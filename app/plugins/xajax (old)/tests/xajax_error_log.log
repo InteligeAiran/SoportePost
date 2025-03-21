@@ -1,0 +1,18 @@
+** xajax Error Log - Apr  2008 11:38:22 AM **
+----
+[WARNING] include(file_doesnt_exist.php) [<a href='function.include'>function.include</a>]: failed to open stream: No such file or directory
+error in line 14 of file C:\Archivos de programa\AppServ\www\admsasil\xajax\tests\errorHandlingTest.php
+----
+[WARNING] include() [<a href='function.include'>function.include</a>]: Failed opening 'file_doesnt_exist.php' for inclusion (include_path='.;C:\php5\pear')
+error in line 14 of file C:\Archivos de programa\AppServ\www\admsasil\xajax\tests\errorHandlingTest.php
+
+
+** xajax Error Log - May  2009 10:59:03 AM **
+----
+[WARNING] include(file_doesnt_exist.php) [<a href='function.include'>function.include</a>]: failed to open stream: No such file or directory
+error in line 14 of file C:\Archivos de programa\AppServ\www\Admision\xajax\tests\errorHandlingTest.php
+----
+[WARNING] include() [<a href='function.include'>function.include</a>]: Failed opening 'file_doesnt_exist.php' for inclusion (include_path='.;C:\php5\pear')
+error in line 14 of file C:\Archivos de programa\AppServ\www\Admision\xajax\tests\errorHandlingTest.php
+
+

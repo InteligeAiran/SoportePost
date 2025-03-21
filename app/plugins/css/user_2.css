@@ -1,0 +1,43 @@
+*{
+  margin: 0;
+  border: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body{
+    background-image: linear-gradient(to right, #000000, rgb(255, 0, 0));
+}
+
+header{
+background: hsla(4, 94%, 47%, 1);
+
+background: linear-gradient(45deg, hsla(4, 94%, 47%, 1) 0%, hsla(4, 85%, 63%, 1) 0%, hsla(4, 85%, 74%, 1) 32%, hsla(7, 80%, 98%, 1) 100%);
+
+background: -moz-linear-gradient(45deg, hsla(4, 94%, 47%, 1) 0%, hsla(4, 85%, 63%, 1) 0%, hsla(4, 85%, 74%, 1) 32%, hsla(7, 80%, 98%, 1) 100%);
+
+background: -webkit-linear-gradient(45deg, hsla(4, 94%, 47%, 1) 0%, hsla(4, 85%, 63%, 1) 0%, hsla(4, 85%, 74%, 1) 32%, hsla(7, 80%, 98%, 1) 100%);
+
+filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#EB1607", endColorstr="#F15D52", GradientType=1 );
+}
+
+h1{
+  color: white;
+  margin-left: 50px;
+  position: right; 
+}
+
+#user_icon{
+  color: white;
+  font-size: 30px;
+  position: fixed;
+  cursor: pointer;
+}
+
+#setting_icon{
+  color: white;
+  font-size: 30px;
+  float: right;
+  cursor: pointer;
+}
+
