@@ -1,0 +1,74 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" version="26.1.0">
+  <diagram name="Page-1" id="e7e014a7-5840-1c2e-5031-d8a46d1fe8dd">
+    <mxGraphModel dx="1255" dy="815" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" value="TECNICO" style="swimlane;whiteSpace=wrap" parent="1" vertex="1">
+          <mxGeometry width="290" height="570" as="geometry" />
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-62" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="2" source="YmPaH8msV4c9Sfyc98O0-61" target="YmPaH8msV4c9Sfyc98O0-63">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="140" y="85" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-61" value="Verifica autenticidad del usuario" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="2">
+          <mxGeometry x="10" y="40" width="80" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-65" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="2" source="YmPaH8msV4c9Sfyc98O0-63" target="YmPaH8msV4c9Sfyc98O0-66">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="250" y="85" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-63" value="Clasifica falla" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="2">
+          <mxGeometry x="120" y="67.5" width="90" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-68" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="2" source="YmPaH8msV4c9Sfyc98O0-66" target="YmPaH8msV4c9Sfyc98O0-67">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-66" value="Valida Garantia de Instalacion y garantia de reingreso" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="2">
+          <mxGeometry x="160" y="135" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-70" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="2" source="YmPaH8msV4c9Sfyc98O0-67" target="YmPaH8msV4c9Sfyc98O0-69">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-67" value="Valida exoneracion y&#xa;pago de anticipo" style="" vertex="1" parent="2">
+          <mxGeometry x="10" y="140" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-69" value="Carga comprobante de pago o PDF de exoneracion" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;" vertex="1" parent="2">
+          <mxGeometry x="95" y="230" width="100" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-107" value=" " style="" vertex="1" parent="2">
+          <mxGeometry x="150" y="400" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-106" value="Verificar Estatus&#xa;taller" style="" vertex="1" parent="2">
+          <mxGeometry x="10" y="400" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-110" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="2" source="YmPaH8msV4c9Sfyc98O0-104" target="YmPaH8msV4c9Sfyc98O0-106">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-104" value="Envia al rosal" style="" vertex="1" parent="2">
+          <mxGeometry x="10" y="320" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="3" value="ADMINISTRACION" style="swimlane;whiteSpace=wrap;startSize=23;" parent="1" vertex="1">
+          <mxGeometry x="290" width="270" height="570" as="geometry" />
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-91" value="Verifica Solvencia" style="" vertex="1" parent="3">
+          <mxGeometry x="70" y="50" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-84" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="YmPaH8msV4c9Sfyc98O0-69" target="YmPaH8msV4c9Sfyc98O0-91">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="310" y="60" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="280" y="270" />
+              <mxPoint x="280" y="75" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YmPaH8msV4c9Sfyc98O0-109" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="YmPaH8msV4c9Sfyc98O0-91" target="YmPaH8msV4c9Sfyc98O0-104">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
