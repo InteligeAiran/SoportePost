@@ -47,15 +47,76 @@ class EmailRepository
         return $result ? $result['row'] : null;
     }
 
+    public function GetEmailCoorDataById($id_coordinador){
+        $result = $this->model->GetEmailCoordById($id_coordinador);
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetDataTicketConCliente()
+    {
+        // Obtener los datos del ticket
+        $result = $this->model->GetTicketNivel();
+
+        if($result['row']['id_level_failure'] == 1){
+            $ticketData = $this->model->GetDataTicket1();
+            $ticket = $ticketData ? $ticketData['row'] : null;
+            if ($ticket && isset($ticket['serial_pos'])) {
+                // Obtener la información del cliente utilizando el serial del ticket
+                $clientData = $this->model->GetClientInfo($ticket['serial_pos']);
+        
+                $clientInfo = $clientData ? $clientData['row'] : null;
+
+                // Unificar los datos si se encontró la información del cliente
+                if ($clientInfo) {
+                    return array_merge($ticket, $clientInfo);
+                } else {
+                    // Si no se encontró la información del cliente, devolver solo los datos del ticket
+                    return $ticket;
+                }
+            }
+        }else{
+            $ticketData = $this->model->GetDataTicket2();
+            $ticket = $ticketData ? $ticketData['row'] : null;
+            if ($ticket && isset($ticket['serial_pos'])) {
+                // Obtener la información del cliente utilizando el serial del ticket
+                $clientData = $this->model->GetClientInfo($ticket['serial_pos']);
+        
+                $clientInfo = $clientData ? $clientData['row'] : null;
+
+                // Unificar los datos si se encontró la información del cliente
+                if ($clientInfo) {
+                    return array_merge($ticket, $clientInfo);
+                } else {
+                    // Si no se encontró la información del cliente, devolver solo los datos del ticket
+                    return $ticket;
+                }
+            }
+        }
+        return null; // Si no se pudieron obtener los datos del ticket iniciales
+    }
+
     public function GetDataTicket1(){
         // Lógica para obtener datos de ticket
         $result = $this->model->GetDataTicket1();
         return $result ? $result['row'] : null;
     }
 
+
+    public function GetDataTicket2(){
+        $result = $this->model->GetDataTicket2();
+        return $result ? $result['row'] : null;
+    }
+
     public  function GetClientInfo($serial){
         // Lógica para obtener información del cliente
         $result = $this->model->GetClientInfo($serial);
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetDataImage($id_ticket){
+        // Lógica para obtener datos de imagen
+        //var_dump($serial);
+        $result = $this->model->GetDataImage($id_ticket);
         return $result ? $result['row'] : null;
     }
 }

@@ -2,7 +2,7 @@
 namespace App\Repositories; // Usar namespaces para organizar tus clases
 require_once __DIR__. '/../models/consulta_rifModel.php'; // Asegúrate de que el modelo de usuario esté incluido
 use consulta_rifModel; // Asegúrate de que tu modelo de usuario exista
-
+session_start(); // Inicia la sesión
 class TechnicalConsultionRepository
 {
     private $model;
@@ -137,9 +137,21 @@ class TechnicalConsultionRepository
         return $failures;
     }
 
-    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo){
-        $result = $this->model->SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo);
+    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio){
+        $result = $this->model->SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio);
         return $result;
+    }
+
+    public  function GetClientInfo($serial){
+        // Lógica para obtener información del cliente
+        $result = $this->model->GetClientInfo($serial);
+
+        for ($i = 0; $i < $result['numRows']; $i++) {
+            $agente = pg_fetch_assoc($result['query'], $i);
+            $data[] = $agente;
+            //var_dump($agente);
+        }
+        return $data;
     }
 }
 ?>

@@ -1,11 +1,10 @@
 @media (max-width: 1900px) AND (min-width: 1200px) AND (max-height: 1000px) AND (min-height: 400px){
-
     body {
         display: flex;
         flex-direction: column;
         min-height: 100vh; /* Asegura que el body ocupe al menos el 100% de la altura de la ventana */
         margin: 0; /* Elimina los márgenes predeterminados del body */
-        
+
         overflow: hidden;
         flex-grow: 1; /* Permite que el contenido principal crezca */
         display: flex;
@@ -15,7 +14,7 @@
     .main-content {
         flex-grow: 1;
     }
-    
+
     .footer {
         margin-top: 600px; /* Empuja el footer hacia la parte inferior */
         text-align: center; /* Centra el texto del footer */
@@ -67,19 +66,35 @@
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 20px;
-        table-layout: fixed;
+        table-layout: fixed; /* Importante para el ancho de las columnas */
+        font-size: 0.9em; /* Reducir ligeramente el tamaño de la fuente */
     }
 
-    #rifCountTable th, td {
+    #rifCountTable th, #rifCountTable td {
         border: 1px solid #ddd;
-        padding: 8px;
+        padding: 8px 5px; /* Reducir el padding vertical y horizontal */
         text-align: left;
-        height: -8px;
-        font-size: 14px;
+        height: auto; /* Permitir que la altura se ajuste al contenido */
+        font-size: 12px; /* Reducir el tamaño de la fuente */
+        white-space: nowrap; /* Evitar saltos de línea innecesarios */
+        overflow: hidden; /* Ocultar el texto que se desborda */
+        text-overflow: ellipsis; /* Mostrar "..." para el texto oculto */
+    }
+
+    #rifCountTable th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+    #rifCountTable_length select {
+        width: 100px; /* Ajusta el ancho del select */
+        padding: 5px; /* Añade un poco de espacio interno */
+        border-radius: 4px; /* Bordes redondeados */
+        border: 1px solid #ccc; /* Borde gris claro */
     }
 
     #rifCountTable td {
-        height: 50px;
+        height: auto; /* Permitir que la altura se ajuste al contenido */
     }
 
     th {
@@ -113,7 +128,7 @@
     }
 
     #Row{
-        margin-top: -4.5rem !important;
+        margin-top: -7.5rem !important;
     }
 
     /* Estilo general del contenedor de paginación */
@@ -161,9 +176,9 @@
         color: #666;
     }
 
-    #rifCountTable td {
-        padding: -5px; /* Ajusta el padding según sea necesario */
-        height: 50px;
+    .table-responsive {
+        overflow-y: auto; /* Añade scroll vertical cuando el contenido desborda */
+        max-height: 80vh; /* O una altura máxima que consideres apropiada para la visualización inicial */
     }
 
     #cliente{
@@ -188,7 +203,7 @@
         background-color: rgba(0, 0, 0, 0.5); /* Fondo translúcido oscuro */
         backdrop-filter: blur(5px); /* Efecto de desenfoque al fondo (opcional) */
     }
-    
+
     #ModalSerial-content {
         background-color: #ffffff; /* Fondo blanco para el contenido */
         margin: 10% auto; /* Centrado */
@@ -199,7 +214,7 @@
         max-width: 1269px; /* Ancho máximo para evitar que se vea demasiado grande en pantallas grandes */
         position: relative; /* Para posicionar el botón de cierre correctamente */
     }
-    
+
     #ModalSerial-close {
         color: red;
         position: absolute; /* Posición absoluta para colocarlo en la esquina */
@@ -210,13 +225,13 @@
         cursor: pointer;
         transition: color 0.3s ease; /* Transición suave para el color */
     }
-    
+
     #ModalSerial-close:hover,
     #ModalSerial-close:focus {
         color: #333;
         text-decoration: none;
     }
-    
+
     #modalContenido {
         text-align: center; /* Centrar el contenido */
         font-size: 18px; /* Tamaño de fuente más grande */
@@ -224,14 +239,14 @@
         color: #333; /* Color de texto más oscuro */
         margin-bottom: 20px; /* Espacio debajo del texto */
     }
-    
+
     /* Estilos adicionales para mejorar la apariencia */
     #ModalSerial-content h2 {
         font-size: 24px;
         margin-bottom: 20px;
         color: #007bff; /* Color azul para el título */
     }
-    
+
     #ModalSerial-content p {
         margin-bottom: 15px;
     }
@@ -257,7 +272,7 @@
         margin-bottom: 20px;
         color: #333;
     }
-    
+
     #serialCountTable {
         width: 65%;
         border-collapse: collapse;
@@ -268,7 +283,7 @@
         cursor: pointer; /* Cambia el cursor a una mano para indicar que es interactivo */
     }
 
-    
+
     #serialCountTable th,
     #serialCountTable td {
         padding: 10px;
@@ -277,16 +292,16 @@
         box-sizing: border-box; /* Incluye el padding en el ancho */
 
     }
-    
+
     #serialCountTable th {
         font-weight: 600;
         width: 40%;
     }
-    
+
     #serialCountTable td {
         width: 85%;
     }
-    
+
     #serialCountTable tbody tr:nth-child(even) {
         background-color: #f9f9f9;
     }
@@ -299,27 +314,27 @@
     #serialCountTable th {
         font-weight: bold;
     }
-    
+
     #serialCountTable td {
         text-align: right; /* Alinea los valores a la derecha */
     }
-    
+
     #ModalSerial-content strong {
         font-weight: bold;
     }
-    
+
     #ModalSerial-content em {
         font-style: italic;
     }
-    
+
     #ModalSerial-content .resaltado {
         color: #007bff; /* Cambia el color según sea necesario */
     }
-    
+
     #ModalSerial-content tr {
         margin-bottom: 10px; /* Ajusta el margen vertical entre filas */
     }
-    
+
         /* Estilos para el botón */
     .boton-modal {
         position: absolute; /* Permite posicionarlo donde quieras */
@@ -341,18 +356,6 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra ligera */
     }
 
-    #crearTicketSelect {
-        /* Copia los estilos de tu botón original aquí */
-        width: 211px;
-        padding: 10px 20px;
-        background-color: #4CAF50; /* Ejemplo de color verde */
-        color: white;
-        border: none;
-        cursor: pointer;
-        margin-left: 1%;
-        margin-top: 4px;
-    }
-    
     /* Estilos para el modal */
     .modal {
         display: none;
@@ -367,8 +370,6 @@
         backdrop-filter: blur(8px);
     }
 
-    
-
     table {
         width: 100%;
         border-collapse: collapse;
@@ -377,7 +378,7 @@
 
     th, td {
         border: 1px solid #eee;
-        padding: 8px; /* Reducido el padding */
+        padding: 8px 5px; /* Reducido el padding */
         text-align: left;
         font-family: 'Arial', sans-serif;
         font-size: 12px; /* Tamaño de la fuente reducido */
@@ -389,7 +390,6 @@
     }
 
     /* IMAGES STYLES */
-
     .ingenico-ict250 {
         width: 150px;
         border: 2px solid green;
@@ -429,12 +429,11 @@
         margin-left: -323px;
         margin-top: 54px;
     }
-
+    
     .Kozen-P10{
         margin-left: -156px;
         height: 525px;
     }
-
     /*  END IMAGES STYLES */
     
 
@@ -447,4 +446,5 @@
         height: 467px;
         margin-left: -200px;
     }*/
+    
 }

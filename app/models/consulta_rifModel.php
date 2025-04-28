@@ -118,7 +118,6 @@ class consulta_rifModel extends Model
             $escaped_nivelFalla = pg_escape_literal($this->db->getConnection(), $nivelFalla);
             $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
             $sql = "SELECT SaveDataFalla(".$escaped_serial.", ".$escaped_falla.", ".$escaped_nivelFalla.", ".$escaped_id_user.");";
-
             $sql.= "SELECT InsertTicketFailure(".$escaped_falla.");";
             $result = $this->db->pgquery($sql);
             $this->db->closeConnection(); // Close the connection if needed
@@ -128,14 +127,14 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaBaseDatos, $id_status_payment,  $rutaExo, $rutaAnticipo){
+    /*public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaBaseDatos, $id_status_payment,  $rutaExo, $rutaAnticipo, $id_user){
         try {
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial);
             $escaped_descripcion = pg_escape_literal($this->db->getConnection(), $descripcion);
             $escaped_nivelFalla = pg_escape_literal($this->db->getConnection(), $nivelFalla);
             $escaped_id_status_payment = pg_escape_literal($this->db->getConnection(), $id_status_payment);
             $escaped_coordinador = pg_escape_literal($this->db->getConnection(), $coordinador);
-            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $_SESSION['id_user']);
+            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
     
             $sql = "SELECT * FROM save_data_failures2(".$escaped_serial."::TEXT, ".$escaped_descripcion."::INTEGER, ".$escaped_nivelFalla."::INTEGER,
                     ".$escaped_id_status_payment."::INTEGER, ".$escaped_coordinador."::INTEGER, ".$escaped_id_user."::INTEGER, '".$rutaBaseDatos."'::TEXT,
@@ -147,6 +146,48 @@ class consulta_rifModel extends Model
                 $sqlFailure = "SELECT InsertTicketFailure(".$escaped_descripcion.");";
                 $resultFailure = $this->db->pgquery($sqlFailure);
                 // Puedes devolver ambos resultados si es necesario
+                return array('save_result' => $result, 'failure_result' => $resultFailure);
+            } else {
+                return $result;
+            }
+        } catch (Throwable $e) {
+                // Handle exception
+        }
+    }*/
+
+    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaBaseDatos, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo = null, $mimeTypeAnticipo = null, $mimeTypeEnvio = null){
+        try {
+            $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial);
+            $escaped_descripcion = pg_escape_literal($this->db->getConnection(), $descripcion);
+            $escaped_nivelFalla = pg_escape_literal($this->db->getConnection(), $nivelFalla);
+            $escaped_id_status_payment = pg_escape_literal($this->db->getConnection(), $id_status_payment);
+            $escaped_coordinador = pg_escape_literal($this->db->getConnection(), $coordinador);
+            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+    
+            $escaped_mimeTypeExo = null;
+            if ($mimeTypeExo !== null) {
+                $escaped_mimeTypeExo = pg_escape_literal($this->db->getConnection(), $mimeTypeExo);
+            }
+    
+            $escaped_mimeTypeAnticipo = null;
+            if ($mimeTypeAnticipo !== null) {
+                $escaped_mimeTypeAnticipo = pg_escape_literal($this->db->getConnection(), $mimeTypeAnticipo);
+            }
+    
+            $escaped_mimeTypeEnvio = null;
+            if ($mimeTypeEnvio !== null) {
+                $escaped_mimeTypeEnvio = pg_escape_literal($this->db->getConnection(), $mimeTypeEnvio);
+            }
+    
+            $sql = "SELECT * FROM save_data_failures2(".$escaped_serial."::TEXT, ".$escaped_descripcion."::INTEGER, ".$escaped_nivelFalla."::INTEGER,
+                    ".$escaped_id_status_payment."::INTEGER, ".$escaped_coordinador."::INTEGER, ".$escaped_id_user."::INTEGER, '".$rutaBaseDatos."'::TEXT,
+                    '".($rutaExo ?? '')."'::TEXT, '".($rutaAnticipo ?? '')."'::TEXT, ".($escaped_mimeTypeExo !== null ? $escaped_mimeTypeExo."::TEXT" : 'NULL').", ".($escaped_mimeTypeAnticipo !== null ? $escaped_mimeTypeAnticipo."::TEXT" : 'NULL').", ".($escaped_mimeTypeEnvio !== null ? $escaped_mimeTypeEnvio."::TEXT" : 'NULL').")";
+            $result = $this->db->pgquery($sql);
+            //var_dump($sql);
+    
+            if($result){
+                $sqlFailure = "SELECT InsertTicketFailure(".$escaped_descripcion.");";
+                $resultFailure = $this->db->pgquery($sqlFailure);
                 return array('save_result' => $result, 'failure_result' => $resultFailure);
             } else {
                 return $result;
@@ -224,11 +265,22 @@ class consulta_rifModel extends Model
 
     public function GetCoordinator(){
         try{
-            $sql = "SELECT * FROM GetCoordinator()";
+            $sql = "SELECT * FROM get_data_coordinator()";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
             // Manejar excepciones
+        }
+    }
+
+    public function GetClientInfo($serial){
+        try{
+            $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); 
+            $sql = "SELECT * FROM get_Client_by_serial(".$escaped_serial.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
         }
     }
 }
