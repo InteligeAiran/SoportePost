@@ -6,7 +6,7 @@ define("bd_usuario", 'postgres');
 define("bd_clave", '1234');
 
 // DB NUEVA
-define("database", 'SoportePost');
+define("database", 'SoportePostNew');
 
 
 /* DB VIEJA*/

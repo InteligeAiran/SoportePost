@@ -293,7 +293,7 @@ function SendDataFailure1() {
     const falla = document.getElementById('FallaSelect1').value;
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/SaveDataFalla');
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/SaveDataFalla');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); // Asegúrate de que esto esté presente
 
     xhr.onload = function() {
@@ -303,7 +303,7 @@ function SendDataFailure1() {
                 if (response.success) {
                     // **MOVER LA LÓGICA DEL CORREO AQUÍ**
                     const xhrEmail = new XMLHttpRequest();
-                    xhrEmail.open('POST', 'http://10.225.1.136/SoportePost/api/email/send_ticket1');
+                    xhrEmail.open('POST', 'http://localhost:8080/SoportePost/api/email/send_ticket1');
                     xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
                     xhrEmail.onload = function() {
@@ -529,7 +529,7 @@ $("#rifInput").keyup(function(){
 
 function SendRif() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/SearchRif');
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/SearchRif');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     const tbody = document.getElementById('rifCountTable').getElementsByTagName('tbody')[0];
@@ -694,7 +694,7 @@ function SendRif() {
 
 function fetchSerialData(serial) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/SearchSerial');
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/SearchSerial');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     const tbody = document.getElementById('serialCountTable').getElementsByTagName('tbody')[0];
 
@@ -791,7 +791,7 @@ function checkRif() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://10.225.1.136/SoportePost/api/ValidateRif');
+        xhr.open('POST', 'http://localhost:8080/SoportePost/api/ValidateRif');
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -843,7 +843,7 @@ function checkRif1() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://10.225.1.136/SoportePost/api/ValidateRif1');
+        xhr.open('POST', 'http://localhost:8080/SoportePost/api/ValidateRif1');
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -886,7 +886,7 @@ function checkRif1() {
 
 function getPosSerials1(rif) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/GetPosSerials1');
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetPosSerials1');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -964,7 +964,7 @@ function getPosSerials1(rif) {
 
 function getFailure() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/GetFailure1');
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetFailure1');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -1011,7 +1011,7 @@ document.addEventListener('DOMContentLoaded', getFailure);
 
 function getFailure2() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/GetFailure2');
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetFailure2');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -1056,7 +1056,7 @@ document.addEventListener('DOMContentLoaded', getFailure2);
 
 function getCoordinador() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/GetCoordinador');
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetCoordinador');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -1103,7 +1103,7 @@ document.addEventListener('DOMContentLoaded', getCoordinador);
 
 function downloadImageModal(serial) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/GetPhoto');
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetPhoto');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -1149,7 +1149,7 @@ let fechaInstalacionGlobal = null;
 
 function getPosSerials(rif) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/GetPosSerials');
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetPosSerials');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -1213,7 +1213,7 @@ function getPosSerials(rif) {
 
 function getUltimateTicket(serial) {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://10.225.1.136/SoportePost/api/GetUltimateTicket'); // Asegúrate de usar la ruta correcta de tu API
+        xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetUltimateTicket'); // Asegúrate de usar la ruta correcta de tu API
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
         xhr.onload = function() {
@@ -1294,7 +1294,7 @@ function getUltimateTicket(serial) {
 
     function getInstalationDate(serial) {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://10.225.1.136/SoportePost/api/GetInstallPosDate'); // Asegúrate de usar la ruta correcta de tu API
+        xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetInstallPosDate'); // Asegúrate de usar la ruta correcta de tu API
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
         xhr.onload = function() {
@@ -1712,7 +1712,7 @@ function SendDataFailure2(idStatusPayment) {
     console.log(formData);*/
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/SaveDataFalla2');
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/SaveDataFalla2');
     xhr.onload = function() {
         if (xhr.status === 200) {
             try {

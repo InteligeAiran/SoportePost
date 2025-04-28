@@ -69,7 +69,7 @@ function SendForm() {
     
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost/SoportePost/api/login');
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/login');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -208,7 +208,7 @@ function checkUser() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost/SoportePost/api/checkUser');
+        xhr.open('POST', 'http://localhost:8080/SoportePost/api/checkUser');
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -245,7 +245,7 @@ function checkPass() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost/SoportePost/api/checkPass');
+        xhr.open('POST', 'http://localhost:8080/SoportePost/api/checkPass');
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -281,7 +281,7 @@ function checkEmail() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost/SoportePost/api/checkEmail');
+        xhr.open('POST', 'http://localhost:8080/SoportePost/api/checkEmail');
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -356,7 +356,7 @@ setTimeout(function() {
 function SendEmail() {
     const email = document.getElementById('email').value;
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost/SoportePost/api/email/restore_password');
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/email/restore_password');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
     mostrarCargando(); // Muestra el "cargando"
