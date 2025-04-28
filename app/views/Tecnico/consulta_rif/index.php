@@ -189,7 +189,7 @@ include 'backEnd.php';
                             </div>
                         </div>
 
-                        <select id="crearTicketSelect" class="boton-modal">
+                        <!--select id="crearTicketSelect" class="boton-modal">
                             <option value = "Crear Ticket">Crear Ticket</option>
                             <option id="abrirModal" value="Soporte POS">Soporte POS</option>
                             <option value="Sustitución de POS">Sustitución de POS</option>
@@ -197,7 +197,7 @@ include 'backEnd.php';
                             <option value="Desafiliación de POS">Desafiliación de POS</option>
                             <option value="Desafiliación de POS">Migracion de Bancos</option>
                             <option value="Desafiliación de POS">Cambio de Razon Social</option>
-                        </select>
+                        </select-->
                         <!-- END TO SELECT THE FAILURE -->
 
                         <!-- MODAL FAILURE 1 -->
@@ -463,13 +463,7 @@ include 'backEnd.php';
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP;?>app/plugins/js/sb-admin-2.min.js"></script>
     
-        <?php
-            if (isset($this->js)){
-                foreach ($this->js as $js){
-                    echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'"></script>'; 
-                }
-            }
-        ?>
+        <script src="<?php echo APP;?>app/views/Tecnico/consulta_rif/js/frontEnd.js"></script>
 
   <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
   <?php

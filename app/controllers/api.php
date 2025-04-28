@@ -213,27 +213,20 @@ class Api extends Controller {
     }
 
     private function handleGetImageExo() {
-        if (isset($_GET['id'])) {
+        // LEER EL ID DESDE $_POST
+           // var_dump($_POST); // Para depuración
             $imageId = $_GET['id'];
-            $emailRepository = new EmailRepository();
-            $imagenData = $emailRepository->GetDataImage($imageId);
-    
+            //var_dump($imageId); // Para depuración
+            // **IMPORTANTE:** Debes tener un repositorio o modelo para interactuar con tu base de datos
+            $emailRepository = new EmailRepository(); // Reemplaza con el nombre de tu repositorio
+            $imagenData = $emailRepository->GetDataImage($imageId); // Implementa esta función en tu repositorio
             if ($imagenData && isset($imagenData['exo']) && isset($imagenData['mime_type'])) {
-                header('Content-Type: ' . $imagenData['mime_type']);
-                // Vamos a intentar enviar los datos en chunks pequeños y ver si la conexión se mantiene
-                $chunkSize = 1024 * 8; // 8 KB por chunk
-                for ($i = 0; $i < strlen($imagenData['exo']); $i += $chunkSize) {
-                    echo substr($imagenData['exo'], $i, $chunkSize);
-                    flush(); // Forzar el envío del buffer
-                    usleep(100); // Esperar un poco para no saturar
-                }
+                header('Content-Type: ' . $imagenData['mime_type']); // Asegúrate de que esta línea se ejecute
+                echo $imagenData['exo'];
                 exit();
             } else {
-                $this->response(['success' => false, 'message' => 'Datos de imagen no encontrados'], 404);
+                $this->response(['success' => false, 'message' => 'Datos de imagen no encontrados en la base de datos'], 404);
             }
-        } else {
-            $this->response(['error' => 'ID de imagen no proporcionado'], 400);
-        }
     }
     
 
@@ -775,8 +768,8 @@ class Api extends Controller {
 
         $result = $repository->SearchRif($rif);
 
-        if (!empty($result)) {
-            $this->response(['success' => true, 'rif' => $result], 200);
+        if ($result != "") {
+            $this->response(['success' => true, 'rif' => $result], status: 200);
         } else {
             $this->response([ 'success' => false, 'message' => 'No se encontraron usuarios'], status: 404);
         }
