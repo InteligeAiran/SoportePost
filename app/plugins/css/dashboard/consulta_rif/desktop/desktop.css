@@ -1,0 +1,450 @@
+@media (max-width: 1900px) AND (min-width: 1200px) AND (max-height: 1000px) AND (min-height: 400px){
+
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh; /* Asegura que el body ocupe al menos el 100% de la altura de la ventana */
+        margin: 0; /* Elimina los márgenes predeterminados del body */
+        
+        overflow: hidden;
+        flex-grow: 1; /* Permite que el contenido principal crezca */
+        display: flex;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .main-content {
+        flex-grow: 1;
+    }
+    
+    .footer {
+        margin-top: 600px; /* Empuja el footer hacia la parte inferior */
+        text-align: center; /* Centra el texto del footer */
+        padding: 20px 0; /* Agrega un poco de espacio alrededor del texto */
+        background-color: #f0f0f0; /* Opcional: agrega un color de fondo */
+    }
+
+    #SearchRif{
+        margin-left: 550px;
+    }
+
+    #buscarRifContainer {
+        display: flex;
+        justify-content: center; /* Centra horizontalmente */
+        align-items: center; /* Centra verticalmente */
+        margin: 20px 0; /* Añade margen superior e inferior */
+    }
+
+    #rifInput {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: 10px;
+        width: 200px; /* Ajusta el ancho según sea necesario */
+        font-size: 16px;
+    }
+
+    #buscarRif {
+        padding: 10px 20px;
+        background-color: #007bff; /* Color azul, puedes cambiarlo */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease; /* Transición suave */
+    }
+
+    #buscarRif:hover {
+        background-color: #0056b3; /* Color más oscuro al pasar el ratón */
+    }
+    /* Estilos generales */
+    body {
+        font-family: Arial, sans-serif;
+        color: #333;
+    }
+
+    #rifCountTable {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        table-layout: fixed;
+    }
+
+    #rifCountTable th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        height: -8px;
+        font-size: 14px;
+    }
+
+    #rifCountTable td {
+        height: 50px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    /* Estilos del input y el botón */
+    #rifInput {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-right: 10px;
+    }
+
+    #buscarBtn {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    #buscarBtn:hover {
+        background-color: #0056b3;
+    }
+
+    #Row{
+        margin-top: -4.5rem !important;
+    }
+
+    /* Estilo general del contenedor de paginación */
+    .dataTables_wrapper .dataTables_paginate {
+        font-size: 14px;
+        margin-top: 10px;
+        padding: 5px;
+        background-color: #f0f0f0; /* Color de fondo */
+        border-radius: 5px; /* Bordes redondeados */
+    }
+
+    /* Estilo de los botones de paginación */
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 5px 10px;
+        margin: 0 5px;
+        border: 1px solid #ccc;
+        background-color: #e0e0e0;
+        color: #333;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+
+    /* Estilo del botón activo (página actual) */
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background-color: #007bff;
+        color: #fff;
+        border-color: #007bff;
+    }
+
+    /* Estilo de los botones deshabilitados */
+    .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Estilo al pasar el ratón por encima de los botones */
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background-color: #d0d0d0;
+    }
+
+    /* Estilo de la información de paginación */
+    .dataTables_wrapper .dataTables_info {
+        font-size: 16px;
+        margin-top: 5px;
+        color: #666;
+    }
+
+    #rifCountTable td {
+        padding: -5px; /* Ajusta el padding según sea necesario */
+        height: 50px;
+    }
+
+    #cliente{
+        margin-left: 100px;
+        position: fixed;
+    }
+
+    #rifCountTable tbody tr:hover {
+        background-color: #f0f0f0; /* Cambia el color de fondo al pasar el ratón */
+        cursor: pointer; /* Cambia el cursor a una mano para indicar que es interactivo */
+    }
+
+    #ModalSerial {
+        display: none; /* Oculto por defecto */
+        position: fixed; /* Posición fija */
+        z-index: 1000; /* Asegura que esté por encima de otros elementos */
+        left: 130px;
+        top: 0;
+        width: 100%; /* Ancho completo */
+        height: 100%; /* Alto completo */
+        overflow: auto; /* Habilitar scroll si es necesario */
+        background-color: rgba(0, 0, 0, 0.5); /* Fondo translúcido oscuro */
+        backdrop-filter: blur(5px); /* Efecto de desenfoque al fondo (opcional) */
+    }
+    
+    #ModalSerial-content {
+        background-color: #ffffff; /* Fondo blanco para el contenido */
+        margin: 10% auto; /* Centrado */
+        padding: 30px; /* Aumenta el relleno para más espacio */
+        border-radius: 12px; /* Bordes más redondeados */
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 1.2); /* Sombra más pronunciada */
+        width: 60%; /* Ancho del contenido (ajusta según sea necesario) */
+        max-width: 1269px; /* Ancho máximo para evitar que se vea demasiado grande en pantallas grandes */
+        position: relative; /* Para posicionar el botón de cierre correctamente */
+    }
+    
+    #ModalSerial-close {
+        color: red;
+        position: absolute; /* Posición absoluta para colocarlo en la esquina */
+        top: 10px;
+        right: 15px;
+        font-size: 30px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.3s ease; /* Transición suave para el color */
+    }
+    
+    #ModalSerial-close:hover,
+    #ModalSerial-close:focus {
+        color: #333;
+        text-decoration: none;
+    }
+    
+    #modalContenido {
+        text-align: center; /* Centrar el contenido */
+        font-size: 18px; /* Tamaño de fuente más grande */
+        line-height: 1.6; /* Espaciado entre líneas para mejor legibilidad */
+        color: #333; /* Color de texto más oscuro */
+        margin-bottom: 20px; /* Espacio debajo del texto */
+    }
+    
+    /* Estilos adicionales para mejorar la apariencia */
+    #ModalSerial-content h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #007bff; /* Color azul para el título */
+    }
+    
+    #ModalSerial-content p {
+        margin-bottom: 15px;
+    }
+
+    #serialCountTable{
+        width: 50%;
+    }
+
+    #ModalSerial-content {
+        background-color: #ffffff;
+        margin: 10% auto;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 1.2);
+        width: 80%;
+        max-width: 800px; /* Ajusta según sea necesario */
+        position: relative;
+    }
+
+    #ModalSerial-content h2 {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #333;
+    }
+    
+    #serialCountTable {
+        width: 65%;
+        border-collapse: collapse;
+    }
+
+    #serialCountTable td:hover {
+        background-color: #f0f0f0; /* Cambia el color de fondo al pasar el ratón */
+        cursor: pointer; /* Cambia el cursor a una mano para indicar que es interactivo */
+    }
+
+    
+    #serialCountTable th,
+    #serialCountTable td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+        box-sizing: border-box; /* Incluye el padding en el ancho */
+
+    }
+    
+    #serialCountTable th {
+        font-weight: 600;
+        width: 40%;
+    }
+    
+    #serialCountTable td {
+        width: 85%;
+    }
+    
+    #serialCountTable tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    #modalContenido span {
+        text-align: right;
+        display: block; /* Asegura que los spans ocupen todo el ancho */
+    }
+
+    #serialCountTable th {
+        font-weight: bold;
+    }
+    
+    #serialCountTable td {
+        text-align: right; /* Alinea los valores a la derecha */
+    }
+    
+    #ModalSerial-content strong {
+        font-weight: bold;
+    }
+    
+    #ModalSerial-content em {
+        font-style: italic;
+    }
+    
+    #ModalSerial-content .resaltado {
+        color: #007bff; /* Cambia el color según sea necesario */
+    }
+    
+    #ModalSerial-content tr {
+        margin-bottom: 10px; /* Ajusta el margen vertical entre filas */
+    }
+    
+        /* Estilos para el botón */
+    .boton-modal {
+        position: absolute; /* Permite posicionarlo donde quieras */
+        top: 107px; /* Ajusta la posición vertical */
+        left: 90%; /* Ajusta la posición horizontal */
+        transform: translateX(-50%); /* Centra el botón */
+        background-color: #4CAF50; /* Color de fondo */
+        color: white; /* Color del texto */
+        padding: 10px 20px; /* Espaciado interno */
+        border: none; /* Sin borde */
+        cursor: pointer; /* Cambia el cursor al pasar por encima */
+        border-radius: 5px; /* Bordes redondeados */
+        z-index: 1000; /* Asegura que esté encima de otros elementos */
+
+    }
+
+    .boton-modal:hover {
+        background-color: #66BB6A; /* Un tono más claro al pasar el cursor */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra ligera */
+    }
+
+    #crearTicketSelect {
+        /* Copia los estilos de tu botón original aquí */
+        width: 211px;
+        padding: 10px 20px;
+        background-color: #4CAF50; /* Ejemplo de color verde */
+        color: white;
+        border: none;
+        cursor: pointer;
+        margin-left: 1%;
+        margin-top: 4px;
+    }
+    
+    /* Estilos para el modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(8px);
+    }
+
+    
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px; /* Reducido el margen */
+    }
+
+    th, td {
+        border: 1px solid #eee;
+        padding: 8px; /* Reducido el padding */
+        text-align: left;
+        font-family: 'Arial', sans-serif;
+        font-size: 12px; /* Tamaño de la fuente reducido */
+    }
+
+    th {
+        background-color: #f9f9f9;
+        font-weight: 600;
+    }
+
+    /* IMAGES STYLES */
+
+    .ingenico-ict250 {
+        width: 150px;
+        border: 2px solid green;
+        border-radius: 10px;
+        margin-left: 10px;
+
+    }
+
+    .sunmi-P2{
+        margin-top: 60px;
+        height: 435px;
+        margin-left: -253px;
+        width: 480px;
+    }
+
+    .ingenico-ict220{
+        margin-left: -261px;
+        margin-top: 15px;
+    }
+
+    .move-2500{
+        margin-left: -165px;
+    }
+
+    .ingenico-iwl220{
+        margin-top: 25px;
+        margin-left: -254px;
+    }
+
+    .sunmi-P2mini{
+        margin-left: -263px;
+        margin-top: 30px;
+    }
+
+    .sunmi-P2SE{
+        width: 625px;
+        margin-left: -323px;
+        margin-top: 54px;
+    }
+
+    .Kozen-P10{
+        margin-left: -156px;
+        height: 525px;
+    }
+
+    /*  END IMAGES STYLES */
+    
+
+    /*#ModalSerial-content img {
+        border: 1px solid #eee;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: block;
+        margin: 28px auto;
+        width: 242%;
+        height: 467px;
+        margin-left: -200px;
+    }*/
+}

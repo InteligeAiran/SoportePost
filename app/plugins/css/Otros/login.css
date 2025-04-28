@@ -1,0 +1,741 @@
+/**{
+	margin: 0;
+	box-sizing: border-box;
+	padding: 0;
+	text-decoration: none;
+	font-family: 'Roboto', 	sans-serif;
+}
+
+body{
+	background-color: #f20a0a;
+	/*EL TAMANO SE ADAPTA*
+	background-size: cover;
+	/*QUE NO SE REPITA EL FONDO*
+	background-repeat: no-repeat;
+	/*PARA QUE SE POSICIONE *
+	background-position: center;
+	/*PARA QUE TOME TODO EL WIDTH Y HEIGHT*
+	background-attachment: fixed;
+}
+
+main{
+	width: 100%;
+	padding: 20px;
+	margin: auto;
+	margin-top: 100px
+}
+
+.container__all{
+	width: 100%;
+	max-width: 800px;
+	margin: auto;
+	position: relative;
+}
+
+.back__box{
+	width: 100%;
+	padding: 10px 20px;
+	display: flex;
+	justify-content: center;
+	/*PARA QUE SE VEA BORROSO*
+   -webkit-backdrop-filter: blur(10px);
+	background-color: rgba(09,8,255,0.5);
+}
+
+.back__box div{
+	margin: 100px 40px;
+	color: #ffffff;
+	transition: all 500ms;
+
+}
+
+.back__box div p,
+.bock__box div button{
+	margin-top: 30px; 
+}
+
+.back__box div h3{
+	font-weight: 400;
+	font-size: 26px;
+}
+
+.back__box button{
+	padding: 10px 40px;
+	border: 2px solid #fff;
+	background: transparent;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	color: #ffffff;
+	/*PARA ELIMINAR UNA LINEA NEGRA*/
+	/*outline: none;
+	transition: all 300ms; 
+/*}
+
+.back__box div p{
+    font-size: 16px;
+    font-weight: 300;
+}
+
+.back__box button:hover{
+	background: #fff;
+	color: #f20a0a;
+}
+
+********************* FORM *************************
+
+.container__login-register{
+	display: flex;
+	align-items: center;
+	width: 100%;
+	max-width: 380px;
+	position: relative;
+	top: -185px;
+	left: 10px;
+	transition: left 500ms cubic-bezier(0.175, 0.885, 0.320, 1.275)
+}
+
+.container__login-register form{
+	width: 100%;
+	padding: 80px 20px;
+	background: #fff;
+	/*PARA PODERLO MOVER*
+	position: absolute;
+	border-radius: 20px
+}
+
+.container__login-register form h2{
+	font-size: 30px;
+	text-align: center;
+	margin-bottom: 20px;
+	color: #f20a0a;
+}
+
+.container__login-register form input{
+	width: 100%;
+	margin-top: 20px;
+	padding: 10px;
+	border: none;
+	background: #F2F2F2;
+	font-size: 16px;
+	outline: none;
+}
+
+.container__login-register form button{
+	padding: 10px 40px;
+	margin-top: 40px;
+	border: none;
+	font-size: 14px;
+	background: #f20a0a;
+	color: #ffff;
+	cursor: pointer;
+	outline: none;
+	font-weight: 600;
+}
+
+
+.container__login-register form button:hover{
+    color: #f20a0a;
+	background: #fff;
+}
+
+
+
+.form__login{
+	opacity: 1;
+	display: block;
+}
+
+.form__register{
+	display: none;
+}
+
+/******************* RESPONSIVE DESIGN *************************
+
+@media screen and (max-width: 850px){
+	main{
+		margin-top: 50px;
+	}
+
+	.back__box{
+		max-width: 350px;
+		height: 300px;
+		flex-direction: column;
+		margin: auto;
+	}
+
+    .back__box div{
+    	margin: 0px;
+    	position: absolute;
+    }
+
+    /************ FORM *************
+
+    .container__login-register{
+    	top: -10px;
+    	left: -5px;
+    	margin: auto;
+    }
+
+    .container__login-register form{
+    	position: relative;
+    }
+
+
+
+}*/
+
+/* Fonts Form Google Font ::- https://fonts.google.com/  -:: */
+@import url("https://fonts.googleapis.com/css?family=Abel|Abril+Fatface|Alegreya|Arima+Madurai|Dancing+Script|Dosis|Merriweather|Oleo+Script|Overlock|PT+Serif|Pacifico|Playball|Playfair+Display|Share|Unica+One|Vibur");
+/* End Fonts */
+/* Start Global rules */
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+/* End Global rules */
+
+/* Start body rules */
+body {
+  background-image: linear-gradient(-225deg, #e3fdf5 0%, #ffe6fa 100%);
+  background-image: linear-gradient(to top, #a8edea 0%, #fed6e3 100%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+
+  font-family: "Vibur", cursive;
+  /*   the main font */
+  font-family: "Abel", sans-serif;
+  opacity: 0.95;
+  /* background-image: linear-gradient(to top, #d9afd9 0%, #97d9e1 100%); */
+}
+
+/* |||||||||||||||||||||||||||||||||||||||||||||*/
+/* //////////////////////////////////////////// */
+
+/* End body rules */
+
+/* Start form  attributes */
+form {
+  width: 450px;
+  min-height: 500px;
+  height: auto;
+  border-radius: 5px;
+  margin: 2% auto;
+  box-shadow: 0 9px 50px hsla(20, 67%, 75%, 0.31);
+  padding: 2%;
+   background: rgb(255,255,255);
+
+}
+/* form Container */
+form .con {
+  display: -webkit-flex;
+  display: flex;
+
+  -webkit-justify-content: space-around;
+  justify-content: space-around;
+
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+
+  margin: 0 auto;
+}
+
+/* the header form form */
+header {
+  /*margin: 2% auto 10% auto;*/
+  text-align: center;
+}
+/* Login title form form */
+header h2 {
+  font-size: 250%;
+  font-family: "Playfair Display", serif;
+  color: #3e403f;
+}
+/*  A welcome message or an explanation of the login form */
+header p {
+  letter-spacing: 0.05em;
+}
+
+/* //////////////////////////////////////////// */
+/* //////////////////////////////////////////// */
+
+.input-item {
+  background: #fff;
+  color: #333;
+  padding: 14.5px 0px 15px 9px;
+  border-radius: 5px 0px 0px 5px;
+}
+
+/* Show/hide password Font Icon */
+#eye {
+  /*background: #fff*/;
+  color: #000;
+
+  margin: 5.9px 0 0 0;
+  margin-left: -20px;
+  /*padding: 15px 9px 19px 0px;*/
+  border-radius: 0px 5px 5px 0px;
+
+  /*float: right;*/
+  position: relative;
+  right: 1%;
+  top: -0.2%;
+  z-index: 5;
+
+  cursor: pointer;
+}
+
+.field-set{
+    margin-left:-100px;
+}
+/* inputs form  */
+input[class="form-input"] {
+  width: 250px;
+  height: 50px;
+  background-color: red;
+  margin-top: 30px;
+  padding: 15px;
+  font-size: 16px;
+  font-family: "Arial", sans-serif;
+  color: #ffffff;
+ /*0 margin-left: -100px;*/
+  outline: none;
+  border: none;
+  border-radius: 0px 5px 5px 0px;
+  transition: 0.2s linear;
+  margin-top: 50px;
+}
+input[id="txt-input"] {
+  width: 250px;
+}
+/* focus  */
+input:focus {
+  transform: translateX(-2px);
+  border-radius: 5px;
+}
+
+/* //////////////////////////////////////////// */
+/* //////////////////////////////////////////// */
+
+/* input[type="text"] {min-width: 250px;} */
+/* buttons  */
+button {
+  /*display: inline-block;*/
+  color: white;
+  width: 180px;
+  height: 50px;
+  margin-left: 60px;
+  padding: 0 20px;
+  background: #000;
+  border-radius: 5px;
+  outline: none;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s linear;
+  margin: 7% auto;
+  letter-spacing: 0.05em;
+  margin-left: 580px;
+}
+
+form .con .other #BtnOlvide{
+   margin-top: 80px;
+   margin-left: 80px;
+
+
+}
+
+.BtnLogin{
+    margin-top: -200px;
+    position: fixed;
+}
+/* Submits */
+.submits {
+  width: 48%;
+  display: inline-block;
+  float: left;
+  margin-left: 2%;
+}
+
+/*       Forgot Password button FAF3DD  */
+.frgt-pass {
+  background: #000;
+  margin-left: 70px;
+}
+
+/*     Sign Up button  */
+
+/* buttons hover */
+button:hover {
+  transform: translatey(3px);
+  box-shadow: none;
+  background-color: green
+}
+
+/* buttons hover Animation */
+button:hover {
+  animation: ani9 0.4s ease-in-out infinite alternate;
+}
+@keyframes ani9 {
+  0% {
+    transform: translateY(3px);
+  }
+  100% {
+    transform: translateY(5px);
+  }
+}
+
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+    font-family: 'Roboto', sans-serif;
+
+}
+
+.form_control i{
+  position: absolute;
+  color: #000;
+  font-size: 17px;
+}
+
+header .comment p{
+	     /*box-shadow: 0px 0px 10px 0px;*/
+	     text-shadow: 1px 1px 2px black;
+}
+
+body{
+    background: rgb(255,255,255);
+background: linear-gradient(356deg, rgba(255,255,255,1) 0%, rgba(255,0,0,1) 0%, rgba(0,0,0,1) 53%); 
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+main{
+    width: 100%;
+    padding: 20px;
+    margin: auto;
+    margin-top: 10px;
+
+}
+ /******************* IMAGE & TEXT ***************/
+.foto{
+	width: 280px;
+	cursor: pointer;
+    position: absolute;
+    margin-left: 50px;
+    margin-bottom: 50px;
+    margin-top: -30;  
+    margin-right: 20px;  
+}
+
+/*header p{
+	font-size: 38px;
+	text-align: right;
+	position: absolute;
+	margin-left: 140px;
+	margin-top: -100px;
+
+}*/
+
+/******************************************/
+
+.container__all{
+    width: 100%;
+    max-width: 800px;
+    margin: auto;
+    position: relative;
+    box-shadow: 0px 10px 10px 0px;
+
+}
+
+.back__box{
+    width: 100%;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: center;
+    -webkit-backdrop-filter: blur(10px);
+    background-color: #f20a0a;
+    box-shadow: 4px 4px 4px 4px;
+
+
+}
+
+.Btn_login{
+	background-color: #f20a0a;
+}
+
+.back__box div{
+    margin: 100px 40px;
+    color: white;
+    transition: all 500ms;
+}
+
+
+.back__box div p,
+.back__box button{
+    margin-top: 30px;
+}
+
+.back__box div h3{
+    font-weight: 400;
+    font-size: 26px;
+}
+
+.back__box div p{
+    font-size: 16px;
+    font-weight: 300;
+}
+
+.back__box button{
+    padding: 10px 40px;
+    border: 2px solid #fff;
+    font-size: 14px;
+    background: transparent;
+    font-weight: 600;
+    cursor: pointer;
+    color: white;
+    outline: none;
+    transition: all 300ms;
+}
+
+.back__box button:hover{
+    background: #fff;
+    color: #f20a0a;
+    box-shadow: 3px 0px 30px  rgba(163, 163, 163, 1);
+}
+
+/*Formularios*/
+
+.container__login-register{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 380px;
+    position: relative;
+    top: -185px;
+    left: 10px;
+    /*La transicion va despues del codigo JS*/
+    transition: left 500ms cubic-bezier(0.175, 0.885, 0.320, 1.275);
+}
+
+.container__login-register form{
+    width: 100%;
+    padding: 80px 20px;
+    background: white;
+    position: absolute;
+    border-radius: 20px;
+}
+
+.container__login-register form h2{
+    font-size: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #000000;
+}
+
+.container__login-register form input{
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px;
+    /*border: none;*/
+    background: #F2F2F2;
+    font-size: 16px;
+    outline: none;
+    /* CSS INPUT CHANGE COLOR WHEN YOU PRESS */
+      border: 3px solid transparent;
+      transition: .3s ease all;
+}
+
+      .container__login-register form input:focus{
+     	border: 3px solid #0075ff;
+	    outline: none;
+	    box-shadow: 3px 0px 30px  rgba(163, 163, 163, 1);
+}  /**/
+
+
+/************************* VALIDATION CSS INPUT ****************************/
+
+.form__login .login_cedula_error,
+.form__login .login_pass_error{
+	margin-top: 5px; 
+	width: 345px;
+	font-size: 18px;
+	color: #f20a0a;
+	text-align: center;
+	padding: 5px 8px;
+	border-radius: 3px;
+	border: 3px solid #f20a0a;
+	display: none;
+}
+
+.container__login-register form button:focus{
+    box-shadow: 3px 0px 30px  rgba(163, 163, 163, 1);
+}
+
+.container__login-register form button:hover{
+    box-shadow: 3px 0px 30px  rgba(163, 163, 163, 1);
+}
+
+
+.container__login-register form button{
+    padding: 10px 40px;
+    margin-top: 40px;
+    border: none;
+    font-size: 14px;
+    background: #f20a0a;
+    font-weight: 600;
+    cursor: pointer;
+    color: white;
+    outline: none;
+}
+
+
+
+
+.form__login{
+    opacity: 1;
+    display: block;
+}
+.form__register{
+    display: none;
+}
+
+
+
+@media screen and (max-width: 850px){
+
+    main{
+        margin-top: 50px;
+    }
+
+    .back__box{
+        max-width: 350px;
+        height: 300px;
+        flex-direction: column;
+        margin: auto;
+    }
+
+    .back__box div{
+        margin: 0px;
+        position: absolute;
+    }
+
+
+    /*Formularios*/
+
+    .container__login-register{
+        top: -10px;
+        left: -5px;
+        margin: auto;
+    }
+
+    .container__login-register form{
+        position: relative;
+    }
+}
+
+
+/******************************* CSS SELECT ************************************/
+
+select {
+   background: red;
+   border: none;
+   font-size: 16px;
+   height: 30px;
+   padding: 5px;
+   width: 250px;
+   color: white;
+}
+
+select:focus{ outline: none;}
+
+.select::after{
+  content:"\025be";
+  display:table-cell;
+  padding-top:7px;
+  text-align:center;
+  width:30px;
+  height:30px;
+  background-color: #d9d9d9;
+  position:absolute;
+  top:0;
+  right:0px;  
+  pointer-events: none;
+}
+
+.form__login input:invalid{  
+  border: 1000px  red;
+}
+
+/************************************ CSS VALIDATION ***************************************/
+.form-control {    
+    margin-bottom: 7px;
+    padding-bottom: 20px;
+    position: relative;
+}
+
+.form-control label {
+    display: inline-block;
+    margin-bottom: 7px;
+    font-size: 200px
+}
+
+.form-control input {
+    border: none;
+    background-color: #f0f0f0;
+    display: block;
+    font-family: inherit;
+    font-size: 16px;
+    padding: 12px;
+    width: 100%;    
+}
+.form-control, input:focus {
+    outline: none;
+}
+
+.form-control.ok input {
+    border: 3px solid;
+    border-color: #18e30e;
+}
+
+
+.form-control.ok label{
+    color: #18e30e;
+}
+
+.form-control.falla p {
+    visibility: visible;
+    color:#f20a15;
+} 
+
+.form-control.falla input {
+    border: 3px solid;
+    border-color:#f20a15;
+}
+
+.form-control.falla input {
+    border: 3px solid;
+    border-color: #f20a15;
+}
+
+.form-control p {
+    visibility: hidden;
+    position: absolute;
+    font-size: small;
+    font-weight: 500;
+    text-align: right;
+}
+
+.form-control.falla p {
+    visibility: visible;
+    color:#f20a15;
+} 
+
+/*********************************** END CSS VALIDATION  ***************************************/
+

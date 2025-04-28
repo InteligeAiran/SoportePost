@@ -1,0 +1,180 @@
+/* Media query para dispositivos móviles */
+@media (max-width: 767px){
+    body {
+        font-family: 'Montserrat', sans-serif;
+        background-color: #000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        overflow: hidden;
+    }
+
+    .login-container {
+        margin-left: -131px;
+        padding: 5px;
+        width: 472%; /* Ajusta al ancho del dispositivo */
+         /*max-height: 330px;/* o remover si no es necesario */
+        height: 375px; /*Lo puedes quitar*/
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 5px 5px 15px  15px rgba(0, 0, 0, 0.3);
+
+    }
+
+    #BtnLogin {
+        font-size: 14px;
+        width: 215px;
+        margin-top: 360px; /* Agrega un margen superior para separarlo del contenido */
+        position: absolute;
+        margin-left: 50px;
+        padding: 10px;
+        background-color: #007bff;
+        border: none;
+        border-radius: 14px;
+        color: #ffffff;
+        cursor: pointer;
+    }
+
+    #link{
+        font-size: 14px;
+        margin-top: 430px;
+        margin-left: 50px;
+        position: absolute;
+        color: #000;
+    }
+
+    .logo{
+        width: 132%; /* Ajusta al ancho del contenedor o body */
+        height: 200%;
+        /*object-fit: contain; /* o cover */
+        /* position: relative; o remover si no es necesario */
+        z-index: -1;
+        border-radius: 8px;
+        margin-top: -43px;
+    }
+
+    #loginform{
+        margin-top: 50px;
+    }
+    
+    .header h1 {
+        font-size: 3em;
+        color: #fff;
+        text-shadow: 2px 2px 4px #000;
+        -webkit-text-stroke: 1px #000;
+        transform: rotate(-5deg);
+        animation: move 5s infinite linear; /* 5 segundos, infinito, lineal */
+    }
+    
+    .login-container h3 {
+        font-size: 15px;
+        text-align: center;
+        color: #333333;
+        margin-bottom: 10px;
+        margin-top: -10px;
+    }
+
+    
+    h2{
+        font-size: 130%;
+        color: #000;
+        /*text-shadow: 2px 2px 4px #000;
+        -webkit-text-stroke: 1px #000;*/
+        transform: rotate(-5deg);
+        animation: move 5s infinite; /* 5 segundos, infinito, lineal */
+    }
+
+    @keyframes move {
+        0% { transform: translateX(0); }
+        50% { transform: translateX(20px); } /* Ajusta la distancia según sea necesario */
+        100% { transform: translateX(0); } 
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #000000;
+        margin-top: -343px;
+        position: absolute;
+    }
+
+    .login-container input[type="text"],
+    .login-container input[type="password"] {
+        width: 90%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: none; /* Elimina el borde plano */
+        border-radius: 4px;
+        box-sizing: border-box;
+        background: linear-gradient(135deg, rgba(220, 220, 220, 0.8), rgba(255, 255, 255, 0.8)); /* Degradado para volumen */
+        box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2), -2px -2px 3px rgba(255, 255, 255, 0.7); /* Sombreado para profundidad */
+        transition: box-shadow 0.6s, transform 0.3s ease; /* Transiciones para suavidad */
+        font-family: 'Montserrat', sans-serif;
+        position: relative;
+        transform: perspective(500px) rotateX(5deg); /* Ligera inclinación 3D */
+    }
+    
+    .login-container input[type="text"]:focus,
+    .login-container input[type="password"]:focus {
+        box-shadow: 5px 5px 8px rgba(2, 91, 255, 0.548); /* Sombreado más intenso al enfocar */
+        background-color: lightblue;
+        transform: perspective(500px) rotateX(0deg); /* Regresa a la posición plana al enfocar */
+        outline: none; /* Elimina el borde de enfoque predeterminado */
+    }
+    
+    .login-container input[type="text"]::before,
+    .login-container input[type="password"]::before {
+        content: "";
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, rgba(200, 200, 200, 0.5), rgba(230, 230, 230, 0.5)); /* Borde sutil con degradado */
+        border-radius: 6px;
+        z-index: -1;
+    }
+
+    .login-container input[type="text"]::placeholder,
+    .login-container input[type="password"]::placeholder{
+        color:#000;   
+    }
+
+    .login-container input[type="text"]:hover,
+    .login-container input[type="password"]:hover {
+        border-color: #007bff;
+        box-shadow: 0 0 20px rgba(0, 123, 255, 0.5);
+        transition: 0.1s;
+        outline: none;
+    }
+
+    /*.login-container #clickme{
+        margin-top: 210px;
+        margin-left: 320px;
+        position: absolute;
+    }*/
+
+    .login-container #clickme {
+        margin: 0; /* Elimina los márgenes innecesarios */
+        position: absolute;
+        top: 56%;
+        right: 28px; /* Ajusta la distancia desde el borde derecho según sea necesario */
+        transform: translateY(-60%);
+        z-index: 1; /* Asegura que el icono esté por encima del input */
+
+    }
+
+    .error {
+        color: red;
+        font-size: 15px;
+        margin-top: -7px; /* Ajusta el margen si es necesario */
+    }
+    
+    .success {
+        font-size: 14px;
+    
+    }
+}
