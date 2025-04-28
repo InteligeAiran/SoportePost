@@ -267,6 +267,7 @@
 
     <!-- Custom scripts for all pages-->
     <script src="<?php echo APP;?>app/plugins/js/sb-admin-2.min.js"></script>
+
+    <script src="<?php echo APP;?>app/core/components/navbar/js/frontEnd1.js"></script>
 </body>
-<script src="<?php echo APP;?>app/core/components/navbar/js/frontEnd.js"></script>
 </html>

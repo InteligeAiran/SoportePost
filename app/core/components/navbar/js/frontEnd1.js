@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // MODIFICACIÓN IMPORTANTE:
     if (cargarBtnEnvio && envioInputFile) {
-        cargarBtnEn vio.addEventListener('click', function(event) {
+        cargarBtnEnvio.addEventListener('click', function(event) {
             event.preventDefault(); // Evita la recarga si el botón es de tipo submit (aunque no lo parece)
             envioInputFile.click(); // Simula el clic en el input file
         });

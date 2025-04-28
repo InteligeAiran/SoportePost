@@ -208,53 +208,40 @@ function ShowImageExo(id_ticket) {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const contentType = response.headers.get('Content-Type');
-        return response.blob().then(blob => ({ blob, contentType }));
+        return response.blob();
     })
-    .then(({ blob, contentType }) => {
-        const objectUrl = URL.createObjectURL(blob);
+    .then(blob => {
+        console.log("Tamaño del Blob:", blob.size); // Verifica el tamaño del Blob
+
+        const imageUrl = URL.createObjectURL(blob);
+        // **ELIMINA ESTE BLOQUE SI SOLO QUIERES MOSTRAR LA IMAGEN, YA QUE ESTO ES PARA DESCARGAR**
+        // const a = document.createElement('a');
+        // a.href = imageUrl;
+        // a.download = 'imagen_descargada.jpg';
+        // document.body.appendChild(a);
+        // a.click();
+        // document.body.removeChild(a);
+        // URL.revokeObjectURL(imageUrl);
+
+        const imgElement = document.createElement('img');
+        imgElement.src = imageUrl; // Asignas la URL del Blob al src de la imagen
+        imgElement.style.width = 'auto';
+        imgElement.style.height = 'auto';
+        imgElement.style.maxWidth = 'none';
+        imgElement.style.maxHeight = 'none';
+
         const modal = document.createElement('div');
-        modal.style.position = 'fixed'; // Ejemplo de estilos para el modal
-        modal.style.top = '0';
-        modal.style.left = '0';
-        modal.style.width = '100%';
-        modal.style.height = '100%';
-        modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-        modal.style.display = 'flex';
-        modal.style.justifyContent = 'center';
-        modal.style.alignItems = 'center';
+        // ... (estilos del modal) ...
+        modal.appendChild(imgElement);
 
         const closeButton = document.createElement('button');
-        closeButton.innerText = 'Cerrar';
-        closeButton.style.position = 'absolute';
-        closeButton.style.top = '10px';
-        closeButton.style.right = '10px';
-        closeButton.addEventListener('click', () => document.body.removeChild(modal));
+        // ... (estilos y funcionalidad del botón cerrar) ...
         modal.appendChild(closeButton);
-
-        if (contentType && contentType.startsWith('image/')) {
-            const imgElement = document.createElement('img');
-            imgElement.src = objectUrl;
-            imgElement.style.maxWidth = '90%';
-            imgElement.style.maxHeight = '90%';
-            modal.appendChild(imgElement);
-        } else if (contentType === 'application/pdf') {
-            const embedElement = document.createElement('embed');
-            embedElement.src = objectUrl;
-            embedElement.type = 'application/pdf';
-            embedElement.width = '90%';
-            embedElement.height = '90%';
-            modal.appendChild(embedElement);
-        } else {
-            const messageElement = document.createElement('p');
-            messageElement.innerText = `Tipo de contenido no soportado: ${contentType}`;
-            modal.appendChild(messageElement);
-        }
 
         document.body.appendChild(modal);
     })
     .catch(error => {
-        console.error('Error al cargar el documento:', error);
-        alert('Error al cargar el documento.');
+        console.error('Error al hacer la petición para la imagen:', error);
+        alert('Error al cargar la imagen.');
     });
 }
