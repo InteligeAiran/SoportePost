@@ -1,0 +1,100 @@
+@media(min-width: 1400px ) and (max-width: 1600px) {
+    #SearchRif {
+        margin-left: 30%;
+    }
+
+    #crearTicketSelect {
+        margin-left: -11%;
+        margin-top: -47px;
+        width: 150px;
+    }
+
+    #rifCountTable {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    #rifCountTable {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        font-size: 0.9em; /* Reducir un poco el tamaño de la fuente */
+    }
+    
+    #rifCountTable th,
+    #rifCountTable td {
+        padding: 8px 5px; /* Reducir el padding vertical y horizontal */
+        border-bottom: 1px solid #ddd; /* Borde inferior sutil */
+        white-space: nowrap; /* Evitar saltos de línea innecesarios */
+        overflow: hidden; /* Ocultar el texto que se desborda */
+        text-overflow: ellipsis; /* Mostrar "..." para el texto oculto */
+    }
+    
+    #rifCountTable th {
+        background-color: #f2f2f2; /* Fondo ligeramente gris para los encabezados */
+        font-weight: bold;
+        text-align: left; /* Alinear los encabezados a la izquierda por defecto */
+    }
+    
+    #rifCountTable tbody tr:nth-child(even) {
+        background-color: #f9f9f9; /* Un ligero sombreado para filas pares */
+    }
+    
+    /* Ajustes de ancho de columna (puedes personalizarlos más) */
+    #rifCountTable th:nth-child(1), /* ID cliente */
+    #rifCountTable td:nth-child(1) {
+        width: 6%;
+    }
+    
+    #rifCountTable th:nth-child(2), /* Razón Social */
+    #rifCountTable td:nth-child(2) {
+        width: 12%;
+    }
+    
+    #rifCountTable th:nth-child(3), /* RIF */
+    #rifCountTable td:nth-child(3) {
+        width: 8%;
+    }
+    
+    #rifCountTable th:nth-child(4), /* Modelo POS */
+    #rifCountTable td:nth-child(4) {
+        width: 8%;
+    }
+    
+    #rifCountTable th:nth-child(5), /* serial POS */
+    #rifCountTable td:nth-child(5) {
+        width: 10%;
+    }
+    
+    #rifCountTable th:nth-child(6), /* Nr Afiliación */
+    #rifCountTable td:nth-child(6) {
+        width: 8%;
+    }
+    
+    #rifCountTable th:nth-child(7), /* Fecha Instalación */
+    #rifCountTable td:nth-child(7) {
+        width: 9%;
+        text-align: center; /* Centrar la fecha */
+    }
+    
+    #rifCountTable th:nth-child(8), /* Banco */
+    #rifCountTable td:nth-child(8) {
+        width: 8%;
+    }
+    
+    #rifCountTable th:nth-child(9), /* Dirección Instalación */
+    #rifCountTable td:nth-child(9) {
+        width: 15%;
+    }
+    
+    #rifCountTable th:nth-child(10), /* Estado */
+    #rifCountTable td:nth-child(10) {
+        width: 6%;
+    }
+    
+    #rifCountTable th:nth-child(11), /* Municipio */
+    #rifCountTable td:nth-child(11) {
+        width: 6%;
+    }
+}

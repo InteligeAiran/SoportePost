@@ -66,6 +66,7 @@ $("#email").keyup(function(){
 function SendForm() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
+    
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', 'http://localhost/SoportePost/api/login');

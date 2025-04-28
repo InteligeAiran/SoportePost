@@ -25,7 +25,7 @@ class Error1 extends Controller {
         echo '    <div class="error-container">';
         echo '        <h1>¡Oops! Página no encontrada</h1>';
         echo '        <p>La URL que has solicitado no existe en este servidor.</p>';
-        echo '        <p><a href="http://localhost/SoportePost/">Volver a la página principal</a></p>';
+        echo '        <p><a href="http://10.225.1.136/SoportePost/">Volver a la página principal</a></p>';
         echo '    </div>';
         echo '</body>';
         echo '</html>';

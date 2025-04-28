@@ -21,6 +21,28 @@ class emailModel extends Model{
         }
     }
 
+    /* REALIZAR ESTA FUNCION EN POSTGRESQL*/
+    public function GetEmailCoordByIdfun($id_coordinador){
+        try{
+            $escaped_id = pg_escape_literal($this->db->getConnection(), $id_coordinador); 
+            $sql = "SELECT * FROM get_user_by_id(".$escaped_id.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+    
+    public function GetEmailCoordById($id_coordinador){
+        try{
+            $sql = "SELECT email, CONCAT(name, ' ', surname) as full_name FROM users where id_user = ".$id_coordinador.";";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
     public function ChangePassForCode($email, $codigo){
         try{
             $escaped_codigo = pg_escape_literal($this->db->getConnection(), $codigo);
@@ -74,10 +96,43 @@ class emailModel extends Model{
         }
     }
 
+    public function GetDataTicket2(){
+        try{
+            $sql = "SELECT * FROM GetDataTicket2()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
     public function GetClientInfo($serial){
         try{
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); 
-            $sql = "SELECT * FROM get_Client_by_serial(".$escaped_serial.");";
+            $sql = "SELECT * FROM GetClientInfo(".$escaped_serial.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetTicketNivel(){
+        try{
+            $sql = "SELECT * FROM id_level_failure()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetDataImage($id_ticket){
+        try{
+            $escaped_id_ticket = pg_escape_literal($this->db->getConnection(), $id_ticket); 
+            $sql = "SELECT downl_exoneration AS exo, mime_type_exo AS mime_type
+FROM tickets WHERE id_ticket = ".$escaped_id_ticket." AND downl_exoneration IS NOT NULL";
+//var_dump($sql);
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
