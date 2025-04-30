@@ -52,7 +52,7 @@ function mi_navbar() {
             <div class="container-fluid py-4">
                 <div id = "Row" class="row mt-4">
                     <div class = "cord">
-                        <div class="background-color">
+                        <div id="div_user" class="background-color">
                             <div class="col-lg-12 col-md-12 mt-4 mb-4">
                                 <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
                                     <strong><h5 class="text-black text-capitalize ps-3">USUARIOS</h5></strong>
@@ -65,12 +65,13 @@ function mi_navbar() {
                                         <th>Nombre y Apellido</th>
                                         <th>Usuario</th>
                                         <th>Cedula</th>
-                                        <th>Rol</th>
-                                        <th>Estatus</th>
                                         <th>E-mail</th>
+                                        <th>Estatus</th>
+                                        <th>Rol</th>
                                         <th>Area</th>
                                         <th>Tipo Usuario</th>
                                         <th>Region</th>
+                                        <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody  id="table-user-body">

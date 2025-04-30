@@ -1,0 +1,772 @@
+@media (max-width: 999px) AND (min-width: 767px) AND (max-height: 1200px) AND (min-height: 400px){
+
+    .modal1 {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(6px); /* Ligeramente reducido el blur */
+    }
+
+    .modal-contenido {
+        background-color: #F9F9F1;
+        margin: 5% auto; /* Reducido el margen superior */
+        padding: 15px; /* Ajuste del padding */
+        border-radius: 8px; /* Ligeramente menos redondeado */
+        width: 80%; /* Aumentado el ancho para pantallas más pequeñas */
+        position: relative;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); /* Ajuste de la sombra */
+        border: 1px solid #eee;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 8%; /* Ajuste del margen superior */
+        height: auto; /* Ajuste automático de la altura */
+    }
+
+    .modal-contenido1 {
+        background-color: #F9F9F1;
+        margin: 8% auto; /* Ajuste del margen superior */
+        padding: 15px; /* Ajuste del padding */
+        border-radius: 8px; /* Ligeramente menos redondeado */
+        width: 60%; /* Aumentado el ancho para pantallas más pequeñas */
+        position: relative;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); /* Ajuste de la sombra */
+        border: 1px solid #eee;
+        margin-left: auto;
+        margin-right: auto;
+        height: auto; /* Ajuste automático de la altura */
+    }
+
+    .cerrar {
+        color: #888;
+        position: absolute;
+        top: 8px; /* Ajuste del botón de cierre */
+        right: 12px;
+        font-size: 18px; /* Tamaño del botón de cierre */
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+
+    .cerrar1 {
+        color: #888;
+        position: absolute;
+        top: 8px; /* Ajuste del botón de cierre */
+        right: 12px;
+        font-size: 18px; /* Tamaño del botón de cierre */
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+
+    .cerrar2 {
+        color: #888;
+        position: absolute;
+        top: 8px; /* Ajuste del botón de cierre */
+        right: 12px;
+        font-size: 18px; /* Tamaño del botón de cierre */
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+
+    .cerrar:hover {
+        color: #333;
+    }
+
+    .cerrar1:hover {
+        color: #333;
+    }
+
+    .cerrar2:hover {
+        color: #333;
+    }
+
+    #contenidoModal {
+        margin-bottom: 15px; /* Ajuste del margen */
+    }
+
+    #contenidoModal h2 {
+        font-size: 28px; /* Tamaño reducido del encabezado */
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 15px;
+        text-align: center;
+        font-family: 'Georgia', serif;
+        position: relative;
+        margin-left: auto; /* Centrar horizontalmente */
+        margin-right: auto; /* Centrar horizontalmente */
+        width: 80%; /* Ajustar ancho */
+        padding-bottom: 30px; /* Reducir padding inferior */
+        margin-left: 54%;
+    }
+
+    #contenidoModal2 h2 {
+        font-size: 28px; /* Tamaño reducido del encabezado */
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 15px;
+        text-align: center;
+        font-family: 'Georgia', serif;
+        position: relative;
+        margin-left: auto; /* Centrar horizontalmente */
+        margin-right: auto; /* Centrar horizontalmente */
+        width: 70%; /* Ajustar ancho */
+    }
+
+    label {
+        display: block;
+        margin-bottom: 4px; /* Ajuste del margen */
+        font-weight: 500;
+        color: #555;
+        font-family: 'Arial', sans-serif;
+        font-size: 13px; /* Tamaño de la fuente reducido */
+    }
+
+    input[type="text"],
+    select,
+    textarea {
+        width: calc(100% - 16px); /* Ajuste del ancho */
+        padding: 6px; /* Ajuste del padding */
+        margin-bottom: 12px; /* Ajuste del margen */
+        border: 1px solid #ddd;
+        border-radius: 5px; /* Ligeramente menos redondeado */
+        box-sizing: border-box;
+        font-size: 13px; /* Tamaño de la fuente reducido */
+        transition: border-color 0.3s;
+        font-family: 'Arial', sans-serif;
+    }
+
+    input[type="text"]:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+    #miModal input[type="text"],
+    #miModal select,
+    #miModal textarea {
+        width: calc(100% - 16px); /* Ajuste del ancho */
+        padding: 6px; /* Ajuste del padding */
+        margin-bottom: 12px; /* Ajuste del margen */
+        border: 1px solid #ddd;
+        border-radius: 5px; /* Ligeramente menos redondeado */
+        box-sizing: border-box;
+        font-size: 13px; /* Tamaño de la fuente reducido */
+        transition: border-color 0.3s;
+        font-family: 'Arial', sans-serif;
+    }
+
+    #miModal input[type="text"]:focus,
+    #miModal select:focus,
+    #miModal textarea:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+    button,
+    #SendForm1,
+    #SendForm2 {
+        background-color: #fff;
+        color: #007bff;
+        padding: 6px 12px; /* Ajuste del padding */
+        border: 1px solid #007bff;
+        border-radius: 5px; /* Ligeramente menos redondeado */
+        font-size: 13px; /* Tamaño de la fuente reducido */
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+        font-family: 'Arial', sans-serif;
+    }
+
+    #SendForm1 {
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        margin-top: 15px; /* Ajuste del margen */
+        position: relative; /* Cambiado a relative para flujo normal */
+        text-align: center; /* Centrar el botón */
+    }
+
+    /* Estilos para el modal (duplicado eliminado) */
+
+    .modal-contenido {
+        /* ... estilos ... */
+        margin-top: 22%; /* Reajuste del margen superior */
+        height: auto; /* Ajuste automático de la altura */
+        width: 85%; /* Aumentar un poco el ancho */
+        margin-right: auto; /* Asegurar centrado */
+    }
+
+    .modal-contenido1 {
+        /* ... estilos ... */
+        margin-top: 36%; /* Reajuste del margen superior */
+        height: auto; /* Ajuste automático de la altura */
+        width: 65%; /* Aumentar un poco el ancho */
+        margin-right: auto; /* Asegurar centrado */
+    }
+
+    /* ... estilos de cerrar (duplicados eliminados) ... */
+
+    #contenidoModal {
+        margin-bottom: 10px; /* Reajuste del margen inferior */
+    }
+
+    /* ... estilos de label e input (duplicados eliminados) ... */
+
+    #miModal input[type="text"],
+    #miModal select,
+    #miModal textarea {
+        width: calc(100% - 16px); /* Reajuste del ancho */
+    }
+
+    /* ... estilos de button y SendForm1 (duplicados eliminados) ... */
+
+    #SendForm2 {
+        margin-top: 10%; /* Ajuste del margen superior */
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        position: static; /* Mantenido como static */
+        text-align: center; /* Centrar el botón */
+        margin-left: 40%;
+    }
+
+    button:hover,
+    #SendForm1:hover,
+    #SendForm2:hover {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    #rifMensaje {
+        margin-top: -12px; /* Ajuste del margen */
+        font-family: 'Arial', sans-serif;
+        font-size: 12px;
+    }
+
+    #rifMensaje1 {
+        margin-top: -12px; /* Ajuste del margen */
+        font-family: 'Arial', sans-serif;
+        font-size: 12px;
+    }
+
+    .navegacion {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px; /* Ajuste del margen */
+    }
+
+    #miModal1 {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(6px); /* Ligeramente reducido el blur */
+    }
+
+    #nivelFallaModal {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(6px); /* Ligeramente reducido el blur */
+    }
+
+    #nivelFallaModal .modal-contenido {
+        background-color: #fff;
+        margin: 25% auto; /* Ajuste del margen */
+        padding: 20px; /* Ajuste del padding */
+        border-radius: 8px;
+        width: 60%; /* Ajuste del ancho */
+        text-align: center;
+        margin-left: auto; /* Centrar */
+        height: auto; /* Ajuste automático de la altura */
+    }
+
+    #nivelFallaModal button {
+        padding: 8px 16px; /* Ajuste del padding */
+        margin: 8px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    #nivelFallaModal #nivel1Btn {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    #nivelFallaModal #nivel2Btn {
+        background-color: #007bff;
+        color: white;
+    }
+
+    #contenidoModal2 {
+        margin-bottom: 30px; /* Ajuste del margen */
+    }
+
+    /* GARANTIAS MODAL*/
+    .garantia-activa {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 4px;
+        font-size: 12px; /* Reducir tamaño fuente */
+    }
+
+    .sin-garantia {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 4px;
+        font-size: 12px; /* Reducir tamaño fuente */
+    }
+
+    #garantiaModal {
+        display: none;
+        position: fixed;
+        z-index: 1001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    #garantiaModal-content {
+        background-color: #fff;
+        margin: 20% auto; /* Ajuste del margen */
+        padding: 20px; /* Ajuste del padding */
+        border: 1px solid #888;
+        width: 80%; /* Aumentar ancho */
+        border-radius: 6px;
+        position: relative;
+        text-align: center;
+    }
+
+    #garantiaModal-close {
+        color: #aaa;
+        position: absolute;
+        right: 12px; /* Ajuste del margen derecho */
+        top: 8px; /* Ajuste del margen superior */
+        font-size: 24px; /* Reducción del tamaño de la fuente */
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    #garantiaModal-close:hover,
+    #garantiaModal-close:focus {
+        color: black;
+        text-decoration: none;
+    }
+
+    .garantia-activa {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 4px 8px; /* Ajuste del padding */
+        border-radius: 4px; /* Ajuste del radio del borde */
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 4px; /* Ajuste del margen superior */
+        font-size: 11px; /* Reducción del tamaño de la fuente */
+    }
+
+    .sin-garantia {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 4px 8px; /* Ajuste del padding */
+        border-radius: 4px; /* Ajuste del radio del borde */
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 4px; /* Ajuste del margen superior */
+        font-size: 11px; /* Reducción del tamaño de la fuente */
+    }
+    /* END GARANTIAS MODAL*/
+
+    .contenedor-fechas {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .contenedor-fechas > div {
+        width: 48%; /* Ligeramente aumentado para mejor distribución */
+    }
+
+    .contenedor-fechas label {
+        display: block;
+        margin-bottom: 4px; /* Ajuste del margen inferior */
+        font-size: 12px; /* Reducción del tamaño de la fuente */
+    }
+
+    .contenedor-fechas input[type="text"] {
+        width: 100%;
+        padding: 6px; /* Ajuste del padding */
+        border: 1px solid #ccc;
+        border-radius: 3px; /* Ajuste del radio del borde */
+        font-size: 12px; /* Reducción del tamaño de la fuente */
+    }
+
+    #resultadoGarantiaReingreso,
+    #resultadoGarantiaInstalacion {
+        margin-top: -12px; /* Ajuste del margen superior */
+        font-weight: bold;
+        font-size: 10px; /* Reducción del tamaño de la fuente */
+        position: absolute;
+        background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255, 0, 0, 0.05) 8px, rgba(255, 0, 0, 0.05) 16px); /* Ajuste del patrón */
+    }
+
+    #ExoneracionLabel {
+        display: block;
+        margin-bottom: 4px; /* Ajuste del margen inferior */
+        font-size: 12px; /* Reducción del tamaño de la fuente */
+    }
+
+    #EnvioLabel {
+        display: block;
+        margin-bottom: 4px; /* Ajuste del margen inferior */
+        font-size: 12px; /* Reducción del tamaño de la fuente */
+    }
+
+    .contenedor-triangulo {
+        position: absolute;
+        width: 80px; /* Ajuste del ancho */
+        height: 80px; /* Ajuste de la altura */
+        margin-left: 58%; /* Ajuste de la posición horizontal */
+        margin-top: 10%; /* Ajuste de la posición vertical */
+    }
+
+    .triangulo {
+        position: absolute;
+        width: 12px; /* Ajuste del tamaño del triángulo */
+        height: 0;
+        border-left: 10px solid transparent; /* Ajuste del tamaño del triángulo */
+        border-right: 8px solid transparent; /* Ajuste del tamaño del triángulo */
+        border-bottom: 30px solid #007DA5; /* Ajuste del color y el tamaño del triángulo */
+        opacity: 0.7;
+        animation: pulsoTriangulo 2s infinite ease-in-out;
+    }
+
+    .triangulo:nth-child(1) {
+        top: 15px; /* Ajuste de la posición */
+        left: 15px; /* Ajuste de la posición */
+    }
+
+    .triangulo:nth-child(2) {
+        border-bottom-color: #0056b3;
+        top: 60px; /* Ajuste de la posición */
+        left: 40px; /* Ajuste de la posición */
+        animation-delay: 0.5s;
+    }
+
+    .triangulo:nth-child(3) {
+        border-bottom-color: #009688;
+        top: 90px; /* Ajuste de la posición */
+        left: 8px; /* Ajuste de la posición */
+        animation-delay: 1s;
+    }
+
+    @keyframes pulsoTriangulo {
+        0% {
+            transform: scale(1);
+            opacity: 0.7;
+        }
+
+        50% {
+            transform: scale(1.2); /* Ligeramente reducido el escalado */
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 0.7;
+        }
+    }
+
+    .contenedor-triangulo1 {
+        position: absolute;
+        width: 150px; /* Ajuste del ancho */
+        height: 150px; /* Ajuste de la altura */
+        margin-top: 12%; /* Ajuste de la posición vertical */
+        display: none;
+    }
+
+    .triangulo1 {
+        position: absolute;
+        width: 12px; /* Ajuste del tamaño del triángulo */
+        height: 0;
+        border-left: 10px solid transparent; /* Ajuste del tamaño del triángulo */
+        border-right: 8px solid transparent; /* Ajuste del tamaño del triángulo */
+        border-bottom: 30px solid #007DA5; /* Ajuste del color y el tamaño del triángulo */
+        opacity: 0.7;
+        animation: pulsoTriangulo1 2s infinite ease-in-out;
+    }
+
+    .triangulo1:nth-child(1) {
+        top: 15px; /* Ajuste de la posición */
+        left: 15px; /* Ajuste de la posición */
+    }
+
+    .triangulo1:nth-child(2) {
+        border-bottom-color: #007DA5;
+        top: 60px; /* Ajuste de la posición */
+        left: 40px; /* Ajuste de la posición */
+        animation-delay: 0.5s;
+    }
+
+    .triangulo1:nth-child(3) {
+        border-bottom-color: #0056b3;
+        top: 90px; /* Ajuste de la posición */
+        left: 8px; /* Ajuste de la posición */
+        animation-delay: 1s;
+    }
+
+    @keyframes pulsoTriangulo1 {
+        0% {
+            transform: scale(1);
+            opacity: 0.7;
+        }
+
+        50% {
+            transform: scale(1.2); /* Ligeramente reducido el escalado */
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 0.7;
+        }
+    }
+
+    #DownloadExo {
+        padding: 6px 10px; /* Ajuste del padding */
+        background-color: #007DA5;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 12px; /* Reducción del tamaño de la fuente */
+    }
+
+    #DownloadEnvi {
+        padding: 6px 10px; /* Ajuste del padding */
+        background-color: #007DA5;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 12px; /* Reducción del tamaño de la fuente */
+    }
+
+    #DownloadAntici {
+        padding: 6px 10px; /* Ajuste del padding */
+        background-color: #007DA5;
+        color: white;
+        border: none;
+        cursor: pointer;
+        width: 80px; /* Ajuste del ancho */
+        font-size: 11px; /* Reducción del tamaño de la fuente */
+    }
+
+    #DownloadExo:hover {
+        background-color: #0056b3;
+    }
+
+    #DownloadAntici:hover {
+        background-color: #0056b3;
+    }
+
+    #DownloadEnvi:hover {
+        background-color: #0056b3;
+    }
+
+    #AnticioLabel {
+        margin-left: 25px; /* Ajuste del margen izquierdo */
+        font-size: 12px; /* Reducción del tamaño de la fuente */
+    }
+
+    input[type="file"] {
+        margin-top: 4px; /* Ajuste del margen superior */
+        font-size: 9px; /* Reducción del tamaño de la fuente */
+        color: black;
+        margin-left: 8px; /* Ajuste del margen izquierdo */
+    }
+
+    #FallaSelect1,
+    #FallaSelect2,
+    #serialSelect1,
+    #FallaSelectt1,
+    #FallaSelectt2 {
+        font-size: 14px; /* Reducción del tamaño de la fuente */
+        border: 1px solid #ccc;
+        border-radius: 4px; /* Ajuste del radio del borde */
+        background-color: white;
+        color: #333;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-repeat: no-repeat;
+        background-position: right 8px top 50%; /* Ajuste de la posición del icono */
+        background-size: 6px; /* Ajuste del tamaño del icono */
+    }
+
+    #FallaSelect1 {
+        background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+    }
+
+    #FallaSelect2 {
+        background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+    }
+
+    #serialSelect1 {
+        background-image: url('data:image/svg+xml;utf8,<svg fill="#333" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+    }
+
+    #FallaSelectt1 {
+        background-repeat: no-repeat;
+        background-position: right 8px top 50%;
+        background-size: 6px;
+    }
+
+    #FallaSelectt2 {
+        background-repeat: no-repeat;
+        background-position: right 8px top 50%;
+        background-size: 6px;
+    }
+
+    #FallaSelect1:focus,
+    #FallaSelect2:focus,
+    #serialSelect1:focus,
+    #FallaSelectt1:focus,
+    #FallaSelectt2:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 4px rgba(0, 123, 255, 0.5); /* Ajuste del tamaño de la sombra */
+    }
+
+    #FallaSelect1 option,
+    #FallaSelect2 option,
+    #serialSelect1 option,
+    #FallaSelectt1 option,
+    #FallaSelectt2 option {
+        padding: 8px; /* Ajuste del padding */
+        font-size: 14px; /* Reducción del tamaño de la fuente */
+        color: #333;
+        background-color: white;
+    }
+
+    #FallaSelect2Container {
+        width: 60%; /* Ajuste del ancho */
+    }
+
+    #detalle1 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px; /* Ajuste del espacio entre columnas */
+    }
+
+    #detalle1 > div {
+        grid-column: span 1;
+    }
+
+    #detalle1 .contenedor-fechas {
+        grid-column: 1 / 3;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    #detalle1 #SendForm2 {
+        grid-column: 1 / 3;
+        margin-top: 10px; /* Ajuste del margen superior */
+        font-size: 12px; /* Reducción del tamaño de la fuente */
+        padding: 6px 10px; /* Ajuste del padding */
+    }
+
+    #detalle1 #ExoneracionLabel,
+    #detalle1 #DownloadExo,
+    #detalle1 #ExoneracionInput {
+        grid-column: 1 / 3;
+        display: flex;
+        align-items: center;
+        gap: 8px; /* Ajuste del espacio */
+        font-size: 12px; /* Reducción del tamaño de la fuente */
+    }
+
+    #detalle1 #ExoneracionInput,
+    #detalle1 #EnvioInput,
+    #detalle1 #AnticipoInput {
+        margin-top: 0;
+        font-size: 12px; /* Reducción del tamaño de la fuente */
+        padding: 6px; /* Ajuste del padding */
+    }
+
+    #detalle1 #DownloadExo,
+    #detalle1 #DownloadEnvi,
+    #detalle1 #DownloadAntici {
+        margin-left: 0;
+        font-size: 11px; /* Reducción del tamaño de la fuente */
+        width: 70px; /* Ajuste del ancho */
+        padding: 5px 8px; /* Ajuste del padding */
+    }
+
+    #detalle1 #EnvioLabel,
+    #detalle1 #DownloadEnvi,
+    #detalle1 #EnvioInput,
+    #detalle1 #AnticipoInput {
+        grid-column: 1 / 3;
+        display: flex;
+        align-items: center;
+        gap: 8px; /* Ajuste del espacio */
+        font-size: 12px; /* Reducción del tamaño de la fuente */
+    }
+
+    #detalle1 #serialCountTableDetalle1 {
+        grid-column: 1 / 3;
+    }
+
+    #FallaSelect2Container,
+    #serialSelectContainer {
+        width: 100%;
+    }
+
+    label[for="InputRif"],
+    .form-label {
+        font-size: 0.7rem; /* Reducción del tamaño de la fuente */
+        font-weight: 700;
+        margin-bottom: 0.4rem; /* Ajuste del margen inferior */
+        color: #344767;
+        margin-left: 0.2rem; /* Ajuste del margen izquierdo */
+    }
+
+    #InputRif {
+        margin-top: 2px; /* Ajuste del margen superior */
+        padding: 5px; /* Ajuste del padding */
+        font-size: 12px; /* Reducción del tamaño de la fuente */
+    }
+
+    #file-chosen {
+        display: none !important;
+    }
+
+    #miModal1,
+    .Modal {
+        background-color: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(6px); /* Ligeramente reducido el blur */
+    }
+}

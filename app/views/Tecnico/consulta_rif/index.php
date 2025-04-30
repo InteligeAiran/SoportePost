@@ -39,7 +39,7 @@ include 'backEnd.php';
             </div>
             <?php require_once 'app/core/components/navbar/index.php'; mi_navbar(); ?>
             <main class="main-content position-relative border-radius-lg ">
-                <div class="container-fluid py-4" style = "margin-top: 90px;">
+                <div class="container-fluid py-4">
                     <div id = "Row" class="row mt-4">
                         <div class = "cord">
                         

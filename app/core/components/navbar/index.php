@@ -7,12 +7,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/navbar/form.css">
-    <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/navbar/styleGeneral.css">
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
     <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-    <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/form.css" />
+    <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/desktop/form.css" />
+    <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/laptop/form.css" />
+    <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/mobile/form.css" />
+
     <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/styleGeneral.css" />
 
 </head>
@@ -115,7 +116,7 @@
             </ul>
         </div>
     </aside>
-    <div id="miModal" class="modal">
+    <div id="miModal" class="modal" style="background-color: rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px);">
         <div class="modal-contenido">
             <span class="cerrar">&times;</span>
             <div id="contenidoModal" style="margin-left: 59px;">

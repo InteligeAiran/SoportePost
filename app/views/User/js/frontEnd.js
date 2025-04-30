@@ -37,6 +37,8 @@ function getUserData() {
                         const areaCell = row.insertCell();
                         const tipo_userCell = row.insertCell();
                         const name_regionCell = row.insertCell();
+                        const actionsCell = row.insertCell(); // Nueva celda para las acciones
+
 
                         id_userCell.textContent = data.id_user; // Accede a las propiedades del 'item'
                         full_nameCell.textContent = data.full_name;
@@ -48,6 +50,19 @@ function getUserData() {
                         areaCell.textContent = data.name_area;
                         tipo_userCell.textContent = data.name_level;
                         name_regionCell.textContent = data.name_region;
+
+                        // Crear los botones
+                        const modifyButton = document.createElement('button');
+                        modifyButton.textContent = 'Modificar';
+                        modifyButton.classList.add('btn', 'btn-sm', 'btn-primary', 'me-2'); // Añade clases de Bootstrap para estilo
+
+                        const statusButton = document.createElement('button');
+                        statusButton.textContent = 'Cambiar Status';
+                        statusButton.classList.add('btn', 'btn-sm', 'btn-info'); // Añade clases de Bootstrap para estilo
+
+                        // Añadir los botones a la celda de acciones
+                        actionsCell.appendChild(modifyButton);
+                        actionsCell.appendChild(statusButton);
                     });
 
                     //console.log('Datos de usuario insertados:', userData); // Agrega esta línea
