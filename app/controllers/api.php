@@ -33,8 +33,9 @@ class Api extends Controller {
     private $db;
     private $loginRepository; // Asegúrate de instanciarlo si lo usas en handleLogin
     private $emailService; // Define the emailService property
-
     private $emailRepository;
+
+    private $userRepository; // Define the userRepository property
 
 
     function __construct() {
@@ -54,6 +55,7 @@ class Api extends Controller {
         $this->loginRepository = new LoginRepository();
         $this->emailService    = new EmailService();
         $this->emailRepository = new EmailRepository();
+        $this->userRepository  = new UserRepository(); // Instancia el UserRepository aquí si lo vas a usar
     }
 
     public function processApi($urlSegments) {
@@ -203,6 +205,17 @@ class Api extends Controller {
                     }
                 break;
                 /*END CONSULTA GENERAL*/
+
+                /*USERS*/
+                case 'GetUsers':
+                    if ($method === 'GET') {
+                        //var_dump($_POST); // Para depuración
+                        $this->handleGetUsers();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/GetImageExo'], 405);
+                    }
+                break;
+                /*END USERS*/
                 default:
                     $this->response(['error' => 'Recurso no encontrado'], 404);
                 break;
@@ -213,20 +226,24 @@ class Api extends Controller {
     }
 
     private function handleGetImageExo() {
-        // LEER EL ID DESDE $_POST
-           // var_dump($_POST); // Para depuración
-            $imageId = $_GET['id'];
-            //var_dump($imageId); // Para depuración
-            // **IMPORTANTE:** Debes tener un repositorio o modelo para interactuar con tu base de datos
-            $emailRepository = new EmailRepository(); // Reemplaza con el nombre de tu repositorio
-            $imagenData = $emailRepository->GetDataImage($imageId); // Implementa esta función en tu repositorio
-            if ($imagenData && isset($imagenData['exo']) && isset($imagenData['mime_type'])) {
-                header('Content-Type: ' . $imagenData['mime_type']); // Asegúrate de que esta línea se ejecute
-                echo $imagenData['exo'];
-                exit();
-            } else {
-                $this->response(['success' => false, 'message' => 'Datos de imagen no encontrados en la base de datos'], 404);
-            }
+        $imageId = $_GET['id'];
+        $emailRepository = new EmailRepository();
+        $imagenData = $emailRepository->GetDataImage($imageId);
+    
+    
+        if ($imagenData && isset($imagenData['exo']) && isset($imagenData['mime_type'])) {
+            $base64Data = $imagenData['exo']; // Ya está en Base64
+            $mimeType = $imagenData['mime_type'];
+            $dataURI = 'data:' . $mimeType . ';base64,' . $base64Data;
+                    //var_dump($imagenData); // Para depuración
+
+    
+                    header('Content-Type: ' . $imagenData['mime_type']); // Asegúrate de que esta línea se ejecute
+                    echo $dataURI;
+            exit();
+        } else {
+            $this->response(['success' => false, 'message' => 'Datos de imagen no encontrados en la base de datos'], 404);
+        }
     }
     
 
@@ -1111,6 +1128,20 @@ class Api extends Controller {
         }else{
             $this->response(['success' => false, 'message' => 'Hay campos vacios'], 400); // Código de estado 404 Not Found
         }
+    }
+
+    public function handleGetUsers(){
+        $repository = new   UserRepository(); // Inicializa el repositorio
+        $result = $repository->getAllUsers();
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'users' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay usuarios disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
     }
 }
 ?>

@@ -25,7 +25,7 @@ require_once 'backEnd.php';
 
     <body class="g-sidenav-show bg-gray-100">
         <div class="d-lg-none fixed-top bg-dark p-2">
-            <button class="btn btn-dark" id="filter-toggle">
+            <button id="filter-toggle">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-list-task" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z"/>
                     <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z"/>
@@ -34,6 +34,7 @@ require_once 'backEnd.php';
             </button>
         </div>
         <?php require_once 'app/core/components/navbar/index.php'; mi_navbar();?>
+        <div class="min-height-300 bg-dark position-absolute w-100"></div>
         <main class="main-content position-relative border-radius-lg ">
             <div class="container-fluid py-4">
                 <div class="row">
