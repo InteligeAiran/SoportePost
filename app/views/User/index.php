@@ -11,7 +11,7 @@ function mi_navbar() {
         <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
         <link rel="icon" type="image/png" href="../assets/img/favicon.png">
         <title>
-            Argon Dashboard 3 by Creative Tim
+            Soporte POST
         </title>
         <!--     Fonts and icons     -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
@@ -21,6 +21,7 @@ function mi_navbar() {
         <!-- Nucleo Icons -->
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-icons.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-svg.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/user/desktop/desktop.css" />
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
@@ -32,152 +33,7 @@ function mi_navbar() {
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
 
         <style>
-            body {
-                font-family: sans-serif;
-                margin: 20px;
-                background-color: #f8f9fa; /* Un gris claro más suave para el fondo general */
-            }
-
-            table tr{
-                text-align: center;
-            }
-
-            .background-users-table th,
-            .background-users-table td {
-                padding: 8px; /* Reduce el padding vertical y horizontal */
-                text-align: left;
-                border-bottom: 1px solid #dee2e6;
-            }
-
-                    /* Estilo general del contenedor de paginación */
-            .dataTables_wrapper .dataTables_paginate {
-                font-size: 14px;
-                margin-top: 10px;
-                padding: 5px;
-                background-color: #f0f0f0; /* Color de fondo */
-                border-radius: 5px; /* Bordes redondeados */
-            }
-
-            /* Estilo de los botones de paginación */
-            .dataTables_wrapper .dataTables_paginate .paginate_button {
-                padding: 5px 10px;
-                margin: 0 5px;
-                border: 1px solid #ccc;
-                background-color: #e0e0e0;
-                color: #333;
-                cursor: pointer;
-                border-radius: 3px;
-            }
-
-            /* Estilo del botón activo (página actual) */
-            .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-                background-color: #007bff;
-                color: #fff;
-                border-color: #007bff;
-            }
-
-            /* Estilo de los botones deshabilitados */
-            .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-
-            .dataTables_length{
-                width: 10%;
-            }
-
-
-            /* Estilo al pasar el ratón por encima de los botones */
-            .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-                background-color: #d0d0d0;
-            }
-
-            /* Estilo de la información de paginación */
-            .dataTables_wrapper .dataTables_info {
-                font-size: 16px;
-                margin-top: 5px;
-                color: #666;
-            }
-
-            .table-responsive {
-                overflow-y: auto; /* Añade scroll vertical cuando el contenido desborda */
-                max-height: 80vh; /* O una altura máxima que consideres apropiada para la visualización inicial */
-            }
-
-            .background-color {
-                background-color: #fff; /* Fondo blanco para la tarjeta */
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 0.125rem 0.25rem rgba(1, 1, 1, 1.085);                
-                margin-bottom: 20px;
-            }
-
-            .background-color h2 {
-                color: #343a40; /* Texto del título más oscuro */
-                margin-top: 0;
-                margin-bottom: 15px;
-                font-size: 1.5rem;
-                font-weight: 500;
-            }
-
-            .background-users-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 10px;
-                border: 1px solid #dee2e6; /* Borde de la tabla */
-                border-radius: 6px;
-                overflow: hidden; /* Para redondear las esquinas de la tabla */
-            }
-
-            .background-users-table th {
-                background-color: #e9ecef; /* Gris muy claro para las cabeceras */
-                color: #495057; /* Texto de las cabeceras */
-                padding: 12px 8px;
-                text-align: left;
-                font-weight: 600;
-                border-bottom: 2px solid #ced4da; /* Borde inferior más grueso para las cabeceras */
-            }
-
-            .background-users-table td {
-                padding: 12px 8px;
-                text-align: left;
-                border-bottom: 1px solid #dee2e6; /* Borde entre filas */
-            }
-
-            .background-users-table tr:last-child td {
-                border-bottom: none; /* Sin borde en la última fila */
-            }
-
-            /* Opcional: Estilo al pasar el ratón por las filas */
-            .background-users-table tbody tr:hover {
-                background-color: #f5f5f5;
-            }
-
-            #filter-toggle {
-                background-color: black; /* Color de fondo del botón */
-                border: none;
-                color: white;
-                padding: 10px 15px;
-                font-size: 16px;
-                cursor: pointer;
-                border-radius: 5px;
-            }
-
-            #filter-toggle:hover {
-                background-color: #555; /* Color de fondo al pasar el ratón */
-            }
-
-            #filter-toggle:focus {
-                outline: none; /* Sin borde al hacer clic */
-            }
-
-            #filter-toggle svg {
-                fill: black; /* Color del icono SVG */
-            }
-            
-            .p-2{
-                display: none;
-            }
+           
 
         </style>
     </head>
