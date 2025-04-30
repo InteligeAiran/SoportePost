@@ -10355,7 +10355,7 @@ fieldset:disabled .btn {
 }
 
 .p-2 {
-  padding: 0.5rem !important;
+  padding: 0.5rem;
 }
 
 .p-3 {
@@ -22200,7 +22200,7 @@ fieldset:disabled .btn {
 }
 
 .card {
-  box-shadow: 0 0 2rem 0 rgba(0, 53, 148, 0.8);
+  box-shadow: 0 0 2rem 0 rgba(0, 53, 148, 1.8);
 }
 
 .card .card-header {

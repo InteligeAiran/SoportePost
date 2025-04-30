@@ -117,6 +117,7 @@ class EmailRepository
         // Lógica para obtener datos de imagen
         //var_dump($serial);
         $result = $this->model->GetDataImage($id_ticket);
+        //var_dump($result['mime_type']);
         return $result ? $result['row'] : null;
     }
 }

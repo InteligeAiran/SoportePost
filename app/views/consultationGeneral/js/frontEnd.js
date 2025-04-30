@@ -208,40 +208,35 @@ function ShowImageExo(id_ticket) {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return response.blob();
+        return response.blob(); // Obtener los datos como Blob
     })
     .then(blob => {
-        console.log("Tamaño del Blob:", blob.size); // Verifica el tamaño del Blob
+        console.log("Blob:", blob);
+        console.log("Tipo de contenido (Blob):", blob.type);
 
-        const imageUrl = URL.createObjectURL(blob);
-        // **ELIMINA ESTE BLOQUE SI SOLO QUIERES MOSTRAR LA IMAGEN, YA QUE ESTO ES PARA DESCARGAR**
-        // const a = document.createElement('a');
-        // a.href = imageUrl;
-        // a.download = 'imagen_descargada.jpg';
-        // document.body.appendChild(a);
-        // a.click();
-        // document.body.removeChild(a);
-        // URL.revokeObjectURL(imageUrl);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
 
-        const imgElement = document.createElement('img');
-        imgElement.src = imageUrl; // Asignas la URL del Blob al src de la imagen
-        imgElement.style.width = 'auto';
-        imgElement.style.height = 'auto';
-        imgElement.style.maxWidth = 'none';
-        imgElement.style.maxHeight = 'none';
+        let filename = 'documento';
+        if (blob.type === 'application/pdf') {
+            filename += '.pdf';
+        } else if (blob.type.startsWith('image/')) {
+            const fileExtension = blob.type.split('/')[1];
+            filename += `.${fileExtension}`;
+        } else {
+            filename += '.bin'; // Tipo genérico si no se reconoce
+        }
 
-        const modal = document.createElement('div');
-        // ... (estilos del modal) ...
-        modal.appendChild(imgElement);
-
-        const closeButton = document.createElement('button');
-        // ... (estilos y funcionalidad del botón cerrar) ...
-        modal.appendChild(closeButton);
-
-        document.body.appendChild(modal);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url); // Limpiar la URL del objeto
     })
     .catch(error => {
-        console.error('Error al hacer la petición para la imagen:', error);
-        alert('Error al cargar la imagen.');
+        console.error('Error al hacer la petición del archivo:', error);
+        alert('Error al descargar el archivo.');
+        console.log("Error details:", error);
     });
 }
