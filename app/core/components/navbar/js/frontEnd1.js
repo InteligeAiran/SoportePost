@@ -59,6 +59,22 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+    const cerrarSesionBtn = document.getElementById('cerrar-link'); // Reemplaza 'cerrarSesionBtn' con el ID de tu botón de cerrar sesión
+
+    if (cerrarSesionBtn) {
+        cerrarSesionBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Evita que el enlace 'href' se siga inmediatamente
+
+            // Eliminar el 'id_user' de localStorage
+            localStorage.removeItem('id_user');
+
+            // Redirigir a la URL de cierre de sesión en el servidor
+            window.location.href = 'cerrar_session'; // Ajusta la URL si es necesario
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
     // Estilo para el span "No file chosen"
     const noFileChosenStyle = 'color: gray; font-style: italic; margin-left: 5px;';
 

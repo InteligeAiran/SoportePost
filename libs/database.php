@@ -12,12 +12,12 @@ define("database", 'SoportePost');
 /* DB VIEJA*/
 //define("database", 'soporte_postventa');
 
-/* END POINT*/ 
+/*ENDPOINT*/
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
 $host = $_SERVER['HTTP_HOST'];
 define('ENDPOINT_BASE_DYNAMIC', $protocol . $host);
 define('APP_BASE_PATH', '/SoportePost/');
-
+/* ENDPOINT*/ 
 
 
 
