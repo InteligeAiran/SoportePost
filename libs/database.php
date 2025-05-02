@@ -13,7 +13,7 @@ define("database", 'SoportePost');
 //define("database", 'soporte_postventa');
 
 /* END POINT*/ 
-define('IP', 'localhost'); // Cambia 'localhost' por otra IP o dominio si es necesario
+define('IP', '10.225.1.136'); // Cambia 'localhost' por otra IP o dominio si es necesario
 define('APP_BASE_PATH', '/SoportePost/');
 
 
