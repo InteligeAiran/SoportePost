@@ -42,6 +42,20 @@ document.addEventListener('DOMContentLoaded', function() {
     setActiveLink('tickets-link', 'pages/tables.html');
     setActiveLink('rif-link', 'consulta_rif');
     setActiveLink('estadisticas-link', 'pages/profile.html');
+
+    // **CÓDIGO PARA OBTENER EL userId**
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+        // Ahora puedes usar la variable userId donde la necesites en tu navbar
+        // Por ejemplo, podrías asignarla al valor de un campo oculto en un formulario:
+        const userIdNavbarInput = document.getElementById('id_user');
+        if (userIdNavbarInput) {
+            userIdNavbarInput.value = userId;
+        }
+    } else {
+        console.log('User ID no encontrado en localStorage.');
+        // Manejar el caso en que el userId no esté disponible (por ejemplo, el usuario no ha iniciado sesión)
+    }
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1386,7 +1400,7 @@ function SendDataFailure2(idStatusPayment) {
         console.log(`${key}:`, value);
     }
     console.log(formData);*/
-
+    
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SaveDataFalla2`);
     xhr.onload = function() {

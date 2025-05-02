@@ -201,7 +201,7 @@
                                 <div class="triangulo1"></div>
                             </div>
                         </div>
-                        <input type="hidden" id="id_user" name="userId" value="<?php echo $_SESSION['id_user']; ?>">
+                        <input type="hidden" id="id_user" name="userId">
                     </div>
                 </form>
                 <div>
@@ -246,7 +246,7 @@
                             <option value="1">Nivel 1</option>
                         </select>
                     </div>
-                    <input type="hidden" id="id_user" name="userId" value=" <?php echo $_SESSION['id_user']; ?> ">
+                    <input type="hidden" id="id_user" name="userId">
                     <button id="SendForm1" onclick="SendDataFailure1();">Cargar</button>
                     <table id="serialCountTableDetalle1">
                         <tbody></tbody>

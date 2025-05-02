@@ -32,13 +32,13 @@
       <label for="user">
         <b>Usuario</b>
       </label>
-      <input type="text" placeholder="Ingresar Usuario" name="username" onkeyup = "checkUser()" id="username" class="username form-input" required>
+      <input type="text" placeholder="Ingresar Usuario" name="username" onblur = "checkUser()" id="username" class="username form-input" required>
       <div id="usernameError" class="error"></div><div id="usernameVerification" class="success"></div><br>
 
       <label class="form-label" for="pass">
         <b>Contraseña</b>
       </label>
-      <input type="password" placeholder="Ingresar Contraseña"  onkeyup = "checkPass()" name="password" id="password" class="password" required>
+      <input type="password" placeholder="Ingresar Contraseña" name="password" id="password" class="password" required>
       <svg id = "clickme" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
         <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
         <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>

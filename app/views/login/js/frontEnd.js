@@ -66,7 +66,7 @@ $("#email").keyup(function(){
 function SendForm() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    
+
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/login`);
@@ -78,6 +78,9 @@ function SendForm() {
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
+                    userId = response.id_user; // Almacena el ID del usuario
+                    localStorage.setItem('userId', userId); // Guarda el userId en localStorage
+                    //alert('userId: ' + userId); // Muestra el ID del usuario en una alerta
                     window.location.href = response.redirect;
                     if (response.message === 'ya existe una sesión activa.') {
                         Swal.fire({
@@ -228,43 +231,6 @@ function checkUser() {
         };
 
         const datos = `action=checkUsername&username=${encodeURIComponent(input.value)}`;
-        xhr.send(datos);
-    }
-}
-
-// filepath: /c:/xampp/htdocs/SoportePost/app/views/login/js/frontEnd.js
-function checkPass() {
-    const username    = document.getElementById('username').value;
-    const password    = document.getElementById('password').value;
-    const mensajeDiv  = document.getElementById('passwordError');
-    const mensajeDivt = document.getElementById('passwordVerification');
-    mensajeDiv.innerHTML = '';
-
-    if (password === '') {
-        mensajeDivt.innerHTML = 'Campo vacío'; // Muestra el mensaje en rojo directamente
-        mensajeDivt.style.color = 'red';
-    } else {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/checkPass`);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    mensajeDivt.innerHTML = response.message;
-                    mensajeDivt.style.color = response.color; // Aplica el color del mensaje
-                } catch (error) {
-                    console.error('Error parsing JSON:', error);
-                    mensajeDiv.innerHTML = 'Error al procesar la respuesta del servidor.';
-                }
-            } else {
-                console.error('Error:', xhr.status, xhr.statusText);
-                mensajeDiv.innerHTML = 'Error de conexión con el servidor.';
-            }
-        };
-
-        const datos = `action=checkPass&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
         xhr.send(datos);
     }
 }
