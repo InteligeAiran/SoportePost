@@ -13,7 +13,7 @@
     <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/styleGeneral.css" />
     <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/desktop/form.css" />
     <script>
-        const ENDPOINT_BASE = '<?php echo IP; ?>';
+        const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
         const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
     </script>
 </head>
@@ -59,15 +59,11 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="crearTicketDropdown">
                         <li><a class="dropdown-item" href="#" data-value="Soporte POS">Soporte POS</a></li>
-                        <li><a class="dropdown-item" href="#" data-value="Sustitución de POS">Sustitución de POS</a>
-                        </li>
+                        <li><a class="dropdown-item" href="#" data-value="Sustitución de POS">Sustitución de POS</a></li>
                         <li><a class="dropdown-item" href="#" data-value="Préstamo de POS">Préstamo de POS</a></li>
-                        <li><a class="dropdown-item" href="#" data-value="Desafiliación de POS">Desafiliación de POS</a>
-                        </li>
-                        <li><a class="dropdown-item" href="#" data-value="Migración de Bancos">Migración de Bancos</a>
-                        </li>
-                        <li><a class="dropdown-item" href="#" data-value="Cambio de Razón Social">Cambio de Razón
-                                Social</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="Desafiliación de POS">Desafiliación de POS</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="Migración de Bancos">Migración de Bancos</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="Cambio de Razón Social">Cambio de Razón Social</a></li>
                     </ul>
                 </li>
                 </li>

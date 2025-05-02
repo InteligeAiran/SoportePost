@@ -9,8 +9,8 @@
     <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/login/mobile/mobile.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/login/desktop/desktop.css" />
     <script>
-      const ENDPOINT_BASE = '<?php echo IP; ?>';
-      const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
+        const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
+        const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
     </script>
   </head>
 <body>

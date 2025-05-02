@@ -361,7 +361,7 @@ function SendDataFailure1() {
     const id_user    = document.getElementById('id_user').value;
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/SaveDataFalla`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SaveDataFalla`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); // Asegúrate de que esto esté presente
 
     xhr.onload = function() {
@@ -371,7 +371,7 @@ function SendDataFailure1() {
                 if (response.success) {
                     // **MOVER LA LÓGICA DEL CORREO AQUÍ**
                     const xhrEmail = new XMLHttpRequest();
-                    xhrEmail.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket1`);
+                    xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket1`);
                     xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
                     xhrEmail.onload = function() {
@@ -508,7 +508,7 @@ function checkRif() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/ValidateRif`);
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/ValidateRif`);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -560,7 +560,7 @@ function checkRif1() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/ValidateRif1`);
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/ValidateRif1`);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -603,7 +603,7 @@ function checkRif1() {
 
 function getPosSerials1(rif) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/GetPosSerials1`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetPosSerials1`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -681,7 +681,7 @@ function getPosSerials1(rif) {
 
 function getFailure() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/GetFailure1`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetFailure1`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -728,7 +728,7 @@ document.addEventListener('DOMContentLoaded', getFailure);
 
 function getFailure2() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/GetFailure2`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetFailure2`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -773,7 +773,7 @@ document.addEventListener('DOMContentLoaded', getFailure2);
 
 function getCoordinador() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/GetCoordinador`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetCoordinador`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -823,7 +823,7 @@ let fechaInstalacionGlobal = null;
 
 function getPosSerials(rif) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/GetPosSerials`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetPosSerials`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -888,7 +888,7 @@ function getPosSerials(rif) {
 
 function getUltimateTicket(serial) {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/GetUltimateTicket`); // Asegúrate de usar la ruta correcta de tu API
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetUltimateTicket`); // Asegúrate de usar la ruta correcta de tu API
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
         xhr.onload = function() {
@@ -969,7 +969,7 @@ function getUltimateTicket(serial) {
 
     function getInstalationDate(serial) {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/GetInstallPosDate`); // Asegúrate de usar la ruta correcta de tu API
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetInstallPosDate`); // Asegúrate de usar la ruta correcta de tu API
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
         xhr.onload = function() {
@@ -1388,7 +1388,7 @@ function SendDataFailure2(idStatusPayment) {
     console.log(formData);*/
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/SaveDataFalla2`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SaveDataFalla2`);
     xhr.onload = function() {
         if (xhr.status === 200) {
             try {
@@ -1396,7 +1396,7 @@ function SendDataFailure2(idStatusPayment) {
                 if (response.success) {
                     // **MOVER LA LÓGICA DEL CORREO AQUÍ**
                     const xhrEmail = new XMLHttpRequest();
-                    xhrEmail.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/send_ticket2`);
+                    xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/send_ticket2`);
                     xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); // Importante para enviar datos como formulario
 
                     xhrEmail.onload = function() {

@@ -1,6 +1,7 @@
 function getUserData() {
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', `http://${ENDPOINT_BASE}${APP_PATH}api/GetUsers`);
+    xhr.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetUsers`);
+    //xhr.open('POST', 'http://localhost/SoportePost/api/GetTipoUsers'); // Asi estaba antes de cambiarlo
     
     //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     const tbody = document.getElementById('table-user').getElementsByTagName('tbody')[0];

@@ -32,7 +32,7 @@ function mi_navbar() {
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
         <script>
-            const ENDPOINT_BASE = '<?php echo IP; ?>';
+            const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
             const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
         </script>
     </head>

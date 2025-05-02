@@ -8,7 +8,7 @@
     <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/consultationGeneral/Desktop/general.css"/>
     <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/consultationGeneral/mobile/general.css"/>
     <script>
-        const ENDPOINT_BASE = '<?php echo IP; ?>';
+        const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
         const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
     </script>
 </head>

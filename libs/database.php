@@ -13,8 +13,11 @@ define("database", 'SoportePost');
 //define("database", 'soporte_postventa');
 
 /* END POINT*/ 
-define('IP', '10.225.1.136'); // Cambia 'localhost' por otra IP o dominio si es necesario
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+$host = $_SERVER['HTTP_HOST'];
+define('ENDPOINT_BASE_DYNAMIC', $protocol . $host);
 define('APP_BASE_PATH', '/SoportePost/');
+
 
 
 

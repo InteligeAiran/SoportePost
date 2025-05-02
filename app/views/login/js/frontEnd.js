@@ -69,7 +69,7 @@ function SendForm() {
     
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/login`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/login`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -208,7 +208,7 @@ function checkUser() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/checkUser`);
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/checkUser`);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -245,7 +245,7 @@ function checkPass() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/checkPass`);
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/checkPass`);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -281,7 +281,7 @@ function checkEmail() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/checkEmail`);
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/checkEmail`);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -356,7 +356,7 @@ setTimeout(function() {
 function SendEmail() {
     const email = document.getElementById('email').value;
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/restore_password`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/restore_password`);
 
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     

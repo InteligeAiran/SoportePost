@@ -25,7 +25,7 @@ include 'backEnd.php';
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
         <script>
-            const ENDPOINT_BASE = '<?php echo IP; ?>';
+            const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
             const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
         </script>
     </head>
