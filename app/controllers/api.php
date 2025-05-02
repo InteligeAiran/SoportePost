@@ -518,7 +518,7 @@ class Api extends Controller {
                             <li class="info-item"><strong>Estatus:</strong> '.$ticketstatus.'</li>
                             <li class="info-item"><strong>Acción:</strong> '.$ticketaccion.'</li>
                         </ul>
-                            <p><a href="http://localhost/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
+                            <p><a href="http://10.225.1.136/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                         <hr>
                         <p class="footer" >Atentamente,</p>
                         <p class="footer">El equipo de InteliSoft</p>
@@ -664,7 +664,7 @@ class Api extends Controller {
                             <li class="info-item"><strong>Estatus:</strong> '.$ticketstatus.'</li>
                             <li class="info-item"><strong>Acción:</strong> '.$ticketaccion.'</li>
                         </ul>
-                            <p><a href="http://localhost/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
+                            <p><a href="http://10.225.1.136/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                         <hr>
                         <p class="footer" >Atentamente,</p>
                         <p class="footer">El equipo de InteliSoft</p>

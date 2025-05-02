@@ -1,10 +1,10 @@
 function getUserData() {
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'http://localhost/SoportePost/api/GetUsers');
+    xhr.open('GET', `http://${ENDPOINT_BASE}${APP_PATH}api/GetUsers`);
+    
     //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     const tbody = document.getElementById('table-user').getElementsByTagName('tbody')[0];
     
-
     // Limpia la tabla ANTES de la nueva búsqueda
     tbody.innerHTML = '';
 
@@ -121,6 +121,4 @@ function getUserData() {
 }
 
 document.addEventListener('DOMContentLoaded', getUserData);
-
-
 //console.log('FrontEnd.js loaded successfully!');

@@ -24,6 +24,10 @@ include 'backEnd.php';
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
+        <script>
+            const ENDPOINT_BASE = '<?php echo IP; ?>';
+            const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
+        </script>
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">

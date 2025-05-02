@@ -31,11 +31,10 @@ function mi_navbar() {
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
-
-        <style>
-           
-
-        </style>
+        <script>
+            const ENDPOINT_BASE = '<?php echo IP; ?>';
+            const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
+        </script>
     </head>
     <body class="g-sidenav-show bg-gray-100">
         <div id="top"  class="d-lg-none fixed-top bg-dark p-2">

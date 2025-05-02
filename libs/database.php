@@ -12,6 +12,12 @@ define("database", 'SoportePost');
 /* DB VIEJA*/
 //define("database", 'soporte_postventa');
 
+/* END POINT*/ 
+define('IP', 'localhost'); // Cambia 'localhost' por otra IP o dominio si es necesario
+define('APP_BASE_PATH', '/SoportePost/');
+
+
+
 //Envio Correo 
 define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_AUTH', true);

@@ -1,5 +1,5 @@
 <?php
-//var_dump($_SESSION['id_user']);
+//var_dump($_SESSION['usuario']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -10,12 +10,12 @@
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
     <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-    <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/desktop/form.css" />
-    <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/laptop/form.css" />
-    <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/mobile/form.css" />
-
     <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/styleGeneral.css" />
-
+    <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/desktop/form.css" />
+    <script>
+        const ENDPOINT_BASE = '<?php echo IP; ?>';
+        const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
+    </script>
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
@@ -122,8 +122,8 @@
             <div id="contenidoModal" style="margin-left: 59px;">
                 <form id="miFormulario">
                     <div id="detalle1">
-                        <h2>Falla Nivel 2</h2><br>
-                        <div>
+                        <h2 id="title2">Falla Nivel 2</h2><br>
+                        <div><br>
                             <label for="FallaSelect2">Falla Descrita Por el Cliente</label>
                             <div id="FallaSelect2Container">
                                 <select id="FallaSelect2" name="FallaSelect2">
@@ -161,14 +161,12 @@
                                 <div id="resultadoGarantiaInstalacion"></div>
                             </div>
                         </div><br>
-                        <br><label
-                            style="margin-left: 30%; width: 85px; margin-top: 27px; position: relative; display: block; margin-bottom: -14px;"
-                            for="FallaSelect1">Nivel Falla</label>
+                        <br><label style="margin-left: 30%; width: 85px; margin-top: 27px; position: relative; display: block; margin-bottom: -14px;" for="FallaSelect1">Nivel Falla</label>
                         <div id="FallaSelectContainer1">
                             <select style="margin-left: 116%; width: 172px;" id="FallaSelectt2" name="FallaSelect1">
                                 <option value="2">Nivel 2</option>
                             </select>
-                        </div><br>
+                        </div>
                         <br>
                         <div style="display: flex; flex-direction: column; margin-top: -24%;">
                             <div>
@@ -232,7 +230,7 @@
             <span class="cerrar1">&times;</span>
             <div class="nivel1modal" id="contenidoModal2">
                 <div>
-                    <h2>Falla Nivel 1</h2>
+                    <h2 id="title1">Falla Nivel 1</h2><br>
                     <label for="FallaSelect1">Falla Descrita Por el Cliente</label>
                     <div id="FallaSelect1Container">
                         <select id="FallaSelect1" name="FallaSelect1">
@@ -252,7 +250,7 @@
                             <option value="1">Nivel 1</option>
                         </select>
                     </div>
-                    <input type="hidden" id="id_user" name="userId" value="<?php echo $_SESSION['id_user']; ?>">
+                    <input type="hidden" id="id_user" name="userId" value=" <?php echo $_SESSION['id_user']; ?> ">
                     <button id="SendForm1" onclick="SendDataFailure1();">Cargar</button>
                     <table id="serialCountTableDetalle1">
                         <tbody></tbody>

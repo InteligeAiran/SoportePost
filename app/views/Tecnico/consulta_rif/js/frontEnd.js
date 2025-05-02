@@ -55,7 +55,7 @@ function clearFormFields() {
     const falla = document.getElementById('FallaSelect1').value;
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/SaveDataFalla');
+    xhr.open('POST', 'http://localhost/SoportePost/api/SaveDataFalla');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); // Asegúrate de que esto esté presente
 
     xhr.onload = function() {
@@ -65,7 +65,7 @@ function clearFormFields() {
                 if (response.success) {
                     // **MOVER LA LÓGICA DEL CORREO AQUÍ**
                     const xhrEmail = new XMLHttpRequest();
-                    xhrEmail.open('POST', 'http://10.225.1.136/SoportePost/api/email/send_ticket1');
+                    xhrEmail.open('POST', 'http://localhost/SoportePost/api/email/send_ticket1');
                     xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
                     xhrEmail.onload = function() {
@@ -291,7 +291,8 @@ $("#rifInput").keyup(function(){
 
 function SendRif() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/SearchRif');
+    xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/SearchRif`);
+    
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     const tbody = document.getElementById('rifCountTable').getElementsByTagName('tbody')[0];
@@ -456,7 +457,8 @@ function SendRif() {
 
 function fetchSerialData(serial) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/SearchSerial');
+    xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/SearchSerial`);
+       
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     const tbody = document.getElementById('serialCountTable').getElementsByTagName('tbody')[0];
 
@@ -543,7 +545,7 @@ function fetchSerialData(serial) {
 
 function downloadImageModal(serial) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://10.225.1.136/SoportePost/api/GetPhoto');
+    xhr.open('POST', `http://${ENDPOINT_BASE}${APP_PATH}api/GetPhoto`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {

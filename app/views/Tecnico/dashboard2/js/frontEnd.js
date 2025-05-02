@@ -1,3 +1,10 @@
+document.addEventListener('DOMContentLoaded', (event) => {
+    const anchoPantalla = window.innerWidth;
+    const altoPantalla = window.innerHeight;
+    console.log(`Ancho de la pantalla: ${anchoPantalla}px`);
+    console.log(`Alto de la pantalla: ${altoPantalla}px`);
+});
+
 //Llamar a la función PHP usando fetch    SESSION EXPIRE DEL USER
 fetch('/SoportePost/app/controllers/dashboard2.php', {
     method: 'POST',
@@ -14,6 +21,7 @@ fetch('/SoportePost/app/controllers/dashboard2.php', {
 .then(responseText => {
     if (responseText) {
         try {
+            console.log('Response text:', responseText); // Mostrar la respuesta para depuración
             const data = JSON.parse(responseText); // Intentar parsear como JSON
             if (data.expired_sessions) {
                 window.location.href = data.redirect;
