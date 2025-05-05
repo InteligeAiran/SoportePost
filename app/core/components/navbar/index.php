@@ -211,7 +211,7 @@
                     </div>
                 </form>
                 <div>
-                    <button id="SendForm2">Cargar</button>
+                    <button id="SendForm2">Guardar</button>
                 </div>
             </div>
         </div>

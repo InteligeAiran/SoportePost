@@ -189,6 +189,18 @@ class Api extends Controller {
                     case 'GetFailure1':
                         $this->handleGetFailure1();
                     break;
+
+                    case 'GetAreaUsers':
+                        $this->handleGetAreaUsers();
+                    break;
+
+                    case 'GetTipoUsers':
+                        $this->handleGetTipoUsers();
+                    break;
+
+                    case 'GuardarUsuarios':
+                        $this->handleGuardarUsuarios();
+                    break;
                 /*END CONSULTA RIF*/
 
                 /*CONSULTA GENERAL*/
@@ -1131,7 +1143,7 @@ class Api extends Controller {
     }
 
     public function handleGetUsers(){
-        $repository = new   UserRepository(); // Inicializa el repositorio
+        $repository = new UserRepository(); // Inicializa el repositorio
         $result = $repository->getAllUsers();
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1143,5 +1155,64 @@ class Api extends Controller {
         }
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
     }
+
+
+    public function handleGetAreaUsers(){
+        $repository = new UserRepository(); // Inicializa el repositorio
+        $result = $repository->GetAreaUsers();
+       // var_dump($result);
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'area' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay coordinadores disponibles o No ha seleccionado ningun coordinador'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los coordinadores'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
+    }   
+
+
+    public function handleGetTipoUsers(){
+        $repository = new UserRepository(); // Inicializa el repositorio
+        $result = $repository->GetTipoUsers();
+       // var_dump($result);
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'tipousers' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay coordinadores disponibles o No ha seleccionado ningun coordinador'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los coordinadores'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
+    }    
+
+
+
+        public function handleGuardarUsuarios(){
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
+        $nombreusers = isset($_POST['nombreuser']) ? $_POST['nombreuser'] : '';
+        $apellidousers = isset($_POST['apellidouser']) ? $_POST['apellidouser'] : '';
+        $tipo_doc = isset($_POST['tipodoc']) ? $_POST['tipodoc'] : '';
+        $documento = isset($_POST['coddocumento']) ? $_POST['coddocumento'] : '';
+        $users = isset($_POST['usuario']) ? $_POST['usuario'] : '';
+        $correo = isset($_POST['email']) ? $_POST['email'] : '';
+        $area_users = isset($_POST['areausers']) ? $_POST['areausers'] : '';
+        $tipo_users = isset($_POST['tipousers']) ? $_POST['tipousers'] : '';
+
+        $repository = new UserRepository(); // Inicializa el repositorio
+    
+
+                    // Guardar archivo de envío
+                    $result = $repository->Guardar_Usuario($id_user, $nombreusers,$apellidousers, $tipo_doc, $documento, $users, $correo, $area_users, $tipo_users);
+    
+                    if ($result) {
+                        $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
+                    } else {
+                        $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
+                    }
+             
+        }
+        
+    
 }
 ?>

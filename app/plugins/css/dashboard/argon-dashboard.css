@@ -4197,10 +4197,17 @@ fieldset:disabled .btn {
 .btn-lg,
 .btn-group-lg>.btn {
   --bs-btn-padding-y: 0.875rem;
-  --bs-btn-padding-x: 4rem;
+/*  --bs-btn-padding-x: 4rem;*/
   --bs-btn-font-size: 0.875rem;
   --bs-btn-border-radius: 0.5rem;
 }
+
+#collapsedatoscontacto{
+
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
 
 .btn-sm,
 .btn-group-sm>.btn {

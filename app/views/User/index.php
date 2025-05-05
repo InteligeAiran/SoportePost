@@ -87,35 +87,77 @@ function mi_navbar() {
 
         <div class="modal fade" id="ModalAggUsers" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"
      data-keyboard="false">
-           <div class="modal-dialog" role="document">
-           <div class="modal-content" style=" margin-left: -15%;width: 800px;">
-        <div class="modal-header yellow">
-        <!--   <h5 class="modal-title" id="exampleModalLabel" color="blue">Resultado de la Gestión  </h5> -->
-          <button type="button" class="btn btn-danger btn-circle btn-lg f" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-
-        </div>
-        <div class="modal-body">
-          <div class="panel-body">
-
-            <div class="col-lg-12">
-              <div class="panel panel-primary">
+         <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
                 <div class="panel-heading" style="text-align: center;color:#ffffff;">
-                    <h4>Registro de Usuarios</h4>
+                    <h4>Registro de usuarios</h4>
                 </div>
-                <!-- /.panel-heading -->
-                <div class="panel-body">
+            </div> 
 
-                </div> <!-- End panel-body -->
-            </div>
+            <div class="modal-body">
+                <div class="panel-body">
+                
+                
+                <div class="row">
+                      <div class="col-md-6">
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" id="nombreuser" class="form-control" name="nombreuser">
+                      </div>
+                      <div class="col-md-6">
+                        <label for="apellido">Apellido:</label>
+                        <input type="text" id="apellidouser" class="form-control" name="apellidouser">
+                      </div>
+                </div>    
+
+                <div class="row">
+                      <div class="col-md-6">
+                        <label for="tipodoc">Tipo Documento:</label>
+                        <input type="text" id="tipodoc" class="form-control" name="tipodoc">
+                      </div>
+                      <div class="col-md-6">
+                        <label for="cedula">Cedula:</label>
+                        <input type="text" id="coddocumento" class="form-control" name="coddocumento">
+                      </div>
+                </div>  
+
+                <div class="row">
+                      <div class="col-md-6">
+                        <label for="usuario">Usuario:</label>
+                            <input type="text" id="usuario" class="form-control" name="usuario">
+                      </div>
+                      <div class="col-md-6">
+                        <label for="email">Correo:</label>
+                            <input type="text" id="email" class="form-control" name="email">
+                      </div>
+                </div>    
+
+                <div class="row">
+                      <div class="col-md-6">
+                        <label for="area">Area:</label>
+                        <div id="AreaUsersContainer">
+                            <select id="areausers" name="areausers"></select>
+                            <p id="rifMensaje1"></p>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="apellido">Tipo Usuario:</label>
+                       <div id="TipoUsersContainer">
+                            <select id="tipousers" name="tipousers"></select>
+                        </div>
+                      </div>
+                </div>    
+
+            </div> 
+          </div>   
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-          </div>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarUsers">Guardar</button>
+            </div>
         </div>
-      </div>
-    </div> <!-- End div modal -->
-    </div>
     </div>
    </div>
 

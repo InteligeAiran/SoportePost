@@ -85,7 +85,7 @@ function getUserData() {
                         dom: 'Bfrtip',
                         buttons: [
                         {
-                            text: '<button onclick="modales()" data-toggle="modal" data-target="#ModalAggUsers"class="btn btn-primary" type="button">Crear Usuario</button>'
+                            text: '<button data-toggle="modal" data-target="#ModalAggUsers"class="btn btn-primary" type="button">Crear Usuario</button>'
                         }
                         ]
                     });
@@ -118,6 +118,219 @@ document.addEventListener('DOMContentLoaded', getUserData);
 
 
 
-
-
 //console.log('FrontEnd.js loaded successfully!');
+
+
+
+
+// Funcion para mostrar las area para crear usuarios 
+function getAreaUsuarios() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetAreaUsers');
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                console.log('areas');
+
+    xhr.onload = function() {
+
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const select = document.getElementById('areausers');
+
+                    select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+                    if (Array.isArray(response.area) && response.area.length > 0) {
+                        response.area.forEach(coordinador => {
+                            const option = document.createElement('option');
+                            option.value = coordinador.idarea;
+                            option.textContent = coordinador.desc_area;
+                            select.appendChild(option);
+                        });
+                    } else {
+                        // Si no hay fallas, puedes mostrar un mensaje en el select
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No hay Áreas disponibles';
+                        select.appendChild(option);
+                    }
+                } else {
+                    document.getElementById('rifMensaje').innerHTML += '<br>Error al obtener las áreas.';
+                    console.error('Error al obtener las fallas:', response.message);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                document.getElementById('rifMensaje').innerHTML += '<br>Error al procesar la respuesta de los áreas.';
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            document.getElementById('rifMensaje').innerHTML += '<br>Error de conexión con el servidor para los áreas.';
+        }
+    };
+
+    const datos = `action=GetAreaUsers`; // Cambia la acción para que coincida con el backend
+    xhr.send(datos);
+}
+
+// Llama a la función para cargar las fallas cuando la página se cargue
+document.addEventListener('DOMContentLoaded', getAreaUsuarios);
+
+
+//FUNCION PARA MOSTRAR TIPO DE USUARIOS 
+function getTipoUsuarios() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetTipoUsers');
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const select = document.getElementById('tipousers');
+ 
+                    select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+                    if (Array.isArray(response.tipousers) && response.tipousers.length > 0) {
+                        response.tipousers.forEach(tipousers => {
+                            const option = document.createElement('option');
+                            option.value = tipousers.idtipo;
+                            option.textContent = tipousers.desc_tipo;
+                            select.appendChild(option);
+                        });
+                    } else {
+                        // Si no hay fallas, puedes mostrar un mensaje en el select
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No hay información disponible';
+                        select.appendChild(option);
+                    }
+                } else {
+                    document.getElementById('rifMensaje').innerHTML += '<br>Error al obtener los datos.';
+                    console.error('Error al obtener las fallas:', response.message);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                document.getElementById('rifMensaje').innerHTML += '<br>Error al procesar la información.';
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            document.getElementById('rifMensaje').innerHTML += '<br>Error de conexión con el servidor para los áreas.';
+        }
+    };
+
+    const datos = `action=GetTipoUsers`; // Cambia la acción para que coincida con el backend
+    xhr.send(datos);
+}
+
+// Llama a la función para cargar las fallas cuando la página se cargue
+document.addEventListener('DOMContentLoaded', getTipoUsuarios);
+
+
+
+
+
+
+document.getElementById('btnGuardarUsers').addEventListener('click', function() {
+    GuardarUsuariosNew();
+});
+
+
+
+
+function GuardarUsuariosNew() {
+    const nombre_usuario = document.getElementById('nombreuser').value;
+    const apellido_usuario = document.getElementById('apellidouser').value;
+    const tipo_doc = document.getElementById('tipodoc').value;
+    const documento = document.getElementById('coddocumento').value;
+    const iusuario = document.getElementById('usuario').value;
+    const correo = document.getElementById('email').value;
+    const area_usuario = document.getElementById('areausers').value;
+    const tipo_usuario = document.getElementById('tipousers').value;
+
+
+    // Validaciones generales
+    if (!nombre_usuario) {
+        Swal.fire({ icon: 'warning', title: 'Campo requerido', color: 'black' });
+        return;
+    }
+    // if (!rif) {
+    //     Swal.fire({ icon: 'warning', title: 'Campo requerido', text: 'Por favor, Coloque un RIF.', color: 'black' });
+    //     return;
+    // }
+    // if (!serial) {
+    //     Swal.fire({ icon: 'warning', title: 'Campo requerido', text: 'Por favor, seleccione un serial.', color: 'black' });
+    //     return;
+    // }
+    // if (!coordinador) {
+    //     Swal.fire({ icon: 'warning', title: 'Campo requerido', text: 'Por favor, seleccione un coordinador.', color: 'black' });
+    //     return;
+    // }
+
+    //console.log(envioButtonContainer);
+
+
+
+    // Agregar datos al formData
+    const formData = new FormData();
+    formData.append('nombreuser', nombre_usuario);
+    formData.append('apellidouser', apellido_usuario);
+    formData.append('tipodoc', tipo_doc);
+    formData.append('coddocumento', documento);
+    formData.append('usuario', iusuario);
+    formData.append('email', correo);
+    formData.append('areausers', area_usuario);
+    formData.append('tipousers', tipo_usuario);
+    
+
+    formData.append('action', 'GuardarUsuarios');
+
+    // Depuración
+    /*for (const [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+    }
+    console.log(formData);*/
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GuardarUsuarios');
+
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {                  
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Guardado exitoso',
+                        text: response.message,
+                        color: 'black',
+                        timer: 1500,
+                        timerProgressBar: true,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        willClose: () => {
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        }
+                    });
+                    $("#miModal").css("display", "none");
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: response.message, color: 'black' });
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                console.log(xhr.responseText);
+                Swal.fire({ icon: 'error', title: 'Error en el servidor', text: 'Ocurrió un error al procesar la respuesta del servidor.', color: 'black' });
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar con el servidor.', color: 'black' });
+        }
+    };
+
+    xhr.send(formData);
+
+}
