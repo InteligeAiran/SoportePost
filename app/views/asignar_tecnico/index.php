@@ -4,87 +4,94 @@ function mi_navbar() {
 }
 ?>
 <!DOCTYPE html>
-<lang="en">
+    <lang="en">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
         <link rel="icon" type="image/png" href="../assets/img/favicon.png">
         <title>
-            Soporte POST
+            Argon Dashboard 3 by Creative Tim
         </title>
-        <!--     Fonts and icons     -->
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-        <!-- Nucleo Icons -->
         <!--     Fonts and icons     -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
         <!-- Nucleo Icons -->
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-icons.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-svg.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/user/desktop/desktop.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/desktop/desktop.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/desktop/form.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/mobile/mobile.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/laptop/laptop.css"/>
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <!-- Font Awesome Icons -->
-      
-        <!-- CSS Files -->
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
-        <script>
-            const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
-            const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
-        </script>
     </head>
-    <body class="g-sidenav-show bg-gray-100">
-        <div id="top"  class="d-lg-none fixed-top bg-dark p-2">
-            <button class="btn btn-dark" id="filter-toggle">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-list-task" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z"/>
-                    <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z"/>
-                    <path fill-rule="evenodd" d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z"/>
-                </svg>
-            </button>
-        </div>
-        <?php require_once 'app/core/components/navbar/index.php'; mi_navbar();?>
-        <main class="main-content position-relative border-radius-lg overflow-hidden bg-gray-100">
-            <div class="container-fluid py-4">
-                <div id = "Row" class="row mt-4">
-                    <div class = "cord">
-                        <div id="div_user" class="background-color">
-                            <div class="col-lg-12 col-md-12 mt-4 mb-4">
-                                <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                    <strong><h5 class="text-black text-capitalize ps-3">USUARIOS</h5></strong>
-                                </div>
-                            </div>         
-                            <table id="table-user" class="background-users-table">
-                                <thead>
-                                    <tr>
-                                        <th>Id Usuario</th>
-                                        <th>Nombre y Apellido</th>
-                                        <th>Usuario</th>
-                                        <th>Cedula</th>
-                                        <th>E-mail</th>
-                                        <th>Estatus</th>
-                                        <th>Rol</th>
-                                        <th>Area</th>
-                                        <th>Tipo Usuario</th>
-                                        <th>Region</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody  id="table-user-body">
-                                </tbody>
-                            </table>
-                            <!--div class="col-lg-12 col-md-12 mt-4 mb-4">
-                            <div class="card card-body bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
-                            <h6 class="text-white text-capitalize ps-3">Dashboard</h6-->         
-                        </div>   
-                    </div>    
-                </div>   
-            </div>
-        </main>
 
+    <body id="fondo" class="g-sidenav-show bg-gray-100">
+        <div class="min-height-300 bg-dark position-absolute w-100">
+            <div class="d-lg-none fixed-top bg-dark p-2">
+                <button class="btn btn-dark" id="filter-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-list-task" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z"/>
+                        <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z"/>
+                        <path fill-rule="evenodd" d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z"/>
+                    </svg>
+                </button>
+            </div>
+            <?php require_once 'app/core/components/navbar/index.php'; mi_navbar(); ?>
+            <main class="main-content position-relative border-radius-lg ">
+                <div class="container-fluid py-4">
+                    <div id = "Row" class="row mt-4">
+                        <div class = "cord">
+                        
+                            <div class="card">
+                                <div class="card-header pb-0 p-3">
+                                    <div class="col-lg-12 col-md-12 mt-4 mb-4">
+                                        <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
+                                            <strong><h5 class="text-black text-capitalize ps-3">TICKETS</h5></strong>
+                                        </div>
+                                    </div>   
+                                    <div class="d-flex justify-content-between">
+                                        <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="tabla-ticket">
+                                        <thead>
+                                                <th style = "width: 5%;">Fecha Creacion</th>
+                                                <th style = "width: 5%;">Tecnico Asignador</th>
+                                                <th style = "width: 5%; height: 10px;">ID ticket</th>
+                                                <th style = "width: 5%;">Accion</th>
+                                                <th style = "width: 5%;">Falla</th>
+                                                <th style = "width: 5%;">Proceso</th>
+                                                <th style = "width: 5%;">Estatus</th>
+                                                <th style = "width: 5%;">Serial POS</th>
+                                                <th>Acciones</th>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody  id="table-ticket-body">
+                                            <tr>
+                                                <td colspan="3">No hay datos</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="card-footer p-3">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p id="total-tickets" class="text-sm mb-0">Total de tickets: 0</p>
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <button id="btn-asignar" type="button" class="btn btn-primary btn-sm mb-0">Asignar</button>
+                                        </div>
+                                    </div>  
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
                 <i class="fa fa-cog py-2"> </i>
@@ -174,9 +181,9 @@ function mi_navbar() {
                 </div>
             </div>
         </div>
-        
-         <!-- Github buttons -->
-         <script async defer src="https://buttons.github.io/buttons.js"></script>
+  
+        <!-- Github buttons -->
+        <script async defer src="https://buttons.github.io/buttons.js"></script>
         <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
         <!-- Bootstrap core JavaScript-->
          <!--JQUERY-->
@@ -214,8 +221,7 @@ function mi_navbar() {
 
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP;?>app/plugins/js/sb-admin-2.min.js"></script>
-
-        
+    
         <?php
             if (isset($this->js)){
                 foreach ($this->js as $js){
@@ -223,8 +229,8 @@ function mi_navbar() {
                 }
             }
         ?>
-    <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-    <?php
+  <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
+  <?php
         $expired_sessions = json_encode($this->expired_sessions);
         $message = json_encode($this->message);
         $redirect = json_encode($this->redirect);
@@ -233,7 +239,6 @@ function mi_navbar() {
 
     ?>
     <script>
-        
         var expired_sessions = <?php echo $expired_sessions; ?>;
         var message = <?php echo $message; ?>;
         var redirect = <?php echo $redirect; ?>;
@@ -270,6 +275,5 @@ function mi_navbar() {
         }
     </script>
     <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-
 </body>
 </html>

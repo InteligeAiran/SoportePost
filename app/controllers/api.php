@@ -211,6 +211,17 @@ class Api extends Controller {
                     }
                 break;
                 /*END USERS*/
+
+                /*TICKETS*/
+                
+                case 'GetTicketData':
+                    if ($method === 'GET') {
+                        //var_dump($_POST); // Para depuración
+                        $this->handleGetTicketData();
+                    } else {
+                        $this->response(['error' => 'Método no permitido'], 405);
+                    }
+                /*END TICKETS*/
                 default:
                     $this->response(['error' => 'Recurso no encontrado'], 404);
                 break;
@@ -1116,6 +1127,20 @@ class Api extends Controller {
             $this->response(['success' => false, 'message' => 'No hay usuarios disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
+
+    public function handleGetTicketData(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetTicketData();
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
     }

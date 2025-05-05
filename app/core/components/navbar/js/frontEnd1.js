@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setActiveLink('estadisticas-link', 'pages/profile.html');
 
     // **CÓDIGO PARA OBTENER EL userId**
-    const userId = localStorage.getItem('userId');
+    /*const userId = localStorage.getItem('userId');
     if (userId) {
         // Ahora puedes usar la variable userId donde la necesites en tu navbar
         // Por ejemplo, podrías asignarla al valor de un campo oculto en un formulario:
@@ -55,10 +55,10 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.log('User ID no encontrado en localStorage.');
         // Manejar el caso en que el userId no esté disponible (por ejemplo, el usuario no ha iniciado sesión)
-    }
+    }*/
 });
 
-document.addEventListener('DOMContentLoaded', function() {
+/*document.addEventListener('DOMContentLoaded', function() {
     const cerrarSesionBtn = document.getElementById('cerrar-link'); // Reemplaza 'cerrarSesionBtn' con el ID de tu botón de cerrar sesión
 
     if (cerrarSesionBtn) {
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = 'cerrar_session'; // Ajusta la URL si es necesario
         });
     }
-});
+});*/
 
 document.addEventListener('DOMContentLoaded', function() {
     // Estilo para el span "No file chosen"
@@ -1426,7 +1426,7 @@ function SendDataFailure2(idStatusPayment) {
                 if (response.success) {
                     // **MOVER LA LÓGICA DEL CORREO AQUÍ**
                     const xhrEmail = new XMLHttpRequest();
-                    xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/send_ticket2`);
+                    xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`);
                     xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); // Importante para enviar datos como formulario
 
                     xhrEmail.onload = function() {
