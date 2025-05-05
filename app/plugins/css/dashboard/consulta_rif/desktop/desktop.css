@@ -1,4 +1,8 @@
-@media (max-width: 1900px) AND (min-width: 1200px) AND (max-height: 1000px) AND (min-height: 400px){
+@media (max-width: 2500px) AND (min-width: 1050px) AND (max-height: 1050px) AND (min-height: 400px){
+    .py-4 {
+       margin-top: 6%;
+    }
+
     body {
         display: flex;
         flex-direction: column;
@@ -24,6 +28,7 @@
 
     #SearchRif{
         margin-left: 550px;
+        width: 11%;
     }
 
     #buscarRifContainer {

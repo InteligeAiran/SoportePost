@@ -28,11 +28,10 @@ function mi_navbar() {
       
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
-
-        <style>
-           
-
-        </style>
+        <script>
+            const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
+            const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
+        </script>
     </head>
     <body class="g-sidenav-show bg-gray-100">
         <div id="top"  class="d-lg-none fixed-top bg-dark p-2">
@@ -50,7 +49,7 @@ function mi_navbar() {
             <div class="container-fluid py-4">
                 <div id = "Row" class="row mt-4">
                     <div class = "cord">
-                        <div class="background-color">
+                        <div id="div_user" class="background-color">
                             <div class="col-lg-12 col-md-12 mt-4 mb-4">
                                 <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
                                     <strong><h5 class="text-black text-capitalize ps-3">USUARIOS</h5></strong>
@@ -64,12 +63,13 @@ function mi_navbar() {
                                         <th>Nombre y Apellido</th>
                                         <th>Usuario</th>
                                         <th>Cedula</th>
-                                        <th>Correo</th>
+
                                         <th>Estatus</th>
                                         <th>Rol</th>
                                         <th>Area</th>
                                         <th>Tipo Usuario</th>
                                         <th>Region</th>
+                                        <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody  id="table-user-body">
