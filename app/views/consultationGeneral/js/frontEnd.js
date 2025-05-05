@@ -68,7 +68,7 @@ function SendDataSearching() {
     if (serialValue !== null && procesoValue !== null) {
         const dataToSend = `action=consultationHistorial&serial=${encodeURIComponent(serialValue)}&proceso=${encodeURIComponent(procesoValue)}`;
 
-        fetch(`${ENDPOINT_BASE}${APP_PATH}api/consultationHistorial`, {
+        fetch('http://localhost/SoportePost/api/consultationHistorial', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -199,7 +199,7 @@ function SendDataSearching() {
 }
 
 function ShowImageExo(id_ticket) {
-    const apiUrl = `10.225.1.136/SoportePost/api/GetImageExo?id=${encodeURIComponent(id_ticket)}`;
+    const apiUrl = `http://localhost/SoportePost/api/GetImageExo?id=${encodeURIComponent(id_ticket)}`;
 
     fetch(apiUrl, {
         method: 'GET',

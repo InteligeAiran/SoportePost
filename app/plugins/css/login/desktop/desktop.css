@@ -1,4 +1,4 @@
-@media (max-width: 2600px) AND (min-width: 767px) AND (max-height: 1500px) AND (min-height: 400px){
+@media (max-width: 1900px) AND (min-width: 1200px) AND (max-height: 1000px) AND (min-height: 400px){
     .login-container h2 {
         margin-top: -50px;
         text-align: center;

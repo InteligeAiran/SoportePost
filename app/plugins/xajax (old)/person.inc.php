@@ -3,7 +3,7 @@
 require_once 'DB.php';
 require_once "PEAR.php";
 
-define('SQLC', "mysql://root@10.225.1.136/xajaxGrid");
+define('SQLC', "mysql://root@localhost/xajaxGrid");
 $GLOBALS['db'] =& DB::connect(SQLC);
 $GLOBALS['db']->setFetchMode(DB_FETCHMODE_ASSOC);
 

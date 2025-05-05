@@ -1,5 +1,5 @@
 <?php
-//var_dump($_SESSION['usuario']);
+//var_dump($_SESSION['id_user']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -7,15 +7,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/navbar/form.css">
+    <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/navbar/styleGeneral.css">
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
     <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
+    <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/form.css" />
     <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/styleGeneral.css" />
-    <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/desktop/form.css" />
-    <script>
-        const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
-        const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
-    </script>
+
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
@@ -59,11 +58,15 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="crearTicketDropdown">
                         <li><a class="dropdown-item" href="#" data-value="Soporte POS">Soporte POS</a></li>
-                        <li><a class="dropdown-item" href="#" data-value="Sustitución de POS">Sustitución de POS</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="Sustitución de POS">Sustitución de POS</a>
+                        </li>
                         <li><a class="dropdown-item" href="#" data-value="Préstamo de POS">Préstamo de POS</a></li>
-                        <li><a class="dropdown-item" href="#" data-value="Desafiliación de POS">Desafiliación de POS</a></li>
-                        <li><a class="dropdown-item" href="#" data-value="Migración de Bancos">Migración de Bancos</a></li>
-                        <li><a class="dropdown-item" href="#" data-value="Cambio de Razón Social">Cambio de Razón Social</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="Desafiliación de POS">Desafiliación de POS</a>
+                        </li>
+                        <li><a class="dropdown-item" href="#" data-value="Migración de Bancos">Migración de Bancos</a>
+                        </li>
+                        <li><a class="dropdown-item" href="#" data-value="Cambio de Razón Social">Cambio de Razón
+                                Social</a></li>
                     </ul>
                 </li>
                 </li>
@@ -113,14 +116,14 @@
             </ul>
         </div>
     </aside>
-    <div id="miModal" class="modal" style="background-color: rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px);">
+    <div id="miModal" class="modal">
         <div class="modal-contenido">
             <span class="cerrar">&times;</span>
             <div id="contenidoModal" style="margin-left: 59px;">
                 <form id="miFormulario">
                     <div id="detalle1">
-                        <h2 id="title2">Falla Nivel 2</h2><br>
-                        <div><br>
+                        <h2>Falla Nivel 2</h2><br>
+                        <div>
                             <label for="FallaSelect2">Falla Descrita Por el Cliente</label>
                             <div id="FallaSelect2Container">
                                 <select id="FallaSelect2" name="FallaSelect2">
@@ -158,12 +161,14 @@
                                 <div id="resultadoGarantiaInstalacion"></div>
                             </div>
                         </div><br>
-                        <br><label style="margin-left: 30%; width: 85px; margin-top: 27px; position: relative; display: block; margin-bottom: -14px;" for="FallaSelect1">Nivel Falla</label>
+                        <br><label
+                            style="margin-left: 30%; width: 85px; margin-top: 27px; position: relative; display: block; margin-bottom: -14px;"
+                            for="FallaSelect1">Nivel Falla</label>
                         <div id="FallaSelectContainer1">
                             <select style="margin-left: 116%; width: 172px;" id="FallaSelectt2" name="FallaSelect1">
                                 <option value="2">Nivel 2</option>
                             </select>
-                        </div>
+                        </div><br>
                         <br>
                         <div style="display: flex; flex-direction: column; margin-top: -24%;">
                             <div>
@@ -202,7 +207,7 @@
                                 <div class="triangulo1"></div>
                             </div>
                         </div>
-                        <input type="hidden" id="id_user" name="userId">
+                        <input type="hidden" id="id_user" name="userId" value="<?php echo $_SESSION['id_user']; ?>">
                     </div>
                 </form>
                 <div>
@@ -227,7 +232,7 @@
             <span class="cerrar1">&times;</span>
             <div class="nivel1modal" id="contenidoModal2">
                 <div>
-                    <h2 id="title1">Falla Nivel 1</h2><br>
+                    <h2>Falla Nivel 1</h2>
                     <label for="FallaSelect1">Falla Descrita Por el Cliente</label>
                     <div id="FallaSelect1Container">
                         <select id="FallaSelect1" name="FallaSelect1">
@@ -247,7 +252,7 @@
                             <option value="1">Nivel 1</option>
                         </select>
                     </div>
-                    <input type="hidden" id="id_user" name="userId">
+                    <input type="hidden" id="id_user" name="userId" value="<?php echo $_SESSION['id_user']; ?>">
                     <button id="SendForm1" onclick="SendDataFailure1();">Cargar</button>
                     <table id="serialCountTableDetalle1">
                         <tbody></tbody>

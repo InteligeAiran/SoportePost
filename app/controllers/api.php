@@ -85,6 +85,11 @@ class Api extends Controller {
                         $this->response(['success' => true, 'message' => 'Sesión cerrada correctamente'], 200);
                     break;*/
 
+                    case 'checkPass':
+                        // Manejo de la verificación de contraseña
+                        $this->handlePassword();
+                    break;
+
                     case 'checkUser':
                         // Manejo de la verificación de nombre de usuario
                         $this->handleUsername();
@@ -261,97 +266,116 @@ class Api extends Controller {
         $model = new LoginRepository(); // Inicializa el LoginRepository aquí
         //var_dump($username, $password); // Para depuración
 
-        if ($username != "" && $password != "") {
-            $userExists = $model->GetUsernameUser($username);
-            if ($userExists > 0) {
-                $passwordMatch = $model->GetPasswordUser($username, $password);
-                if ($passwordMatch > 0) {
-                    $userData = $model->GetUserData($username, $password);
-                    //var_dump($userData); // Para depuración
-                    if ($userData['status'] != 3 && $userData['status'] != 4) {
-                        $_SESSION["cedula"]     = $userData['cedula'];
-                        $_SESSION['id_user']    = (int) $userData['id_user'];
-                        $_SESSION["usuario"]    = $userData['usuario'];
-                        $_SESSION["nombres"]    = $userData['nombres'];
-                        $_SESSION["apellidos"]  = $userData['apellidos'];
-                        $_SESSION["correo"]     = $userData['correo'];
-                        $_SESSION['d_rol']      = (int) $userData['codtipousuario'];
-                        $_SESSION['name_rol']   = $userData['name_rol'];
-                        $_SESSION['status']     = (int) $userData['status'];
-                        //var_dump($userData);
-                        $session_lifetime = 1200; 
-                        // Ejemplo: 1200 SEGUNDO = 20 minutos en segundos
-                        // Ejemplo: 1800 SEGUNDO = 30 minutos en segundos
-                        // Ejemplo: 3600 SEGUNDO = 1 hora en segundos
-                        // Ejemplo: 300 SEGUNDO  = 5 minutos en segundos               
-                        $_SESSION['session_lifetime'] = $session_lifetime;
+    if ($username != "" && $password != "") {
+        $userExists = $model->GetUsernameUser($username);
+        if ($userExists > 0) {
+            $passwordMatch = $model->GetPasswordUser($username, $password);
+            if ($passwordMatch > 0) {
+                $userData = $model->GetUserData($username, $password);
+                //var_dump($userData); // Para depuración
+                if ($userData['status'] != 3 && $userData['status'] != 4) {
+                    $_SESSION["cedula"]     = $userData['cedula'];
+                    $_SESSION['id_user']    = (int) $userData['id_user'];
+                    $_SESSION["usuario"]    = $userData['usuario'];
+                    $_SESSION["nombres"]    = $userData['nombres'];
+                    $_SESSION["apellidos"]  = $userData['apellidos'];
+                    $_SESSION["correo"]     = $userData['correo'];
+                    $_SESSION['d_rol']      = (int) $userData['codtipousuario'];
+                    $_SESSION['name_rol']   = $userData['name_rol'];
+                    $_SESSION['status']     = (int) $userData['status'];
+                    //var_dump($userData);
+                    $session_lifetime = 1200; 
+                    // Ejemplo: 1200 SEGUNDO = 20 minutos en segundos
+                    // Ejemplo: 1800 SEGUNDO = 30 minutos en segundos
+                    // Ejemplo: 3600 SEGUNDO = 1 hora en segundos
+                    // Ejemplo: 300 SEGUNDO  = 5 minutos en segundos               
+                    $_SESSION['session_lifetime'] = $session_lifetime;
 
-                        // Regenerar el ID de sesión antes de usar session_id()
-                        session_regenerate_id(true);
-                        // Configurar la zona horaria a Venezuela (Caracas)
-                        date_default_timezone_set('America/Caracas');
-                        // Generar id_session
-                        $session_id = session_id();
-                        $_SESSION["session_id"] = $session_id;
-                        // Obtener datos adicionales
-                        $start_date = date('Y-m-d H:i:s');
-                        $user_agent = $_SERVER['HTTP_USER_AGENT'];
-                        $ip_address = $_SERVER['REMOTE_ADDR'];
-                        $active = 1;
-                        $expiry_time_unix = time() + $session_lifetime;
-                        $expiry_time = date('Y-m-d H:i:s', $expiry_time_unix); // Convertir a formato DATETIME
+                    // Regenerar el ID de sesión antes de usar session_id()
+                    session_regenerate_id(true);
+                    // Configurar la zona horaria a Venezuela (Caracas)
+                    date_default_timezone_set('America/Caracas');
+                    // Generar id_session
+                    $session_id = session_id();
+                    $_SESSION["session_id"] = $session_id;
+                    // Obtener datos adicionales
+                    $start_date = date('Y-m-d H:i:s');
+                    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+                    $ip_address = $_SERVER['REMOTE_ADDR'];
+                    $active = 1;
+                    $expiry_time_unix = time() + $session_lifetime;
+                    $expiry_time = date('Y-m-d H:i:s', $expiry_time_unix); // Convertir a formato DATETIME
 
-                        // Asegúrate de que GetSession en tu modelo LoginRepository tome el id_user correctamente
-                        $result9 = $model->GetSession($session_id);
-                        
-                        if($result9 > 0){
-                            $this->response([
-                                'success' => false,
-                                'message' => 'Ya existe una sesión activa para este usuario.',
-                                'redirect' => 'login'
-                            ], 409); // Código de estado 409 Conflict
-                        } else {
-                            $insertResult = $model->InsertSession($session_id, $start_date,  $user_agent, $ip_address, $active, $expiry_time);
-                            if ($insertResult) {
-                                $redirectURL = '';
-                                switch ($userData['codtipousuario']) {
-                                    case 1: $redirectURL = 'dashboard'; break;
-                                    case 2: $redirectURL = 'dashboard2'; break;
-                                    case 3: $redirectURL = 'dashboard3'; break;
-                                    case 4: $redirectURL = 'dashboard4'; break;
-                                    case 5: $redirectURL = 'dashboard5'; break;
-                                }
-                                $model->UpdateTryPassTo0($username);
-                                $this->response([
-                                    'success' => true,
-                                    'message' => 'Inicio de sesión exitoso',
-                                    'redirect' => $redirectURL,
-                                    'session_lifetime' => $_SESSION['session_lifetime'],
-                                    'session_id' => $_SESSION["session_id"],
-                                    'id_user' => $_SESSION['id_user']
-                                ], 200);
-                            } else {
-                                $this->response(['error' => 'Error al guardar la información de la sesión'], 500);
-                            }
-                        }
+                    // Asegúrate de que GetSession en tu modelo LoginRepository tome el id_user correctamente
+                    $result9 = $model->GetSession($session_id);
+                    
+                    if($result9 > 0){
+                        $this->response([
+                            'success' => false,
+                            'message' => 'Ya existe una sesión activa para este usuario.',
+                            'redirect' => 'login'
+                        ], 409); // Código de estado 409 Conflict
                     } else {
-                        $this->response(['success' => false, 'message' => 'Usuario inactivo o bloqueado'], 401);
+                        $insertResult = $model->InsertSession($session_id, $start_date,  $user_agent, $ip_address, $active, $expiry_time);
+                        if ($insertResult) {
+                            $redirectURL = '';
+                            switch ($userData['codtipousuario']) {
+                                case 1: $redirectURL = 'dashboard'; break;
+                                case 2: $redirectURL = 'dashboard2'; break;
+                                case 3: $redirectURL = 'dashboard3'; break;
+                                case 4: $redirectURL = 'dashboard4'; break;
+                                case 5: $redirectURL = 'dashboard5'; break;
+                            }
+                            $model->UpdateTryPassTo0($username);
+                            $this->response([
+                                'success' => true,
+                                'message' => 'Inicio de sesión exitoso',
+                                'redirect' => $redirectURL,
+                                'session_lifetime' => $_SESSION['session_lifetime'],
+                                'session_id' => $_SESSION["session_id"],
+                                'id_user' => $_SESSION['id_user']
+                            ], 200);
+                        } else {
+                            $this->response(['error' => 'Error al guardar la información de la sesión'], 500);
+                        }
                     }
                 } else {
-                    $model->UpdateTryPass($username);
-                    $attempts = $model->GetTryPass($username);
-                    if ($attempts <= 3) {
-                        $this->response(['success' => false, 'message' => 'Contraseña incorrecta. Intentos restantes: ' . (3 - $attempts)], 401);
-                    } else {
-                        $model->UpdateStatusTo4($username);
-                        $this->response(['success' => false, 'message' => 'Usuario bloqueado por intentos fallidos'], 403);
-                    }
+                    $this->response(['success' => false, 'message' => 'Usuario inactivo o bloqueado'], 401);
                 }
             } else {
-                $this->response(['success' => false, 'message' => 'Usuario no existe'], 401);
+                $model->UpdateTryPass($username);
+                $attempts = $model->GetTryPass($username);
+                if ($attempts <= 3) {
+                    $this->response(['success' => false, 'message' => 'Contraseña incorrecta. Intentos restantes: ' . (3 - $attempts)], 401);
+                } else {
+                    $model->UpdateStatusTo4($username);
+                    $this->response(['success' => false, 'message' => 'Usuario bloqueado por intentos fallidos'], 403);
+                }
             }
         } else {
-            $this->response(['success' => false, 'message' => 'Usuario o contraseña están vacíos'], 400);
+            $this->response(['success' => false, 'message' => 'Usuario no existe'], 401);
+        }
+    } else {
+        $this->response(['success' => false, 'message' => 'Usuario o contraseña están vacíos'], 400);
+    }
+}
+
+    private function handlePassword(){
+        $username = isset($_POST['username']) ? $_POST['username'] : '';
+        $password = isset($_POST['password']) ? $_POST['password'] : '';
+        $password = sha1(md5($password)); // Asegúrate de que el hash sea el correcto
+        //var_dump($password); // Para depuración
+        $repository = new LoginRepository(); // Inicializa el LoginRepository aquí
+
+        if ($password != '') {
+            $result = $repository->GetPasswordUser( $username,$password);
+            if ($result > 0) {
+                $this->response(['success' => true,'message' => 'La clave coincide con el usuario', 'color'   => 'green']);
+            } else {
+                $this->response(['success' => false,'message' => 'No coincide con el usuario','color'=> 'red']);
+            }
+        } else {
+            $this->response(['success' => false,'message' => 'Usuario o contraseña están vacíos','color'=> 'red']);
         }
     }
 
@@ -506,7 +530,7 @@ class Api extends Controller {
                             <li class="info-item"><strong>Estatus:</strong> '.$ticketstatus.'</li>
                             <li class="info-item"><strong>Acción:</strong> '.$ticketaccion.'</li>
                         </ul>
-                            <p><a href="http://10.225.1.136/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
+                            <p><a href="http://localhost/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                         <hr>
                         <p class="footer" >Atentamente,</p>
                         <p class="footer">El equipo de InteliSoft</p>
@@ -652,7 +676,7 @@ class Api extends Controller {
                             <li class="info-item"><strong>Estatus:</strong> '.$ticketstatus.'</li>
                             <li class="info-item"><strong>Acción:</strong> '.$ticketaccion.'</li>
                         </ul>
-                            <p><a href="http://10.225.1.136/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
+                            <p><a href="http://localhost/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                         <hr>
                         <p class="footer" >Atentamente,</p>
                         <p class="footer">El equipo de InteliSoft</p>
