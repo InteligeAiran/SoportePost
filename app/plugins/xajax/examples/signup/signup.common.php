@@ -6,7 +6,7 @@
 
 require_once ("../../xajax.inc.php");
 
-session_start();
+//session_start();
 
 $xajax = new xajax("signup.server.php");
 $xajax->registerFunction("processForm");

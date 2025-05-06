@@ -66,10 +66,10 @@ $("#email").keyup(function(){
 function SendForm() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    
+
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost:8080/SoportePost/api/login');
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/login`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -78,6 +78,9 @@ function SendForm() {
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
+                    userId = response.id_user; // Almacena el ID del usuario
+                    localStorage.setItem('userId', userId); // Guarda el userId en localStorage
+                    //alert('userId: ' + userId); // Muestra el ID del usuario en una alerta
                     window.location.href = response.redirect;
                     if (response.message === 'ya existe una sesión activa.') {
                         Swal.fire({
@@ -208,7 +211,7 @@ function checkUser() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost:8080/SoportePost/api/checkUser');
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/checkUser`);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -232,43 +235,6 @@ function checkUser() {
     }
 }
 
-// filepath: /c:/xampp/htdocs/SoportePost/app/views/login/js/frontEnd.js
-function checkPass() {
-    const username    = document.getElementById('username').value;
-    const password    = document.getElementById('password').value;
-    const mensajeDiv  = document.getElementById('passwordError');
-    const mensajeDivt = document.getElementById('passwordVerification');
-    mensajeDiv.innerHTML = '';
-
-    if (password === '') {
-        mensajeDivt.innerHTML = 'Campo vacío'; // Muestra el mensaje en rojo directamente
-        mensajeDivt.style.color = 'red';
-    } else {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost:8080/SoportePost/api/checkPass');
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    mensajeDivt.innerHTML = response.message;
-                    mensajeDivt.style.color = response.color; // Aplica el color del mensaje
-                } catch (error) {
-                    console.error('Error parsing JSON:', error);
-                    mensajeDiv.innerHTML = 'Error al procesar la respuesta del servidor.';
-                }
-            } else {
-                console.error('Error:', xhr.status, xhr.statusText);
-                mensajeDiv.innerHTML = 'Error de conexión con el servidor.';
-            }
-        };
-
-        const datos = `action=checkPass&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
-        xhr.send(datos);
-    }
-}
-
 function checkEmail() {
     const input = document.getElementById('email');
     const mensajeDiv = document.getElementById('emailError');
@@ -281,7 +247,7 @@ function checkEmail() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost:8080/SoportePost/api/checkEmail');
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/checkEmail`);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -356,7 +322,8 @@ setTimeout(function() {
 function SendEmail() {
     const email = document.getElementById('email').value;
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost:8080/SoportePost/api/email/restore_password');
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/restore_password`);
+
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
     mostrarCargando(); // Muestra el "cargando"

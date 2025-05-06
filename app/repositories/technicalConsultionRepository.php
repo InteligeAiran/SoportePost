@@ -158,6 +158,5 @@ class TechnicalConsultionRepository
             return null;
         }
     }
-
 }
 ?>

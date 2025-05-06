@@ -7,7 +7,7 @@ class Dashboard extends Controller {
     }
 
     public function index(): void {
-        session_start();
+        session_start();;
         Model::exists('dashboard');
 
         // Incorporates the FrontEnd Controller
