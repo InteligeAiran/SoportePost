@@ -29,6 +29,11 @@ function mi_navbar() {
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
 
+        <!-- alertify -->
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.bootstrap.css" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.core.css" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.default.css" />
+
         <style>
            
 
@@ -120,7 +125,7 @@ function mi_navbar() {
                       </div>
                       <div class="col-md-6">
                         <label for="cedula">Cedula:</label>
-                        <input type="text" id="coddocumento" class="form-control" name="coddocumento">
+                        <input type="text" id="coddocumento" class="form-control" name="coddocumento" onkeypress="return soloNumeros(event);">
                       </div>
                 </div>  
 
@@ -302,6 +307,11 @@ function mi_navbar() {
         <!--  SweetAlert   -->
         <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.js"></script>
         <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
+
+        <!--  Alertify   --> 
+        <script src="<?php echo APP;?>app/plugins/alertify/lib/alertify.js"></script>
+        <script src="<?php echo APP;?>app/plugins/alertify/lib/alertify.min.js"></script>
+        <script src="<?php echo APP;?>app/plugins/alertify/src/alertify.js"></script>
 
         <!--MASCARAS JQUERY-->
         <script src = "<?php echo APP;?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>

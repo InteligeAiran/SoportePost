@@ -1,3 +1,13 @@
+function soloNumeros(e)
+{
+    var keynum = window.event ? window.event.keyCode : e.which;
+    if ((keynum == 8) || (keynum == 46))
+        return true;
+
+    return /\d/.test(String.fromCharCode(keynum));
+}
+
+
 function getUserData() {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', 'http://localhost:8080/SoportePost/api/GetUsers');
@@ -249,10 +259,10 @@ function GuardarUsuariosNew() {
 
 
     // Validaciones generales
-    if (!nombre_usuario) {
-        Swal.fire({ icon: 'warning', title: 'Campo requerido', color: 'black' });
-        return;
-    }
+    if (!nombre_usuario || !apellido_usuario || !tipo_doc || !documento || !iusuario || !correo || !area_usuario || !tipo_usuario) {
+            alertify.error('Error, Los campos no pueden estar en blanco');
+            return false;
+        }
     // if (!rif) {
     //     Swal.fire({ icon: 'warning', title: 'Campo requerido', text: 'Por favor, Coloque un RIF.', color: 'black' });
     //     return;
