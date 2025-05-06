@@ -516,7 +516,7 @@ class Helpers
         } else {
 
             $protocol = "";
-            $host = ""; // 10.225.1.136, really
+            $host = ""; // localhost, really
 
             $i = mb_stripos($url, "://");
             if ($i !== false) {

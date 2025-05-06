@@ -2,7 +2,7 @@
             
             <p>In order to send data between different HTML pages (or to a specific page) there
                 are two ways to do this. Either by including the parameters in the URI directly,
-                (e.g. <code class="code">http://10.225.1.136/mygraph.php?d1=12</code>) or by creating a POST request
+                (e.g. <code class="code">http://localhost/mygraph.php?d1=12</code>) or by creating a POST request
                 and send to a page. The details of these two methods are discussed below.</p>
             <p>
                 </p><div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3>
@@ -33,7 +33,7 @@
                 <p>GET arguments are the arguments that can be added as part of the URI. For
                     example as</p>
                 <p>
-                    </p><pre class="screen">http://10.225.1.136/mygraph.php?id=12&amp;start=20081223&amp;end=20090115</pre><p>
+                    </p><pre class="screen">http://localhost/mygraph.php?id=12&amp;start=20081223&amp;end=20090115</pre><p>
                 </p>
                 <p>PHP automatically places all given arguments in the "super global" array
                     variable <code class="code">$_GET</code> as an associative array.</p>
@@ -184,7 +184,7 @@
                         
                         <div class="mediaobject"><img src="images/post_request_phase1.png" alt="The request phase of a POST header"><div class="caption">
                                 <p>1. The request is initially made by calling the a.php script,
-                                    e.g. http://10.225.1.136/a.php in the browser</p>
+                                    e.g. http://localhost/a.php in the browser</p>
                                 <p>2. When the a.php script is executed it will create the POST
                                     header and call script b.php o the server B (could possibly be
                                     the same server). Since the browser is displaying script a.php

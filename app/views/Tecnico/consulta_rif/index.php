@@ -11,7 +11,7 @@ function mi_navbar() {
         <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
         <link rel="icon" type="image/png" href="../assets/img/favicon.png">
         <title>
-            Argon Dashboard 3 by Creative Tim
+            Soporte Post Venta
         </title>
         <!--     Fonts and icons     -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
@@ -26,10 +26,6 @@ function mi_navbar() {
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <script>
-            const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
-            const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
-        </script>
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -45,7 +41,7 @@ function mi_navbar() {
             </div>
             <?php require_once 'app/core/components/navbar/index.php'; mi_navbar(); ?>
             <main class="main-content position-relative border-radius-lg ">
-                <div class="container-fluid py-4">
+                <div class="container-fluid py-4" style = "margin-top: 90px;">
                     <div id = "Row" class="row mt-4">
                         <div class = "cord">
                         
