@@ -4,169 +4,95 @@ function mi_navbar() {
 }
 ?>
 <!DOCTYPE html>
-<lang="en">
+    <lang="en">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
         <link rel="icon" type="image/png" href="../assets/img/favicon.png">
         <title>
-            Soporte POST
+            Argon Dashboard 3 by Creative Tim
         </title>
         <!--     Fonts and icons     -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
         <!-- Nucleo Icons -->
-        <!--     Fonts and icons     -->
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-        <!-- Nucleo Icons -->
-   
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/user/desktop/desktop.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-icons.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-svg.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/desktop/desktop.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/desktop/form.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/mobile/mobile.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/laptop/laptop.css"/>
         <!-- CSS Files -->
-            <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <!-- Font Awesome Icons -->
-      
-        <!-- CSS Files -->
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
-
-        <!-- alertify -->
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.bootstrap.css" />
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.core.css" />
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.default.css" />
-
-        <style>
-           
-
-        </style>
     </head>
-    <body class="g-sidenav-show bg-gray-100">
-        <div id="top"  class="d-lg-none fixed-top bg-dark p-2">
-            <button class="btn btn-dark" id="filter-toggle">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-list-task" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z"/>
-                    <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z"/>
-                    <path fill-rule="evenodd" d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z"/>
-                </svg>
-            </button>
-        </div>
-        <?php require_once 'app/core/components/navbar/index.php'; mi_navbar();?>
 
-        <main class="main-content position-relative border-radius-lg overflow-hidden bg-gray-100">
-            <div class="container-fluid py-4">
-                <div id = "Row" class="row mt-4">
-                    <div class = "cord">
-                        <div class="background-color">
-                            <div class="col-lg-12 col-md-12 mt-4 mb-4">
-                                <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                    <strong><h5 class="text-black text-capitalize ps-3">USUARIOS</h5></strong>
-                                </div>
-                            </div> 
-                                  
-                            <table id="table-user" class="background-users-table">
-                                <thead>
-                                    <tr>
-                                        <th>Id</th>
-                                        <th>Nombre y Apellido</th>
-                                        <th>Usuario</th>
-                                        <th>Cedula</th>
-                                        <th>Correo</th>
-                                        <th>Estatus</th>
-                                        <th>Rol</th>
-                                        <th>Area</th>
-                                        <th>Tipo Usuario</th>
-                                        <th>Region</th>
-                                    </tr>
-                                </thead>
-                                <tbody  id="table-user-body">
-                                </tbody>
-                            </table>
-                            <!--div class="col-lg-12 col-md-12 mt-4 mb-4">
-                            <div class="card card-body bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
-                            <h6 class="text-white text-capitalize ps-3">Dashboard</h6-->         
-                        </div>   
-                    </div>    
-                </div>   
-            </div>
-        </main>
-
-
-        <div class="modal fade" id="ModalAggUsers" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"
-     data-keyboard="false">
-         <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+    <body id="fondo" class="g-sidenav-show bg-gray-100">
+        <div class="min-height-300 bg-dark position-absolute w-100">
+            <div class="d-lg-none fixed-top bg-dark p-2">
+                <button class="btn btn-dark" id="filter-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-list-task" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z"/>
+                        <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z"/>
+                        <path fill-rule="evenodd" d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z"/>
+                    </svg>
                 </button>
-                <div class="panel-heading" style="text-align: center;color:#ffffff;">
-                    <h4>Registro de usuarios</h4>
-                </div>
-            </div> 
-
-            <div class="modal-body">
-                <div class="panel-body">
-                
-                
-                <div class="row">
-                      <div class="col-md-6">
-                        <label for="nombre">Nombre:</label>
-                        <input type="text" id="nombreuser" class="form-control" name="nombreuser">
-                      </div>
-                      <div class="col-md-6">
-                        <label for="apellido">Apellido:</label>
-                        <input type="text" id="apellidouser" class="form-control" name="apellidouser">
-                      </div>
-                </div>    
-
-                <div class="row">
-                      <div class="col-md-6">
-                        <label for="tipodoc">Tipo Documento:</label>
-                        <input type="text" id="tipodoc" class="form-control" name="tipodoc">
-                      </div>
-                      <div class="col-md-6">
-                        <label for="cedula">Cedula:</label>
-                        <input type="text" id="coddocumento" class="form-control" name="coddocumento" onkeypress="return soloNumeros(event);">
-                      </div>
-                </div>  
-
-                <div class="row">
-                      <div class="col-md-6">
-                        <label for="usuario">Usuario:</label>
-                            <input type="text" id="usuario" class="form-control" name="usuario">
-                      </div>
-                      <div class="col-md-6">
-                        <label for="email">Correo:</label>
-                            <input type="text" id="email" class="form-control" name="email">
-                      </div>
-                </div>    
-
-                <div class="row">
-                      <div class="col-md-6">
-                        <label for="area">Area:</label>
-                        <div id="AreaUsersContainer">
-                            <select id="areausers" name="areausers"></select>
-                            <p id="rifMensaje1"></p>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <label for="apellido">Tipo Usuario:</label>
-                       <div id="TipoUsersContainer">
-                            <select id="tipousers" name="tipousers"></select>
-                        </div>
-                      </div>
-                </div>    
-
-            </div> 
-          </div>   
-          <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" id="btnGuardarUsers">Guardar</button>
             </div>
-        </div>
-    </div>
-   </div>
+            <?php require_once 'app/core/components/navbar/index.php'; mi_navbar(); ?>
+            <main class="main-content position-relative border-radius-lg ">
+                <div class="container-fluid py-4">
+                    <div id = "Row" class="row mt-4">
+                        <div class = "cord">
+                        
+                            <div class="card">
+                                <div class="card-header pb-0 p-3">
+                                    <div class="col-lg-12 col-md-12 mt-4 mb-4">
+                                        <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
+                                            <strong><h5 class="text-black text-capitalize ps-3">TICKETS</h5></strong>
+                                        </div>
+                                    </div>   
+                                    <div class="d-flex justify-content-between">
+                                        <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="tabla-ticket">
+                                        <thead>
+                                                <th style = "width: 5%;">Fecha Creacion</th>
+                                                <th style = "width: 5%;">Tecnico Asignador</th>
+                                                <th style = "width: 5%; height: 10px;">ID ticket</th>
+                                                <th style = "width: 5%;">Accion</th>
+                                                <th style = "width: 5%;">Falla</th>
+                                                <th style = "width: 5%;">Proceso</th>
+                                                <th style = "width: 5%;">Estatus</th>
+                                                <th style = "width: 5%;">Serial POS</th>
+                                                <th>Acciones</th>
 
-        <!-- <div class="fixed-plugin">
+                                            </tr>
+                                        </thead>
+                                        <tbody  id="table-ticket-body">
+                                            <tr>
+                                                <td colspan="3">No hay datos</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="card-footer p-3">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p id="total-tickets" class="text-sm mb-0">Total de tickets: 0</p>
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <button id="btn-asignar" type="button" class="btn btn-primary btn-sm mb-0">Asignar</button>
+                                        </div>
+                                    </div>  
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
                 <i class="fa fa-cog py-2"> </i>
             </a>
@@ -181,9 +107,11 @@ function mi_navbar() {
                             <i class="fa fa-close"></i>
                         </button>
                     </div>
+                    <!-- End Toggle Button -->
                 </div>
                 <hr class="horizontal dark my-1">
                 <div class="card-body pt-sm-3 pt-0 overflow-auto">
+                    <!-- Sidebar Backgrounds -->
                     <div>
                         <h6 class="mb-0">Sidebar Colors</h6>
                     </div>
@@ -203,6 +131,7 @@ function mi_navbar() {
                                 onclick="sidebarColor(this)"></span>
                         </div>
                     </a>
+                    <!-- Sidenav Type -->
                     <div class="mt-3">
                         <h6 class="mb-0">Sidenav Type</h6>
                         <p class="text-sm">Choose between 2 different sidenav types.</p>
@@ -214,7 +143,7 @@ function mi_navbar() {
                             onclick="sidebarType(this)">Dark</button>
                     </div>
                     <p class="text-sm d-xl-none d-block mt-2">You can change the sidenav type just on desktop view.</p>
-                  
+                    <!-- Navbar Fixed -->
                     <div class="d-flex my-3">
                         <h6 class="mb-0">Navbar Fixed</h6>
                         <div class="form-check form-switch ps-0 ms-auto my-auto">
@@ -251,10 +180,10 @@ function mi_navbar() {
                     </div>
                 </div>
             </div>
-        </div> -->
-        
-         <!-- Github buttons -->
-         <script async defer src="https://buttons.github.io/buttons.js"></script>
+        </div>
+  
+        <!-- Github buttons -->
+        <script async defer src="https://buttons.github.io/buttons.js"></script>
         <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
         <!-- Bootstrap core JavaScript-->
          <!--JQUERY-->
@@ -279,27 +208,6 @@ function mi_navbar() {
         <script src = "<?php echo APP;?>app/plugins/datatables/datatables.min.js"></script>
         <script src = "<?php echo APP;?>app/plugins/datatables/datatables.js"></script>
 
-        <!-- Datatable otro sistema-->
-        <script src = "<?php echo APP;?>js/jquery.dataTables.js"></script>
-        <script src = "<?php echo APP;?>DataTable/dataTables.bootstrap.js"></script>
-        <script src = "<?php echo APP;?>DataTable/jquery.dataTables.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/dataTables.buttons.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.print.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.flash.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/pdfmake.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/jszip.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/vfs_fonts.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.html5.min.js"></script>
-
-
-         <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
-         <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
-         <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
-         <script src = "<?php echo APP;?>js/datatables.js"></script>
-
-
-
-
         <!-- Chart -->
         <script src="<?php echo APP;?>app/plugins/chart.js/chart.js"></script>
         <script src="<?php echo APP;?>app/plugins/chart.js/chart.min.js"></script>
@@ -308,18 +216,12 @@ function mi_navbar() {
         <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.js"></script>
         <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
 
-        <!--  Alertify   --> 
-        <script src="<?php echo APP;?>app/plugins/alertify/lib/alertify.js"></script>
-        <script src="<?php echo APP;?>app/plugins/alertify/lib/alertify.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/alertify/src/alertify.js"></script>
-
         <!--MASCARAS JQUERY-->
         <script src = "<?php echo APP;?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
 
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP;?>app/plugins/js/sb-admin-2.min.js"></script>
-
-        
+    
         <?php
             if (isset($this->js)){
                 foreach ($this->js as $js){
@@ -327,8 +229,8 @@ function mi_navbar() {
                 }
             }
         ?>
-    <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-    <?php
+  <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
+  <?php
         $expired_sessions = json_encode($this->expired_sessions);
         $message = json_encode($this->message);
         $redirect = json_encode($this->redirect);
@@ -337,7 +239,6 @@ function mi_navbar() {
 
     ?>
     <script>
-        
         var expired_sessions = <?php echo $expired_sessions; ?>;
         var message = <?php echo $message; ?>;
         var redirect = <?php echo $redirect; ?>;
@@ -374,6 +275,5 @@ function mi_navbar() {
         }
     </script>
     <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-
 </body>
 </html>
