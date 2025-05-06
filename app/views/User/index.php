@@ -321,12 +321,12 @@ function mi_navbar() {
 
         
         <?php
-            if (isset($this->js)){
-                foreach ($this->js as $js){
-                    echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'"></script>'; 
-                }
-            }
-        ?>
+    if (isset($this->js)){
+      foreach ($this->js as $js){
+        echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'"></script>'; 
+      }
+    }
+  ?>
     <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
     <?php
         $expired_sessions = json_encode($this->expired_sessions);

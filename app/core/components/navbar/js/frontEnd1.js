@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setActiveLink('rif-link', 'consulta_rif');
     setActiveLink('estadisticas-link', 'pages/profile.html');
 
-
 document.addEventListener('DOMContentLoaded', function() {
     // Estilo para el span "No file chosen"
     const noFileChosenStyle = 'color: gray; font-style: italic; margin-left: 5px;';
@@ -1387,7 +1386,7 @@ function SendDataFailure2(idStatusPayment) {
     console.log(formData);*/
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SaveDataFalla2`);
+    xhr.open('POST', 'http://localhost/SoportePost/api/SaveDataFalla2');
     xhr.onload = function() {
         if (xhr.status === 200) {
             try {
@@ -1395,7 +1394,7 @@ function SendDataFailure2(idStatusPayment) {
                 if (response.success) {
                     // **MOVER LA LÓGICA DEL CORREO AQUÍ**
                     const xhrEmail = new XMLHttpRequest();
-                    xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`);
+                    xhrEmail.open('POST', 'http://localhost/SoportePost/api/email/send_ticket2');
                     xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); // Importante para enviar datos como formulario
 
                     xhrEmail.onload = function() {

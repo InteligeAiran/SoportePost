@@ -142,21 +142,16 @@ class TechnicalConsultionRepository
         return $result;
     }
 
-    public function GetTicketData(){
-        $result = $this->model->GetTicketData();
-        if ($result) {
-            //var_dump($result);  
-            $ticket = [];
+    public  function GetClientInfo($serial){
+        // Lógica para obtener información del cliente
+        $result = $this->model->GetClientInfo($serial);
 
-            for ($i = 0; $i < $result['numRows']; $i++) {
-                $agente = pg_fetch_assoc($result['query'], $i);
-                $ticket[] = $agente;
-            }
+        for ($i = 0; $i < $result['numRows']; $i++) {
+            $agente = pg_fetch_assoc($result['query'], $i);
+            $data[] = $agente;
             //var_dump($agente);
-            return $ticket;
-        } else {
-            return null;
         }
+        return $data;
     }
 
 }

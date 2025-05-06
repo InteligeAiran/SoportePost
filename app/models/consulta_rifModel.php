@@ -273,13 +273,14 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function GetTicketData(){
+    public function GetClientInfo($serial){
         try{
-            $sql = "SELECT * FROM GetDataTicketByIdAccion()";
+            $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); 
+            $sql = "SELECT * FROM get_Client_by_serial(".$escaped_serial.");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Manejar excepciones
+            // Handle exception
         }
     }
 }
