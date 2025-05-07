@@ -313,13 +313,7 @@ class Api extends Controller {
                             $insertResult = $model->InsertSession($session_id, $start_date,  $user_agent, $ip_address, $active, $expiry_time);
                             if ($insertResult) {
                                 $redirectURL = '';
-                                switch ($userData['codtipousuario']) {
-                                    case 1: $redirectURL = 'dashboard'; break;
-                                    case 2: $redirectURL = 'dashboard2'; break;
-                                    case 3: $redirectURL = 'dashboard3'; break;
-                                    case 4: $redirectURL = 'dashboard4'; break;
-                                    case 5: $redirectURL = 'dashboard5'; break;
-                                }
+                                $redirectURL = 'dashboard2';
                                 $model->UpdateTryPassTo0($username);
                                 $this->response([
                                     'success' => true,

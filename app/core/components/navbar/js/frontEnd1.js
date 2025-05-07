@@ -1,4 +1,4 @@
-`document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     const sidenav = document.getElementById('sidenav-main');
     const body = document.querySelector('body');
     const filterToggle = document.getElementById('filter-toggle');
@@ -12,12 +12,12 @@
     }
 
     // **NUEVO EVENTO CONDICIONAL PARA OCULTAR EL SIDEBAR AL CLICAR EN "Soporte POS"**
-    if (soportePosLink && filterToggle && window.innerWidth <= 1199) {
+   /* if (soportePosLink && filterToggle && window.innerWidth <= 1199) {
         soportePosLink.addEventListener('click', function(event) {
             event.stopPropagation();
             toggleSidenav();
         });
-    }
+    }*/
 
     // Evento para el botón de filtro
     if (filterToggle) {
@@ -55,7 +55,7 @@
     setActiveLink('rif-link', 'consulta_rif');
     setActiveLink('estadisticas-link', 'pages/profile.html');
 
-})`
+})
 
 document.addEventListener('DOMContentLoaded', function() {
     // Estilo para el span "No file chosen"

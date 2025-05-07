@@ -60,17 +60,16 @@ function mi_navbar() {
                                 <div class="table-responsive">
                                     <table id="tabla-ticket">
                                         <thead>
-                                                <th style = "width: 5%;">Fecha Creacion</th>
-                                                <th style = "width: 5%;">Tecnico Asignador</th>
-                                                <th style = "width: 5%; height: 10px;">ID ticket</th>
-                                                <th style = "width: 5%;">Accion</th>
-                                                <th style = "width: 5%;">Falla</th>
-                                                <th style = "width: 5%;">Proceso</th>
-                                                <th style = "width: 5%;">Estatus</th>
-                                                <th style = "width: 5%;">Serial POS</th>
-                                                <th>Acciones</th>
-
-                                            </tr>
+                                            <th style = "width: 5%; height: 10px;">ID ticket</th>
+                                            <th style = "width: 5%;">Serial POS</th>
+                                            <th style = "width: 5%;">Fecha Creacion</th>
+                                            <th style = "width: 5%;">Tecnico Asignador</th>
+                                            <th style = "width: 5%;">Accion</th>
+                                            <th style = "width: 5%;">Falla</th>
+                                            <th style = "width: 5%;">Proceso</th>
+                                            <th style = "width: 5%;">Estatus</th>
+                                            <th>Acciones</th>
+                                        </tr>
                                         </thead>
                                         <tbody  id="table-ticket-body">
                                             <tr>
@@ -85,6 +84,27 @@ function mi_navbar() {
                 </div>
             </main>
         </div>
+
+        <!-- MODAL PARA SELECCIONAR TECNICO -->
+            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        ...
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Understood</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        <!--MODAL PARA SELECCIONAR TECNICO-->
+
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
                 <i class="fa fa-cog py-2"> </i>

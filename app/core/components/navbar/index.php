@@ -31,8 +31,8 @@
                 target="_blank">
                 <img src="<?php echo APP; ?>app/public/img/login/Logo.png" width="26px" height="26px"
                     class="navbar-brand-img h-100" alt="main_logo">
-                <span style="color:#fff;" class="ms-1 font-weight-bold">Airan Bracamonte</span><br>
-                <span style="color:#fff;" class="ms-5 font-weight-bold">Tecnico<br>
+                <span style="color:#fff;" class="ms-1 font-weight-bold"><?php echo $_SESSION['nombres']?> <?php echo $_SESSION['apellidos']?></span><br>
+                <span style="color:#fff;" class="ms-5 font-weight-bold"><?php echo $_SESSION['name_rol']?><br>
             </a>
         </div>
         <hr class="horizontal dark mt-0">
@@ -129,18 +129,18 @@
                         <button id="cerraModal2" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body" style="margin-left: 0;">
-                        <form id="miFormulario">
-                            <div id="detalle1">
+                        <form id="miFormulario" class="row g-3">
+                            <div id="detalle1" class="col-md-6">
                                 <div><br>
-                                    <label for="FallaSelect2">Falla Descrita Por el Cliente</label>
+                                    <label for="FallaSelect2" class="form-label">Falla Descrita Por el Cliente</label>
                                     <div id="FallaSelect2Container">
-                                        <select id="FallaSelect2" name="FallaSelect2">
+                                        <select id="FallaSelect2" name="FallaSelect2" class="form-select">
                                             <option></option>
                                         </select>
                                     </div><br>
                                 </div>
                                 <div style=" display: flex; flex-direction: column;">
-                                    <label id="LabelRifModal2" for="serialInputDetalle1">RIF cliente</label>
+                                    <label id="LabelRifModal2" for="serialInputDetalle1" class="form">RIF cliente</label>
                                     <input type="text" onchange="checkRif()" id="InputRif" placeholder="JV123456789">
                                     <p id="rifMensaje"></p>
                                 </div>

@@ -26,31 +26,44 @@ function getTicketData() {
                 if (response.success) {
                     //console.log('Datos de ticket:', response.ticket); // Agrega esta línea para depurar los datos de ticket
                     const TicketData = response.ticket; // Cambia el nombre de la variable aquí
+                    const modal = document.getElementById('staticBackdrop'); // Obtén una referencia al modal
+
                     //console.log('Datos de ticket:', TicketData); // Agrega esta línea para depurar los datos de ticket
                     TicketData.forEach(data => { // Usa un nombre diferente para el elemento individual
                         const row = tbody.insertRow();
+                        const id_ticketCell = row.insertCell();
+                        const serial_posCell = row.insertCell();
                         const create_ticketCell = row.insertCell();
                         const full_name_tecnicoCell = row.insertCell();
-                        const id_ticketCell = row.insertCell();
                         const name_accionCell = row.insertCell();
                         const name_failureCell = row.insertCell()
                         const name_processCell = row.insertCell();
                         const name_status_ticketCell = row.insertCell();
-                        const serial_posCell = row.insertCell();
                         const actionsCell = row.insertCell(); // Nueva celda para las acciones
 
+                        id_ticketCell.textContent = data.id_ticket; // Accede a las propiedades del 'item'
+                        serial_posCell.textContent = data.serial_pos;
                         create_ticketCell.textContent = data.create_ticket;
                         full_name_tecnicoCell.textContent = data.full_name_tecnico;
-                        id_ticketCell.textContent = data.id_ticket; // Accede a las propiedades del 'item'
                         name_accionCell.textContent = data.name_accion_ticket;
                         name_failureCell.textContent = data.name_failure;
                         name_processCell.textContent = data.name_process_ticket;
                         name_status_ticketCell.textContent = data.name_status_ticket;
-                        serial_posCell.textContent = data.serial_pos;
 
                         const AssingmentButton = document.createElement('button');
                         AssingmentButton.textContent = 'Asignar A tecnico';
                         AssingmentButton.classList.add('btn', 'btn-sm', 'btn-info'); // Añade clases de Bootstrap para estilo
+
+                        // Agrega un event listener al botón para mostrar el modal
+                        AssingmentButton.addEventListener('click', function() {
+                            // Utiliza la API de Bootstrap para mostrar el modal
+                            const modalBootstrap = new bootstrap.Modal(modal);
+                            modalBootstrap.show();
+
+                            // Aquí puedes agregar lógica adicional si necesitas pasar información
+                            // específica del ticket al modal (por ejemplo, el ID del ticket)
+                            // modal.querySelector('.modal-body').textContent = `ID del ticket: ${data.id_ticket}`;
+                        });
 
                         // Añadir los botones a la celda de acciones
                         actionsCell.appendChild(AssingmentButton);
