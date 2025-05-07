@@ -140,37 +140,37 @@
                                     </div><br>
                                 </div>
                                 <div style=" display: flex; flex-direction: column;">
-                                    <label id="LabelRifModal2" for="serialInputDetalle1" class="form">RIF cliente</label>
-                                    <input type="text" onchange="checkRif()" id="InputRif" placeholder="JV123456789">
+                                    <label id="LabelRifModal2" for="serialInputDetalle1" class="form-label">RIF cliente</label>
+                                    <input type="text" onchange="checkRif()" id="InputRif" class="form-control" placeholder="JV123456789">
                                     <p id="rifMensaje"></p>
                                 </div>
                                 <div>
-                                    <label for="serialSelect">Seriales de POS:</label>
+                                    <label class="form-label" for="serialSelect">Seriales de POS:</label>
                                     <div id="serialSelectContainer">
-                                        <select id="serialSelect" name="serialSelect"></select>
+                                        <select class="form-select" id="serialSelect" name="serialSelect"></select>
                                     </div><br>
                                 </div>
                                 <div>
-                                    <label for="AsiganrCoordinador">Asignar a Coordinador</label>
+                                    <label class= "form-label" for="AsiganrCoordinador">Asignar a Coordinador</label>
                                     <div id="AsiganrCoordinadorContainer">
-                                        <select id="AsiganrCoordinador" name="AsiganrCoordinador"></select>
+                                        <select id="AsiganrCoordinador" name="AsiganrCoordinador" class="form-select"></select>
                                     </div><br>
                                 </div>
                                 <div class="contenedor-fechas">
                                     <div>
-                                        <label for="ultimoTicketInput">Fecha del Último Ticket:</label>
-                                        <input style="width: 50%;" type="text" id="ultimateTicketInput" readonly>
+                                        <label class="form-label" for="ultimoTicketInput">Fecha del Último Ticket:</label>
+                                        <input class="form-control" type="text" id="ultimateTicketInput" readonly>
                                         <div id="resultadoGarantiaReingreso"></div>
                                     </div><br>
 
                                     <div>
-                                        <label for="InputFechaInstall">Fecha de Instalaci&oacuten POS:</label>
-                                        <input style="width: 50%;" type="text" id="InputFechaInstall" readonly>
+                                        <label class="form-label" for="InputFechaInstall">Fecha de Instalaci&oacuten POS:</label>
+                                        <input class="form-control" type="text" id="InputFechaInstall" readonly>
                                         <div id="resultadoGarantiaInstalacion"></div>
                                     </div>
                                 </div><br>
                                 <div id="FallaSelectContainer1">
-                                    <select style="margin-left: 116%; width: 172px; display: none;" id="FallaSelectt2" name="FallaSelect1">
+                                    <select class="form-select" style="margin-left: 116%; width: 172px; display: none;" id="FallaSelectt2" name="FallaSelect1">
                                         <option value="2">Nivel 2</option>
                                     </select>
                                 </div>
@@ -179,7 +179,7 @@
                                     <div>
                                         <div id="botonCargaPDFEnv">
                                             <button id="DownloadEnvi" class="btn btn-outline-secondary btn-sm">Cargar PDF Envio</button>
-                                            <input id="EnvioInput" type="file" style="display: none; margin-left: 10px;"
+                                            <input class="form-control" id="EnvioInput" type="file" style="display: none; margin-left: 10px;"
                                                 accept="application/pdf, image/jpeg, image/jpg">
                                             <div id="anticipoStatus"></div>
                                         </div>
@@ -187,7 +187,7 @@
                                     <div>
                                         <div style="display: flex; align-items: center; margin-bottom: 6%;">
                                             <button id="DownloadExo" class="btn btn-outline-secondary btn-sm">Cargar Exoneracion</button>
-                                            <input id="ExoneracionInput" type="file"
+                                            <input class="form-control" id="ExoneracionInput" type="file"
                                                 style="display: none; margin-left: 10px;"
                                                 accept="application/pdf, image/jpeg, image/jpg">
                                             <div id="exoneracionStatus"></div>
@@ -195,7 +195,7 @@
                                     </div><br>
                                     <div>
                                         <div style="display: flex; align-items: center; margin-bottom: 2%;">
-                                            <button id="DownloadAntici" class="btn btn-outline-secondary btn-sm">Cargar PDF Anticipo</button>
+                                            <button class="form-control" id="DownloadAntici" class="btn btn-outline-secondary btn-sm">Cargar PDF Anticipo</button>
                                             <input id="AnticipoInput" type="file" style="display: none; margin-left: 10px;"
                                                 accept="application/pdf, image/jpeg, image/jpg">
                                             <div id="envioStatus"></div>
@@ -204,7 +204,7 @@
                                 </div>
                                 <div id="RightSelects">
                                     <div>
-                                        <label for="selectAdicional1">Opción 1:</label>
+                                        <label class="form-label" for="selectAdicional1">Opción 1:</label>
                                         <select class="form-select" id="selectAdicional1" name="selectAdicional1">
                                             <option value="">Seleccionar</option>
                                             <option value="valor1">Valor 1</option>
@@ -212,7 +212,7 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label for="selectAdicional2">Opción 2:</label>
+                                        <label class="form-label" for="selectAdicional2">Opción 2:</label>
                                         <select class="form-select" id="selectAdicional2" name="selectAdicional2">
                                             <option value="">Seleccionar</option>
                                             <option value="valorA">Valor A</option>
@@ -220,7 +220,7 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label for="selectAdicional3">Opción 3:</label>
+                                        <label class="form-label" for="selectAdicional3">Opción 3:</label>
                                         <select class="form-select" id="selectAdicional3" name="selectAdicional3">
                                             <option value="">Seleccionar</option>
                                             <option value="itemX">Item X</option>
@@ -228,7 +228,7 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label for="selectAdicional4">Opción 4:</label>
+                                        <label class="form-label" for="selectAdicional4">Opción 4:</label>
                                         <select class="form-select" id="selectAdicional4" name="selectAdicional4">
                                             <option value="">Seleccionar</option>
                                             <option value="uno">Uno</option>

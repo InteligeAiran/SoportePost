@@ -2,8 +2,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidenav = document.getElementById('sidenav-main');
     const body = document.querySelector('body');
     const filterToggle = document.getElementById('filter-toggle');
-    const soportePosLink = document.querySelector('#crearTicketDropdown + .dropdown-menu a[data-value="Soporte POS"]');
-
 
     // Función para mostrar/ocultar el sidebar
     function toggleSidenav() {
@@ -12,12 +10,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // **NUEVO EVENTO CONDICIONAL PARA OCULTAR EL SIDEBAR AL CLICAR EN "Soporte POS"**
-   /* if (soportePosLink && filterToggle && window.innerWidth <= 1199) {
+    if (soportePosLink && filterToggle && window.innerWidth <= 1199) {
         soportePosLink.addEventListener('click', function(event) {
             event.stopPropagation();
             toggleSidenav();
         });
-    }*/
+    }
+
 
     // Evento para el botón de filtro
     if (filterToggle) {
@@ -30,8 +29,6 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleSidenav();
         }
     });
-
-
 
     // **NUEVO CÓDIGO PARA CERRAR EL SIDEBAR AL CARGAR LA PÁGINA EN PANTALLAS PEQUEÑAS**
     if (window.innerWidth <= 1199) {
@@ -744,7 +741,7 @@ function getFailure() {
                 if (response.success) {
                     const select = document.getElementById('FallaSelect1');
 
-                    select.innerHTML = '<option value="">Seleccione la falla</option>'; // Limpiar y agregar la opción por defecto
+                    select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
                     if (Array.isArray(response.failures) && response.failures.length > 0) {
                         response.failures.forEach(failure => {
                             const option = document.createElement('option');
@@ -838,7 +835,7 @@ function getCoordinador() {
                 if (response.success) {
                     const select = document.getElementById('AsiganrCoordinador');
 
-                    select.innerHTML = '<option value="">Seleccione el Coordinador</option>'; // Limpiar y agregar la opción por defecto
+                    select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
                     if (Array.isArray(response.coordinadores) && response.coordinadores.length > 0) {
                         response.coordinadores.forEach(coordinador => {
                             const option = document.createElement('option');
