@@ -6487,7 +6487,7 @@ fieldset:disabled .btn {
   background: transparent var(--bs-btn-close-bg) center/1em auto no-repeat;
   border: 0;
   border-radius: 0.375rem;
-  opacity: var(--bs-btn-close-opacity);
+  /*opacity: var(--bs-btn-close-opacity);*/
 }
 
 .btn-close:hover {
@@ -10913,7 +10913,7 @@ fieldset:disabled .btn {
 }
 
 .fs-5 {
-  font-size: 1.25rem !important;
+  font-size: 1.25rem;
 }
 
 .fs-6 {

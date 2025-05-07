@@ -284,7 +284,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         break;*/
 
-        /*case 'GetPhoto':
+        case 'GetPhoto':
             $serial = $_POST['serial'];
             $result = $model->SearchtypePos($serial);
             if ($result !== false) {
@@ -292,7 +292,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 //var_dump($codmodelopos);
 
                 /*  AGREGAR CSS */
-                /*$claseImagen = "imagen-predeterminada"; // Valor predeterminado
+                $claseImagen = "imagen-predeterminada"; // Valor predeterminado
                 switch ($codmodelopos) {
                     case 1:
                         $nombreArchivo = "ingenico-ict220.png";
@@ -341,7 +341,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 /* ENDF AGREGAR CSS */
 
-                /*$rutaImagen = __DIR__ . "/../../../public/img/consulta_rif/POS/" . $nombreArchivo; // Ruta absoluta
+                $rutaImagen = __DIR__ . "/../../../public/img/consulta_rif/POS/" . $nombreArchivo; // Ruta absoluta
                 $tipoImagen = mime_content_type($rutaImagen);
                 $datosImagen = file_get_contents($rutaImagen);
                 $imagenBase64 = base64_encode($datosImagen);
@@ -360,7 +360,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'message' => 'Error al obtener el tipo del POS'
                 ];
             }
-        break;*/
+        break;
 
         /*case 'SaveDataFalla':
             $serial = $_POST['serial'];

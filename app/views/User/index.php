@@ -1,4 +1,4 @@
-<?php
+<?
 function mi_navbar() {
 
 }

@@ -22,6 +22,8 @@ function mi_navbar() {
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/desktop/form.css"/>
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/mobile/mobile.css"/>
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/laptop/laptop.css"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
+
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
@@ -77,15 +79,6 @@ function mi_navbar() {
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="card-footer p-3">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <p id="total-tickets" class="text-sm mb-0">Total de tickets: 0</p>
-                                        </div>
-                                        <div class="col-md-6 text-end">
-                                            <button id="btn-asignar" type="button" class="btn btn-primary btn-sm mb-0">Asignar</button>
-                                        </div>
-                                    </div>  
                             </div>
                         </div>
                     </div>

@@ -518,10 +518,11 @@ class Api extends Controller {
                 if (defined('FIRMA_CORREO')) {
                     $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
                 }
-
                 if ($this->emailService->sendEmail($email, $subject, $body, [], $embeddedImages)){
-                    $this->response(['success' => true, 'message' => 'Se ha enviado un código de restablecimiento a su correo electrónico.', 'color' => 'green']);
+                    $this->response(['success' => true, 'message' => 'Se ha enviado un   Aviso a su correo electrónico.', 'color' => 'green']);
                 } else {
+                    var_dump($email, $subject, $body);
+
                     $this->response(['success' => false, 'message' => 'Error al enviar el correo.', 'color' => 'red']);
                 }
             } else {
@@ -534,7 +535,7 @@ class Api extends Controller {
         $id_coordinador = isset($_POST['id_coordinador']) ? $_POST['id_coordinador'] : '';
            // var_dump($id_coordinador);
             $result  = $repository->GetEmailCoorDataById($id_coordinador);
-            $email   = $result['email']; //EL GMAIL DEL COORDINADOR 
+            $email   = $result['email']; //EL GMAIL DEL COORDINADOR
             $nombre  = $result['full_name']; // EL NOMBRE DEL COORDINADOR
             $result1 = $repository->GetDataTicket2();
             $nombre_tecnico   = $result1['full_name_tecnico']; 
@@ -796,7 +797,7 @@ class Api extends Controller {
     public function handleGetPhoto(){
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
         $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
-
+        //var_dump($serial);
         $result = $repository->SearchtypePos($serial);
         if ($result !== false) {
             $codrepositoryopos = $result;

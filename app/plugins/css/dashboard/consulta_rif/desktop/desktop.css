@@ -200,7 +200,7 @@
         display: none; /* Oculto por defecto */
         position: fixed; /* Posición fija */
         z-index: 1000; /* Asegura que esté por encima de otros elementos */
-        left: 130px;
+        /*left: 130px;*/
         top: 0;
         width: 100%; /* Ancho completo */
         height: 100%; /* Alto completo */
@@ -269,6 +269,7 @@
         width: 80%;
         max-width: 800px; /* Ajusta según sea necesario */
         position: relative;
+        margin-left: 35%;
     }
 
     #ModalSerial-content h2 {

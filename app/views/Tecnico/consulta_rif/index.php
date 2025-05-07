@@ -26,10 +26,6 @@ function mi_navbar() {
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <script>
-            const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
-            const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
-        </script>
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -50,10 +46,10 @@ function mi_navbar() {
                         <div class = "cord">
                         
                         
-                        <div id = "SearchRif">
-                            <input type="text" id="rifInput" placeholder= "JV123456789">
-                            <button type = "button" onclick = "SendRif()" id="buscarRif">Buscar</button><br>
-                        </div><br>
+                        <div id="SearchRif" class="mb-3 d-flex align-items-center">
+    <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789">
+    <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif">Buscar</button>
+</div><br>
                             <div class="card">
                                 <div class="card-header pb-0 p-3">
                                     

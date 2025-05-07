@@ -1,12 +1,22 @@
-document.addEventListener('DOMContentLoaded', function() {
+`document.addEventListener('DOMContentLoaded', function() {
     const sidenav = document.getElementById('sidenav-main');
     const body = document.querySelector('body');
     const filterToggle = document.getElementById('filter-toggle');
+    const soportePosLink = document.querySelector('#crearTicketDropdown + .dropdown-menu a[data-value="Soporte POS"]');
+
 
     // Función para mostrar/ocultar el sidebar
     function toggleSidenav() {
         sidenav.classList.toggle('active');
         body.classList.toggle('sidenav-open');
+    }
+
+    // **NUEVO EVENTO CONDICIONAL PARA OCULTAR EL SIDEBAR AL CLICAR EN "Soporte POS"**
+    if (soportePosLink && filterToggle && window.innerWidth <= 1199) {
+        soportePosLink.addEventListener('click', function(event) {
+            event.stopPropagation();
+            toggleSidenav();
+        });
     }
 
     // Evento para el botón de filtro
@@ -20,6 +30,8 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleSidenav();
         }
     });
+
+
 
     // **NUEVO CÓDIGO PARA CERRAR EL SIDEBAR AL CARGAR LA PÁGINA EN PANTALLAS PEQUEÑAS**
     if (window.innerWidth <= 1199) {
@@ -43,36 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setActiveLink('rif-link', 'consulta_rif');
     setActiveLink('estadisticas-link', 'pages/profile.html');
 
-    // **CÓDIGO PARA OBTENER EL userId**
-    /*const userId = localStorage.getItem('userId');
-    if (userId) {
-        // Ahora puedes usar la variable userId donde la necesites en tu navbar
-        // Por ejemplo, podrías asignarla al valor de un campo oculto en un formulario:
-        const userIdNavbarInput = document.getElementById('id_user');
-        if (userIdNavbarInput) {
-            userIdNavbarInput.value = userId;
-        }
-    } else {
-        console.log('User ID no encontrado en localStorage.');
-        // Manejar el caso en que el userId no esté disponible (por ejemplo, el usuario no ha iniciado sesión)
-    }*/
-});
-
-/*document.addEventListener('DOMContentLoaded', function() {
-    const cerrarSesionBtn = document.getElementById('cerrar-link'); // Reemplaza 'cerrarSesionBtn' con el ID de tu botón de cerrar sesión
-
-    if (cerrarSesionBtn) {
-        cerrarSesionBtn.addEventListener('click', function(e) {
-            e.preventDefault(); // Evita que el enlace 'href' se siga inmediatamente
-
-            // Eliminar el 'id_user' de localStorage
-            localStorage.removeItem('id_user');
-
-            // Redirigir a la URL de cierre de sesión en el servidor
-            window.location.href = 'cerrar_session'; // Ajusta la URL si es necesario
-        });
-    }
-});*/
+})`
 
 document.addEventListener('DOMContentLoaded', function() {
     // Estilo para el span "No file chosen"
@@ -101,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
         envioInputFile.addEventListener('change', function() {
             if (this.files.length > 0) {
                 fileChosenSpanEnvio.textContent = this.files[0].name;
-                fileChosenSpanEnvio.style.cssText = 'margin-left: 5px; font-size: 11px; display: block;'; // Remover estilo de "no file"
+                fileChosenSpanEnvio.style.cssText = 'margin-left: 5px; font-size: 9px; display: block;'; // Remover estilo de "no file"
             } else {
                 fileChosenSpanEnvio.style.cssText = noFileChosenStyle;
             }
@@ -140,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 fileChosenSpanExo.style.cssText = noFileChosenStyle;
             } else if (file) {
                 fileChosenSpanExo.textContent = file.name;
-                fileChosenSpanExo.style.cssText = 'margin-left: 5px; font-size: 11px; display: block;'; // Remover estilo de "no file"
+                fileChosenSpanExo.style.cssText = 'margin-left: 5px; font-size: 9px; display: block;'; // Remover estilo de "no file"
             } else {
                 fileChosenSpanExo.style.cssText = noFileChosenStyle;
             }
@@ -179,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 fileChosenSpanAntici.style.cssText = noFileChosenStyle;
             } else if (file) {
                 fileChosenSpanAntici.textContent = file.name;
-                fileChosenSpanAntici.style.cssText = 'margin-left: 5px; font-size: 11px; display: block;'; // Remover estilo de "no file"
+                fileChosenSpanAntici.style.cssText = 'margin-left: 5px; font-size: 9px; display: block;'; // Remover estilo de "no file"
             } else {
                 fileChosenSpanAntici.style.cssText = noFileChosenStyle;
             }
@@ -241,12 +224,18 @@ if (crearTicketDropdown && dropdownMenu) {
 function inicializeModal() {
     var modal = $("#miModal"); // Modal Nivel 2
     var modal1 = $("#miModal1"); // Modal Nivel 1
-    var span = $(".cerrar");     // Cierre Modal Nivel 2
-    var span1 = $(".cerrar1");    // Cierre Modal Nivel 1
+    var spanNivelFalla = $("#cerrar-icon");     // Cierre Modal de Nivel Falla
+    var spanFalla1 = $("#cerrar-iconNivel1");    // Cierre Modal Nivel 1
+    var spanFalla2 = $("#cerraModal2");
     var btnAnterior = $("#anterior");
     var btnSiguiente = $("#siguiente");
     var indiceActual = 0;
     var nivelFallaModal = $("#nivelFallaModal");
+    var cerrarNivelFalla = $("#cerrar"); // Botón de cerrar el modal de nivel de falla
+    var cerraModalFalla1 = $("#buttonCerrar"); // Botón de cerrar el modal de nivel 1
+    var cerraModalFalla2 = $("#buttonCerrar2")
+    
+
     var crearTicketDropdownItems = $("#crearTicketDropdown + ul.dropdown-menu a"); // Seleccionamos los items del dropdown
 
     function mostrarContenido(indice) {
@@ -259,12 +248,44 @@ function inicializeModal() {
             $("#detalle3").show();
         }
     }
+    
+    cerrarNivelFalla.off('click').on('click', function() { // Cierre Modal Nivel de Falla (BOTON DE CERRAR)
+        nivelFallaModal.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });
+
+    spanNivelFalla.off('click').on('click', function() { // Cierre Modal NIVEL FALLA (ICON-CERRAR)
+        nivelFallaModal.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });
+
+    cerraModalFalla1.off('click').on('click', function() { // Cierre Modal Nivel 1 (BOTON DE CERRAR)
+        modal1.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });
+
+    spanFalla1.off('click').on('click', function() { // Cierre Modal Nivel 1  (ICON-CERRAR)
+        modal1.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });
+
+    cerraModalFalla2.off('click').on('click', function() { // Cierre Modal falla 2 (BOTON DE CERRAR)
+        modal.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });
+
+    spanFalla2.off('click').on('click', function() { // Cierre Modal falla 2 (ICON-CERRAR)
+        modal.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });
 
     function cerrarNivelFallaModal() {
         nivelFallaModal.css("display", "none");
         clearFormFields(); // Limpiar campos de ambos modales
     }
 
+ 
+    
     function mostrarMiModal(nivel) { // Muestra Modal Nivel 2 y limpia campos al mostrar
         modal.css("display", "block");
         indiceActual = 0;
@@ -275,7 +296,14 @@ function inicializeModal() {
     function mostrarMiModal1(nivel) { // Muestra Modal Nivel 1 y limpia campos al mostrar
         modal1.css("display", "block");
         clearFormFields(); // Limpiar campos de ambos modales
-    }
+    }   
+
+    /*cerrarNivelFalla.off('click').on('click', function() { // Cierre Modal Nivel de Falla
+        modal.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });*/
+
+
 
     crearTicketDropdownItems.off('click').on('click', function(event) {
         event.preventDefault(); // Evitar que el enlace navegue
@@ -315,23 +343,10 @@ function inicializeModal() {
         mostrarMiModal1('nivel1'); // Esta función ya establece display: block para modal1
     });
 
-    span1.off('click').on('click', function() { // Cierre Modal Nivel 1
-        nivelFallaModal.css("display", "none");
-        modal1.css("display", "none");
-        clearFormFields(); // Limpiar campos de ambos modales
-        // No necesitas ocultar modal (Nivel 2) aquí
-    });
 
     $("#nivel2Btn").off('click').on('click', function() {
         cerrarNivelFallaModal();
         mostrarMiModal('nivel2'); // Esta función ya establece display: block para modal
-    });
-
-    span.off('click').on('click', function() { // Cierre Modal Nivel 2
-        modal.css("display", "none");
-        nivelFallaModal.css("display", "none");
-        clearFormFields(); // Limpiar campos de ambos modales
-        // No necesitas ocultar modal1 (Nivel 1) aquí
     });
 
     $(window).off('click').on('click', function(event) {
@@ -375,6 +390,9 @@ function clearFormFields() {
     document.getElementById('EnvioInput').value = '';
     document.getElementById('ExoneracionInput').value = '';
     document.getElementById('AnticipoInput').value = '';
+    document.getElementById('rifMensaje1').innerHTML = ''; // Limpiar mensaje de error
+    document.getElementById('rifMensaje').innerHTML = ''; // Limpiar mensaje de error
+
 
     // Limpiar campos de Modal Nivel 1 (miModal1)
     document.getElementById('FallaSelect1').value = '';
@@ -539,6 +557,8 @@ function checkRif() {
     } else {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/ValidateRif`);
+       
+
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -591,6 +611,7 @@ function checkRif1() {
     } else {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/ValidateRif1`);
+         
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -634,6 +655,7 @@ function checkRif1() {
 function getPosSerials1(rif) {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetPosSerials1`);
+    
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -712,6 +734,7 @@ function getPosSerials1(rif) {
 function getFailure() {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetFailure1`);
+    
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -759,6 +782,7 @@ document.addEventListener('DOMContentLoaded', getFailure);
 function getFailure2() {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetFailure2`);
+    
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -803,7 +827,8 @@ document.addEventListener('DOMContentLoaded', getFailure2);
 
 function getCoordinador() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetCoordinador`);
+    xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/GetCoordinador`);
+   
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -853,7 +878,7 @@ let fechaInstalacionGlobal = null;
 
 function getPosSerials(rif) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetPosSerials`);
+    xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/GetPosSerials`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -915,10 +940,9 @@ function getPosSerials(rif) {
     xhr.send(datos);
 }
 
-
 function getUltimateTicket(serial) {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetUltimateTicket`); // Asegúrate de usar la ruta correcta de tu API
+        xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/GetUltimateTicket`); // Asegúrate de usar la ruta correcta de tu API
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
         xhr.onload = function() {
@@ -999,7 +1023,7 @@ function getUltimateTicket(serial) {
 
     function getInstalationDate(serial) {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetInstallPosDate`); // Asegúrate de usar la ruta correcta de tu API
+        xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/GetInstallPosDate`); // Asegúrate de usar la ruta correcta de tu API
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
         xhr.onload = function() {
@@ -1061,7 +1085,7 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
     // Controlar visibilidad de los botones
     const botonExoneracion = document.getElementById('DownloadExo');
     const botonAnticipo = document.getElementById('DownloadAntici');
-    const animation = document.getElementById('animation');
+   // const animation = document.getElementById('animation');
  
 
     if (fechaUltimoTicket === 'No disponible') {
@@ -1086,14 +1110,14 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
             resultadoElemento.style.color = 'red';
             botonExoneracion.style.display = 'none';
             botonAnticipo.style.display = 'none';
-            animation.style.display = 'block';  
+           // animation.style.display = 'block';  
             return 3;
         } else {
             resultadoElemento.textContent = 'Sin Novedad';
             resultadoElemento.style.color = '';
             botonExoneracion.style.display = 'inline-block';
             botonAnticipo.style.display = 'inline-block';
-            animation.style.display = 'none';  
+           // animation.style.display = 'none';  
 
             return null;
         }
@@ -1105,7 +1129,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
      // Controlar visibilidad de los botones
      const botonExoneracion = document.getElementById('DownloadExo');
      const botonAnticipo = document.getElementById('DownloadAntici');
-     const animation = document.getElementById('animation');
+     //const animation = document.getElementById('animation');
  
 
     if (fechaInstalacion === 'No disponible') {
@@ -1130,7 +1154,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
             resultadoElemento.style.color = 'red';
             botonExoneracion.style.display = 'none';
             botonAnticipo.style.display = 'none';
-            animation.style.display = 'block';
+           // animation.style.display = 'block';
             
             return 1;
         } else {
@@ -1138,7 +1162,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
             resultadoElemento.style.color = '';
             botonExoneracion.style.display = 'inline-block';
             botonAnticipo.style.display = 'inline-block';
-            animation.style.display = 'none';  
+            //animation.style.display = 'none';  
 
             return null;
         }
@@ -1377,6 +1401,7 @@ function SendDataFailure2(idStatusPayment) {
     formData.append('id_status_payment', idStatusPayment);
     formData.append('id_user', id_user);
     
+    console.log(descrpFailure, serial, coordinador, nivelFalla, idStatusPayment, id_user);
     if (envioButtonContainer.style.display !== 'none' && archivoEnvio) {
         formData.append('archivoEnvio', archivoEnvio);
     }
@@ -1416,7 +1441,7 @@ function SendDataFailure2(idStatusPayment) {
         console.log(`${key}:`, value);
     }
     console.log(formData);*/
-    
+
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SaveDataFalla2`);
     xhr.onload = function() {

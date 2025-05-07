@@ -48,19 +48,12 @@ function getTicketData() {
                         name_status_ticketCell.textContent = data.name_status_ticket;
                         serial_posCell.textContent = data.serial_pos;
 
-
-                        // Crear los botones
-                        const modifyButton = document.createElement('button');
-                        modifyButton.textContent = 'Modificar';
-                        modifyButton.classList.add('btn', 'btn-sm', 'btn-primary', 'me-2'); // Añade clases de Bootstrap para estilo
-
-                        const statusButton = document.createElement('button');
-                        statusButton.textContent = 'Cambiar Status';
-                        statusButton.classList.add('btn', 'btn-sm', 'btn-info'); // Añade clases de Bootstrap para estilo
+                        const AssingmentButton = document.createElement('button');
+                        AssingmentButton.textContent = 'Asignar A tecnico';
+                        AssingmentButton.classList.add('btn', 'btn-sm', 'btn-info'); // Añade clases de Bootstrap para estilo
 
                         // Añadir los botones a la celda de acciones
-                        actionsCell.appendChild(modifyButton);
-                        actionsCell.appendChild(statusButton);
+                        actionsCell.appendChild(AssingmentButton);
                     });
 
                     // Inicialización de DataTables
