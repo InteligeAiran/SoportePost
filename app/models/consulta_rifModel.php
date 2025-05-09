@@ -282,5 +282,15 @@ class consulta_rifModel extends Model
             // Manejar excepciones
         }
     }
+
+    public function GetTicketData1(){
+        try{
+            $sql = "SELECT * FROM GetDataTicketByIdAccion1()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }
 }
 ?>

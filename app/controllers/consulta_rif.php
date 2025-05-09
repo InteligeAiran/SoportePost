@@ -29,7 +29,7 @@ class consulta_rif extends Controller {
 
         // Incorporates the FrontEnd Controller
         $this->view->js = array('consulta_rif/js/frontEnd.js');
-        $this->view->render('/consulta_rif/index', 1);
+        $this->view->render('consulta_rif/index', 1);
     }
 
     private function validataExpiresSessions($usuario_id) {

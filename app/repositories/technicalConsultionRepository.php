@@ -158,5 +158,22 @@ class TechnicalConsultionRepository
             return null;
         }
     }
+
+    public function GetTicketData1(){
+        $result = $this->model->GetTicketData1();
+        if ($result) {
+            //var_dump($result);  
+            $ticket = [];
+
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            //var_dump($agente);
+            return $ticket;
+        } else {
+            return null;
+        }
+    }
 }
 ?>
