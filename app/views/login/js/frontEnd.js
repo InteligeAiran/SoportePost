@@ -78,8 +78,8 @@ function SendForm() {
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
-                    userId = response.id_user; // Almacena el ID del usuario
-                    localStorage.setItem('userId', userId); // Guarda el userId en localStorage
+                    //userId = response.id_user; // Almacena el ID del usuario
+                    //localStorage.setItem('userId', userId); // Guarda el userId en localStorage
                     //alert('userId: ' + userId); // Muestra el ID del usuario en una alerta
                     window.location.href = response.redirect;
                     if (response.message === 'ya existe una sesión activa.') {

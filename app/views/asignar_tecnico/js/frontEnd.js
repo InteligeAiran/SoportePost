@@ -1,3 +1,7 @@
+let modalInstance; // Declara modalInstance fuera del listener
+let currentTicketId = null; // Variable para almacenar el ID del ticket actual
+
+
 function getTicketData() {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetTicketData`);
@@ -9,15 +13,15 @@ function getTicketData() {
     tbody.innerHTML = '';
 
     // Destruye DataTables si ya está inicializado
-    /*if ($.fn.DataTable.isDataTable('#table-ticket-body')) {
-        $('#table-ticket-body').DataTable().destroy();
-    }*/
+    if ($.fn.DataTable.isDataTable('tabla-ticket')) {
+        $('#tabla-ticket').DataTable().destroy();
+    }
 
     // Limpia la tabla usando removeChild
     /*while (tbody.firstChild) {
         tbody.removeChild(tbody.firstChild);
     }
-*/
+    */
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300) {
             try {
@@ -26,7 +30,7 @@ function getTicketData() {
                 if (response.success) {
                     //console.log('Datos de ticket:', response.ticket); // Agrega esta línea para depurar los datos de ticket
                     const TicketData = response.ticket; // Cambia el nombre de la variable aquí
-                    const modal = document.getElementById('staticBackdrop'); // Obtén una referencia al modal
+                    const modalElement = document.getElementById('staticBackdrop'); // Obtén la referencia al modal fuera del bucle
 
                     //console.log('Datos de ticket:', TicketData); // Agrega esta línea para depurar los datos de ticket
                     TicketData.forEach(data => { // Usa un nombre diferente para el elemento individual
@@ -48,21 +52,26 @@ function getTicketData() {
                         name_accionCell.textContent = data.name_accion_ticket;
                         name_failureCell.textContent = data.name_failure;
                         name_processCell.textContent = data.name_process_ticket;
-                        name_status_ticketCell.textContent = data.name_status_ticket;
+                        name_status_ticketCell.textContent = data.name_status_ticket
 
                         const AssingmentButton = document.createElement('button');
-                        AssingmentButton.textContent = 'Asignar A tecnico';
+                        AssingmentButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>';
                         AssingmentButton.classList.add('btn', 'btn-sm', 'btn-info'); // Añade clases de Bootstrap para estilo
+                        AssingmentButton.setAttribute('data-bs-toggle', 'tooltip'); // Agrega el atributo data-bs-toggle
+                        AssingmentButton.setAttribute('data-bs-placement', 'top'); // O 'bottom', 'left', 'right' para la posición
+                        AssingmentButton.title = 'Asignar a técnico'; // El texto del tooltip va en el atributo title
 
+                        // Inicializa los tooltips de Bootstrap en tu script (asegúrate de que el DOM esté cargado)
+            
                         // Agrega un event listener al botón para mostrar el modal
+                        // Dentro de la función getUserData, después de actionsCell.appendChild(AssingmentButton);
                         AssingmentButton.addEventListener('click', function() {
-                            // Utiliza la API de Bootstrap para mostrar el modal
-                            const modalBootstrap = new bootstrap.Modal(modal);
+                            currentTicketId  = data.id_ticket
+                            const modalBootstrap = new bootstrap.Modal(modalElement, {
+                                backdrop: 'static'
+                            });
+                            modalInstance = modalBootstrap; // Asigna la instancia a la variable
                             modalBootstrap.show();
-
-                            // Aquí puedes agregar lógica adicional si necesitas pasar información
-                            // específica del ticket al modal (por ejemplo, el ID del ticket)
-                            // modal.querySelector('.modal-body').textContent = `ID del ticket: ${data.id_ticket}`;
                         });
 
                         // Añadir los botones a la celda de acciones
@@ -70,9 +79,10 @@ function getTicketData() {
                     });
 
                     // Inicialización de DataTables
-                    /*if ($.fn.DataTable.isDataTable('#table-ticket-body')) {
-                        $('#table-ticket-body').DataTable().destroy();
-                    }*/
+
+                    if ($.fn.DataTable.isDataTable('#tabla-ticket')) {
+                        $('#tabla-ticket').DataTable().destroy();
+                    }
                     
                     $('#tabla-ticket').DataTable({
                         responsive: false,
@@ -122,5 +132,154 @@ function getTicketData() {
     xhr.send(datos);
 }
 
-document.addEventListener('DOMContentLoaded', getTicketData);
+document.addEventListener('DOMContentLoaded', function() {
+    getTicketData(); // Llama a la función para cargar los datos
+
+    // Obtén la referencia al botón cerrar FUERA de la función getTicketData y del bucle
+    const cerrar = document.getElementById('close-button');
+    const icon   = document.getElementById('Close-icon');
+    const assignButton = document.getElementById('assingment-button'); // Obtén el botón "Asignar"
+
+
+    // Agrega el event listener al botón cerrar
+    cerrar.addEventListener('click', function() {
+        if (modalInstance) {
+            modalInstance.hide();
+            currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
+        }
+        document.getElementById('idSelectionTec').value = '';
+    });
+
+    icon.addEventListener('click', function() {
+        if (modalInstance) {
+            modalInstance.hide();
+            currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
+        }
+        document.getElementById('idSelectionTec').value = '';
+    });
+    // Agrega el event listener al botón "Asignar"
+    assignButton.addEventListener('click', AssignTicket);
+});
 //console.log('FrontEnd.js loaded successfully!');
+
+function getTecnico2(){
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetTecnico2`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const select = document.getElementById('idSelectionTec');
+    
+                    select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+                    if (Array.isArray(response.tecnicos) && response.tecnicos.length > 0) {
+                        response.tecnicos.forEach(tecnico => {
+                            const option = document.createElement('option');
+                            option.value = tecnico.id_user;
+                            option.textContent = tecnico.full_name;
+                            select.appendChild(option);
+                        });
+                    } else {
+                        // Si no hay fallas, puedes mostrar un mensaje en el select
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No hay Técnicos Disponibles';
+                        select.appendChild(option);
+                    }
+                } else {
+                    document.getElementById('rifMensaje').innerHTML += '<br>Error al obtener los Técnicos.';
+                    console.error('Error al obtener las fallas:', response.message);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                document.getElementById('rifMensaje').innerHTML += '<br>Error al procesar la respuesta de las Técnicos.';
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            document.getElementById('rifMensaje').innerHTML += '<br>Error de conexión con el servidor para las Técnicos.';
+        }
+    };
+    
+    const datos = `action=GetTecnico2`; // Cambia la acción para que coincida con el backend
+    xhr.send(datos);
+}
+
+// Llama a la función para cargar las fallas cuando la página se cargue
+document.addEventListener('DOMContentLoaded', getTecnico2);
+
+function AssignTicket(){
+    const id_tecnico_asignado = document.getElementById('idSelectionTec').value;
+    /*console.log('ID del ticket a asignar:', currentTicketId); // Agrega un log más descriptivo
+    console.log('ID del ticket a asignar:', currentTicketId); // Agrega un log más descriptivo*/
+
+    if (!currentTicketId || !id_tecnico_asignado) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Por favor, selecciona un ticket antes de asignar un técnico.',
+            color: 'black'
+        });
+        return;
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/AssignTicket`); // Asegúrate de que esta sea la ruta correcta en tu backend
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Asignado',
+                        text: response.message,
+                        color: 'black',
+                        timer: 2500,
+                        timerProgressBar: true,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        willClose: () => {
+                            setTimeout(() => {
+                                location.reload(); // Recarga la página después del temporizador
+                            }, 1000);
+                        }
+                    });
+                    document.getElementById('idSelectionTec').value = '';
+                    currentTicketId = null;
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al asignar',
+                        text: response.message,
+                        color: 'black'
+                    });
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error en el servidor',
+                    text: 'Ocurrió un error al procesar la respuesta.',
+                    color: 'black'
+                });
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar con el servidor.',
+                color: 'black'
+            });
+        }
+    };
+    const datos = `action=AssignTicket&id_ticket=${encodeURIComponent(currentTicketId)}&id_tecnico=${encodeURIComponent(id_tecnico_asignado)}`;
+    console.log(datos);
+    xhr.send(datos);
+}

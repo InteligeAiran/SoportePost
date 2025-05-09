@@ -207,7 +207,23 @@ class Api extends Controller {
                         //var_dump($_POST); // Para depuración
                         $this->handleGetUsers();
                     } else {
-                        $this->response(['error' => 'Método no permitido para /api/GetImageExo'], 405);
+                        $this->response(['error' => 'Método no permitido para /api/GetUsers'], 405);
+                    }
+                break;
+
+                case 'GetTecnico2': 
+                    if($method === 'POST'){
+                        $this->handleGetTecnico2();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/GetTecnico2'], 405);
+                    }
+                break;
+
+                case 'AssignTicket':
+                    if($method === 'POST'){
+                        $this->handleAssignTicket();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/AssingTicket'], 405);
                     }
                 break;
                 /*END USERS*/
@@ -313,7 +329,7 @@ class Api extends Controller {
                             $insertResult = $model->InsertSession($session_id, $start_date,  $user_agent, $ip_address, $active, $expiry_time);
                             if ($insertResult) {
                                 $redirectURL = '';
-                                $redirectURL = 'dashboard2';
+                                $redirectURL = 'dashboard';
                                 $model->UpdateTryPassTo0($username);
                                 $this->response([
                                     'success' => true,
@@ -1124,6 +1140,39 @@ class Api extends Controller {
             $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
         }
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
+
+    public function handleGetTecnico2(){
+        $repository = new   UserRepository(); // Inicializa el repositorio
+        $result = $repository->getTecnico2();
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'tecnicos' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay usuarios disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
+
+    public function handleAssignTicket(){
+        $id_tecnico     = isset($_POST['id_tecnico']) ? $_POST['id_tecnico'] : '';
+        $id_ticket      = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
+
+      
+        $repository = new UserRepository(); // Inicializa el repositorio
+        $result = $repository->AssignTicket($id_ticket, $id_tecnico, );
+
+         if ($id_tecnico != '' && $id_ticket != '') {
+            if($result){
+                $this->response(['success' => true, 'message' => 'Asignado Con Exito'], 200); 
+            }else{
+                $this->response(['success' => false, 'message' => 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
+            }
+        }else{
+            $this->response(['success' => false, 'message' => 'Hay campos vacios'], 400); // Código de estado 404 Not Found
+        }
     }
 
     public function handleGetTicketData(){

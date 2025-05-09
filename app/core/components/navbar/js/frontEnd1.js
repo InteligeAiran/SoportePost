@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidenav = document.getElementById('sidenav-main');
     const body = document.querySelector('body');
     const filterToggle = document.getElementById('filter-toggle');
+    const soportePosLink = document.querySelector('#crearTicketDropdown + .dropdown-menu a[data-value="Soporte POS"]');
+
 
     // Función para mostrar/ocultar el sidebar
     function toggleSidenav() {
@@ -16,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleSidenav();
         });
     }
-
 
     // Evento para el botón de filtro
     if (filterToggle) {
@@ -47,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    setActiveLink('inicio-link', 'dashboard2');
+    setActiveLink('inicio-link', 'dashboard');
     setActiveLink('tickets-link', 'pages/tables.html');
     setActiveLink('rif-link', 'consulta_rif');
     setActiveLink('estadisticas-link', 'pages/profile.html');

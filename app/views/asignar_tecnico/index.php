@@ -16,12 +16,14 @@ function mi_navbar() {
         <!--     Fonts and icons     -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
         <!-- Nucleo Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-icons.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-svg.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/desktop/desktop.css"/>
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/desktop/form.css"/>
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/mobile/mobile.css"/>
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/laptop/laptop.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/asignar_tecnico/General.css"/>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
         <!-- CSS Files -->
@@ -88,17 +90,17 @@ function mi_navbar() {
         <!-- MODAL PARA SELECCIONAR TECNICO -->
             <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div class="modal-dialog">
-                    <div class="modal-content">
+                    <div id="ModalSelecttecnico" class="modal-content">
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Seleccione un Técnico</h1>
+                        <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        ...
+                        <select id="idSelectionTec" class="form-select" aria-label="Default select example"></select>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Understood</button>
+                        <button id="close-button" type="button" class="btn btn-secondary">Cerrar</button>
+                        <button id="assingment-button" type="button" class="btn btn-primary">Asignar</button>
                     </div>
                     </div>
                 </div>
@@ -210,6 +212,8 @@ function mi_navbar() {
         <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.js"></script>
+            <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.js"></script>
+
 
         <!--   Core JS Files   -->
         <script src="<?php echo APP;?>app/plugins/js/popper.min.js"></script>

@@ -9,9 +9,7 @@ require_once __DIR__ . "/../../../../libs/Session.php";
 Session::init(); // Inicia la sesión
 
 // Función mi_navbar() para generar la barra de navegación
-function mi_navbar() {
 
-}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'];

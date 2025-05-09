@@ -1,10 +1,12 @@
 <?php
-function mi_navbar() {
+function mi_navbar()
+{
 
 }
 ?>
 <!DOCTYPE html>
-    <lang="en">
+<lang="en">
+
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -16,62 +18,72 @@ function mi_navbar() {
         <!--     Fonts and icons     -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
         <!-- Nucleo Icons -->
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-icons.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-svg.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/desktop/desktop.css"/>
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/desktop/form.css"/>
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/mobile/mobile.css"/>
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/consulta_rif/laptop/laptop.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
+        <link rel="stylesheet" type="text/css"
+            href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/desktop/desktop.css" />
+        <link rel="stylesheet" type="text/css"
+            href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/desktop/form.css" />
+        <link rel="stylesheet" type="text/css"
+            href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/mobile/mobile.css" />
+        <link rel="stylesheet" type="text/css"
+            href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/laptop/laptop.css" />
         <!-- CSS Files -->
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
+        <link id="pagestyle" rel="stylesheet"
+            href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
+        <link rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
         <div class="min-height-300 bg-dark position-absolute w-100">
             <div class="d-lg-none fixed-top bg-dark p-2">
                 <button class="btn btn-dark" id="filter-toggle">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-list-task" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z"/>
-                        <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z"/>
-                        <path fill-rule="evenodd" d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                        class="bi bi-list-task" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z" />
+                        <path
+                            d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z" />
+                        <path fill-rule="evenodd"
+                            d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z" />
                     </svg>
                 </button>
             </div>
-            <?php require_once 'app/core/components/navbar/index.php'; mi_navbar(); ?>
+            <?php require_once 'app/core/components/navbar/index.php';
+            mi_navbar(); ?>
             <main class="main-content position-relative border-radius-lg ">
                 <div class="container-fluid py-4">
-                    <div id = "Row" class="row mt-4">
-                        <div class = "cord">
-                        
-                        
-                        <div id="SearchRif" class="mb-3 d-flex align-items-center">
-    <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789">
-    <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif">Buscar</button>
-</div><br>
+                    <div id="Row" class="row mt-4">
+                        <div class="cord">
+                            <div id="SearchRif" class="mb-3 d-flex align-items-center">
+                                <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789">
+                                <button type="button" class="btn btn-primary" onclick="SendRif()"
+                                    id="buscarRif">Buscar</button>
+                            </div><br>
                             <div class="card">
                                 <div class="card-header pb-0 p-3">
-                                    
+
                                     <div class="d-flex justify-content-between">
                                         <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
                                     </div>
                                 </div>
                                 <div class="table-responsive">
-                                    <table id="rifCountTable" >
+                                    <table id="rifCountTable">
                                         <thead>
                                             <tr>
-                                                <th style = "width: 5%; height: 10px;" >ID cliente</th>
-                                                <th style = "width: 5%;">Raz&oacuten Social</th>
-                                                <th style = "width: 5%;">RIF</th>
-                                                <th style = "width: 5%;">Modelo POS</th>
-                                                <th style = "width: 5%;">serial POS</th>
-                                                <th style = "width: 5%;">Nr Afiliaci&oacuten</th>
-                                                <th style = "width: 5%;">Fecha Instalaci&oacuten</th>
-                                                <th style = "width: 5%;">Banco</th>
-                                                <th style = "width: 5%;">Direcci&oacuten Instalaci&oacuten</th>
-                                                <th style = "width: 5%;">Estado</th>
-                                                <th style = "width: 5%;">Municipio</th>
+                                                <th style="width: 5%; height: 10px;">ID cliente</th>
+                                                <th style="width: 5%;">Raz&oacuten Social</th>
+                                                <th style="width: 5%;">RIF</th>
+                                                <th style="width: 5%;">Modelo POS</th>
+                                                <th style="width: 5%;">serial POS</th>
+                                                <th style="width: 5%;">Nr Afiliaci&oacuten</th>
+                                                <th style="width: 5%;">Fecha Instalaci&oacuten</th>
+                                                <th style="width: 5%;">Banco</th>
+                                                <th style="width: 5%;">Direcci&oacuten Instalaci&oacuten</th>
+                                                <th style="width: 5%;">Estado</th>
+                                                <th style="width: 5%;">Municipio</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -81,7 +93,7 @@ function mi_navbar() {
                                         </tbody>
                                     </table>
                                 </div>
-                                
+
                                 <div id="ModalSerial" class="modal">
                                     <div id="ModalSerial-content" class="modal-content">
                                         <span id="ModalSerial-close" class="close">&times;</span>
@@ -95,42 +107,28 @@ function mi_navbar() {
                                                 </table>
                                             </div>
                                             <div style="width: 150px;">
-                                            <img src="" alt="Imagen del POS"> </img>
+                                                <img src="" alt="Imagen del POS"> </img>
                                             </div>
-                                        </div>    
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!--footer class="footer pt-3">
-                        <div class="container-fluid">
-                            <div class="row align-items-center justify-content-lg-between">
-                                <div class="col-lg-6 mb-lg-0 mb-4">
-                                    <div class="copyright text-center text-sm text-muted text-lg-start">
-                                        © <script>
-                                        document.write(new Date().getFullYear())
-                                        </script>,
-                                        made with <i class="fa fa-heart"></i> by
-                                        <a href="https://www.inteligensa.com/" class="font-weight-bold"
-                                            target="_blank">Creative By Inteligensa</a>
-                                        for a better web.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </footer-->
                 </div>
-                <!-- AVISA LAS GARANTIAS --->
-                <div id="garantiaModal" class="modal">
-                    <div id="garantiaModal-content" class="modal-content">
-                        <span id="garantiaModal-close" class="close">&times;</span>
-                        <h2 id="garantiaModal-titulo">¡Alerta de Garantía!</h2>
-                        <p id="garantiaModal-mensaje"></p>
-                    </div>
-                </div>
-                <!-- AVISA LAS GARANTIAS --->
-            </main>
+        </div>
+        </div>
+
+        <!-- AVISA LAS GARANTIAS --->
+        <div id="garantiaModal" class="modal">
+            <div id="garantiaModal-content" class="modal-content">
+                <span id="garantiaModal-close" class="close">&times;</span>
+                <h2 id="garantiaModal-titulo">¡Alerta de Garantía!</h2>
+                <p id="garantiaModal-mensaje"></p>
+            </div>
+        </div>
+        <!-- AVISA LAS GARANTIAS --->
+        </main>
         </div>
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
@@ -221,94 +219,98 @@ function mi_navbar() {
                 </div>
             </div>
         </div>
-  
+
         <!-- Github buttons -->
         <script async defer src="https://buttons.github.io/buttons.js"></script>
         <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
         <!-- Bootstrap core JavaScript-->
-         <!--JQUERY-->
-         <script src="<?php echo APP;?>app/plugins/jquery/jquery.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/jquery/jquery-3.5.1.js"></script>
-        <script src="<?php echo APP;?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
+        <!--JQUERY-->
+        <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
 
 
         <!-- Bootstrap-->
-        <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.js"></script>
 
         <!--   Core JS Files   -->
-        <script src="<?php echo APP;?>app/plugins/js/popper.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/js/perfect-scrollbar.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/js/smooth-scrollbar.min.js"></script>
-        <script src="<?php echo APP;?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
-        
+        <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
+        <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
+
         <!-- Datatable -->
-        <script src = "<?php echo APP;?>app/plugins/datatables/datatables.min.js"></script>
-        <script src = "<?php echo APP;?>app/plugins/datatables/datatables.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
 
         <!-- Chart -->
-        <script src="<?php echo APP;?>app/plugins/chart.js/chart.js"></script>
-        <script src="<?php echo APP;?>app/plugins/chart.js/chart.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/chart.js/chart.min.js"></script>
 
         <!--  SweetAlert   -->
-        <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.js"></script>
-        <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
 
         <!--MASCARAS JQUERY-->
-        <script src = "<?php echo APP;?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
+        <script
+            src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
 
         <!-- Custom scripts for all pages-->
-        <script src="<?php echo APP;?>app/plugins/js/sb-admin-2.min.js"></script>
-    
-        <script src="<?php echo APP;?>app/views/Tecnico/consulta_rif/js/frontEnd.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
 
-  <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-  <?php
+        <script src="<?php echo APP; ?>app/views/Tecnico/consulta_rif/js/frontEnd.js"></script>
+
+        <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
+        <?php
         $expired_sessions = json_encode($this->expired_sessions);
         $message = json_encode($this->message);
         $redirect = json_encode($this->redirect);
         $usuario_id = json_encode($this->usuario_id);
         $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
+        
+        ?>
+        <script>
+            var expired_sessions = <?php echo $expired_sessions; ?>;
+            var message = <?php echo $message; ?>;
+            var redirect = <?php echo $redirect; ?>;
+            var usuario_id = <?php echo $usuario_id; ?>;
+            var sessionLifetime = <?php echo $sessionLifetime; ?>; // Asegúrate de que esto esté presente
 
-    ?>
-    <script>
-        var expired_sessions = <?php echo $expired_sessions; ?>;
-        var message = <?php echo $message; ?>;
-        var redirect = <?php echo $redirect; ?>;
-        var usuario_id = <?php echo $usuario_id; ?>;
-        var sessionLifetime = <?php echo $sessionLifetime; ?>; // Asegúrate de que esto esté presente
 
+            // Verificar si hay sesiones expiradas
+            if (expired_sessions) {
+                Swal.fire({
+                    icon: 'warning', // Puedes cambiar el icono (warning, error, success, info, question)
+                    title: 'Session Expiró.', // Título del SweetAlert
+                    text: message, // Mensaje del SweetAlert
+                    color: 'black', // Color del texto
+                    showConfirmButton: false, // Oculta el botón "Aceptar"
+                    timer: 2000, // Cierra el modal después de 2 segundos (2000 ms)
+                    timerProgressBar: true, // Opcional: muestra una barra de progreso del tiempo
+                    didOpen: () => {
+                        Swal.showLoading();
+                    },
+                    willClose: () => {
+                        setTimeout(() => {
+                            window.location.href = redirect; // Recarga la página después del temporizador
+                        }, 500); // Espera 0.5 segundos (igual que el temporizador)
+                    }
+                })// Programar la recarga después de que el SweetAlert se cierre
+            }
 
-        // Verificar si hay sesiones expiradas
-        if (expired_sessions) {
-            Swal.fire({
-                icon: 'warning', // Puedes cambiar el icono (warning, error, success, info, question)
-                title: 'Session Expiró.', // Título del SweetAlert
-                text: message, // Mensaje del SweetAlert
-                color: 'black', // Color del texto
-                showConfirmButton: false, // Oculta el botón "Aceptar"
-                timer: 2000, // Cierra el modal después de 2 segundos (2000 ms)
-                timerProgressBar: true, // Opcional: muestra una barra de progreso del tiempo
-                didOpen: () => {
-                    Swal.showLoading();
-                },
-                willClose: () => {
-                    setTimeout(() => {
-                        window.location.href = redirect; // Recarga la página después del temporizador
-                    }, 500); // Espera 0.5 segundos (igual que el temporizador)
-                }
-            })// Programar la recarga después de que el SweetAlert se cierre
-        }
+            // Agregar lógica de recarga automática
+            if (sessionLifetime) {
+                setTimeout(function () {
+                    location.reload(true); // Forzar recarga desde el servidor
+                }, sessionLifetime * 1000); // sessionLifetime está en segundos
+            }
+        </script>
+        <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
+    </body>
+    <h1>hola</h1>
 
-        // Agregar lógica de recarga automática
-        if (sessionLifetime) {
-            setTimeout(function() {
-                location.reload(true); // Forzar recarga desde el servidor
-            }, sessionLifetime * 1000); // sessionLifetime está en segundos
-        }
-    </script>
-    <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-</body>
-</html>
+    </html>

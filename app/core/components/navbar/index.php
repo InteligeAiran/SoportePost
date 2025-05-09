@@ -39,7 +39,7 @@
         <div class="collapse navbar-collapse w-auto " id="sidenav-collapse-main">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" id="inicio-link" href="dashboard2">
+                    <a class="nav-link" id="inicio-link" href="dashboard">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-laptop"
                             viewBox="0 0 16 16">
                             <path
@@ -100,7 +100,16 @@
                             <path
                                 d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z" />
                         </svg>
-                        <span class="nav-link-text ms-3">Asignar Ticket a Tecnico</span>
+                        <span class="nav-link-text ms-3">Asignar Ticket a Técnico</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="assignment-ticket" href="asignar_tecnico">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-workspace" viewBox="0 0 16 16">
+                            <path d="M4 16s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-5.95a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                            <path d="M2 1a2 2 0 0 0-2 2v9.5A1.5 1.5 0 0 0 1.5 14h.653a5.4 5.4 0 0 1 1.066-2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v9h-2.219c.554.654.89 1.373 1.066 2h.653a1.5 1.5 0 0 0 1.5-1.5V3a2 2 0 0 0-2-2z"/>
+                        </svg>
+                        <span class="nav-link-text ms-3">Técnico</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -142,31 +151,31 @@
                                 <div style=" display: flex; flex-direction: column;">
                                     <label id="LabelRifModal2" for="serialInputDetalle1" class="form-label">RIF cliente</label>
                                     <input type="text" onchange="checkRif()" id="InputRif" class="form-control" placeholder="JV123456789">
-                                    <p id="rifMensaje"></p>
+                                    <p style="margin-left: 143%; width: 100%;" id="rifMensaje"></p>
                                 </div>
                                 <div>
-                                    <label class="form-label" for="serialSelect">Seriales de POS:</label>
+                                    <label id="LabelSerial" class="form-label" for="serialSelect">Seriales de POS:</label>
                                     <div id="serialSelectContainer">
                                         <select class="form-select" id="serialSelect" name="serialSelect"></select>
                                     </div><br>
                                 </div>
                                 <div>
-                                    <label class= "form-label" for="AsiganrCoordinador">Asignar a Coordinador</label>
+                                    <label id="LabelCoordinador" class= "form-label" for="AsiganrCoordinador">Asignar a Coordinador</label>
                                     <div id="AsiganrCoordinadorContainer">
                                         <select id="AsiganrCoordinador" name="AsiganrCoordinador" class="form-select"></select>
                                     </div><br>
                                 </div>
                                 <div class="contenedor-fechas">
                                     <div>
-                                        <label class="form-label" for="ultimoTicketInput">Fecha del Último Ticket:</label>
+                                        <label class="form-label" id="FechaLast" for="ultimoTicketInput">Fecha del Último Ticket:</label>
                                         <input class="form-control" type="text" id="ultimateTicketInput" readonly>
-                                        <div id="resultadoGarantiaReingreso"></div>
+                                        <div style=" margin-left: 5%;" id="resultadoGarantiaReingreso"></div>
                                     </div><br>
 
                                     <div>
-                                        <label class="form-label" for="InputFechaInstall">Fecha de Instalaci&oacuten POS:</label>
+                                        <label class="form-label" id="LabelFechaInst" for="InputFechaInstall">Fecha de Instalaci&oacuten POS:</label>
                                         <input class="form-control" type="text" id="InputFechaInstall" readonly>
-                                        <div id="resultadoGarantiaInstalacion"></div>
+                                        <div style="margin-left: 31%;" id="resultadoGarantiaInstalacion"></div>
                                     </div>
                                 </div><br>
                                 <div id="FallaSelectContainer1">
