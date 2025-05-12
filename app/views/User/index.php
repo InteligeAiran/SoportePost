@@ -66,7 +66,7 @@ function mi_navbar() {
                                 <thead>
                                     <tr>
                                         <th>Id</th>
-                                        <th>Nombre y Apellido</th>
+                                        <th>Nombre Apellido</th>
                                         <th>Usuario</th>
                                         <th>Cedula</th>
                                         <th>Correo</th>
