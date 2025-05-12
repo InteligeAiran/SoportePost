@@ -53,5 +53,31 @@ class userModel extends Model{
 
         }
     }
-}
+
+    public function getUserPermission($userId, $viewName) {
+        try {
+            $escapedUserId = pg_escape_literal($this->db->getConnection(), $userId);
+            $escapedViewName = pg_escape_literal($this->db->getConnection(), $viewName);
+
+            $sql = "SELECT getuserpermissionfunction(" . $escapedUserId . ", " . $escapedViewName . ")";
+            $result = Model::getResult($sql, $this->db); // Obtienes el array de getResult
+            //var_dump($sql); // Muestra el resultado del query
+            return $result; // Devuelve el resultado completo
+
+        } catch (Throwable $e) {
+            error_log("Error al obtener permisos del usuario: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Error al obtener permisos'];
+        }
+    }
+
+    public function getview(){
+        try{
+            $sql = "SELECT name_view FROM views";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+}   
 ?>

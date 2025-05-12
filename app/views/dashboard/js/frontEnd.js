@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 
 //Llamar a la función PHP usando fetch    SESSION EXPIRE DEL USER
-fetch('/SoportePost/app/controllers/dashboard2.php', {
+fetch('/SoportePost/app/controllers/dashboard.php', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json'

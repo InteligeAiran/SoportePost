@@ -52,12 +52,16 @@ function mi_navbar()
                 <div class="container-fluid py-4">
                     <div id="Row" class="row mt-4">
                         <div class="cord">
+                            <div class="d-flex justify-content-start mt-2">
+                                <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorNombreBtn">Buscar por Nombre</button>
+                                <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
+                                <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
+                            </div>
                             <div id="SearchRif" class="mb-3 d-flex align-items-center">
-                                <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789">
-                                <button type="button" class="btn btn-primary" onclick="SendRif()"
-                                    id="buscarRif">Buscar</button>
+                                <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
+                                <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;">Buscar</button>
                             </div><br>
-                            <div class="card">
+                            <div class="card" style="display: none;">
                                 <div class="table-responsive">
                                     <table id="rifCountTable">
                                         <thead>
@@ -82,7 +86,6 @@ function mi_navbar()
                                         </tbody>
                                     </table>
                                 </div>
-
                                 <div id="ModalSerial" class="modal">
                                     <div id="ModalSerial-content" class="modal-content">
                                         <span id="ModalSerial-close" class="close">&times;</span>
@@ -217,9 +220,7 @@ function mi_navbar()
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
         <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
-        <script
-            src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
-
+        <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
 
         <!-- Bootstrap-->
         <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -245,13 +246,11 @@ function mi_navbar()
         <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
 
         <!--MASCARAS JQUERY-->
-        <script
-            src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
 
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
-
-        <script src="<?php echo APP; ?>app/views/Tecnico/consulta_rif/js/frontEnd.js"></script>
+        <script src="<?php echo APP; ?>app/views/consulta_rif/js/frontEnd.js"></script>
 
         <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
         <?php
@@ -300,6 +299,4 @@ function mi_navbar()
         </script>
         <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
     </body>
-    <h1>hola</h1>
-
     </html>

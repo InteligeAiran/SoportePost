@@ -28,7 +28,6 @@ fetch('/SoportePost/app/controllers/consulta_rif.php', {
 });
 //// END  SESSION EXPIRE DEL USER
 
-
 function clearFormFields() {
     // Limpiar campos de Modal Nivel 2 (miModal)
     document.getElementById('FallaSelect2').value = '';
@@ -59,13 +58,13 @@ var input1 = document.getElementById("rifInput");
 
 // Execute a function when the user presses a key on the keyboard
 input1.addEventListener("keypress", function(event) {
-  // If the user presses the "Enter" key on the keyboard
-  if (event.key === "Enter") {
-    // Cancel the default action, if needed
-    event.preventDefault();
-    // Trigger the button element with a click
-    document.getElementById("buscarRif").click();
-  }
+    // If the user presses the "Enter" key on the keyboard
+    if (event.key === "Enter") {
+        // Cancel the default action, if needed
+        event.preventDefault();
+        // Trigger the button element with a click
+        document.getElementById("buscarRif").click();
+    }
 }); 
 
 $("#rifInput").keyup(function(){
@@ -372,3 +371,19 @@ function downloadImageModal(serial) {
     xhr.send(datos);
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    const buscarPorRifBtn = document.getElementById('buscarPorRifBtn');
+    const rifInput = document.getElementById('rifInput');
+    const buscarRif = document.getElementById('buscarRif');
+    const rifCountTableCard = document.querySelector('.card');
+
+    if (buscarPorRifBtn && rifCountTableCard) {
+        buscarPorRifBtn.addEventListener('click', function() {
+            rifCountTableCard.style.display = 'block'; // Muestra la tabla
+            rifInput.style.display = 'block'; // Muestra el input
+            buscarRif.style.display = 'block'; // Oculta el botón
+        });
+    } else {
+        console.log('Error: No se encontraron el botón o la tabla.'); // Para verificar si los elementos se seleccionan
+    }
+});

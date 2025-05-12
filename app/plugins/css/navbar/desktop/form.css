@@ -507,10 +507,25 @@
         }
     }
 
+    #serialSelect1 {
+        width: 57%;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: white;
+        color: #333;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url('data:image/svg+xml;utf8,<svg fill="#333" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 10px top 50%;
+        background-size: 8px;
+    }
+
     /*END MODAL NIVEL 1*/
 
     /*MODAL NIVEL 2*/
-
     #FallaSelect2 {
         width: 330%;
         font-size: 16px;
@@ -1131,21 +1146,6 @@
         font-size: 16px;
         color: #333;
         background-color: white;
-    }
-
-    #serialSelect1 {
-        font-size: 16px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        background-color: white;
-        color: #333;
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        background-image: url('data:image/svg+xml;utf8,<svg fill="#333" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
-        background-repeat: no-repeat;
-        background-position: right 10px top 50%;
-        background-size: 8px;
     }
 
     #serialSelect1:focus {

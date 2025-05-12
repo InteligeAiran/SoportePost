@@ -49,39 +49,40 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="crearTicketDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                            class="bi bi-plus-square-fill" viewBox="0 0 16 16">
-                            <path
-                                d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0" />
-                        </svg>
-                        <span class="nav-link-text ms-3">Crear Ticket</span>
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="crearTicketDropdown">
-                        <li><a class="dropdown-item" href="#" data-value="Soporte POS">Soporte POS</a></li>
-                        <li><a class="dropdown-item" href="#" data-value="Sustitución de POS">Sustitución de POS</a>
-                        </li>
-                        <li><a class="dropdown-item" href="#" data-value="Préstamo de POS">Préstamo de POS</a></li>
-                        <li><a class="dropdown-item" href="#" data-value="Desafiliación de POS">Desafiliación de POS</a>
-                        </li>
-                        <li><a class="dropdown-item" href="#" data-value="Migración de Bancos">Migración de Bancos</a>
-                        </li>
-                        <li><a class="dropdown-item" href="#" data-value="Cambio de Razón Social">Cambio de Razón
-                                Social</a></li>
-                    </ul>
-                </li>
+                   <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="crearTicketDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-plus-square-fill" viewBox="0 0 16 16">
+                                <path
+                                    d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0" />
+                            </svg>
+                            <span class="nav-link-text ms-3">Crear Ticket</span>
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="crearTicketDropdown">
+                            <li><a class="dropdown-item" href="#" data-value="Soporte POS">Soporte POS</a></li>
+                            <li><a class="dropdown-item" href="#" data-value="Sustitución de POS">Sustitución de POS</a></li>
+                            <li><a class="dropdown-item" href="#" data-value="Préstamo de POS">Préstamo de POS</a></li>
+                            <li><a class="dropdown-item" href="#" data-value="Desafiliación de POS">Desafiliación de POS</a></li>
+                            <li><a class="dropdown-item" href="#" data-value="Migración de Bancos">Migración de Bancos</a></li>
+                            <li><a class="dropdown-item" href="#" data-value="Cambio de Razón Social">Cambio de Razón Social</a></li>
+                        </ul>
+                    </li>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="rif-link" href="consulta_rif">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                            class="bi bi-search" viewBox="0 0 16 16">
-                            <path
-                                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                        </svg>
-                        <span class="nav-link-text ms-3">Consultar RIF</span>
-                    </a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="Reportes" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                            </svg>
+                            <span class="nav-link-text ms-3">Consultas General</span>
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="Reportes">
+                            <li><a class="dropdown-item" style="display: block;" href="consulta_rif" data-value="Consulta Rif">Consulta de Rif</a></li>
+                            <li><a class="dropdown-item" style="display: block;" href="#" data-value="Reportes Tickets">Reportes Tickets</a></li>
+                        </ul>
+                    </li>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="estadisticas-link" href="../pages/profile.html">

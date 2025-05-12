@@ -23,7 +23,7 @@ class TechnicalConsultionRepository
                 $rif[] = $agente;
                 //var_dump($agente);
             }
-        return $rif;
+            return $rif;
         } else {
             return null;
         }

@@ -66,6 +66,16 @@ class Api extends Controller {
         if (isset($urlSegments[0])) {
             switch ($urlSegments[0]) {
 
+                case 'permissions':
+                    // api/permissions/{user_id}
+                    if (isset($urlSegments[1]) && is_numeric($urlSegments[1])) {
+                        $userId = (int) $urlSegments[1];
+                        $this->handleGetUserPermissions($userId);
+                    } else {
+                        $this->response(['error' => 'ID de usuario no válido'], 400);
+                    }
+                break;
+
                 /* LOGIN */
                     case 'users':
                         // Pasar los segmentos de la URL a la función handleUsers
@@ -259,7 +269,6 @@ class Api extends Controller {
         $emailRepository = new EmailRepository();
         $imagenData = $emailRepository->GetDataImage($imageId);
     
-    
         if ($imagenData && isset($imagenData['exo']) && isset($imagenData['mime_type'])) {
             $base64Data = $imagenData['exo']; // Ya está en Base64
             $mimeType = $imagenData['mime_type'];
@@ -275,6 +284,17 @@ class Api extends Controller {
         }
     }
     
+    private function handleGetUserPermissions($userId) {
+        $repository = new UserRepository();
+        $permissions = $repository->getUserPermissions($userId); // Implementa esta función en tu PermissionRepository
+        //var_dump($permissions); // Para depuración
+        if ($permissions) {
+            $this->response(['success' => true, 'permissions' => $permissions], 200);
+        } else {
+            $this->response(['error' => 'No se encontraron permisos para el usuario'], 404);
+        }
+    }
+
 
     private function handleLogin() {
         $username = isset($_POST['username']) ? trim($_POST['username']) : '';

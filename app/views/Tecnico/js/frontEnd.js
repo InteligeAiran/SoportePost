@@ -85,10 +85,6 @@ function getTicketData() {
                         "pagingType": "simple_numbers",
                         "lengthMenu": [5],
                         autoWidth: false,
-                        "dom": '<"top"f>lt<"top"lp><"clear">', // Positions table elements
-                        "search": {
-                        "addClass": 'form-control input-lg col-xs-12'
-                                },
                         "language": {
                             "lengthMenu": "Mostrar _MENU_ registros", // Esta línea es la clave
                             "emptyTable": "No hay datos disponibles en la tabla",

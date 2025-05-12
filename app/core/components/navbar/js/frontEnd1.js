@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const body = document.querySelector('body');
     const filterToggle = document.getElementById('filter-toggle');
     const soportePosLink = document.querySelector('#crearTicketDropdown + .dropdown-menu a[data-value="Soporte POS"]');
+    const consultaRifLink = document.querySelector('#Reportes + .dropdown-menu a[href="consulta_rif"]');
+
 
 
     // Función para mostrar/ocultar el sidebar
@@ -14,6 +16,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // **NUEVO EVENTO CONDICIONAL PARA OCULTAR EL SIDEBAR AL CLICAR EN "Soporte POS"**
     if (soportePosLink && filterToggle && window.innerWidth <= 1199) {
         soportePosLink.addEventListener('click', function(event) {
+            event.stopPropagation();
+            toggleSidenav();
+        });
+    }
+
+     // **NUEVO EVENTO CONDICIONAL PARA OCULTAR EL SIDEBAR AL CLICAR EN "Soporte POS"**
+    if (consultaRifLink && filterToggle && window.innerWidth <= 1199) {
+        consultaRifLink.addEventListener('click', function(event) {
             event.stopPropagation();
             toggleSidenav();
         });
@@ -200,23 +210,43 @@ window.addEventListener('resize', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-const crearTicketDropdown = document.getElementById('crearTicketDropdown');
-const dropdownMenu = crearTicketDropdown.nextElementSibling;
+    const crearTicketDropdown = document.getElementById('crearTicketDropdown');
+    const dropdownMenu = crearTicketDropdown.nextElementSibling;
 
-if (crearTicketDropdown && dropdownMenu) {
-    crearTicketDropdown.addEventListener('click', function(event) {
-        event.preventDefault();
-        dropdownMenu.classList.toggle('show');
-        this.classList.toggle('active'); // Opcional: Puedes usar esta clase para otros estilos si lo necesitas
-    });
+    if (crearTicketDropdown && dropdownMenu) {
+        crearTicketDropdown.addEventListener('click', function(event) {
+            event.preventDefault();
+            dropdownMenu.classList.toggle('show');
+            this.classList.toggle('active'); // Opcional: Puedes usar esta clase para otros estilos si lo necesitas
+        });
 
-    document.addEventListener('click', function(event) {
-        if (!crearTicketDropdown.contains(event.target) && !dropdownMenu.contains(event.target)) {
-            dropdownMenu.classList.remove('show');
-            crearTicketDropdown.classList.remove('active'); // Opcional
-        }
-    });
-}
+        document.addEventListener('click', function(event) {
+            if (!crearTicketDropdown.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                dropdownMenu.classList.remove('show');
+                crearTicketDropdown.classList.remove('active'); // Opcional
+            }
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const reportesDropdown = document.getElementById('Reportes');
+    const reportesMenu = reportesDropdown.nextElementSibling;
+
+    if (reportesDropdown && reportesMenu) {
+        reportesDropdown.addEventListener('click', function(event) {
+            event.preventDefault();
+            reportesMenu.classList.toggle('show');
+            this.classList.toggle('active'); // Opcional
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!reportesDropdown.contains(event.target) && !reportesMenu.contains(event.target)) {
+                reportesMenu.classList.remove('show');
+                reportesDropdown.classList.remove('active'); // Opcional
+            }
+        });
+    }
 });
 
 function inicializeModal() {
@@ -1515,3 +1545,103 @@ function SendDataFailure2(idStatusPayment) {
     };
     xhr.send(formData);
 }
+
+const userId = document.getElementById('id_user').value
+    document.addEventListener('DOMContentLoaded', function() {
+        //console.log('ID de usuario:', userId);
+        if (userId > 0) {
+            //console.log('URL de permisos:', ${ENDPOINT_BASE}${APP_PATH}/api/permissions/${userId});
+            fetch(`${ENDPOINT_BASE}${APP_PATH}api/permissions/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const permissions = data.permissions;
+                        //console.log('Permisos obtenidos:', permissions);
+                        updateNavbar(permissions);
+                    } else {
+                        console.error('Error al obtener los permisos:', data.error);
+                        updateNavbar({}); // Ocultar todo en caso de error
+                    }
+                })
+                .catch(error => {
+                    console.error('Error de red al obtener los permisos:', error);
+                     updateNavbar({}); // Ocultar todo en caso de error de red
+                });
+        } else {
+            console.log('Usuario no autenticado, ocultando elementos.');
+            updateNavbar({}); // Ocultar todo si no hay usuario logueado
+        }
+    });
+
+function updateNavbar(permissions) {
+    // Función para verificar si el usuario tiene permiso para una vista
+    function hasPermission(viewName) {
+        return permissions?.[viewName] === true;
+    }
+
+    // **Dropdown "Crear Ticket" y sus sub-ítems**
+    const crearTicketDropdown = document.getElementById('crearTicketDropdown');
+    const crearTicketMenu = crearTicketDropdown?.nextElementSibling; // El ul.dropdown-menu siguiente
+
+    const soportePosItem = crearTicketMenu?.querySelector('a[data-value="Soporte POS"]')?.closest('li');
+    const sustitucionPosItem = crearTicketMenu?.querySelector('a[data-value="Sustitución de POS"]')?.closest('li');
+    const prestamoPosItem = crearTicketMenu?.querySelector('a[data-value="Préstamo de POS"]')?.closest('li');
+    const desafiliacionPosItem = crearTicketMenu?.querySelector('a[data-value="Desafiliación de POS"]')?.closest('li');
+    const migracionBancosItem = crearTicketMenu?.querySelector('a[data-value="Migración de Bancos"]')?.closest('li');
+    const cambioRazonSocialItem = crearTicketMenu?.querySelector('a[data-value="Cambio de Razón Social"]')?.closest('li');
+
+    // Ocultar/Mostrar los sub-ítems de "Crear Ticket"
+    if (soportePosItem) {
+        soportePosItem.style.display = hasPermission('Soporte_Pos') ? 'block' : 'none';
+    }
+    if (sustitucionPosItem) {
+        sustitucionPosItem.style.display = hasPermission('Sustitucion_Pos') ? 'block' : 'none';
+    }
+    if (prestamoPosItem) {
+        prestamoPosItem.style.display = hasPermission('Prestamo_Pos') ? 'block' : 'none';
+    }
+    if (desafiliacionPosItem) {
+        desafiliacionPosItem.style.display = hasPermission('Desafiliacion_Pos') ? 'block' : 'none';
+    }
+    if (migracionBancosItem) {
+        migracionBancosItem.style.display = hasPermission('Migracion_Bancos') ? 'block' : 'none';
+    }
+    if (cambioRazonSocialItem) {
+        cambioRazonSocialItem.style.display = hasPermission('Cambio_RazonSocial') ? 'block' : 'none';
+    }
+
+     // **Dropdown "Consultas General" y sus sub-ítems**
+    const consultasDropdown = document.getElementById('Reportes');
+    const consultasMenu = consultasDropdown?.nextElementSibling; // El ul.dropdown-menu siguiente
+
+    const consultaRifItem = consultasMenu?.querySelector('a[data-value="Consulta Rif"]')?.closest('li');
+    const reportesTicketsItem = consultasMenu?.querySelector('a[data-value="Reportes Tickets"]')?.closest('li');
+
+    // Ocultar/Mostrar los sub-ítems de "Consultas General"
+    if (consultaRifItem) {
+        consultaRifItem.style.display = hasPermission('Consulta_Rif') ? 'block' : 'none';
+    }
+
+    if (reportesTicketsItem) {
+        reportesTicketsItem.style.display = hasPermission('Reportes_Tickets') ? 'block' : 'none';
+    }
+
+    // **Enlace "Estadisticas Mis Tickets"**
+    /*const estadisticasLinkLi = document.getElementById('estadisticas-link')?.closest('li');
+    if (estadisticasLinkLi) {
+        estadisticasLinkLi.style.display = hasPermission('estadisticas-link') ? 'block' : 'none';
+    }
+
+    // **Enlace "Asignar Ticket a Técnico"**
+    const asignarTicketLinkLi = document.getElementById('assignment-ticket')?.closest('li');
+    if (asignarTicketLinkLi) {
+        asignarTicketLinkLi.style.display = hasPermission('asignar_tecnico') ? 'block' : 'none';
+    }
+
+    // **Enlace "Técnico"**
+    const tecnicoLinkLi = document.querySelector('a[href="tecnico"]')?.closest('li');
+    if (tecnicoLinkLi) {
+        tecnicoLinkLi.style.display = hasPermission('tecnico') ? 'block' : 'none';
+    }   */
+}    
+

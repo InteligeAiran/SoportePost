@@ -1,4 +1,60 @@
 @media (max-width: 2500px) AND (min-width: 1050px) AND (max-height: 1050px) AND (min-height: 400px){
+
+    #buscarPorRifBtn, #buscarPorSerialBtn, #buscarPorNombreBtn{
+        background-color: #001f3f; /* Azul oscuro */
+        color: #ffff00; /* Amarillo */
+        border: 2px solid #00ffff; /* Azul claro */
+        border-radius: 8px; /* Bordes redondeados */
+        padding: 12px 24px; /* Ajustar el relleno según sea necesario */
+        font-weight: bold; /* Texto en negrita */
+        box-shadow: 0 0 15px #00ffff; /* Resplandor azul claro */
+        transition: box-shadow 0.3s ease, transform 0.3s ease; /* Transición suave para el resplandor y la escala */
+        text-transform: uppercase; /* Texto en mayúsculas */
+        letter-spacing: 1px; /* Espacio entre letras */
+    }
+
+    #buscarPorNombreBtn{
+        margin-left: 24%;
+    }
+
+    #buscarPorRifBtn:hover {
+        box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
+        transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    }
+
+    #buscarPorSerialBtn:hover{
+        box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
+        transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    }
+
+    #buscarPorNombreBtn:hover{
+        box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
+        transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    }
+
+    #buscarPorNombreBtn:focus {
+        outline: none; /* Eliminar el contorno predeterminado al enfocar */
+        box-shadow: 0 0 20px #00ffff; /* Mantener el resplandor al enfocar */
+    }
+
+    #buscarPorRifBtn:focus {
+        outline: none; /* Eliminar el contorno predeterminado al enfocar */
+        box-shadow: 0 0 20px #00ffff; /* Mantener el resplandor al enfocar */
+    }
+
+    #buscarPorSerialBtn:focus {
+        outline: none; /* Eliminar el contorno predeterminado al enfocar */
+        box-shadow: 0 0 20px #00ffff; /* Mantener el resplandor al enfocar */
+    }
+
+    /* Aplicar los estilos a los botones */
+    .d-flex.justify-content-start.mt-2 button.me-2:nth-child(1),
+    .d-flex.justify-content-start.mt-2 button.me-2:nth-child(2),
+    .d-flex.justify-content-start.mt-2 button#buscarPorRifBtn {
+        @apply btn-custom; /* Si usas Tailwind CSS */
+    /* Si no usas Tailwind, añade la clase 'btn-custom' a cada botón en tu HTML */
+    }
+
     .py-4 {
        margin-top: 6%;
     }
@@ -29,6 +85,7 @@
     #SearchRif{
         margin-left: 550px;
         width: 11%;
+        margin-top: 4%;
     }
 
     #buscarRifContainer {
@@ -405,25 +462,26 @@
     }
 
     .sunmi-P2{
-        margin-top: 60px;
-        height: 435px;
-        margin-left: -253px;
-        width: 480px;
+        margin-top: -5%;
+        height: 95%;
+        margin-left: -171%;
+        width: 307%;
     }
 
     .ingenico-ict220{
-        margin-left: -217px;
-        margin-top: -18px;
-        height: 378px;
+        margin-left: -179%;
+        margin-top: -1%;
+        height: 99%;
     }
 
     .move-2500{
-        margin-left: -165px;
+        margin-left: -144px;
+        height: 78%;
     }
 
     .ingenico-iwl220{
-        margin-top: 25px;
-        margin-left: -254px;
+        margin-top: -15%;
+        margin-left: -179%;
     }
 
     .sunmi-P2mini{
@@ -432,9 +490,10 @@
     }
 
     .sunmi-P2SE{
-        width: 625px;
-        margin-left: -323px;
-        margin-top: 54px;
+        width: 376%; 
+        margin-left: -197%;
+        margin-top: -5%;
+
     }
     
     .Kozen-P10{
