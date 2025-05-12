@@ -86,4 +86,40 @@ class UserRepository
         }
         return $permissions;
     }
+
+    public function GetAreaUsers(){
+        $result = $this->model->GetAreaUsers();
+    
+        for ($i = 0; $i < $result['numRows']; $i++) {
+            $agente = pg_fetch_assoc($result['query'], $i);
+            $area[] = $agente;
+            //var_dump($agente);
+        }
+        return $area;
+    }
+
+        public function GetTipoUsers(){
+        $result = $this->model->GetTipoUsers();
+    
+        for ($i = 0; $i < $result['numRows']; $i++) {
+            $agente = pg_fetch_assoc($result['query'], $i);
+            $tipousers[] = $agente;
+            //var_dump($agente);
+        }
+        return $tipousers;
+    }
+
+    public function Guardar_Usuario($id_user,$nombreusers, $apellidousers, $tipo_doc, $documento, $users, $correo, $area_users, $tipo_users){
+
+        $result = $this->model->Guardar_Usuario($id_user, $nombreusers, $apellidousers, $tipo_doc, $documento, $users, $correo, $area_users, $tipo_users);
+        //var_dump($result);
+        for ($i = 0; $i < $result['numRows']; $i++) {
+            $agente = pg_fetch_assoc($result['query'], $i);
+            $saveusers[] = $agente;
+            //var_dump($agente);
+        }
+        return $saveusers;
+    }
+
+    
 }
