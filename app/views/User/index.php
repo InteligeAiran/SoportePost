@@ -63,7 +63,6 @@ function mi_navbar() {
                                         <th>Nombre y Apellido</th>
                                         <th>Usuario</th>
                                         <th>Cedula</th>
-
                                         <th>Estatus</th>
                                         <th>Rol</th>
                                         <th>Area</th>
@@ -114,33 +113,41 @@ function mi_navbar() {
                 </div>    
 
                 <div class="row">
-                      <div class="col-md-6">
+                      <!-- <div class="col-md-6">
                         <label for="tipodoc">Tipo Documento:</label>
                         <input type="text" id="tipodoc" class="form-control" name="tipodoc">
-                      </div>
+                      </div> -->
                       <div class="col-md-6">
-                        <label for="cedula">Cedula:</label>
-                        <input type="text" id="coddocumento" class="form-control" name="coddocumento">
+                        <label for="cedula">Documentacion:</label>
+                        <input type="text" id="coddocumento" class="form-control" name="coddocumento" onkeypress="return soloNumeros(event);">
                       </div>
-                </div>  
 
-                <div class="row">
                       <div class="col-md-6">
                         <label for="usuario">Usuario:</label>
                             <input type="text" id="usuario" class="form-control" name="usuario">
                       </div>
+                </div>  
+
+                <div class="row">
+                      
                       <div class="col-md-6">
                         <label for="email">Correo:</label>
                             <input type="text" id="email" class="form-control" name="email">
                       </div>
-                </div>    
-
-                <div class="row">
                       <div class="col-md-6">
                         <label for="area">Area:</label>
                         <div id="AreaUsersContainer">
                             <select id="areausers" name="areausers"></select>
                             <p id="rifMensaje1"></p>
+                        </div>
+                      </div>
+                </div>    
+
+                <div class="row">
+                      <div class="col-md-6">
+                        <label for="apellido">Region:</label>
+                       <div id="TipoUsersContainer">
+                            <select id="regionusersusers" name="regionusersusers"></select>
                         </div>
                       </div>
                       <div class="col-md-6">
@@ -149,7 +156,19 @@ function mi_navbar() {
                             <select id="tipousers" name="tipousers"></select>
                         </div>
                       </div>
-                </div>    
+                </div>   
+                <div class="row">
+                      <div class="col-md-6">
+                        <label for="apellido">Nivel Técnico:</label>
+                       <div id="TipoUsersContainer">
+                            <select name="select" name="idnivel" id="idnivel">
+                              <option value="" selected>Seleccione</option>
+                              <option value="1">Nivel 1</option>
+                              <option value="2">Nivel 2</option>
+                            </select>
+                        </div>
+                      </div>
+                </div>  
 
             </div> 
           </div>   

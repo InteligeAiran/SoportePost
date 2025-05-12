@@ -1,3 +1,13 @@
+function soloNumeros(e)
+{
+    var keynum = window.event ? window.event.keyCode : e.which;
+    if ((keynum == 8) || (keynum == 46))
+        return true;
+
+    return /\d/.test(String.fromCharCode(keynum));
+}
+
+
 function getUserData() {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetUsers`);
