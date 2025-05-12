@@ -69,6 +69,7 @@ function mi_navbar() {
                                         <th>Tipo Usuario</th>
                                         <th>Region</th>
                                         <th>Acciones</th>
+                                        <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody  id="table-user-body">
@@ -147,7 +148,7 @@ function mi_navbar() {
                       <div class="col-md-6">
                         <label for="apellido">Region:</label>
                        <div id="TipoUsersContainer">
-                            <select id="regionusersusers" name="regionusersusers"></select>
+                            <select id="regionusers" name="regionusers"></select>
                         </div>
                       </div>
                       <div class="col-md-6">

@@ -193,6 +193,10 @@ class Api extends Controller {
                         $this->handleGetTipoUsers();
                     break;
 
+                    case 'GetRegionUsers':
+                        $this->handleGetRegionUsers();
+                    break;                    
+
                     case 'GuardarUsuarios':
                         $this->handleGuardarUsuarios();
                     break;
@@ -1163,6 +1167,19 @@ class Api extends Controller {
     }    
 
 
+    public function handleGetRegionUsers(){
+        $repository = new UserRepository(); // Inicializa el repositorio
+        $result = $repository->GetRegionUsers();
+       // var_dump($result);
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'regionusers' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay coordinadores disponibles o No ha seleccionado ningun coordinador'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los coordinadores'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
+    }  
 
         public function handleGuardarUsuarios(){
         $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';

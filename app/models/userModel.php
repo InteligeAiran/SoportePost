@@ -62,7 +62,17 @@ class userModel extends Model{
         } catch (Throwable $e) {
             // Manejar excepciones
         }
-    }    
+    }   
+
+        public function GetRegionUsers(){
+        try{
+            $sql = "SELECT * FROM sp_verregionusers()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }         
 
 
         public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $tipo_doc, $documento, $users, $correo, $area_users, $tipo_users){
