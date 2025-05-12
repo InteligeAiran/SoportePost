@@ -23,7 +23,7 @@ class TechnicalConsultionRepository
                 $rif[] = $agente;
                 //var_dump($agente);
             }
-        return $rif;
+            return $rif;
         } else {
             return null;
         }
@@ -142,17 +142,38 @@ class TechnicalConsultionRepository
         return $result;
     }
 
-    public  function GetClientInfo($serial){
-        // Lógica para obtener información del cliente
-        $result = $this->model->GetClientInfo($serial);
+    public function GetTicketData(){
+        $result = $this->model->GetTicketData();
+        if ($result) {
+            //var_dump($result);  
+            $ticket = [];
 
-        for ($i = 0; $i < $result['numRows']; $i++) {
-            $agente = pg_fetch_assoc($result['query'], $i);
-            $data[] = $agente;
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
             //var_dump($agente);
+            return $ticket;
+        } else {
+            return null;
         }
-        return $data;
     }
 
+    public function GetTicketData1(){
+        $result = $this->model->GetTicketData1();
+        if ($result) {
+            //var_dump($result);  
+            $ticket = [];
+
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            //var_dump($agente);
+            return $ticket;
+        } else {
+            return null;
+        }
+    }
 }
 ?>

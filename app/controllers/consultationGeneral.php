@@ -7,7 +7,7 @@ class consultationGeneral extends Controller {
     }
 
     public function index(): void {
-        session_start();
+        session_start();;
         Model::exists('consultationGeneral');
 
         // Incorporates the FrontEnd Controller

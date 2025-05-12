@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . "/../../libs/session.php";
-session_start();
+/*session_start();*/
 
 class cerrar_session extends Controller {
 
@@ -43,6 +43,7 @@ class cerrar_session extends Controller {
 
         // Llamar al método en usuarioModel para actualizar el estado del usuario
         $usuarioModel->UpdateSession($usuario_id,  $session_id);
+        var_dump($usuarioModel->UpdateSession($usuario_id,  $session_id)); // Verifica el resultado de la actualización
     }
 
 }

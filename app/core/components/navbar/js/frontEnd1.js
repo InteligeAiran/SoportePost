@@ -2,11 +2,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidenav = document.getElementById('sidenav-main');
     const body = document.querySelector('body');
     const filterToggle = document.getElementById('filter-toggle');
+    const soportePosLink = document.querySelector('#crearTicketDropdown + .dropdown-menu a[data-value="Soporte POS"]');
+    const consultaRifLink = document.querySelector('#Reportes + .dropdown-menu a[href="consulta_rif"]');
+
+
 
     // Función para mostrar/ocultar el sidebar
     function toggleSidenav() {
         sidenav.classList.toggle('active');
         body.classList.toggle('sidenav-open');
+    }
+
+    // **NUEVO EVENTO CONDICIONAL PARA OCULTAR EL SIDEBAR AL CLICAR EN "Soporte POS"**
+    if (soportePosLink && filterToggle && window.innerWidth <= 1199) {
+        soportePosLink.addEventListener('click', function(event) {
+            event.stopPropagation();
+            toggleSidenav();
+        });
+    }
+
+     // **NUEVO EVENTO CONDICIONAL PARA OCULTAR EL SIDEBAR AL CLICAR EN "Soporte POS"**
+    if (consultaRifLink && filterToggle && window.innerWidth <= 1199) {
+        consultaRifLink.addEventListener('click', function(event) {
+            event.stopPropagation();
+            toggleSidenav();
+        });
     }
 
     // Evento para el botón de filtro
@@ -38,10 +58,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    setActiveLink('inicio-link', 'dashboard2');
+    setActiveLink('inicio-link', 'dashboard');
     setActiveLink('tickets-link', 'pages/tables.html');
     setActiveLink('rif-link', 'consulta_rif');
     setActiveLink('estadisticas-link', 'pages/profile.html');
+
+})
 
 document.addEventListener('DOMContentLoaded', function() {
     // Estilo para el span "No file chosen"
@@ -70,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
         envioInputFile.addEventListener('change', function() {
             if (this.files.length > 0) {
                 fileChosenSpanEnvio.textContent = this.files[0].name;
-                fileChosenSpanEnvio.style.cssText = 'margin-left: 5px; font-size: 11px; display: block;'; // Remover estilo de "no file"
+                fileChosenSpanEnvio.style.cssText = 'margin-left: 5px; font-size: 9px; display: block;'; // Remover estilo de "no file"
             } else {
                 fileChosenSpanEnvio.style.cssText = noFileChosenStyle;
             }
@@ -109,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 fileChosenSpanExo.style.cssText = noFileChosenStyle;
             } else if (file) {
                 fileChosenSpanExo.textContent = file.name;
-                fileChosenSpanExo.style.cssText = 'margin-left: 5px; font-size: 11px; display: block;'; // Remover estilo de "no file"
+                fileChosenSpanExo.style.cssText = 'margin-left: 5px; font-size: 9px; display: block;'; // Remover estilo de "no file"
             } else {
                 fileChosenSpanExo.style.cssText = noFileChosenStyle;
             }
@@ -148,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 fileChosenSpanAntici.style.cssText = noFileChosenStyle;
             } else if (file) {
                 fileChosenSpanAntici.textContent = file.name;
-                fileChosenSpanAntici.style.cssText = 'margin-left: 5px; font-size: 11px; display: block;'; // Remover estilo de "no file"
+                fileChosenSpanAntici.style.cssText = 'margin-left: 5px; font-size: 9px; display: block;'; // Remover estilo de "no file"
             } else {
                 fileChosenSpanAntici.style.cssText = noFileChosenStyle;
             }
@@ -188,34 +210,60 @@ window.addEventListener('resize', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-const crearTicketDropdown = document.getElementById('crearTicketDropdown');
-const dropdownMenu = crearTicketDropdown.nextElementSibling;
+    const crearTicketDropdown = document.getElementById('crearTicketDropdown');
+    const dropdownMenu = crearTicketDropdown.nextElementSibling;
 
-if (crearTicketDropdown && dropdownMenu) {
-    crearTicketDropdown.addEventListener('click', function(event) {
-        event.preventDefault();
-        dropdownMenu.classList.toggle('show');
-        this.classList.toggle('active'); // Opcional: Puedes usar esta clase para otros estilos si lo necesitas
-    });
+    if (crearTicketDropdown && dropdownMenu) {
+        crearTicketDropdown.addEventListener('click', function(event) {
+            event.preventDefault();
+            dropdownMenu.classList.toggle('show');
+            this.classList.toggle('active'); // Opcional: Puedes usar esta clase para otros estilos si lo necesitas
+        });
 
-    document.addEventListener('click', function(event) {
-        if (!crearTicketDropdown.contains(event.target) && !dropdownMenu.contains(event.target)) {
-            dropdownMenu.classList.remove('show');
-            crearTicketDropdown.classList.remove('active'); // Opcional
-        }
-    });
-}
+        document.addEventListener('click', function(event) {
+            if (!crearTicketDropdown.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                dropdownMenu.classList.remove('show');
+                crearTicketDropdown.classList.remove('active'); // Opcional
+            }
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const reportesDropdown = document.getElementById('Reportes');
+    const reportesMenu = reportesDropdown.nextElementSibling;
+
+    if (reportesDropdown && reportesMenu) {
+        reportesDropdown.addEventListener('click', function(event) {
+            event.preventDefault();
+            reportesMenu.classList.toggle('show');
+            this.classList.toggle('active'); // Opcional
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!reportesDropdown.contains(event.target) && !reportesMenu.contains(event.target)) {
+                reportesMenu.classList.remove('show');
+                reportesDropdown.classList.remove('active'); // Opcional
+            }
+        });
+    }
 });
 
 function inicializeModal() {
     var modal = $("#miModal"); // Modal Nivel 2
     var modal1 = $("#miModal1"); // Modal Nivel 1
-    var span = $(".cerrar");     // Cierre Modal Nivel 2
-    var span1 = $(".cerrar1");    // Cierre Modal Nivel 1
+    var spanNivelFalla = $("#cerrar-icon");     // Cierre Modal de Nivel Falla
+    var spanFalla1 = $("#cerrar-iconNivel1");    // Cierre Modal Nivel 1
+    var spanFalla2 = $("#cerraModal2");
     var btnAnterior = $("#anterior");
     var btnSiguiente = $("#siguiente");
     var indiceActual = 0;
     var nivelFallaModal = $("#nivelFallaModal");
+    var cerrarNivelFalla = $("#cerrar"); // Botón de cerrar el modal de nivel de falla
+    var cerraModalFalla1 = $("#buttonCerrar"); // Botón de cerrar el modal de nivel 1
+    var cerraModalFalla2 = $("#buttonCerrar2")
+    
+
     var crearTicketDropdownItems = $("#crearTicketDropdown + ul.dropdown-menu a"); // Seleccionamos los items del dropdown
 
     function mostrarContenido(indice) {
@@ -228,12 +276,44 @@ function inicializeModal() {
             $("#detalle3").show();
         }
     }
+    
+    cerrarNivelFalla.off('click').on('click', function() { // Cierre Modal Nivel de Falla (BOTON DE CERRAR)
+        nivelFallaModal.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });
+
+    spanNivelFalla.off('click').on('click', function() { // Cierre Modal NIVEL FALLA (ICON-CERRAR)
+        nivelFallaModal.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });
+
+    cerraModalFalla1.off('click').on('click', function() { // Cierre Modal Nivel 1 (BOTON DE CERRAR)
+        modal1.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });
+
+    spanFalla1.off('click').on('click', function() { // Cierre Modal Nivel 1  (ICON-CERRAR)
+        modal1.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });
+
+    cerraModalFalla2.off('click').on('click', function() { // Cierre Modal falla 2 (BOTON DE CERRAR)
+        modal.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });
+
+    spanFalla2.off('click').on('click', function() { // Cierre Modal falla 2 (ICON-CERRAR)
+        modal.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });
 
     function cerrarNivelFallaModal() {
         nivelFallaModal.css("display", "none");
         clearFormFields(); // Limpiar campos de ambos modales
     }
 
+ 
+    
     function mostrarMiModal(nivel) { // Muestra Modal Nivel 2 y limpia campos al mostrar
         modal.css("display", "block");
         indiceActual = 0;
@@ -244,7 +324,14 @@ function inicializeModal() {
     function mostrarMiModal1(nivel) { // Muestra Modal Nivel 1 y limpia campos al mostrar
         modal1.css("display", "block");
         clearFormFields(); // Limpiar campos de ambos modales
-    }
+    }   
+
+    /*cerrarNivelFalla.off('click').on('click', function() { // Cierre Modal Nivel de Falla
+        modal.css("display", "none");
+        clearFormFields(); // Limpiar campos de ambos modales
+    });*/
+
+
 
     crearTicketDropdownItems.off('click').on('click', function(event) {
         event.preventDefault(); // Evitar que el enlace navegue
@@ -284,23 +371,10 @@ function inicializeModal() {
         mostrarMiModal1('nivel1'); // Esta función ya establece display: block para modal1
     });
 
-    span1.off('click').on('click', function() { // Cierre Modal Nivel 1
-        nivelFallaModal.css("display", "none");
-        modal1.css("display", "none");
-        clearFormFields(); // Limpiar campos de ambos modales
-        // No necesitas ocultar modal (Nivel 2) aquí
-    });
 
     $("#nivel2Btn").off('click').on('click', function() {
         cerrarNivelFallaModal();
         mostrarMiModal('nivel2'); // Esta función ya establece display: block para modal
-    });
-
-    span.off('click').on('click', function() { // Cierre Modal Nivel 2
-        modal.css("display", "none");
-        nivelFallaModal.css("display", "none");
-        clearFormFields(); // Limpiar campos de ambos modales
-        // No necesitas ocultar modal1 (Nivel 1) aquí
     });
 
     $(window).off('click').on('click', function(event) {
@@ -344,6 +418,9 @@ function clearFormFields() {
     document.getElementById('EnvioInput').value = '';
     document.getElementById('ExoneracionInput').value = '';
     document.getElementById('AnticipoInput').value = '';
+    document.getElementById('rifMensaje1').innerHTML = ''; // Limpiar mensaje de error
+    document.getElementById('rifMensaje').innerHTML = ''; // Limpiar mensaje de error
+
 
     // Limpiar campos de Modal Nivel 1 (miModal1)
     document.getElementById('FallaSelect1').value = '';
@@ -360,7 +437,7 @@ function SendDataFailure1() {
     const id_user    = document.getElementById('id_user').value;
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost/SoportePost/api/SaveDataFalla');
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SaveDataFalla`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); // Asegúrate de que esto esté presente
 
     xhr.onload = function() {
@@ -370,7 +447,7 @@ function SendDataFailure1() {
                 if (response.success) {
                     // **MOVER LA LÓGICA DEL CORREO AQUÍ**
                     const xhrEmail = new XMLHttpRequest();
-                    xhrEmail.open('POST', 'http://localhost/SoportePost/api/email/send_ticket1');
+                    xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket1`);
                     xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
                     xhrEmail.onload = function() {
@@ -507,7 +584,9 @@ function checkRif() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost/SoportePost/api/ValidateRif');
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/ValidateRif`);
+       
+
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -559,7 +638,8 @@ function checkRif1() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost/SoportePost/api/ValidateRif1');
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/ValidateRif1`);
+         
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -602,7 +682,8 @@ function checkRif1() {
 
 function getPosSerials1(rif) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost/SoportePost/api/GetPosSerials1');
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetPosSerials1`);
+    
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -680,7 +761,8 @@ function getPosSerials1(rif) {
 
 function getFailure() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost/SoportePost/api/GetFailure1');
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetFailure1`);
+    
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -690,7 +772,7 @@ function getFailure() {
                 if (response.success) {
                     const select = document.getElementById('FallaSelect1');
 
-                    select.innerHTML = '<option value="">Seleccione la falla</option>'; // Limpiar y agregar la opción por defecto
+                    select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
                     if (Array.isArray(response.failures) && response.failures.length > 0) {
                         response.failures.forEach(failure => {
                             const option = document.createElement('option');
@@ -727,7 +809,8 @@ document.addEventListener('DOMContentLoaded', getFailure);
 
 function getFailure2() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost/SoportePost/api/GetFailure2');
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetFailure2`);
+    
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -772,7 +855,8 @@ document.addEventListener('DOMContentLoaded', getFailure2);
 
 function getCoordinador() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost/SoportePost/api/GetCoordinador');
+    xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/GetCoordinador`);
+   
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -782,7 +866,7 @@ function getCoordinador() {
                 if (response.success) {
                     const select = document.getElementById('AsiganrCoordinador');
 
-                    select.innerHTML = '<option value="">Seleccione el Coordinador</option>'; // Limpiar y agregar la opción por defecto
+                    select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
                     if (Array.isArray(response.coordinadores) && response.coordinadores.length > 0) {
                         response.coordinadores.forEach(coordinador => {
                             const option = document.createElement('option');
@@ -822,7 +906,7 @@ let fechaInstalacionGlobal = null;
 
 function getPosSerials(rif) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost/SoportePost/api/GetPosSerials');
+    xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/GetPosSerials`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -886,7 +970,7 @@ function getPosSerials(rif) {
 
 function getUltimateTicket(serial) {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost/SoportePost/api/GetUltimateTicket'); // Asegúrate de usar la ruta correcta de tu API
+        xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/GetUltimateTicket`); // Asegúrate de usar la ruta correcta de tu API
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
         xhr.onload = function() {
@@ -967,7 +1051,7 @@ function getUltimateTicket(serial) {
 
     function getInstalationDate(serial) {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost/SoportePost/api/GetInstallPosDate'); // Asegúrate de usar la ruta correcta de tu API
+        xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/GetInstallPosDate`); // Asegúrate de usar la ruta correcta de tu API
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
         xhr.onload = function() {
@@ -1029,7 +1113,7 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
     // Controlar visibilidad de los botones
     const botonExoneracion = document.getElementById('DownloadExo');
     const botonAnticipo = document.getElementById('DownloadAntici');
-    const animation = document.getElementById('animation');
+   // const animation = document.getElementById('animation');
  
 
     if (fechaUltimoTicket === 'No disponible') {
@@ -1054,14 +1138,14 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
             resultadoElemento.style.color = 'red';
             botonExoneracion.style.display = 'none';
             botonAnticipo.style.display = 'none';
-            animation.style.display = 'block';  
+           // animation.style.display = 'block';  
             return 3;
         } else {
             resultadoElemento.textContent = 'Sin Novedad';
             resultadoElemento.style.color = '';
             botonExoneracion.style.display = 'inline-block';
             botonAnticipo.style.display = 'inline-block';
-            animation.style.display = 'none';  
+           // animation.style.display = 'none';  
 
             return null;
         }
@@ -1073,7 +1157,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
      // Controlar visibilidad de los botones
      const botonExoneracion = document.getElementById('DownloadExo');
      const botonAnticipo = document.getElementById('DownloadAntici');
-     const animation = document.getElementById('animation');
+     //const animation = document.getElementById('animation');
  
 
     if (fechaInstalacion === 'No disponible') {
@@ -1098,7 +1182,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
             resultadoElemento.style.color = 'red';
             botonExoneracion.style.display = 'none';
             botonAnticipo.style.display = 'none';
-            animation.style.display = 'block';
+           // animation.style.display = 'block';
             
             return 1;
         } else {
@@ -1106,7 +1190,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
             resultadoElemento.style.color = '';
             botonExoneracion.style.display = 'inline-block';
             botonAnticipo.style.display = 'inline-block';
-            animation.style.display = 'none';  
+            //animation.style.display = 'none';  
 
             return null;
         }
@@ -1345,6 +1429,7 @@ function SendDataFailure2(idStatusPayment) {
     formData.append('id_status_payment', idStatusPayment);
     formData.append('id_user', id_user);
     
+    console.log(descrpFailure, serial, coordinador, nivelFalla, idStatusPayment, id_user);
     if (envioButtonContainer.style.display !== 'none' && archivoEnvio) {
         formData.append('archivoEnvio', archivoEnvio);
     }
@@ -1386,7 +1471,7 @@ function SendDataFailure2(idStatusPayment) {
     console.log(formData);*/
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost/SoportePost/api/SaveDataFalla2');
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SaveDataFalla2`);
     xhr.onload = function() {
         if (xhr.status === 200) {
             try {
@@ -1394,7 +1479,7 @@ function SendDataFailure2(idStatusPayment) {
                 if (response.success) {
                     // **MOVER LA LÓGICA DEL CORREO AQUÍ**
                     const xhrEmail = new XMLHttpRequest();
-                    xhrEmail.open('POST', 'http://localhost/SoportePost/api/email/send_ticket2');
+                    xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`);
                     xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); // Importante para enviar datos como formulario
 
                     xhrEmail.onload = function() {
@@ -1460,3 +1545,103 @@ function SendDataFailure2(idStatusPayment) {
     };
     xhr.send(formData);
 }
+
+const userId = document.getElementById('id_user').value
+    document.addEventListener('DOMContentLoaded', function() {
+        //console.log('ID de usuario:', userId);
+        if (userId > 0) {
+            //console.log('URL de permisos:', ${ENDPOINT_BASE}${APP_PATH}/api/permissions/${userId});
+            fetch(`${ENDPOINT_BASE}${APP_PATH}api/permissions/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const permissions = data.permissions;
+                        //console.log('Permisos obtenidos:', permissions);
+                        updateNavbar(permissions);
+                    } else {
+                        console.error('Error al obtener los permisos:', data.error);
+                        updateNavbar({}); // Ocultar todo en caso de error
+                    }
+                })
+                .catch(error => {
+                    console.error('Error de red al obtener los permisos:', error);
+                     updateNavbar({}); // Ocultar todo en caso de error de red
+                });
+        } else {
+            console.log('Usuario no autenticado, ocultando elementos.');
+            updateNavbar({}); // Ocultar todo si no hay usuario logueado
+        }
+    });
+
+function updateNavbar(permissions) {
+    // Función para verificar si el usuario tiene permiso para una vista
+    function hasPermission(viewName) {
+        return permissions?.[viewName] === true;
+    }
+
+    // **Dropdown "Crear Ticket" y sus sub-ítems**
+    const crearTicketDropdown = document.getElementById('crearTicketDropdown');
+    const crearTicketMenu = crearTicketDropdown?.nextElementSibling; // El ul.dropdown-menu siguiente
+
+    const soportePosItem = crearTicketMenu?.querySelector('a[data-value="Soporte POS"]')?.closest('li');
+    const sustitucionPosItem = crearTicketMenu?.querySelector('a[data-value="Sustitución de POS"]')?.closest('li');
+    const prestamoPosItem = crearTicketMenu?.querySelector('a[data-value="Préstamo de POS"]')?.closest('li');
+    const desafiliacionPosItem = crearTicketMenu?.querySelector('a[data-value="Desafiliación de POS"]')?.closest('li');
+    const migracionBancosItem = crearTicketMenu?.querySelector('a[data-value="Migración de Bancos"]')?.closest('li');
+    const cambioRazonSocialItem = crearTicketMenu?.querySelector('a[data-value="Cambio de Razón Social"]')?.closest('li');
+
+    // Ocultar/Mostrar los sub-ítems de "Crear Ticket"
+    if (soportePosItem) {
+        soportePosItem.style.display = hasPermission('Soporte_Pos') ? 'block' : 'none';
+    }
+    if (sustitucionPosItem) {
+        sustitucionPosItem.style.display = hasPermission('Sustitucion_Pos') ? 'block' : 'none';
+    }
+    if (prestamoPosItem) {
+        prestamoPosItem.style.display = hasPermission('Prestamo_Pos') ? 'block' : 'none';
+    }
+    if (desafiliacionPosItem) {
+        desafiliacionPosItem.style.display = hasPermission('Desafiliacion_Pos') ? 'block' : 'none';
+    }
+    if (migracionBancosItem) {
+        migracionBancosItem.style.display = hasPermission('Migracion_Bancos') ? 'block' : 'none';
+    }
+    if (cambioRazonSocialItem) {
+        cambioRazonSocialItem.style.display = hasPermission('Cambio_RazonSocial') ? 'block' : 'none';
+    }
+
+     // **Dropdown "Consultas General" y sus sub-ítems**
+    const consultasDropdown = document.getElementById('Reportes');
+    const consultasMenu = consultasDropdown?.nextElementSibling; // El ul.dropdown-menu siguiente
+
+    const consultaRifItem = consultasMenu?.querySelector('a[data-value="Consulta Rif"]')?.closest('li');
+    const reportesTicketsItem = consultasMenu?.querySelector('a[data-value="Reportes Tickets"]')?.closest('li');
+
+    // Ocultar/Mostrar los sub-ítems de "Consultas General"
+    if (consultaRifItem) {
+        consultaRifItem.style.display = hasPermission('Consulta_Rif') ? 'block' : 'none';
+    }
+
+    if (reportesTicketsItem) {
+        reportesTicketsItem.style.display = hasPermission('Reportes_Tickets') ? 'block' : 'none';
+    }
+
+    // **Enlace "Estadisticas Mis Tickets"**
+    /*const estadisticasLinkLi = document.getElementById('estadisticas-link')?.closest('li');
+    if (estadisticasLinkLi) {
+        estadisticasLinkLi.style.display = hasPermission('estadisticas-link') ? 'block' : 'none';
+    }
+
+    // **Enlace "Asignar Ticket a Técnico"**
+    const asignarTicketLinkLi = document.getElementById('assignment-ticket')?.closest('li');
+    if (asignarTicketLinkLi) {
+        asignarTicketLinkLi.style.display = hasPermission('asignar_tecnico') ? 'block' : 'none';
+    }
+
+    // **Enlace "Técnico"**
+    const tecnicoLinkLi = document.querySelector('a[href="tecnico"]')?.closest('li');
+    if (tecnicoLinkLi) {
+        tecnicoLinkLi.style.display = hasPermission('tecnico') ? 'block' : 'none';
+    }   */
+}    
+

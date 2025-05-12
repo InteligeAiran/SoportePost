@@ -7,6 +7,10 @@
     <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/consultationGeneral/laptop/general.css"/>
     <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/consultationGeneral/Desktop/general.css"/>
     <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/consultationGeneral/mobile/general.css"/>
+    <script>
+        const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
+        const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
+    </script>
 </head>
 <body>
     <div class="identifying-text">Soporte Post-Venta</div>

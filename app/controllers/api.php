@@ -66,6 +66,16 @@ class Api extends Controller {
         if (isset($urlSegments[0])) {
             switch ($urlSegments[0]) {
 
+                case 'permissions':
+                    // api/permissions/{user_id}
+                    if (isset($urlSegments[1]) && is_numeric($urlSegments[1])) {
+                        $userId = (int) $urlSegments[1];
+                        $this->handleGetUserPermissions($userId);
+                    } else {
+                        $this->response(['error' => 'ID de usuario no válido'], 400);
+                    }
+                break;
+
                 /* LOGIN */
                     case 'users':
                         // Pasar los segmentos de la URL a la función handleUsers
@@ -84,11 +94,6 @@ class Api extends Controller {
                         session_destroy();
                         $this->response(['success' => true, 'message' => 'Sesión cerrada correctamente'], 200);
                     break;*/
-
-                    case 'checkPass':
-                        // Manejo de la verificación de contraseña
-                        $this->handlePassword();
-                    break;
 
                     case 'checkUser':
                         // Manejo de la verificación de nombre de usuario
@@ -189,18 +194,6 @@ class Api extends Controller {
                     case 'GetFailure1':
                         $this->handleGetFailure1();
                     break;
-
-                    case 'GetAreaUsers':
-                        $this->handleGetAreaUsers();
-                    break;
-
-                    case 'GetTipoUsers':
-                        $this->handleGetTipoUsers();
-                    break;
-
-                    case 'GuardarUsuarios':
-                        $this->handleGuardarUsuarios();
-                    break;
                 /*END CONSULTA RIF*/
 
                 /*CONSULTA GENERAL*/
@@ -224,10 +217,44 @@ class Api extends Controller {
                         //var_dump($_POST); // Para depuración
                         $this->handleGetUsers();
                     } else {
-                        $this->response(['error' => 'Método no permitido para /api/GetImageExo'], 405);
+                        $this->response(['error' => 'Método no permitido para /api/GetUsers'], 405);
+                    }
+                break;
+
+                case 'GetTecnico2': 
+                    if($method === 'POST'){
+                        $this->handleGetTecnico2();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/GetTecnico2'], 405);
+                    }
+                break;
+
+                case 'AssignTicket':
+                    if($method === 'POST'){
+                        $this->handleAssignTicket();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/AssingTicket'], 405);
                     }
                 break;
                 /*END USERS*/
+
+                /*TICKETS*/
+                case 'GetTicketData1':
+                    if($method === 'GET'){
+                        $this->handleGetTicketData1();
+                    }else{
+                        $this->response(['error' => 'Método no permitido para /api/GetUsers'], 405);
+                    }
+                break;
+                
+                case 'GetTicketData':
+                    if ($method === 'GET') {
+                        //var_dump($_POST); // Para depuración
+                        $this->handleGetTicketData();
+                    } else {
+                        $this->response(['error' => 'Método no permitido'], 405);
+                    }
+                /*END TICKETS*/
                 default:
                     $this->response(['error' => 'Recurso no encontrado'], 404);
                 break;
@@ -241,7 +268,6 @@ class Api extends Controller {
         $imageId = $_GET['id'];
         $emailRepository = new EmailRepository();
         $imagenData = $emailRepository->GetDataImage($imageId);
-    
     
         if ($imagenData && isset($imagenData['exo']) && isset($imagenData['mime_type'])) {
             $base64Data = $imagenData['exo']; // Ya está en Base64
@@ -258,6 +284,17 @@ class Api extends Controller {
         }
     }
     
+    private function handleGetUserPermissions($userId) {
+        $repository = new UserRepository();
+        $permissions = $repository->getUserPermissions($userId); // Implementa esta función en tu PermissionRepository
+        //var_dump($permissions); // Para depuración
+        if ($permissions) {
+            $this->response(['success' => true, 'permissions' => $permissions], 200);
+        } else {
+            $this->response(['error' => 'No se encontraron permisos para el usuario'], 404);
+        }
+    }
+
 
     private function handleLogin() {
         $username = isset($_POST['username']) ? trim($_POST['username']) : '';
@@ -266,116 +303,91 @@ class Api extends Controller {
         $model = new LoginRepository(); // Inicializa el LoginRepository aquí
         //var_dump($username, $password); // Para depuración
 
-    if ($username != "" && $password != "") {
-        $userExists = $model->GetUsernameUser($username);
-        if ($userExists > 0) {
-            $passwordMatch = $model->GetPasswordUser($username, $password);
-            if ($passwordMatch > 0) {
-                $userData = $model->GetUserData($username, $password);
-                //var_dump($userData); // Para depuración
-                if ($userData['status'] != 3 && $userData['status'] != 4) {
-                    $_SESSION["cedula"]     = $userData['cedula'];
-                    $_SESSION['id_user']    = (int) $userData['id_user'];
-                    $_SESSION["usuario"]    = $userData['usuario'];
-                    $_SESSION["nombres"]    = $userData['nombres'];
-                    $_SESSION["apellidos"]  = $userData['apellidos'];
-                    $_SESSION["correo"]     = $userData['correo'];
-                    $_SESSION['d_rol']      = (int) $userData['codtipousuario'];
-                    $_SESSION['name_rol']   = $userData['name_rol'];
-                    $_SESSION['status']     = (int) $userData['status'];
-                    //var_dump($userData);
-                    $session_lifetime = 1200; 
-                    // Ejemplo: 1200 SEGUNDO = 20 minutos en segundos
-                    // Ejemplo: 1800 SEGUNDO = 30 minutos en segundos
-                    // Ejemplo: 3600 SEGUNDO = 1 hora en segundos
-                    // Ejemplo: 300 SEGUNDO  = 5 minutos en segundos               
-                    $_SESSION['session_lifetime'] = $session_lifetime;
+        if ($username != "" && $password != "") {
+            $userExists = $model->GetUsernameUser($username);
+            if ($userExists > 0) {
+                $passwordMatch = $model->GetPasswordUser($username, $password);
+                if ($passwordMatch > 0) {
+                    $userData = $model->GetUserData($username, $password);
+                    //var_dump($userData); // Para depuración
+                    if ($userData['status'] != 3 && $userData['status'] != 4) {
+                        $_SESSION["cedula"]     = $userData['cedula'];
+                        $_SESSION['id_user']    = (int) $userData['id_user'];
+                        $_SESSION["usuario"]    = $userData['usuario'];
+                        $_SESSION["nombres"]    = $userData['nombres'];
+                        $_SESSION["apellidos"]  = $userData['apellidos'];
+                        $_SESSION["correo"]     = $userData['correo'];
+                        $_SESSION['d_rol']      = (int) $userData['codtipousuario'];
+                        $_SESSION['name_rol']   = $userData['name_rol'];
+                        $_SESSION['status']     = (int) $userData['status'];
+                        //var_dump($userData);
+                        $session_lifetime = 1200; 
+                        // Ejemplo: 1200 SEGUNDO = 20 minutos en segundos
+                        // Ejemplo: 1800 SEGUNDO = 30 minutos en segundos
+                        // Ejemplo: 3600 SEGUNDO = 1 hora en segundos
+                        // Ejemplo: 300 SEGUNDO  = 5 minutos en segundos               
+                        $_SESSION['session_lifetime'] = $session_lifetime;
 
-                    // Regenerar el ID de sesión antes de usar session_id()
-                    session_regenerate_id(true);
-                    // Configurar la zona horaria a Venezuela (Caracas)
-                    date_default_timezone_set('America/Caracas');
-                    // Generar id_session
-                    $session_id = session_id();
-                    $_SESSION["session_id"] = $session_id;
-                    // Obtener datos adicionales
-                    $start_date = date('Y-m-d H:i:s');
-                    $user_agent = $_SERVER['HTTP_USER_AGENT'];
-                    $ip_address = $_SERVER['REMOTE_ADDR'];
-                    $active = 1;
-                    $expiry_time_unix = time() + $session_lifetime;
-                    $expiry_time = date('Y-m-d H:i:s', $expiry_time_unix); // Convertir a formato DATETIME
+                        // Regenerar el ID de sesión antes de usar session_id()
+                        session_regenerate_id(true);
+                        // Configurar la zona horaria a Venezuela (Caracas)
+                        date_default_timezone_set('America/Caracas');
+                        // Generar id_session
+                        $session_id = session_id();
+                        $_SESSION["session_id"] = $session_id;
+                        // Obtener datos adicionales
+                        $start_date = date('Y-m-d H:i:s');
+                        $user_agent = $_SERVER['HTTP_USER_AGENT'];
+                        $ip_address = $_SERVER['REMOTE_ADDR'];
+                        $active = 1;
+                        $expiry_time_unix = time() + $session_lifetime;
+                        $expiry_time = date('Y-m-d H:i:s', $expiry_time_unix); // Convertir a formato DATETIME
 
-                    // Asegúrate de que GetSession en tu modelo LoginRepository tome el id_user correctamente
-                    $result9 = $model->GetSession($session_id);
-                    
-                    if($result9 > 0){
-                        $this->response([
-                            'success' => false,
-                            'message' => 'Ya existe una sesión activa para este usuario.',
-                            'redirect' => 'login'
-                        ], 409); // Código de estado 409 Conflict
-                    } else {
-                        $insertResult = $model->InsertSession($session_id, $start_date,  $user_agent, $ip_address, $active, $expiry_time);
-                        if ($insertResult) {
-                            $redirectURL = '';
-                            switch ($userData['codtipousuario']) {
-                                case 1: $redirectURL = 'dashboard'; break;
-                                case 2: $redirectURL = 'dashboard2'; break;
-                                case 3: $redirectURL = 'dashboard3'; break;
-                                case 4: $redirectURL = 'dashboard4'; break;
-                                case 5: $redirectURL = 'dashboard5'; break;
-                            }
-                            $model->UpdateTryPassTo0($username);
+                        // Asegúrate de que GetSession en tu modelo LoginRepository tome el id_user correctamente
+                        $result9 = $model->GetSession($session_id);
+                        
+                        if($result9 > 0){
                             $this->response([
-                                'success' => true,
-                                'message' => 'Inicio de sesión exitoso',
-                                'redirect' => $redirectURL,
-                                'session_lifetime' => $_SESSION['session_lifetime'],
-                                'session_id' => $_SESSION["session_id"],
-                                'id_user' => $_SESSION['id_user']
-                            ], 200);
+                                'success' => false,
+                                'message' => 'Ya existe una sesión activa para este usuario.',
+                                'redirect' => 'login'
+                            ], 409); // Código de estado 409 Conflict
                         } else {
-                            $this->response(['error' => 'Error al guardar la información de la sesión'], 500);
+                            $insertResult = $model->InsertSession($session_id, $start_date,  $user_agent, $ip_address, $active, $expiry_time);
+                            if ($insertResult) {
+                                $redirectURL = '';
+                                $redirectURL = 'dashboard';
+                                $model->UpdateTryPassTo0($username);
+                                $this->response([
+                                    'success' => true,
+                                    'message' => 'Inicio de sesión exitoso',
+                                    'redirect' => $redirectURL,
+                                    'session_lifetime' => $_SESSION['session_lifetime'],
+                                    'session_id' => $_SESSION["session_id"],
+                                    'id_user' => $_SESSION['id_user']
+                                ], 200);
+                            } else {
+                                $this->response(['error' => 'Error al guardar la información de la sesión'], 500);
+                            }
                         }
+                    } else {
+                        $this->response(['success' => false, 'message' => 'Usuario inactivo o bloqueado'], 401);
                     }
                 } else {
-                    $this->response(['success' => false, 'message' => 'Usuario inactivo o bloqueado'], 401);
+                    $model->UpdateTryPass($username);
+                    $attempts = $model->GetTryPass($username);
+                    if ($attempts <= 3) {
+                        $this->response(['success' => false, 'message' => 'Contraseña incorrecta. Intentos restantes: ' . (3 - $attempts)], 401);
+                    } else {
+                        $model->UpdateStatusTo4($username);
+                        $this->response(['success' => false, 'message' => 'Usuario bloqueado por intentos fallidos'], 403);
+                    }
                 }
             } else {
-                $model->UpdateTryPass($username);
-                $attempts = $model->GetTryPass($username);
-                if ($attempts <= 3) {
-                    $this->response(['success' => false, 'message' => 'Contraseña incorrecta. Intentos restantes: ' . (3 - $attempts)], 401);
-                } else {
-                    $model->UpdateStatusTo4($username);
-                    $this->response(['success' => false, 'message' => 'Usuario bloqueado por intentos fallidos'], 403);
-                }
+                $this->response(['success' => false, 'message' => 'Usuario no existe'], 401);
             }
         } else {
-            $this->response(['success' => false, 'message' => 'Usuario no existe'], 401);
-        }
-    } else {
-        $this->response(['success' => false, 'message' => 'Usuario o contraseña están vacíos'], 400);
-    }
-}
-
-    private function handlePassword(){
-        $username = isset($_POST['username']) ? $_POST['username'] : '';
-        $password = isset($_POST['password']) ? $_POST['password'] : '';
-        $password = sha1(md5($password)); // Asegúrate de que el hash sea el correcto
-        //var_dump($password); // Para depuración
-        $repository = new LoginRepository(); // Inicializa el LoginRepository aquí
-
-        if ($password != '') {
-            $result = $repository->GetPasswordUser( $username,$password);
-            if ($result > 0) {
-                $this->response(['success' => true,'message' => 'La clave coincide con el usuario', 'color'   => 'green']);
-            } else {
-                $this->response(['success' => false,'message' => 'No coincide con el usuario','color'=> 'red']);
-            }
-        } else {
-            $this->response(['success' => false,'message' => 'Usuario o contraseña están vacíos','color'=> 'red']);
+            $this->response(['success' => false, 'message' => 'Usuario o contraseña están vacíos'], 400);
         }
     }
 
@@ -530,7 +542,7 @@ class Api extends Controller {
                             <li class="info-item"><strong>Estatus:</strong> '.$ticketstatus.'</li>
                             <li class="info-item"><strong>Acción:</strong> '.$ticketaccion.'</li>
                         </ul>
-                            <p><a href="http://localhost/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
+                            <p><a href="http://10.225.1.136/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                         <hr>
                         <p class="footer" >Atentamente,</p>
                         <p class="footer">El equipo de InteliSoft</p>
@@ -543,10 +555,11 @@ class Api extends Controller {
                 if (defined('FIRMA_CORREO')) {
                     $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
                 }
-
                 if ($this->emailService->sendEmail($email, $subject, $body, [], $embeddedImages)){
-                    $this->response(['success' => true, 'message' => 'Se ha enviado un código de restablecimiento a su correo electrónico.', 'color' => 'green']);
+                    $this->response(['success' => true, 'message' => 'Se ha enviado un   Aviso a su correo electrónico.', 'color' => 'green']);
                 } else {
+                    var_dump($email, $subject, $body);
+
                     $this->response(['success' => false, 'message' => 'Error al enviar el correo.', 'color' => 'red']);
                 }
             } else {
@@ -559,7 +572,7 @@ class Api extends Controller {
         $id_coordinador = isset($_POST['id_coordinador']) ? $_POST['id_coordinador'] : '';
            // var_dump($id_coordinador);
             $result  = $repository->GetEmailCoorDataById($id_coordinador);
-            $email   = $result['email']; //EL GMAIL DEL COORDINADOR 
+            $email   = $result['email']; //EL GMAIL DEL COORDINADOR
             $nombre  = $result['full_name']; // EL NOMBRE DEL COORDINADOR
             $result1 = $repository->GetDataTicket2();
             $nombre_tecnico   = $result1['full_name_tecnico']; 
@@ -676,7 +689,7 @@ class Api extends Controller {
                             <li class="info-item"><strong>Estatus:</strong> '.$ticketstatus.'</li>
                             <li class="info-item"><strong>Acción:</strong> '.$ticketaccion.'</li>
                         </ul>
-                            <p><a href="http://localhost/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
+                            <p><a href="http://10.225.1.136/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                         <hr>
                         <p class="footer" >Atentamente,</p>
                         <p class="footer">El equipo de InteliSoft</p>
@@ -821,7 +834,7 @@ class Api extends Controller {
     public function handleGetPhoto(){
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
         $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
-
+        //var_dump($serial);
         $result = $repository->SearchtypePos($serial);
         if ($result !== false) {
             $codrepositoryopos = $result;
@@ -1143,7 +1156,7 @@ class Api extends Controller {
     }
 
     public function handleGetUsers(){
-        $repository = new UserRepository(); // Inicializa el repositorio
+        $repository = new   UserRepository(); // Inicializa el repositorio
         $result = $repository->getAllUsers();
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1156,63 +1169,65 @@ class Api extends Controller {
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
     }
 
+    public function handleGetTecnico2(){
+        $repository = new   UserRepository(); // Inicializa el repositorio
+        $result = $repository->getTecnico2();
 
-    public function handleGetAreaUsers(){
-        $repository = new UserRepository(); // Inicializa el repositorio
-        $result = $repository->GetAreaUsers();
-       // var_dump($result);
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
-            $this->response(['success' => true, 'area' => $result], 200);
+            $this->response(['success' => true, 'tecnicos' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
-            $this->response(['success' => false, 'message' => 'No hay coordinadores disponibles o No ha seleccionado ningun coordinador'], 404); // Código 404 Not Found
+            $this->response(['success' => false, 'message' => 'No hay usuarios disponibles'], 404); // Código 404 Not Found
         } else {
-            $this->response(['success' => false, 'message' => 'Error al obtener los coordinadores'], 500); // Código 500 Internal Server Error
+            $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
         }
-        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
-    }   
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
 
+    public function handleAssignTicket(){
+        $id_tecnico     = isset($_POST['id_tecnico']) ? $_POST['id_tecnico'] : '';
+        $id_ticket      = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
 
-    public function handleGetTipoUsers(){
+      
         $repository = new UserRepository(); // Inicializa el repositorio
-        $result = $repository->GetTipoUsers();
-       // var_dump($result);
+        $result = $repository->AssignTicket($id_ticket, $id_tecnico, );
+
+         if ($id_tecnico != '' && $id_ticket != '') {
+            if($result){
+                $this->response(['success' => true, 'message' => 'Asignado Con Exito'], 200); 
+            }else{
+                $this->response(['success' => false, 'message' => 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
+            }
+        }else{
+            $this->response(['success' => false, 'message' => 'Hay campos vacios'], 400); // Código de estado 404 Not Found
+        }
+    }
+
+    public function handleGetTicketData(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetTicketData();
+
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
-            $this->response(['success' => true, 'tipousers' => $result], 200);
+            $this->response(['success' => true, 'ticket' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
-            $this->response(['success' => false, 'message' => 'No hay coordinadores disponibles o No ha seleccionado ningun coordinador'], 404); // Código 404 Not Found
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
-            $this->response(['success' => false, 'message' => 'Error al obtener los coordinadores'], 500); // Código 500 Internal Server Error
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
-        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
-    }    
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
 
+    public function handleGetTicketData1(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetTicketData1();
 
-
-        public function handleGuardarUsuarios(){
-        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
-        $nombreusers = isset($_POST['nombreuser']) ? $_POST['nombreuser'] : '';
-        $apellidousers = isset($_POST['apellidouser']) ? $_POST['apellidouser'] : '';
-        $tipo_doc = isset($_POST['tipodoc']) ? $_POST['tipodoc'] : '';
-        $documento = isset($_POST['coddocumento']) ? $_POST['coddocumento'] : '';
-        $users = isset($_POST['usuario']) ? $_POST['usuario'] : '';
-        $correo = isset($_POST['email']) ? $_POST['email'] : '';
-        $area_users = isset($_POST['areausers']) ? $_POST['areausers'] : '';
-        $tipo_users = isset($_POST['tipousers']) ? $_POST['tipousers'] : '';
-
-        $repository = new UserRepository(); // Inicializa el repositorio
-    
-
-                    // Guardar archivo de envío
-                    $result = $repository->Guardar_Usuario($id_user, $nombreusers,$apellidousers, $tipo_doc, $documento, $users, $correo, $area_users, $tipo_users);
-    
-                    if ($result) {
-                        $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
-                    } else {
-                        $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
-                    }
-             
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
-        
-    
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
 }
 ?>

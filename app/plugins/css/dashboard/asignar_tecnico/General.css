@@ -1,0 +1,98 @@
+#ModalSelecttecnico{
+    width: 55%;
+    justify-content: center;
+    text-align: center;
+    margin-top: 27%;
+    margin-left: 37%;
+
+}
+
+#close-button:hover{
+    background-color: red;
+    color: white;
+}
+
+#assingment-button{
+    background-color: #003594;;
+    color: white;
+}
+
+#assingment-button:hover{
+    background-color: green;
+    color: white;
+}
+
+#Close-icon{
+    background-color: #8392ab;
+}
+
+#Close-icon:hover{
+    background-color: red;
+    color: white;
+}
+
+#modal-confirmation h1{
+    font-size: 176%;
+    font-family: 'sans-serif';
+}
+
+/*#tabla-ticket {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    table-layout: auto; /* Importante para el ancho de las columnas */
+    /*font-size: 0.9em; /* Reducir ligeramente el tamaño de la fuente */
+/*}
+
+#tabla-ticket th, #tabla-ticket td {
+    border: 1px solid #ddd;
+    padding: 8px 5px; /* Reducir el padding vertical y horizontal */
+   /* text-align: left;
+    height: auto; /* Permitir que la altura se ajuste al contenido */
+   /* font-size: 20px; /* Reducir el tamaño de la fuente */
+   /* white-space: nowrap; /* Evitar saltos de línea innecesarios */
+   /* overflow: hidden; /* Ocultar el texto que se desborda */
+    /*text-overflow: ellipsis; /* Mostrar "..." para el texto oculto */
+/*}
+
+#tabla-ticket th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+#tabla-ticket_length select {
+    width: 100px; /* Ajusta el ancho del select */
+   /* padding: 5px; /* Añade un poco de espacio interno */
+  /*  border-radius: 4px; /* Bordes redondeados */
+  /*  border: 1px solid #ccc; /* Borde gris claro */
+/*}
+
+#tabla-ticket td {
+    height: auto; /* Permitir que la altura se ajuste al contenido */
+/*}
+
+#tabla-ticket tbody tr:hover {
+    background-color: #f0f0f0; /* Cambia el color de fondo al pasar el ratón */
+  /*  cursor: pointer; /* Cambia el cursor a una mano para indicar que es interactivo */
+/*}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px; /* Reducido el margen */
+/*}
+
+th, td {
+    border: 1px solid #eee;
+    padding: 8px 5px; /* Reducido el padding */
+   /* text-align: left;
+   /* font-family: 'Arial', sans-serif;
+   /* font-size: 12px; /* Tamaño de la fuente reducido */
+/*}
+
+th {
+    background-color: #f9f9f9;
+    font-weight: 600;
+}
+
+
