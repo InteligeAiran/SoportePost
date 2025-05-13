@@ -2770,10 +2770,10 @@ progress {
   border-color: var(--bs-table-border-color);
 }
 
-.table-responsive {
+/*.table-responsive {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-}
+}*/
 
 @media (max-width: 575.98px) {
   .table-responsive-sm {

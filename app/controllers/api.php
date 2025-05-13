@@ -141,6 +141,16 @@ class Api extends Controller {
                         $this->handleSearchRif();
                     break;
 
+                    case 'SearchSerialData':
+                        // Manejo de la búsqueda de serial
+                        $this->handleSearchSerialData();
+                    break;
+
+                    case 'SearchRazonData':
+                        // Manejo de la búsqueda de razón social
+                        $this->handleSearchRazonData();
+                    break;
+
                     case 'SearchSerial':
                         // Manejo de la búsqueda de serial
                         $this->handleSearchSerial();
@@ -828,6 +838,30 @@ class Api extends Controller {
             $this->response([ 'success' => true, 'serial' => $result], 200);
         } else {
             $this->response(['success' => false, 'message' => 'No se encontraron usuarios'], 404);
+        }
+    }
+
+    public function handleSearchSerialData(){
+        $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
+        $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        $result = $repository->SearchSerialData($serial);
+        //var_dump($serial);
+        if ($result != "") {
+            $this->response(['success' => true,'serialData' => $result], status: 200);
+        } else {
+            $this->response(['success' => false,'message' => 'No se encontraron datos'], status: 404);
+        }
+    }
+
+    public function handleSearchRazonData(){
+        $razonsocial = isset($_POST['RazonSocial']) ? $_POST['RazonSocial'] : '';
+        $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        $result = $repository->SearchRazonData($razonsocial);
+        //var_dump($serial);
+        if ($result != "") {
+            $this->response(['success' => true,'RazonData' => $result], status: 200);
+        } else {
+            $this->response(['success' => false,'message' => 'No se encontraron datos'], status: 404);
         }
     }
 

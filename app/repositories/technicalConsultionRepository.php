@@ -29,6 +29,42 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function SearchSerialData($serial){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->SearchSerialData($serial);
+        if ($result) {
+            //var_dump($result);  
+            $serialData = [];
+
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $serialData[] = $agente;
+                //var_dump($agente);
+            }
+             return $serialData;
+        } else {
+            return null;
+        }
+    }
+
+    public function SearchRazonData($razonsocial){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->SearchRazonData($razonsocial);
+        if ($result) {
+            //var_dump($result);  
+            $razon = [];
+
+             for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $serialData[] = $agente;
+                //var_dump($agente);
+            }
+             return $serialData;
+        } else {
+            return null;
+        }
+    }
+
     public function SearchSerial($serial){
         // Lógica para obtener todos los usuarios
         $result = $this->model->SearchSerial($serial);

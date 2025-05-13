@@ -55,6 +55,8 @@ $(document).ready(function() {
 
 // Get the input field
 var input1 = document.getElementById("rifInput");
+var input2 = document.getElementById("serialInput");
+var input3 = document.getElementById("RazonInput");
 
 // Execute a function when the user presses a key on the keyboard
 input1.addEventListener("keypress", function(event) {
@@ -65,12 +67,33 @@ input1.addEventListener("keypress", function(event) {
         // Trigger the button element with a click
         document.getElementById("buscarRif").click();
     }
-}); 
+});
+
+input2.addEventListener("keypress", function(event) {
+    // If the user presses the "Enter" key on the keyboard
+    if (event.key === "Enter") {
+        // Cancel the default action, if needed
+        event.preventDefault();
+        // Trigger the button element with a click
+        document.getElementById("buscarSerial").click();
+    }
+});
+
+input3.addEventListener("keypress", function(event) {
+    // If the user presses the "Enter" key on the keyboard
+    if (event.key === "Enter") {
+        // Cancel the default action, if needed
+        event.preventDefault();
+        // Trigger the button element with a click
+        document.getElementById("buscarRazon").click();
+    }
+});
 
 $("#rifInput").keyup(function(){
     let string = $("#rifInput").val();
     $("#rifInput").val(string.replace(/ /g, ""))
 });
+
 
 
 function SendRif() {
@@ -156,11 +179,11 @@ function SendRif() {
                         const diffEnMeses = diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
 
                         const garantiaLabel = document.createElement('span');
-                        garantiaLabel.style.fontSize = '12px';
+                        garantiaLabel.style.fontSize = '10px';
                         garantiaLabel.style.fontWeight = 'bold';
                         garantiaLabel.style.display = 'block';
                         garantiaLabel.style.marginTop = '5px';
-                        garantiaLabel.style.width = '100px';
+                        garantiaLabel.style.width = '173px';
                         let garantiaTexto = '';
                         let garantiaClase = '';
 
@@ -235,6 +258,335 @@ function SendRif() {
     };
     const rifInputValue = document.getElementById('rifInput').value;
     const datos = `action=SearchRif&rif=${encodeURIComponent(rifInputValue)}`;
+    xhr.send(datos);
+}
+
+function SendSerial() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SearchSerialData`);
+    
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    const tbody = document.getElementById('rifCountTable').getElementsByTagName('tbody')[0];
+
+    // Limpia la tabla ANTES de la nueva búsqueda
+    tbody.innerHTML = '';
+
+    // Destruye DataTables si ya está inicializado
+    if ($.fn.DataTable.isDataTable('#rifCountTable')) {
+        $('#rifCountTable').DataTable().destroy();
+    }
+
+    // Limpia la tabla usando removeChild
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+
+                if (response.success) {
+                    const serialData = response.serialData; // Cambia el nombre de la variable aquí
+
+                    serialData.forEach(item => { // Usa un nombre diferente para el elemento individual
+                        const row = tbody.insertRow();
+                        const id_clienteCell = row.insertCell();
+                        const razonsocialCell = row.insertCell();
+                        const rifCell = row.insertCell();
+                        const name_modeloposCell = row.insertCell();
+                        const serial_posCell = row.insertCell();
+                        const afiliacionCell = row.insertCell();
+                        const fechainstallCell = row.insertCell();
+                        const bancoCell = row.insertCell();
+                        const directionCell = row.insertCell();
+                        const estadoCell = row.insertCell();
+                        const municipioCell = row.insertCell();
+
+                        id_clienteCell.textContent = item.id_cliente; // Accede a las propiedades del 'item'
+                        razonsocialCell.textContent = item.razonsocial;
+                        rifCell.textContent = item.rif;
+                        name_modeloposCell.textContent = item.name_modelopos;
+
+                        // Crear el enlace para el número de serie
+                        const enlaceSerial = document.createElement('a');
+                        enlaceSerial.textContent = item.serial_pos;
+                        enlaceSerial.style.color = 'blue';
+                        enlaceSerial.style.textDecoration = 'underline';
+                        enlaceSerial.style.cursor = 'pointer';
+                        serial_posCell.appendChild(enlaceSerial);
+
+                        // Modal de detalles del serial (tu código existente)
+                        const modalSerial = document.getElementById('ModalSerial');
+                        const spanSerialClose = document.getElementById('ModalSerial-close');
+                        enlaceSerial.onclick = function() {
+                            modalSerial.style.display = 'block';
+                            fetchSerialData(item.serial_pos);
+                        }
+                        spanSerialClose.onclick = function() {
+                            modalSerial.style.display = 'none';
+                        }
+                        window.onclick = function(event) {
+                            if (event.target == modalSerial) {
+                                modalSerial.style.display = 'none';
+                            }
+                        }
+
+                        fechainstallCell.textContent = item.fechainstalacion;
+                        afiliacionCell.textContent = item.afiliacion;
+
+
+                        //TEXTO EN LA VISTA
+                        const fechaInstalacion = new Date(item.fechainstalacion);
+                        const ahora = new Date();
+                        const diffEnMilisegundos = ahora.getTime() - fechaInstalacion.getTime();
+                        const diffEnMeses = diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
+
+                        const garantiaLabel = document.createElement('span');
+                        garantiaLabel.style.fontSize = '10px';
+                        garantiaLabel.style.fontWeight = 'bold';
+                        garantiaLabel.style.display = 'block';
+                        garantiaLabel.style.marginTop = '5px';
+                        garantiaLabel.style.width = '173px';
+                        let garantiaTexto = '';
+                        let garantiaClase = '';
+
+                        if (diffEnMeses <= 6 && diffEnMeses >= 0) {
+                            garantiaTexto = 'Garantía Instalación (6 meses)';
+                            garantiaClase = 'garantia-activa';
+                            garantiaDetectada = true;
+                        } else {
+                            garantiaTexto = 'Sin garantía';
+                            garantiaClase = 'sin-garantia';
+                        }
+
+                        garantiaLabel.textContent = garantiaTexto;
+                        garantiaLabel.className = garantiaClase;
+                        fechainstallCell.appendChild(document.createElement('br'));
+                        fechainstallCell.appendChild(garantiaLabel);
+                        //END TEXTO EN LA VISTA
+
+                        bancoCell.textContent = item.banco;
+                        directionCell.textContent = item.direccion_instalacion;
+                        estadoCell.textContent = item.estado;
+                        municipioCell.textContent = item.municipio;
+                    });
+
+                    // Inicialización de DataTables
+                    if ($.fn.DataTable.isDataTable('#rifCountTable')) {
+                        $('#rifCountTable').DataTable().destroy();
+                    }
+                    $('#rifCountTable').DataTable({
+                        responsive: false,
+                        "pagingType": "simple_numbers",
+                        "lengthMenu": [5],
+                        autoWidth: false,
+                        "language": {
+                            "lengthMenu": "Mostrar _MENU_ registros", // Esta línea es la clave
+                            "emptyTable": "No hay datos disponibles en la tabla",
+                            "zeroRecords": "No se encontraron resultados para la búsqueda",
+                            "info": "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
+                            "infoEmpty": "No hay datos disponibles",
+                            "infoFiltered": "(Filtrado de _MAX_ datos disponibles)",
+                            "search": "Buscar:",
+                            "loadingRecords": "Buscando...",
+                            "processing": "Procesando...",
+                            "paginate": {
+                                "first": "Primero",
+                                "last": "Último",
+                                "next": "Siguiente",
+                                "previous": "Anterior"
+                            }
+                        }
+                    });
+                    $('#rifCountTable').resizableColumns();
+
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="11">Error al cargar</td></tr>';
+                    console.error('Error:', response.message);
+                }
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="11">Error al procesar la respuesta</td></tr>';
+                console.error('Error parsing JSON:', error);
+            } 
+        }else if (xhr.status === 404) {
+                tbody.innerHTML = '<tr><td colspan="11">No se encontraron usuarios</td></tr>';
+        } else {
+            tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+            console.error('Error:', xhr.status, xhr.statusText);
+        }
+    };
+    xhr.onerror = function() {
+        tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+        console.error('Error de red');
+    };
+    const serialInputValue = document.getElementById('serialInput').value;
+    const datos = `action=SearchSerialData&serial=${encodeURIComponent(serialInputValue)}`;
+    xhr.send(datos);
+}
+
+function SendRazon() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SearchRazonData`);
+    
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    const tbody = document.getElementById('rifCountTable').getElementsByTagName('tbody')[0];
+
+    // Limpia la tabla ANTES de la nueva búsqueda
+    tbody.innerHTML = '';
+
+    // Destruye DataTables si ya está inicializado
+    if ($.fn.DataTable.isDataTable('#rifCountTable')) {
+        $('#rifCountTable').DataTable().destroy();
+    }
+
+    // Limpia la tabla usando removeChild
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+
+                if (response.success) {
+                    const RazonData = response.RazonData; // Cambia el nombre de la variable aquí
+
+                    RazonData.forEach(item => { // Usa un nombre diferente para el elemento individual
+                        const row = tbody.insertRow();
+                        const id_clienteCell = row.insertCell();
+                        const razonsocialCell = row.insertCell();
+                        const rifCell = row.insertCell();
+                        const name_modeloposCell = row.insertCell();
+                        const serial_posCell = row.insertCell();
+                        const afiliacionCell = row.insertCell();
+                        const fechainstallCell = row.insertCell();
+                        const bancoCell = row.insertCell();
+                        const directionCell = row.insertCell();
+                        const estadoCell = row.insertCell();
+                        const municipioCell = row.insertCell();
+
+                        id_clienteCell.textContent = item.id_cliente; // Accede a las propiedades del 'item'
+                        razonsocialCell.textContent = item.razonsocial;
+                        rifCell.textContent = item.rif;
+                        name_modeloposCell.textContent = item.name_modelopos;
+
+                        // Crear el enlace para el número de serie
+                        const enlaceSerial = document.createElement('a');
+                        enlaceSerial.textContent = item.serial_pos;
+                        enlaceSerial.style.color = 'blue';
+                        enlaceSerial.style.textDecoration = 'underline';
+                        enlaceSerial.style.cursor = 'pointer';
+                        serial_posCell.appendChild(enlaceSerial);
+
+                        // Modal de detalles del serial (tu código existente)
+                        const modalSerial = document.getElementById('ModalSerial');
+                        const spanSerialClose = document.getElementById('ModalSerial-close');
+                        enlaceSerial.onclick = function() {
+                            modalSerial.style.display = 'block';
+                            fetchSerialData(item.serial_pos);
+                        }
+                        spanSerialClose.onclick = function() {
+                            modalSerial.style.display = 'none';
+                        }
+                        window.onclick = function(event) {
+                            if (event.target == modalSerial) {
+                                modalSerial.style.display = 'none';
+                            }
+                        }
+
+                        fechainstallCell.textContent = item.fechainstalacion;
+                        afiliacionCell.textContent = item.afiliacion;
+
+                        //TEXTO EN LA VISTA
+                        const fechaInstalacion = new Date(item.fechainstalacion);
+                        const ahora = new Date();
+                        const diffEnMilisegundos = ahora.getTime() - fechaInstalacion.getTime();
+                        const diffEnMeses = diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
+
+                        const garantiaLabel = document.createElement('span');
+                        garantiaLabel.style.fontSize = '10px';
+                        garantiaLabel.style.fontWeight = 'bold';
+                        garantiaLabel.style.display = 'block';
+                        garantiaLabel.style.marginTop = '5px';
+                        garantiaLabel.style.width = '173px';
+                        let garantiaTexto = '';
+                        let garantiaClase = '';
+
+                        if (diffEnMeses <= 6 && diffEnMeses >= 0) {
+                            garantiaTexto = 'Garantía Instalación (6 meses)';
+                            garantiaClase = 'garantia-activa';
+                            garantiaDetectada = true;
+                        } else {
+                            garantiaTexto = 'Sin garantía';
+                            garantiaClase = 'sin-garantia';
+                        }
+
+                        garantiaLabel.textContent = garantiaTexto;
+                        garantiaLabel.className = garantiaClase;
+                        fechainstallCell.appendChild(document.createElement('br'));
+                        fechainstallCell.appendChild(garantiaLabel);
+                        //END TEXTO EN LA VISTA
+
+                        bancoCell.textContent = item.banco;
+                        directionCell.textContent = item.direccion_instalacion;
+                        estadoCell.textContent = item.estado;
+                        municipioCell.textContent = item.municipio;
+                    });
+
+                    // Inicialización de DataTables
+                    if ($.fn.DataTable.isDataTable('#rifCountTable')) {
+                        $('#rifCountTable').DataTable().destroy();
+                    }
+                    $('#rifCountTable').DataTable({
+                        responsive: false,
+                        "pagingType": "simple_numbers",
+                        "lengthMenu": [5],
+                        autoWidth: false,
+                        "language": {
+                            "lengthMenu": "Mostrar _MENU_ registros", // Esta línea es la clave
+                            "emptyTable": "No hay datos disponibles en la tabla",
+                            "zeroRecords": "No se encontraron resultados para la búsqueda",
+                            "info": "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
+                            "infoEmpty": "No hay datos disponibles",
+                            "infoFiltered": "(Filtrado de _MAX_ datos disponibles)",
+                            "search": "Buscar:",
+                            "loadingRecords": "Buscando...",
+                            "processing": "Procesando...",
+                            "paginate": {
+                                "first": "Primero",
+                                "last": "Último",
+                                "next": "Siguiente",
+                                "previous": "Anterior"
+                            }
+                        }
+                    });
+                    $('#rifCountTable').resizableColumns();
+
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="11">Error al cargar</td></tr>';
+                    console.error('Error:', response.message);
+                }
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="11">Error al procesar la respuesta</td></tr>';
+                console.error('Error parsing JSON:', error);
+            } 
+        }else if (xhr.status === 404) {
+                tbody.innerHTML = '<tr><td colspan="11">No se encontraron usuarios</td></tr>';
+        } else {
+            tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+            console.error('Error:', xhr.status, xhr.statusText);
+        }
+    };
+    xhr.onerror = function() {
+        tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+        console.error('Error de red');
+    };
+    const RazonInputValue = document.getElementById('RazonInput').value;
+    const datos = `action=SearchRazonData&RazonSocial=${encodeURIComponent(RazonInputValue)}`;
     xhr.send(datos);
 }
 
@@ -327,6 +679,8 @@ function fetchSerialData(serial) {
     xhr.send(datos);
 }
 
+
+
 function downloadImageModal(serial) {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetPhoto`);
@@ -377,13 +731,61 @@ document.addEventListener('DOMContentLoaded', function() {
     const buscarRif = document.getElementById('buscarRif');
     const rifCountTableCard = document.querySelector('.card');
 
+    const buscarPorSerialBtn = document.getElementById('buscarPorSerialBtn');
+    const serialInput = document.getElementById('serialInput');
+    const buscarSerial = document.getElementById('buscarSerial');
+    const serialCountTableCard = document.querySelector('.card');
+
+    const buscarPorRazonBtn = document.getElementById('buscarPorNombreBtn');
+    const razonInput = document.getElementById('RazonInput');
+    const buscarRazon = document.getElementById('buscarRazon');
+    const razonCountTableCard = document.querySelector('.card');
+
+    if (buscarPorRazonBtn && razonCountTableCard) {
+        buscarPorRazonBtn.addEventListener('click', function() {
+            razonCountTableCard.style.display = 'block'; // Muestra la tabla
+            razonInput.style.display = 'block'; // Muestra el input
+            buscarRazon.style.display = 'block'; // Oculta el botón
+            buscarRif.style.display = 'none'; // Oculta el botón
+            rifInput.style.display = 'none'; // Muestra el input*/
+            serialInput.style.display = 'none'; // Oculta el botón
+            buscarSerial.style.display = 'none'; // Oculta el botón
+        });
+    } else {
+        console.log('Error: No se encontraron el botón o la tabla.'); // Para verificar si los elementos se seleccionan
+    }
+
+
     if (buscarPorRifBtn && rifCountTableCard) {
         buscarPorRifBtn.addEventListener('click', function() {
             rifCountTableCard.style.display = 'block'; // Muestra la tabla
             rifInput.style.display = 'block'; // Muestra el input
             buscarRif.style.display = 'block'; // Oculta el botón
+            buscarSerial.style.display = 'none'; // Oculta el botón
+            serialInput.style.display = 'none';
+            buscarRazon.style.display = 'none'; // Oculta el botón
+            razonInput.style.display = 'none'; // Oculta el botón
+
+        });
+    } else {
+        console.log('Error: No se encontraron el botón o la tabla.'); // Para verificar si los elementos se seleccionan
+    }
+
+
+
+    if (buscarPorSerialBtn && serialCountTableCard) {
+        buscarPorSerialBtn.addEventListener('click', function() {
+            serialCountTableCard.style.display = 'block'; // Muestra la tabla
+            serialInput.style.display = 'block'; // Muestra el input
+            buscarSerial.style.display = 'block'; // Oculta el botón
+            rifInput.style.display = 'none'; // Muestra el input
+            buscarRif.style.display = 'none'; // Oculta el botón
+            buscarRazon.style.display = 'none'; // Oculta el botón
+            razonInput.style.display = 'none'; // Oculta el botón
+            
         });
     } else {
         console.log('Error: No se encontraron el botón o la tabla.'); // Para verificar si los elementos se seleccionan
     }
 });
+
