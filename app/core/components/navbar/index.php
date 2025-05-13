@@ -9,9 +9,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
-    <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-    <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/styleGeneral.css" />
-    <link id="pagestyle" rel="stylesheet"  href="<?php echo APP; ?>app/plugins/css/navbar/desktop/form.css" />
+    <link id="pagestyle" rel="stylesheet"
+        href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
+    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/navbar/styleGeneral.css" />
+    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/navbar/desktop/form.css" />
+
     <script>
         const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
         const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
@@ -29,15 +31,15 @@
                 target="_blank">
                 <img src="<?php echo APP; ?>app/public/img/login/Logo.png" width="26px" height="26px"
                     class="navbar-brand-img h-100" alt="main_logo">
-                <span style="color:#fff;" class="ms-1 font-weight-bold">Airan Bracamonte</span><br>
-                <span style="color:#fff;" class="ms-5 font-weight-bold">Tecnico<br>
+                <span style="color:#fff;" class="ms-1 font-weight-bold"><?php echo $_SESSION['nombres']?> <?php echo $_SESSION['apellidos']?></span><br>
+                <span style="color:#fff;" class="ms-5 font-weight-bold"><?php echo $_SESSION['name_rol']?><br>
             </a>
         </div>
         <hr class="horizontal dark mt-0">
         <div class="collapse navbar-collapse w-auto " id="sidenav-collapse-main">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" id="inicio-link" href="dashboard2">
+                    <a class="nav-link" id="inicio-link" href="dashboard">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-laptop"
                             viewBox="0 0 16 16">
                             <path
@@ -47,35 +49,40 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="crearTicketDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                            class="bi bi-plus-square-fill" viewBox="0 0 16 16">
-                            <path
-                                d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0" />
-                        </svg>
-                        <span class="nav-link-text ms-3">Crear Ticket</span>
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="crearTicketDropdown">
-                        <li><a class="dropdown-item" href="#" data-value="Soporte POS">Soporte POS</a></li>
-                        <li><a class="dropdown-item" href="#" data-value="Sustitución de POS">Sustitución de POS</a></li>
-                        <li><a class="dropdown-item" href="#" data-value="Préstamo de POS">Préstamo de POS</a></li>
-                        <li><a class="dropdown-item" href="#" data-value="Desafiliación de POS">Desafiliación de POS</a></li>
-                        <li><a class="dropdown-item" href="#" data-value="Migración de Bancos">Migración de Bancos</a></li>
-                        <li><a class="dropdown-item" href="#" data-value="Cambio de Razón Social">Cambio de Razón Social</a></li>
-                    </ul>
-                </li>
+                   <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="crearTicketDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-plus-square-fill" viewBox="0 0 16 16">
+                                <path
+                                    d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0" />
+                            </svg>
+                            <span class="nav-link-text ms-3">Crear Ticket</span>
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="crearTicketDropdown">
+                            <li><a class="dropdown-item" href="#" data-value="Soporte POS">Soporte POS</a></li>
+                            <li><a class="dropdown-item" href="#" data-value="Sustitución de POS">Sustitución de POS</a></li>
+                            <li><a class="dropdown-item" href="#" data-value="Préstamo de POS">Préstamo de POS</a></li>
+                            <li><a class="dropdown-item" href="#" data-value="Desafiliación de POS">Desafiliación de POS</a></li>
+                            <li><a class="dropdown-item" href="#" data-value="Migración de Bancos">Migración de Bancos</a></li>
+                            <li><a class="dropdown-item" href="#" data-value="Cambio de Razón Social">Cambio de Razón Social</a></li>
+                        </ul>
+                    </li>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="rif-link" href="consulta_rif">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                            class="bi bi-search" viewBox="0 0 16 16">
-                            <path
-                                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                        </svg>
-                        <span class="nav-link-text ms-3">Consultar RIF</span>
-                    </a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="Reportes" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                            </svg>
+                            <span class="nav-link-text ms-3">Consultas General</span>
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="Reportes">
+                            <li><a class="dropdown-item" style="display: block;" href="consulta_rif" data-value="Consulta Rif">Consulta de Rif</a></li>
+                            <li><a class="dropdown-item" style="display: block;" href="#" data-value="Reportes Tickets">Reportes Tickets</a></li>
+                        </ul>
+                    </li>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="estadisticas-link" href="../pages/profile.html">
@@ -88,13 +95,22 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="cerrar-link" href="gestionusers">
+                    <a class="nav-link" id="assignment-ticket" href="asignar_tecnico">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                            class="bi bi-person-gear" viewBox="0 0 16 16">
+                            class="bi bi-tools" viewBox="0 0 16 16">
                             <path
-                                d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m.256 7a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1zm3.63-4.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382zM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0" />
+                                d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z" />
                         </svg>
-                        <span class="nav-link-text ms-3">Gestión Usuario</span>
+                        <span class="nav-link-text ms-3">Asignar Ticket a Técnico</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="assignment-ticket" href="tecnico">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-workspace" viewBox="0 0 16 16">
+                            <path d="M4 16s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-5.95a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                            <path d="M2 1a2 2 0 0 0-2 2v9.5A1.5 1.5 0 0 0 1.5 14h.653a5.4 5.4 0 0 1 1.066-2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v9h-2.219c.554.654.89 1.373 1.066 2h.653a1.5 1.5 0 0 0 1.5-1.5V3a2 2 0 0 0-2-2z"/>
+                        </svg>
+                        <span class="nav-link-text ms-3">Técnico</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -106,156 +122,227 @@
                             <path fill-rule="evenodd"
                                 d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z" />
                         </svg>
-                        <span class="nav-link-text ms-3">Cerrar Ses&oacuten</span>
+                        <span class="nav-link-text ms-3">Cerrar Secci&oacuten</span>
                     </a>
                 </li>
-                
             </ul>
         </div>
     </aside>
-    <div id="miModal" class="modal" style="background-color: rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px);">
-        <div class="modal-contenido">
-            <span class="cerrar">&times;</span>
-            <div id="contenidoModal" style="margin-left: 59px;">
-                <form id="miFormulario">
-                    <div id="detalle1">
-                        <h2 id="title2">Falla Nivel 2</h2><br>
-                        <div><br>
-                            <label for="FallaSelect2">Falla Descrita Por el Cliente</label>
-                            <div id="FallaSelect2Container">
-                                <select id="FallaSelect2" name="FallaSelect2">
-                                    <option></option>
+
+    <!--MODAL FALLA NIVEL 2-->
+        <div class="modal" id="miModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"
+            style="background-color: rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px);">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalToggleLabel">Falla Nivel 2</h1>
+                        <button id="cerraModal2" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" style="margin-left: 0;">
+                        <form id="miFormulario" class="row g-3">
+                            <div id="detalle1" class="col-md-6">
+                                <div><br>
+                                    <label for="FallaSelect2" class="form-label">Falla Descrita Por el Cliente</label>
+                                    <div id="FallaSelect2Container">
+                                        <select id="FallaSelect2" name="FallaSelect2" class="form-select">
+                                            <option></option>
+                                        </select>
+                                    </div><br>
+                                </div>
+                                <div style=" display: flex; flex-direction: column;">
+                                    <label id="LabelRifModal2" for="serialInputDetalle1" class="form-label">RIF cliente</label>
+                                    <input type="text" onchange="checkRif()" id="InputRif" class="form-control" placeholder="JV123456789">
+                                    <p style="margin-left: 143%; width: 100%;" id="rifMensaje"></p>
+                                </div>
+                                <div>
+                                    <label id="LabelSerial" class="form-label" for="serialSelect">Seriales de POS:</label>
+                                    <div id="serialSelectContainer">
+                                        <select class="form-select" id="serialSelect" name="serialSelect"></select>
+                                    </div><br>
+                                </div>
+                                <div>
+                                    <label id="LabelCoordinador" class= "form-label" for="AsiganrCoordinador">Asignar a Coordinador</label>
+                                    <div id="AsiganrCoordinadorContainer">
+                                        <select id="AsiganrCoordinador" name="AsiganrCoordinador" class="form-select"></select>
+                                    </div><br>
+                                </div>
+                                <div class="contenedor-fechas">
+                                    <div>
+                                        <label class="form-label" id="FechaLast" for="ultimoTicketInput">Fecha del Último Ticket:</label>
+                                        <input class="form-control" type="text" id="ultimateTicketInput" readonly>
+                                        <div style=" margin-left: 5%;" id="resultadoGarantiaReingreso"></div>
+                                    </div><br>
+
+                                    <div>
+                                        <label class="form-label" id="LabelFechaInst" for="InputFechaInstall">Fecha de Instalaci&oacuten POS:</label>
+                                        <input class="form-control" type="text" id="InputFechaInstall" readonly>
+                                        <div style="margin-left: 31%;" id="resultadoGarantiaInstalacion"></div>
+                                    </div>
+                                </div><br>
+                                <div id="FallaSelectContainer1">
+                                    <select class="form-select" style="margin-left: 116%; width: 172px; display: none;" id="FallaSelectt2" name="FallaSelect1">
+                                        <option value="2">Nivel 2</option>
+                                    </select>
+                                </div>
+                                <br>
+                                <div id="DownloadsBotons">
+                                    <div>
+                                        <div id="botonCargaPDFEnv">
+                                            <button id="DownloadEnvi" class="btn btn-outline-secondary btn-sm">Cargar PDF Envio</button>
+                                            <input class="form-control" id="EnvioInput" type="file" style="display: none; margin-left: 10px;"
+                                                accept="application/pdf, image/jpeg, image/jpg">
+                                            <div id="anticipoStatus"></div>
+                                        </div>
+                                    </div><br>
+                                    <div>
+                                        <div style="display: flex; align-items: center; margin-bottom: 6%;">
+                                            <button id="DownloadExo" class="btn btn-outline-secondary btn-sm">Cargar Exoneracion</button>
+                                            <input class="form-control" id="ExoneracionInput" type="file"
+                                                style="display: none; margin-left: 10px;"
+                                                accept="application/pdf, image/jpeg, image/jpg">
+                                            <div id="exoneracionStatus"></div>
+                                        </div>
+                                    </div><br>
+                                    <div>
+                                        <div style="display: flex; align-items: center; margin-bottom: 2%;">
+                                            <button class="form-control" id="DownloadAntici" class="btn btn-outline-secondary btn-sm">Cargar PDF Anticipo</button>
+                                            <input id="AnticipoInput" type="file" style="display: none; margin-left: 10px;"
+                                                accept="application/pdf, image/jpeg, image/jpg">
+                                            <div id="envioStatus"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="RightSelects">
+                                    <div>
+                                        <label class="form-label" for="selectAdicional1">Opción 1:</label>
+                                        <select class="form-select" id="selectAdicional1" name="selectAdicional1">
+                                            <option value="">Seleccionar</option>
+                                            <option value="valor1">Valor 1</option>
+                                            <option value="valor2">Valor 2</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label" for="selectAdicional2">Opción 2:</label>
+                                        <select class="form-select" id="selectAdicional2" name="selectAdicional2">
+                                            <option value="">Seleccionar</option>
+                                            <option value="valorA">Valor A</option>
+                                            <option value="valorB">Valor B</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label" for="selectAdicional3">Opción 3:</label>
+                                        <select class="form-select" id="selectAdicional3" name="selectAdicional3">
+                                            <option value="">Seleccionar</option>
+                                            <option value="itemX">Item X</option>
+                                            <option value="itemY">Item Y</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label" for="selectAdicional4">Opción 4:</label>
+                                        <select class="form-select" id="selectAdicional4" name="selectAdicional4">
+                                            <option value="">Seleccionar</option>
+                                            <option value="uno">Uno</option>
+                                            <option value="dos">Dos</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                    
+                                    <!--div class="contenedor-triangulo">
+                                            <div class="triangulo"></div>
+                                            <div class="triangulo"></div>
+                                            <div class="triangulo"></div>
+                                        </div-->
+
+                                    <!--div id="animation" class="contenedor-triangulo1">
+                                            <div class="triangulo1"></div>
+                                            <div class="triangulo1"></div>
+                                            <div class="triangulo1"></div>
+                                        </div-->
+                                <input type="hidden" id="id_user" name="userId" value = <?php echo $_SESSION['id_user']?>>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="SendForm2" class="btn btn-primary">Guardar</button>
+                        <button id="buttonCerrar2" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <!--END MODAL FALLA NIVEL 2-->
+
+    <!--MODAL SELECIONAR TIPO DE FALLA -->
+    <div class="modal" id="nivelFallaModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div id="NivelFalla-div" class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="nivelFallaModalLabel">¿Cuál es el nivel de la falla?</h1>
+                    <button type="button" id="cerrar-icon" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+
+                </div>
+                <div class="modal-body text-center">
+                    <button value="1" id="nivel1Btn" type="button" class="btn btn-success me-2"
+                        data-bs-dismiss="modal">Nivel 1</button>
+                    <button value="2" id="nivel2Btn" type="button" class="btn btn-primary" data-bs-dismiss="modal">Nivel
+                        2</button>
+                </div>
+                <div class="modal-footer">
+                    <button id="cerrar" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--END MODAL SELECCIONAR TIPO DE FALLA -->
+
+    <!--MODAL FALLA NIVEL 1-->
+        <div class="modal" id="miModal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"
+            data-bs-backdrop="static" data-bs-keyboard="false">
+            <div id="Modal2-div" class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalToggleLabel">Falla Nivel 1</h1>
+                        <button id="cerrar-iconNivel1" type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <label for="FallaSelect1">Falla Descrita Por el Cliente</label>
+                            <div id="FallaSelect1Container">
+                                <select id="FallaSelect1" name="FallaSelect1">
                                 </select>
                             </div><br>
-                        </div>
-                        <div style=" display: flex; flex-direction: column;">
                             <label for="serialInputDetalle1">RIF cliente</label>
-                            <input type="text" onchange="checkRif()" id="InputRif" placeholder="JV123456789">
-                            <p id="rifMensaje"></p>
-                        </div>
-                        <div>
+                            <input type="text" onchange="checkRif1()" id="InputRif1" placeholder="JV123456789">
+                            <p id="rifMensaje1"></p>
                             <label for="serialSelect">Seriales de POS:</label>
                             <div id="serialSelectContainer">
-                                <select id="serialSelect" name="serialSelect"></select>
+                                <select id="serialSelect1" name="serialSelect">
+                                </select>
                             </div><br>
-                        </div>
-                        <div>
-                            <label for="AsiganrCoordinador">Asignar a Coordinador</label>
-                            <div id="AsiganrCoordinadorContainer">
-                                <select id="AsiganrCoordinador" name="AsiganrCoordinador"></select>
-                            </div><br>
-                        </div>
-                        <div class="contenedor-fechas">
-                            <div>
-                                <label for="ultimoTicketInput">Fecha del Último Ticket:</label>
-                                <input style="width: 50%;" type="text" id="ultimateTicketInput" readonly>
-                                <div id="resultadoGarantiaReingreso"></div>
-                            </div><br>
-
-                            <div>
-                                <label for="InputFechaInstall">Fecha de Instalaci&oacuten POS:</label>
-                                <input style="width: 50%;" type="text" id="InputFechaInstall" readonly>
-                                <div id="resultadoGarantiaInstalacion"></div>
+                            <label for="FallaSelect">Nivel Falla</label>
+                            <div id="FallaSelectContainer">
+                                <select id="FallaSelectt1" name="FallaSelect">
+                                    <option value="1">Nivel 1</option>
+                                </select>
                             </div>
-                        </div><br>
-                        <br><label style="margin-left: 30%; width: 85px; margin-top: 27px; position: relative; display: block; margin-bottom: -14px;" for="FallaSelect1">Nivel Falla</label>
-                        <div id="FallaSelectContainer1">
-                            <select style="margin-left: 116%; width: 172px;" id="FallaSelectt2" name="FallaSelect1">
-                                <option value="2">Nivel 2</option>
-                            </select>
+                            <input type="hidden" id="id_user" name="userId">
+                            <button id="SendForm1" onclick="SendDataFailure1();" class="btn btn-primary">Guardar</button>
+                            <table id="serialCountTableDetalle1" class="table">
+                                <tbody></tbody>
+                            </table>
                         </div>
-                        <br>
-                        <div style="display: flex; flex-direction: column; margin-top: -24%;">
-                            <div>
-                                <div style="display: flex; align-items: center;">
-                                    <button id="DownloadEnvi">Cargar PDF Envio</button>
-                                    <input id="EnvioInput" type="file" style="display: none; margin-left: 10px;"
-                                        accept="application/pdf, image/jpeg, image/jpg">
-                                    <div id="anticipoStatus"></div>
-                                </div>
-                            </div><br>
-                            <div>
-                                <div style="display: flex; align-items: center;">
-                                    <button id="DownloadExo">Cargar Exoneracion</button>
-                                    <input id="ExoneracionInput" type="file" style="display: none; margin-left: 10px;"
-                                        accept="application/pdf, image/jpeg, image/jpg">
-                                    <div id="exoneracionStatus"></div>
-                                </div>
-                            </div><br>
-                            <div>
-                                <div style="display: flex; align-items: center;">
-                                    <button id="DownloadAntici">Cargar PDF Anticipo</button>
-                                    <input id="AnticipoInput" type="file" style="display: none; margin-left: 10px;"
-                                        accept="application/pdf, image/jpeg, image/jpg">
-                                    <div id="envioStatus"></div>
-                                </div>
-                            </div>
-                            <div class="contenedor-triangulo">
-                                <div class="triangulo"></div>
-                                <div class="triangulo"></div>
-                                <div class="triangulo"></div>
-                            </div>
-
-                            <div id="animation" class="contenedor-triangulo1">
-                                <div class="triangulo1"></div>
-                                <div class="triangulo1"></div>
-                                <div class="triangulo1"></div>
-                            </div>
-                        </div>
-                        <input type="hidden" id="id_user" name="userId">
                     </div>
-                </form>
-                <div>
-                    <button id="SendForm2">Guardar</button>
+                    <div class="modal-footer">
+                        <button id="buttonCerrar" type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">Cerrar</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div id="nivelFallaModal" class="modal">
-        <div class="modal-contenido">
-            <span class="cerrar1">&times;</span>
-            <h2>¿Cuál es el nivel de la falla?</h2>
-            <div style="text-align: center;">
-                <button value="1" id="nivel1Btn">Nivel 1</button>
-                <button value="2" id="nivel2Btn">Nivel 2</button>
-            </div>
-        </div>
-    </div>
+    <!--END MODAL FALLA NIVEL 1-->
 
-    <div id="miModal1" class="modal">
-        <div class="modal-contenido1">
-            <span class="cerrar1">&times;</span>
-            <div class="nivel1modal" id="contenidoModal2">
-                <div>
-                    <h2 id="title1">Falla Nivel 1</h2><br>
-                    <label for="FallaSelect1">Falla Descrita Por el Cliente</label>
-                    <div id="FallaSelect1Container">
-                        <select id="FallaSelect1" name="FallaSelect1">
-                        </select>
-                    </div><br>
-                    <label for="serialInputDetalle1">RIF cliente</label>
-                    <input type="text" onchange="checkRif1()" id="InputRif1" placeholder="JV123456789">
-                    <p id="rifMensaje1"></p>
-                    <label for="serialSelect">Seriales de POS:</label>
-                    <div id="serialSelectContainer">
-                        <select id="serialSelect1" name="serialSelect">
-                        </select>
-                    </div><br>
-                    <label for="FallaSelect">Nivel Falla</label>
-                    <div id="FallaSelectContainer">
-                        <select id="FallaSelectt1" name="FallaSelect">
-                            <option value="1">Nivel 1</option>
-                        </select>
-                    </div>
-                    <input type="hidden" id="id_user" name="userId">
-                    <button id="SendForm1" onclick="SendDataFailure1();">Cargar</button>
-                    <table id="serialCountTableDetalle1">
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
     <!--JQUERY-->
     <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
@@ -265,6 +352,7 @@
     <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.js"></script>
 
     <!--   Core JS Files   -->
     <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>

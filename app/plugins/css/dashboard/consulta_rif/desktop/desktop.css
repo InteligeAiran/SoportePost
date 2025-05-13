@@ -1,4 +1,61 @@
 @media (max-width: 2500px) AND (min-width: 1050px) AND (max-height: 1050px) AND (min-height: 400px){
+
+    #buscarPorRifBtn, #buscarPorSerialBtn, #buscarPorNombreBtn{
+        background-color: #001f3f; /* Azul oscuro */
+        color: #FFFFFF; /* Amarillo */
+        /*color: #ffff00; /* Amarillo */
+        border: 2px solid #00ffff; /* Azul claro */
+        border-radius: 8px; /* Bordes redondeados */
+        padding: 12px 24px; /* Ajustar el relleno según sea necesario */
+        font-weight: bold; /* Texto en negrita */
+        box-shadow: 0 0 15px #00ffff; /* Resplandor azul claro */
+        transition: box-shadow 0.3s ease, transform 0.3s ease; /* Transición suave para el resplandor y la escala */
+        text-transform: uppercase; /* Texto en mayúsculas */
+        letter-spacing: 1px; /* Espacio entre letras */
+    }
+
+    #buscarPorNombreBtn{
+        margin-left: 24%;
+    }
+
+    #buscarPorRifBtn:hover {
+        box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
+        transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    }
+
+    #buscarPorSerialBtn:hover{
+        box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
+        transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    }
+
+    #buscarPorNombreBtn:hover{
+        box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
+        transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    }
+
+    #buscarPorNombreBtn:focus {
+        outline: none; /* Eliminar el contorno predeterminado al enfocar */
+        box-shadow: 0 0 20px #00ffff; /* Mantener el resplandor al enfocar */
+    }
+
+    #buscarPorRifBtn:focus {
+        outline: none; /* Eliminar el contorno predeterminado al enfocar */
+        box-shadow: 0 0 20px #00ffff; /* Mantener el resplandor al enfocar */
+    }
+
+    #buscarPorSerialBtn:focus {
+        outline: none; /* Eliminar el contorno predeterminado al enfocar */
+        box-shadow: 0 0 20px #00ffff; /* Mantener el resplandor al enfocar */
+    }
+
+    /* Aplicar los estilos a los botones */
+    .d-flex.justify-content-start.mt-2 button.me-2:nth-child(1),
+    .d-flex.justify-content-start.mt-2 button.me-2:nth-child(2),
+    .d-flex.justify-content-start.mt-2 button#buscarPorRifBtn {
+        @apply btn-custom; /* Si usas Tailwind CSS */
+    /* Si no usas Tailwind, añade la clase 'btn-custom' a cada botón en tu HTML */
+    }
+
     .py-4 {
        margin-top: 6%;
     }
@@ -29,25 +86,10 @@
     #SearchRif{
         margin-left: 550px;
         width: 11%;
+        margin-top: 4%;
     }
 
-    #buscarRifContainer {
-        display: flex;
-        justify-content: center; /* Centra horizontalmente */
-        align-items: center; /* Centra verticalmente */
-        margin: 20px 0; /* Añade margen superior e inferior */
-    }
-
-    #rifInput {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        margin-right: 10px;
-        width: 200px; /* Ajusta el ancho según sea necesario */
-        font-size: 16px;
-    }
-
-    #buscarRif {
+    #SearchRif button{
         padding: 10px 20px;
         background-color: #007bff; /* Color azul, puedes cambiarlo */
         color: white;
@@ -58,9 +100,26 @@
         transition: background-color 0.3s ease; /* Transición suave */
     }
 
-    #buscarRif:hover {
+    #SearchRif button:hover {
         background-color: #0056b3; /* Color más oscuro al pasar el ratón */
     }
+
+    #buscarRifContainer {
+        display: flex;
+        justify-content: center; /* Centra horizontalmente */
+        align-items: center; /* Centra verticalmente */
+        margin: 20px 0; /* Añade margen superior e inferior */
+    }
+
+    #SearchRif input{
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: 10px;
+        width: 200px; /* Ajusta el ancho según sea necesario */
+        font-size: 16px;
+    }
+
     /* Estilos generales */
     body {
         font-family: Arial, sans-serif;
@@ -111,13 +170,6 @@
         background-color: #f9f9f9;
     }
 
-    /* Estilos del input y el botón */
-    #rifInput {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        margin-right: 10px;
-    }
 
     #buscarBtn {
         padding: 10px 20px;
@@ -181,10 +233,10 @@
         color: #666;
     }
 
-    .table-responsive {
-        overflow-y: auto; /* Añade scroll vertical cuando el contenido desborda */
-        max-height: 80vh; /* O una altura máxima que consideres apropiada para la visualización inicial */
-    }
+    /*.table-responsive {
+        /*overflow-y: auto; /* Añade scroll vertical cuando el contenido desborda */
+        /*max-height: 80vh; /* O una altura máxima que consideres apropiada para la visualización inicial */
+    /*}*/
 
     #cliente{
         margin-left: 100px;
@@ -200,7 +252,7 @@
         display: none; /* Oculto por defecto */
         position: fixed; /* Posición fija */
         z-index: 1000; /* Asegura que esté por encima de otros elementos */
-        left: 130px;
+        /*left: 130px;*/
         top: 0;
         width: 100%; /* Ancho completo */
         height: 100%; /* Alto completo */
@@ -269,6 +321,7 @@
         width: 80%;
         max-width: 800px; /* Ajusta según sea necesario */
         position: relative;
+        margin-left: 35%;
     }
 
     #ModalSerial-content h2 {
@@ -404,25 +457,26 @@
     }
 
     .sunmi-P2{
-        margin-top: 60px;
-        height: 435px;
-        margin-left: -253px;
-        width: 480px;
+        margin-top: -5%;
+        height: 95%;
+        margin-left: -171%;
+        width: 307%;
     }
 
     .ingenico-ict220{
-        margin-left: -217px;
-        margin-top: -18px;
-        height: 378px;
+        margin-left: -179%;
+        margin-top: -1%;
+        height: 99%;
     }
 
     .move-2500{
-        margin-left: -165px;
+        margin-left: -144px;
+        height: 78%;
     }
 
     .ingenico-iwl220{
-        margin-top: 25px;
-        margin-left: -254px;
+        margin-top: -15%;
+        margin-left: -179%;
     }
 
     .sunmi-P2mini{
@@ -431,9 +485,10 @@
     }
 
     .sunmi-P2SE{
-        width: 625px;
-        margin-left: -323px;
-        margin-top: 54px;
+        width: 376%; 
+        margin-left: -197%;
+        margin-top: -5%;
+
     }
     
     .Kozen-P10{

@@ -66,6 +66,16 @@ class Api extends Controller {
         if (isset($urlSegments[0])) {
             switch ($urlSegments[0]) {
 
+                case 'permissions':
+                    // api/permissions/{user_id}
+                    if (isset($urlSegments[1]) && is_numeric($urlSegments[1])) {
+                        $userId = (int) $urlSegments[1];
+                        $this->handleGetUserPermissions($userId);
+                    } else {
+                        $this->response(['error' => 'ID de usuario no válido'], 400);
+                    }
+                break;
+
                 /* LOGIN */
                     case 'users':
                         // Pasar los segmentos de la URL a la función handleUsers
@@ -129,6 +139,16 @@ class Api extends Controller {
                     case 'SearchRif':
                         // Manejo de la búsqueda de RIF
                         $this->handleSearchRif();
+                    break;
+
+                    case 'SearchSerialData':
+                        // Manejo de la búsqueda de serial
+                        $this->handleSearchSerialData();
+                    break;
+
+                    case 'SearchRazonData':
+                        // Manejo de la búsqueda de razón social
+                        $this->handleSearchRazonData();
                     break;
 
                     case 'SearchSerial':
@@ -223,10 +243,44 @@ class Api extends Controller {
                         //var_dump($_POST); // Para depuración
                         $this->handleGetUsers();
                     } else {
-                        $this->response(['error' => 'Método no permitido para /api/GetImageExo'], 405);
+                        $this->response(['error' => 'Método no permitido para /api/GetUsers'], 405);
+                    }
+                break;
+
+                case 'GetTecnico2': 
+                    if($method === 'POST'){
+                        $this->handleGetTecnico2();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/GetTecnico2'], 405);
+                    }
+                break;
+
+                case 'AssignTicket':
+                    if($method === 'POST'){
+                        $this->handleAssignTicket();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/AssingTicket'], 405);
                     }
                 break;
                 /*END USERS*/
+
+                /*TICKETS*/
+                case 'GetTicketData1':
+                    if($method === 'GET'){
+                        $this->handleGetTicketData1();
+                    }else{
+                        $this->response(['error' => 'Método no permitido para /api/GetUsers'], 405);
+                    }
+                break;
+                
+                case 'GetTicketData':
+                    if ($method === 'GET') {
+                        //var_dump($_POST); // Para depuración
+                        $this->handleGetTicketData();
+                    } else {
+                        $this->response(['error' => 'Método no permitido'], 405);
+                    }
+                /*END TICKETS*/
                 default:
                     $this->response(['error' => 'Recurso no encontrado'], 404);
                 break;
@@ -240,7 +294,6 @@ class Api extends Controller {
         $imageId = $_GET['id'];
         $emailRepository = new EmailRepository();
         $imagenData = $emailRepository->GetDataImage($imageId);
-    
     
         if ($imagenData && isset($imagenData['exo']) && isset($imagenData['mime_type'])) {
             $base64Data = $imagenData['exo']; // Ya está en Base64
@@ -257,6 +310,17 @@ class Api extends Controller {
         }
     }
     
+    private function handleGetUserPermissions($userId) {
+        $repository = new UserRepository();
+        $permissions = $repository->getUserPermissions($userId); // Implementa esta función en tu PermissionRepository
+        //var_dump($permissions); // Para depuración
+        if ($permissions) {
+            $this->response(['success' => true, 'permissions' => $permissions], 200);
+        } else {
+            $this->response(['error' => 'No se encontraron permisos para el usuario'], 404);
+        }
+    }
+
 
     private function handleLogin() {
         $username = isset($_POST['username']) ? trim($_POST['username']) : '';
@@ -318,13 +382,7 @@ class Api extends Controller {
                             $insertResult = $model->InsertSession($session_id, $start_date,  $user_agent, $ip_address, $active, $expiry_time);
                             if ($insertResult) {
                                 $redirectURL = '';
-                                switch ($userData['codtipousuario']) {
-                                    case 1: $redirectURL = 'dashboard'; break;
-                                    case 2: $redirectURL = 'dashboard2'; break;
-                                    case 3: $redirectURL = 'dashboard3'; break;
-                                    case 4: $redirectURL = 'dashboard4'; break;
-                                    case 5: $redirectURL = 'dashboard5'; break;
-                                }
+                                $redirectURL = 'dashboard';
                                 $model->UpdateTryPassTo0($username);
                                 $this->response([
                                     'success' => true,
@@ -523,10 +581,11 @@ class Api extends Controller {
                 if (defined('FIRMA_CORREO')) {
                     $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
                 }
-
                 if ($this->emailService->sendEmail($email, $subject, $body, [], $embeddedImages)){
-                    $this->response(['success' => true, 'message' => 'Se ha enviado un código de restablecimiento a su correo electrónico.', 'color' => 'green']);
+                    $this->response(['success' => true, 'message' => 'Se ha enviado un   Aviso a su correo electrónico.', 'color' => 'green']);
                 } else {
+                    var_dump($email, $subject, $body);
+
                     $this->response(['success' => false, 'message' => 'Error al enviar el correo.', 'color' => 'red']);
                 }
             } else {
@@ -539,7 +598,7 @@ class Api extends Controller {
         $id_coordinador = isset($_POST['id_coordinador']) ? $_POST['id_coordinador'] : '';
            // var_dump($id_coordinador);
             $result  = $repository->GetEmailCoorDataById($id_coordinador);
-            $email   = $result['email']; //EL GMAIL DEL COORDINADOR 
+            $email   = $result['email']; //EL GMAIL DEL COORDINADOR
             $nombre  = $result['full_name']; // EL NOMBRE DEL COORDINADOR
             $result1 = $repository->GetDataTicket2();
             $nombre_tecnico   = $result1['full_name_tecnico']; 
@@ -798,10 +857,34 @@ class Api extends Controller {
         }
     }
 
+    public function handleSearchSerialData(){
+        $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
+        $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        $result = $repository->SearchSerialData($serial);
+        //var_dump($serial);
+        if ($result != "") {
+            $this->response(['success' => true,'serialData' => $result], status: 200);
+        } else {
+            $this->response(['success' => false,'message' => 'No se encontraron datos'], status: 404);
+        }
+    }
+
+    public function handleSearchRazonData(){
+        $razonsocial = isset($_POST['RazonSocial']) ? $_POST['RazonSocial'] : '';
+        $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        $result = $repository->SearchRazonData($razonsocial);
+        //var_dump($serial);
+        if ($result != "") {
+            $this->response(['success' => true,'RazonData' => $result], status: 200);
+        } else {
+            $this->response(['success' => false,'message' => 'No se encontraron datos'], status: 404);
+        }
+    }
+
     public function handleGetPhoto(){
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
         $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
-
+        //var_dump($serial);
         $result = $repository->SearchtypePos($serial);
         if ($result !== false) {
             $codrepositoryopos = $result;
@@ -1123,7 +1206,7 @@ class Api extends Controller {
     }
 
     public function handleGetUsers(){
-        $repository = new UserRepository(); // Inicializa el repositorio
+        $repository = new   UserRepository(); // Inicializa el repositorio
         $result = $repository->getAllUsers();
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1136,32 +1219,49 @@ class Api extends Controller {
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
     }
 
+    public function handleGetTecnico2(){
+        $repository = new   UserRepository(); // Inicializa el repositorio
+        $result = $repository->getTecnico2();
 
-    public function handleGetAreaUsers(){
-        $repository = new UserRepository(); // Inicializa el repositorio
-        $result = $repository->GetAreaUsers();
-       // var_dump($result);
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
-            $this->response(['success' => true, 'area' => $result], 200);
+            $this->response(['success' => true, 'tecnicos' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
-            $this->response(['success' => false, 'message' => 'No hay coordinadores disponibles o No ha seleccionado ningun coordinador'], 404); // Código 404 Not Found
+            $this->response(['success' => false, 'message' => 'No hay usuarios disponibles'], 404); // Código 404 Not Found
         } else {
-            $this->response(['success' => false, 'message' => 'Error al obtener los coordinadores'], 500); // Código 500 Internal Server Error
+            $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
         }
-        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
-    }   
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
 
+    public function handleAssignTicket(){
+        $id_tecnico     = isset($_POST['id_tecnico']) ? $_POST['id_tecnico'] : '';
+        $id_ticket      = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
 
-    public function handleGetTipoUsers(){
+      
         $repository = new UserRepository(); // Inicializa el repositorio
-        $result = $repository->GetTipoUsers();
-       // var_dump($result);
+        $result = $repository->AssignTicket($id_ticket, $id_tecnico, );
+
+         if ($id_tecnico != '' && $id_ticket != '') {
+            if($result){
+                $this->response(['success' => true, 'message' => 'Asignado Con Exito'], 200); 
+            }else{
+                $this->response(['success' => false, 'message' => 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
+            }
+        }else{
+            $this->response(['success' => false, 'message' => 'Hay campos vacios'], 400); // Código de estado 404 Not Found
+        }
+    }
+
+    public function handleGetTicketData(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetTicketData();
+
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
-            $this->response(['success' => true, 'tipousers' => $result], 200);
+            $this->response(['success' => true, 'ticket' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
-            $this->response(['success' => false, 'message' => 'No hay coordinadores disponibles o No ha seleccionado ningun coordinador'], 404); // Código 404 Not Found
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
-            $this->response(['success' => false, 'message' => 'Error al obtener los coordinadores'], 500); // Código 500 Internal Server Error
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
     }    
@@ -1193,20 +1293,29 @@ class Api extends Controller {
         $id_nivel = isset($_POST['id_nivel']) ? $_POST['id_nivel'] : '';
         $identificacion = isset($_POST['identificacion']) ? $_POST['identificacion'] : '';
 
-        $repository = new UserRepository(); // Inicializa el repositorio
-    
-
-        //Guardar archivo de envío
         $result = $repository->Guardar_Usuario($id_user, $nombreusers,$apellidousers, $identificacion,$users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel);
     
-                    if ($result) {
-                        $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
-                    } else {
-                        $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
-                    }
-             
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
         }
-        
-    
+ }
+    public function handleGetTicketData1(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetTicketData1();
+
+        //Guardar archivo de envío
+
+             
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
 }
 ?>

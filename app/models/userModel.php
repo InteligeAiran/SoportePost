@@ -33,34 +33,24 @@ class userModel extends Model{
         }
     }
 
-
-        public function GetUsuarios(){
+    public function GetTecnico2(){
         try{
-            $sql = "SELECT * FROM get_data_coordinator()";
+            $sql = "SELECT * FROM GetTecnico2()";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Manejar excepciones
+            // Handle exception
         }
     }
 
-        public function GetAreaUsers(){
+    public function UpdateAccion($id_ticket, $id_tecnico){
         try{
-            $sql = "SELECT * FROM sp_verareasusers()";
+            $sql = "SELECT * FROM AssignTickettoTecnico(".$id_ticket.", ".$id_tecnico.")";
+           // var_dump($sql);
             $result = Model::getResult($sql, $this->db);
             return $result;
-        } catch (Throwable $e) {
-            // Manejar excepciones
-        }
-    }    
+        }catch(Throwable $e){
 
-        public function GetTipoUsers(){
-        try{
-            $sql = "SELECT * FROM sp_vertiposusers()";
-            $result = Model::getResult($sql, $this->db);
-            return $result;
-        } catch (Throwable $e) {
-            // Manejar excepciones
         }
     }   
 
@@ -103,10 +93,19 @@ class userModel extends Model{
                 return $result;
             }*/
         } catch (Throwable $e) {
-                // Handle exception
+            error_log("Error al obtener permisos del usuario: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Error al obtener permisos'];
         }
     }
 
-}
-
+    public function getview(){
+        try{
+            $sql = "SELECT name_view FROM views";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+}   
 ?>

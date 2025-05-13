@@ -167,13 +167,10 @@ function getUserData() {
                         $('#table-user').DataTable().destroy();
                     }
                     $('#table-user').DataTable({
-                       
-                            
-                        responsive: true,
+                        responsive: false,
                         "pagingType": "simple_numbers",
                         "lengthMenu": [5],
                         autoWidth: false,
-
                         "language": {
                             "lengthMenu": "Mostrar _MENU_ registros", // Esta línea es la clave
                             "emptyTable": "No hay datos disponibles en la tabla",
@@ -190,13 +187,7 @@ function getUserData() {
                                 "next": "Siguiente",
                                 "previous": "Anterior"
                             }
-                        },
-                        dom: 'Bfrtip',
-                        buttons: [
-                        {
-                            text: '<button data-toggle="modal" data-target="#ModalAggUsers"class="btn btn-primary" type="button">Crear Usuario</button>'
                         }
-                        ]
                     });
                     $('#table-user').resizableColumns();
 

@@ -1,4 +1,4 @@
-    .modal1{
+    /*.modal1{
         display: none;
         position: fixed;
         z-index: 1;
@@ -9,35 +9,35 @@
         overflow: auto;
         background-color: rgba(0, 0, 0, 0.2);
         backdrop-filter: blur(8px);
-    }
-    
-    .cerrar {
-        color: #888;
-        position: absolute;
-        top: 10px; /* Ajuste del botón de cierre */
-        right: 15px;
-        font-size: 20px; /* Tamaño del botón de cierre */
-        cursor: pointer;
-        transition: color 0.3s;
-    }
+    }*/
 
-    .cerrar1 {
+    /*.cerrar {
         color: #888;
         position: absolute;
         top: 10px; /* Ajuste del botón de cierre */
-        right: 15px;
+    /* right: 15px;
         font-size: 20px; /* Tamaño del botón de cierre */
-        cursor: pointer;
+    /*cursor: pointer;
         transition: color 0.3s;
-    }
+    }*/
 
-    .cerrar2{
+    /*.cerrar1 {
         color: #888;
         position: absolute;
         top: 10px; /* Ajuste del botón de cierre */
-        right: 15px;
+    /*right: 15px;
         font-size: 20px; /* Tamaño del botón de cierre */
-        cursor: pointer;
+    /* cursor: pointer;
+        transition: color 0.3s;
+    }*/
+
+    /*.cerrar2{
+        color: #888;
+        position: absolute;
+        top: 10px; /* Ajuste del botón de cierre */
+    /* right: 15px;
+        font-size: 20px; /* Tamaño del botón de cierre */
+    /* cursor: pointer;
         transition: color 0.3s;
     }
 
@@ -54,139 +54,85 @@
         color: #333;
     }
 
-    #contenidoModal {
+   /* #contenidoModal {
         margin-bottom: 20px; /* Reducido el margen */
-    }
 
-    #contenidoModal h2 {
+
+    /*#contenidoModal h2 {
         font-size: 34px; /* Tamaño reducido del encabezado */
-        font-weight: 500;
+    /* font-weight: 500;
         color: #333;
         margin-bottom: 20px;
         text-align: center;
         font-family: 'Georgia', serif;
         position: relative; /* Agrega esta línea */
-        margin-left: 115px;
+    /* margin-left: 115px;
         width: 100%;;
         padding-bottom: 46px;
-    }
+    }*/
 
-    #contenidoModal2 h2 {
+    /* #contenidoModal2 h2 {
         font-size: 34px; /* Tamaño reducido del encabezado */
-        font-weight: 500;
+    /* font-weight: 500;
         color: #333;
         margin-bottom: 20px;
         text-align: center;
         font-family: 'Georgia', serif;
         position: relative; /* Agrega esta línea */
-        margin-left: 87px;
+    /*margin-left: 87px;
         width: 50%;
-    }
+    }*/
 
-    label {
-        display: block;
-        margin-bottom: 5px; /* Reducido el margen */
-        font-weight: 500;
-        color: #555;
-        font-family: 'Arial', sans-serif;
-        font-size: 14px; /* Tamaño de la fuente reducido */
-    }
-
-    input[type="text"], select, textarea {
-        width: calc(100% - 20px); /* Ajuste del ancho */
-        padding: 8px; /* Reducido el padding */
-        margin-bottom: 15px; /* Reducido el margen */
-        border: 1px solid #ddd;
-        border-radius: 6px; /* Bordes menos redondeados */
-        box-sizing: border-box;
-        font-size: 14px; /* Tamaño de la fuente reducido */
-        transition: border-color 0.3s;
-        font-family: 'Arial', sans-serif;
-    }
-
-    input[type="text"]:focus, select:focus, textarea:focus {
-        border-color: #007bff;
-        outline: none;
-    }
-
-    #miModal input[type="text"], 
+    /* #miModal input[type="text"], 
     #miModal select, 
     #miModal textarea {
         width: calc(80% - 20px); /* Ajuste del ancho */
-        padding: 8px; /* Reducido el padding */
-        margin-bottom: 15px; /* Reducido el margen */
-        border: 1px solid #ddd;
+    /* padding: 8px; /* Reducido el padding */
+    /* margin-bottom: 15px; /* Reducido el margen */
+    /* border: 1px solid #ddd;
         border-radius: 6px; /* Bordes menos redondeados */
-        box-sizing: border-box;
+    /* box-sizing: border-box;
         font-size: 14px; /* Tamaño de la fuente reducido */
-        transition: border-color 0.3s;
+    /* transition: border-color 0.3s;
         font-family: 'Arial', sans-serif;
-    }
+    }*/
 
-    #miModal input[type="text"]:focus, 
+    /*#miModal input[type="text"]:focus, 
     #miModal select:focus, 
     #miModal textarea:focus {
         border-color: #007bff;
         outline: none;
-    }
+    }*/
 
-    button, #SendForm1 {
+
+
+    /*button, #SendForm2 {
         background-color: #fff;
         color: #007bff;
         padding: 8px 15px; /* Reducido el padding */
-        border: 1px solid #007bff;
+    /* border: 1px solid #007bff;
         border-radius: 6px; /* Bordes menos redondeados */
-        font-size: 14px; /* Tamaño de la fuente reducido */
-        cursor: pointer;
+    /* font-size: 14px; /* Tamaño de la fuente reducido */
+    /* cursor: pointer;
         transition: background-color 0.3s, color 0.3s;
         font-family: 'Arial', sans-serif;
-    }
-
-    button, #SendForm2 {
-        background-color: #fff;
-        color: #007bff;
-        padding: 8px 15px; /* Reducido el padding */
-        border: 1px solid #007bff;
-        border-radius: 6px; /* Bordes menos redondeados */
-        font-size: 14px; /* Tamaño de la fuente reducido */
-        cursor: pointer;
-        transition: background-color 0.3s, color 0.3s;
-        font-family: 'Arial', sans-serif;
-    }
-
-    #SendForm1 {
-        margin-left: auto;
-        margin-right: auto;
-        display: block;
-        margin-top: 19px;
-        position: absolute;
-        margin-left: 131px;
-    }
-
-    /* Estilos para el modal */
-    .modal1{
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.2);
-        backdrop-filter: blur(8px);
-    }
-        
+    }*/
     .modal-contenido {
         /*background-color: #f9f9f9;*/
         background-color: #F9F9F1;
-        margin: 2% auto; /* Ajuste para centrar */
-        padding: 11px; /* Reducido el padding */
-        border-radius: 10px; /* Bordes menos redondeados */
-        width: 700px; /* Ancho fijo */
+        margin: 2% auto;
+        /* Ajuste para centrar */
+        padding: 11px;
+        /* Reducido el padding */
+        border-radius: 10px;
+        /* Bordes menos redondeados */
+        width: 700px;
+        /* Ancho fijo */
         position: relative;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
         border: 1px solid #eee;
-        margin-left: auto; /* Elimina el margen izquierdo fijo */
+        margin-left: auto;
+        /* Elimina el margen izquierdo fijo */
         margin-right: 28%;
         margin-top: 5%;
         height: 83%;
@@ -194,227 +140,170 @@
 
     /* LAPTOP */
     @media (min-width: 769px) and (max-width: 1900px) {
-        .modal-contenido{
+        .modal-contenido {
             height: 95%;
             margin-top: 1%;
             margin-right: 20%;
         }
 
-        button, #SendForm2 {
-           margin-top: -5%;
+        button,
+        #SendForm2 {
+            margin-top: -5%;
         }
 
-        #resultadoGarantiaReingreso{
+        #resultadoGarantiaReingreso {
             margin-top: -5px;
         }
     }
+
     /* LAPTOP */
 
-        
-    .modal-contenido1{
+
+    .modal-contenido1 {
         /*background-color: #f9f9f9;*/
         background-color: #F9F9F1;
-        margin: 10% auto; /* Ajuste para centrar */
-        padding: 20px; /* Reducido el padding */
-        border-radius: 10px; /* Bordes menos redondeados */
-        width: 400px; /* Ancho fijo */
+        margin: 10% auto;
+        /* Ajuste para centrar */
+        padding: 20px;
+        /* Reducido el padding */
+        border-radius: 10px;
+        /* Bordes menos redondeados */
+        width: 400px;
+        /* Ancho fijo */
         position: relative;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
         border: 1px solid #eee;
-        margin-left: auto; /* Elimina el margen izquierdo fijo */
-        margin-right: 36%; /* Asegura el centrado horizontal */
+        margin-left: auto;
+        /* Elimina el margen izquierdo fijo */
+        margin-right: 36%;
+        /* Asegura el centrado horizontal */
         height: 56%;
         margin-top: 13%;
     }
 
     /* LAPTOP */
     @media (min-width: 769px) and (max-width: 1900px) {
-        .modal-contenido1{
+        .modal-contenido1 {
             height: 70%;
             margin-top: 5%;
             margin-right: 30%;
             overflow-y: hidden;
         }
     }
+
     /* LAPTOP */
-        
+
     .cerrar {
         color: #888;
         position: absolute;
-        top: 10px; /* Ajuste del botón de cierre */
+        top: 10px;
+        /* Ajuste del botón de cierre */
         right: 15px;
-        font-size: 20px; /* Tamaño del botón de cierre */
+        font-size: 20px;
+        /* Tamaño del botón de cierre */
         cursor: pointer;
         transition: color 0.3s;
     }
-        
+
     .cerrar1 {
         color: #888;
         position: absolute;
-        top: 10px; /* Ajuste del botón de cierre */
+        top: 10px;
+        /* Ajuste del botón de cierre */
         right: 15px;
-        font-size: 20px; /* Tamaño del botón de cierre */
+        font-size: 20px;
+        /* Tamaño del botón de cierre */
         cursor: pointer;
         transition: color 0.3s;
     }
-        
-    .cerrar2{
+
+    .cerrar2 {
         color: #888;
         position: absolute;
-        top: 10px; /* Ajuste del botón de cierre */
+        top: 10px;
+        /* Ajuste del botón de cierre */
         right: 15px;
-        font-size: 20px; /* Tamaño del botón de cierre */
+        font-size: 20px;
+        /* Tamaño del botón de cierre */
         cursor: pointer;
         transition: color 0.3s;
     }
-        
-        
+
+
     .cerrar:hover {
         color: #333;
     }
-        
+
     .cerrar1:hover {
         color: #333;
     }
-        
+
     .cerrar2:hover {
         color: #333;
     }
-        
+
     #contenidoModal {
-        margin-bottom: -9px; /* Reducido el margen */
+        margin-bottom: -9px;
+        /* Reducido el margen */
     }
-        
+
     label {
         display: block;
-        margin-bottom: 5px; /* Reducido el margen */
+        margin-bottom: 5px;
+        /* Reducido el margen */
         font-weight: 500;
         color: #555;
         font-family: 'Arial', sans-serif;
-        font-size: 14px; /* Tamaño de la fuente reducido */
+        font-size: 14px;
+        /* Tamaño de la fuente reducido */
     }
-        
-    input[type="text"], select, textarea {
+
+    /*input[type="text"], select, textarea {
         width: calc(100% - 20px); /* Ajuste del ancho */
-        padding: 8px; /* Reducido el padding */
-        margin-bottom: 15px; /* Reducido el margen */
-        border: 1px solid #ddd;
-        border-radius: 6px; /* Bordes menos redondeados */
-        box-sizing: border-box;
+    /* padding: 8px; /* Reducido el padding */
+    /* /*margin-bottom: 15px; /* Reducido el margen */
+    /* border: 1px solid #ddd;
+       /* border-radius: 6px; /* Bordes menos redondeados */
+    /* box-sizing: border-box;
         font-size: 14px; /* Tamaño de la fuente reducido */
-        transition: border-color 0.3s;
+    /* transition: border-color 0.3s;
         font-family: 'Arial', sans-serif;
      }
         
     input[type="text"]:focus, select:focus, textarea:focus {
         border-color: #007bff;
         outline: none;
-    }
-        
-    #miModal input[type="text"], 
+    }*/
+
+    /*#miModal input[type="text"], 
     #miModal select, 
     #miModal textarea {
         width: calc(91% - 20px); /* Ajuste del ancho */
-        padding: 8px; /* Reducido el padding */
-        margin-bottom: 15px; /* Reducido el margen */
-        border: 1px solid #ddd;
+    /* padding: 8px; /* Reducido el padding */
+    /* margin-bottom: 15px; /* Reducido el margen */
+    /* border: 1px solid #ddd;
         border-radius: 6px; /* Bordes menos redondeados */
-        box-sizing: border-box;
+    /* box-sizing: border-box;
         font-size: 14px; /* Tamaño de la fuente reducido */
-        transition: border-color 0.3s;
+    /*transition: border-color 0.3s;
         font-family: 'Arial', sans-serif;
-    }
-        
-    #miModal input[type="text"]:focus, 
+    }*/
+
+    /*#miModal input[type="text"]:focus, 
     #miModal select:focus, 
     #miModal textarea:focus {
         border-color: #007bff;
         outline: none;
-    }
-        
-    button, #SendForm1 {
-        background-color: #fff;
-        color: #007bff;
-        padding: 8px 15px; /* Reducido el padding */
-        border: 1px solid #007bff;
-        border-radius: 6px; /* Bordes menos redondeados */
-        font-size: 14px; /* Tamaño de la fuente reducido */
-        cursor: pointer;
-        transition: background-color 0.3s, color 0.3s;
-        font-family: 'Arial', sans-serif;
-    }
-        
-    button, #SendForm2 {
-        background-color: #fff;
-        color: #007bff;
-        padding: 8px 15px; /* Reducido el padding */
-        border: 1px solid #007bff;
-        border-radius: 6px; /* Bordes menos redondeados */
-        font-size: 14px; /* Tamaño de la fuente reducido */
-        cursor: pointer;
-        transition: background-color 0.3s, color 0.3s;
-        font-family: 'Arial', sans-serif;
-    }
-        
-    #SendForm1 {
-        margin-left: auto;
-        margin-right: auto;
-        display: block;
-        margin-top: 19px;
-        position: absolute;
-        margin-left: 140px;
-        margin-top: 10%;
-    }
-
-    #SendForm2 {
-        margin-top: 16%;
-        margin-left: 35%;
-        margin-right: auto;
-        display: block;
-        margin-top: 20%;
-        position: static;
-    }
-    
-    button:hover, #SendForm1:hover {
-        background-color: #007bff;
-        color: #fff;
-    }
-
-    button:hover, #SendForm2:hover {
-        background-color: #007bff;
-        color: #fff;
-    }
-
-    #rifMensaje {
-        margin-top: -15px; /* Ajuste del margen */
-        font-family: 'Arial', sans-serif;
-        font-size: 14px;
-    }
-
-    #rifMensaje1{
-        margin-top: -15px; /* Ajuste del margen */
-        font-family: 'Arial', sans-serif;
-        font-size: 14px;
-    }
+    }*/
 
     .navegacion {
         display: flex;
         justify-content: space-between;
-        margin-top: 20px; /* Reducido el margen */
+        margin-top: 20px;
+        /* Reducido el margen */
     }
 
-    #miModal1 {
-        display: none;
-        position: fixed;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(8px);
-    }
-
+    /*MODAL TIPO DE FALLA*/
     #nivelFallaModal {
         display: none;
         position: fixed;
@@ -426,7 +315,7 @@
         background-color: rgba(0, 0, 0, 0.4);
         backdrop-filter: blur(8px);
     }
-    
+
     #nivelFallaModal .modal-contenido {
         background-color: #fff;
         margin: 20% auto;
@@ -440,16 +329,18 @@
 
     /* LAPTOP */
     @media (min-width: 769px) and (max-width: 1900px) {
-        #nivelFallaModal .modal-contenido{
+        #nivelFallaModal .modal-contenido {
             height: 26%;
         }
     }
+
     /* LAPTOP */
 
     /* MOBILE */
     @media (max-width: 600px) and (max-height: 800px) {
+
         /* Estilos para teléfonos con un ancho máximo de 600px y una altura máxima de 768px */
-        #nivelFallaModal .modal-contenido h2{
+        #nivelFallaModal .modal-contenido h2 {
             font-size: 15px;
         }
 
@@ -459,39 +350,496 @@
             margin-left: 5%;
             margin-top: 60%;
         }
-
-        
     }
+
+    .fs-5 {
+        font-size: 1.7rem;
+        margin-left: 13%;
+    }
+
+    #nivelFallaModal #cerrar-icon {
+        right: -1px;
+        font-size: 9px;
+        color: black;
+        background-color: #8392ab;
+        cursor: pointer;
+        margin-bottom: 24px;
+    }
+
+    #cerrar-iconNivel1 {
+        font-size: 9px;
+        color: black;
+        background-color: #8392ab;
+        cursor: pointer;
+        margin-bottom: 48px;
+        margin-right: -25px;
+    }
+
+    #nivelFallaModal #cerrar-icon:hover {
+        background-color: red;
+        color: white;
+    }
+
     /* MOBILE */
 
-    
-    #nivelFallaModal button {
-        padding: 10px 20px;
-        margin: 10px;
+
+    #nivelFallaModal,
+    #nivel1Btn,
+    #nivel2Btn,
+    .cerrar {
+        padding: 10px 50px;
+        margin: 0px;
         border: none;
         border-radius: 5px;
         cursor: pointer;
         font-size: 16px;
     }
-    
+
+    #cerrar:hover {
+        background-color: red;
+        /* Rojo */
+        color: white;
+    }
+
     #nivelFallaModal #nivel1Btn {
         background-color: #4CAF50;
         color: white;
     }
-    
+
     #nivelFallaModal #nivel2Btn {
-        background-color: #007bff;
+        background-color: #003594;
         color: white;
     }
 
-    #contenidoModal2{
-        margin-bottom: 45px;
+    /* END CSS MODAL TIPO DE FALLA*/
+
+    /* MODAL NIVEL 1*/
+    /* Estilos para el modal */
+    .modal1 {
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(8px);
     }
+
+    #buttonCerrar:hover {
+        background-color: red;
+        color: white;
+    }
+
+    #cerrar-iconNivel1:hover {
+        background-color: red;
+        color: white;
+    }
+
+    #miModal1 {
+        display: none;
+        position: fixed;
+        left: 0%;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(8px);
+    }
+
+    #miModal1 .fs-5 {
+        font-size: 2.7rem;
+        margin-left: 13%;
+    }
+
+    #miModal1 #cerrar-icon {
+        right: -1px;
+        font-size: 9px;
+        color: black;
+        background-color: #8392ab;
+        cursor: pointer;
+    }
+
+    #miModal1 .modal-content {
+        background-color: #F9F9F1;
+        margin: 10% auto;
+        /* Ajuste para centrar */
+        padding: 20px;
+        /* Reducido el padding */
+        border-radius: 10px;
+        /* Bordes menos redondeados */
+        width: 400px;
+        /* Ancho fijo */
+        position: relative;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        border: 1px solid #eee;
+        margin-left: auto;
+        /* Elimina el margen izquierdo fijo */
+        /* margin-right: 36%; /* Asegura el centrado horizontal */
+        height: 56%;
+    }
+
+    #SendForm1 {
+        margin-right: auto;
+        display: block;
+        margin-top: 14%;
+        position: absolute;
+        margin-left: 2%;
+        background-color: #003594;
+    }
+
+    button:hover,
+    #SendForm1:hover {
+        background-color: green;
+        color: #fff;
+        transition: 1.5s;
+    }
+
+    @media (min-width: 769px) and (max-width: 1900px) {
+        #Modal2-div {
+            margin-left: 35%;
+        }
+
+        #NivelFalla-div {
+            margin-left: 38%;
+        }
+    }
+
+    #serialSelect1 {
+        width: 57%;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: white;
+        color: #333;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url('data:image/svg+xml;utf8,<svg fill="#333" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 10px top 50%;
+        background-size: 8px;
+    }
+
+    /*END MODAL NIVEL 1*/
+
+    /*MODAL NIVEL 2*/
+    #FallaSelect2 {
+        width: 330%;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: white;
+        color: #333;
+        background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 10px top 50%;
+        background-size: 8px;
+    }
+
+    #RightSelects {
+        display: flex;
+        flex-direction: column;
+        margin-top: -164%;
+        margin-left: 256%;
+        width: 127%;
+    }
+
+    #botonCargaPDFEnv {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4%;
+        margin-top: 3%;
+    }
+
+
+    @media (min-width: 769px) and (max-width: 1900px) {
+        #botonCargaPDFEnv {
+            margin-top: 13%;
+        }
+    }
+
+
+    #DownloadsBotons {
+        margin-left: -55%;
+        margin-top: 4%;
+    }
+
+    #SendForm2 {
+        margin-right: 71%;
+        background-color: #003594;
+        color: white;
+        margin-top: -1%;
+        width: 14%;
+    }
+
+    #SendForm2:hover {
+        background-color: green;
+        color: white;
+        transition: 1.5s;
+    }
+
+    #miModal .modal-content {
+        background-color: #F9F9F1;
+
+    }
+
+    #LabelCoordinador{
+        margin-left: 160%;
+    }
+
+    #LabelSerial{
+        margin-left: 35%;
+    }
+
+    #resultadoGarantiaReingreso,
+    #resultadoGarantiaInstalacion {
+        margin-top: -6px;
+        font-weight: bold;
+        font-size: 15px;
+        position: absolute;
+        background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 0, 0, 0.05) 10px, rgba(255, 0, 0, 0.05) 20px);
+        /* Patrón de líneas rojas muy claras */
+    }
+
+    #miModal .fs-5 {
+        font-size: 2.7rem;
+        margin-left: 32%;
+    }
+
+    #serialSelectContainer{
+        width: 168%;
+    }
+
+    #InputFechaInstall{
+        margin-left: 160%;
+
+    }
+
+    #LabelFechaInst{
+        margin-left: 154%;
+    }
+
+    #LabelRifModal2 {
+        margin-top: 3%;
+        position: absolute;
+        margin-left: 42%;
+    }
+
+    #FechaLast{
+        margin-left: 24%; 
+    }
+
+    #ultimateTicketInput{
+        margin-left: 27%;
+    }
+    #InputRif {
+        margin-top: 32%;
+        margin-left: 140%;
+        width: 150%;
+        /* Ajusta este valor según sea necesario */
+    }
+
+    #AsiganrCoordinadorContainer{
+        width: 149%;
+        margin-left: 141%;
+    }
+
+    #LabelCoordinador{
+        margin-left: 157%;
+    }
+
+    #buttonCerrar2:hover {
+        background-color: red;
+    }
+
+    #ultimateTicketInput, #InputFechaInstall{
+        width: 143%;
+    }
+
+    /* Tus estilos personalizados */
+    .modal-dialog {
+        max-width: 700px;
+        /* Reduce el ancho máximo del modal */
+        /* Si prefieres un ancho fijo: */
+        /* width: 600px; */
+        margin: 1.75rem auto;
+        /* Mantiene el centrado */
+    }
+
+    label {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-weight: 500;
+        color: #495057;
+        font-family: 'Arial', sans-serif;
+        font-size: 0.9rem;
+    }
+
+    input[type="text"],
+    select,
+    textarea {
+        width: calc(100% - 1rem);
+        /* Reduce ligeramente el ancho del input */
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.75rem;
+        /* Reduce el margen inferior */
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        box-sizing: border-box;
+        font-size: 0.9rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        font-family: 'Arial', sans-serif;
+    }
+
+    input[type="text"]:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #007bff;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+    }
+
+    .form-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: -0.75rem;
+        margin-bottom: 0.5rem;
+    }
+
+    #cerraModal2 {
+        color: #fff;
+        background-color: #8392ab;
+    }
+
+    #cerraModal2:hover {
+        background-color: red;
+        border-color: red;
+    }
+
+    .modal-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #dee2e6;
+    }
+
+    .btn-outline-secondary {
+        --bs-btn-color: #6c757d;
+        --bs-btn-border-color: #6c757d;
+        --bs-btn-hover-bg: #6c757d;
+        --bs-btn-hover-border-color: #6c757d;
+        --bs-btn-hover-color: #fff;
+        --bs-btn-active-bg: #6c757d;
+        --bs-btn-active-border-color: #6c757d;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #6c757d;
+        --bs-btn-disabled-border-color: #6c757d;
+    }
+
+    .form-select {
+        font-size: 0.9rem;
+        font-family: 'Arial', sans-serif;
+    }
+
+    .row {
+        --bs-gutter-x: 1.5rem;
+        /* Puedes reducir el espacio entre columnas si lo deseas */
+    }
+
+    .col-md-6 {
+        padding-left: 0.75rem;
+        /* Ajusta el padding izquierdo de las columnas */
+        padding-right: 0.75rem;
+        /* Ajusta el padding derecho de las columnas */
+    }
+
+    .d-flex.flex-column.gap-2 {
+        gap: 0.5rem !important;
+        /* Reduce el espacio entre los botones de carga */
+    }
+
+    .d-flex.align-items-center {
+        gap: 0.5rem;
+        /* Reduce el espacio entre botón e input de carga */
+    }
+
+        /*CSS MOBIL*/
+        @media (max-width: 700px) and (max-height: 960px) {
+            /* Estilos para teléfonos con un ancho máximo de 600px y una altura máxima de 768px */
+            #miModal .fs-5 {
+                font-size: 1.7rem;
+                margin-left: 32%;
+            }
+
+            #miModal label{
+                font-size: 0.7rem;
+            }
+
+            #InputRif{
+                margin-top: 27%;
+            }
+
+            #LabelRifModal2{
+                margin-top: 5%;
+            }
+
+            #nivelFallaModal .modal-contenido {
+                width: 90%;
+                height: 20%;
+                margin-left: 5%;
+                margin-top: 60%;
+            }
+
+            #serialSelect{
+                margin-top: 4%;
+            }
+
+            #ultimateTicketInput, #InputFechaInstall{
+                width: 90%;
+            }
+
+            #RightSelects{
+                margin-top: -180%;
+                width: 82%;
+                margin-left: 113%;
+            }
+
+            #SendForm2{
+                width: 24%;
+                position: absolute;
+            }
+
+            #rifMensaje {
+                margin-top: -15px;
+                /* Ajuste del margen */
+                font-family: 'Arial', sans-serif;
+                font-size: 14px;
+                margin-left: 145%;
+                width: 100%;
+            }
+        }
+        /* END CSS MOBIL*/
+
+       /* #ultimateTicketInput, #InputFechaInstall{
+            width: 50%;
+        }*/
+    /*END MODAL NIVEL 2*/
+
+    /*#contenidoModal2{
+        margin-bottom: 45px;
+    }*/
 
     /* GARANTIAS MODAL*/
     .garantia-activa {
-        background-color: #d4edda; /* Fondo verde claro */
-        color: #155724; /* Texto verde oscuro */
+        background-color: #d4edda;
+        /* Fondo verde claro */
+        color: #155724;
+        /* Texto verde oscuro */
         padding: 5px 10px;
         border-radius: 5px;
         font-weight: bold;
@@ -500,8 +848,10 @@
     }
 
     .sin-garantia {
-        background-color: #f8d7da; /* Fondo rojo claro */
-        color: #721c24; /* Texto rojo oscuro */
+        background-color: #f8d7da;
+        /* Fondo rojo claro */
+        color: #721c24;
+        /* Texto rojo oscuro */
         padding: 5px 10px;
         border-radius: 5px;
         font-weight: bold;
@@ -512,7 +862,8 @@
     #garantiaModal {
         display: none;
         position: fixed;
-        z-index: 1001; /* Mayor que el modal de detalles */
+        z-index: 1001;
+        /* Mayor que el modal de detalles */
         left: 0;
         top: 0;
         width: 100%;
@@ -531,7 +882,7 @@
         position: relative;
         text-align: center;
     }
-/*AQUI*/
+
     #garantiaModal-close {
         color: #aaa;
         position: absolute;
@@ -567,6 +918,7 @@
         display: inline-block;
         margin-top: 5px;
     }
+
     /* END GARANTIAS MODAL*/
 
     .contenedor-fechas {
@@ -574,7 +926,7 @@
         justify-content: space-between;
     }
 
-    .contenedor-fechas > div {
+    .contenedor-fechas>div {
         width: 43%;
     }
 
@@ -590,14 +942,6 @@
         border-radius: 4px;
     }
 
-    #resultadoGarantiaReingreso, #resultadoGarantiaInstalacion {
-        margin-top: -15px;
-        font-weight: bold;
-        font-size: 11px;
-        position: absolute;
-        background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 0, 0, 0.05) 10px, rgba(255, 0, 0, 0.05) 20px); /* Patrón de líneas rojas muy claras */
-    }
-
     #ExoneracionLabel {
         display: block;
         margin-bottom: 5px;
@@ -608,116 +952,118 @@
         margin-bottom: 5px;
     }
 
-    .contenedor-triangulo {
-        position: absolute;
-        width: 100px; /* Ajusta el ancho según sea necesario */
-        height: 100px; /* Ajusta la altura según sea necesario */
-        margin-left: 56%;
-        margin-top: 13%;
-    }
-    
-    .triangulo {
-        position: absolute;
-        width: 16px;
-        height: 0;
-        border-left: 15px solid transparent; /* Ajusta el tamaño del triángulo */
-        border-right: 13px solid transparent; /* Ajusta el tamaño del triángulo */
-        border-bottom: 40px solid #007DA5; /* Ajusta el color y el tamaño del triángulo */
-        opacity: 0.7;
-        animation: pulsoTriangulo 2s infinite ease-in-out;
-    }
-    
-    .triangulo:nth-child(1) {
-        top: 20px;
-        left: 20px;
-    }
-    
-    .triangulo:nth-child(2) {
-        border-bottom-color: #0056b3; /* Cambia el color del triángulo */
-        top: 80px;
-        left: 50px;
-        animation-delay: 0.5s;
-    }
-    
-    .triangulo:nth-child(3) {
-        border-bottom-color: #009688; /* Cambia el color del triángulo */
-        top: 120px;
-        left: 10px;
-        animation-delay: 1s;
-    }
-    
-    @keyframes pulsoTriangulo {
-        0% {
-            transform: scale(1);
-            opacity: 0.7;
+    /*CCS DE ANIMACION TRIANGULO*/
+    /*.contenedor-triangulo {
+            position: absolute;
+            width: 100px; /* Ajusta el ancho según sea necesario */
+    /* height: 100px; /* Ajusta la altura según sea necesario */
+    /* margin-left: 56%;
+        /* margin-top: 13%;
         }
-    
-        50% {
-            transform: scale(1.3);
-            opacity: 1;
+        
+        .triangulo {
+            position: absolute;
+            width: 16px;
+            height: 0;
+            border-left: 15px solid transparent; /* Ajusta el tamaño del triángulo */
+    /* border-right: 13px solid transparent; /* Ajusta el tamaño del triángulo */
+    /*border-bottom: 40px solid #007DA5; /* Ajusta el color y el tamaño del triángulo */
+    /*opacity: 0.7;
+            /*animation: pulsoTriangulo 2s infinite ease-in-out;
         }
-    
-        100% {
-            transform: scale(1);
-            opacity: 0.7;
+        
+        .triangulo:nth-child(1) {
+            top: 20px;
+            left: 20px;
         }
-    }
+        
+        .triangulo:nth-child(2) {
+            border-bottom-color: #0056b3; /* Cambia el color del triángulo */
+    /*  top: 80px;
+        /* left: 50px;
+            animation-delay: 0.5s;
+        }
+        
+        .triangulo:nth-child(3) {
+            border-bottom-color: #009688; /* Cambia el color del triángulo */
+    /* top: 120px;
+            left: 10px;
+            animation-delay: 1s;
+        }
+        
+        @keyframes pulsoTriangulo {
+            0% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+        
+            50% {
+                transform: scale(1.3);
+                opacity: 1;
+            }
+        
+            100% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+        }
 
-    .contenedor-triangulo1 {
-        position: absolute;
-        width: 200px; /* Ajusta el ancho según sea necesario */
-        height: 200px; /* Ajusta la altura según sea necesario */
-        margin-top: 15%; /* Mantiene la misma posición vertical */
-        display: none;
-    }
-    
-    .triangulo1 {
-        position: absolute;
-        width: 16px;
-        height: 0;
-        border-left: 15px solid transparent; /* Ajusta el tamaño del triángulo */
-        border-right: 13px solid transparent; /* Ajusta el tamaño del triángulo */
-        border-bottom: 40px solid #007DA5; /* Ajusta el color y el tamaño del triángulo */
-        opacity: 0.7;
-        animation: pulsoTriangulo1 2s infinite ease-in-out;
-    }
-    
-    .triangulo1:nth-child(1) {
-        top: 20px;
-        left: 20px;
-    }
-    
-    .triangulo1:nth-child(2) {
-        border-bottom-color: #007DA5; /* Cambia el color del triángulo */
-        top: 80px;
-        left: 50px;
-        animation-delay: 0.5s;
-    }
-    
-    .triangulo1:nth-child(3) {
-        border-bottom-color: #0056b3; /* Cambia el color del triángulo */
-        top: 120px;
-        left: 10px;
-        animation-delay: 1s;
-    }
-    
-    @keyframes pulsoTriangulo1 {
-        0% {
-            transform: scale(1);
-            opacity: 0.7;
+        .contenedor-triangulo1 {
+            position: absolute;
+        /* /* width: 200px; /* Ajusta el ancho según sea necesario */
+    /* height: 200px; /* Ajusta la altura según sea necesario */
+    /* margin-top: 15%; /* Mantiene la misma posición vertical */
+    /* display: none;
         }
-    
-        50% {
-            transform: scale(1.3);
-            opacity: 1;
+        
+        .triangulo1 {
+            position: absolute;
+            width: 16px;
+            height: 0;
+            border-left: 15px solid transparent; /* Ajusta el tamaño del triángulo */
+    /* border-right: 13px solid transparent; /* Ajusta el tamaño del triángulo */
+    /*border-bottom: 40px solid #007DA5; /* Ajusta el color y el tamaño del triángulo */
+    /*opacity: 0.7;
+            animation: pulsoTriangulo1 2s infinite ease-in-out;
         }
-    
-        100% {
-            transform: scale(1);
-            opacity: 0.7;
+        
+        .triangulo1:nth-child(1) {
+            top: 20px;
+            left: 20px;
         }
-    }
-    
+        
+        .triangulo1:nth-child(2) {
+            border-bottom-color: #007DA5; /* Cambia el color del triángulo */
+    /*  top: 80px;
+            left: 50px;
+            animation-delay: 0.5s;
+        }
+        
+        .triangulo1:nth-child(3) {
+            border-bottom-color: #0056b3; /* Cambia el color del triángulo */
+    /* top: 120px;
+            left: 10px;
+            animation-delay: 1s;
+        }
+        
+        @keyframes pulsoTriangulo1 {
+            0% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+        
+            50% {
+                transform: scale(1.3);
+                opacity: 1;
+            }
+        
+            100% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+        }*/
+    /*END CCS DE ANIMACION TRIANGULO*/
+
     #DownloadExo {
         padding: 8px 12px;
         /*background-color: #007bff;*/
@@ -746,7 +1092,7 @@
         width: 101px;
         font-size: 13px;
     }
-    
+
     #DownloadExo:hover {
         background-color: #0056b3;
     }
@@ -759,15 +1105,16 @@
         background-color: #0056b3;
     }
 
-    #AnticioLabel{
+    #AnticioLabel {
         margin-left: 35px;
     }
-    
+
     input[type="file"] {
         margin-top: 5px;
         font-size: 10px;
         color: black;
-        margin-left: 10px; /* Ajustar el margen izquierdo */
+        margin-left: 10px;
+        /* Ajustar el margen izquierdo */
 
     }
 
@@ -786,27 +1133,14 @@
         background-size: 8px;
     }
 
-    #FallaSelect2 {
-        font-size: 16px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        background-color: white;
-        color: #333;
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
-        background-repeat: no-repeat;
-        background-position: right 10px top 50%;
-        background-size: 8px;
-    }
     
+
     #FallaSelect1:focus {
         outline: none;
         border-color: #007bff;
         box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
     }
-    
+
     #FallaSelect1 option {
         padding: 10px;
         font-size: 16px;
@@ -814,27 +1148,12 @@
         background-color: white;
     }
 
-    #serialSelect1 {
-        font-size: 16px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        background-color: white;
-        color: #333;
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        background-image: url('data:image/svg+xml;utf8,<svg fill="#333" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
-        background-repeat: no-repeat;
-        background-position: right 10px top 50%;
-        background-size: 8px;
-    }
-    
     #serialSelect1:focus {
         outline: none;
         border-color: #007bff;
         box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
     }
-    
+
     #serialSelect1 option {
         padding: 10px;
         font-size: 16px;
@@ -855,7 +1174,7 @@
         background-position: right 10px top 50%;
         background-size: 8px;
     }
-    
+
     #FallaSelectt1:focus {
         outline: none;
         border-color: #007bff;
@@ -867,7 +1186,7 @@
         border-color: #007bff;
         box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
     }
-    
+
     #FallaSelectt1 option {
         padding: 10px;
         font-size: 16px;
@@ -882,49 +1201,59 @@
         background-color: white;
     }
 
-    #FallaSelect2Container{
+    #FallaSelect2Container {
         width: 50%;
     }
 
     #detalle1 {
-        display: grid; /* Usamos grid para un diseño de columnas más flexible */
-        grid-template-columns: 1fr 1fr; /* Dividimos en dos columnas de igual ancho */
-        gap: 2px; /* Espacio entre columnas */
+        display: grid;
+        /* Usamos grid para un diseño de columnas más flexible */
+        grid-template-columns: 1fr 1fr;
+        /* Dividimos en dos columnas de igual ancho */
+        gap: 2px;
+        /* Espacio entre columnas */
     }
 
-    #detalle1 > div {
-        grid-column: span 1; /* Cada div ocupa una columna */
+    #detalle1>div {
+        grid-column: span 1;
+        /* Cada div ocupa una columna */
     }
 
     #detalle1 .contenedor-fechas {
-        grid-column: 1 / 3; /* Aseguramos que las fechas ocupen ambas columnas */
+        grid-column: 1 / 3;
+        /* Aseguramos que las fechas ocupen ambas columnas */
         display: flex;
         justify-content: space-between;
     }
 
     #detalle1 #SendForm2 {
-        grid-column: 1 / 3; /* Aseguramos que el botón "Cargar" ocupe ambas columnas */
+        grid-column: 1 / 3;
+        /* Aseguramos que el botón "Cargar" ocupe ambas columnas */
     }
 
     #detalle1 #ExoneracionLabel,
     #detalle1 #DownloadExo,
     #detalle1 #ExoneracionInput {
-        grid-column: 1 / 3; /* Aseguramos que la exoneración ocupe ambas columnas */
+        grid-column: 1 / 3;
+        /* Aseguramos que la exoneración ocupe ambas columnas */
         display: flex;
-        align-items: center; /* Alinea verticalmente los elementos */
-        gap: 10px; /* Espacio entre el botón y el input */
+        align-items: center;
+        /* Alinea verticalmente los elementos */
+        gap: 10px;
+        /* Espacio entre el botón y el input */
     }
 
     #detalle1 #ExoneracionInput,
-    #detalle1 #EnvioInput
-    #deltalle1 #AnticipoInput{
-        margin-top: 0; /* Elimina el margen superior innecesario */
+    #detalle1 #EnvioInput #deltalle1 #AnticipoInput {
+        margin-top: 0;
+        /* Elimina el margen superior innecesario */
     }
 
     #detalle1 #DownloadExo,
     #detalle1 #DownloadEnvi,
-    #dellate1 #DownloadAntici{
-        margin-left: 0; /* Elimina el margen izquierdo innecesario */
+    #dellate1 #DownloadAntici {
+        margin-left: 0;
+        /* Elimina el margen izquierdo innecesario */
         font-size: 12px;
         width: 101px;
     }
@@ -932,53 +1261,55 @@
     #detalle1 #EnvioLabel,
     #detalle1 #DownloadEnvi,
     #detalle1 #EnvioInput,
-    #detalle1  #AnticipoInput{
-        grid-column: 1 / 3; /* Aseguramos que la exoneración ocupe ambas columnas */
+    #detalle1 #AnticipoInput {
+        grid-column: 1 / 3;
+        /* Aseguramos que la exoneración ocupe ambas columnas */
         display: flex;
-        align-items: center; /* Alinea verticalmente los elementos */
-        gap: 10px; /* Espacio entre el botón y el input */
+        align-items: center;
+        /* Alinea verticalmente los elementos */
+        gap: 10px;
+        /* Espacio entre el botón y el input */
         font-size: 13px;
         /*margin-top: 60px;*/
     }
 
     #detalle1 #serialCountTableDetalle1 {
-        grid-column: 1 / 3; /* Aseguramos que la tabla ocupe ambas columnas */
+        grid-column: 1 / 3;
+        /* Aseguramos que la tabla ocupe ambas columnas */
     }
 
     /* Ajustes adicionales para elementos específicos */
-    #FallaSelect2Container, #serialSelectContainer {
-        width: 100%; /* Asegura que estos elementos ocupen todo el ancho de su columna */
-    }
-
+    /*#FallaSelect2Container,
+    #serialSelectContainer {
+        width: 100%;
+        /* Asegura que estos elementos ocupen todo el ancho de su columna */
+    /*}
+*/
     label[for="InputRif"] {
-        margin-bottom: 5px; /* Ajusta este valor según sea necesario */
-        flex-direction: column; /* Organiza los elementos en columna */
+        margin-bottom: 5px;
+        /* Ajusta este valor según sea necesario */
+        flex-direction: column;
+        /* Organiza los elementos en columna */
 
-    }
-    
-    #InputRif {
-        margin-top: 3px; /* Ajusta este valor según sea necesario */
     }
 
     label,
     .form-label {
-        font-size: 0.75rem;
+        font-size: 1.0rem;
         font-weight: 700;
         margin-bottom: 0.5rem;
         color: #344767;
         margin-left: 0.25rem;
+        width: 160%;
     }
 
     #file-chosen {
-        display: none !important; /* Usa !important para asegurar que se sobreponga a otros estilos */
+        display: none !important;
+        /* Usa !important para asegurar que se sobreponga a otros estilos */
     }
 
-    #miModal1{
-        background-color: rgba(0, 0, 0, 0.2);
-        backdrop-filter: blur(8px);
-    }
 
-    .Modal{
+    .Modal {
         background-color: rgba(0, 0, 0, 0.2);
         backdrop-filter: blur(8px);
     }

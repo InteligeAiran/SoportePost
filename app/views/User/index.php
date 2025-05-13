@@ -1,4 +1,4 @@
-<?php
+<?
 function mi_navbar() {
 
 }
@@ -19,14 +19,17 @@ function mi_navbar() {
         <!--     Fonts and icons     -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
         <!-- Nucleo Icons -->
-   
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-icons.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-svg.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/user/desktop/desktop.css" />
         <!-- CSS Files -->
-            <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
         <!-- Font Awesome Icons -->
       
         <!-- CSS Files -->
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
 
         <!-- alertify -->
@@ -50,7 +53,6 @@ function mi_navbar() {
             </button>
         </div>
         <?php require_once 'app/core/components/navbar/index.php'; mi_navbar();?>
-
         <main class="main-content position-relative border-radius-lg overflow-hidden bg-gray-100">
             <div class="container-fluid py-4">
                 <div id = "Row" class="row mt-4">
@@ -60,15 +62,15 @@ function mi_navbar() {
                                 <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
                                     <strong><h5 class="text-black text-capitalize ps-3">USUARIOS</h5></strong>
                                 </div>
-                            </div> 
-                                  
+                            </div>         
                             <table id="table-user" class="background-users-table">
                                 <thead>
                                     <tr>
-                                        <th>Id</th>
+                                        <th>Id Usuario</th>
                                         <th>Nombre y Apellido</th>
                                         <th>Usuario</th>
                                         <th>Cedula</th>
+                                        <th>E-mail</th>
                                         <th>Estatus</th>
                                         <th>Rol</th>
                                         <th>Area</th>
@@ -203,9 +205,11 @@ function mi_navbar() {
                             <i class="fa fa-close"></i>
                         </button>
                     </div>
+                    <!-- End Toggle Button -->
                 </div>
                 <hr class="horizontal dark my-1">
                 <div class="card-body pt-sm-3 pt-0 overflow-auto">
+                    <!-- Sidebar Backgrounds -->
                     <div>
                         <h6 class="mb-0">Sidebar Colors</h6>
                     </div>
@@ -225,6 +229,7 @@ function mi_navbar() {
                                 onclick="sidebarColor(this)"></span>
                         </div>
                     </a>
+                    <!-- Sidenav Type -->
                     <div class="mt-3">
                         <h6 class="mb-0">Sidenav Type</h6>
                         <p class="text-sm">Choose between 2 different sidenav types.</p>
@@ -236,7 +241,7 @@ function mi_navbar() {
                             onclick="sidebarType(this)">Dark</button>
                     </div>
                     <p class="text-sm d-xl-none d-block mt-2">You can change the sidenav type just on desktop view.</p>
-                  
+                    <!-- Navbar Fixed -->
                     <div class="d-flex my-3">
                         <h6 class="mb-0">Navbar Fixed</h6>
                         <div class="form-check form-switch ps-0 ms-auto my-auto">
@@ -273,7 +278,7 @@ function mi_navbar() {
                     </div>
                 </div>
             </div>
-        </div> -->
+        </div>
         
          <!-- Github buttons -->
          <script async defer src="https://buttons.github.io/buttons.js"></script>
@@ -301,27 +306,6 @@ function mi_navbar() {
         <script src = "<?php echo APP;?>app/plugins/datatables/datatables.min.js"></script>
         <script src = "<?php echo APP;?>app/plugins/datatables/datatables.js"></script>
 
-        <!-- Datatable otro sistema-->
-        <script src = "<?php echo APP;?>js/jquery.dataTables.js"></script>
-        <script src = "<?php echo APP;?>DataTable/dataTables.bootstrap.js"></script>
-        <script src = "<?php echo APP;?>DataTable/jquery.dataTables.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/dataTables.buttons.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.print.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.flash.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/pdfmake.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/jszip.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/vfs_fonts.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.html5.min.js"></script>
-
-
-         <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
-         <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
-         <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
-         <script src = "<?php echo APP;?>js/datatables.js"></script>
-
-
-
-
         <!-- Chart -->
         <script src="<?php echo APP;?>app/plugins/chart.js/chart.js"></script>
         <script src="<?php echo APP;?>app/plugins/chart.js/chart.min.js"></script>
@@ -344,12 +328,12 @@ function mi_navbar() {
 
         
         <?php
-    if (isset($this->js)){
-      foreach ($this->js as $js){
-        echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'"></script>'; 
-      }
-    }
-  ?>
+            if (isset($this->js)){
+                foreach ($this->js as $js){
+                    echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'"></script>'; 
+                }
+            }
+        ?>
     <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
     <?php
         $expired_sessions = json_encode($this->expired_sessions);
