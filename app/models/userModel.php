@@ -54,6 +54,27 @@ class userModel extends Model{
         }
     }   
 
+        public function GetAreaUsers(){
+        try{
+            $sql = "SELECT * FROM sp_verareasusers()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }    
+
+        public function GetTipoUsers(){
+        try{
+            $sql = "SELECT * FROM sp_vertiposusers()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }    
+
+
         public function GetRegionUsers(){
         try{
             $sql = "SELECT * FROM sp_verregionusers()";
