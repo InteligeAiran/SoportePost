@@ -1185,18 +1185,19 @@ class Api extends Controller {
         $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
         $nombreusers = isset($_POST['nombreuser']) ? $_POST['nombreuser'] : '';
         $apellidousers = isset($_POST['apellidouser']) ? $_POST['apellidouser'] : '';
-        $tipo_doc = isset($_POST['tipodoc']) ? $_POST['tipodoc'] : '';
-        $documento = isset($_POST['coddocumento']) ? $_POST['coddocumento'] : '';
         $users = isset($_POST['usuario']) ? $_POST['usuario'] : '';
         $correo = isset($_POST['email']) ? $_POST['email'] : '';
         $area_users = isset($_POST['areausers']) ? $_POST['areausers'] : '';
         $tipo_users = isset($_POST['tipousers']) ? $_POST['tipousers'] : '';
+        $regionusers = isset($_POST['regionusers']) ? $_POST['regionusers'] : '';
+        $id_nivel = isset($_POST['id_nivel']) ? $_POST['id_nivel'] : '';
+        $identificacion = isset($_POST['identificacion']) ? $_POST['identificacion'] : '';
 
         $repository = new UserRepository(); // Inicializa el repositorio
     
 
-                    // Guardar archivo de envío
-                    $result = $repository->Guardar_Usuario($id_user, $nombreusers,$apellidousers, $tipo_doc, $documento, $users, $correo, $area_users, $tipo_users);
+        //Guardar archivo de envío
+        $result = $repository->Guardar_Usuario($id_user, $nombreusers,$apellidousers, $identificacion,$users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel);
     
                     if ($result) {
                         $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);

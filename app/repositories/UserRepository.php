@@ -66,15 +66,11 @@ class UserRepository
         return $tipousers;
     }    
 
-    public function Guardar_Usuario($id_user,$nombreusers, $apellidousers, $tipo_doc, $documento, $users, $correo, $area_users, $tipo_users){
+    public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel){
 
-        $result = $this->model->Guardar_Usuario($id_user, $nombreusers, $apellidousers, $tipo_doc, $documento, $users, $correo, $area_users, $tipo_users);
-        //var_dump($result);
-        for ($i = 0; $i < $result['numRows']; $i++) {
-            $agente = pg_fetch_assoc($result['query'], $i);
-            $saveusers[] = $agente;
-            //var_dump($agente);
-        }
-        return $saveusers;
+        $defaul_pass = 123456;
+        $encry_passw = sha1(md5($defaul_pass));
+
+        $result = $this->model->Guardar_Usuario($id_user, $nombreusers, $apellidousers, $encry_passw, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel);
     }
 }

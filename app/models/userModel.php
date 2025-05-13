@@ -75,21 +75,23 @@ class userModel extends Model{
     }         
 
 
-        public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $tipo_doc, $documento, $users, $correo, $area_users, $tipo_users){
+        public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $encry_passw, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel){
         try {
             $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
             $escaped_nombreusers = pg_escape_literal($this->db->getConnection(), $nombreusers);
             $escaped_apellidousers = pg_escape_literal($this->db->getConnection(), $apellidousers);
-            $escaped_tipo_doc = pg_escape_literal($this->db->getConnection(), $tipo_doc);
-            $escaped_documento = pg_escape_literal($this->db->getConnection(), $documento);
+            $escaped_encry_passw = pg_escape_literal($this->db->getConnection(), $encry_passw);
+            $escaped_identificacion = pg_escape_literal($this->db->getConnection(), $identificacion);
             $escaped_users = pg_escape_literal($this->db->getConnection(), $users);
             $escaped_correo = pg_escape_literal($this->db->getConnection(), $correo);
             $escaped_area_users = pg_escape_literal($this->db->getConnection(), $area_users);
             $escaped_tipo_users = pg_escape_literal($this->db->getConnection(), $tipo_users);
+            $escaped_regionusers = pg_escape_literal($this->db->getConnection(), $regionusers);
+            $escaped_id_nivel = pg_escape_literal($this->db->getConnection(), $id_nivel);
 
     
-            $sql = "SELECT * FROM sp_guardarusuarios(".$escaped_id_user.", ".$escaped_nombreusers.", ".$escaped_apellidousers.",
-                    ".$escaped_tipo_doc.", ".$escaped_documento.", ".$escaped_users.", ".$escaped_correo.",".$escaped_area_users.",".$escaped_tipo_users.")";
+            $sql = "SELECT * FROM sp_guardarusuarios(".$escaped_id_user.", ".$escaped_nombreusers.", ".$escaped_apellidousers.", ".$escaped_encry_passw.",
+                    ".$escaped_identificacion.", ".$escaped_users.", ".$escaped_correo.",".$escaped_area_users.",".$escaped_tipo_users.", ".$escaped_regionusers.", ".$escaped_id_nivel.")";
             $result = $this->db->pgquery($sql);
             var_dump($sql);
     

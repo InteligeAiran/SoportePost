@@ -28,6 +28,12 @@ function mi_navbar() {
       
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
+
+        <!-- alertify -->
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.bootstrap.css" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.core.css" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.default.css" />
+
         <script>
             const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
             const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
@@ -114,22 +120,17 @@ function mi_navbar() {
                 </div>    
 
                 <div class="row">
-                      <!-- <div class="col-md-6">
-                        <label for="tipodoc">Tipo Documento:</label>
-                        <input type="text" id="tipodoc" class="form-control" name="tipodoc">
-                      </div> -->
-                            <div class="col-md-6">
-                                <label for="">Documentacion</label>
-                                <div class="input-group" style="width: 92%;">
-                                  <input name="prefijo" id="idprefijo" type="text" value="V-" class="form-control" disabled>
-                                  <span class="input-group-addon"></span>
-                                  <input style="width: 70%;" class="form-control" type="text" name="idcuenta" id="idcuenta"  maxlength="9" onkeypress="return soloNumeros(event)" >
-                                </div>
-                            </div>
-
+                    <div class="col-md-6">
+                        <label for="">Documentacion</label>
+                        <div class="input-group" style="width: 92%;">
+                          <input name="tipodoc" id="tipodoc" type="text" value="V-" class="form-control" disabled>
+                          <span class="input-group-addon"></span>
+                          <input style="width: 70%;" class="form-control" type="text" name="documento" id="documento"  maxlength="9" onkeypress="return soloNumeros(event)" >
+                        </div>
+                    </div>
                       <div class="col-md-6">
                         <label for="usuario">Usuario:</label>
-                            <input type="text" id="usuario" class="form-control" name="usuario" disabled onchange="nameUsuario()"> 
+                        <input type="text" id="usuario" class="form-control" name="usuario" disabled onchange="nameUsuario()"> 
                       </div>
                 </div>  
 
@@ -169,16 +170,14 @@ function mi_navbar() {
                         <label for="apellido">Nivel Técnico:</label>
                        <div id="TipoUsersContainer">
                             <select name="select" name="idnivel" id="idnivel">
-                              <option value="" selected>Seleccione</option>
+                              <option value="3" selected>Seleccione</option>
                               <option value="1">Nivel 1</option>
                               <option value="2">Nivel 2</option>
                             </select>
                         </div>
                       </div>
-
-                      
+                      <input name="id_user" id="id_user" type="hidden" value="<?php echo $_SESSION['id_user']?>">
                 </div>  
-
             </div> 
           </div>   
           <div class="modal-footer">
@@ -330,6 +329,12 @@ function mi_navbar() {
         <!--  SweetAlert   -->
         <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.js"></script>
         <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
+
+        <!--  Alertify   --> 
+        <script src="<?php echo APP;?>app/plugins/alertify/lib/alertify.js"></script>
+        <script src="<?php echo APP;?>app/plugins/alertify/lib/alertify.min.js"></script>
+        <script src="<?php echo APP;?>app/plugins/alertify/src/alertify.js"></script>
+
 
         <!--MASCARAS JQUERY-->
         <script src = "<?php echo APP;?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>

@@ -397,46 +397,43 @@ function GuardarUsuariosNew() {
     const nombre_usuario = document.getElementById('nombreuser').value;
     const apellido_usuario = document.getElementById('apellidouser').value;
     const tipo_doc = document.getElementById('tipodoc').value;
-    const documento = document.getElementById('coddocumento').value;
+    const documento = document.getElementById('documento').value;
     const iusuario = document.getElementById('usuario').value;
     const correo = document.getElementById('email').value;
     const area_usuario = document.getElementById('areausers').value;
     const tipo_usuario = document.getElementById('tipousers').value;
+    const regionusers = document.getElementById('regionusers').value;
+    const id_nivel = document.getElementById('idnivel').value;
+    const id_user = document.getElementById('id_user').value
 
+    const identificacion=tipo_doc+documento;
 
+//console.log(regionusers);
     // Validaciones generales
-    if (!nombre_usuario) {
-        Swal.fire({ icon: 'warning', title: 'Campo requerido', color: 'black' });
+    if (!nombre_usuario && !apellido_usuario && !documento && !correo && !area_usuario && !tipo_usuario && !regionusers) {
+        alertify.error('Los campos no pueden estar vacios')
         return;
     }
-    // if (!rif) {
-    //     Swal.fire({ icon: 'warning', title: 'Campo requerido', text: 'Por favor, Coloque un RIF.', color: 'black' });
-    //     return;
-    // }
-    // if (!serial) {
-    //     Swal.fire({ icon: 'warning', title: 'Campo requerido', text: 'Por favor, seleccione un serial.', color: 'black' });
-    //     return;
-    // }
-    // if (!coordinador) {
-    //     Swal.fire({ icon: 'warning', title: 'Campo requerido', text: 'Por favor, seleccione un coordinador.', color: 'black' });
-    //     return;
-    // }
 
-    //console.log(envioButtonContainer);
 
+    //alert(nombre_usuario + apellido_usuario + iusuario + identificacion + correo + area_usuario + tipo_usuario + regionusers + id_nivel);
 
 
     // Agregar datos al formData
     const formData = new FormData();
     formData.append('nombreuser', nombre_usuario);
     formData.append('apellidouser', apellido_usuario);
-    formData.append('tipodoc', tipo_doc);
-    formData.append('coddocumento', documento);
+    //formData.append('tipodoc', tipo_doc);
+    //formData.append('coddocumento', documento);
     formData.append('usuario', iusuario);
     formData.append('email', correo);
     formData.append('areausers', area_usuario);
     formData.append('tipousers', tipo_usuario);
-    
+    formData.append('regionusers', regionusers);
+    formData.append('identificacion', identificacion);
+    formData.append('id_user', id_user);
+    formData.append('id_nivel', id_nivel);
+
 
     formData.append('action', 'GuardarUsuarios');
 
