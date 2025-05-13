@@ -105,11 +105,11 @@ function mi_navbar() {
                 <div class="row">
                       <div class="col-md-6">
                         <label for="nombre">Nombre:</label>
-                        <input type="text" id="nombreuser" class="form-control" name="nombreuser">
+                        <input type="text" id="nombreuser" class="form-control" name="nombreuser" onkeypress="return soloLetras(event)">
                       </div>
                       <div class="col-md-6">
                         <label for="apellido">Apellido:</label>
-                        <input type="text" id="apellidouser" class="form-control" name="apellidouser">
+                        <input type="text" id="apellidouser" class="form-control" name="apellidouser" onkeypress="return soloLetras(event)" onchange="nameUsuario()">
                       </div>
                 </div>    
 
@@ -118,14 +118,18 @@ function mi_navbar() {
                         <label for="tipodoc">Tipo Documento:</label>
                         <input type="text" id="tipodoc" class="form-control" name="tipodoc">
                       </div> -->
-                      <div class="col-md-6">
-                        <label for="cedula">Documentacion:</label>
-                        <input type="text" id="coddocumento" class="form-control" name="coddocumento" onkeypress="return soloNumeros(event);">
-                      </div>
+                            <div class="col-md-6">
+                                <label for="">Documentacion</label>
+                                <div class="input-group" style="width: 92%;">
+                                  <input name="prefijo" id="idprefijo" type="text" value="V-" class="form-control" disabled>
+                                  <span class="input-group-addon"></span>
+                                  <input style="width: 70%;" class="form-control" type="text" name="idcuenta" id="idcuenta"  maxlength="9" onkeypress="return soloNumeros(event)" >
+                                </div>
+                            </div>
 
                       <div class="col-md-6">
                         <label for="usuario">Usuario:</label>
-                            <input type="text" id="usuario" class="form-control" name="usuario">
+                            <input type="text" id="usuario" class="form-control" name="usuario" disabled onchange="nameUsuario()"> 
                       </div>
                 </div>  
 
@@ -133,7 +137,8 @@ function mi_navbar() {
                       
                       <div class="col-md-6">
                         <label for="email">Correo:</label>
-                            <input type="text" id="email" class="form-control" name="email">
+                            <input type="text" id="email" class="form-control" name="email" onchange="validarEmail(this)">
+                            <span class="alert-danger" id="resultcorreo"></span>
                       </div>
                       <div class="col-md-6">
                         <label for="area">Area:</label>
@@ -143,7 +148,7 @@ function mi_navbar() {
                         </div>
                       </div>
                 </div>    
-
+                <br>
                 <div class="row">
                       <div class="col-md-6">
                         <label for="apellido">Region:</label>
@@ -154,12 +159,13 @@ function mi_navbar() {
                       <div class="col-md-6">
                         <label for="apellido">Tipo Usuario:</label>
                        <div id="TipoUsersContainer">
-                            <select id="tipousers" name="tipousers"></select>
+                            <select id="tipousers" name="tipousers" onchange="levelTecnico()"></select>
                         </div>
                       </div>
-                </div>   
+                </div>  
+                <br> 
                 <div class="row">
-                      <div class="col-md-6">
+                      <div class="col-md-6" id="nivel" style="display: none;">
                         <label for="apellido">Nivel Técnico:</label>
                        <div id="TipoUsersContainer">
                             <select name="select" name="idnivel" id="idnivel">
@@ -169,6 +175,8 @@ function mi_navbar() {
                             </select>
                         </div>
                       </div>
+
+                      
                 </div>  
 
             </div> 

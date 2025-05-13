@@ -8,6 +8,89 @@ function soloNumeros(e)
 }
 
 
+correosvalidos=0
+function validarEmail(elemento){
+  // document.getElementById('updatoscontacto').disabled=true;
+  var texto = document.getElementById(elemento.id).value;
+  var regex = /^[-\w.%+]{1,64}@(?:[A-Z0-9-]{1,63}\.){1,125}[A-Z]{2,63}$/i;
+  var per =0;
+   if(document.getElementById(elemento.id).value == "") {
+      document.getElementById(elemento.id).style = 'border-color:none;';
+
+      // document.getElementById('updatoscontacto').disabled=false;
+   }
+   else if (!regex.test(texto)) {
+      document.getElementById("resultcorreo").innerHTML = "Correo invalido";
+      // document.getElementById('updatoscontacto').disabled=true;
+      document.getElementById(elemento.id).style = 'border-color:red;';   
+       if (elemento.id=='email') { per=1; }
+       correosvalidos=1;
+
+      }
+
+   else if (regex.test(texto) || (per ==0)){
+      // document.getElementById('updatoscontacto').disabled=false;
+      document.getElementById("resultcorreo").innerHTML = "";
+      document.getElementById(elemento.id).style = 'border-color:green;';
+
+    correosvalidos=0
+
+  }
+
+
+}
+
+function soloLetras(e) {
+    key = e.keyCode || e.which;
+    tecla = String.fromCharCode(key).toString();
+letras = "áéíóúabcdefghijklmnñopqrstuvwxyzÁÉÍÓÚABCDEFGHIJKLMNÑOPQRSTUVWXYZ";//Se define todo el abecedario que se quiere mostrar.
+especiales = [8, 37, 39, 46, 6, 32]; //Es la validacion del KeyCodes, que teclas recibe el campo de texto.
+tecla_especial = false
+for(var i in especiales) {
+    if(key == especiales[i]) {
+        tecla_especial = true;
+        break;
+    }
+}
+
+if(letras.indexOf(tecla) == -1 && !tecla_especial){
+    return false;
+}
+}
+
+
+function nameUsuario(){
+    const nombreusuario=document.getElementById('nombreuser').value;
+    const apellidousuario=document.getElementById('apellidouser').value;
+    const nameusers=document.getElementById('usuario').value;
+
+    const inicialnombre=nombreusuario.substr(0, 1);
+
+         if (nombreusuario!='' && apellidousuario!='') {
+
+         const idusuario=inicialnombre+apellidousuario;
+            //console.log(idusuario);
+
+            document.getElementById("usuario").value=idusuario;
+        }
+  }
+
+
+  function levelTecnico(){
+    var idtipousuario=document.getElementById('tipousers').value;
+    var infoDiv=document.getElementById('nivel').value;
+
+    
+    if (idtipousuario==3) {
+        $('#nivel').css('display', 'block');
+    } else {
+
+        $('#nivel').css('display', 'none') ;
+    }
+
+}
+
+
 function getUserData() {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetUsers`);
@@ -151,7 +234,7 @@ function getAreaUsuarios() {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetAreaUsers');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                console.log('areas');
+                
 
     xhr.onload = function() {
 
