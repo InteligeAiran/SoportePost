@@ -317,5 +317,27 @@ class consulta_rifModel extends Model
             // Manejar excepciones
         }
     }
+
+    public function GetTecnico2(){
+        try{
+            $sql = "SELECT * FROM GetTecnico2()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function UpdateAccion($id_ticket, $id_tecnico){
+        try{
+            $sql = "SELECT * FROM AssignTickettoTecnico(".$id_ticket.", ".$id_tecnico.")";
+           // var_dump($sql);
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        }catch(Throwable $e){
+
+        }
+    }   
+
 }
 ?>

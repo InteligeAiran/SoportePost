@@ -1,6 +1,6 @@
 function getTicketData() {
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetTicketData1`);
+    xhr.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketData1`);
     //xhr.open('POST', 'http://localhost/SoportePost/api/GetTipoUsers'); // Asi estaba antes de cambiarlo
     
     //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');

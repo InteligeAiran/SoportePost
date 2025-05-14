@@ -32,28 +32,6 @@ class UserRepository
         return $result ? $result['row'] : null;
     }
 
-    public function getTecnico2(){
-        $result = $this->model->GetTecnico2();
-
-        if ($result && $result['numRows'] > 0) {
-            $tecnicos = [];
-            for ($i = 0; $i < $result['numRows']; $i++) {
-                $tecnicos[] = pg_fetch_assoc($result['query'], $i);
-            }
-            pg_free_result($result['query']);
-            return $tecnicos;
-        } else {
-            return [];
-        } 
-    }
-
-    public function AssignTicket($id_ticket, $id_tecnico){
-        $result = $this->model->UpdateAccion($id_tecnico, $id_ticket);
-        return $result;
-    }
-
-
-
     public function GetAreaUsers(){
         $result = $this->model->GetAreaUsers();
     
@@ -114,19 +92,75 @@ class UserRepository
         // Ahora itera sobre los nombres de las vistas y obtén los permisos del usuario
         foreach ($viewsToCheck as $viewName) {
             $resultPermission = $this->model->getUserPermission($userId, $viewName);
+            //var_dump($resultPermission); // Para depurar, muestra los resultados de la consulta
 
-            if (isset($resultPermission['row']) && is_array($resultPermission['row'])) {
+        
                 $permissionValue = reset($resultPermission['row']);
                 if ($permissionValue === true || ($permissionValue) === 't') {
                     $permissions[$viewName] = true;
+                    //var_dump($viewName.'-> '.($permissionValue === true? 'Permitido' : 'Denegado'));
                 } else {
                     $permissions[$viewName] = false;
+                   // var_dump($viewName.'-> Denegado');
                 }
-            } else {
-                // Manejar el caso en que no se encuentra el permiso o la estructura es incorrecta
-                $permissions[$viewName] = false; // O define un valor por defecto
-            }
         }
         return $permissions;
+    }
+
+    public function GetUsernameUser($username){
+        // Lógica para obtener un usuario por su ID usando el modelo
+        $result = $this->model->GetUsernameUser($username); // Asumiendo que tienes este método en tu modelo
+        return $result ? $result['numRows'] : null;
+    }
+
+    public function GetUserData($username, $password){
+        // Lógica para obtener datos de usuario
+        $result = $this->model->GetUserData($username, $password); // Asumiendo que tienes este método en tu modelo
+        return $result ? $result['row'] : null;
+    }
+    
+    public function UpdateTryPassTo0($username){
+        // Lógica para actualizar el intento de contraseña a 0
+        $result = $this->model->UpdateStatusTo0($username);// Asumiendo que tienes este método en tu modelo
+        //var_dump($result);
+        return $result;
+    }
+
+    public function UpdateTryPass($username){
+        // Lógica para actualizar el intento de contraseña a 0
+        $result = $this->model->UpdateTryPass($username);// Asumiendo que tienes este método en tu modelo
+        return $result;
+    }
+
+    public function GetTryPass($username){
+        // Lógica para Obtener los intentos de clave  
+        $result = $this->model->GetTryPass($username);// Asumiendo que tienes este método en tu modelo
+        return $result ? $result['row']['trying_failedpassw'] : null;
+    }
+
+    public function UpdateStatusTo4($username){
+        // Lógica para actualizar el status a 4 lo cual es STATUS: Bloqueado
+        $result = $this->model->UpdateStatusTo4($username);// Asumiendo que tienes este método en tu modelo
+        return $result;
+    }
+
+    public function GetSession($session_id){
+        // Lógica para obtener una sesión por su ID
+        $result = $this->model->GetSession($_SESSION['id_user'], $session_id); // Asumiendo que tienes este método en tu modelo
+        //var_dump($result);
+        return $result ? $result['numRows'] : null;;
+    }
+
+    public function InsertSession($session_id, $start_date, $user_agent, $ip_address, $active, $expiry_time){
+        // Lógica para insertar una sesión
+        $result = $this->model->InsertSession($session_id, $start_date, $_SESSION['id_user'], $user_agent, $ip_address, $active, $expiry_time);// Asumiendo que tienes este método en tu modelo
+        return $result;
+    }
+
+    public function GetPasswordUser($username, $password){
+        // Lógica para obtener un usuario por su nombre de usuario
+        $result = $this->model->GetPasswordUser($username, $password); // Asumiendo que tienes este método en tu modelo
+        //var_dump($result);
+        return $result ? $result['numRows'] : null;
     }
 }

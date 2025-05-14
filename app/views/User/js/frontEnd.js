@@ -34,10 +34,7 @@ function validarEmail(elemento){
       document.getElementById(elemento.id).style = 'border-color:green;';
 
     correosvalidos=0
-
   }
-
-
 }
 
 function soloLetras(e) {
@@ -93,7 +90,7 @@ function nameUsuario(){
 
 function getUserData() {
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetUsers`);
+    xhr.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/users/GetUsers`);
     //xhr.open('POST', 'http://localhost/SoportePost/api/GetTipoUsers'); // Asi estaba antes de cambiarlo
     
     //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
@@ -232,7 +229,7 @@ document.addEventListener('DOMContentLoaded', getUserData);
 // Funcion para mostrar las area para crear usuarios 
 function getAreaUsuarios() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetAreaUsers');
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/GetAreaUsers`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
                 
 
@@ -284,7 +281,7 @@ document.addEventListener('DOMContentLoaded', getAreaUsuarios);
 //FUNCION PARA MOSTRAR TIPO DE USUARIOS 
 function getTipoUsuarios() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetTipoUsers');
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/GetTipoUsers`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -336,7 +333,8 @@ document.addEventListener('DOMContentLoaded', getTipoUsuarios);
 //FUNCION PARA MOSTRAR LA LISTA DE REGIONES
 function getRegionUsuarios() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetRegionUsers');
+    xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/users/GetRegionUsers`);
+   
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -383,15 +381,9 @@ function getRegionUsuarios() {
 // Llama a la función para cargar las fallas cuando la página se cargue
 document.addEventListener('DOMContentLoaded', getRegionUsuarios);
 
-
-
-
 document.getElementById('btnGuardarUsers').addEventListener('click', function() {
     GuardarUsuariosNew();
 });
-
-
-
 
 function GuardarUsuariosNew() {
     const nombre_usuario = document.getElementById('nombreuser').value;
@@ -415,9 +407,7 @@ function GuardarUsuariosNew() {
         return;
     }
 
-
     //alert(nombre_usuario + apellido_usuario + iusuario + identificacion + correo + area_usuario + tipo_usuario + regionusers + id_nivel);
-
 
     // Agregar datos al formData
     const formData = new FormData();
@@ -433,19 +423,11 @@ function GuardarUsuariosNew() {
     formData.append('identificacion', identificacion);
     formData.append('id_user', id_user);
     formData.append('id_nivel', id_nivel);
-
-
     formData.append('action', 'GuardarUsuarios');
 
-    // Depuración
-    /*for (const [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-    }
-    console.log(formData);*/
-
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GuardarUsuarios');
-
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/GuardarUsuarios`);
+     
     
     xhr.onload = function() {
         if (xhr.status === 200) {
