@@ -121,6 +121,7 @@ function getUserData() {
 
                     userData.forEach(data => { // Usa un nombre diferente para el elemento individual
                         const row = tbody.insertRow();
+                        const id_secuencialCell = row.insertCell();
                         const id_userCell = row.insertCell();
                         const full_nameCell = row.insertCell();
                         const usernameCell = row.insertCell();
@@ -134,6 +135,7 @@ function getUserData() {
                         const actionsCell = row.insertCell(); // Nueva celda para las acciones
 
 
+                        id_secuencialCell.textContent = data.secuencial; // Accede a las propiedades del 'item'
                         id_userCell.textContent = data.id_user; // Accede a las propiedades del 'item'
                         full_nameCell.textContent = data.full_name;
                         usernameCell.textContent = data.usuario;
@@ -147,7 +149,7 @@ function getUserData() {
 
                         // Crear los botones
                         const modifyButton = document.createElement('button');
-                        modifyButton.textContent = 'Modificar';
+                        modifyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/></svg>';
                         modifyButton.classList.add('btn', 'btn-sm', 'btn-primary', 'me-2'); // Añade clases de Bootstrap para estilo
 
                         const statusButton = document.createElement('button');
@@ -157,6 +159,16 @@ function getUserData() {
                         // Añadir los botones a la celda de acciones
                         actionsCell.appendChild(modifyButton);
                         actionsCell.appendChild(statusButton);
+
+
+                        modifyButton.onclick = function() {
+                          
+                         const idusuario = data.id_user;
+
+                         $('#ModalEditUsers').modal('show'); // abrir
+                         VerUsuario(idusuario);
+                        };
+
                     });
 
                     //console.log('Datos de usuario insertados:', userData); // Agrega esta línea
@@ -167,6 +179,13 @@ function getUserData() {
                         $('#table-user').DataTable().destroy();
                     }
                     $('#table-user').DataTable({
+
+                            "columnDefs": [
+                                   {
+                                         "targets": [1,9 ],
+                                         "visible": false,
+                                     }
+                                 ],
                        
                             
                         responsive: true,
@@ -485,5 +504,48 @@ function GuardarUsuariosNew() {
     };
 
     xhr.send(formData);
+
+}
+
+
+function VerUsuario(idusuario){
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetMostrarUsuarioEdit`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    const tbody = document.getElementById('table-user').getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
+
+  if ($.fn.DataTable.isDataTable('#table-user-bod')) {
+        $('#table-user-bod').DataTable().destroy();
+    }
+
+     while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
+    const iidusuario=idusuario;
+    const id_userInput = document.getElementById('id_user');
+
+    // Asigna el valor de 'iidusuario' a la propiedad 'value' del elemento
+    if (id_userInput) {
+      id_userInput.value = iidusuario;
+        xhr.onload = function() {
+            const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const userData = response.users; // Cambia el nombre de la variable aquí
+
+                    userData.forEach(data => { // Usa un nombre diferente para el elemento individual
+                        const row = tbody.insertRow();
+                        $("#editnombreuser").val(data.secuencial); // Accede a las propiedades del 'item'
+                    });
+                }          
+           };
+        const id_user = id_userInput.value
+    const datos = `action=GetMostrarUsuarioEdit&id_user=${encodeURIComponent(id_user)}`;
+    xhr.send(datos);
+    } else {
+      console.error("No se encontró ningún elemento con el ID 'id_user'");
+    }
+
 
 }

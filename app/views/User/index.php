@@ -58,23 +58,24 @@ function mi_navbar() {
                         <div id="div_user" class="background-color">
                             <div class="col-lg-12 col-md-12 mt-4 mb-4">
                                 <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                    <strong><h5 class="text-black text-capitalize ps-3">USUARIOS</h5></strong>
+                                    <strong><h5 class="text-black text-capitalize ps-3">LISTA DE USUARIOS</h5></strong>
                                 </div>
                             </div> 
                                   
                             <table id="table-user" class="background-users-table">
                                 <thead>
                                     <tr>
-                                        <th>Id</th>
+                                        <th>Nº</th>
+                                        <th>id</th>
                                         <th>Nombre y Apellido</th>
                                         <th>Usuario</th>
                                         <th>Cedula</th>
+                                        <th>Correo</th>
                                         <th>Estatus</th>
                                         <th>Rol</th>
                                         <th>Area</th>
-                                        <th>Tipo Usuario</th>
+                                        <th>Nivel Tecnico</th>
                                         <th>Region</th>
-                                        <th>Acciones</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
@@ -178,6 +179,107 @@ function mi_navbar() {
                       </div>
                       <input name="id_user" id="id_user" type="hidden" value="<?php echo $_SESSION['id_user']?>">
                 </div>  
+            </div> 
+          </div>   
+          <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarUsers">Guardar</button>
+            </div>
+        </div>
+    </div>
+   </div>
+
+
+
+    <div class="modal fade" id="ModalEditUsers" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"
+     data-keyboard="false">
+         <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <div class="panel-heading" style="text-align: center;color:#ffffff;">
+                    <h4>Editar usuarios</h4>
+                </div>
+            </div> 
+
+            <div class="modal-body">
+                <div class="panel-body">
+                
+                <input type="text" id="id_user" class="form-control" name="editnombreuser" style="display: none">
+                <div class="row">
+                      <div class="col-md-6">
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" id="editnombreuser" class="form-control" name="editnombreuser" onkeypress="return soloLetras(event)">
+                      </div>
+                      <div class="col-md-6">
+                        <label for="apellido">Apellido:</label>
+                        <input type="text" id="apellidouser" class="form-control" name="apellidouser" onkeypress="return soloLetras(event)" onchange="nameUsuario()">
+                      </div>
+
+                </div>    
+
+                <!-- <div class="row">
+                    <div class="col-md-6">
+                        <label for="">Documentacion</label>
+                        <div class="input-group" style="width: 92%;">
+                          <input name="tipodoc" id="tipodoc" type="text" value="V-" class="form-control" disabled>
+                          <span class="input-group-addon"></span>
+                          <input style="width: 70%;" class="form-control" type="text" name="documento" id="documento"  maxlength="9" onkeypress="return soloNumeros(event)" >
+                        </div>
+                    </div>
+                      <div class="col-md-6">
+                        <label for="usuario">Usuario:</label>
+                        <input type="text" id="usuario" class="form-control" name="usuario" disabled onchange="nameUsuario()"> 
+                      </div>
+                </div>  
+
+                <div class="row">
+                      
+                      <div class="col-md-6">
+                        <label for="email">Correo:</label>
+                            <input type="text" id="email" class="form-control" name="email" onchange="validarEmail(this)">
+                            <span class="alert-danger" id="resultcorreo"></span>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="area">Area:</label>
+                        <div id="AreaUsersContainer">
+                            <select id="areausers" name="areausers"></select>
+                            <p id="rifMensaje1"></p>
+                        </div>
+                      </div>
+                </div>    
+                <br>
+                <div class="row">
+                      <div class="col-md-6">
+                        <label for="apellido">Region:</label>
+                       <div id="TipoUsersContainer">
+                            <select id="regionusers" name="regionusers"></select>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="apellido">Tipo Usuario:</label>
+                       <div id="TipoUsersContainer">
+                            <select id="tipousers" name="tipousers" onchange="levelTecnico()"></select>
+                        </div>
+                      </div>
+                </div>  
+                <br> 
+                <div class="row">
+                      <div class="col-md-6" id="nivel" style="display: none;">
+                        <label for="apellido">Nivel Técnico:</label>
+                       <div id="TipoUsersContainer">
+                            <select name="select" name="idnivel" id="idnivel">
+                              <option value="3" selected>Seleccione</option>
+                              <option value="1">Nivel 1</option>
+                              <option value="2">Nivel 2</option>
+                            </select>
+                        </div>
+                      </div>
+                      
+                </div>   -->
+                <input name="id_user" id="id_user" type="hidden" value="<?php echo $_SESSION['id_user']?>">
             </div> 
           </div>   
           <div class="modal-footer">

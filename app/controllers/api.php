@@ -220,6 +220,11 @@ class Api extends Controller {
                     case 'GuardarUsuarios':
                         $this->handleGuardarUsuarios();
                     break;
+
+                    case 'GetMostrarUsuarioEdit':
+                    $id_user = isset($_POST['id_user']) ? trim($_POST['id_user']) : '';
+                        $this->handleGetMostrarUsuarioEdit($id_user);
+                    break;                    
                 /*END CONSULTA RIF*/
 
                 /*CONSULTA GENERAL*/
@@ -1348,6 +1353,42 @@ class Api extends Controller {
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
+
+
+    // public function handleGetMostrarUsuarioEdit(){
+
+    //     $idusuario = isset($_SESSION['idusuario']) ? $_SESSION['idusuario'] : '';
+
+    //     $repository = new   UserRepository(); // Inicializa el repositorio
+    //     $result = $repository->getAllUsers($idusuario);
+
+    //     if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+    //         $this->response(['success' => true, 'users' => $result], 200);
+    //     } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+    //         $this->response(['success' => false, 'message' => 'No hay usuarios disponibles'], 404); // Código 404 Not Found
+    //     } else {
+    //         $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
+    //     }
+    //     $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    // }  
+
+
+    public function handleGetMostrarUsuarioEdit($id_user){
+        $id_user = isset($_GET['id_user']) ? $_GET['id_user'] : '';
+        var_dump($id_user);
+            
+        $repository = new   UserRepository(); // Inicializa el repositorio
+        $result = $repository->GetMostrarUsuarioEdit($id_user);
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'users' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay usuarios disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
         }
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
     }

@@ -128,5 +128,16 @@ class userModel extends Model{
             // Handle exception
         }
     }
+
+    public function MostrarUsuarioEdit($idusuario){
+        try{
+            $sql = "SELECT * FROM sp_mostrarusuarios(".$idusuario.")";
+           // var_dump($sql);
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        }catch(Throwable $e){
+
+        }
+    }   
 }   
 ?>
