@@ -211,27 +211,27 @@ function mi_navbar() {
                 <div class="row">
                       <div class="col-md-6">
                         <label for="nombre">Nombre:</label>
-                        <input type="text" id="editnombreuser" class="form-control" name="editnombreuser" onkeypress="return soloLetras(event)">
+                        <input type="text" id="edit_nombreuser" class="form-control" name="edit_nombreuser" onkeypress="return soloLetras(event)" style="text-transform:uppercase; color:#000000;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                       </div>
                       <div class="col-md-6">
                         <label for="apellido">Apellido:</label>
-                        <input type="text" id="apellidouser" class="form-control" name="apellidouser" onkeypress="return soloLetras(event)" onchange="nameUsuario()">
+                        <input type="text" id="edit_apellidouser" class="form-control" name="edit_apellidouser" onkeypress="return soloLetras(event)" onchange="nameUsuario()" style="text-transform:uppercase; color:#000000;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                       </div>
 
                 </div>    
-
-                <!-- <div class="row">
+                
+                <div class="row">
                     <div class="col-md-6">
                         <label for="">Documentacion</label>
                         <div class="input-group" style="width: 92%;">
                           <input name="tipodoc" id="tipodoc" type="text" value="V-" class="form-control" disabled>
                           <span class="input-group-addon"></span>
-                          <input style="width: 70%;" class="form-control" type="text" name="documento" id="documento"  maxlength="9" onkeypress="return soloNumeros(event)" >
+                          <input style="width: 70%;" class="form-control" type="text" name="edit_documento" id="edit_documento"  maxlength="9" onkeypress="return soloNumeros(event)" >
                         </div>
                     </div>
                       <div class="col-md-6">
                         <label for="usuario">Usuario:</label>
-                        <input type="text" id="usuario" class="form-control" name="usuario" disabled onchange="nameUsuario()"> 
+                        <input type="text" id="edit_usuario" class="form-control" name="editusuario" disabled onchange="nameUsuario()"> 
                       </div>
                 </div>  
 
@@ -239,13 +239,13 @@ function mi_navbar() {
                       
                       <div class="col-md-6">
                         <label for="email">Correo:</label>
-                            <input type="text" id="email" class="form-control" name="email" onchange="validarEmail(this)">
+                            <input type="text" id="edit_email" class="form-control" name="edit_email" onchange="validarEmail(this)" style="text-transform:uppercase; color:#000000;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                             <span class="alert-danger" id="resultcorreo"></span>
                       </div>
                       <div class="col-md-6">
                         <label for="area">Area:</label>
                         <div id="AreaUsersContainer">
-                            <select id="areausers" name="areausers"></select>
+                            <select id="edit_areausers" name="edit_areausers"></select>
                             <p id="rifMensaje1"></p>
                         </div>
                       </div>
@@ -255,13 +255,13 @@ function mi_navbar() {
                       <div class="col-md-6">
                         <label for="apellido">Region:</label>
                        <div id="TipoUsersContainer">
-                            <select id="regionusers" name="regionusers"></select>
+                            <select id="edit_regionusers" name="edit_regionusers"></select>
                         </div>
                       </div>
                       <div class="col-md-6">
                         <label for="apellido">Tipo Usuario:</label>
                        <div id="TipoUsersContainer">
-                            <select id="tipousers" name="tipousers" onchange="levelTecnico()"></select>
+                            <select id="edit_tipousers" name="edit_tipousers" onchange="levelTecnico()"></select>
                         </div>
                       </div>
                 </div>  
@@ -270,7 +270,7 @@ function mi_navbar() {
                       <div class="col-md-6" id="nivel" style="display: none;">
                         <label for="apellido">Nivel Técnico:</label>
                        <div id="TipoUsersContainer">
-                            <select name="select" name="idnivel" id="idnivel">
+                            <select name="select" name="edit_idnivel" id="edit_idnivel">
                               <option value="3" selected>Seleccione</option>
                               <option value="1">Nivel 1</option>
                               <option value="2">Nivel 2</option>
@@ -278,7 +278,7 @@ function mi_navbar() {
                         </div>
                       </div>
                       
-                </div>   -->
+                </div>   
                 <input name="id_user" id="id_user" type="hidden" value="<?php echo $_SESSION['id_user']?>">
             </div> 
           </div>   

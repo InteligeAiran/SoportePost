@@ -130,16 +130,15 @@ class UserRepository
         return $permissions;
     }
 
-    public function GetMostrarUsuarioEdit($idusuario){
+    public function MostrarUsuarioEdit($idusuario){
 
         $result = $this->model->MostrarUsuarioEdit($idusuario);
-        
-        var_dump($result);
+
         for ($i = 0; $i < $result['numRows']; $i++) {
             $agente = pg_fetch_assoc($result['query'], $i);
-            $tipousers[] = $agente;
+            $edit[] = $agente;
             //var_dump($agente);
         }
-        return $tipousers;
+        return $edit;
     }    
 }

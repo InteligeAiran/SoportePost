@@ -129,9 +129,9 @@ class userModel extends Model{
         }
     }
 
-    public function MostrarUsuarioEdit($idusuario){
+    public function MostrarUsuarioEdit($id_user){
         try{
-            $sql = "SELECT * FROM sp_mostrarusuarios(".$idusuario.")";
+            $sql = "SELECT * FROM sp_mostrarusuarios(".$id_user.")";
            // var_dump($sql);
             $result = Model::getResult($sql, $this->db);
             return $result;

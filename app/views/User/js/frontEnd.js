@@ -512,19 +512,16 @@ function VerUsuario(idusuario){
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetMostrarUsuarioEdit`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
     const tbody = document.getElementById('table-user').getElementsByTagName('tbody')[0];
-    tbody.innerHTML = '';
+    //tbody.innerHTML = '';
 
-  if ($.fn.DataTable.isDataTable('#table-user-bod')) {
-        $('#table-user-bod').DataTable().destroy();
-    }
-
-     while (tbody.firstChild) {
-        tbody.removeChild(tbody.firstChild);
-    }
+    //  while (tbody.firstChild) {
+    //     tbody.removeChild(tbody.firstChild);
+    // }
 
     const iidusuario=idusuario;
-    const id_userInput = document.getElementById('id_user');
+    const id_userInput = idusuario;
 
     // Asigna el valor de 'iidusuario' a la propiedad 'value' del elemento
     if (id_userInput) {
@@ -535,12 +532,22 @@ function VerUsuario(idusuario){
                     const userData = response.users; // Cambia el nombre de la variable aquí
 
                     userData.forEach(data => { // Usa un nombre diferente para el elemento individual
+                        console.log(data.name_area);
                         const row = tbody.insertRow();
-                        $("#editnombreuser").val(data.secuencial); // Accede a las propiedades del 'item'
+                        $("#edit_nombreuser").val(data.inombre); // Accede a las propiedades del 'item'
+                        $("#edit_apellidouser").val(data.iapellido); // Accede a las propiedades del 'item'
+                        $("#edit_documento").val(data.documentoo); // Accede a las propiedades del 'item'
+                        $("#edit_usuario").val(data.usuario); // Accede a las propiedades del 'item'
+                        $("#edit_email").val(data.correo); // Accede a las propiedades del 'item'
+                        $("select#edit_areausers").val(data.name_area); // Accede a las propiedades del 'item'
+                        $("#edit_regionusers").val(data.idreg); // Accede a las propiedades del 'item'
+                        $("#edit_tipousers").val(data.name_rol); // Accede a las propiedades del 'item'
+                        $("#edit_idnivel").val(data.inombre); // Accede a las propiedades del 'item'
                     });
                 }          
            };
-        const id_user = id_userInput.value
+        const id_user = idusuario;
+
     const datos = `action=GetMostrarUsuarioEdit&id_user=${encodeURIComponent(id_user)}`;
     xhr.send(datos);
     } else {

@@ -1377,11 +1377,10 @@ class Api extends Controller {
 
 
     public function handleGetMostrarUsuarioEdit($id_user){
-        $id_user = isset($_GET['id_user']) ? $_GET['id_user'] : '';
-        var_dump($id_user);
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
             
         $repository = new   UserRepository(); // Inicializa el repositorio
-        $result = $repository->GetMostrarUsuarioEdit($id_user);
+        $result = $repository->MostrarUsuarioEdit($id_user);
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'users' => $result], 200);
