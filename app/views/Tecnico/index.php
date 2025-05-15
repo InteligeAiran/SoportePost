@@ -24,35 +24,14 @@ function mi_navbar() {
         <link rel="stylesheet" type="text/css" href="<?php // echo APP;?>app/plugins/css/dashboard/consulta_rif/laptop/laptop.css"/>
         <link rel="stylesheet" type="text/css" href="<?php //echo APP;?>app/plugins/css/dashboard/asignar_tecnico/General.css"/-->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css"/>
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/datatables.min.css"/>
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/datatables.css"/>
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/bootstrap.css"/>
-
-
-
-
-      <style>
-    .search-box input[type="text"],
-    .search-box input[type="search"] {
-        padding: 10px 15px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-    }
-    
-    /* If you want different padding on different sides */
-    .search-box .form-control {
-        padding-left: 15px;
-        padding-right: 30px; /* More space for search icon */
-        padding-top: 8px;
-        padding-bottom: 8px;
-    }
-</style>
-
 
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
+
+        <style>
+            
+        </style>
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
