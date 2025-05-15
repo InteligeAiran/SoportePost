@@ -1,3 +1,96 @@
+function soloNumeros(e)
+{
+    var keynum = window.event ? window.event.keyCode : e.which;
+    if ((keynum == 8) || (keynum == 46))
+        return true;
+
+    return /\d/.test(String.fromCharCode(keynum));
+}
+
+
+correosvalidos=0
+function validarEmail(elemento){
+  // document.getElementById('updatoscontacto').disabled=true;
+  var texto = document.getElementById(elemento.id).value;
+  var regex = /^[-\w.%+]{1,64}@(?:[A-Z0-9-]{1,63}\.){1,125}[A-Z]{2,63}$/i;
+  var per =0;
+   if(document.getElementById(elemento.id).value == "") {
+      document.getElementById(elemento.id).style = 'border-color:none;';
+
+      // document.getElementById('updatoscontacto').disabled=false;
+   }
+   else if (!regex.test(texto)) {
+      document.getElementById("resultcorreo").innerHTML = "Correo invalido";
+      // document.getElementById('updatoscontacto').disabled=true;
+      document.getElementById(elemento.id).style = 'border-color:red;';   
+       if (elemento.id=='email') { per=1; }
+       correosvalidos=1;
+
+      }
+
+   else if (regex.test(texto) || (per ==0)){
+      // document.getElementById('updatoscontacto').disabled=false;
+      document.getElementById("resultcorreo").innerHTML = "";
+      document.getElementById(elemento.id).style = 'border-color:green;';
+
+    correosvalidos=0
+
+  }
+
+
+}
+
+function soloLetras(e) {
+    key = e.keyCode || e.which;
+    tecla = String.fromCharCode(key).toString();
+letras = "áéíóúabcdefghijklmnñopqrstuvwxyzÁÉÍÓÚABCDEFGHIJKLMNÑOPQRSTUVWXYZ";//Se define todo el abecedario que se quiere mostrar.
+especiales = [8, 37, 39, 46, 6, 32]; //Es la validacion del KeyCodes, que teclas recibe el campo de texto.
+tecla_especial = false
+for(var i in especiales) {
+    if(key == especiales[i]) {
+        tecla_especial = true;
+        break;
+    }
+}
+
+if(letras.indexOf(tecla) == -1 && !tecla_especial){
+    return false;
+}
+}
+
+
+function nameUsuario(){
+    const nombreusuario=document.getElementById('nombreuser').value;
+    const apellidousuario=document.getElementById('apellidouser').value;
+    const nameusers=document.getElementById('usuario').value;
+
+    const inicialnombre=nombreusuario.substr(0, 1);
+
+         if (nombreusuario!='' && apellidousuario!='') {
+
+         const idusuario=inicialnombre+apellidousuario;
+            //console.log(idusuario);
+
+            document.getElementById("usuario").value=idusuario;
+        }
+  }
+
+
+  function levelTecnico(){
+    var idtipousuario=document.getElementById('tipousers').value;
+    var infoDiv=document.getElementById('nivel').value;
+
+    
+    if (idtipousuario==3) {
+        $('#nivel').css('display', 'block');
+    } else {
+
+        $('#nivel').css('display', 'none') ;
+    }
+
+}
+
+
 function getUserData() {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetUsers`);
@@ -28,6 +121,7 @@ function getUserData() {
 
                     userData.forEach(data => { // Usa un nombre diferente para el elemento individual
                         const row = tbody.insertRow();
+                        const id_secuencialCell = row.insertCell();
                         const id_userCell = row.insertCell();
                         const full_nameCell = row.insertCell();
                         const usernameCell = row.insertCell();
@@ -41,6 +135,7 @@ function getUserData() {
                         const actionsCell = row.insertCell(); // Nueva celda para las acciones
 
 
+                        id_secuencialCell.textContent = data.secuencial; // Accede a las propiedades del 'item'
                         id_userCell.textContent = data.id_user; // Accede a las propiedades del 'item'
                         full_nameCell.textContent = data.full_name;
                         usernameCell.textContent = data.usuario;
@@ -54,7 +149,7 @@ function getUserData() {
 
                         // Crear los botones
                         const modifyButton = document.createElement('button');
-                        modifyButton.textContent = 'Modificar';
+                        modifyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/></svg>';
                         modifyButton.classList.add('btn', 'btn-sm', 'btn-primary', 'me-2'); // Añade clases de Bootstrap para estilo
 
                         const statusButton = document.createElement('button');
@@ -64,6 +159,16 @@ function getUserData() {
                         // Añadir los botones a la celda de acciones
                         actionsCell.appendChild(modifyButton);
                         actionsCell.appendChild(statusButton);
+
+
+                        modifyButton.onclick = function() {
+                          
+                         const idusuario = data.id_user;
+
+                         $('#ModalEditUsers').modal('show'); // abrir
+                         VerUsuario(idusuario);
+                        };
+
                     });
 
                     //console.log('Datos de usuario insertados:', userData); // Agrega esta línea
@@ -74,10 +179,20 @@ function getUserData() {
                         $('#table-user').DataTable().destroy();
                     }
                     $('#table-user').DataTable({
-                        responsive: false,
+
+                            "columnDefs": [
+                                   {
+                                         "targets": [1,9 ],
+                                         "visible": false,
+                                     }
+                                 ],
+                       
+                            
+                        responsive: true,
                         "pagingType": "simple_numbers",
                         "lengthMenu": [5],
                         autoWidth: false,
+
                         "language": {
                             "lengthMenu": "Mostrar _MENU_ registros", // Esta línea es la clave
                             "emptyTable": "No hay datos disponibles en la tabla",
@@ -94,7 +209,13 @@ function getUserData() {
                                 "next": "Siguiente",
                                 "previous": "Anterior"
                             }
+                        },
+                        dom: 'Bfrtip',
+                        buttons: [
+                        {
+                            text: '<button data-toggle="modal" data-target="#ModalAggUsers"class="btn btn-primary" type="button">Crear Usuario</button>'
                         }
+                        ]
                     });
                     $('#table-user').resizableColumns();
 
@@ -122,4 +243,316 @@ function getUserData() {
 }
 
 document.addEventListener('DOMContentLoaded', getUserData);
-//console.log('FrontEnd.js loaded successfully!');
+
+
+
+
+
+// Funcion para mostrar las area para crear usuarios 
+function getAreaUsuarios() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetAreaUsers');
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                
+
+    xhr.onload = function() {
+
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const select = document.getElementById('areausers');
+
+                    select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+                    if (Array.isArray(response.area) && response.area.length > 0) {
+                        response.area.forEach(coordinador => {
+                            const option = document.createElement('option');
+                            option.value = coordinador.idarea;
+                            option.textContent = coordinador.desc_area;
+                            select.appendChild(option);
+                        });
+                    } else {
+                        // Si no hay fallas, puedes mostrar un mensaje en el select
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No hay Áreas disponibles';
+                        select.appendChild(option);
+                    }
+                } else {
+                    document.getElementById('rifMensaje').innerHTML += '<br>Error al obtener las áreas.';
+                    console.error('Error al obtener las fallas:', response.message);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                document.getElementById('rifMensaje').innerHTML += '<br>Error al procesar la respuesta de los áreas.';
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            document.getElementById('rifMensaje').innerHTML += '<br>Error de conexión con el servidor para los áreas.';
+        }
+    };
+
+    const datos = `action=GetAreaUsers`; // Cambia la acción para que coincida con el backend
+    xhr.send(datos);
+}
+
+// Llama a la función para cargar las fallas cuando la página se cargue
+document.addEventListener('DOMContentLoaded', getAreaUsuarios);
+
+
+//FUNCION PARA MOSTRAR TIPO DE USUARIOS 
+function getTipoUsuarios() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetTipoUsers');
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const select = document.getElementById('tipousers');
+ 
+                    select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+                    if (Array.isArray(response.tipousers) && response.tipousers.length > 0) {
+                        response.tipousers.forEach(tipousers => {
+                            const option = document.createElement('option');
+                            option.value = tipousers.idtipo;
+                            option.textContent = tipousers.desc_tipo;
+                            select.appendChild(option);
+                        });
+                    } else {
+                        // Si no hay fallas, puedes mostrar un mensaje en el select
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No hay información disponible';
+                        select.appendChild(option);
+                    }
+                } else {
+                    document.getElementById('rifMensaje').innerHTML += '<br>Error al obtener los datos.';
+                    console.error('Error al obtener las fallas:', response.message);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                document.getElementById('rifMensaje').innerHTML += '<br>Error al procesar la información.';
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            document.getElementById('rifMensaje').innerHTML += '<br>Error de conexión con el servidor para los áreas.';
+        }
+    };
+
+    const datos = `action=GetTipoUsers`; // Cambia la acción para que coincida con el backend
+    xhr.send(datos);
+}
+
+// Llama a la función para cargar las fallas cuando la página se cargue
+document.addEventListener('DOMContentLoaded', getTipoUsuarios);
+
+
+
+//FUNCION PARA MOSTRAR LA LISTA DE REGIONES
+function getRegionUsuarios() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GetRegionUsers');
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const select = document.getElementById('regionusers');
+ 
+                    select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+                    if (Array.isArray(response.regionusers) && response.regionusers.length > 0) {
+                        response.regionusers.forEach(regionusers => {
+                            const option = document.createElement('option');
+                            option.value = regionusers.idreg;
+                            option.textContent = regionusers.desc_reg;
+                            select.appendChild(option);
+                        });
+                    } else {
+                        // Si no hay fallas, puedes mostrar un mensaje en el select
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No hay información disponible';
+                        select.appendChild(option);
+                    }
+                } else {
+                    document.getElementById('rifMensaje').innerHTML += '<br>Error al obtener los datos.';
+                    console.error('Error al obtener las fallas:', response.message);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                document.getElementById('rifMensaje').innerHTML += '<br>Error al procesar la información.';
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            document.getElementById('rifMensaje').innerHTML += '<br>Error de conexión con el servidor para los áreas.';
+        }
+    };
+
+    const datos = `action=GetRegionUsers`; // Cambia la acción para que coincida con el backend
+    xhr.send(datos);
+}
+
+// Llama a la función para cargar las fallas cuando la página se cargue
+document.addEventListener('DOMContentLoaded', getRegionUsuarios);
+
+
+
+
+document.getElementById('btnGuardarUsers').addEventListener('click', function() {
+    GuardarUsuariosNew();
+});
+
+
+
+
+function GuardarUsuariosNew() {
+    const nombre_usuario = document.getElementById('nombreuser').value;
+    const apellido_usuario = document.getElementById('apellidouser').value;
+    const tipo_doc = document.getElementById('tipodoc').value;
+    const documento = document.getElementById('documento').value;
+    const iusuario = document.getElementById('usuario').value;
+    const correo = document.getElementById('email').value;
+    const area_usuario = document.getElementById('areausers').value;
+    const tipo_usuario = document.getElementById('tipousers').value;
+    const regionusers = document.getElementById('regionusers').value;
+    const id_nivel = document.getElementById('idnivel').value;
+    const id_user = document.getElementById('id_user').value
+
+    const identificacion=tipo_doc+documento;
+
+//console.log(regionusers);
+    // Validaciones generales
+    if (!nombre_usuario && !apellido_usuario && !documento && !correo && !area_usuario && !tipo_usuario && !regionusers) {
+        alertify.error('Los campos no pueden estar vacios')
+        return;
+    }
+
+
+    //alert(nombre_usuario + apellido_usuario + iusuario + identificacion + correo + area_usuario + tipo_usuario + regionusers + id_nivel);
+
+
+    // Agregar datos al formData
+    const formData = new FormData();
+    formData.append('nombreuser', nombre_usuario);
+    formData.append('apellidouser', apellido_usuario);
+    //formData.append('tipodoc', tipo_doc);
+    //formData.append('coddocumento', documento);
+    formData.append('usuario', iusuario);
+    formData.append('email', correo);
+    formData.append('areausers', area_usuario);
+    formData.append('tipousers', tipo_usuario);
+    formData.append('regionusers', regionusers);
+    formData.append('identificacion', identificacion);
+    formData.append('id_user', id_user);
+    formData.append('id_nivel', id_nivel);
+
+
+    formData.append('action', 'GuardarUsuarios');
+
+    // Depuración
+    /*for (const [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+    }
+    console.log(formData);*/
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GuardarUsuarios');
+
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {                  
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Guardado exitoso',
+                        text: response.message,
+                        color: 'black',
+                        timer: 1500,
+                        timerProgressBar: true,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        willClose: () => {
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        }
+                    });
+                    $("#miModal").css("display", "none");
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: response.message, color: 'black' });
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                console.log(xhr.responseText);
+                Swal.fire({ icon: 'error', title: 'Error en el servidor', text: 'Ocurrió un error al procesar la respuesta del servidor.', color: 'black' });
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar con el servidor.', color: 'black' });
+        }
+    };
+
+    xhr.send(formData);
+
+}
+
+
+function VerUsuario(idusuario){
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetMostrarUsuarioEdit`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    const tbody = document.getElementById('table-user').getElementsByTagName('tbody')[0];
+    //tbody.innerHTML = '';
+
+    //  while (tbody.firstChild) {
+    //     tbody.removeChild(tbody.firstChild);
+    // }
+
+    const iidusuario=idusuario;
+    const id_userInput = idusuario;
+
+    // Asigna el valor de 'iidusuario' a la propiedad 'value' del elemento
+    if (id_userInput) {
+      id_userInput.value = iidusuario;
+        xhr.onload = function() {
+            const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const userData = response.users; // Cambia el nombre de la variable aquí
+
+                    userData.forEach(data => { // Usa un nombre diferente para el elemento individual
+                        console.log(data.name_area);
+                        const row = tbody.insertRow();
+                        $("#edit_nombreuser").val(data.inombre); // Accede a las propiedades del 'item'
+                        $("#edit_apellidouser").val(data.iapellido); // Accede a las propiedades del 'item'
+                        $("#edit_documento").val(data.documentoo); // Accede a las propiedades del 'item'
+                        $("#edit_usuario").val(data.usuario); // Accede a las propiedades del 'item'
+                        $("#edit_email").val(data.correo); // Accede a las propiedades del 'item'
+                        $("select#edit_areausers").val(data.name_area); // Accede a las propiedades del 'item'
+                        $("#edit_regionusers").val(data.idreg); // Accede a las propiedades del 'item'
+                        $("#edit_tipousers").val(data.name_rol); // Accede a las propiedades del 'item'
+                        $("#edit_idnivel").val(data.inombre); // Accede a las propiedades del 'item'
+                    });
+                }          
+           };
+        const id_user = idusuario;
+
+    const datos = `action=GetMostrarUsuarioEdit&id_user=${encodeURIComponent(id_user)}`;
+    xhr.send(datos);
+    } else {
+      console.error("No se encontró ningún elemento con el ID 'id_user'");
+    }
+
+
+}

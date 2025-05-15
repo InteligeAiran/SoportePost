@@ -27,8 +27,7 @@ function mi_navbar()
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
-        <link rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -53,13 +52,20 @@ function mi_navbar()
                     <div id="Row" class="row mt-4">
                         <div class="cord">
                             <div class="d-flex justify-content-start mt-2">
-                                <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorNombreBtn">Buscar por Nombre</button>
+                                <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorNombreBtn">Buscar por Razón Social</button>
                                 <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
                                 <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
                             </div>
                             <div id="SearchRif" class="mb-3 d-flex align-items-center">
                                 <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
-                                <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;">Buscar</button>
+                                <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;">Buscar</button><br>
+
+                                <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none;" maxlength="24">
+                                <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none;">Buscar</button>
+
+                                <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
+                                <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
+                                
                             </div><br>
                             <div class="card" style="display: none;">
                                 <div class="table-responsive">
@@ -67,7 +73,7 @@ function mi_navbar()
                                         <thead>
                                             <tr>
                                                 <th style="width: 5%; height: 10px;">ID cliente</th>
-                                                <th style="width: 5%;">Raz&oacuten Social</th>
+                                                <th style="width: 10%;">Raz&oacuten Social</th>
                                                 <th style="width: 5%;">RIF</th>
                                                 <th style="width: 5%;">Modelo POS</th>
                                                 <th style="width: 5%;">serial POS</th>
@@ -108,19 +114,17 @@ function mi_navbar()
                         </div>
                     </div>
                 </div>
-        </div>
-        </div>
 
-        <!-- AVISA LAS GARANTIAS --->
-        <div id="garantiaModal" class="modal">
-            <div id="garantiaModal-content" class="modal-content">
-                <span id="garantiaModal-close" class="close">&times;</span>
-                <h2 id="garantiaModal-titulo">¡Alerta de Garantía!</h2>
-                <p id="garantiaModal-mensaje"></p>
-            </div>
-        </div>
-        <!-- AVISA LAS GARANTIAS --->
-        </main>
+                <!-- AVISA LAS GARANTIAS --->
+                    <div id="garantiaModal" class="modal">
+                        <div id="garantiaModal-content" class="modal-content">
+                            <span id="garantiaModal-close" class="close">&times;</span>
+                            <h2 id="garantiaModal-titulo">¡Alerta de Garantía!</h2>
+                            <p id="garantiaModal-mensaje"></p>
+                        </div>
+                    </div>
+                <!-- AVISA LAS GARANTIAS --->
+            </main>
         </div>
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">

@@ -18,8 +18,33 @@ class consulta_rifModel extends Model
     {
         try {
             $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif); // Assuming '$this->db' is now a valid PgSql\Connection
-            $sql = "SELECT * FROM public.getdataclientbyrif(".$escaped_rif.");";     
+            $sql = "SELECT * FROM public.getdataclientbyrif('%" . substr($escaped_rif, 1, -1) . "%');";     
             $result = $this->getResult($sql, $this->db);
+            $this->db->closeConnection(); // Close the connection if needed
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function SearchSerialData($serial){
+        try {
+            $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); // Assuming '$this->db' is now a valid PgSql\Connection
+            $sql = "SELECT * FROM getdataclientbyserial('%" . substr($escaped_serial, 1, -1) . "%')";
+            $result = Model::getResult($sql, $this->db);
+            $this->db->closeConnection(); // Close the connection if needed
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function SearchRazonData($razonsocial){
+        try {
+            $escaped_razonsocial = pg_escape_literal($this->db->getConnection(), $razonsocial); // Assuming '$this->db' is now a valid PgSql\Connection
+            $sql = "SELECT * FROM getdataclientbyrazon('%" . substr($escaped_razonsocial, 1, -1) . "%')";
+            //var_dump($sql);
+            $result = Model::getResult($sql, $this->db);
             $this->db->closeConnection(); // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
@@ -31,7 +56,7 @@ class consulta_rifModel extends Model
     {
         try {
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); // Assuming '$this->db' is now a valid PgSql\Connection
-            $sql = "SELECT * FROM SearchSerial(".$escaped_serial.");";
+            $sql = "SELECT * FROM SearchSerial(".$escaped_serial.")";
             $result = Model::getResult($sql, $this->db);
             $this->db->closeConnection(); // Close the connection if needed
             return $result;

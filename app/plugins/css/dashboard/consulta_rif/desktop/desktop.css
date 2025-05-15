@@ -2,7 +2,8 @@
 
     #buscarPorRifBtn, #buscarPorSerialBtn, #buscarPorNombreBtn{
         background-color: #001f3f; /* Azul oscuro */
-        color: #ffff00; /* Amarillo */
+        color: #FFFFFF; /* Amarillo */
+        /*color: #ffff00; /* Amarillo */
         border: 2px solid #00ffff; /* Azul claro */
         border-radius: 8px; /* Bordes redondeados */
         padding: 12px 24px; /* Ajustar el relleno según sea necesario */
@@ -88,23 +89,7 @@
         margin-top: 4%;
     }
 
-    #buscarRifContainer {
-        display: flex;
-        justify-content: center; /* Centra horizontalmente */
-        align-items: center; /* Centra verticalmente */
-        margin: 20px 0; /* Añade margen superior e inferior */
-    }
-
-    #rifInput {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        margin-right: 10px;
-        width: 200px; /* Ajusta el ancho según sea necesario */
-        font-size: 16px;
-    }
-
-    #buscarRif {
+    #SearchRif button{
         padding: 10px 20px;
         background-color: #007bff; /* Color azul, puedes cambiarlo */
         color: white;
@@ -115,9 +100,26 @@
         transition: background-color 0.3s ease; /* Transición suave */
     }
 
-    #buscarRif:hover {
+    #SearchRif button:hover {
         background-color: #0056b3; /* Color más oscuro al pasar el ratón */
     }
+
+    #buscarRifContainer {
+        display: flex;
+        justify-content: center; /* Centra horizontalmente */
+        align-items: center; /* Centra verticalmente */
+        margin: 20px 0; /* Añade margen superior e inferior */
+    }
+
+    #SearchRif input{
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: 10px;
+        width: 200px; /* Ajusta el ancho según sea necesario */
+        font-size: 16px;
+    }
+
     /* Estilos generales */
     body {
         font-family: Arial, sans-serif;
@@ -168,13 +170,6 @@
         background-color: #f9f9f9;
     }
 
-    /* Estilos del input y el botón */
-    #rifInput {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        margin-right: 10px;
-    }
 
     #buscarBtn {
         padding: 10px 20px;
@@ -238,10 +233,10 @@
         color: #666;
     }
 
-    .table-responsive {
-        overflow-y: auto; /* Añade scroll vertical cuando el contenido desborda */
-        max-height: 80vh; /* O una altura máxima que consideres apropiada para la visualización inicial */
-    }
+    /*.table-responsive {
+        /*overflow-y: auto; /* Añade scroll vertical cuando el contenido desborda */
+        /*max-height: 80vh; /* O una altura máxima que consideres apropiada para la visualización inicial */
+    /*}*/
 
     #cliente{
         margin-left: 100px;

@@ -52,6 +52,49 @@ class UserRepository
         return $result;
     }
 
+
+
+    public function GetAreaUsers(){
+        $result = $this->model->GetAreaUsers();
+    
+        for ($i = 0; $i < $result['numRows']; $i++) {
+            $agente = pg_fetch_assoc($result['query'], $i);
+            $area[] = $agente;
+            //var_dump($agente);
+        }
+        return $area;
+    }
+
+        public function GetTipoUsers(){
+        $result = $this->model->GetTipoUsers();
+    
+        for ($i = 0; $i < $result['numRows']; $i++) {
+            $agente = pg_fetch_assoc($result['query'], $i);
+            $tipousers[] = $agente;
+            //var_dump($agente);
+        }
+        return $tipousers;
+    }
+
+    
+        public function GetRegionUsers(){
+        $result = $this->model->GetRegionUsers();
+    
+        for ($i = 0; $i < $result['numRows']; $i++) {
+            $agente = pg_fetch_assoc($result['query'], $i);
+            $tipousers[] = $agente;
+            //var_dump($agente);
+        }
+        return $tipousers;
+    }    
+
+    public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel){
+
+        $defaul_pass = 123456;
+        $encry_passw = sha1(md5($defaul_pass));
+
+        $result = $this->model->Guardar_Usuario($id_user, $nombreusers, $apellidousers, $encry_passw, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel);
+         }
    public function getUserPermissions($userId) {
         $permissions = [];
 
@@ -87,39 +130,15 @@ class UserRepository
         return $permissions;
     }
 
-    public function GetAreaUsers(){
-        $result = $this->model->GetAreaUsers();
-    
+    public function MostrarUsuarioEdit($idusuario){
+
+        $result = $this->model->MostrarUsuarioEdit($idusuario);
+
         for ($i = 0; $i < $result['numRows']; $i++) {
             $agente = pg_fetch_assoc($result['query'], $i);
-            $area[] = $agente;
+            $edit[] = $agente;
             //var_dump($agente);
         }
-        return $area;
-    }
-
-        public function GetTipoUsers(){
-        $result = $this->model->GetTipoUsers();
-    
-        for ($i = 0; $i < $result['numRows']; $i++) {
-            $agente = pg_fetch_assoc($result['query'], $i);
-            $tipousers[] = $agente;
-            //var_dump($agente);
-        }
-        return $tipousers;
-    }
-
-    public function Guardar_Usuario($id_user,$nombreusers, $apellidousers, $tipo_doc, $documento, $users, $correo, $area_users, $tipo_users){
-
-        $result = $this->model->Guardar_Usuario($id_user, $nombreusers, $apellidousers, $tipo_doc, $documento, $users, $correo, $area_users, $tipo_users);
-        //var_dump($result);
-        for ($i = 0; $i < $result['numRows']; $i++) {
-            $agente = pg_fetch_assoc($result['query'], $i);
-            $saveusers[] = $agente;
-            //var_dump($agente);
-        }
-        return $saveusers;
-    }
-
-    
+        return $edit;
+    }    
 }

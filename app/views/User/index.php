@@ -1,4 +1,4 @@
-<?
+<?php
 function mi_navbar() {
 
 }
@@ -19,18 +19,21 @@ function mi_navbar() {
         <!--     Fonts and icons     -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
         <!-- Nucleo Icons -->
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-icons.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-svg.css" />
+   
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/user/desktop/desktop.css" />
         <!-- CSS Files -->
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
+            <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
         <!-- Font Awesome Icons -->
       
         <!-- CSS Files -->
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
+
+        <!-- alertify -->
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.bootstrap.css" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.core.css" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.default.css" />
+
         <script>
             const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
             const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
@@ -47,6 +50,7 @@ function mi_navbar() {
             </button>
         </div>
         <?php require_once 'app/core/components/navbar/index.php'; mi_navbar();?>
+
         <main class="main-content position-relative border-radius-lg overflow-hidden bg-gray-100">
             <div class="container-fluid py-4">
                 <div id = "Row" class="row mt-4">
@@ -54,21 +58,23 @@ function mi_navbar() {
                         <div id="div_user" class="background-color">
                             <div class="col-lg-12 col-md-12 mt-4 mb-4">
                                 <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                    <strong><h5 class="text-black text-capitalize ps-3">USUARIOS</h5></strong>
+                                    <strong><h5 class="text-black text-capitalize ps-3">LISTA DE USUARIOS</h5></strong>
                                 </div>
-                            </div>         
+                            </div> 
+                                  
                             <table id="table-user" class="background-users-table">
                                 <thead>
                                     <tr>
-                                        <th>Id Usuario</th>
+                                        <th>Nº</th>
+                                        <th>id</th>
                                         <th>Nombre y Apellido</th>
                                         <th>Usuario</th>
                                         <th>Cedula</th>
-                                        <th>E-mail</th>
+                                        <th>Correo</th>
                                         <th>Estatus</th>
                                         <th>Rol</th>
                                         <th>Area</th>
-                                        <th>Tipo Usuario</th>
+                                        <th>Nivel Tecnico</th>
                                         <th>Region</th>
                                         <th>Acciones</th>
                                     </tr>
@@ -85,7 +91,206 @@ function mi_navbar() {
             </div>
         </main>
 
-        <div class="fixed-plugin">
+
+        <div class="modal fade" id="ModalAggUsers" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"
+     data-keyboard="false">
+         <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <div class="panel-heading" style="text-align: center;color:#ffffff;">
+                    <h4>Registro de usuarios</h4>
+                </div>
+            </div> 
+
+            <div class="modal-body">
+                <div class="panel-body">
+                
+                
+                <div class="row">
+                      <div class="col-md-6">
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" id="nombreuser" class="form-control" name="nombreuser" onkeypress="return soloLetras(event)">
+                      </div>
+                      <div class="col-md-6">
+                        <label for="apellido">Apellido:</label>
+                        <input type="text" id="apellidouser" class="form-control" name="apellidouser" onkeypress="return soloLetras(event)" onchange="nameUsuario()">
+                      </div>
+                </div>    
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="">Documentacion</label>
+                        <div class="input-group" style="width: 92%;">
+                          <input name="tipodoc" id="tipodoc" type="text" value="V-" class="form-control" disabled>
+                          <span class="input-group-addon"></span>
+                          <input style="width: 70%;" class="form-control" type="text" name="documento" id="documento"  maxlength="9" onkeypress="return soloNumeros(event)" >
+                        </div>
+                    </div>
+                      <div class="col-md-6">
+                        <label for="usuario">Usuario:</label>
+                        <input type="text" id="usuario" class="form-control" name="usuario" disabled onchange="nameUsuario()"> 
+                      </div>
+                </div>  
+
+                <div class="row">
+                      
+                      <div class="col-md-6">
+                        <label for="email">Correo:</label>
+                            <input type="text" id="email" class="form-control" name="email" onchange="validarEmail(this)">
+                            <span class="alert-danger" id="resultcorreo"></span>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="area">Area:</label>
+                        <div id="AreaUsersContainer">
+                            <select id="areausers" name="areausers"></select>
+                            <p id="rifMensaje1"></p>
+                        </div>
+                      </div>
+                </div>    
+                <br>
+                <div class="row">
+                      <div class="col-md-6">
+                        <label for="apellido">Region:</label>
+                       <div id="TipoUsersContainer">
+                            <select id="regionusers" name="regionusers"></select>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="apellido">Tipo Usuario:</label>
+                       <div id="TipoUsersContainer">
+                            <select id="tipousers" name="tipousers" onchange="levelTecnico()"></select>
+                        </div>
+                      </div>
+                </div>  
+                <br> 
+                <div class="row">
+                      <div class="col-md-6" id="nivel" style="display: none;">
+                        <label for="apellido">Nivel Técnico:</label>
+                       <div id="TipoUsersContainer">
+                            <select name="select" name="idnivel" id="idnivel">
+                              <option value="3" selected>Seleccione</option>
+                              <option value="1">Nivel 1</option>
+                              <option value="2">Nivel 2</option>
+                            </select>
+                        </div>
+                      </div>
+                      <input name="id_user" id="id_user" type="hidden" value="<?php echo $_SESSION['id_user']?>">
+                </div>  
+            </div> 
+          </div>   
+          <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarUsers">Guardar</button>
+            </div>
+        </div>
+    </div>
+   </div>
+
+
+
+    <div class="modal fade" id="ModalEditUsers" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"
+     data-keyboard="false">
+         <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <div class="panel-heading" style="text-align: center;color:#ffffff;">
+                    <h4>Editar usuarios</h4>
+                </div>
+            </div> 
+
+            <div class="modal-body">
+                <div class="panel-body">
+                
+                <input type="text" id="id_user" class="form-control" name="editnombreuser" style="display: none">
+                <div class="row">
+                      <div class="col-md-6">
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" id="edit_nombreuser" class="form-control" name="edit_nombreuser" onkeypress="return soloLetras(event)" style="text-transform:uppercase; color:#000000;" onkeyup="javascript:this.value=this.value.toUpperCase();">
+                      </div>
+                      <div class="col-md-6">
+                        <label for="apellido">Apellido:</label>
+                        <input type="text" id="edit_apellidouser" class="form-control" name="edit_apellidouser" onkeypress="return soloLetras(event)" onchange="nameUsuario()" style="text-transform:uppercase; color:#000000;" onkeyup="javascript:this.value=this.value.toUpperCase();">
+                      </div>
+
+                </div>    
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="">Documentacion</label>
+                        <div class="input-group" style="width: 92%;">
+                          <input name="tipodoc" id="tipodoc" type="text" value="V-" class="form-control" disabled>
+                          <span class="input-group-addon"></span>
+                          <input style="width: 70%;" class="form-control" type="text" name="edit_documento" id="edit_documento"  maxlength="9" onkeypress="return soloNumeros(event)" >
+                        </div>
+                    </div>
+                      <div class="col-md-6">
+                        <label for="usuario">Usuario:</label>
+                        <input type="text" id="edit_usuario" class="form-control" name="editusuario" disabled onchange="nameUsuario()"> 
+                      </div>
+                </div>  
+
+                <div class="row">
+                      
+                      <div class="col-md-6">
+                        <label for="email">Correo:</label>
+                            <input type="text" id="edit_email" class="form-control" name="edit_email" onchange="validarEmail(this)" style="text-transform:uppercase; color:#000000;" onkeyup="javascript:this.value=this.value.toUpperCase();">
+                            <span class="alert-danger" id="resultcorreo"></span>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="area">Area:</label>
+                        <div id="AreaUsersContainer">
+                            <select id="edit_areausers" name="edit_areausers"></select>
+                            <p id="rifMensaje1"></p>
+                        </div>
+                      </div>
+                </div>    
+                <br>
+                <div class="row">
+                      <div class="col-md-6">
+                        <label for="apellido">Region:</label>
+                       <div id="TipoUsersContainer">
+                            <select id="edit_regionusers" name="edit_regionusers"></select>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="apellido">Tipo Usuario:</label>
+                       <div id="TipoUsersContainer">
+                            <select id="edit_tipousers" name="edit_tipousers" onchange="levelTecnico()"></select>
+                        </div>
+                      </div>
+                </div>  
+                <br> 
+                <div class="row">
+                      <div class="col-md-6" id="nivel" style="display: none;">
+                        <label for="apellido">Nivel Técnico:</label>
+                       <div id="TipoUsersContainer">
+                            <select name="select" name="edit_idnivel" id="edit_idnivel">
+                              <option value="3" selected>Seleccione</option>
+                              <option value="1">Nivel 1</option>
+                              <option value="2">Nivel 2</option>
+                            </select>
+                        </div>
+                      </div>
+                      
+                </div>   
+                <input name="id_user" id="id_user" type="hidden" value="<?php echo $_SESSION['id_user']?>">
+            </div> 
+          </div>   
+          <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarUsers">Guardar</button>
+            </div>
+        </div>
+    </div>
+   </div>
+
+        <!-- <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
                 <i class="fa fa-cog py-2"> </i>
             </a>
@@ -100,11 +305,9 @@ function mi_navbar() {
                             <i class="fa fa-close"></i>
                         </button>
                     </div>
-                    <!-- End Toggle Button -->
                 </div>
                 <hr class="horizontal dark my-1">
                 <div class="card-body pt-sm-3 pt-0 overflow-auto">
-                    <!-- Sidebar Backgrounds -->
                     <div>
                         <h6 class="mb-0">Sidebar Colors</h6>
                     </div>
@@ -124,7 +327,6 @@ function mi_navbar() {
                                 onclick="sidebarColor(this)"></span>
                         </div>
                     </a>
-                    <!-- Sidenav Type -->
                     <div class="mt-3">
                         <h6 class="mb-0">Sidenav Type</h6>
                         <p class="text-sm">Choose between 2 different sidenav types.</p>
@@ -136,7 +338,7 @@ function mi_navbar() {
                             onclick="sidebarType(this)">Dark</button>
                     </div>
                     <p class="text-sm d-xl-none d-block mt-2">You can change the sidenav type just on desktop view.</p>
-                    <!-- Navbar Fixed -->
+                  
                     <div class="d-flex my-3">
                         <h6 class="mb-0">Navbar Fixed</h6>
                         <div class="form-check form-switch ps-0 ms-auto my-auto">
@@ -173,7 +375,7 @@ function mi_navbar() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
         
          <!-- Github buttons -->
          <script async defer src="https://buttons.github.io/buttons.js"></script>
@@ -201,6 +403,27 @@ function mi_navbar() {
         <script src = "<?php echo APP;?>app/plugins/datatables/datatables.min.js"></script>
         <script src = "<?php echo APP;?>app/plugins/datatables/datatables.js"></script>
 
+        <!-- Datatable otro sistema-->
+        <script src = "<?php echo APP;?>js/jquery.dataTables.js"></script>
+        <script src = "<?php echo APP;?>DataTable/dataTables.bootstrap.js"></script>
+        <script src = "<?php echo APP;?>DataTable/jquery.dataTables.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/dataTables.buttons.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.print.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.flash.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/pdfmake.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/jszip.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/vfs_fonts.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.html5.min.js"></script>
+
+
+         <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
+         <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
+         <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
+         <script src = "<?php echo APP;?>js/datatables.js"></script>
+
+
+
+
         <!-- Chart -->
         <script src="<?php echo APP;?>app/plugins/chart.js/chart.js"></script>
         <script src="<?php echo APP;?>app/plugins/chart.js/chart.min.js"></script>
@@ -208,6 +431,12 @@ function mi_navbar() {
         <!--  SweetAlert   -->
         <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.js"></script>
         <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
+
+        <!--  Alertify   --> 
+        <script src="<?php echo APP;?>app/plugins/alertify/lib/alertify.js"></script>
+        <script src="<?php echo APP;?>app/plugins/alertify/lib/alertify.min.js"></script>
+        <script src="<?php echo APP;?>app/plugins/alertify/src/alertify.js"></script>
+
 
         <!--MASCARAS JQUERY-->
         <script src = "<?php echo APP;?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
@@ -217,12 +446,12 @@ function mi_navbar() {
 
         
         <?php
-            if (isset($this->js)){
-                foreach ($this->js as $js){
-                    echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'"></script>'; 
-                }
-            }
-        ?>
+    if (isset($this->js)){
+      foreach ($this->js as $js){
+        echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'"></script>'; 
+      }
+    }
+  ?>
     <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
     <?php
         $expired_sessions = json_encode($this->expired_sessions);

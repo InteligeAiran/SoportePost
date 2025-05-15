@@ -52,18 +52,67 @@ class userModel extends Model{
         }catch(Throwable $e){
 
         }
-    }
+    }   
 
-    public function getUserPermission($userId, $viewName) {
+        public function GetAreaUsers(){
+        try{
+            $sql = "SELECT * FROM sp_verareasusers()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }    
+
+        public function GetTipoUsers(){
+        try{
+            $sql = "SELECT * FROM sp_vertiposusers()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }    
+
+
+        public function GetRegionUsers(){
+        try{
+            $sql = "SELECT * FROM sp_verregionusers()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }         
+
+
+        public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $encry_passw, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel){
         try {
-            $escapedUserId = pg_escape_literal($this->db->getConnection(), $userId);
-            $escapedViewName = pg_escape_literal($this->db->getConnection(), $viewName);
+            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+            $escaped_nombreusers = pg_escape_literal($this->db->getConnection(), $nombreusers);
+            $escaped_apellidousers = pg_escape_literal($this->db->getConnection(), $apellidousers);
+            $escaped_encry_passw = pg_escape_literal($this->db->getConnection(), $encry_passw);
+            $escaped_identificacion = pg_escape_literal($this->db->getConnection(), $identificacion);
+            $escaped_users = pg_escape_literal($this->db->getConnection(), $users);
+            $escaped_correo = pg_escape_literal($this->db->getConnection(), $correo);
+            $escaped_area_users = pg_escape_literal($this->db->getConnection(), $area_users);
+            $escaped_tipo_users = pg_escape_literal($this->db->getConnection(), $tipo_users);
+            $escaped_regionusers = pg_escape_literal($this->db->getConnection(), $regionusers);
+            $escaped_id_nivel = pg_escape_literal($this->db->getConnection(), $id_nivel);
 
-            $sql = "SELECT getuserpermissionfunction(" . $escapedUserId . ", " . $escapedViewName . ")";
-            $result = Model::getResult($sql, $this->db); // Obtienes el array de getResult
-            //var_dump($sql); // Muestra el resultado del query
-            return $result; // Devuelve el resultado completo
-
+    
+            $sql = "SELECT * FROM sp_guardarusuarios(".$escaped_id_user.", ".$escaped_nombreusers.", ".$escaped_apellidousers.", ".$escaped_encry_passw.",
+                    ".$escaped_identificacion.", ".$escaped_users.", ".$escaped_correo.",".$escaped_area_users.",".$escaped_tipo_users.", ".$escaped_regionusers.", ".$escaped_id_nivel.")";
+            $result = $this->db->pgquery($sql);
+            var_dump($sql);
+    
+/*            if($result){
+                $sqlFailure = "SELECT InsertTicketFailure(".$escaped_descripcion.");";
+                $resultFailure = $this->db->pgquery($sqlFailure);
+                return array('save_result' => $result, 'failure_result' => $resultFailure);
+            } else {
+                return $result;
+            }*/
         } catch (Throwable $e) {
             error_log("Error al obtener permisos del usuario: " . $e->getMessage());
             return ['success' => false, 'error' => 'Error al obtener permisos'];
@@ -79,5 +128,16 @@ class userModel extends Model{
             // Handle exception
         }
     }
+
+    public function MostrarUsuarioEdit($id_user){
+        try{
+            $sql = "SELECT * FROM sp_mostrarusuarios(".$id_user.")";
+           // var_dump($sql);
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        }catch(Throwable $e){
+
+        }
+    }   
 }   
 ?>
