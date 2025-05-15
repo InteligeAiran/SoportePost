@@ -63,6 +63,11 @@ document.addEventListener('DOMContentLoaded', function() {
     setActiveLink('rif-link', 'consulta_rif');
     setActiveLink('estadisticas-link', 'pages/profile.html');
 
+    setActiveLink('assignment-ticket', 'asignar_tecnico');
+    setActiveLink('tecnico', 'tecnico');
+    setActiveLink('gestion_users', 'gestionusers');
+    setActiveLink('estadisticas-link', 'pages/profile.html');
+
     // **CÓDIGO PARA OBTENER EL userId**
     // const userId = localStorage.getItem('userId');
     // if (userId) {

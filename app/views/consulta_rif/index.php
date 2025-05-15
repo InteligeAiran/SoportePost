@@ -6,7 +6,6 @@ function mi_navbar()
 ?>
 <!DOCTYPE html>
 <lang="en">
-
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -30,29 +29,29 @@ function mi_navbar()
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
         <style>
-    #rifTipo {
-    width: auto;
-    max-width: 80px;
-    padding: 0.5rem 0.75rem;
-    font-size: 1rem;
-    height: auto;
-    -webkit-appearance: none; /* Elimina la apariencia nativa en navegadores WebKit */
-    -moz-appearance: none; /* Elimina la apariencia nativa en Firefox */
-    appearance: none; /* Elimina la apariencia nativa en otros navegadores */
-    background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 0.5rem center;
-    background-size: 1em;
-    border-radius: 0.25rem; /* Mantén o ajusta el radio del borde */
-    border: 1px solid #ced4da; /* Mantén o ajusta el color del borde */
-    color: #495057; /* Mantén o ajusta el color del texto */
-}
+            #rifTipo {
+                width: auto;
+                max-width: 80px;
+                padding: 0.5rem 0.75rem;
+                font-size: 1rem;
+                height: auto;
+                -webkit-appearance: none; /* Elimina la apariencia nativa en navegadores WebKit */
+                -moz-appearance: none; /* Elimina la apariencia nativa en Firefox */
+                appearance: none; /* Elimina la apariencia nativa en otros navegadores */
+                background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>');
+                background-repeat: no-repeat;
+                background-position: right 0.5rem center;
+                background-size: 1em;
+                border-radius: 0.25rem; /* Mantén o ajusta el radio del borde */
+                border: 1px solid #ced4da; /* Mantén o ajusta el color del borde */
+                color: #495057; /* Mantén o ajusta el color del texto */
+            }
 
-/* Opcional: Para eliminar el espaciado extra en algunos navegadores */
-#rifTipo::-ms-expand {
-    display: none;
-}
-</style>
+            /* Opcional: Para eliminar el espaciado extra en algunos navegadores */
+            #rifTipo::-ms-expand {
+                display: none;
+            }
+        </style>
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">

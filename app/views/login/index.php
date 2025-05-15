@@ -21,7 +21,7 @@
 
   <!-------------------------------- LOGIN 2 ---------------------------------->
     <video autoplay loop muted class="logo">
-      <source src="<?php echo APP;?>app/public/img/login/SoportePostLogo.mp4" type="video/mp4">
+      <source src="<?php echo APP;?>app/public/img/login/Soporte-Post Venta (5).mp4" type="video/mp4">
     </video>
   <!--------------------------------------------------------------------------->
 

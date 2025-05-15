@@ -775,7 +775,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Error: No se encontraron el botón o la tabla.'); // Para verificar si los elementos se seleccionan
     }
 
-
     if (buscarPorRifBtn && rifCountTableCard) {
         buscarPorRifBtn.addEventListener('click', function() {
             rifCountTableCard.style.display = 'block'; // Muestra la tabla
@@ -792,8 +791,6 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.log('Error: No se encontraron el botón o la tabla.'); // Para verificar si los elementos se seleccionan
     }
-
-
 
     if (buscarPorSerialBtn && serialCountTableCard) {
         buscarPorSerialBtn.addEventListener('click', function() {

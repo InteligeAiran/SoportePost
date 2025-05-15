@@ -1,6 +1,6 @@
 @media (max-width: 2500px) AND (min-width: 1050px) AND (max-height: 1050px) AND (min-height: 400px){
 
-    #buscarPorRifBtn, #buscarPorSerialBtn, #buscarPorNombreBtn{
+    #buscarPorRifBtn, #buscarPorSerialBtn, #buscarPorNombreBtn, #buscarPorRangoBtn{
         background-color: #001f3f; /* Azul oscuro */
         color: #FFFFFF; /* Amarillo */
         /*color: #ffff00; /* Amarillo */
@@ -22,6 +22,12 @@
         box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
         transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
     }
+
+    #buscarPorRangoBtn:hover{
+        box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
+        transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    }
+
 
     #buscarPorSerialBtn:hover{
         box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
@@ -218,7 +224,7 @@
     /* Estilo de los botones deshabilitados */
     .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
         opacity: 0.5;
-        cursor: not-allowed;
+        /*cursor: not-allowed;*/
     }
 
     /* Estilo al pasar el ratón por encima de los botones */
@@ -232,6 +238,7 @@
         margin-top: 5px;
         color: #666;
     }
+
 
     /*.table-responsive {
         /*overflow-y: auto; /* Añade scroll vertical cuando el contenido desborda */

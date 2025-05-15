@@ -94,14 +94,14 @@ function getUserData() {
     //xhr.open('POST', 'http://localhost/SoportePost/api/GetTipoUsers'); // Asi estaba antes de cambiarlo
     
     //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-    const tbody = document.getElementById('table-user').getElementsByTagName('tbody')[0];
+    const tbody = document.getElementById('table-ticket-body');
     
     // Limpia la tabla ANTES de la nueva búsqueda
     tbody.innerHTML = '';
 
     // Destruye DataTables si ya está inicializado
-    if ($.fn.DataTable.isDataTable('#table-user-bod')) {
-        $('#table-user-bod').DataTable().destroy();
+    if ($.fn.DataTable.isDataTable('#tabla-ticket')) {
+        $('#tabla-ticket').DataTable().destroy();
     }
 
     // Limpia la tabla usando removeChild
@@ -160,10 +160,10 @@ function getUserData() {
 
 
                     // Inicialización de DataTables
-                    if ($.fn.DataTable.isDataTable('#table-user')) {
-                        $('#table-user').DataTable().destroy();
+                    if ($.fn.DataTable.isDataTable('#tabla-ticket')) {
+                        $('#tabla-ticket').DataTable().destroy();
                     }
-                    $('#table-user').DataTable({
+                    $('#tabla-ticket').DataTable({
                        
                             
                         responsive: true,
@@ -195,7 +195,7 @@ function getUserData() {
                         }
                         ]
                     });
-                    $('#table-user').resizableColumns();
+                    $('#tabla-ticket').resizableColumns();
 
                 } else {
                     tbody.innerHTML = '<tr><td colspan="11">Error al cargar</td></tr>';
@@ -221,9 +221,6 @@ function getUserData() {
 }
 
 document.addEventListener('DOMContentLoaded', getUserData);
-
-
-
 
 
 // Funcion para mostrar las area para crear usuarios 
