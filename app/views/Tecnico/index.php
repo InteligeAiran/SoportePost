@@ -37,7 +37,7 @@ function mi_navbar() {
                 border-radius: 5px; /* Ejemplo: Bordes redondeados */
                 padding: 5px 10px; /* Ejemplo: Espaciado interno */
                 font-size: 0.9em; /* Ejemplo: Tamaño de la fuente */
-                width: 18%;
+                width: 29%;
             }
 
             /* Estilizar el label "Buscar:" */
@@ -45,7 +45,7 @@ function mi_navbar() {
                 font-weight: bold; /* Ejemplo: Texto en negrita */
                 color: #333; /* Ejemplo: Color del texto */
                 margin-right: 0.5em; /* Ejemplo: Espacio a la derecha del label */
-                    margin-left: -100%;
+                margin-left: -100%;
             }
 
             /* Estilizar el input de búsqueda */

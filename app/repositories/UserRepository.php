@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Repositories; // Usar namespaces para organizar tus clases
 require_once __DIR__. '/../models/userModel.php'; // Asegúrate de que el modelo de usuario esté incluido
 use userModel; // Asegúrate de que tu modelo de usuario exista

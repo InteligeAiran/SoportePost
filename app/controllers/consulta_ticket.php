@@ -13,6 +13,7 @@ class consulta_ticket extends Controller {
 
     public function index(): void {
         Model::exists('consulta_rif');
+        Model::exists('reports');
 
         // Agregar sessionLifetime a la respuesta
         if (isset($_SESSION['session_lifetime'])) {

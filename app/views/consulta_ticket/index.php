@@ -20,17 +20,16 @@ function mi_navbar()
         <!-- Nucleo Icons -->
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/desktop/desktop.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/desktop/form.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/mobile/mobile.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/laptop/laptop.css" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/General.css" />
+
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
         <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/flatpickr-4.6.13/dist/flatpickr.min.css">
-
-
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/dataTables.min.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/datatable.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/bootstrap.css"/>
         <style>
             #rifTipo {
                 width: auto;
@@ -54,6 +53,90 @@ function mi_navbar()
             #rifTipo::-ms-expand {
                 display: none;
             }
+            
+            div.dataTables_wrapper div.dataTables_length label {
+                font-weight: bold; /* Ejemplo: Texto en negrita */
+                color: #333; /* Ejemplo: Color del texto */
+                margin-right: 10px; /* Ejemplo: Espacio a la derecha del label */
+                margin-top: 23px;
+            }
+
+            /* Estilizar el select dropdown del lengthMenu */
+            div.dataTables_wrapper div.dataTables_length select {
+                border: 1px solid #ccc; /* Ejemplo: Borde */
+                border-radius: 5px; /* Ejemplo: Bordes redondeados */
+                padding: 5px 10px; /* Ejemplo: Espaciado interno */
+                font-size: 0.9em; /* Ejemplo: Tamaño de la fuente */
+                width: 29%;
+            }
+
+            /* Estilizar el label "Buscar:" */
+            div.dataTables_wrapper div.dataTables_filter label {
+                font-weight: bold; /* Ejemplo: Texto en negrita */
+                color: #333; /* Ejemplo: Color del texto */
+                margin-right: 0.5em; /* Ejemplo: Espacio a la derecha del label */
+                margin-left: -100%;
+            }
+
+            /* Estilizar el input de búsqueda */
+            div.dataTables_wrapper div.dataTables_filter input[type="search"] {
+                border: 1px solid #ccc; /* Ejemplo: Borde */
+                border-radius: 0.25rem; /* Ejemplo: Bordes redondeados */
+                padding: 0.375rem 0.75rem; /* Ejemplo: Espaciado interno */
+                font-size: 1rem; /* Ejemplo: Tamaño de la fuente */
+                color: #495057; /* Ejemplo: Color del texto del input */
+                background-color: #fff; /* Ejemplo: Color de fondo del input */
+                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* Ejemplo: Transiciones suaves */
+                margin-top: 18px;
+            }
+
+            /* Estilizar el input de búsqueda al enfocarlo */
+            div.dataTables_wrapper div.dataTables_filter input[type="search"]:focus {
+                color: #495057;
+                background-color: #fff;
+                border-color: #007bff; /* Ejemplo: Color del borde al enfocar */
+                outline: 0;
+                box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Ejemplo: Sombra al enfocar */
+            }
+
+            #rifCountTable {
+                width: 100% !important;
+            }
+
+            #rifCountTable th,
+            #rifCountTable td {
+                white-space: nowrap;
+                overflow: hidden;
+               /* max-width: 150px; /* ajusta este valor según tus necesidades */
+            }
+
+            .dataTables_wrapper {
+                width: 100%;
+                overflow-x: auto;
+            }
+
+            .dataTables_scrollBody {
+                overflow-x: auto;
+                overflow-y: auto;
+                border-bottom: 1px solid #ddd;
+            }
+
+            /* Estilos para columnas específicas si es necesario */
+            #rifCountTable th:nth-child(1),
+            #rifCountTable td:nth-child(1) {
+                min-width: 50px; /* ID Ticket */
+            }
+
+            #rifCountTable th:nth-child(2),
+            #rifCountTable td:nth-child(2) {
+                min-width: 100px; /* Create Ticket */
+            }
+            /* Añade más estilos específicos para otras columnas según sea necesario */
+
+            #rifCountTable tbody tr {
+                margin-bottom: 5px; /* Ajusta este valor según necesites */
+                }
+
         </style>
     </head>
 
@@ -82,20 +165,20 @@ function mi_navbar()
                                 <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorRangoBtn">Buscar por Rango de Fecha</button>
                                 <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
                                 <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
-                                <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRifBtn">Buscar Por Region</button>
+                                <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRegionsBtn">Buscar Por Region</button>
                             </div>
                             <div id="SearchRif" class="mb-3 d-flex align-items-center">
 
                                 <div class="d-flex align-items-center">
-                                        <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none;">     
-                                            <option value="J">J</option>
-                                            <option value="V" selected>V</option>
-                                            <option value="E">E</option>
-                                            <option value="G">G</option>
-                                        </select>
-                                        <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
-                                        <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;  margin-top: 15px;">Buscar</button><br>
-                                    </div>
+                                    <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none;">     
+                                        <option value="J">J</option>
+                                        <option value="V" selected>V</option>
+                                        <option value="E">E</option>
+                                        <option value="G">G</option>
+                                    </select>
+                                    <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
+                                    <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;  margin-top: 15px;">Buscar</button><br>
+                                </div>
 
                                 <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none;" maxlength="24">
                                 <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none; margin-top: 15px;">Buscar</button>
@@ -110,36 +193,20 @@ function mi_navbar()
                                 </div>
 
                                 <div class="d-flex align-items-center">
-                                    <select class="form-select" multiple aria-label="Multiple select example" style="display: none;">
-                                        <option value="1">One</option>
-                                        <option value="2">Two</option>
-                                        <option value="3">Three</option>
+                                    <select id="SelectRgions" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
                                     </select>
-                                    <button type="button" class="btn btn-primary" onclick="SendRango()" id="buscarRango" style="display: none; margin-top: 19px;">Buscar</button>
+                                    <button type="button" class="btn btn-primary" onclick="SendRegions()" id="buscarRegions" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
                                 </div>
 
                             </div><br>
                             <div class="card" style="display: none;">
                                 <div class="table-responsive">
-                                    <table id="rifCountTable">
+                                    <table id="rifCountTable" class="table table-striped table-bordered table-hover table-sm">
                                         <thead>
-                                            <tr>
-                                                <th style="width: 5%; height: 10px;">ID cliente</th>
-                                                <th style="width: 10%;">Raz&oacuten Social</th>
-                                                <th style="width: 5%;">RIF</th>
-                                                <th style="width: 5%;">Modelo POS</th>
-                                                <th style="width: 5%;">serial POS</th>
-                                                <th style="width: 5%;">Nr Afiliaci&oacuten</th>
-                                                <th style="width: 5%;">Fecha Instalaci&oacuten</th>
-                                                <th style="width: 5%;">Banco</th>
-                                                <th style="width: 5%;">Direcci&oacuten Instalaci&oacuten</th>
-                                                <th style="width: 5%;">Estado</th>
-                                                <th style="width: 5%;">Municipio</th>
-                                            </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td colspan="3">No hay datos</td>
+                                                <td colspan="15">No hay datos</td>
                                             </tr>
                                         </tbody>
                                     </table>
