@@ -207,6 +207,7 @@ function mi_navbar() {
             <div class="modal-body">
                 <div class="panel-body">
                 
+                <input type="hidden" id="idusuario_edit" class="form-control" name="idusuario_edit">
                 <input type="text" id="id_user" class="form-control" name="editnombreuser" style="display: none">
                 <div class="row">
                       <div class="col-md-6">
@@ -284,7 +285,7 @@ function mi_navbar() {
           </div>   
           <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" id="btnGuardarUsers">Guardar</button>
+                <button type="button" class="btn btn-primary" id="btnEditarUsers">Guardar</button>
             </div>
         </div>
     </div>

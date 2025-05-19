@@ -427,15 +427,11 @@ function GuardarUsuariosNew() {
 
     const identificacion=tipo_doc+documento;
 
-//console.log(regionusers);
     // Validaciones generales
     if (!nombre_usuario && !apellido_usuario && !documento && !correo && !area_usuario && !tipo_usuario && !regionusers) {
         alertify.error('Los campos no pueden estar vacios')
         return;
     }
-
-
-    //alert(nombre_usuario + apellido_usuario + iusuario + identificacion + correo + area_usuario + tipo_usuario + regionusers + id_nivel);
 
 
     // Agregar datos al formData
@@ -455,12 +451,6 @@ function GuardarUsuariosNew() {
 
 
     formData.append('action', 'GuardarUsuarios');
-
-    // Depuración
-    /*for (const [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-    }
-    console.log(formData);*/
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', 'http://localhost:8080/SoportePost/api/GuardarUsuarios');
@@ -507,52 +497,218 @@ function GuardarUsuariosNew() {
 
 }
 
+function VerUsuario(idusuario) {
+    const xhrUsuario = new XMLHttpRequest();
+    xhrUsuario.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetMostrarUsuarioEdit`);
+    xhrUsuario.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-function VerUsuario(idusuario){
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetMostrarUsuarioEdit`);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    
-    const tbody = document.getElementById('table-user').getElementsByTagName('tbody')[0];
-    //tbody.innerHTML = '';
+    // const selectAreas = document.getElementById('edit_areausers');
+    // selectAreas.innerHTML = '';
 
-    //  while (tbody.firstChild) {
-    //     tbody.removeChild(tbody.firstChild);
-    // }
+    xhrUsuario.onload = function() {
+        const responseUsuario = JSON.parse(xhrUsuario.responseText);
+        if (responseUsuario.success && responseUsuario.users && Array.isArray(responseUsuario.users) && responseUsuario.users.length > 0) {
+            const userData = responseUsuario.users[0];
+            
+            $("#idusuario_edit").val(userData.id_usuario);
+            $("#edit_nombreuser").val(userData.inombre);
+            $("#edit_apellidouser").val(userData.iapellido);
+            $("#edit_documento").val(userData.documentoo);
+            $("#edit_usuario").val(userData.usuario);
+            $("#edit_email").val(userData.correo);
+            $("#edit_regionusers").val(userData.idreg);
+            $("#edit_tipousers").val(userData.name_rol);
+            $("#edit_idnivel").val(userData.inombre);
 
-    const iidusuario=idusuario;
-    const id_userInput = idusuario;
+            obtenerAreas(userData.iid_area);
+            obtenerRegion(userData.idreg);
+            obtenerRol(userData.idrol);
+        } else {
+            console.error("Error al obtener la información del usuario o el formato de la respuesta es incorrecto:", responseUsuario);
+            // Aquí podrías añadir lógica para manejar el error, como mostrar un mensaje al usuario
+        }
+    };
 
-    // Asigna el valor de 'iidusuario' a la propiedad 'value' del elemento
-    if (id_userInput) {
-      id_userInput.value = iidusuario;
-        xhr.onload = function() {
-            const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                    const userData = response.users; // Cambia el nombre de la variable aquí
+    const id_user = idusuario;
+    const datosUsuario = `action=GetMostrarUsuarioEdit&id_user=${encodeURIComponent(id_user)}`;
+    xhrUsuario.send(datosUsuario);
+}
 
-                    userData.forEach(data => { // Usa un nombre diferente para el elemento individual
-                        console.log(data.name_area);
-                        const row = tbody.insertRow();
-                        $("#edit_nombreuser").val(data.inombre); // Accede a las propiedades del 'item'
-                        $("#edit_apellidouser").val(data.iapellido); // Accede a las propiedades del 'item'
-                        $("#edit_documento").val(data.documentoo); // Accede a las propiedades del 'item'
-                        $("#edit_usuario").val(data.usuario); // Accede a las propiedades del 'item'
-                        $("#edit_email").val(data.correo); // Accede a las propiedades del 'item'
-                        $("select#edit_areausers").val(data.name_area); // Accede a las propiedades del 'item'
-                        $("#edit_regionusers").val(data.idreg); // Accede a las propiedades del 'item'
-                        $("#edit_tipousers").val(data.name_rol); // Accede a las propiedades del 'item'
-                        $("#edit_idnivel").val(data.inombre); // Accede a las propiedades del 'item'
-                    });
-                }          
-           };
-        const id_user = idusuario;
+function obtenerAreas(idAreaSeleccionada) {
+    const xhrAreas = new XMLHttpRequest();
+    xhrAreas.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetAreaUsers`); // Cambié a GET
+    xhrAreas.onload = function() {
+        const responseAreas = JSON.parse(xhrAreas.responseText);
+        //console.log('Respuesta de GetAreaUsers:', responseAreas); // Agregué un log para inspeccionar la respuesta
+        if (responseAreas.success && responseAreas.area && Array.isArray(responseAreas.area)) {
+            const listaDeAreas = responseAreas.area; // Cambié el nombre para claridad
 
-    const datos = `action=GetMostrarUsuarioEdit&id_user=${encodeURIComponent(id_user)}`;
-    xhr.send(datos);
-    } else {
-      console.error("No se encontró ningún elemento con el ID 'id_user'");
+            const selectAreas = document.getElementById('edit_areausers');
+
+            listaDeAreas.forEach(area => {
+                const option = document.createElement('option');
+                option.value = area.idarea; // Usando el nombre de propiedad del backend
+                option.textContent = area.desc_area; // Usando el nombre de propiedad del backend
+                if (area.idarea == idAreaSeleccionada) { // Comparando con el ID del backend
+                    option.selected = true;
+                    //console.log('Opción seleccionada:', area.desc_area); // Para verificar si se selecciona alguna
+                }
+                selectAreas.appendChild(option);
+            });
+        } else {
+            console.error("Error al obtener la lista de áreas o el formato de la respuesta es incorrecto:", responseAreas);
+        }
+    };
+    xhrAreas.send();
+}
+
+
+function obtenerRegion(idRegionSelect) {
+    const xhrRegion = new XMLHttpRequest();
+    xhrRegion.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetRegionUsers`); // Cambié a GET
+    xhrRegion.onload = function() {
+        const responseRegion = JSON.parse(xhrRegion.responseText);
+        //console.log('Respuesta de GetRegionUsers:', responseRegion); // Agregué un log para inspeccionar la respuesta
+        if (responseRegion.success && responseRegion.regionusers && Array.isArray(responseRegion.regionusers)) {
+            const listaDeAreas = responseRegion.regionusers; // Cambié el nombre para claridad
+
+            const selectRegion = document.getElementById('edit_regionusers');
+
+            listaDeAreas.forEach(regionusers => {
+                const option = document.createElement('option');
+                option.value = regionusers.idreg; // Usando el nombre de propiedad del backend
+                option.textContent = regionusers.desc_reg; // Usando el nombre de propiedad del backend
+                if (regionusers.idreg == idRegionSelect) { // Comparando con el ID del backend
+                    option.selected = true;
+                    //console.log('Opción seleccionada:', regionusers.desc_reg); // Para verificar si se selecciona alguna
+                }
+                selectRegion.appendChild(option);
+            });
+        } else {
+            console.error("Error al obtener la lista de regiones o el formato de la respuesta es incorrecto:", responseRegion);
+        }
+    };
+    xhrRegion.send();
+}
+
+
+function obtenerRol(idTipoUserSelect) {
+    const xhrTipoU = new XMLHttpRequest();
+    xhrTipoU.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetTipoUsers`); // Cambié a GET
+    xhrTipoU.onload = function() {
+        const responseTipoU = JSON.parse(xhrTipoU.responseText);
+        //console.log('Respuesta de GetTipoUsers:', responseTipoU); // Agregué un log para inspeccionar la respuesta
+        if (responseTipoU.success && responseTipoU.tipousers && Array.isArray(responseTipoU.tipousers)) {
+            const listaTipoU = responseTipoU.tipousers; // Cambié el nombre para claridad
+
+            const selectTipoU = document.getElementById('edit_tipousers');
+
+            listaTipoU.forEach(tipousers => {
+                const option = document.createElement('option');
+                option.value = tipousers.idtipo; // Usando el nombre de propiedad del backend
+                option.textContent = tipousers.desc_tipo; // Usando el nombre de propiedad del backend
+                if (tipousers.idtipo == idTipoUserSelect) { // Comparando con el ID del backend
+                    option.selected = true;
+                    //console.log('Opción seleccionada:', tipousers.desc_tipo); // Para verificar si se selecciona alguna
+                }
+                selectTipoU.appendChild(option);
+            });
+        } else {
+            console.error("Error al obtener la lista de tipo de usuarios o el formato de la respuesta es incorrecto:", responseTipoU);
+        }
+    };
+    xhrTipoU.send();
+}
+
+
+
+document.getElementById('btnEditarUsers').addEventListener('click', function() {
+    EditarUsuarios();
+});
+
+
+function EditarUsuarios() {
+    const idusuario_edit = document.getElementById('idusuario_edit').value;
+    const nombre_usuario = document.getElementById('edit_nombreuser').value;
+    const apellido_usuario = document.getElementById('edit_apellidouser').value;
+    //const tipo_doc = document.getElementById('tipodoc').value;
+    const documento = document.getElementById('edit_documento').value;
+    const iusuario = document.getElementById('edit_usuario').value;
+    const correo = document.getElementById('edit_email').value;
+    const area_usuario = document.getElementById('edit_areausers').value;
+    const regionusers = document.getElementById('edit_regionusers').value;
+    const tipo_usuario = document.getElementById('edit_tipousers').value;
+    //const id_nivel = document.getElementById('idnivel').value;
+    const usuariocarga = document.getElementById('id_user').value
+
+    //alert(nombre_usuario +'/'+ apellido_usuario +'/'+ iusuario +'/'+ documento +'/'+ correo +'/'+ area_usuario +'/'+ tipo_usuario +'/'+ regionusers);
+
+
+    // // Agregar datos al formData
+    const formData = new FormData();
+    formData.append('idusuario_edit', idusuario_edit);
+    formData.append('edit_nombreuser', nombre_usuario);
+    formData.append('edit_apellidouser', apellido_usuario);
+    //formData.append('tipodoc', tipo_doc);
+    //formData.append('coddocumento', documento);
+    formData.append('edit_documento', documento);
+    formData.append('usuario', iusuario);
+    formData.append('edit_email', correo);
+    formData.append('edit_areausers', area_usuario);
+    formData.append('edit_regionusers', regionusers);
+    formData.append('edit_tipousers', tipo_usuario);
+    formData.append('id_user', usuariocarga);
+
+
+    formData.append('action', 'EditarUsuarios');
+
+    // Depuración
+    /*for (const [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
     }
+    console.log(formData);*/
 
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://localhost:8080/SoportePost/api/EditarUsuarios');
+
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {                  
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'El usuario ha sido modificado exitosamente',
+                        text: response.message,
+                        color: 'black',
+                        timer: 1500,
+                        timerProgressBar: true,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        willClose: () => {
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        }
+                    });
+                    $("#miModal").css("display", "none");
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: response.message, color: 'black' });
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                console.log(xhr.responseText);
+                Swal.fire({ icon: 'error', title: 'Error en el servidor', text: 'Ocurrió un error al procesar la respuesta del servidor.', color: 'black' });
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar con el servidor.', color: 'black' });
+        }
+    };
+
+    xhr.send(formData);
 
 }

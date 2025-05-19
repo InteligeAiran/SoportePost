@@ -221,6 +221,10 @@ class Api extends Controller {
                         $this->handleGuardarUsuarios();
                     break;
 
+                    case 'EditarUsuarios':
+                        $this->handleEditarUsuarios();
+                    break;
+
                     case 'GetMostrarUsuarioEdit':
                     $id_user = isset($_POST['id_user']) ? trim($_POST['id_user']) : '';
                         $this->handleGetMostrarUsuarioEdit($id_user);
@@ -1358,24 +1362,6 @@ class Api extends Controller {
     }
 
 
-    // public function handleGetMostrarUsuarioEdit(){
-
-    //     $idusuario = isset($_SESSION['idusuario']) ? $_SESSION['idusuario'] : '';
-
-    //     $repository = new   UserRepository(); // Inicializa el repositorio
-    //     $result = $repository->getAllUsers($idusuario);
-
-    //     if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
-    //         $this->response(['success' => true, 'users' => $result], 200);
-    //     } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
-    //         $this->response(['success' => false, 'message' => 'No hay usuarios disponibles'], 404); // Código 404 Not Found
-    //     } else {
-    //         $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
-    //     }
-    //     $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
-    // }  
-
-
     public function handleGetMostrarUsuarioEdit($id_user){
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
             
@@ -1391,5 +1377,34 @@ class Api extends Controller {
         }
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
     }
+
+
+    public function handleEditarUsuarios(){
+        $repository = new UserRepository(); // Inicializa el repositorio
+            
+        $idusuario_edit = isset($_POST['idusuario_edit']) ? $_POST['idusuario_edit'] : ''; // id del usuario que se esta editando
+        $edit_nombreusers = isset($_POST['edit_nombreuser']) ? $_POST['edit_nombreuser'] : '';
+        $edit_apellidousers = isset($_POST['edit_apellidouser']) ? $_POST['edit_apellidouser'] : '';
+        $edit_usuario = isset($_POST['usuario']) ? $_POST['usuario'] : '';
+        $edit_documento = isset($_POST['edit_documento']) ? $_POST['edit_documento'] : '';
+        $edit_correo = isset($_POST['edit_email']) ? $_POST['edit_email'] : '';
+        $edit_area_users = isset($_POST['edit_areausers']) ? $_POST['edit_areausers'] : '';
+        $edit_regionusers = isset($_POST['edit_regionusers']) ? $_POST['edit_regionusers'] : '';
+        $edit_tipo_users = isset($_POST['edit_tipousers']) ? $_POST['edit_tipousers'] : '';
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : ''; // id del usuario logueado
+        //$id_nivel = isset($_POST['id_nivel']) ? $_POST['id_nivel'] : '';
+        //$identificacion = isset($_POST['identificacion']) ? $_POST['identificacion'] : '';
+
+        //var_dump($idusuario_edit);
+
+         $result = $repository->Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$edit_documento,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$id_user);
+    
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
+        }
+ }
+
 }
 ?>

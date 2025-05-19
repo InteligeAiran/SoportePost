@@ -139,5 +139,34 @@ class userModel extends Model{
 
         }
     }   
+
+
+    public function Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$edit_documento,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$id_user){
+        try {
+            $escaped_idusuario_edit = pg_escape_literal($this->db->getConnection(), $idusuario_edit);
+            $escaped_edit_nombreusers = pg_escape_literal($this->db->getConnection(), $edit_nombreusers);
+            $escaped_edit_apellidousers = pg_escape_literal($this->db->getConnection(), $edit_apellidousers);
+            $escaped_edit_usuario = pg_escape_literal($this->db->getConnection(), $edit_usuario);
+            $escaped_edit_documento = pg_escape_literal($this->db->getConnection(), $edit_documento);
+            $escaped_edit_correo = pg_escape_literal($this->db->getConnection(), $edit_correo);
+            $escaped_edit_area_users = pg_escape_literal($this->db->getConnection(), $edit_area_users);
+            $escaped_edit_regionusers = pg_escape_literal($this->db->getConnection(), $edit_regionusers);
+            $escaped_edit_tipo_users = pg_escape_literal($this->db->getConnection(), $edit_tipo_users);
+            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+            //$escaped_id_nivel = pg_escape_literal($this->db->getConnection(), $id_nivel);
+
+    
+            $sql = "SELECT * FROM sp_editarusuarios(".$escaped_idusuario_edit.", ".$escaped_edit_nombreusers.", ".$escaped_edit_apellidousers.", ".$escaped_edit_usuario.",
+                    ".$escaped_edit_documento.", ".$escaped_edit_correo.", ".$escaped_edit_area_users.",".$escaped_edit_regionusers.",".$escaped_edit_tipo_users.", ".$escaped_id_user.")";
+            $result = $this->db->pgquery($sql);
+
+            echo $sql;
+
+        } catch (Throwable $e) {
+            error_log("Error al obtener permisos del usuario: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Error al obtener permisos'];
+        }
+    }
+
 }   
 ?>
