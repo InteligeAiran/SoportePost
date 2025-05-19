@@ -69,7 +69,7 @@ function SendForm() {
 
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/login`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/access`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -195,7 +195,7 @@ function SendForm() {
             });
         }
     };
-    const datos = `action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+    const datos = `action=access&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
     xhr.send(datos);
 }
 
@@ -211,7 +211,7 @@ function checkUser() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/checkUser`);
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/checkUser`);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -247,7 +247,7 @@ function checkEmail() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/checkEmail`);
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/checkEmail`);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -322,7 +322,7 @@ setTimeout(function() {
 function SendEmail() {
     const email = document.getElementById('email').value;
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/restore_password`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/resetPassword`);
 
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
@@ -368,6 +368,6 @@ function SendEmail() {
             });
         }
     };
-    const datos = `action=email&email=${encodeURIComponent(email)}`;
+    const datos = `action=resetPassword&email=${encodeURIComponent(email)}`;
     xhr.send(datos);
 }

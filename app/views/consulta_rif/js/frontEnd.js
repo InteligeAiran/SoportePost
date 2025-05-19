@@ -48,10 +48,23 @@ function clearFormFields() {
 
 /* CAMPO RIF*/
 $(document).ready(function() {
-    $.mask.definitions['~'] = '[JVEG]'; // Permite J o V
-    $('#rifInput').mask('~9?99999999');
+    $('#rifInput').mask('9?99999999'); // Máscara solo para la parte numérica
 });
+
 /* END CAMPO RIF*/
+
+function obtenerRifCompleto() {
+    const tipoRif = $('#rifTipo').val();
+    const numeroRif = $('#rifInput').val();
+    return tipoRif + numeroRif;
+}
+
+// Ejemplo de cómo podrías usar la función para obtener el RIF completo al hacer clic en "Buscar"
+$('.btn-primary').on('click', function() {
+    const rifCompleto = obtenerRifCompleto();
+    console.log("RIF Completo:", rifCompleto);
+    // Aquí puedes realizar la búsqueda con el 'rifCompleto'
+});
 
 // Get the input field
 var input1 = document.getElementById("rifInput");
@@ -98,7 +111,7 @@ $("#rifInput").keyup(function(){
 
 function SendRif() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SearchRif`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchRif`);
     
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -238,7 +251,7 @@ function SendRif() {
                     $('#rifCountTable').resizableColumns();
 
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="11">Error al cargar</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="11">No se ha encontrado resultados</td></tr>';
                     console.error('Error:', response.message);
                 }
             } catch (error) {
@@ -256,18 +269,23 @@ function SendRif() {
         tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
         console.error('Error de red');
     };
-    const rifInputValue = document.getElementById('rifInput').value;
+    const rifInputValue = obtenerRifCompleto();
     const datos = `action=SearchRif&rif=${encodeURIComponent(rifInputValue)}`;
     xhr.send(datos);
 }
 
 function SendSerial() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SearchSerialData`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchSerialData`);
     
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     const tbody = document.getElementById('rifCountTable').getElementsByTagName('tbody')[0];
+
+     const tipoRif = $('#rifTipo').val();
+        const numeroRif = $('#rifInput').val();
+        const rifCompleto = tipoRif + numeroRif;
+        console.log("Buscar RIF:", rifCompleto);
 
     // Limpia la tabla ANTES de la nueva búsqueda
     tbody.innerHTML = '';
@@ -428,7 +446,7 @@ function SendSerial() {
 
 function SendRazon() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SearchRazonData`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchRazonData`);
     
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -593,7 +611,7 @@ function SendRazon() {
 
 function fetchSerialData(serial) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SearchSerial`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchSerial`);
        
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     const tbody = document.getElementById('serialCountTable').getElementsByTagName('tbody')[0];
@@ -683,7 +701,7 @@ function fetchSerialData(serial) {
 
 function downloadImageModal(serial) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetPhoto`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhoto`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -730,6 +748,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const rifInput = document.getElementById('rifInput');
     const buscarRif = document.getElementById('buscarRif');
     const rifCountTableCard = document.querySelector('.card');
+    const selectInputRif = document.getElementById('rifTipo');
 
     const buscarPorSerialBtn = document.getElementById('buscarPorSerialBtn');
     const serialInput = document.getElementById('serialInput');
@@ -746,6 +765,7 @@ document.addEventListener('DOMContentLoaded', function() {
             razonCountTableCard.style.display = 'block'; // Muestra la tabla
             razonInput.style.display = 'block'; // Muestra el input
             buscarRazon.style.display = 'block'; // Oculta el botón
+            selectInputRif.style.display = 'none'; // Muestra el select
             buscarRif.style.display = 'none'; // Oculta el botón
             rifInput.style.display = 'none'; // Muestra el input*/
             serialInput.style.display = 'none'; // Oculta el botón
@@ -755,12 +775,13 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Error: No se encontraron el botón o la tabla.'); // Para verificar si los elementos se seleccionan
     }
 
-
     if (buscarPorRifBtn && rifCountTableCard) {
         buscarPorRifBtn.addEventListener('click', function() {
             rifCountTableCard.style.display = 'block'; // Muestra la tabla
             rifInput.style.display = 'block'; // Muestra el input
+            selectInputRif.style.display = 'block'; // Muestra el select
             buscarRif.style.display = 'block'; // Oculta el botón
+
             buscarSerial.style.display = 'none'; // Oculta el botón
             serialInput.style.display = 'none';
             buscarRazon.style.display = 'none'; // Oculta el botón
@@ -771,13 +792,12 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Error: No se encontraron el botón o la tabla.'); // Para verificar si los elementos se seleccionan
     }
 
-
-
     if (buscarPorSerialBtn && serialCountTableCard) {
         buscarPorSerialBtn.addEventListener('click', function() {
             serialCountTableCard.style.display = 'block'; // Muestra la tabla
             serialInput.style.display = 'block'; // Muestra el input
             buscarSerial.style.display = 'block'; // Oculta el botón
+            selectInputRif.style.display = 'none'; // Muestra el select
             rifInput.style.display = 'none'; // Muestra el input
             buscarRif.style.display = 'none'; // Oculta el botón
             buscarRazon.style.display = 'none'; // Oculta el botón

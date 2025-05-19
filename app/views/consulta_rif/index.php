@@ -6,7 +6,6 @@ function mi_navbar()
 ?>
 <!DOCTYPE html>
 <lang="en">
-
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -24,10 +23,37 @@ function mi_navbar()
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/desktop/form.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/mobile/mobile.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/laptop/laptop.css" />
+                    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/General.css" />
+
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
+
+        <style>
+            #rifTipo {
+                width: auto;
+                max-width: 80px;
+                padding: 0.5rem 0.75rem;
+                font-size: 1rem;
+                height: auto;
+                -webkit-appearance: none; /* Elimina la apariencia nativa en navegadores WebKit */
+                -moz-appearance: none; /* Elimina la apariencia nativa en Firefox */
+                appearance: none; /* Elimina la apariencia nativa en otros navegadores */
+                background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>');
+                background-repeat: no-repeat;
+                background-position: right 0.5rem center;
+                background-size: 1em;
+                border-radius: 0.25rem; /* Mantén o ajusta el radio del borde */
+                border: 1px solid #ced4da; /* Mantén o ajusta el color del borde */
+                color: #495057; /* Mantén o ajusta el color del texto */
+            }
+
+            /* Opcional: Para eliminar el espaciado extra en algunos navegadores */
+            #rifTipo::-ms-expand {
+                display: none;
+            }
+        </style>
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -57,15 +83,22 @@ function mi_navbar()
                                 <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
                             </div>
                             <div id="SearchRif" class="mb-3 d-flex align-items-center">
-                                <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
-                                <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;">Buscar</button><br>
+                                    <div class="d-flex align-items-center">
+                                        <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none;">     
+                                            <option value="J">J</option>
+                                            <option value="V" selected>V</option>
+                                            <option value="E">E</option>
+                                            <option value="G">G</option>
+                                        </select>
+                                        <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
+                                        <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;">Buscar</button><br>
+                                    </div>
 
                                 <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none;" maxlength="24">
                                 <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none;">Buscar</button>
 
                                 <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
                                 <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
-                                
                             </div><br>
                             <div class="card" style="display: none;">
                                 <div class="table-responsive">

@@ -211,5 +211,27 @@ class TechnicalConsultionRepository
             return null;
         }
     }
+
+    public function getTecnico2(){
+        $result = $this->model->GetTecnico2();
+
+        if ($result && $result['numRows'] > 0) {
+            $tecnicos = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $tecnicos[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result($result['query']);
+            return $tecnicos;
+        } else {
+            return [];
+        } 
+    }
+
+    
+    public function AssignTicket($id_ticket, $id_tecnico){
+        $result = $this->model->UpdateAccion($id_tecnico, $id_ticket);
+        return $result;
+    }
+
 }
 ?>

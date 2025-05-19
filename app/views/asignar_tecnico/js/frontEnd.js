@@ -4,7 +4,7 @@ let currentTicketId = null; // Variable para almacenar el ID del ticket actual
 
 function getTicketData() {
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetTicketData`);
+    xhr.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketData`);
     //xhr.open('POST', 'http://localhost/SoportePost/api/GetTipoUsers'); // Asi estaba antes de cambiarlo
     
     //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function getTecnico2(){
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetTecnico2`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
     xhr.onload = function() {
@@ -226,7 +226,7 @@ function AssignTicket(){
     }
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/AssignTicket`); // Asegúrate de que esta sea la ruta correcta en tu backend
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/AssignTicket`); // Asegúrate de que esta sea la ruta correcta en tu backend
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {

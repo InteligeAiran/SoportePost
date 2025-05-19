@@ -63,6 +63,11 @@ document.addEventListener('DOMContentLoaded', function() {
     setActiveLink('rif-link', 'consulta_rif');
     setActiveLink('estadisticas-link', 'pages/profile.html');
 
+    setActiveLink('assignment-ticket', 'asignar_tecnico');
+    setActiveLink('tecnico', 'tecnico');
+    setActiveLink('gestion_users', 'gestionusers');
+    setActiveLink('estadisticas-link', 'pages/profile.html');
+
     // **CÓDIGO PARA OBTENER EL userId**
     // const userId = localStorage.getItem('userId');
     // if (userId) {
@@ -466,7 +471,7 @@ function SendDataFailure1() {
     const id_user    = document.getElementById('id_user').value;
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SaveDataFalla`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveDataFalla`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); // Asegúrate de que esto esté presente
 
     xhr.onload = function() {
@@ -613,7 +618,7 @@ function checkRif() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/ValidateRif`);
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/ValidateRif`);
        
 
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -667,7 +672,7 @@ function checkRif1() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/ValidateRif1`);
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/ValidateRif1`);
          
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -711,7 +716,7 @@ function checkRif1() {
 
 function getPosSerials1(rif) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetPosSerials1`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPosSerials1`);
     
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -790,7 +795,7 @@ function getPosSerials1(rif) {
 
 function getFailure() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetFailure1`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetFailure1`);
     
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -838,7 +843,7 @@ document.addEventListener('DOMContentLoaded', getFailure);
 
 function getFailure2() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetFailure2`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetFailure2`);
     
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -884,7 +889,7 @@ document.addEventListener('DOMContentLoaded', getFailure2);
 
 function getCoordinador() {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/GetCoordinador`);
+    xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetCoordinador`);
    
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -935,7 +940,7 @@ let fechaInstalacionGlobal = null;
 
 function getPosSerials(rif) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/GetPosSerials`);
+    xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPosSerials`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -999,7 +1004,7 @@ function getPosSerials(rif) {
 
 function getUltimateTicket(serial) {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/GetUltimateTicket`); // Asegúrate de usar la ruta correcta de tu API
+        xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetUltimateTicket`); // Asegúrate de usar la ruta correcta de tu API
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
         xhr.onload = function() {
@@ -1080,7 +1085,7 @@ function getUltimateTicket(serial) {
 
     function getInstalationDate(serial) {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/GetInstallPosDate`); // Asegúrate de usar la ruta correcta de tu API
+        xhr.open('POST',  `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetInstallPosDate`); // Asegúrate de usar la ruta correcta de tu API
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
         xhr.onload = function() {
@@ -1500,7 +1505,7 @@ function SendDataFailure2(idStatusPayment) {
     console.log(formData);*/
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/SaveDataFalla2`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveDataFalla2`);
     xhr.onload = function() {
         if (xhr.status === 200) {
             try {
@@ -1580,12 +1585,12 @@ const userId = document.getElementById('id_user').value
         //console.log('ID de usuario:', userId);
         if (userId > 0) {
             //console.log('URL de permisos:', ${ENDPOINT_BASE}${APP_PATH}/api/permissions/${userId});
-            fetch(`${ENDPOINT_BASE}${APP_PATH}api/permissions/${userId}`)
+            fetch(`${ENDPOINT_BASE}${APP_PATH}api/users/permissions/${userId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         const permissions = data.permissions;
-                        //console.log('Permisos obtenidos:', permissions);
+                        console.log('Permisos obtenidos:', permissions);
                         updateNavbar(permissions);
                     } else {
                         console.error('Error al obtener los permisos:', data.error);

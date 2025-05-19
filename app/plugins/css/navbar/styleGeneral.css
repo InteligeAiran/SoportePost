@@ -21,6 +21,7 @@ body.g-sidenav-show {
     .main-content {
         margin-left: 250px; /* Ajustar el margen para el sidebar fijo */
         transition: margin-left 0.3s ease; /* Transición suave */
+        font-size: 15px;
     }
 }
 
