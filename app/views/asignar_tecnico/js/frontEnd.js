@@ -166,14 +166,14 @@ function getTecnico2(){
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    
+
     xhr.onload = function() {
         if (xhr.status === 200) {
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
                     const select = document.getElementById('idSelectionTec');
-    
+
                     select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
                     if (Array.isArray(response.tecnicos) && response.tecnicos.length > 0) {
                         response.tecnicos.forEach(tecnico => {
@@ -182,8 +182,18 @@ function getTecnico2(){
                             option.textContent = tecnico.full_name;
                             select.appendChild(option);
                         });
+
+                        // Agregar un event listener para cuando se cambia la selección del técnico
+                        select.addEventListener('change', function() {
+                            const selectedTecnicoId = this.value;
+                            if (selectedTecnicoId) {
+                                GetRegionUser(selectedTecnicoId);
+                            } else {
+                                document.getElementById('InputRegion').value = ''; // Limpiar el campo de región si no se selecciona nada
+                            }
+                        });
+
                     } else {
-                        // Si no hay fallas, puedes mostrar un mensaje en el select
                         const option = document.createElement('option');
                         option.value = '';
                         option.textContent = 'No hay Técnicos Disponibles';
@@ -191,24 +201,67 @@ function getTecnico2(){
                     }
                 } else {
                     document.getElementById('rifMensaje').innerHTML += '<br>Error al obtener los Técnicos.';
-                    console.error('Error al obtener las fallas:', response.message);
+                    console.error('Error al obtener los técnicos:', response.message);
                 }
             } catch (error) {
                 console.error('Error parsing JSON:', error);
-                document.getElementById('rifMensaje').innerHTML += '<br>Error al procesar la respuesta de las Técnicos.';
+                document.getElementById('rifMensaje').innerHTML += '<br>Error al procesar la respuesta de los Técnicos.';
             }
         } else {
             console.error('Error:', xhr.status, xhr.statusText);
-            document.getElementById('rifMensaje').innerHTML += '<br>Error de conexión con el servidor para las Técnicos.';
+            document.getElementById('rifMensaje').innerHTML += '<br>Error de conexión con el servidor para los Técnicos.';
         }
     };
-    
-    const datos = `action=GetTecnico2`; // Cambia la acción para que coincida con el backend
+
+    const datos = `action=GetTecnico2`; // Asegúrate de que esta acción en el backend devuelva los técnicos filtrados
     xhr.send(datos);
 }
 
 // Llama a la función para cargar las fallas cuando la página se cargue
+
+function GetRegionUser(id_user){
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/GetRegionUsersAssign`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const inputRegion = document.getElementById('InputRegion');
+                    const region = response.regionusers || ''; // Asegúrate de que la respuesta contenga la regió
+                    
+                    if (region) {
+                        inputRegion.value = region;
+                    } else {
+                        inputRegion.value = ''; // Limpiar el campo si no hay región
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Por favor, selecciona un ticket antes de asignar un técnico.',
+                        color: 'black'
+                    });
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                document.getElementById('rifMensaje').innerHTML += '<br>Error al procesar la respuesta de la región del técnico.';
+                document.getElementById('InputRegion').value = '';
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            document.getElementById('rifMensaje').innerHTML += '<br>Error de conexión con el servidor para la región del técnico.';
+            document.getElementById('InputRegion').value = '';
+        }
+    };
+    console.log('ID del usuario para obtener la región:', id_user);
+    const datos = `action=GetRegionUsersAssign&id_user=${encodeURIComponent(id_user)}`;
+    xhr.send(datos);
+}
+
 document.addEventListener('DOMContentLoaded', getTecnico2);
+
 
 function AssignTicket(){
     const id_tecnico_asignado = document.getElementById('idSelectionTec').value;

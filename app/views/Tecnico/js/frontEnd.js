@@ -51,7 +51,7 @@ function getTicketData() {
                         name_status_ticketCell.textContent = data.name_status_ticket
 
                         const AssingmentButton = document.createElement('button');
-                        AssingmentButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>';
+                        AssingmentButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>';
                         AssingmentButton.classList.add('btn', 'btn-sm', 'btn-info'); // Añade clases de Bootstrap para estilo
                         AssingmentButton.setAttribute('data-bs-toggle', 'tooltip'); // Agrega el atributo data-bs-toggle
                         AssingmentButton.setAttribute('data-bs-placement', 'top'); // O 'bottom', 'left', 'right' para la posición
@@ -129,3 +129,30 @@ function getTicketData() {
 
 document.addEventListener('DOMContentLoaded', getTicketData);
 
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Obtén la referencia al botón cerrar FUERA de la función getTicketData y del bucle
+    const cerrar = document.getElementById('close-button');
+    const icon   = document.getElementById('Close-icon');
+    const assignButton = document.getElementById('assingment-button'); // Obtén el botón "Asignar"
+
+
+    // Agrega el event listener al botón cerrar
+    cerrar.addEventListener('click', function() {
+        if (modalInstance) {
+            modalInstance.hide();
+            currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
+        }
+        document.getElementById('idSelectionTec').value = '';
+    });
+
+    icon.addEventListener('click', function() {
+        if (modalInstance) {
+            modalInstance.hide();
+            currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
+        }
+        document.getElementById('idSelectionTec').value = '';
+    });
+    // Agrega el event listener al botón "Asignar"
+    assignButton.addEventListener('click', AssignTicket);
+});

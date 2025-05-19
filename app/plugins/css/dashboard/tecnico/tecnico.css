@@ -1,0 +1,32 @@
+#ModalSelecttecnico{
+    width: 55%;
+    justify-content: center;
+    text-align: center;
+    margin-top: 27%;
+    margin-left: 37%;
+
+}
+
+#close-button:hover{
+    background-color: red;
+    color: white;
+}
+
+#assingment-button{
+    background-color: #003594;;
+    color: white;
+}
+
+#assingment-button:hover{
+    background-color: green;
+    color: white;
+}
+
+#Close-icon{
+    background-color: #8392ab;
+}
+
+#Close-icon:hover{
+    background-color: red;
+    color: white;
+}

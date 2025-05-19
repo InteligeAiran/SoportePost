@@ -24,6 +24,8 @@ function mi_navbar() {
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/dataTables.min.css"/>
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/datatable.css"/>
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/bootstrap.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/tecnico/tecnico.css"/>
+
         <style>
             div.dataTables_wrapper div.dataTables_length label {
                 font-weight: bold; /* Ejemplo: Texto en negrita */

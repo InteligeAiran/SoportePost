@@ -42,7 +42,7 @@ class UserRepository
         return $area;
     }
 
-        public function GetTipoUsers(){
+    public function GetTipoUsers(){
         $result = $this->model->GetTipoUsers();
     
         for ($i = 0; $i < $result['numRows']; $i++) {
@@ -54,7 +54,7 @@ class UserRepository
     }
 
     
-        public function GetRegionUsers(){
+    public function GetRegionUsers(){
         $result = $this->model->GetRegionUsers();
     
         for ($i = 0; $i < $result['numRows']; $i++) {
@@ -63,7 +63,14 @@ class UserRepository
             //var_dump($agente);
         }
         return $tipousers;
-    }    
+    }
+
+    public function GetRegionUsersById($id_user){
+        $result = $this->model->GetRegionUsersById($id_user);
+    
+        $region = $result['row']['getuserregion'];
+        return $region;
+    }
 
     public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel){
 
@@ -71,7 +78,8 @@ class UserRepository
         $encry_passw = sha1(md5($defaul_pass));
 
         $result = $this->model->Guardar_Usuario($id_user, $nombreusers, $apellidousers, $encry_passw, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel);
-         }
+    }
+
    public function getUserPermissions($userId) {
         $permissions = [];
 

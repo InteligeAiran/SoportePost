@@ -136,7 +136,11 @@ function mi_navbar() {
                         <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <select id="idSelectionTec" class="form-select" aria-label="Default select example"></select>
+                        <select id="idSelectionTec" class="form-select" onchange="GetRegionUser()" aria-label="Default select example"></select>
+                        <div class="row mt-4">
+                            <label class="col-sm-2 col-form-label">Región</label>
+                        </div>
+                        <input  id="InputRegion" class="form-control" type="text" value="" aria-label="readonly input example" style="width: 100%;" readonly>                    
                     </div>
                     <div class="modal-footer">
                         <button id="close-button" type="button" class="btn btn-secondary">Cerrar</button>
