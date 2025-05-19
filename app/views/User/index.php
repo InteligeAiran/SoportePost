@@ -86,45 +86,50 @@ function mi_navbar() {
                 </button>
             </div>
             <?php require_once 'app/core/components/navbar/index.php'; mi_navbar(); ?>
-                    <main class="main-content position-relative border-radius-lg overflow-hidden bg-gray-100">
-            <div class="container-fluid py-4">
-                <div id = "Row" class="row mt-4">
-                    <div class = "cord">
-                        <div id="div_user" class="background-color">
-                            <div class="col-lg-12 col-md-12 mt-4 mb-4">
-                                <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                    <strong><h5 class="text-black text-capitalize ps-3">LISTA DE USUARIOS</h5></strong>
+            <main class="main-content position-relative border-radius-lg ">
+                <div class="container-fluid py-4" style="margin-top: 2%;">
+                    <div id = "Row" class="row mt-4">
+                        <div class = "cord">
+                            <div class="card">
+                                <div class="card-header pb-0 p-3">
+                                    <div class="col-lg-12 col-md-12 mt-4 mb-4">
+                                        <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
+                                            <strong><h5 class="text-black text-capitalize ps-3">USUARIOS</h5></strong>
+                                        </div>
+                                    </div>   
+                                    <div class="d-flex justify-content-between">
+                                    </div>
                                 </div>
-                            </div> 
-                                  
-                            <table id="table-user" class="background-users-table">
-                                <thead>
-                                    <tr>
-                                        <th>Nº</th>
-                                        <th>id</th>
-                                        <th>Nombre y Apellido</th>
-                                        <th>Usuario</th>
-                                        <th>Cedula</th>
-                                        <th>Correo</th>
-                                        <th>Estatus</th>
-                                        <th>Rol</th>
-                                        <th>Area</th>
-                                        <th>Nivel Tecnico</th>
-                                        <th>Region</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody  id="table-ticket-body">
-                                </tbody>
-                            </table>
-                            <!--div class="col-lg-12 col-md-12 mt-4 mb-4">
-                            <div class="card card-body bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
-                            <h6 class="text-white text-capitalize ps-3">Dashboard</h6-->         
-                        </div>   
-                    </div>    
-                </div>   
-            </div>
-        </main>
+                                <div class="table-responsive">
+                                    <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Nº</th>
+                                                <th>id</th>
+                                                <th>Nombre y Apellido</th>
+                                                <th>Usuario</th>
+                                                <th>Cedula</th>
+                                                <th>Correo</th>
+                                                <th>Estatus</th>
+                                                <th>Rol</th>
+                                                <th>Area</th>
+                                                <th>Nivel Tecnico</th>
+                                                <th>Region</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="table-group-divider" id="table-ticket-body">
+                                            <tr>
+                                                <td colspan="3">No hay datos</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
 
         <!-- MODAL PARA SELECCIONAR TECNICO -->

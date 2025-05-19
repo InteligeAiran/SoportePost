@@ -434,7 +434,8 @@ function GuardarUsuariosNew() {
     formData.append('action', 'GuardarUsuarios');
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost:8080/SoportePost/api/GuardarUsuarios');
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/GuardarUsuarios`);
+
 
     
     xhr.onload = function() {
@@ -480,7 +481,7 @@ function GuardarUsuariosNew() {
 
 function VerUsuario(idusuario) {
     const xhrUsuario = new XMLHttpRequest();
-    xhrUsuario.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/GetMostrarUsuarioEdit`);
+    xhrUsuario.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/GetMostrarUsuarioEdit`);
     xhrUsuario.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     // const selectAreas = document.getElementById('edit_areausers');
@@ -517,7 +518,7 @@ function VerUsuario(idusuario) {
 
 function obtenerAreas(idAreaSeleccionada) {
     const xhrAreas = new XMLHttpRequest();
-    xhrAreas.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetAreaUsers`); // Cambié a GET
+    xhrAreas.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/users/GetAreaUsers`); // Cambié a GET
     xhrAreas.onload = function() {
         const responseAreas = JSON.parse(xhrAreas.responseText);
         //console.log('Respuesta de GetAreaUsers:', responseAreas); // Agregué un log para inspeccionar la respuesta
@@ -546,7 +547,7 @@ function obtenerAreas(idAreaSeleccionada) {
 
 function obtenerRegion(idRegionSelect) {
     const xhrRegion = new XMLHttpRequest();
-    xhrRegion.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetRegionUsers`); // Cambié a GET
+    xhrRegion.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/users/GetRegionUsers`); // Cambié a GET
     xhrRegion.onload = function() {
         const responseRegion = JSON.parse(xhrRegion.responseText);
         //console.log('Respuesta de GetRegionUsers:', responseRegion); // Agregué un log para inspeccionar la respuesta
@@ -575,7 +576,7 @@ function obtenerRegion(idRegionSelect) {
 
 function obtenerRol(idTipoUserSelect) {
     const xhrTipoU = new XMLHttpRequest();
-    xhrTipoU.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/GetTipoUsers`); // Cambié a GET
+    xhrTipoU.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/users/GetTipoUsers`); // Cambié a GET
     xhrTipoU.onload = function() {
         const responseTipoU = JSON.parse(xhrTipoU.responseText);
         //console.log('Respuesta de GetTipoUsers:', responseTipoU); // Agregué un log para inspeccionar la respuesta
@@ -650,7 +651,7 @@ function EditarUsuarios() {
     console.log(formData);*/
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost:8080/SoportePost/api/EditarUsuarios');
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/EditarUsuarios`);
      
     
     xhr.onload = function() {
