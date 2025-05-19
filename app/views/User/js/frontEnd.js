@@ -203,7 +203,7 @@ function getUserData() {
                         dom: 'Bfrtip',
                         buttons: [
                         {
-                            text: '<button data-toggle="modal" data-target="#ModalAggUsers"class="btn btn-primary" type="button">Crear Usuario</button>'
+                            text: '<button data-toggle="modal" data-target="#ModalAggUsers" class="btn btn-primary" type="button">Crear Usuario</button>'
                         }
                         ]
                     });
