@@ -309,13 +309,14 @@ class Consulta extends Controller {
 
     public function handleSaveFalla1(){
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
+        $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
         $falla = isset($_POST['falla']) ? $_POST['falla'] : '';
         $nivelFalla = isset($_POST['nivelFalla']) ? $_POST['nivelFalla'] : '';
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
         //var_dump($id_user, $serial, $falla, $nivelFalla);
-        if($serial != '' && $falla != '' && $nivelFalla != '' && $id_user != '') {     
-            $result = $repository->SaveDataFalla($serial, $falla, $nivelFalla, $id_user);
+        if($serial != '' && $falla != '' && $nivelFalla != '' && $id_user != '' && $rif != ''){
+            $result = $repository->SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif);
             if ($result) {
                 $this->response(['success' => true, 'message' => 'Se guardaron los datos del Ticket correctamente.'], 200); // Código de estado 200 OK por defecto
             } else {

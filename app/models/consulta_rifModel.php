@@ -136,15 +136,17 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user){
+    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif){
     try {
         $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial);
         $escaped_falla = pg_escape_literal($this->db->getConnection(), $falla);
         $escaped_nivelFalla = pg_escape_literal($this->db->getConnection(), $nivelFalla);
         $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+        $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif);
 
         // Ejecutar la función para guardar la falla y obtener el ID del ticket creado
-        $sqlSave = "SELECT SaveDataFalla(".$escaped_serial.", ".$escaped_falla.", ".$escaped_nivelFalla.", ".$escaped_id_user.");";
+        $sqlSave = "SELECT SaveDataFalla(".$escaped_serial.", ".$escaped_falla.", ".$escaped_nivelFalla.", ".$escaped_rif.");";
+        //var_dump($sqlSave);
         $resultSave = $this->db->pgquery($sqlSave);
         $ticketData = pg_fetch_assoc($resultSave);
         $idTicketCreado = $ticketData['savedatafalla']; // Capturar el ID del ticket creado
@@ -155,7 +157,7 @@ class consulta_rifModel extends Model
         $resultFailure = $this->db->pgquery($sqlFailure);
 
         if($resultSave && $resultFailure){
-            $sqlInsertUserTicket = sprintf("SELECT public.insertintouser_ticket(%d::integer, %d::integer, %d::integer, NOW()::timestamp without time zone, NOW()::timestamp without time zone);", $idTicketCreado, (int)$nivelFalla, (int)$id_user);
+            $sqlInsertUserTicket = sprintf("SELECT public.insertintouser_ticket(%d::integer, %d::integer, NOW()::timestamp without time zone, NOW()::timestamp without time zone);", $idTicketCreado, (int)$id_user);
             $resultUserTicket = $this->db->pgquery($sqlInsertUserTicket);
             //var_dump($sqlInsertUserTicket);
             $this->db->closeConnection();

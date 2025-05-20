@@ -22,7 +22,6 @@ class tecnico extends Controller {
      exit();
     }
 
-
     public function index(): void {
         Model::exists('consulta_rif');
 

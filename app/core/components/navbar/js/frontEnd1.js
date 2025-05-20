@@ -589,7 +589,8 @@ function SendDataFailure1() {
             color: 'black'
         });
     };
-    const datos = `action=SaveDataFalla&serial=${encodeURIComponent(serial)}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(nivelFalla)}&id_user=${encodeURIComponent(id_user)}`;
+        const rif        = document.getElementById('InputRif1').value;
+    const datos = `action=SaveDataFalla&serial=${encodeURIComponent(serial)}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(nivelFalla)}&id_user=${encodeURIComponent(id_user)}&rif=${encodeURIComponent(rif)}`;
     xhr.send(datos);
 }
 

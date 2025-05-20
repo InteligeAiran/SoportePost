@@ -333,9 +333,9 @@
                                 <select id="serialSelect1" name="serialSelect">
                                 </select>
                             </div><br>
-                            <label for="FallaSelect">Nivel Falla</label>
+                            <label style="display: none;" for="FallaSelect">Nivel Falla</label>
                             <div id="FallaSelectContainer">
-                                <select id="FallaSelectt1" name="FallaSelect">
+                                <select id="FallaSelectt1" name="FallaSelect" style="display: none;">
                                     <option value="1">Nivel 1</option>
                                 </select>
                             </div>

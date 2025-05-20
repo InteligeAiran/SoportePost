@@ -98,8 +98,8 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user){
-        $result = $this->model->SaveDataFalla($serial, $falla, $nivelFalla, $id_user);
+    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif){
+        $result = $this->model->SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif);
         return $result;
     }
 
