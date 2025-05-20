@@ -291,11 +291,41 @@ class userModel extends Model{
             $sql = "SELECT getuserpermissionfunction(" . $escapedUserId . ", " . $escapedViewName . ")";
             $result = Model::getResult($sql, $this->db); // Obtienes el array de getResult
             return $result; // Devuelve el resultado completo
-
+            
         } catch (Throwable $e) {
             error_log("Error al obtener permisos del usuario: " . $e->getMessage());
             return ['success' => false, 'error' => 'Error al obtener permisos'];
         }
     }
+
+    public function getModuloUsers($id_usuario){
+        try{
+            $escaped_id_usuario = pg_escape_literal($this->db->getConnection(), $id_usuario); 
+
+            $sql = "SELECT * FROM sp_vermoduloactivo(".$escaped_id_usuario.")";
+            //echo $sql;
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function AsignacionModulo($id_modulo, $id_usuario){
+        try{
+
+            $escaped_id_modulo = pg_escape_literal($this->db->getConnection(), $id_modulo); 
+            $escaped_id_usuario = pg_escape_literal($this->db->getConnection(), $id_usuario); 
+
+            $sql = "SELECT * FROM sp_asignacionmodulo(".$escaped_id_modulo.", " . $escaped_id_usuario . ")";
+            //echo $sql;
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+        // Handle exception
+        }
+    }   
+
+
 }   
 ?>

@@ -85,6 +85,7 @@ function mi_navbar() {
                                         <th>Area</th>
                                         <th>Nivel Tecnico</th>
                                         <th>Region</th>
+                                        <th>Modulos</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
@@ -296,6 +297,47 @@ function mi_navbar() {
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-primary" id="btnEditarUsers">Guardar</button>
             </div>
+        </div>
+    </div>
+   </div>
+
+
+           <div class="modal fade" id="ModalModulos" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"
+     data-keyboard="false">
+         <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <div class="panel-heading" style="text-align: center;color:#ffffff;">
+                    <h4>Asignación de Módulos</h4>
+                </div>
+            </div> 
+
+            <div class="modal-body">
+                <div class="panel-body">
+                
+                <input type="hidden" id="idusuario_edit" class="form-control" name="idusuario_edit"> 
+                
+                <input name="id_user" id="id_user" type="hidden" value="<?php echo $_SESSION['id_user']?>">
+                    <table id="tabla-modulo" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Nº</th>
+                                <th>Módulo</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                            <tbody  id="tabla-modulo-body">
+                            </tbody>
+                    </table>
+            </div> 
+          </div>   
+          <!-- <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarUsers">Guardar</button>
+            </div> -->
         </div>
     </div>
    </div>

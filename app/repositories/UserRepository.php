@@ -179,4 +179,24 @@ class UserRepository
         //var_dump($result);
         return $result ? $result['numRows'] : null;
     }
+
+    public function getModuloUsers($id_usuario){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->getModuloUsers($id_usuario); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result($result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
+    public function AsignacionModulo($id_modulo, $id_usuario){
+        $result = $this->model->AsignacionModulo($id_modulo, $id_usuario);
+        return $result;
+    }
 }

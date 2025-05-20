@@ -129,7 +129,8 @@ function getUserData() {
                         const areaCell = row.insertCell();
                         const tipo_userCell = row.insertCell();
                         const name_regionCell = row.insertCell();
-                        const actionsCell = row.insertCell(); // Nueva celda para las acciones
+                        const moduloCell = row.insertCell(); // Nueva celda para las acciones
+                        const actionsCell = row.insertCell();
 
 
                         id_secuencialCell.textContent = data.secuencial; // Accede a las propiedades del 'item'
@@ -144,18 +145,23 @@ function getUserData() {
                         tipo_userCell.textContent = data.name_level;
                         name_regionCell.textContent = data.name_region;
 
+                        const moduloButton = document.createElement('button');
+                        moduloButton.textContent = 'Asignar';
+                        moduloButton.classList.add('btn', 'btn-sm', 'btn-link'); // Añade clases de Bootstrap para estilo
+                        moduloCell.appendChild(moduloButton);
+
                         // Crear los botones
                         const modifyButton = document.createElement('button');
                         modifyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/></svg>';
-                        modifyButton.classList.add('btn', 'btn-sm', 'btn-primary', 'me-2'); // Añade clases de Bootstrap para estilo
+                        modifyButton.classList.add('btn', 'btn-xs', 'btn-primary', 'me-1'); // Añade clases de Bootstrap para estilo
 
-                        const statusButton = document.createElement('button');
+                        /*const statusButton = document.createElement('button');
                         statusButton.textContent = 'Cambiar Status';
-                        statusButton.classList.add('btn', 'btn-sm', 'btn-info'); // Añade clases de Bootstrap para estilo
+                        statusButton.classList.add('btn', 'btn-sm', 'btn-info'); // Añade clases de Bootstrap para estilo*/
 
                         // Añadir los botones a la celda de acciones
                         actionsCell.appendChild(modifyButton);
-                        actionsCell.appendChild(statusButton);
+                        //actionsCell.appendChild(statusButton);
 
 
                         modifyButton.onclick = function() {
@@ -164,6 +170,13 @@ function getUserData() {
 
                          $('#ModalEditUsers').modal('show'); // abrir
                          VerUsuario(idusuario);
+                        };
+
+
+                        moduloButton.onclick = function() {
+                         const idusuario= data.id_user;
+                         $('#ModalModulos').modal('show'); // abrir
+                         VerModulos(idusuario);
                         };
 
                     });
@@ -200,6 +213,13 @@ function getUserData() {
                                 "previous": "Anterior"
                             }
                         },
+
+                "columnDefs": [
+                 {
+                       "targets": [ 1],
+                       "visible": false,
+                   }
+               ],    
                         dom: 'Bfrtip',
                         buttons: [
                         {
@@ -693,4 +713,180 @@ function EditarUsuarios() {
 
     xhr.send(formData);
 
+}
+
+
+function VerModulos(idusuario) {
+
+    const id_usuario = idusuario;
+
+const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/ModuloUsers`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    //xhr.open('POST', 'http://localhost/SoportePost/api/GetTipoUsers'); // Asi estaba antes de cambiarlo
+    
+    //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    const tbody = document.getElementById('tabla-modulo-body');
+    
+    // Limpia la tabla ANTES de la nueva búsqueda
+    tbody.innerHTML = '';
+
+    // Destruye DataTables si ya está inicializado
+    if ($.fn.DataTable.isDataTable('#tabla-modulo')) {
+        $('#tabla-modulo').DataTable().destroy();
+    }
+
+    // Limpia la tabla usando removeChild
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const userData = response.users; // Cambia el nombre de la variable aquí
+
+                    userData.forEach(data => { // Usa un nombre diferente para el elemento individual
+                        const row = tbody.insertRow();
+                        const id_secuencialCell = row.insertCell();
+                        const id_userCell = row.insertCell();
+                        const modulosCell = row.insertCell();
+                        
+
+                        id_secuencialCell.textContent = data.idmodulo; // Accede a las propiedades del 'item'
+                        id_userCell.textContent = data.desc_modulo; // Accede a las propiedades del 'item'
+                        //full_nameCell.textContent = data.full_name;
+                        
+
+                        const idCheck = document.createElement('input');
+                        idCheck.type = 'checkbox';
+                        // Es CRÍTICO darle un ID, especialmente si vas a usar un <label> asociado
+                        idCheck.id = 'checkModulo'; // Un ID único y descriptivo
+                        idCheck.name = 'moduloAccion'; // Nombre para enviar en formularios
+
+
+                        if (data.estatus === 't') {
+                            idCheck.checked = true;
+                        } else {
+                            idCheck.checked = false; // Explícito para claridad, aunque es el valor por defecto
+                        }
+
+
+
+                        //idCheck.value  = '1';
+                        //nuevoCheckbox.checked  = 'true';
+
+                        modulosCell.appendChild(idCheck);
+
+
+                        idCheck.onclick = function() {
+                         const iusuario= idusuario;
+                         const idmodulo= data.id_view;
+                         $('#ModalModulos').modal('show'); // abrir
+                         AsignacionModulo(idmodulo,iusuario);
+                        };
+
+                    });
+
+                    //console.log('Datos de usuario insertados:', userData); // Agrega esta línea
+
+
+                    // Inicialización de DataTables
+                    if ($.fn.DataTable.isDataTable('#tabla-modulo')) {
+                        $('#tabla-modulo').DataTable().destroy();
+                    }
+                    $('#tabla-modulo').resizableColumns();
+
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="11">Error al cargar</td></tr>';
+                    console.error('Error:', response.message);
+                }
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="11">Error al procesar la respuesta</td></tr>';
+                console.error('Error parsing JSON:', error);
+            } 
+        }else if (xhr.status === 404) {
+                tbody.innerHTML = '<tr><td colspan="11">No se encontraron usuarios</td></tr>';
+        } else {
+            tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+            console.error('Error:', xhr.status, xhr.statusText);
+        }
+    };
+    xhr.onerror = function() {
+        tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+        console.error('Error de red');
+    };
+    const datos = `action=ModuloUsers&id_usuario=${encodeURIComponent(id_usuario)}`;
+    xhr.send(datos);
+}
+
+document.addEventListener('DOMContentLoaded', VerModulos);
+
+
+
+
+function AsignacionModulo(idmodulo,iusuario){
+
+
+const id_modulo = idmodulo;
+const id_usuario = iusuario;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/AsignacionModulo`); // Asegúrate de que esta sea la ruta correcta en tu backend
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Asignado',
+                        text: response.message,
+                        color: 'black',
+                        timer: 2500,
+                        timerProgressBar: true,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        willClose: () => {
+                            setTimeout(() => {
+                                location.reload(); // Recarga la página después del temporizador
+                            }, 1000);
+                        }
+                    });
+                    document.getElementById('idSelectionTec').value = '';
+                    currentTicketId = null;
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al asignar',
+                        text: response.message,
+                        color: 'black'
+                    });
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error en el servidor',
+                    text: 'Ocurrió un error al procesar la respuesta.',
+                    color: 'black'
+                });
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar con el servidor.',
+                color: 'black'
+            });
+        }
+    };
+    const datos = `action=AsignacionModulo&id_modulo=${encodeURIComponent(id_modulo)}&id_usuario=${encodeURIComponent(id_usuario)}`;
+    xhr.send(datos);
 }

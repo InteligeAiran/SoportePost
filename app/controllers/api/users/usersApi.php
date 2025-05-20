@@ -108,7 +108,23 @@ class users extends Controller {
                 case 'GetMostrarUsuarioEdit':
                 $id_user = isset($_POST['id_user']) ? trim($_POST['id_user']) : '';
                     $this->handleGetMostrarUsuarioEdit($id_user);
-                break;    
+                break;   
+
+                case 'ModuloUsers':
+                    if ($method === 'POST') {
+                        //var_dump($_POST); // Para depuración
+                        $this->handleGetUsersModulos();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/ModuloUsers'], 405);
+                    }
+                break; 
+
+                case 'AsignacionModulo':
+                    if($method === 'POST'){
+                        $this->handleAsignacionModulo();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/AsignacionModulo'], 405);
+                    }
 
 
                 default:
@@ -415,6 +431,42 @@ class users extends Controller {
  }
 
 
+    public function handleGetUsersModulos(){
+
+        $id_usuario = isset($_POST['id_usuario']) ? $_POST['id_usuario'] : '';
+
+        //var_dump($id_usuario );
+
+        $repository = new   UserRepository(); // Inicializa el repositorio
+        $result = $repository->getModuloUsers($id_usuario);
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'users' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay usuarios disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
+
+
+
+    public function handleAsignacionModulo(){
+        $id_modulo     = isset($_POST['id_modulo']) ? $_POST['id_modulo'] : '';
+        $id_usuario      = isset($_POST['id_usuario']) ? $_POST['id_usuario'] : '';
+
+        //var_dump($id_modulo,$id_usuario);
+      
+        $repository = new UserRepository(); // Inicializa el repositorio
+        $result = $repository->AsignacionModulo($id_modulo, $id_usuario);
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
+        }
+    }
 
     // ... otras funciones handleSearchSerialData, etc.
 }
