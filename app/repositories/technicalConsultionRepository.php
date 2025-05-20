@@ -173,8 +173,8 @@ class TechnicalConsultionRepository
         return $failures;
     }
 
-    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio){
-        $result = $this->model->SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio);
+    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio, $rif){
+        $result = $this->model->SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio, $rif);
         return $result;
     }
 
@@ -229,8 +229,8 @@ class TechnicalConsultionRepository
 
     
     public function AssignTicket($id_ticket, $id_tecnico){
-        $result = $this->model->UpdateAccion($id_tecnico, $id_ticket);
-        return $result;
+        $result = $this->model->UpdateAccion($id_ticket, $id_tecnico); // ¡Ahora el orden es correcto!
+            return $result;
     }
 
 }

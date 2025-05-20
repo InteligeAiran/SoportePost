@@ -162,6 +162,80 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 //console.log('FrontEnd.js loaded successfully!');
 
+function AssignTicket(){
+    const id_tecnico_asignado = document.getElementById('idSelectionTec').value;
+    /*console.log('ID del ticket a asignar:', currentTicketId); // Agrega un log más descriptivo
+    console.log('ID del ticket a asignar:', currentTicketId); // Agrega un log más descriptivo*/
+
+    if (!currentTicketId || !id_tecnico_asignado) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Por favor, selecciona un ticket antes de asignar un técnico.',
+            color: 'black'
+        });
+        return;
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/AssignTicket`); // Asegúrate de que esta sea la ruta correcta en tu backend
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Asignado',
+                        text: response.message,
+                        color: 'black',
+                        timer: 2500,
+                        timerProgressBar: true,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        willClose: () => {
+                            setTimeout(() => {
+                                location.reload(); // Recarga la página después del temporizador
+                            }, 1000);
+                        }
+                    });
+                    document.getElementById('idSelectionTec').value = '';
+                    currentTicketId = null;
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al asignar',
+                        text: response.message,
+                        color: 'black'
+                    });
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error en el servidor',
+                    text: 'Ocurrió un error al procesar la respuesta.',
+                    color: 'black'
+                });
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar con el servidor.',
+                color: 'black'
+            });
+        }
+    };
+    const datos = `action=AssignTicket&id_ticket=${encodeURIComponent(currentTicketId)}&id_tecnico=${encodeURIComponent(id_tecnico_asignado)}`;
+    console.log(datos);
+    xhr.send(datos);
+}
+
 function getTecnico2(){
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
@@ -261,78 +335,3 @@ function GetRegionUser(id_user){
 }
 
 document.addEventListener('DOMContentLoaded', getTecnico2);
-
-
-function AssignTicket(){
-    const id_tecnico_asignado = document.getElementById('idSelectionTec').value;
-    /*console.log('ID del ticket a asignar:', currentTicketId); // Agrega un log más descriptivo
-    console.log('ID del ticket a asignar:', currentTicketId); // Agrega un log más descriptivo*/
-
-    if (!currentTicketId || !id_tecnico_asignado) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Por favor, selecciona un ticket antes de asignar un técnico.',
-            color: 'black'
-        });
-        return;
-    }
-
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/AssignTicket`); // Asegúrate de que esta sea la ruta correcta en tu backend
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Asignado',
-                        text: response.message,
-                        color: 'black',
-                        timer: 2500,
-                        timerProgressBar: true,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        },
-                        willClose: () => {
-                            setTimeout(() => {
-                                location.reload(); // Recarga la página después del temporizador
-                            }, 1000);
-                        }
-                    });
-                    document.getElementById('idSelectionTec').value = '';
-                    currentTicketId = null;
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error al asignar',
-                        text: response.message,
-                        color: 'black'
-                    });
-                }
-            } catch (error) {
-                console.error('Error parsing JSON:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error en el servidor',
-                    text: 'Ocurrió un error al procesar la respuesta.',
-                    color: 'black'
-                });
-            }
-        } else {
-            console.error('Error:', xhr.status, xhr.statusText);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de conexión',
-                text: 'No se pudo conectar con el servidor.',
-                color: 'black'
-            });
-        }
-    };
-    const datos = `action=AssignTicket&id_ticket=${encodeURIComponent(currentTicketId)}&id_tecnico=${encodeURIComponent(id_tecnico_asignado)}`;
-    console.log(datos);
-    xhr.send(datos);
-}

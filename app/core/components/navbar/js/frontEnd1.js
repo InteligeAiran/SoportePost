@@ -1415,6 +1415,18 @@ function SendDataFailure2(idStatusPayment) {
     const inputAnticipo1 = document.getElementById('DownloadAntici');
     const envioButtonContainer = document.querySelector('#DownloadEnvi').parentNode; // Contenedor del botón de envío
 
+    /*console.log(
+        "Datos a enviar para SaveDataFalla2:",
+        "\n  Descripción de Falla:", descrpFailure,
+        "\n  RIF:", rif,
+        "\n  Serial:", serial,
+        "\n  Coordinador (ID):", coordinador,
+        "\n  ID de Estado de Pago:", idStatusPayment,
+        "\n  ID de Usuario:", id_user,
+        "\n  Archivo Envío:", archivoEnvio,
+        "\n  Archivo Exoneración:", archivoExoneracion,
+        "\n  Archivo Anticipo:", archivoAnticipo
+    );*/
 
     // Validaciones generales
     if (!descrpFailure) {
@@ -1463,8 +1475,8 @@ function SendDataFailure2(idStatusPayment) {
     formData.append('nivelFalla', nivelFalla);
     formData.append('id_status_payment', idStatusPayment);
     formData.append('id_user', id_user);
+    formData.append('rif', rif);
     
-    console.log(descrpFailure, serial, coordinador, nivelFalla, idStatusPayment, id_user);
     if (envioButtonContainer.style.display !== 'none' && archivoEnvio) {
         formData.append('archivoEnvio', archivoEnvio);
     }

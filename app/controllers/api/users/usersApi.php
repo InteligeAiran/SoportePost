@@ -344,7 +344,7 @@ class users extends Controller {
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
         $repository = new UserRepository(); // Inicializa el repositorio
         $result = $repository->GetRegionUsersById($id_user);
-       // var_dump($result);
+
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'regionusers' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores

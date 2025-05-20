@@ -3,6 +3,7 @@ class asignar_tecnico extends Controller {
         public $view;
 
     function __construct() {
+        session_start();
         parent::__construct();
         if (empty($_SESSION["id_user"])) {
             // Si no hay una sesión activa, redirigir a la página de inicio de sesión
@@ -17,8 +18,8 @@ class asignar_tecnico extends Controller {
      exit();
     }
 
+
     public function index(): void {
-        session_start();
         Model::exists('user');
 
         Model::exists('consulta_rif');

@@ -334,13 +334,14 @@ class Consulta extends Controller {
         $coordinador = isset($_POST['coordinador']) ? $_POST['coordinador'] : '';
         $nivelFalla = isset($_POST['nivelFalla']) ? $_POST['nivelFalla'] : '';
         $id_status_payment = isset($_POST['id_status_payment']) ? $_POST['id_status_payment'] : '';
+        $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
         $rutaEnvio = null;
         $rutaExo = null;
         $rutaAnticipo = null;
         $mimeTypeExo = null;
         $mimeTypeAnticipo = null;
         $mimeTypeEnvio = null;
-    
+
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
     
         if (!empty($serial)) {
@@ -390,8 +391,7 @@ class Consulta extends Controller {
                             return;
                         }
                     }
-    
-                    $result = $repository->SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio);
+                    $result = $repository->SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio, $rif);
     
                     if ($result) {
                         $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
@@ -514,9 +514,6 @@ class Consulta extends Controller {
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketData1();
 
-        //Guardar archivo de envío
-
-             
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
@@ -558,7 +555,6 @@ class Consulta extends Controller {
     public function handleAssignTicket(){
         $id_tecnico     = isset($_POST['id_tecnico']) ? $_POST['id_tecnico'] : '';
         $id_ticket      = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
-
       
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->AssignTicket($id_ticket, $id_tecnico);
