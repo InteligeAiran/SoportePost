@@ -9,7 +9,14 @@ class dashboard extends Controller {
 
     function __construct() {
         parent::__construct();
-      
+        if (empty($_SESSION["id_user"])) {
+            // Si no hay una sesión activa, redirigir a la página de inicio de sesión
+            // Set the message to be displayed
+            $this->view->message = 'Por favor inicie sesión para acceder al sistema.';
+            $this->view->redirectURL = self::getURL() . 'login'; // URL for JavaScript redirection
+            // Load a specific view that will display the message and then redirect
+            exit(); // Stop further execution of the dashboard controller
+        }
     }
 
     function index() {

@@ -137,20 +137,40 @@ class consulta_rifModel extends Model
     }
 
     public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user){
-        try {
-            $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); // Assuming '$this->db' is now a valid PgSql\Connection
-            $escaped_falla = pg_escape_literal($this->db->getConnection(), $falla); 
-            $escaped_nivelFalla = pg_escape_literal($this->db->getConnection(), $nivelFalla);
-            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
-            $sql = "SELECT SaveDataFalla(".$escaped_serial.", ".$escaped_falla.", ".$escaped_nivelFalla.", ".$escaped_id_user.");";
-            $sql.= "SELECT InsertTicketFailure(".$escaped_falla.");";
-            $result = $this->db->pgquery($sql);
-            $this->db->closeConnection(); // Close the connection if needed
-             return $result;
-        } catch (Throwable $e) {
-            // Handle exception
+    try {
+        $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial);
+        $escaped_falla = pg_escape_literal($this->db->getConnection(), $falla);
+        $escaped_nivelFalla = pg_escape_literal($this->db->getConnection(), $nivelFalla);
+        $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+
+        // Ejecutar la función para guardar la falla y obtener el ID del ticket creado
+        $sqlSave = "SELECT SaveDataFalla(".$escaped_serial.", ".$escaped_falla.", ".$escaped_nivelFalla.", ".$escaped_id_user.");";
+        $resultSave = $this->db->pgquery($sqlSave);
+        $ticketData = pg_fetch_assoc($resultSave);
+        $idTicketCreado = $ticketData['savedatafalla']; // Capturar el ID del ticket creado
+        $escaped_id_ticket = pg_escape_literal($this->db->getConnection(), $idTicketCreado);
+
+        // Ejecutar la función para insertar la falla
+        $sqlFailure = "SELECT InsertTicketFailure(".$escaped_id_ticket.", ".$escaped_falla.");";
+        $resultFailure = $this->db->pgquery($sqlFailure);
+
+        if($resultSave && $resultFailure){
+            $sqlInsertUserTicket = sprintf("SELECT public.insertintouser_ticket(%d::integer, %d::integer, %d::integer, NOW()::timestamp without time zone, NOW()::timestamp without time zone);", $idTicketCreado, (int)$nivelFalla, (int)$id_user);
+            $resultUserTicket = $this->db->pgquery($sqlInsertUserTicket);
+            //var_dump($sqlInsertUserTicket);
+            $this->db->closeConnection();
+            return array('save_result' => $resultSave, 'failure_result' => $resultFailure, 'user_ticket_result' => $resultUserTicket);
+        } else {
+            $this->db->closeConnection();
+            return array('save_result' => $resultSave, 'failure_result' => $resultFailure);
         }
+
+    } catch (Throwable $e) {
+        // Handle exception
+        $this->db->closeConnection();
+        return array('error' => $e->getMessage()); // Devolver información del error para depuración
     }
+}
 
     /*public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaBaseDatos, $id_status_payment,  $rutaExo, $rutaAnticipo, $id_user){
         try {
@@ -209,6 +229,8 @@ class consulta_rifModel extends Model
                     '".($rutaExo ?? '')."'::TEXT, '".($rutaAnticipo ?? '')."'::TEXT, ".($escaped_mimeTypeExo !== null ? $escaped_mimeTypeExo."::TEXT" : 'NULL').", ".($escaped_mimeTypeAnticipo !== null ? $escaped_mimeTypeAnticipo."::TEXT" : 'NULL').", ".($escaped_mimeTypeEnvio !== null ? $escaped_mimeTypeEnvio."::TEXT" : 'NULL').")";
             $result = $this->db->pgquery($sql);
             //var_dump($sql);
+
+
     
             if($result){
                 $sqlFailure = "SELECT InsertTicketFailure(".$escaped_descripcion.");";

@@ -2,8 +2,19 @@
 class asignar_tecnico extends Controller {
         public $view;
 
-    public function __construct() {
+    function __construct() {
         parent::__construct();
+        if (empty($_SESSION["id_user"])) {
+            // Si no hay una sesión activa, redirigir a la página de inicio de sesión
+            $this->view->message = 'Por favor inicie sesión para acceder al sistema.';
+            $this->redirectToLogin();
+        }
+    }
+
+    private function redirectToLogin() {
+        $loginUrl = self::getURL() . 'login';
+        header("Location: $loginUrl");
+     exit();
     }
 
     public function index(): void {
