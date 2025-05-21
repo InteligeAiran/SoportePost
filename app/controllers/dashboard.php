@@ -4,7 +4,6 @@ require_once __DIR__ . "/../../libs/Controller.php";
 
 session_start();
 
-
 class dashboard extends Controller {
 
     function __construct() {

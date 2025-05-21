@@ -59,7 +59,7 @@ function getTicketData() {
                         AssingmentButton.classList.add('btn', 'btn-sm', 'btn-info'); // Añade clases de Bootstrap para estilo
                         AssingmentButton.setAttribute('data-bs-toggle', 'tooltip'); // Agrega el atributo data-bs-toggle
                         AssingmentButton.setAttribute('data-bs-placement', 'top'); // O 'bottom', 'left', 'right' para la posición
-                        AssingmentButton.title = 'Enviar a Taller'; // El texto del tooltip va en el atributo title
+                        AssingmentButton.title = 'Asignar Técnico'; // El texto del tooltip va en el atributo title
 
                         // Inicializa los tooltips de Bootstrap en tu script (asegúrate de que el DOM esté cargado)
             

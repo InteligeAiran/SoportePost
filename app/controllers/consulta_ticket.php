@@ -3,7 +3,7 @@
 require_once __DIR__ . "/../../libs/session.php";
 require_once __DIR__ . "/../../libs/Controller.php";
 
-session_start();;
+session_start();
 class consulta_ticket extends Controller {
         public $view;
 

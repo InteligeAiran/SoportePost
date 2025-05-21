@@ -1,5 +1,5 @@
 <?php
-class gestionusers extends Controller {
+class taller extends Controller {
         public $view;
 
     function __construct() {
@@ -38,8 +38,8 @@ class gestionusers extends Controller {
         $this->validataExpiresSessions($usuario_id);
 
         // Incorporates the FrontEnd Controller
-        $this->view->js = array('User/js/frontEnd.js');
-        $this->view->render('User/index', 1);
+        $this->view->js = array('taller/js/frontEnd.js');
+        $this->view->render('taller/index', 1);
     }
 
     private function validataExpiresSessions($usuario_id) {

@@ -227,11 +227,30 @@ class TechnicalConsultionRepository
         } 
     }
 
-    
     public function AssignTicket($id_ticket, $id_tecnico){
         $result = $this->model->UpdateAccion($id_ticket, $id_tecnico); // ¡Ahora el orden es correcto!
-            return $result;
+        return $result;
     }
 
+    public function SendToTaller($id_ticket){
+        $result = $this->model->SendToTaller($id_ticket); // ¡Ahora el orden es correcto!
+        return $result;
+    }
+
+    public function GetTicketDataLab(){
+        $result = $this->model->GetTicketDataLab();
+        if ($result) {
+            //var_dump($result);  
+            $ticket = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            //var_dump($agente);
+            return $ticket;
+        } else {
+            return null;
+        }
+    }
 }
 ?>

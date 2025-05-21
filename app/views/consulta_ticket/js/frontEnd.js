@@ -436,7 +436,7 @@ function SendRegions() {
                             downl_send_to_rosal: 'Enviado a Rosal',
                             downl_send_fromrosal: 'Enviado desde Rosal A destino',
                             date_send_lab: 'Fecha Envío Lab',
-                            date_send_torosal_fromlab: 'Fecha Envío a rosal',
+                            date_send_torosal_fromlab: 'Fecha Envío arosal',
                             id_status_domiciliacion: 'Estatus Domiciliación',
                             date_sendkey: 'Fecha Envío Key',
                             date_receivekey: 'Fecha Recibo Key',

@@ -55,7 +55,7 @@ function getTicketData() {
                         AssingmentButton.classList.add('btn', 'btn-sm', 'btn-info'); // Añade clases de Bootstrap para estilo
                         AssingmentButton.setAttribute('data-bs-toggle', 'tooltip'); // Agrega el atributo data-bs-toggle
                         AssingmentButton.setAttribute('data-bs-placement', 'top'); // O 'bottom', 'left', 'right' para la posición
-                        AssingmentButton.title = 'Asignar a técnico'; // El texto del tooltip va en el atributo title
+                        AssingmentButton.title = 'Enviar a Taller'; // El texto del tooltip va en el atributo title
 
                         // Inicializa los tooltips de Bootstrap en tu script (asegúrate de que el DOM esté cargado)
             
@@ -130,29 +130,90 @@ function getTicketData() {
 document.addEventListener('DOMContentLoaded', getTicketData);
 
 document.addEventListener('DOMContentLoaded', function() {
-
-    // Obtén la referencia al botón cerrar FUERA de la función getTicketData y del bucle
     const cerrar = document.getElementById('close-button');
-    const icon   = document.getElementById('Close-icon');
-    const assignButton = document.getElementById('assingment-button'); // Obtén el botón "Asignar"
-
+    const icon = document.getElementById('Close-icon');
+    
+    // CAMBIO AQUI: Usa un nombre diferente para la variable del botón, por ejemplo, `sendToTallerButton`
+    const sendToTallerButton = document.getElementById('SendToTaller-button');
 
     // Agrega el event listener al botón cerrar
-    cerrar.addEventListener('click', function() {
-        if (modalInstance) {
-            modalInstance.hide();
-            currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
-        }
-        document.getElementById('idSelectionTec').value = '';
-    });
+    if (cerrar) { // Siempre es buena práctica verificar si el elemento existe antes de añadir un listener
+        cerrar.addEventListener('click', function() {
+            if (modalInstance) {
+                modalInstance.hide();
+                currentTicketId = null;
+            }
+            document.getElementById('idSelectionTec').value = '';
+        });
+    } else {
+        console.error("Elemento con ID 'close-button' no encontrado.");
+    }
 
-    icon.addEventListener('click', function() {
-        if (modalInstance) {
-            modalInstance.hide();
-            currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
-        }
-        document.getElementById('idSelectionTec').value = '';
-    });
-    // Agrega el event listener al botón "Asignar"
-    assignButton.addEventListener('click', AssignTicket);
+    if (icon) {
+        icon.addEventListener('click', function() {
+            if (modalInstance) {
+                modalInstance.hide();
+                currentTicketId = null;
+            }
+            document.getElementById('idSelectionTec').value = '';
+        });
+    } else {
+        console.error("Elemento con ID 'Close-icon' no encontrado.");
+    }
+
+    // Agrega el event listener al botón "Enviar a Taller"
+    if (sendToTallerButton) { // Verifica si el botón existe antes de añadir el listener
+        sendToTallerButton.addEventListener('click', handleSendToTallerClick); // Llama a una función con otro nombre
+    } else {
+        console.error("Elemento con ID 'SendToTaller-button' no encontrado. Esto está causando el TypeError.");
+    }
 });
+
+// CAMBIO AQUI: Renombra la función para que no haya conflicto con el nombre de la variable del botón
+function handleSendToTallerClick() {
+    const idTicket = currentTicketId; // Usa la variable global para obtener el ID del ticket
+
+    if (idTicket) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SendToTaller`);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'El ticket del Dispostitivo POS fue enviado a Taller',
+                        text: response.message,
+                        color: 'black',
+                        timer: 1500,
+                        timerProgressBar: true,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        willClose: () => {
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        }
+                    });
+                    modalInstance.hide(); // Cierra el modal
+                    getTicketData(); // Recarga los datos de la tabla
+                } else {
+                    alert('Error al enviar el ticket: ' + response.message);
+                }
+            } else {
+                alert('Error de conexión: ' + xhr.statusText);
+            }
+        };
+        xhr.onerror = function() {
+            alert('Error de red');
+        };
+
+        const data = `action=SendToTaller&id_ticket=${encodeURIComponent(idTicket)}`;
+        xhr.send(data);
+    } else {
+        alert('Por favor, selecciona un ticket.');
+    }
+}

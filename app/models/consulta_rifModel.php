@@ -197,78 +197,6 @@ class consulta_rifModel extends Model
         }
     }
 
-    /*public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaBaseDatos, $id_status_payment,  $rutaExo, $rutaAnticipo, $id_user){
-        try {
-            $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial);
-            $escaped_descripcion = pg_escape_literal($this->db->getConnection(), $descripcion);
-            $escaped_nivelFalla = pg_escape_literal($this->db->getConnection(), $nivelFalla);
-            $escaped_id_status_payment = pg_escape_literal($this->db->getConnection(), $id_status_payment);
-            $escaped_coordinador = pg_escape_literal($this->db->getConnection(), $coordinador);
-            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
-    
-            $sql = "SELECT * FROM save_data_failures2(".$escaped_serial."::TEXT, ".$escaped_descripcion."::INTEGER, ".$escaped_nivelFalla."::INTEGER,
-                    ".$escaped_id_status_payment."::INTEGER, ".$escaped_coordinador."::INTEGER, ".$escaped_id_user."::INTEGER, '".$rutaBaseDatos."'::TEXT,
-                    '".$rutaExo."'::TEXT, '".$rutaAnticipo."'::TEXT)";
-            $result = $this->db->pgquery($sql);
-            //var_dump($sql);
-
-            if($result){
-                $sqlFailure = "SELECT InsertTicketFailure(".$escaped_descripcion.");";
-                $resultFailure = $this->db->pgquery($sqlFailure);
-                // Puedes devolver ambos resultados si es necesario
-                return array('save_result' => $result, 'failure_result' => $resultFailure);
-            } else {
-                return $result;
-            }
-        } catch (Throwable $e) {
-                // Handle exception
-        }
-    }*/
-
-    /*public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaBaseDatos, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo = null, $mimeTypeAnticipo = null, $mimeTypeEnvio = null){
-        try {
-            $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial);
-            $escaped_descripcion = pg_escape_literal($this->db->getConnection(), $descripcion);
-            $escaped_nivelFalla = pg_escape_literal($this->db->getConnection(), $nivelFalla);
-            $escaped_id_status_payment = pg_escape_literal($this->db->getConnection(), $id_status_payment);
-            $escaped_coordinador = pg_escape_literal($this->db->getConnection(), $coordinador);
-            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
-    
-            $escaped_mimeTypeExo = null;
-            if ($mimeTypeExo !== null) {
-                $escaped_mimeTypeExo = pg_escape_literal($this->db->getConnection(), $mimeTypeExo);
-            }
-    
-            $escaped_mimeTypeAnticipo = null;
-            if ($mimeTypeAnticipo !== null) {
-                $escaped_mimeTypeAnticipo = pg_escape_literal($this->db->getConnection(), $mimeTypeAnticipo);
-            }
-    
-            $escaped_mimeTypeEnvio = null;
-            if ($mimeTypeEnvio !== null) {
-                $escaped_mimeTypeEnvio = pg_escape_literal($this->db->getConnection(), $mimeTypeEnvio);
-            }
-    
-            $sql = "SELECT * FROM save_data_failures2(".$escaped_serial."::TEXT, ".$escaped_descripcion."::INTEGER, ".$escaped_nivelFalla."::INTEGER,
-                    ".$escaped_id_status_payment."::INTEGER, ".$escaped_coordinador."::INTEGER, ".$escaped_id_user."::INTEGER, '".$rutaBaseDatos."'::TEXT,
-                    '".($rutaExo ?? '')."'::TEXT, '".($rutaAnticipo ?? '')."'::TEXT, ".($escaped_mimeTypeExo !== null ? $escaped_mimeTypeExo."::TEXT" : 'NULL').", ".($escaped_mimeTypeAnticipo !== null ? $escaped_mimeTypeAnticipo."::TEXT" : 'NULL').", ".($escaped_mimeTypeEnvio !== null ? $escaped_mimeTypeEnvio."::TEXT" : 'NULL').")";
-            $result = $this->db->pgquery($sql);
-            //var_dump($sql);
-
-
-    
-            if($result){
-                $sqlFailure = "SELECT InsertTicketFailure(".$escaped_descripcion.");";
-                $resultFailure = $this->db->pgquery($sqlFailure);
-                return array('save_result' => $result, 'failure_result' => $resultFailure);
-            } else {
-                return $result;
-            }
-        } catch (Throwable $e) {
-                // Handle exception
-        }
-    }*/
-
     public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaBaseDatos, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo = null, $mimeTypeAnticipo = null, $mimeTypeEnvio = null, $rif){
         try {
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial);
@@ -315,15 +243,16 @@ class consulta_rifModel extends Model
                 $resultFailure = $this->db->pgquery($sqlFailure);
 
                 // Llamar a insertintouser_ticket AQUI
-                $sqlInsertUserTicket = sprintf("SELECT public.insertintouser_ticket(%d::integer, %d::integer, NOW()::timestamp without time zone, NOW()::timestamp without time zone, %s::integer, NOW()::timestamp without time zone, %s::integer, %s::timestamp without time zone);",
+                $sqlInsertUserTicket = sprintf("SELECT public.insertintouser_ticket(%d::integer, %d::integer, NOW()::timestamp without time zone, NULL::timestamp without time zone, %s::integer, NOW()::timestamp without time zone, %s::integer, %s::timestamp without time zone);",
                     //Los parametros de la funcion insertintouser_ticket son:  p_id_ticket integer, p_id_tecnico_n1 integer, p_date_create_ticket timestamp without time zone, p_date_end_ticket timestamp without time zone, p_id_coordinator integer, p_date_sendcoordinator timestamp without time zone, p_id_tecnico_n2 integer, p_date_assign_tec2 timestamp without time zone
                     $idTicketCreado,  // Necesitas obtener este valor de alguna parte.  Tal vez de la llamada a savedatafalla2?
                     (int)$id_user,
-                    $escaped_coordinador, // Usar el valor del coordinador
+                    (int)$coordinador, // Usar el valor del coordinador
                     'NULL', // Puedes usar NULL o una variable si tienes el id_tecnico_n2
+                    'NULL',  // Puedes usar NULL o una variable si tienes la fecha
                     'NULL'  // Puedes usar NULL o una variable si tienes la fecha
-                );
 
+                );
                 $resultUserTicket = $this->db->pgquery($sqlInsertUserTicket);
 
                 if (!$resultUserTicket) {
@@ -464,6 +393,54 @@ class consulta_rifModel extends Model
             // Considera manejar el error de forma más robusta aquí, por ejemplo, loguear el error y devolver un resultado 'false'
             error_log("Error en UpdateAccion (PHP): " . $e->getMessage());
             return ['success' => false, 'message' => 'Error interno: ' . $e->getMessage()];
+        }
+    }
+
+   public function SendToTaller($id_ticket){
+        try {
+            // Escapado del ID del ticket para prevenir inyección SQL
+            $escaped_id_ticket = pg_escape_literal($this->db->getConnection(), $id_ticket);
+
+            // 1. Ejecutar la primera actualización (fecha del taller)
+            $sqlDateUpdate = "SELECT * FROM updateticketdatetaller(" . $escaped_id_ticket . ")";
+            $resultDateUpdate = Model::getResult($sqlDateUpdate, $this->db);
+
+
+            // 2. Verificar el resultado de la primera actualización
+            if (!$resultDateUpdate) {
+                // Si falla la actualización de la fecha, registra el error y retorna una respuesta de fallo.
+                error_log("Error al actualizar fecha del ticket: " . $id_ticket);
+                return ['success' => false, 'message' => 'Error al actualizar la fecha del ticket.'];
+            }
+
+            // 3. Si la primera actualización fue exitosa, ejecuta la segunda (estado del ticket a taller)
+            $sqlStatusUpdate = "SELECT * FROM UpdateTicketStatusTaller(" . $escaped_id_ticket . ")";
+            $resultStatusUpdate = Model::getResult($sqlStatusUpdate, $this->db);
+
+            // 4. Verificar el resultado de la segunda actualización
+            if (!$resultStatusUpdate) {
+                // Si falla la actualización del estado, registra el error y retorna una respuesta de fallo.
+                error_log("Error al actualizar estado del ticket a taller: " . $id_ticket);
+                return ['success' => false, 'message' => 'Error al actualizar el estado del ticket a taller.'];
+            }
+
+            // 5. Si ambas operaciones fueron exitosas, retorna una respuesta de éxito.
+            return ['success' => true, 'message' => 'Ticket enviado a taller correctamente.'];
+
+        } catch (Throwable $e) {
+            // 6. Manejo general de excepciones: registra la excepción y retorna una respuesta de error genérico.
+            error_log("Excepción en SendToTaller para ticket " . $id_ticket . ": " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
+            return ['success' => false, 'message' => 'Ocurrió un error inesperado al enviar el ticket a taller.'];
+        }
+    }
+
+    public function GetTicketDataLab(){
+        try{
+            $sql = "SELECT * FROM get_tickets_for_taller()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
         }
     }
 }
