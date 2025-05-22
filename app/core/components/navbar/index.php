@@ -52,7 +52,8 @@
                 </a>
             </li>
 
-            <hr class="horizontal dark my-3"> <li class="nav-item mt-3">
+            <hr class="horizontal dark my-3"> 
+            <li class="nav-item mt-3">
                 <h6 style="color: white;" class="ps-4 ms-2">Gestión de Tickets</h6>
             </li>
             <li class="nav-item">

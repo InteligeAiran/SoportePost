@@ -252,5 +252,25 @@ class TechnicalConsultionRepository
             return null;
         }
     }
+
+    public function GetSatusTaller(){
+        $result = $this->model->GetSatusTaller();
+        if ($result) {
+            //var_dump($result);  
+            $estatus = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $estatus[] = $agente;
+            }
+            //var_dump($agente);
+            return $estatus;
+        } else {
+            return null;
+        }
+    }
+
+    public function UpdateTicketStatus(){
+        $result = $this->model->UpdateTicketStatus();
+    }
 }
 ?>

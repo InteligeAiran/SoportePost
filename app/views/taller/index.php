@@ -139,10 +139,6 @@ function mi_navbar() {
                                     <label for="modalNewStatus" class="form-label">Nuevo Estatus:</label>
                                     <select class="form-select" id="modalNewStatus" required></select>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="modalComments" class="form-label">Comentarios:</label>
-                                    <textarea class="form-control" id="modalComments" rows="3"></textarea>
-                                </div>
                             </form>
                         </div>
                         <div class="modal-footer">

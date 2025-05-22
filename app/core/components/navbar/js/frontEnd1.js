@@ -5,8 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const soportePosLink = document.querySelector('#crearTicketDropdown + .dropdown-menu a[data-value="Soporte POS"]');
     const consultaRifLink = document.querySelector('#Reportes + .dropdown-menu a[href="consulta_rif"]');
 
-
-
     // Función para mostrar/ocultar el sidebar
     function toggleSidenav() {
         sidenav.classList.toggle('active');

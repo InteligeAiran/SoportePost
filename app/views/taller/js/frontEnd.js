@@ -115,7 +115,7 @@ function getTicketData() {
                             width: '8%',
                             render: function (data, type, row) {
                                 const idTicket = row.id_ticket;
-                                const currentStatus = row.name_status_ticket; // Asegúrate de usar la propiedad correcta para el estatus
+                                const currentStatus = row.name_status_lab; // Asegúrate de usar la propiedad correcta para el estatus
 
                                 if (currentStatus !== 'Cerrado') {
                                     // *** ESTE ES EL CAMBIO CLAVE ***
@@ -265,38 +265,91 @@ $(document).ready(function() {
     $('#saveStatusChangeBtn').on('click', function() {
         const idTicket = $('#modalTicketId').val();
         const newStatus = $('#modalNewStatus').val();
-        const comments = $('#modalComments').val();
+        //const comments = $('#modalComments').val();
 
         if (!newStatus) {
-            alert('Por favor, selecciona un nuevo estatus.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Notificación!',
+                text: 'Por favor, selecciona un nuevo estatus.',
+                color: 'black'
+            });
             return;
         }
-
-        const updateApiUrl = `${ENDPOINT_BASE}${APP_PATH}api/actualizar/UpdateTicketStatus`;
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/UpdateTicketStatus`);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         
-        $.ajax({
-            url: updateApiUrl,
-            type: 'POST', 
-            contentType: 'application/json',
-            data: JSON.stringify({
-                id_ticket: idTicket,
-                new_status: newStatus,
-                comments: comments
-            }),
-            success: function(response) {
-                if (response.success) {
-                    alert('Estatus del ticket actualizado con éxito.');
-                    $('#changeStatusModal').modal('hide');
-                    getTicketData(); // Recargar la tabla
-                } else {
-                    alert('Error al actualizar el estatus: ' + (response.message || 'Error desconocido'));
-                    console.error('Error al actualizar estatus:', response);
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        alert('Estatus del ticket actualizado con éxito.');
+                        $('#changeStatusModal').modal('hide');
+                        getTicketData(); // Recargar la tabla
+                    } else {
+                        document.getElementById('rifMensaje').innerHTML += '<br>Error al obtener los Técnicos.';
+                        console.error('Error al obtener los técnicos:', response.message);
+                    }
+                } catch (error) {
+                    console.error('Error parsing JSON:', error);
+                    document.getElementById('rifMensaje').innerHTML += '<br>Error al procesar la respuesta de los Técnicos.';
                 }
-            },
-            error: function(xhr, status, error) {
-                alert('Error de conexión o del servidor al actualizar el estatus.');
-                console.error('AJAX Error:', status, error, xhr.responseText);
+            } else {
+                console.error('Error:', xhr.status, xhr.statusText);
+                document.getElementById('rifMensaje').innerHTML += '<br>Error de conexión con el servidor para los Técnicos.';
             }
-        });
+        };
+
+        const datos = `action=UpdateTicketStatus&id_ticket=${idTicket}&id_new_status=${newStatus}`;
+        xhr.send(datos);
+
     });
 });
+       
+function getStatusLab(){
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetStatusLab`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const select = document.getElementById('modalNewStatus');
+
+                    select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+                    if (Array.isArray(response.estatus) && response.estatus.length > 0) {
+                        response.estatus.forEach(status => {
+                            const option = document.createElement('option');
+                            option.value = status.id_status_lab;
+                            option.textContent = status.name_status_lab;
+                            select.appendChild(option);
+                        });
+                    } else {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No hay Técnicos Disponibles';
+                        select.appendChild(option);
+                    }
+                } else {
+                    document.getElementById('rifMensaje').innerHTML += '<br>Error al obtener los Técnicos.';
+                    console.error('Error al obtener los técnicos:', response.message);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                document.getElementById('rifMensaje').innerHTML += '<br>Error al procesar la respuesta de los Técnicos.';
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+            document.getElementById('rifMensaje').innerHTML += '<br>Error de conexión con el servidor para los Técnicos.';
+        }
+    };
+
+    const datos = `action=GetStatusLab`; // Asegúrate de que esta acción en el backend devuelva los técnicos filtrados
+    xhr.send(datos);
+}
+
+document.addEventListener('DOMContentLoaded', getStatusLab);
