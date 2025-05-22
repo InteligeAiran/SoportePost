@@ -124,6 +124,14 @@ class Consulta extends Controller {
                     }
                 break;
 
+                case 'SendToTaller':
+                    $this->handleSendToTaller();
+                break;
+
+                case 'GetTicketDataLab':
+                    $this->handleGetTicketDataLab();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                 break;
@@ -309,13 +317,14 @@ class Consulta extends Controller {
 
     public function handleSaveFalla1(){
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
+        $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
         $falla = isset($_POST['falla']) ? $_POST['falla'] : '';
         $nivelFalla = isset($_POST['nivelFalla']) ? $_POST['nivelFalla'] : '';
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
         //var_dump($id_user, $serial, $falla, $nivelFalla);
-        if($serial != '' && $falla != '' && $nivelFalla != '' && $id_user != '') {     
-            $result = $repository->SaveDataFalla($serial, $falla, $nivelFalla, $id_user);
+        if($serial != '' && $falla != '' && $nivelFalla != '' && $id_user != '' && $rif != ''){
+            $result = $repository->SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif);
             if ($result) {
                 $this->response(['success' => true, 'message' => 'Se guardaron los datos del Ticket correctamente.'], 200); // Código de estado 200 OK por defecto
             } else {
@@ -333,13 +342,14 @@ class Consulta extends Controller {
         $coordinador = isset($_POST['coordinador']) ? $_POST['coordinador'] : '';
         $nivelFalla = isset($_POST['nivelFalla']) ? $_POST['nivelFalla'] : '';
         $id_status_payment = isset($_POST['id_status_payment']) ? $_POST['id_status_payment'] : '';
+        $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
         $rutaEnvio = null;
         $rutaExo = null;
         $rutaAnticipo = null;
         $mimeTypeExo = null;
         $mimeTypeAnticipo = null;
         $mimeTypeEnvio = null;
-    
+
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
     
         if (!empty($serial)) {
@@ -389,8 +399,7 @@ class Consulta extends Controller {
                             return;
                         }
                     }
-    
-                    $result = $repository->SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio);
+                    $result = $repository->SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio, $rif);
     
                     if ($result) {
                         $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
@@ -513,9 +522,6 @@ class Consulta extends Controller {
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketData1();
 
-        //Guardar archivo de envío
-
-             
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
@@ -557,7 +563,6 @@ class Consulta extends Controller {
     public function handleAssignTicket(){
         $id_tecnico     = isset($_POST['id_tecnico']) ? $_POST['id_tecnico'] : '';
         $id_ticket      = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
-
       
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->AssignTicket($id_ticket, $id_tecnico);
@@ -572,6 +577,34 @@ class Consulta extends Controller {
             $this->response(['success' => false, 'message' => 'Hay campos vacios'], 400); // Código de estado 404 Not Found
         }
     }
-    // ... otras funciones handleSearchSerialData, etc.
+
+    public function handleSendToTaller(){
+        $id_ticket = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->SendToTaller($id_ticket);
+        if ($id_ticket != '') {
+            if($result){
+                $this->response(['success' => true, 'message' => 'Ticket enviado al taller con éxito.'], 200); 
+            }else{
+                $this->response(['success' => false, 'message' => 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
+            }
+        }else{
+            $this->response(['success' => false, 'message' => 'Hay un error'], 400); // Código de estado 404 Not Found
+        }
+    }
+
+    public function handleGetTicketDataLab(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetTicketDataLab();
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
 }
 ?>

@@ -462,8 +462,7 @@ function GuardarUsuariosNew() {
         if (xhr.status === 200) {
             try {
                 const response = JSON.parse(xhr.responseText);
-                if (response.success) {                  
-                    
+                if (response.success) {                                      
                     Swal.fire({
                         icon: 'success',
                         title: 'Guardado exitoso',
@@ -494,9 +493,7 @@ function GuardarUsuariosNew() {
             Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar con el servidor.', color: 'black' });
         }
     };
-
     xhr.send(formData);
-
 }
 
 function VerUsuario(idusuario) {

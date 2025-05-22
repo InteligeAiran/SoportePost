@@ -41,9 +41,9 @@ class userModel extends Model{
         } catch (Throwable $e) {
             // Manejar excepciones
         }
-    }    
+    }
 
-        public function GetTipoUsers(){
+    public function GetTipoUsers(){
         try{
             $sql = "SELECT * FROM sp_vertiposusers()";
             $result = Model::getResult($sql, $this->db);
@@ -51,10 +51,10 @@ class userModel extends Model{
         } catch (Throwable $e) {
             // Manejar excepciones
         }
-    }    
+    }
 
 
-        public function GetRegionUsers(){
+    public function GetRegionUsers(){
         try{
             $sql = "SELECT * FROM sp_verregionusers()";
             $result = Model::getResult($sql, $this->db);
@@ -62,7 +62,18 @@ class userModel extends Model{
         } catch (Throwable $e) {
             // Manejar excepciones
         }
-    }         
+    }
+
+     public function GetRegionUsersById($id_user){
+        try{
+            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+            $sql = "SELECT * FROM GetUserRegion(".$escaped_id_user.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }
 
 
     public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $encry_passw, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel){
