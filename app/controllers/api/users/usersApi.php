@@ -455,11 +455,12 @@ class users extends Controller {
     public function handleAsignacionModulo(){
         $id_modulo     = isset($_POST['id_modulo']) ? $_POST['id_modulo'] : '';
         $id_usuario      = isset($_POST['id_usuario']) ? $_POST['id_usuario'] : '';
+        $idcheck_value      = isset($_POST['idcheck_value']) ? $_POST['idcheck_value'] : '';
 
-        //var_dump($id_modulo,$id_usuario);
+        //var_dump($id_modulo,$id_usuario,$idcheck_value);
       
         $repository = new UserRepository(); // Inicializa el repositorio
-        $result = $repository->AsignacionModulo($id_modulo, $id_usuario);
+        $result = $repository->AsignacionModulo($id_modulo, $id_usuario,$idcheck_value);
 
         if ($result) {
             $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);

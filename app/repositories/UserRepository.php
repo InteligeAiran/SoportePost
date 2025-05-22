@@ -195,8 +195,8 @@ class UserRepository
         }
     }
 
-    public function AsignacionModulo($id_modulo, $id_usuario){
-        $result = $this->model->AsignacionModulo($id_modulo, $id_usuario);
+    public function AsignacionModulo($id_modulo, $id_usuario,$idcheck_value){
+        $result = $this->model->AsignacionModulo($id_modulo, $id_usuario,$idcheck_value);
         return $result;
     }
 }

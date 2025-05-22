@@ -769,23 +769,22 @@ const xhr = new XMLHttpRequest();
 
                         if (data.estatus === 't') {
                             idCheck.checked = true;
+                            idCheck.value = '0'; // Nombre para enviar en formularios
                         } else {
                             idCheck.checked = false; // Explícito para claridad, aunque es el valor por defecto
+                            idCheck.value = '1';
                         }
-
-
-
-                        //idCheck.value  = '1';
-                        //nuevoCheckbox.checked  = 'true';
 
                         modulosCell.appendChild(idCheck);
 
 
                         idCheck.onclick = function() {
                          const iusuario= idusuario;
-                         const idmodulo= data.id_view;
+                         const idmodulo= data.idmodulo;
+                         const idcheck= data.estatus;
+
                          $('#ModalModulos').modal('show'); // abrir
-                         AsignacionModulo(idmodulo,iusuario);
+                         AsignacionModulo(idmodulo,iusuario, idcheck);
                         };
 
                     });
@@ -827,11 +826,15 @@ document.addEventListener('DOMContentLoaded', VerModulos);
 
 
 
-function AsignacionModulo(idmodulo,iusuario){
+function AsignacionModulo(idmodulo,iusuario, idcheck){
 
 
 const id_modulo = idmodulo;
 const id_usuario = iusuario;
+const idcheck_value= idcheck; 
+
+
+console.log(idcheck_value);
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/AsignacionModulo`); // Asegúrate de que esta sea la ruta correcta en tu backend
@@ -858,12 +861,10 @@ const id_usuario = iusuario;
                             }, 1000);
                         }
                     });
-                    document.getElementById('idSelectionTec').value = '';
-                    currentTicketId = null;
                 } else {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Error al asignar',
+                        title: 'Error al asignar el modulo',
                         text: response.message,
                         color: 'black'
                     });
@@ -887,6 +888,6 @@ const id_usuario = iusuario;
             });
         }
     };
-    const datos = `action=AsignacionModulo&id_modulo=${encodeURIComponent(id_modulo)}&id_usuario=${encodeURIComponent(id_usuario)}`;
+    const datos = `action=AsignacionModulo&id_modulo=${encodeURIComponent(id_modulo)}&id_usuario=${encodeURIComponent(id_usuario)}&idcheck_value=${encodeURIComponent(idcheck_value)}`;
     xhr.send(datos);
 }

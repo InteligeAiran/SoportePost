@@ -122,11 +122,11 @@ function mi_navbar() {
                 <div class="row">
                       <div class="col-md-6">
                         <label for="nombre">Nombre:</label>
-                        <input type="text" id="nombreuser" class="form-control" name="nombreuser" onkeypress="return soloLetras(event)">
+                        <input type="text" id="nombreuser" class="form-control" name="nombreuser" onkeypress="return soloLetras(event)" style="text-transform:uppercase; color:#000000;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                       </div>
                       <div class="col-md-6">
                         <label for="apellido">Apellido:</label>
-                        <input type="text" id="apellidouser" class="form-control" name="apellidouser" onkeypress="return soloLetras(event)" onchange="nameUsuario()">
+                        <input type="text" id="apellidouser" class="form-control" name="apellidouser" onkeypress="return soloLetras(event)" onchange="nameUsuario()" style="text-transform:uppercase; color:#000000;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                       </div>
                 </div>    
 
@@ -141,7 +141,7 @@ function mi_navbar() {
                     </div>
                       <div class="col-md-6">
                         <label for="usuario">Usuario:</label>
-                        <input type="text" id="usuario" class="form-control" name="usuario" disabled onchange="nameUsuario()"> 
+                        <input type="text" id="usuario" class="form-control" name="usuario" disabled onchange="nameUsuario()" style="text-transform:uppercase; color:#000000;" onkeyup="javascript:this.value=this.value.toUpperCase();">  
                       </div>
                 </div>  
 

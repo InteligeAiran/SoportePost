@@ -79,19 +79,30 @@ class userModel extends Model{
             $escaped_regionusers = pg_escape_literal($this->db->getConnection(), $regionusers);
             $escaped_id_nivel = pg_escape_literal($this->db->getConnection(), $id_nivel);
 
-    
-            $sql = "SELECT * FROM sp_guardarusuarios(".$escaped_id_user.", ".$escaped_nombreusers.", ".$escaped_apellidousers.", ".$escaped_encry_passw.",
+            
+             $sql_check_user = "SELECT * FROM sp_verificarusuariorep(".$escaped_users.")";
+                $result_check_user = $this->db->pgquery($sql_check_user);
+
+                if (!$result_check_user) {
+                    throw new Exception("Error al verificar usuario existente: " . pg_last_error($this->db->pgquery($sql_check_user)));
+                }
+                $row_check_user = pg_fetch_row($result_check_user);
+                if ($row_check_user[0] > 0) {
+                    return ['success' => false, 'message' => 'El nombre de usuario "' . $users . '" ya está registrado.'];
+        }
+
+            $sql_sp  = "SELECT * FROM sp_guardarusuarios(".$escaped_id_user.", ".$escaped_nombreusers.", ".$escaped_apellidousers.", ".$escaped_encry_passw.",
                     ".$escaped_identificacion.", ".$escaped_users.", ".$escaped_correo.",".$escaped_area_users.",".$escaped_tipo_users.", ".$escaped_regionusers.", ".$escaped_id_nivel.")";
-            $result = $this->db->pgquery($sql);
-            //var_dump($sql);
-    
-            /*if($result){
-                $sqlFailure = "SELECT InsertTicketFailure(".$escaped_descripcion.");";
-                $resultFailure = $this->db->pgquery($sqlFailure);
-                return array('save_result' => $result, 'failure_result' => $resultFailure);
-            } else {
-                return $result;
-            }*/
+            $result_sp  = $this->db->pgquery($sql_sp );
+
+            if ($result_sp) {
+             // Asumiendo que sp_guardarusuarios aún inserta y no devuelve success/message.
+             // Si el SP ahora devuelve success/message, usa la lógica de la Opción 1.
+             return ['success' => true, 'message' => 'Usuario guardado exitosamente.'];
+        } else {
+            return ['success' => false, 'message' => 'Error al ejecutar procedimiento de guardar usuario: '];
+        }
+
         } catch (Throwable $e) {
             error_log("Error al obtener permisos del usuario: " . $e->getMessage());
             return ['success' => false, 'error' => 'Error al obtener permisos'];
@@ -311,14 +322,15 @@ class userModel extends Model{
         }
     }
 
-    public function AsignacionModulo($id_modulo, $id_usuario){
+    public function AsignacionModulo($id_modulo, $id_usuario, $idcheck_value){
         try{
 
             $escaped_id_modulo = pg_escape_literal($this->db->getConnection(), $id_modulo); 
             $escaped_id_usuario = pg_escape_literal($this->db->getConnection(), $id_usuario); 
+            $escaped_idcheck_value = pg_escape_literal($this->db->getConnection(), $idcheck_value); 
 
-            $sql = "SELECT * FROM sp_asignacionmodulo(".$escaped_id_modulo.", " . $escaped_id_usuario . ")";
-            //echo $sql;
+            $sql = "SELECT * FROM sp_asignacionmodulo(".$escaped_id_modulo.", " . $escaped_id_usuario . "," . $escaped_idcheck_value . ")";
+            echo $sql;
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
