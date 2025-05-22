@@ -139,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const cerrar = document.getElementById('close-button');
     const icon   = document.getElementById('Close-icon');
     const assignButton = document.getElementById('assingment-button'); // Obtén el botón "Asignar"
+    const inputRegion = document.getElementById('InputRegion'); // Obtén el input de región
 
 
     // Agrega el event listener al botón cerrar
@@ -146,6 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (modalInstance) {
             modalInstance.hide();
             currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
+            inputRegion.value = ''; // Limpia el campo de región al cerrar el modal
         }
         document.getElementById('idSelectionTec').value = '';
     });
@@ -154,6 +156,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (modalInstance) {
             modalInstance.hide();
             currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
+            inputRegion.value = ''; // Limpia el campo de región al cerrar el modal
         }
         document.getElementById('idSelectionTec').value = '';
     });

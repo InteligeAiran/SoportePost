@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setActiveLink('tecnico', 'tecnico');
     setActiveLink('gestion_users', 'gestionusers');
     setActiveLink('estadisticas-link', 'pages/profile.html');
+    setActiveLink('taller', 'taller');
 
     // **CÓDIGO PARA OBTENER EL userId**
     // const userId = localStorage.getItem('userId');

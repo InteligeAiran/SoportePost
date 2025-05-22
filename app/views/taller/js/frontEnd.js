@@ -1,8 +1,3 @@
-// Asegúrate de que ENDPOINT_BASE y APP_PATH estén definidos globalmente o en un archivo de configuración
-// Por ejemplo:
-// const ENDPOINT_BASE = 'http://localhost/';
-// const APP_PATH = 'SoportePost/';
-
 function getTicketData() {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketDataLab`);
@@ -25,7 +20,7 @@ function getTicketData() {
         name_status_payment: 'Estatus Pago',
         name_status_lab: 'Estatus Taller',
         name_accion_ticket: 'Acción Ticket',
-        name_status_ticket: 'Estatus',
+        name_status_ticket: 'Estatus Ticket',
         name_failure: 'Falla',
         date_send_torosal_fromlab: 'Fecha Envío a Rosal',
         date_sendkey: 'Fecha Envío Key',
@@ -111,6 +106,36 @@ function getTicketData() {
                             }
                         }
 
+                        // Añadir la columna de "Acciones" al final
+                        columnsConfig.push({
+                            data: null,
+                            title: 'Acciones',
+                            orderable: false,
+                            searchable: false,
+                            width: '8%',
+                            render: function (data, type, row) {
+                                const idTicket = row.id_ticket;
+                                const currentStatus = row.name_status_ticket; // Asegúrate de usar la propiedad correcta para el estatus
+
+                                if (currentStatus !== 'Cerrado') {
+                                    // *** ESTE ES EL CAMBIO CLAVE ***
+                                    // Añade los atributos data-bs-toggle y data-bs-target directamente al botón.
+                                    // La clase `open-status-modal-btn` ya no es estrictamente necesaria para abrir el modal
+                                    // (Bootstrap lo hace con los data-bs-toggle/target), pero la mantendremos si la usas para otra lógica.
+                                    return `<button type="button" class="btn btn-primary btn-sm cambiar-estatus-btn" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#changeStatusModal" 
+                                                    data-id="${idTicket}" 
+                                                    data-current-status="${currentStatus}">
+                                                Cambiar Estatus
+                                            </button>`;
+                                } else {
+                                    return `<button class="btn btn-secondary btn-sm" disabled>Cerrado</button>`;
+                                }
+                            }
+                        });
+
+
                         // Initialize DataTables
                         const dataTable = $(tableElement).DataTable({
                             responsive: true,
@@ -118,9 +143,9 @@ function getTicketData() {
                             columns: columnsConfig,
                             "pagingType": "simple_numbers",
                             "lengthMenu": [5, 10, 25, 50, 100],
+                            
                             autoWidth: false,
-                            dom: 'Bfrtip', // Add 'B' for Buttons to be enabled
-                            buttons: [
+                                buttons: [
                                 {
                                     extend: 'colvis', // Column visibility button
                                     text: 'Mostrar/Ocultar Columnas',
@@ -205,4 +230,73 @@ function getTicketData() {
     xhr.send();
 }
 
-document.addEventListener('DOMContentLoaded', getTicketData);
+// Call getTicketData when the document is ready using jQuery
+$(document).ready(function() {
+    getTicketData(); // Llama a tu función para cargar la tabla
+
+    // Evento que se dispara cuando se va a mostrar el modal de Bootstrap
+    // Este código es crucial para rellenar el modal con los datos del ticket
+    const changeStatusModal = document.getElementById('changeStatusModal');
+    if (changeStatusModal) {
+        changeStatusModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; // Botón que disparó el modal
+            const idTicket = button.getAttribute('data-id');
+            const currentStatus = button.getAttribute('data-current-status');
+
+            const modalTicketId = changeStatusModal.querySelector('#modalTicketId');
+            const modalCurrentStatus = changeStatusModal.querySelector('#modalCurrentStatus');
+            const modalNewStatus = changeStatusModal.querySelector('#modalNewStatus');
+            const modalComments = changeStatusModal.querySelector('#modalComments');
+
+            if (modalTicketId) modalTicketId.value = idTicket;
+            if (modalCurrentStatus) modalCurrentStatus.value = currentStatus;
+            if (modalNewStatus) modalNewStatus.value = currentStatus; // Opcional: seleccionar el estatus actual
+            if (modalComments) modalComments.value = ''; // Limpiar comentarios
+
+            // Importante: Si estás usando el plugin Bootstrap-select o similar para el dropdown,
+            // puede que necesites un comando para actualizarlo después de cambiar su valor:
+            // if (modalNewStatus && $(modalNewStatus).data('selectpicker')) {
+            //    $(modalNewStatus).selectpicker('refresh');
+            // }
+        });
+    }
+
+    // Manejador de eventos para el botón "Guardar Cambios" dentro del modal
+    $('#saveStatusChangeBtn').on('click', function() {
+        const idTicket = $('#modalTicketId').val();
+        const newStatus = $('#modalNewStatus').val();
+        const comments = $('#modalComments').val();
+
+        if (!newStatus) {
+            alert('Por favor, selecciona un nuevo estatus.');
+            return;
+        }
+
+        const updateApiUrl = `${ENDPOINT_BASE}${APP_PATH}api/actualizar/UpdateTicketStatus`;
+        
+        $.ajax({
+            url: updateApiUrl,
+            type: 'POST', 
+            contentType: 'application/json',
+            data: JSON.stringify({
+                id_ticket: idTicket,
+                new_status: newStatus,
+                comments: comments
+            }),
+            success: function(response) {
+                if (response.success) {
+                    alert('Estatus del ticket actualizado con éxito.');
+                    $('#changeStatusModal').modal('hide');
+                    getTicketData(); // Recargar la tabla
+                } else {
+                    alert('Error al actualizar el estatus: ' + (response.message || 'Error desconocido'));
+                    console.error('Error al actualizar estatus:', response);
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Error de conexión o del servidor al actualizar el estatus.');
+                console.error('AJAX Error:', status, error, xhr.responseText);
+            }
+        });
+    });
+});

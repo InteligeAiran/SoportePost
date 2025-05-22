@@ -4,24 +4,30 @@ function mi_navbar() {
 }
 ?>
 <!DOCTYPE html>
-    <lang="en">
+<html lang="en">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
         <link rel="icon" type="image/png" href="../assets/img/favicon.png">
         <title>
-            Soporte POST        
+            Soporte POST
         </title>
-        <!--     Fonts and icons     -->
+
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-        <!-- Nucleo Icons -->
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/asignar_tecnico/General.css"/>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
+
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css"/>
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/dataTables.min.css"/>
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/datatable.css"/>
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/bootstrap.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/datatable.css"/>
+
+
+        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/tecnico/tecnico.css"/>
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
+
       <style>
             div.dataTables_wrapper div.dataTables_length label {
                 font-weight: bold; /* Ejemplo: Texto en negrita */
@@ -127,29 +133,29 @@ function mi_navbar() {
             </main>
         </div>
 
-        <!-- MODAL PARA SELECCIONAR TECNICO -->
-            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div id="ModalSelecttecnico" class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Seleccione un Técnico</h1>
-                        <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <select id="idSelectionTec" class="form-select" onchange="GetRegionUser()" aria-label="Default select example"></select>
-                        <div class="row mt-4">
-                            <label class="col-sm-2 col-form-label">Región</label>
+            <!-- MODAL PARA SELECCIONAR TECNICO -->
+                <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div id="ModalSelecttecnico" class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="staticBackdropLabel">Seleccione un Técnico</h1>
+                            <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
                         </div>
-                        <input  id="InputRegion" class="form-control" type="text" value="" aria-label="readonly input example" style="width: 100%;" readonly>                    
-                    </div>
-                    <div class="modal-footer">
-                        <button id="close-button" type="button" class="btn btn-secondary">Cerrar</button>
-                        <button id="assingment-button" type="button" class="btn btn-primary">Asignar</button>
-                    </div>
+                        <div class="modal-body">
+                            <select id="idSelectionTec" class="form-select" onchange="GetRegionUser()" aria-label="Default select example"></select>
+                            <div class="row mt-4">
+                                <label class="col-sm-2 col-form-label">Región</label>
+                            </div>
+                            <input  id="InputRegion" class="form-control" type="text" value="" aria-label="readonly input example" style="width: 100%;" readonly>                    
+                        </div>
+                        <div class="modal-footer">
+                            <button id="close-button" type="button" class="btn btn-secondary">Cerrar</button>
+                            <button id="assingment-button" type="button" class="btn btn-primary">Asignar</button>
+                        </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        <!--MODAL PARA SELECCIONAR TECNICO-->
+            <!--MODAL PARA SELECCIONAR TECNICO-->
 
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
@@ -241,48 +247,23 @@ function mi_navbar() {
             </div>
         </div>
   
-        <!-- Github buttons -->
-        <script async defer src="https://buttons.github.io/buttons.js"></script>
-        <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
-        <!-- Bootstrap core JavaScript-->
-         <!--JQUERY-->
-         <script src="<?php echo APP;?>app/plugins/jquery/jquery.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/jquery/jquery-3.5.1.js"></script>
+        <script src="<?php echo APP;?>app/plugins/jquery/jquery.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
-
-
-        <!-- Bootstrap-->
+        <script src="<?php echo APP;?>app/plugins/js/popper.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.js"></script>
-            <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.js"></script>
 
+        <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
+        <script src = "<?php echo APP;?>app/plugins/datatables/datatables.min.js"></script>
+        <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
+        <script src="<?php echo APP;?>app/plugins/chart.js/chart.min.js"></script>
+        <script src = "<?php echo APP;?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
 
-        <!--   Core JS Files   -->
-        <script src="<?php echo APP;?>app/plugins/js/popper.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/js/perfect-scrollbar.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/js/smooth-scrollbar.min.js"></script>
         <script src="<?php echo APP;?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
-        
-        <!-- Datatable -->
-        <script src = "<?php echo APP;?>app/plugins/datatables/datatables.min.js"></script>
-        <script src = "<?php echo APP;?>app/plugins/datatables/datatables.js"></script>
-
-        <!-- Chart -->
-        <script src="<?php echo APP;?>app/plugins/chart.js/chart.js"></script>
-        <script src="<?php echo APP;?>app/plugins/chart.js/chart.min.js"></script>
-
-        <!--  SweetAlert   -->
-        <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.js"></script>
-        <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
-
-        <!--MASCARAS JQUERY-->
-        <script src = "<?php echo APP;?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
-
-        <!-- Custom scripts for all pages-->
         <script src="<?php echo APP;?>app/plugins/js/sb-admin-2.min.js"></script>
-    
+        
         <?php
             if (isset($this->js)){
                 foreach ($this->js as $js){
