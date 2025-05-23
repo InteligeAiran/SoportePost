@@ -11,7 +11,7 @@ function mi_navbar() {
         <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
         <link rel="icon" type="image/png" href="../assets/img/favicon.png">
         <title>
-            Soporte Post Venta
+            <?php echo tituloPagina; ?>
         </title>
         <!--     Fonts and icons     -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
@@ -142,6 +142,8 @@ function mi_navbar() {
                       <div class="col-md-6">
                         <label for="usuario">Usuario:</label>
                         <input type="text" id="usuario" class="form-control" name="usuario" disabled onchange="nameUsuario()" style="text-transform:uppercase; color:#000000;" onkeyup="javascript:this.value=this.value.toUpperCase();">  
+
+                        <div id="usuario-status" class="mt-1"></div>
                       </div>
                 </div>  
 
@@ -207,7 +209,7 @@ function mi_navbar() {
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closedModal()"><span aria-hidden="true">&times;</span>
                 </button>
                 <div class="panel-heading" style="text-align: center;color:#ffffff;">
                     <h4>Editar usuarios</h4>
@@ -230,7 +232,7 @@ function mi_navbar() {
                       </div>
 
                 </div>    
-                
+                <br>
                 <div class="row">
                     <div class="col-md-6">
                         <label for="">Documentacion</label>
@@ -245,7 +247,7 @@ function mi_navbar() {
                         <input type="text" id="edit_usuario" class="form-control" name="editusuario" disabled onchange="nameUsuario()"> 
                       </div>
                 </div>  
-
+                <br>
                 <div class="row">
                       
                       <div class="col-md-6">
@@ -272,13 +274,13 @@ function mi_navbar() {
                       <div class="col-md-6">
                         <label for="apellido">Tipo Usuario:</label>
                        <div id="TipoUsersContainer">
-                            <select id="edit_tipousers" name="edit_tipousers" onchange="levelTecnico()"></select>
+                            <select id="edit_tipousers" name="edit_tipousers" onchange="levelTecnicoEditar()"></select>
                         </div>
                       </div>
                 </div>  
                 <br> 
                 <div class="row">
-                      <div class="col-md-6" id="nivel" style="display: none;">
+                      <div class="col-md-6" id="nivelEditar" style="display: none;">
                         <label for="apellido">Nivel Técnico:</label>
                        <div id="TipoUsersContainer">
                             <select name="select" name="edit_idnivel" id="edit_idnivel">
@@ -294,8 +296,8 @@ function mi_navbar() {
             </div> 
           </div>   
           <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" id="btnEditarUsers">Guardar</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closedModal()">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btnEditarUsers" >Guardar</button>
             </div>
         </div>
     </div>

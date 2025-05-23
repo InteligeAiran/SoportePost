@@ -127,8 +127,8 @@ class UserRepository
     }    
 
 
-    public function Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$edit_documento,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$id_user){
-        $result = $this->model->Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$edit_documento,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$id_user);
+    public function Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$edit_documento,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user){
+        $result = $this->model->Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$edit_documento,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user);
     }
 
     public function GetUsernameUser($username){
@@ -205,6 +205,16 @@ class UserRepository
 
     public function AsignacionModulo($id_modulo, $id_usuario,$idcheck_value){
         $result = $this->model->AsignacionModulo($id_modulo, $id_usuario,$idcheck_value);
+        return $result;
+    }
+
+    // public function VerificaUsuario($username){
+    //     $result = $this->model->VerificaUsuario($username);
+    //     return $result;
+    // }
+
+    public function VerificaUsuario($nombre,$apellido){
+        $result = $this->model->VerificaUsuario($nombre,$apellido);
         return $result;
     }
 }

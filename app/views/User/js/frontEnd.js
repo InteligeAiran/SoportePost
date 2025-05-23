@@ -56,21 +56,162 @@ if(letras.indexOf(tecla) == -1 && !tecla_especial){
 }
 
 
-function nameUsuario(){
-    const nombreusuario=document.getElementById('nombreuser').value;
-    const apellidousuario=document.getElementById('apellidouser').value;
-    const nameusers=document.getElementById('usuario').value;
+// function nameUsuario(){
+//     const nombreusuario=document.getElementById('nombreuser').value;
+//     const apellidousuario=document.getElementById('apellidouser').value;
+//     const nameusers=document.getElementById('usuario').value;
 
-    const inicialnombre=nombreusuario.substr(0, 1);
+//     const inicialnombre=nombreusuario.substr(0, 1);
 
-         if (nombreusuario!='' && apellidousuario!='') {
+//          if (nombreusuario!='' && apellidousuario!='') {
 
-         const idusuario=inicialnombre+apellidousuario;
-            //console.log(idusuario);
+//          const idusuario=inicialnombre+apellidousuario;
+//             //console.log(idusuario);
 
-            document.getElementById("usuario").value=idusuario;
+//             document.getElementById("usuario").value=idusuario;
+//         }
+//   }
+
+
+
+// function nameUsuario() {
+//     const nombreusuario = document.getElementById('nombreuser').value.trim(); // .trim() para limpiar espacios
+//     const apellidousuario = document.getElementById('apellidouser').value.trim();
+//     const nameusers = document.getElementById('usuario'); // El input donde se muestra el usuario
+//     const usuarioStatusDiv = document.getElementById('usuario-status'); // Un div para mostrar mensajes de estado (lo crearemos)
+
+//     // Limpia el estado anterior
+//     usuarioStatusDiv.innerHTML = '';
+//     nameusers.value = ''; // Limpia el campo mientras se genera/valida
+
+//     if (nombreusuario === '' || apellidousuario === '') {
+//         return; // No hagas nada si los campos están vacíos
+//     }
+
+//     // Generar el nombre de usuario base
+//     const inicialnombre = nombreusuario.substr(0, 1).toUpperCase(); // Asegura mayúscula
+//     const apellidoSinEspacios = apellidousuario.replace(/\s+/g, '').toUpperCase(); // Quitar espacios y mayúsculas
+//     const nombreUsuarioGenerado = inicialnombre + apellidoSinEspacios;
+
+//     nameusers.value = nombreUsuarioGenerado; // Muestra el nombre sugerido
+
+//     const checkUsernameEndpoint = `${ENDPOINT_BASE}${APP_PATH}api/users/checkUsernameAvailability`;
+
+//     const xhr = new XMLHttpRequest();
+//     xhr.open('POST', checkUsernameEndpoint, true); // true para asíncrono
+//     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+//     xhr.onload = function() {
+//         if (xhr.status === 200) {
+//             try {
+//                 const response = JSON.parse(xhr.responseText);
+//                 if (response.available) {
+//                     // El nombre de usuario base está disponible
+//                     usuarioStatusDiv.innerHTML = '<span style="color: green;">Nombre de usuario disponible.</span>';
+//                     nameusers.classList.remove('is-invalid');
+//                     nameusers.classList.add('is-valid');
+//                     // Puedes guardar el nombre de usuario generado en un campo oculto
+//                     // o confiar en que el backend lo manejará al guardar el formulario completo.
+//                 } else {
+//                     // El nombre de usuario base NO está disponible
+//                     usuarioStatusDiv.innerHTML = '<span style="color: red;">Nombre de usuario sugerido ya existe. </span>';
+//                     nameusers.classList.add('is-invalid');
+//                     nameusers.classList.remove('is-valid');
+//                     // No modificamos el input de usuario aquí, dejamos que el backend
+//                     // nos diga el nombre final al guardar el formulario.
+//                 }
+//             } catch (error) {
+//                 console.error('Error parsing JSON for username check:', error);
+//                 usuarioStatusDiv.innerHTML = '<span style="color: orange;">Error al verificar disponibilidad.</span>';
+//             }
+//         } else {
+//             console.error('Error en el servidor al verificar usuario:', xhr.status, xhr.statusText);
+//             usuarioStatusDiv.innerHTML = '<span style="color: orange;">Error de conexión al verificar usuario.</span>';
+//         }
+//     };
+
+//     xhr.onerror = function() {
+//         console.error('Error de red al verificar usuario.');
+//         usuarioStatusDiv.innerHTML = '<span style="color: orange;">Error de red al verificar usuario.</span>';
+//     };
+
+//     xhr.send(`username=${encodeURIComponent(nombreUsuarioGenerado)}`);
+// }
+
+
+function nameUsuario() {
+    const nombreusuario = document.getElementById('nombreuser').value.trim();
+    const apellidousuario = document.getElementById('apellidouser').value.trim();
+    const usuarioInput = document.getElementById('usuario');
+    const usuarioStatusDiv = document.getElementById('usuario-status');
+
+    usuarioStatusDiv.innerHTML = '';
+    // No limpiamos el input de usuario aquí, lo actualizaremos con la sugerencia
+
+    if (nombreusuario === '' || apellidousuario === '') {
+        usuarioInput.value = ''; // Limpiar si los campos base están vacíos
+        return;
+    }
+
+    // --- Parte de la validación AJAX ---
+    const checkUsernameEndpoint = `${ENDPOINT_BASE}${APP_PATH}api/users/checkUsernameAvailability`;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', checkUsernameEndpoint, true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.suggested_username) { // Siempre usaremos la sugerencia que venga del backend
+                    usuarioInput.value = response.suggested_username; // ¡Actualiza el input con la sugerencia del backend!
+
+                    if (response.available) {
+                        usuarioStatusDiv.innerHTML = '<span style="color: green;">Nombre de usuario disponible.</span>';
+                        usuarioInput.classList.remove('is-invalid');
+                        usuarioInput.classList.add('is-valid');
+                    } else {
+                        // Si no está disponible pero hay sugerencia (ej. YQUIJADA -> YAQUIJADA)
+                        usuarioStatusDiv.innerHTML = `<span style="color: red;">${response.message}</span>`;
+                        usuarioInput.classList.add('is-invalid');
+                        usuarioInput.classList.remove('is-valid');
+                    }
+                } else {
+                    // Si no hay suggested_username (ej. error fatal en el SP)
+                    usuarioInput.value = ''; // Limpiar si no hay sugerencia válida
+                    usuarioStatusDiv.innerHTML = `<span style="color: orange;">${response.message || 'Error al verificar disponibilidad.'}</span>`;
+                    usuarioInput.classList.remove('is-valid');
+                    usuarioInput.classList.add('is-invalid');
+                }
+            } catch (error) {
+                console.error('Error parsing JSON for username check:', error);
+                usuarioInput.value = '';
+                usuarioStatusDiv.innerHTML = '<span style="color: orange;">Error al verificar disponibilidad.</span>';
+                usuarioInput.classList.remove('is-valid');
+                usuarioInput.classList.add('is-invalid');
+            }
+        } else {
+            console.error('Error en el servidor al verificar usuario:', xhr.status, xhr.statusText);
+            usuarioInput.value = '';
+            usuarioStatusDiv.innerHTML = '<span style="color: orange;">Error de conexión al verificar usuario.</span>';
+            usuarioInput.classList.remove('is-valid');
+            usuarioInput.classList.add('is-invalid');
         }
-  }
+    };
+
+    xhr.onerror = function() {
+        console.error('Error de red al verificar usuario.');
+        usuarioInput.value = '';
+        usuarioStatusDiv.innerHTML = '<span style="color: orange;">Error de red al verificar usuario.</span>';
+        usuarioInput.classList.remove('is-valid');
+        usuarioInput.classList.add('is-invalid');
+    };
+
+    // ¡ENVÍA NOMBRE Y APELLIDO AL BACKEND!
+    xhr.send(`nombre=${encodeURIComponent(nombreusuario)}&apellido=${encodeURIComponent(apellidousuario)}`);
+}
+
 
 
   function levelTecnico(){
@@ -83,6 +224,23 @@ function nameUsuario(){
     } else {
 
         $('#nivel').css('display', 'none') ;
+    }
+
+}
+
+
+  function levelTecnicoEditar(){
+
+    var idtipousuario=document.getElementById('edit_tipousers').value;
+    var infoDiv=document.getElementById('nivelEditar').value;
+    console.log(idtipousuario);
+
+    
+    if (idtipousuario==3) {
+        $('#nivelEditar').css('display', 'block');
+    } else {
+
+        $('#nivelEditar').css('display', 'none') ;
     }
 
 }
@@ -497,6 +655,9 @@ function GuardarUsuariosNew() {
 }
 
 function VerUsuario(idusuario) {
+    var infoDiv=document.getElementById('nivelEditar').value;
+
+
     const xhrUsuario = new XMLHttpRequest();
     xhrUsuario.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/GetMostrarUsuarioEdit`);
     xhrUsuario.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -517,7 +678,16 @@ function VerUsuario(idusuario) {
             $("#edit_email").val(userData.correo);
             $("#edit_regionusers").val(userData.idreg);
             $("#edit_tipousers").val(userData.name_rol);
-            $("#edit_idnivel").val(userData.inombre);
+            $("#edit_idnivel").val(userData.idlevel);
+
+            if (userData.idrol==3) {
+                console.log(userData.idrol);
+                    $('#nivelEditar').css('display', 'block');
+                } else {
+
+                    console.log('njh');
+                    $('#nivelEditar').css('display', 'none') ;
+                }
 
             obtenerAreas(userData.iid_area);
             obtenerRegion(userData.idreg);
@@ -637,7 +807,7 @@ function EditarUsuarios() {
     const area_usuario = document.getElementById('edit_areausers').value;
     const regionusers = document.getElementById('edit_regionusers').value;
     const tipo_usuario = document.getElementById('edit_tipousers').value;
-    //const id_nivel = document.getElementById('idnivel').value;
+    const id_nivel = document.getElementById('edit_idnivel').value;
     const usuariocarga = document.getElementById('id_user').value
 
     //alert(nombre_usuario +'/'+ apellido_usuario +'/'+ iusuario +'/'+ documento +'/'+ correo +'/'+ area_usuario +'/'+ tipo_usuario +'/'+ regionusers);
@@ -656,6 +826,7 @@ function EditarUsuarios() {
     formData.append('edit_areausers', area_usuario);
     formData.append('edit_regionusers', regionusers);
     formData.append('edit_tipousers', tipo_usuario);
+    formData.append('edit_idnivel', id_nivel);
     formData.append('id_user', usuariocarga);
 
 
@@ -838,7 +1009,7 @@ console.log(idcheck_value);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
+        if (xhr.status === 200) {
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
@@ -887,4 +1058,14 @@ console.log(idcheck_value);
     };
     const datos = `action=AsignacionModulo&id_modulo=${encodeURIComponent(id_modulo)}&id_usuario=${encodeURIComponent(id_usuario)}&idcheck_value=${encodeURIComponent(idcheck_value)}`;
     xhr.send(datos);
+}
+
+
+function closedModal() {
+
+    $('#edit_areausers').empty();
+    $('#edit_regionusers').empty();
+    $('#edit_tipousers').empty();
+    $('#edit_idnivel').empty();
+
 }

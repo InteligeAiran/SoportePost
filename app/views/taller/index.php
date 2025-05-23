@@ -10,7 +10,7 @@ function mi_navbar() {
     <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
     <title>
-        Soporte POST
+        <?php echo tituloPagina; ?>
     </title>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-icons.css" />

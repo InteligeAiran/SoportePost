@@ -142,7 +142,7 @@ class userModel extends Model{
     }   
 
 
-    public function Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$edit_documento,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$id_user){
+    public function Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$edit_documento,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user){
         try {
             $escaped_idusuario_edit = pg_escape_literal($this->db->getConnection(), $idusuario_edit);
             $escaped_edit_nombreusers = pg_escape_literal($this->db->getConnection(), $edit_nombreusers);
@@ -153,15 +153,16 @@ class userModel extends Model{
             $escaped_edit_area_users = pg_escape_literal($this->db->getConnection(), $edit_area_users);
             $escaped_edit_regionusers = pg_escape_literal($this->db->getConnection(), $edit_regionusers);
             $escaped_edit_tipo_users = pg_escape_literal($this->db->getConnection(), $edit_tipo_users);
+            $escaped_edit_idnivel = pg_escape_literal($this->db->getConnection(), $edit_idnivel);
             $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
-            //$escaped_id_nivel = pg_escape_literal($this->db->getConnection(), $id_nivel);
 
     
             $sql = "SELECT * FROM sp_editarusuarios(".$escaped_idusuario_edit.", ".$escaped_edit_nombreusers.", ".$escaped_edit_apellidousers.", ".$escaped_edit_usuario.",
-                    ".$escaped_edit_documento.", ".$escaped_edit_correo.", ".$escaped_edit_area_users.",".$escaped_edit_regionusers.",".$escaped_edit_tipo_users.", ".$escaped_id_user.")";
-            $result = $this->db->pgquery($sql);
+                    ".$escaped_edit_documento.", ".$escaped_edit_correo.", ".$escaped_edit_area_users.",".$escaped_edit_regionusers.",".$escaped_edit_tipo_users.", ".$escaped_edit_idnivel.",".$escaped_id_user.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
 
-            echo $sql;
+            //echo $sql;
                } catch (Throwable $e) {
             // Handle exception
         } 
@@ -341,13 +342,105 @@ class userModel extends Model{
             $escaped_idcheck_value = pg_escape_literal($this->db->getConnection(), $idcheck_value); 
 
             $sql = "SELECT * FROM sp_asignacionmodulo(".$escaped_id_modulo.", " . $escaped_id_usuario . "," . $escaped_idcheck_value . ")";
-            echo $sql;
+            //echo $sql;
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
         // Handle exception
         }
-    }   
+    }  
+
+
+    //     public function VerificaUsuario($users){
+    //     try {
+            
+    //         $escaped_users = pg_escape_literal($this->db->getConnection(), $users);
+
+            
+    //          $sql_check_user = "SELECT * FROM sp_verificarusuariorep(".$escaped_users.")";
+    //             $result_check_user = $this->db->pgquery($sql_check_user);
+
+    //             if (!$result_check_user) {
+    //                 throw new Exception("Error al verificar usuario existente: " . pg_last_error($this->db->pgquery($sql_check_user)));
+    //             }
+    //             $row_check_user = pg_fetch_row($result_check_user);
+    //             if ($row_check_user[0] > 0) {
+    //                 return ['success' => false, 'message' => 'El nombre de usuario "' . $users . '" ya está registrado.'];
+    //     }
+
+    //     } catch (Throwable $e) {
+    //         error_log("Error al obtener permisos del usuario: " . $e->getMessage());
+    //         return ['success' => false, 'error' => 'Error al obtener permisos'];
+    //     }
+    // } 
+
+    // public function VerificaUsuario($users){
+    //     try {
+    //         $conn = $this->db->getConnection(); // Obtener la conexión
+    //         $escaped_users = pg_escape_literal($conn, $users);
+
+    //         // Ojo: Si sp_verificarusuariorep devuelve COUNT(*), entonces es mejor usar fetch_result
+    //         // Si sp_verificarusuariorep ya devuelve un BOOLEAN (TRUE si existe, FALSE si no), entonces usa esa lógica.
+    //         // Asumiendo que sp_verificarusuariorep devuelve un COUNT(*):
+    //         $sql_check_user = "SELECT * FROM sp_verificarusuariorep(".$escaped_users.")";
+    //         $result_check_user_query = $this->db->pgquery($sql_check_user); // Renombrado para claridad
+
+    //         if (!$result_check_user_query) {
+    //             // Manejar error en la consulta
+    //             error_log("Error al ejecutar sp_verificarusuariorep: " . pg_last_error($conn));
+    //             // Devolvemos un array de error consistente
+    //             return ['status' => 'error', 'message' => 'Error interno al verificar usuario.'];
+    //         }
+
+    //         // Asumimos que sp_verificarusuariorep devuelve una única fila con un único valor (el COUNT)
+    //         $count = pg_fetch_result($result_check_user_query, 0, 0);
+
+    //         if ($count > 0) {
+    //             // El usuario existe
+    //             return ['status' => 'exists', 'message' => 'El nombre de usuario "' . $users . '" ya está registrado.'];
+    //         } else {
+    //             // El usuario NO existe
+    //             return ['status' => 'available', 'message' => 'Nombre de usuario disponible.'];
+    //         }
+
+    //     } catch (Throwable $e) {
+    //         error_log("Error en VerificaUsuario: " . $e->getMessage());
+    //         return ['status' => 'error', 'message' => 'Error fatal al verificar usuario: ' . $e->getMessage()];
+    //     }
+    // }
+
+
+public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y apellido
+    try {
+        $conn = $this->db->getConnection();
+        $escaped_nombre = pg_escape_literal($conn, $nombre);
+        $escaped_apellido = pg_escape_literal($conn, $apellido);
+
+        // Llama al SP que ahora devuelve la sugerencia usando nombre y apellido
+        $sql_check_user = "SELECT available, suggested_username, message FROM sp_verificarusuariorepetidoo(".$escaped_nombre.", ".$escaped_apellido.")";
+        $result_check_user_query = $this->db->pgquery($sql_check_user);
+
+        if (!$result_check_user_query) {
+            error_log("Error al ejecutar sp_verificarusuariorepetidoo: " . pg_last_error($conn));
+            return ['status' => 'error', 'message' => 'Error interno al verificar usuario.', 'suggested_username' => null];
+        }
+
+        $row = pg_fetch_assoc($result_check_user_query);
+        if ($row) {
+            return [
+                'status' => ($row['available'] === 't' ? 'available' : 'exists'),
+                'message' => $row['message'],
+                'suggested_username' => $row['suggested_username']
+            ];
+        } else {
+            return ['status' => 'error', 'message' => 'El SP no devolvió un resultado válido.', 'suggested_username' => null];
+        }
+
+    } catch (Throwable $e) {
+        error_log("Error en VerificaUsuario: " . $e->getMessage());
+        return ['status' => 'error', 'message' => 'Error fatal al verificar usuario: ' . $e->getMessage(), 'suggested_username' => null];
+    }
+}
 
 
 }   
