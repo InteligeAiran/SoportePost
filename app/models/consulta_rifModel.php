@@ -555,12 +555,35 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function UpdateTicketStatus()
+    public function UpdateTicketStatus($id_new_status, $id_ticket, $id_user)
+
     {
         try {
-            $sql = "SELECT * FROM UpdateTicketStatus()";
-            $result = Model::getResult($sql, $this->db);
-            return $result;
+            $id_new_status = (int)$id_new_status;
+            $id_ticket = (int)$id_ticket;
+            $sql = "CALL UpdateTicketStatus(".$id_ticket .", ".$id_new_status .")";
+            $result = Model::getResult($sql, $this->db);    
+            if($result) {
+                $id_accion_ticket = 7;
+                $id_status_ticket = 1; // Asignar un valor predeterminado o dinámico según tu lógica
+
+                // Llamar a insertintouser_ticket AQUI
+                $sqlInsertHistory = sprintf(
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                    (int) $id_ticket,    // Corresponds to p_id_ticket
+                    (int) $id_user,      // Corresponds to p_changedstatus_by
+                    (int) $id_status_ticket,     // Corresponds to p_new_action (assuming it's always 4 based on your function's internal logic)
+                    (int) $id_accion_ticket,        // Corresponds to p_id_action_ticket
+                    (int) $id_new_status
+                );
+                $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
+                if (!$resultsqlInsertHistory) {
+                    error_log("Error en insertintouser_ticket: " . pg_last_error($this->db->getConnection()));
+                    $this->db->closeConnection();
+                    return array('error' => 'Error al insertar en users_tickets: ' . pg_last_error($this->db->getConnection()));
+                }
+            }
+            return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory);;
         } catch (Throwable $e) {
             // Handle exception
         }

@@ -628,12 +628,14 @@ class Consulta extends Controller {
         $this->response(['success' => false, 'message' => 'Debe Seleccionar un Estatus']);
     }
 
-   /* public function handleUpdateTicketStatus(){
+   public function handleUpdateTicketStatus(){
+        $id_user = isset($_SESSION['id_user'])? $_SESSION['id_user'] : '';
         $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
         $id_new_status = isset($_POST['id_new_status'])? $_POST['id_new_status'] : '';
 
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
-        $result = $repository->UpdateTicketStatus($id_ticket, $id_new_status);
+        $result = $repository->UpdateTicketStatus( $id_new_status, $id_ticket, $id_user);
+
         if ($id_new_status != '') {
             if($result){
                 $this->response(['success' => true, 'message' => 'Ticket actualizado con éxito.'], 200); 
@@ -643,6 +645,6 @@ class Consulta extends Controller {
         }else{
             $this->response(['success' => false, 'message' => 'El estatus esta vacio'], 500); // Código de estado 404 Not Found
         }
-    }*/
+    }
 }
 ?>

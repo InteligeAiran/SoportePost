@@ -30,3 +30,27 @@
     background-color: red;
     color: white;
 }
+
+button.btn-wrench-custom{
+    background-color: #003594; /* Tu color azul deseado */
+    border-color: #003594;     /* Importante: el borde también debe coincidir */
+    color: #ffffff;           /* Color del icono/texto para asegurar contraste */
+}
+
+button.btn-wrench-custom:hover{
+    background-color: green; /* Color más oscuro al pasar el ratón */
+    border-color: white;     /* Cambia el borde también */
+    color: white;           /* Color del icono/texto al pasar el ratón */
+}
+
+#SendToTaller-button{
+    background-color: #003594; /* Tu color azul deseado */
+    border-color: #003594;     /* Importante: el borde también debe coincidir */
+    color: #ffffff;           /* Color del icono/texto para asegurar contraste */
+}
+
+#SendToTaller-button:hover{
+    background-color: green; /* Color más oscuro al pasar el ratón */
+    border-color: white;     /* Cambia el borde también */
+    color: white;           /* Color del icono/texto al pasar el ratón */
+}

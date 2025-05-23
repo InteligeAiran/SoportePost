@@ -269,8 +269,9 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function UpdateTicketStatus(){
-        $result = $this->model->UpdateTicketStatus();
+    public function UpdateTicketStatus($id_new_status, $id_ticket, $id_user){
+        $result = $this->model->UpdateTicketStatus($id_new_status,$id_ticket, $id_user);
+        return $result['row']['check_user_status'];
     }
 }
 ?>

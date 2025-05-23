@@ -60,7 +60,7 @@
       <h2>Restablecer Contraseña</h2>
       <p>Ingresa tu correo electrónico para recibir un codigo.</p>
       <form id="restore_passForm">
-        <input placeholder = "Coloque su Correo" onkeyup = "checkEmail()" type="email" id="email" name = "email" required>
+        <input placeholder = "Coloque su Correo" onblur = "checkEmail()" type="email" id="email" name = "email" required>
         <div id="emailError" class="error"></div><div id="emailVerification" class="success"></div>
         <button id="Sendemail" type="button" onclick="SendEmail()">Enviar</button>
       </form>

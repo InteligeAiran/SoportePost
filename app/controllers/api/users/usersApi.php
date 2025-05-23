@@ -6,8 +6,10 @@ require_once __DIR__ . '/../../../../libs/database_cn.php';
 require_once __DIR__ . '/../../../../libs/View.php';
 require_once __DIR__ . '/../../../../libs/database.php';
 require_once __DIR__ . '/../../../repositories/UserRepository.php';
-
+require_once __DIR__ . '/../../../../libs/session.php';
 require_once __DIR__ . '/../../../../config/paths.php';
+
+session_start(); // Inicia la sesión aquí, al principio del constructor o del método handleLogin
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -27,15 +29,7 @@ class users extends Controller {
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
         header('Access-Control-Allow-Headers: Content-Type');
-
-            // Inicia la sesión aquí, al principio del constructor o del método handleLogin
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-
         $this->db = DatabaseCon::getInstance(bd_hostname, mvc_port, bd_usuario, bd_clave, database);
-        // ... instancia tus repositorios y servicios si los usas aquí
     }
 
     public function processApi($urlSegments) {
@@ -103,6 +97,14 @@ class users extends Controller {
 
                 case 'GetRegionUsersAssign':
                     $this->handleGetRegionUsersById();
+                break;
+
+                case 'checkStatus':
+                    $this->handlecheckUserStatus();
+                break;
+                
+                case 'updatePassword':
+                    $this->handleupdatePassword();
                 break;
 
                 default:
@@ -376,6 +378,32 @@ class users extends Controller {
         } else {
             $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
         }
+    }
+
+    public function handlecheckUserStatus(){
+        $id_user = isset($_POST['userId']) ? $_POST['userId'] : '';
+        $repository = new UserRepository();
+        $result = $repository->checkUserStatus($id_user);
+        if ($result) {
+            $this->response(['success' => true, 'isVerified' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'isVerified' => false], 200);
+        }
+        $this->response(['success' => false,'message' => 'Error al verificar el estado del usuario.'], 500);
+    }
+
+    public function handleupdatePassword(){
+        $id_user = isset($_POST['userId']) ? $_POST['userId'] : '';
+        $contrase = isset($_POST['newPassword']) ? $_POST['newPassword'] : '';
+        $contrase = sha1(md5($contrase)); // Asegúrate de que el hash sea el correcto
+        $repository = new UserRepository();
+        $result = $repository->updatePassword($id_user, $contrase);
+        if ($result) {
+            $this->response(['success' => true, 'isVerified' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'isVerified' => false], 200);
+        }
+        $this->response(['success' => false,'message' => 'Error al verificar el estado del usuario.'], 500);
     }
 
     // ... otras funciones handleSearchSerialData, etc.
