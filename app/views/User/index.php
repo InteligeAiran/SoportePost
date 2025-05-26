@@ -108,17 +108,15 @@ function mi_navbar() {
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closedModalCreated()"><span aria-hidden="true">&times;</span>
                 </button>
                 <div class="panel-heading" style="text-align: center;color:#ffffff;">
                     <h4>Registro de usuarios</h4>
                 </div>
             </div> 
 
-            <div class="modal-body">
-                <div class="panel-body">
-                
-                
+            <div class="modal-body" >
+                <div class="panel-body"> 
                 <div class="row">
                       <div class="col-md-6">
                         <label for="nombre">Nombre:</label>
@@ -195,7 +193,7 @@ function mi_navbar() {
             </div> 
           </div>   
           <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closedModalCreated()">Cerrar</button>
                 <button type="button" class="btn btn-primary" id="btnGuardarUsers">Guardar</button>
             </div>
         </div>
@@ -305,9 +303,8 @@ function mi_navbar() {
    </div>
 
 
-           <div class="modal fade" id="ModalModulos" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"
-     data-keyboard="false">
-         <div class="modal-dialog" role="document">
+    <div class="modal fade" id="ModalModulos" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"  data-keyboard="false">
+      <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel"></h5>
@@ -337,10 +334,6 @@ function mi_navbar() {
                     </table>
             </div> 
           </div>   
-          <!-- <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" id="btnGuardarUsers">Guardar</button>
-            </div> -->
         </div>
     </div>
    </div>
@@ -515,6 +508,9 @@ function mi_navbar() {
         $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
 
     ?>
+
+
+
     <script>
         
         var expired_sessions = <?php echo $expired_sessions; ?>;
@@ -556,3 +552,6 @@ function mi_navbar() {
 
 </body>
 </html>
+
+
+

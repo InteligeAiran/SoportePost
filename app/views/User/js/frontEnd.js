@@ -17,7 +17,6 @@ function validarEmail(elemento){
    if(document.getElementById(elemento.id).value == "") {
       document.getElementById(elemento.id).style = 'border-color:none;';
 
-      // document.getElementById('updatoscontacto').disabled=false;
    }
    else if (!regex.test(texto)) {
       document.getElementById("resultcorreo").innerHTML = "Correo invalido";
@@ -37,22 +36,22 @@ function validarEmail(elemento){
   }
 }
 
-function soloLetras(e) {
-    key = e.keyCode || e.which;
-    tecla = String.fromCharCode(key).toString();
-letras = "áéíóúabcdefghijklmnñopqrstuvwxyzÁÉÍÓÚABCDEFGHIJKLMNÑOPQRSTUVWXYZ";//Se define todo el abecedario que se quiere mostrar.
-especiales = [8, 37, 39, 46, 6, 32]; //Es la validacion del KeyCodes, que teclas recibe el campo de texto.
-tecla_especial = false
-for(var i in especiales) {
-    if(key == especiales[i]) {
-        tecla_especial = true;
-        break;
+    function soloLetras(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toString();
+    letras = "áéíóúabcdefghijklmnñopqrstuvwxyzÁÉÍÓÚABCDEFGHIJKLMNÑOPQRSTUVWXYZ";//Se define todo el abecedario que se quiere mostrar.
+    especiales = [8, 37, 39, 46, 6, 32]; //Es la validacion del KeyCodes, que teclas recibe el campo de texto.
+    tecla_especial = false
+    for(var i in especiales) {
+        if(key == especiales[i]) {
+            tecla_especial = true;
+            break;
+        }
     }
-}
 
-if(letras.indexOf(tecla) == -1 && !tecla_especial){
-    return false;
-}
+    if(letras.indexOf(tecla) == -1 && !tecla_especial){
+        return false;
+    }
 }
 
 
@@ -71,72 +70,6 @@ if(letras.indexOf(tecla) == -1 && !tecla_especial){
 //             document.getElementById("usuario").value=idusuario;
 //         }
 //   }
-
-
-
-// function nameUsuario() {
-//     const nombreusuario = document.getElementById('nombreuser').value.trim(); // .trim() para limpiar espacios
-//     const apellidousuario = document.getElementById('apellidouser').value.trim();
-//     const nameusers = document.getElementById('usuario'); // El input donde se muestra el usuario
-//     const usuarioStatusDiv = document.getElementById('usuario-status'); // Un div para mostrar mensajes de estado (lo crearemos)
-
-//     // Limpia el estado anterior
-//     usuarioStatusDiv.innerHTML = '';
-//     nameusers.value = ''; // Limpia el campo mientras se genera/valida
-
-//     if (nombreusuario === '' || apellidousuario === '') {
-//         return; // No hagas nada si los campos están vacíos
-//     }
-
-//     // Generar el nombre de usuario base
-//     const inicialnombre = nombreusuario.substr(0, 1).toUpperCase(); // Asegura mayúscula
-//     const apellidoSinEspacios = apellidousuario.replace(/\s+/g, '').toUpperCase(); // Quitar espacios y mayúsculas
-//     const nombreUsuarioGenerado = inicialnombre + apellidoSinEspacios;
-
-//     nameusers.value = nombreUsuarioGenerado; // Muestra el nombre sugerido
-
-//     const checkUsernameEndpoint = `${ENDPOINT_BASE}${APP_PATH}api/users/checkUsernameAvailability`;
-
-//     const xhr = new XMLHttpRequest();
-//     xhr.open('POST', checkUsernameEndpoint, true); // true para asíncrono
-//     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-//     xhr.onload = function() {
-//         if (xhr.status === 200) {
-//             try {
-//                 const response = JSON.parse(xhr.responseText);
-//                 if (response.available) {
-//                     // El nombre de usuario base está disponible
-//                     usuarioStatusDiv.innerHTML = '<span style="color: green;">Nombre de usuario disponible.</span>';
-//                     nameusers.classList.remove('is-invalid');
-//                     nameusers.classList.add('is-valid');
-//                     // Puedes guardar el nombre de usuario generado en un campo oculto
-//                     // o confiar en que el backend lo manejará al guardar el formulario completo.
-//                 } else {
-//                     // El nombre de usuario base NO está disponible
-//                     usuarioStatusDiv.innerHTML = '<span style="color: red;">Nombre de usuario sugerido ya existe. </span>';
-//                     nameusers.classList.add('is-invalid');
-//                     nameusers.classList.remove('is-valid');
-//                     // No modificamos el input de usuario aquí, dejamos que el backend
-//                     // nos diga el nombre final al guardar el formulario.
-//                 }
-//             } catch (error) {
-//                 console.error('Error parsing JSON for username check:', error);
-//                 usuarioStatusDiv.innerHTML = '<span style="color: orange;">Error al verificar disponibilidad.</span>';
-//             }
-//         } else {
-//             console.error('Error en el servidor al verificar usuario:', xhr.status, xhr.statusText);
-//             usuarioStatusDiv.innerHTML = '<span style="color: orange;">Error de conexión al verificar usuario.</span>';
-//         }
-//     };
-
-//     xhr.onerror = function() {
-//         console.error('Error de red al verificar usuario.');
-//         usuarioStatusDiv.innerHTML = '<span style="color: orange;">Error de red al verificar usuario.</span>';
-//     };
-
-//     xhr.send(`username=${encodeURIComponent(nombreUsuarioGenerado)}`);
-// }
 
 
 function nameUsuario() {
@@ -214,7 +147,7 @@ function nameUsuario() {
 
 
 
-  function levelTecnico(){
+function levelTecnico(){
     var idtipousuario=document.getElementById('tipousers').value;
     var infoDiv=document.getElementById('nivel').value;
 
@@ -229,7 +162,7 @@ function nameUsuario() {
 }
 
 
-  function levelTecnicoEditar(){
+function levelTecnicoEditar(){
 
     var idtipousuario=document.getElementById('edit_tipousers').value;
     var infoDiv=document.getElementById('nivelEditar').value;
@@ -312,11 +245,7 @@ function getUserData() {
                         const modifyButton = document.createElement('button');
                         modifyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/></svg>';
                         modifyButton.classList.add('btn', 'btn-xs', 'btn-primary', 'me-1'); // Añade clases de Bootstrap para estilo
-
-                        /*const statusButton = document.createElement('button');
-                        statusButton.textContent = 'Cambiar Status';
-                        statusButton.classList.add('btn', 'btn-sm', 'btn-info'); // Añade clases de Bootstrap para estilo*/
-
+ 
                         // Añadir los botones a la celda de acciones
                         actionsCell.appendChild(modifyButton);
                         //actionsCell.appendChild(statusButton);
@@ -338,9 +267,6 @@ function getUserData() {
                         };
 
                     });
-
-                    //console.log('Datos de usuario insertados:', userData); // Agrega esta línea
-
 
                     // Inicialización de DataTables
                     if ($.fn.DataTable.isDataTable('#tabla-ticket')) {
@@ -1001,9 +927,6 @@ const id_modulo = idmodulo;
 const id_usuario = iusuario;
 const idcheck_value= idcheck; 
 
-
-console.log(idcheck_value);
-
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/AsignacionModulo`); // Asegúrate de que esta sea la ruta correcta en tu backend
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -1019,15 +942,16 @@ console.log(idcheck_value);
                         text: response.message,
                         color: 'black',
                         timer: 2500,
+                        allowOutsideClick: false,
                         timerProgressBar: true,
                         didOpen: () => {
                             Swal.showLoading();
                         },
-                        willClose: () => {
-                            setTimeout(() => {
-                                location.reload(); // Recarga la página después del temporizador
-                            }, 1000);
-                        }
+                        // willClose: () => {
+                        //     setTimeout(() => {
+                        //         location.reload(); // Recarga la página después del temporizador
+                        //     }, 1000);
+                        // }
                     });
                 } else {
                     Swal.fire({
@@ -1067,5 +991,21 @@ function closedModal() {
     $('#edit_regionusers').empty();
     $('#edit_tipousers').empty();
     $('#edit_idnivel').empty();
+
+}
+
+
+function closedModalCreated() {
+
+
+    $('#nombreuser').val('');
+    $('#apellidouser').val('');
+    $('#documento').val('');
+    $('#usuario').val('');
+    $('#email').val('');
+    $('#areausers').val('');
+    $('#regionusers').val('');
+    $('#tipousers').val('');
+    $('#idnivel').val('');
 
 }

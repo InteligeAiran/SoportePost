@@ -501,32 +501,6 @@ class users extends Controller {
     }
 
 
-/*public function handleCheckUsernameAvailability() {
-    $username = $_POST['username'] ?? '';
-
-
-    //var_dump($username);
-    $repository = new UserRepository(); // Inicializa el repositorio
-    $check_result  = $repository->VerificaUsuario($username);
-
-
-    if (is_array($check_result) && isset($check_result['status'])) {
-        if ($check_result['status'] === 'available') {
-            $this->response(['available' => true, 'message' => $check_result['message']], 200);
-        } elseif ($check_result['status'] === 'exists') {
-            $this->response(['available' => false, 'message' => $check_result['message']], 200); // 200 OK porque la verificación fue exitosa
-        } else { // status === 'error'
-            $this->response(['available' => false, 'message' => $check_result['message']], 500); // Internal Server Error
-        }
-    } else {
-        // Fallback si VerificaUsuario no devolvió el formato esperado
-        error_log("VerificaUsuario no devolvió el formato esperado en handleCheckUsernameAvailability: " . print_r($check_result, true));
-        $this->response(['available' => false, 'message' => 'Error interno del servidor al procesar la verificación.'], 500);
-    }
-
-}*/
-
-
 public function handleCheckUsernameAvailability() {
     header('Content-Type: application/json');
     
