@@ -17,15 +17,12 @@
         const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
     </script>
 </head>
-
 <body class="g-sidenav-show bg-gray-100">
-    <aside
-    class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-1"
-    id="sidenav-main">
+    <aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-1" id="sidenav-main">
     <div class="sidenav-header">
         <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
             aria-hidden="true" id="iconSidenav"></i>
-        <a class="navbar-brand m-0" href=" https://demos.creative-tim.com/argon-dashboard/pages/dashboard.html "
+        <a class="navbar-brand m-0" href="dashboard"
             target="_blank">
             <img src="<?php echo APP; ?>app/public/img/login/Logo.png" width="26px" height="26px"
                 class="navbar-brand-img h-100" alt="main_logo">
@@ -90,6 +87,15 @@
                     <span class="nav-link-text ms-3">Taller</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tecnico" href="tecnico">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-workspace" viewBox="0 0 16 16">
+                        <path d="M4 16s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-5.95a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                        <path d="M2 1a2 2 0 0 0-2 2v9.5A1.5 1.5 0 0 0 1.5 14h.653a5.4 5.4 0 0 1 1.066-2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v9h-2.219c.554.654.89 1.373 1.066 2h.653a1.5 1.5 0 0 0 1.5-1.5V3a2 2 0 0 0-2-2z"/>
+                    </svg>
+                    <span class="nav-link-text ms-3">Técnico</span>
+                </a>
+            </li>
 
             <hr class="horizontal dark my-3"> <li class="nav-item mt-3">
                 <h6 style="color: white;" class="ps-4 ms-2">Consultas y Reportes</h6>
@@ -123,14 +129,19 @@
             <hr class="horizontal dark my-3"> <li class="nav-item mt-3">
                 <h6 style="color: white;" class="ps-4 ms-2">Administración</h6>
             </li>
+            
             <li class="nav-item">
-                <a class="nav-link" id="tecnico" href="tecnico">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-workspace" viewBox="0 0 16 16">
-                        <path d="M4 16s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-5.95a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
-                        <path d="M2 1a2 2 0 0 0-2 2v9.5A1.5 1.5 0 0 0 1.5 14h.653a5.4 5.4 0 0 1 1.066-2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v9h-2.219c.554.654.89 1.373 1.066 2h.653a1.5 1.5 0 0 0 1.5-1.5V3a2 2 0 0 0-2-2z"/>
+                <a class="nav-link" id="domiciliacion" href="domiciliacion">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cash-stack" viewBox="0 0 16 16">
+                        <path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/>
+                        <path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2z"/>
                     </svg>
-                    <span class="nav-link-text ms-3">Técnico</span>
+                    <span class="nav-link-text ms-3">Verificación de Solvencia</span>
                 </a>
+            </li>
+
+            <hr class="horizontal dark my-3"> <li class="nav-item mt-3">
+                <h6 style="color: white;" class="ps-4 ms-2">Configuración</h6>
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="gestion_users" href="gestionusers">
@@ -140,10 +151,6 @@
                     </svg>
                     <span class="nav-link-text ms-3">Gestión Usuario</span>
                 </a>
-            </li>
-
-            <hr class="horizontal dark my-3"> <li class="nav-item mt-3">
-                <h6 style="color: white;" class="ps-4 ms-2">Sesión</h6>
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="cerrar-link" href="cerrar_session">
