@@ -54,3 +54,93 @@ body {
     justify-content: center;
     align-items: center;
 }
+
+#CloseIcon {
+    position: absolute;
+    right: 4%;
+    cursor: pointer;
+    color: #fff;
+    background-color: #8392ab;
+}
+
+#CloseIcon:hover{
+    color: #fff;
+    background-color: red;
+}
+
+#Cerrar-botton {
+    position: absolute;
+    cursor: pointer;
+    color: #fff;
+    background-color: #8392ab;
+    right: 31%;
+}
+
+#Cerrar-botton:hover{
+    color: #fff;
+    background-color: red;
+}
+
+#CloseIcon:hover {
+    /* El background-color sí se aplica a la caja del botón */
+    background-color: red;
+
+    /* Para cambiar el color del SVG (la 'X'): */
+    /* Opción 1: Invertir el color (si el SVG es blanco/negro) */
+    filter: invert(0);
+
+    /* Opción 2: Usar brightness para oscurecer/aclarar si el color actual es parte del SVG */
+    /* filter: brightness(0) invert(1);  -- Esto lo haría blanco si el original es negro, o negro si el original es blanco */
+}
+
+/* Opcional: Para asegurar que el color de texto (si lo hubiera en el futuro) sea blanco */
+#CloseIcon:hover {
+    color: #fff; /* Esto solo afectaría texto dentro del botón, no el SVG */
+}
+
+#submitNewPasswordBtn{
+    background-color: #003594;
+}
+
+#submitNewPasswordBtn:hover{
+    background-color: green;
+}
+
+#modalTitulLable {
+    position: relative; /* Puedes dejarlo si lo necesitas para otras cosas, pero no ayuda mucho al SVG aquí */
+    /* Para que el input y el SVG estén en la misma línea sin espacio intermedio */
+    display: flex;
+    align-items: center; /* Centra verticalmente el input y el SVG */
+    gap: 5px; /* Pequeño espacio entre el input y el SVG si lo deseas */
+}
+
+
+/* Ajusta los estilos del input para que ocupe el espacio sin su propio borde si el contenedor lo maneja */
+.mb-4 input[type="password"],
+.mb-4 input[type="text"] {
+    flex-grow: 1; /* Permite que el input ocupe el espacio restante */
+    /* Si usas display: flex en .mb-4, es posible que el input no necesite width: 100% */
+    /* Y el padding-right ya no es para el ojo superpuesto, sino un padding normal */
+    padding-right: 15px; /* Padding normal */
+}
+
+/* Estilos para el SVG */
+.mb-4 .bi-eye-fill { /* Usamos la clase bi-eye-fill ya que no hay toggle-password */
+    /* No podemos usar position: absolute; de forma efectiva aquí para superponer */
+    /* porque el padre directo (.mb-4) contendría más elementos */
+    cursor: pointer;
+    color: #6c757d;
+    width: 11%;
+    height: 11%; /* Ajusta la altura según sea necesario */
+    /* Ajustes mínimos si es necesario para alineación, ej. margin-left: -30px; */
+    /* Esto es un "hack" para moverlo hacia la izquierda, pero puede ser frágil. */
+}
+
+.mb-4 .bi-eye-fill:hover {
+    color: #495057;
+}
+
+/* ¡Importante! El input type="hidden" debe seguir funcionando, asegúrate de que no se vea */
+#modalUserIdForPassword {
+    display: none;
+}

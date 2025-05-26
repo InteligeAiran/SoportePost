@@ -115,8 +115,7 @@ function mi_navbar() {
                                         </div>
                                     </div>
                                     <div class="col-4 text-end">
-                                        <div
-                                            class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
+                                        <div class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
                                             <svg style = "margin-top: 14px;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-wrench-adjustable" viewBox="0 0 16 16">
                                                 <path d="M16 4.5a4.5 4.5 0 0 1-1.703 3.526L13 5l2.959-1.11q.04.3.041.61"/>
                                                 <path d="M11.5 9c.653 0 1.273-.139 1.833-.39L12 5.5 11 3l3.826-1.53A4.5 4.5 0 0 0 7.29 6.092l-6.116 5.096a2.583 2.583 0 1 0 3.638 3.638L9.908 8.71A4.5 4.5 0 0 0 11.5 9m-1.292-4.361-.596.893.809-.27a.25.25 0 0 1 .287.377l-.596.893.809-.27.158.475-1.5.5a.25.25 0 0 1-.287-.376l.596-.893-.809.27a.25.25 0 0 1-.287-.377l.596-.893-.809.27-.158-.475 1.5-.5a.25.25 0 0 1 .287.376M3 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
@@ -359,32 +358,40 @@ function mi_navbar() {
                         </div>
                     </div>
                 </div>
-                <div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px)">
+                <div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);"  data-bs-backdrop="static" data-bs-keyboard="false">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content rounded-lg shadow-lg">
-                            <div class="modal-header bg-gradient-primary text-white rounded-t-lg">
+                            <div class="modal-header bg-gradient-primary text-white rounded-t-lg" id="newPasswordModalHeader">
                                 <h5 class="modal-title text-white" id="newPasswordModalLabel">Ingrese Nueva Contraseña</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" id="CloseIcon" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body p-6">
                                 <form id="newPasswordForm">
                                     <input type="hidden" id="modalUserIdForPassword"> 
-                                    <div class="mb-4">
+                                    <div id="modalTitulLable" class="mb-4">
                                         <label for="newPassword" class="form-label text-gray-700 font-semibold">Nueva Contraseña:</label>
                                         <input type="password" class="form-control rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500" id="newPassword" required>
+                                        <svg id = "clickme1" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                                        </svg> 
                                         <div id="passwordError" class="error"></div>
                                         <div id="passwordVerification" class="success"></div>
                                     </div>
-                                    <div class="mb-4">
+                                    <div id="modalTitulLable" class="mb-4">
                                         <label for="confirmNewPassword" class="form-label text-gray-700 font-semibold">Confirmar Contraseña:</label>
                                         <input type="password" class="form-control rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500" id="confirmNewPassword" required>
+                                        <svg id = "clickme" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                                        </svg> 
                                         <div id="confirmPasswordError" class="error"></div>
                                     </div>
                                 </form>
                                 <input type="hidden" id="modalUserIdForPassword">
                             </div>
                             <div class="modal-footer flex justify-end p-4 bg-gray-50 rounded-b-lg">
-                                <button type="button" class="btn btn-secondary rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-secondary rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" data-bs-dismiss="modal" id="Cerrar-botton">Cancelar</button>
                                 <button type="button" class="btn btn-primary rounded-md px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="submitNewPasswordBtn">Guardar Contraseña</button>
                             </div>
                         </div>
@@ -512,7 +519,6 @@ function mi_navbar() {
         <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.js"></script>
 
         <!--   Core JS Files   -->
-        <script src="<?php echo APP;?>app/plugins/js/popper.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/js/perfect-scrollbar.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/js/smooth-scrollbar.min.js"></script>
         <script src="<?php echo APP;?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>

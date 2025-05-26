@@ -336,8 +336,6 @@ function inicializeModal() {
         clearFormFields(); // Limpiar campos de ambos modales
     });*/
 
-
-
     crearTicketDropdownItems.off('click').on('click', function(event) {
         event.preventDefault(); // Evitar que el enlace navegue
         var selectedValue = $(this).data('value');
@@ -1661,5 +1659,72 @@ function updateNavbar(permissions) {
     if (tecnicoLinkLi) {
         tecnicoLinkLi.style.display = hasPermission('tecnico') ? 'block' : 'none';
     }   */
-}    
+}
 
+function HideNavbar() {
+  const id_user = document.getElementById("id_user").value;
+  const navbar = document.getElementById("sidenav-main");
+
+
+  const xhr = new XMLHttpRequest();
+  // El endpoint de tu API que verifica el estatus del usuario logueado (desde la sesión)
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/checkStatus`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+        try {
+            const response = JSON.parse(xhr.responseText);
+            const userStatus = response.isVerified; // Asignar un valor por defecto si no existe
+
+            if (userStatus.id_status === "1") {
+               if (navbar) {
+                    navbar.style.display = "none"; // Oculta la barra de navegación
+                } else {
+                    console.error("La barra de navegación no se encontró en el DOM.");
+                }
+            const newPasswordModalElement = document.getElementById("newPasswordModal");
+                if (newPasswordModalElement) {
+                    // Si el modal existe, lo mostramos
+                    new bootstrap.Modal(newPasswordModalElement).show();
+                } else {
+                    console.error("El modal 'newPasswordModal' no se encontró en el DOM.");
+                }
+            } else if (userStatus.id_status != "1") {
+                // Si el usuario ya está verificado, ocultamos la barra de navegación
+                if (navbar) {
+                    navbar.style.display = "block"; // Oculta la barra de navegación
+                } else {
+                    console.error("La barra de navegación no se encontró en el DOM.");
+                }
+            }
+        } catch (error) {
+            console.error("Error parsing JSON:", error);
+            Swal.fire({
+            title: "Error",
+            text: "Ocurrió un error al procesar la respuesta del servidor.",
+            icon: "error",
+            confirmButtonText: "OK",
+            color: "black",
+            });
+        }
+    } else {
+        console.error("Error:", xhr.status, xhr.statusText);
+        Swal.fire({
+            title: "Error",
+            text: "Error de conexión con el servidor.",
+            icon: "error",
+            confirmButtonText: "OK",
+            color: "black",
+        });
+    }
+}
+  const datos = `action=checkStatus&userId=${encodeURIComponent(id_user)}`; // O simplemente "" si el endpoint no necesita action
+  xhr.send(datos);
+}
+
+// --- Event Listeners y la Lógica del Botón 'Guardar Contraseña' del modal ---
+// --- Event Listeners y la Lógica del Botón 'Guardar Contraseña' del modal ---
+document.addEventListener("DOMContentLoaded", function () {
+  HideNavbar(); // Llama a la función para verificar el estatus del usuario al cargar la página
+});

@@ -215,6 +215,8 @@ class consulta_rifModel extends Model
             $escaped_coordinador = pg_escape_literal($this->db->getConnection(), $coordinador);  // Usar $coordinador
             $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
             $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif); // Escapar el RIF
+            $idStatusDomiciliacion = $_POST['id_status_domiciliacion'] ?? null; // O de donde venga el dato
+            $escaped_idStatusDomiciliacion = ($idStatusDomiciliacion !== null) ? "'" . pg_escape_string($this->db->getConnection(),  $idStatusDomiciliacion) . "'" : null;
 
 
             $escaped_mimeTypeExo = null;
@@ -232,8 +234,8 @@ class consulta_rifModel extends Model
                 $escaped_mimeTypeEnvio = pg_escape_literal($this->db->getConnection(), $mimeTypeEnvio);
             }
 
-            $sql = "SELECT * FROM save_data_failures2(" . $escaped_serial . "::TEXT, " . $escaped_nivelFalla . "::INTEGER, " . $escaped_id_status_payment . "::INTEGER, " . $escaped_rif . "::VARCHAR,'" . $rutaBaseDatos . "'::TEXT,
-                '" . ($rutaExo ?? '') . "'::TEXT, '" . ($rutaAnticipo ?? '') . "'::TEXT, " . ($escaped_mimeTypeExo !== null ? $escaped_mimeTypeExo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeAnticipo !== null ? $escaped_mimeTypeAnticipo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeEnvio !== null ? $escaped_mimeTypeEnvio . "::TEXT" : 'NULL') . ");";
+            $sql = "SELECT * FROM save_data_failure2(" . $escaped_serial . "::TEXT, " . $escaped_nivelFalla . "::INTEGER, " . $escaped_id_status_payment . "::INTEGER, " . $escaped_rif . "::VARCHAR,'" . $rutaBaseDatos . "'::TEXT,
+                '" . ($rutaExo ?? '') . "'::TEXT, '" . ($rutaAnticipo ?? '') . "'::TEXT, " . ($escaped_mimeTypeExo !== null ? $escaped_mimeTypeExo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeAnticipo !== null ? $escaped_mimeTypeAnticipo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeEnvio !== null ? $escaped_mimeTypeEnvio . "::TEXT" : 'NULL') . ", ". ($escaped_idStatusDomiciliacion !== null ? $escaped_idStatusDomiciliacion . "::TEXT" : 'NULL') .");";
             $result = $this->db->pgquery($sql);
             $ticketData = pg_fetch_assoc($result);
 

@@ -1,9 +1,9 @@
-document.addEventListener('DOMContentLoaded', (event) => {
+/*document.addEventListener('DOMContentLoaded', (event) => {
     const anchoPantalla = window.innerWidth;
     const altoPantalla = window.innerHeight;
     console.log(`Ancho de la pantalla: ${anchoPantalla}px`);
     console.log(`Alto de la pantalla: ${altoPantalla}px`);
-});
+});*/
 
 // Get the input field
 var input1 = document.getElementById("username");
@@ -25,7 +25,7 @@ jQuery('#clickme').on('click', function() {
     jQuery('#password').attr('type', function(index, attr) {
       return attr == 'text' ? 'password' : 'text';
     })
-  })
+})
 
 input2.addEventListener("keypress", function(event) {
     // If the user presses the "Enter" key on the keyboard
@@ -66,7 +66,6 @@ $("#email").keyup(function(){
 function SendForm() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/access`);
