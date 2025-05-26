@@ -144,6 +144,7 @@ function mi_navbar() {
                         <input type="text" id="usuario" class="form-control" name="usuario" disabled onchange="nameUsuario()" style="text-transform:uppercase; color:#000000;" onkeyup="javascript:this.value=this.value.toUpperCase();">  
 
                         <div id="usuario-status" class="mt-1"></div>
+                        <br>
                       </div>
                 </div>  
 
