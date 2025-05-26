@@ -282,7 +282,7 @@ class email extends Controller {
                             <li class="info-item"><strong>Estatus:</strong> '.$ticketstatus.'</li>
                             <li class="info-item"><strong>Acción:</strong> '.$ticketaccion.'</li>
                         </ul>
-                            <p><a href="http://10.225.1.136/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
+                            <p><a href="http://10.225.1.136/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'&id_level_failure='.$ticketNivelFalla.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                         <hr>
                         <p class="footer" >Atentamente,</p>
                         <p class="footer">El equipo de InteliSoft</p>
@@ -429,7 +429,7 @@ class email extends Controller {
                             <li class="info-item"><strong>Estatus:</strong> '.$ticketstatus.'</li>
                             <li class="info-item"><strong>Acción:</strong> '.$ticketaccion.'</li>
                         </ul>
-                            <p><a href="http://10.225.1.136/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
+                            <p><a href="http://10.225.1.136/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'&id_level_failure='.$ticketNivelFalla.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                         <hr>
                         <p class="footer" >Atentamente,</p>
                         <p class="footer">El equipo de InteliSoft</p>
@@ -456,10 +456,12 @@ class email extends Controller {
     public function handleconsultationHistorial(): void{
         $serial  = isset($_POST['serial']) ? $_POST['serial'] : '';
         $proceso = isset($_POST['proceso']) ? $_POST['proceso'] : '';
+        $id_level_failure = isset($_POST['id_level_failure']) ? $_POST['id_level_failure'] : '';
+        
         $repository   = new EmailRepository(); // Inicializa el repositorio
-        $result  = $repository->GetDataTicketConCliente(); // Llama a la función del repositoryo
-   
         if ($serial != '' && $proceso != '') {
+        $result  = $repository->GetDataTicketConCliente($serial, $id_level_failure); // Llama a la función del repositoryo
+
             if($result){
                 $this->response(['success' => true, 'data' => $result], 200); 
             }else{

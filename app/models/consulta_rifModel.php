@@ -236,21 +236,23 @@ class consulta_rifModel extends Model
 
             $sql = "SELECT * FROM save_data_failure2(" . $escaped_serial . "::TEXT, " . $escaped_nivelFalla . "::INTEGER, " . $escaped_id_status_payment . "::INTEGER, " . $escaped_rif . "::VARCHAR,'" . $rutaBaseDatos . "'::TEXT,
                 '" . ($rutaExo ?? '') . "'::TEXT, '" . ($rutaAnticipo ?? '') . "'::TEXT, " . ($escaped_mimeTypeExo !== null ? $escaped_mimeTypeExo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeAnticipo !== null ? $escaped_mimeTypeAnticipo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeEnvio !== null ? $escaped_mimeTypeEnvio . "::TEXT" : 'NULL') . ", ". ($escaped_idStatusDomiciliacion !== null ? $escaped_idStatusDomiciliacion . "::TEXT" : 'NULL') .");";
+
             $result = $this->db->pgquery($sql);
             $ticketData = pg_fetch_assoc($result);
 
             // **Asegúrate de que 'savedatafalla' es el nombre de la columna que devuelve el ID**
-            if (!$ticketData || !isset($ticketData['save_data_failures2'])) {
+            if (!$ticketData || !isset($ticketData['save_data_failure2'])) {
                 // Es importante manejar el caso donde no se obtiene el ID del ticket
                 error_log("Error: No se pudo obtener el ID del ticket de SaveDataFalla2.");
                 $this->db->closeConnection();
                 return array('error' => 'Error al obtener ID del ticket.');
             }
-            $idTicketCreado = $ticketData['save_data_failures2']; // Capturar el ID del ticket creado
+            $idTicketCreado = $ticketData['save_data_failure2']; // Capturar el ID del ticket creado
             $escaped_id_ticket = pg_escape_literal($this->db->getConnection(), $idTicketCreado);
 
             if ($result) {
                 $sqlFailure = "SELECT InsertTicketFailure(" . $escaped_id_ticket . ", " . $escaped_descripcion . ");";
+
                 $resultFailure = $this->db->pgquery($sqlFailure);
 
                 // Llamar a insertintouser_ticket AQUI
