@@ -332,6 +332,15 @@ class userModel extends Model{
         } catch (Throwable $e) {
             // Handle exception
         }
+    }   
+    public function checkUserStatus($id_user){
+        try{
+            $sql = "SELECT id_user, id_status FROM check_user_status(".$id_user.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
     }
 
     public function AsignacionModulo($id_modulo, $id_usuario, $idcheck_value){
@@ -443,5 +452,14 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
 }
 
 
+    public function UpdateUserStatus($id_user, $contrase){
+        try{
+            $sql = "SELECT * FROM update_user_status(".$id_user.", '".$contrase."');";
+            $result = $this->db->pgquery($sql);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }   
 ?>

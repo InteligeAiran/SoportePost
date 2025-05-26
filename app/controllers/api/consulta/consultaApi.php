@@ -132,6 +132,14 @@ class Consulta extends Controller {
                     $this->handleGetTicketDataLab();
                 break;
 
+                case 'GetStatusLab':
+                    $this->handleGetStatusLab();
+                break;
+
+                case 'UpdateTicketStatus':
+                    $this->handleUpdateTicketStatus();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                 break;
@@ -553,11 +561,11 @@ class Consulta extends Controller {
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'tecnicos' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
-            $this->response(['success' => false, 'message' => 'No hay usuarios disponibles'], 404); // Código 404 Not Found
+            $this->response(['success' => false, 'message' => 'No hay Técnico disponibles'], 404); // Código 404 Not Found
         } else {
-            $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
+            $this->response(['success' => false, 'message' => 'Error al obtener los Técnico'], 500); // Código 500 Internal Server Error
         }
-        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Técnico']);
     }
 
     public function handleAssignTicket(){
@@ -604,7 +612,39 @@ class Consulta extends Controller {
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
-        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
+
+    public function handleGetStatusLab(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetSatusTaller();
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'estatus' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos Estatus disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los Estatus'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar un Estatus']);
+    }
+
+   public function handleUpdateTicketStatus(){
+        $id_user = isset($_SESSION['id_user'])? $_SESSION['id_user'] : '';
+        $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_new_status = isset($_POST['id_new_status'])? $_POST['id_new_status'] : '';
+
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->UpdateTicketStatus( $id_new_status, $id_ticket, $id_user);
+
+        if ($id_new_status != '') {
+            if($result){
+                $this->response(['success' => true, 'message' => 'Ticket actualizado con éxito.'], 200); 
+            }else{
+                $this->response(['success' => false, 'message' => 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
+            }
+        }else{
+            $this->response(['success' => false, 'message' => 'El estatus esta vacio'], 500); // Código de estado 404 Not Found
+        }
     }
 }
 ?>

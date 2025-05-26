@@ -2,7 +2,7 @@
 class asignar_tecnico extends Controller {
         public $view;
 
-    function __construct() {
+    function __construct(){
         session_start();
         parent::__construct();
         if (empty($_SESSION["id_user"])) {

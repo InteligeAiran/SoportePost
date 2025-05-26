@@ -9,11 +9,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
-    <link id="pagestyle" rel="stylesheet"
-        href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
+    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
     <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/navbar/styleGeneral.css" />
     <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/navbar/desktop/form.css" />
-
     <script>
         const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
         const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
@@ -280,18 +278,6 @@
                                         </select>
                                     </div>
                                 </div>
-                                    
-                                    <!--div class="contenedor-triangulo">
-                                            <div class="triangulo"></div>
-                                            <div class="triangulo"></div>
-                                            <div class="triangulo"></div>
-                                        </div-->
-
-                                    <!--div id="animation" class="contenedor-triangulo1">
-                                            <div class="triangulo1"></div>
-                                            <div class="triangulo1"></div>
-                                            <div class="triangulo1"></div>
-                                        </div-->
                                 <input type="hidden" id="id_user" name="userId" value = <?php echo $_SESSION['id_user']?>>
                             </div>
                         </form>

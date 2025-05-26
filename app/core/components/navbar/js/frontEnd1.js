@@ -68,37 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setActiveLink('gestion_users', 'gestionusers');
     setActiveLink('estadisticas-link', 'pages/profile.html');
     setActiveLink('taller', 'taller');
-
-    // **CÓDIGO PARA OBTENER EL userId**
-    // const userId = localStorage.getItem('userId');
-    // if (userId) {
-    //     // Ahora puedes usar la variable userId donde la necesites en tu navbar
-    //     // Por ejemplo, podrías asignarla al valor de un campo oculto en un formulario:
-    //     const userIdNavbarInput = document.getElementById('id_user');
-    //     if (userIdNavbarInput) {
-    //         userIdNavbarInput.value = userId;
-    //     }
-    // } else {
-    //     console.log('User ID no encontrado en localStorage.');
-    //     // Manejar el caso en que el userId no esté disponible (por ejemplo, el usuario no ha iniciado sesión)
-    // }
 });
-
-// document.addEventListener('DOMContentLoaded', function() {
-//     const cerrarSesionBtn = document.getElementById('cerrar-link'); // Reemplaza 'cerrarSesionBtn' con el ID de tu botón de cerrar sesión
-
-//     if (cerrarSesionBtn) {
-//         cerrarSesionBtn.addEventListener('click', function(e) {
-//             e.preventDefault(); // Evita que el enlace 'href' se siga inmediatamente
-
-//             // Eliminar el 'id_user' de localStorage
-//             localStorage.removeItem('id_user');
-
-//             // Redirigir a la URL de cierre de sesión en el servidor
-//             window.location.href = 'cerrar_session'; // Ajusta la URL si es necesario
-//         });
-//     }
-// });
 
 document.addEventListener('DOMContentLoaded', function() {
     // Estilo para el span "No file chosen"

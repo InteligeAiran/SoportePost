@@ -241,10 +241,14 @@ function checkEmail() {
     const mensajeDivt = document.getElementById('emailVerification');
 
     mensajeDiv.innerHTML = '';
+    mensajeDivt.innerHTML = '';
+    mensajeDivt.style.color = ''; // Resetear el color del mensaje
+    input.style.borderColor = ''; // Resetear el borde a su estado original
 
-    if (input.value === '') {
-        mensajeDivt.innerHTML = 'Campo vacío'; // Muestra el mensaje en rojo directamente
+    if (input.value.trim() === '') { // Usar .trim() para quitar espacios en blanco
+        mensajeDivt.innerHTML = 'Campo vacío';
         mensajeDivt.style.color = 'red';
+        input.style.borderColor = 'red'; // Pone el borde rojo
     } else {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/checkEmail`);
@@ -256,6 +260,7 @@ function checkEmail() {
                     const response = JSON.parse(xhr.responseText);
                     mensajeDivt.innerHTML = response.message;
                     mensajeDivt.style.color = response.color; // Aplica el color del mensaje
+                     input.style.borderColor = response.color; // Pone el borde rojo
                 } catch (error) {
                     console.error('Error parsing JSON:', error);
                     mensajeDiv.innerHTML = 'Error al procesar la respuesta del servidor.';

@@ -250,8 +250,6 @@ function mi_navbar() {
         <script src="<?php echo APP;?>app/plugins/NewDataTable/datatables.js"></script>
 
         <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.js"></script>
         <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.js"></script>
 
          <!--JQUERY-->
@@ -269,10 +267,6 @@ function mi_navbar() {
         <!-- Datatable -->
         <script src = "<?php echo APP;?>app/plugins/datatables/datatables.min.js"></script>
         <script src = "<?php echo APP;?>app/plugins/datatables/datatables.js"></script>
-
-        <!-- Chart -->
-        <script src="<?php echo APP;?>app/plugins/chart.js/chart.js"></script>
-        <script src="<?php echo APP;?>app/plugins/chart.js/chart.min.js"></script>
 
         <!--  SweetAlert   -->
         <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.js"></script>

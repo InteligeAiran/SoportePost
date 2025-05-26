@@ -359,6 +359,40 @@ function mi_navbar() {
                         </div>
                     </div>
                 </div>
+                <div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px)">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content rounded-lg shadow-lg">
+                            <div class="modal-header bg-gradient-primary text-white rounded-t-lg">
+                                <h5 class="modal-title text-white" id="newPasswordModalLabel">Ingrese Nueva Contraseña</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-6">
+                                <form id="newPasswordForm">
+                                    <input type="hidden" id="modalUserIdForPassword"> 
+                                    <div class="mb-4">
+                                        <label for="newPassword" class="form-label text-gray-700 font-semibold">Nueva Contraseña:</label>
+                                        <input type="password" class="form-control rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500" id="newPassword" required>
+                                        <div id="passwordError" class="error"></div>
+                                        <div id="passwordVerification" class="success"></div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="confirmNewPassword" class="form-label text-gray-700 font-semibold">Confirmar Contraseña:</label>
+                                        <input type="password" class="form-control rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500" id="confirmNewPassword" required>
+                                        <div id="confirmPasswordError" class="error"></div>
+                                    </div>
+                                </form>
+                                <input type="hidden" id="modalUserIdForPassword">
+                            </div>
+                            <div class="modal-footer flex justify-end p-4 bg-gray-50 rounded-b-lg">
+                                <button type="button" class="btn btn-secondary rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-primary rounded-md px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="submitNewPasswordBtn">Guardar Contraseña</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
+                    <input type="hidden" id="userIdForPassword" value="<?php echo $_SESSION['id_user']; ?>">
+                <!-- END ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
                 <footer class="footer pt-3  ">
                     <div class="container-fluid">
                         <div class="row align-items-center justify-content-lg-between">

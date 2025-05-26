@@ -184,7 +184,6 @@ class UserRepository
     public function GetPasswordUser($username, $password){
         // Lógica para obtener un usuario por su nombre de usuario
         $result = $this->model->GetPasswordUser($username, $password); // Asumiendo que tienes este método en tu modelo
-        //var_dump($result);
         return $result ? $result['numRows'] : null;
     }
 
@@ -215,6 +214,18 @@ class UserRepository
 
     public function VerificaUsuario($nombre,$apellido){
         $result = $this->model->VerificaUsuario($nombre,$apellido);
+        return $result;
+    }
+    
+    public function checkUserStatus($id_user){
+        // Lógica para verificar el estado del usuario
+        $result = $this->model->checkUserStatus($id_user); // Asumiendo que tienes este método en tu modelo
+        return $result['row'];
+    }
+
+    public function updatePassword($id_user, $contrase){
+        // Lógica para actualizar el estado del usuario
+        $result = $this->model->UpdateUserStatus($id_user, $contrase); // Asumiendo que tienes este método en tu modelo
         return $result;
     }
 }
