@@ -54,3 +54,15 @@ button.btn-wrench-custom:hover{
     border-color: white;     /* Cambia el borde también */
     color: white;           /* Color del icono/texto al pasar el ratón */
 }
+
+.swal2-cancel-hover-red:hover {
+    background-color: red !important; /* Rojo al hacer hover */
+    color: white !important;
+    border-color: red !important; /* Asegura que el borde también cambie si lo tiene */
+}
+
+.swal2-confirm-hover-green:hover{
+    background-color: green !important; /* Verde al hacer hover */
+    color: white !important;
+    border-color: green !important; /* Asegura que el borde también cambie si lo tiene */
+}

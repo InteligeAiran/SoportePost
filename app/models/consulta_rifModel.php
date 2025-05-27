@@ -235,7 +235,7 @@ class consulta_rifModel extends Model
             }
 
             $sql = "SELECT * FROM save_data_failure2(" . $escaped_serial . "::TEXT, " . $escaped_nivelFalla . "::INTEGER, " . $escaped_id_status_payment . "::INTEGER, " . $escaped_rif . "::VARCHAR,'" . $rutaBaseDatos . "'::TEXT,
-                '" . ($rutaExo ?? '') . "'::TEXT, '" . ($rutaAnticipo ?? '') . "'::TEXT, " . ($escaped_mimeTypeExo !== null ? $escaped_mimeTypeExo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeAnticipo !== null ? $escaped_mimeTypeAnticipo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeEnvio !== null ? $escaped_mimeTypeEnvio . "::TEXT" : 'NULL') . ", ". ($escaped_idStatusDomiciliacion !== null ? $escaped_idStatusDomiciliacion . "::TEXT" : 'NULL') .");";
+                '" . ($rutaExo ?? '') . "'::TEXT, '" . ($rutaAnticipo ?? '') . "'::TEXT, " . ($escaped_mimeTypeExo !== null ? $escaped_mimeTypeExo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeAnticipo !== null ? $escaped_mimeTypeAnticipo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeEnvio !== null ? $escaped_mimeTypeEnvio . "::TEXT" : 'NULL') . ", " . ($escaped_idStatusDomiciliacion !== null ? $escaped_idStatusDomiciliacion . "::TEXT" : 'NULL') . ");";
 
             $result = $this->db->pgquery($sql);
             $ticketData = pg_fetch_assoc($result);
@@ -267,7 +267,7 @@ class consulta_rifModel extends Model
                     'NULL'  // Puedes usar NULL o una variable si tienes la fecha
 
                 );
-               // var_dump($sqlInsertUserTicket); // Descomenta para depurar la cadena final
+                // var_dump($sqlInsertUserTicket); // Descomenta para depurar la cadena final
                 $resultUserTicket = $this->db->pgquery($sqlInsertUserTicket);
 
                 if ($resultUserTicket) {
@@ -385,10 +385,10 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function GetTicketData()
+    public function GetTicketData($id_user)
     {
         try {
-            $sql = "SELECT * FROM GetDataTicketByIdAccion()";
+            $sql = "SELECT * FROM GetDataTicketByIdAccion(" . $id_user . ")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -396,10 +396,10 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function GetTicketData1()
+    public function GetTicketData1($id_user)
     {
         try {
-            $sql = "SELECT * FROM GetDataTicketByIdAccion1()";
+            $sql = "SELECT * FROM GetDataTicketByIdAccion1(" . $id_user . ")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -506,7 +506,7 @@ class consulta_rifModel extends Model
                 return ['success' => false, 'message' => 'Error al actualizar el estado del ticket a taller.'];
             }
 
-             if ($resultStatusUpdate) {
+            if ($resultStatusUpdate) {
                 $id_accion_ticket = 7;
                 $id_user = $_SESSION['id_user'];
                 $id_status_ticket = 1; // Asignar un valor predeterminado o dinámico según tu lógica
@@ -537,10 +537,10 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function GetTicketDataLab()
+    public function GetTicketDataLab($id_user)
     {
         try {
-            $sql = "SELECT * FROM get_tickets_for_taller()";
+            $sql = "SELECT * FROM get_tickets_for_taller(" . $id_user . ")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -560,14 +560,14 @@ class consulta_rifModel extends Model
     }
 
     public function UpdateTicketStatus($id_new_status, $id_ticket, $id_user)
-
     {
         try {
             $id_new_status = (int)$id_new_status;
             $id_ticket = (int)$id_ticket;
-            $sql = "CALL UpdateTicketStatus(".$id_ticket .", ".$id_new_status .")";
-            $result = Model::getResult($sql, $this->db);    
-            if($result) {
+            $sql = "CALL UpdateTicketStatus(" . $id_ticket . ", " . $id_new_status . ")";
+
+            $result = Model::getResult($sql, $this->db);
+            if ($result) {
                 $id_accion_ticket = 7;
                 $id_status_ticket = 1; // Asignar un valor predeterminado o dinámico según tu lógica
 
@@ -580,14 +580,86 @@ class consulta_rifModel extends Model
                     (int) $id_accion_ticket,        // Corresponds to p_id_action_ticket
                     (int) $id_new_status
                 );
+
                 $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
                 if (!$resultsqlInsertHistory) {
                     error_log("Error en insertintouser_ticket: " . pg_last_error($this->db->getConnection()));
                     $this->db->closeConnection();
                     return array('error' => 'Error al insertar en users_tickets: ' . pg_last_error($this->db->getConnection()));
                 }
+
+                // Inicializar $sqlInserttickets antes de usarla
+                $sqlInserttickets = null; // O $sqlInserttickets = "";
+
+                if ($id_new_status == 2) {
+                    $id_accion_ticket1 = 8;
+                    $sqlInserttickets = "UPDATE tickets SET date_sendkey = NOW(), id_status_key = TRUE, id_accion_ticket = ".$id_accion_ticket1."
+                    WHERE id_ticket = $id_ticket;";
+                }
+                // Esta línea ahora será segura porque $sqlInserttickets siempre estará definida
+                $resultsqlInserttickets = $this->db->pgquery($sqlInserttickets);
+
+                if (!$resultsqlInserttickets && $sqlInserttickets !== null) { // Agrega la condición para verificar si la consulta realmente se ejecutó
+                    error_log("Error al insertar en tickets: " . pg_last_error($this->db->getConnection()));
+                    $this->db->closeConnection();
+                    return array('error' => 'Error al insertar en tickets: ' . pg_last_error($this->db->getConnection()));
+                }
+
+                if ($resultsqlInserttickets) {
+                        $sqlInsertHistory1 = sprintf(
+                        "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                        (int) $id_ticket,    // Corresponds to p_id_ticket
+                        (int) $id_user,      // Corresponds to p_changedstatus_by
+                        (int) $id_status_ticket,     // Corresponds to p_new_action (assuming it's always 4 based on your function's internal logic)
+                        (int) $id_accion_ticket1,        // Corresponds to p_id_action_ticket
+                        (int) $id_new_status
+                    );
+                    $resultsqlInsertHistory1 = $this->db->pgquery($sqlInsertHistory1);
+                }
+
+                if (!$resultsqlInsertHistory1) {
+                    error_log("Error en insertintouser_ticket: " . pg_last_error($this->db->getConnection()));
+                    $this->db->closeConnection();
+                    return array('error' => 'Error al insertar en users_tickets: '. pg_last_error($this->db->getConnection()));
+                }
+
+                return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory, 'tickets_result' => $resultsqlInserttickets, 'history_result1' => $resultsqlInsertHistory1);
             }
-            return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory);;
+        } catch (Throwable $e) {
+            // Handle exception
+            error_log("Error en UpdateTicketStatus: " . $e->getMessage());
+            return array('error' => 'Error en UpdateTicketStatus: ' . $e->getMessage());
+        }
+    }
+
+    public function UpdateKeyReceiveDate($id_ticket, $id_user)
+    {
+        try {
+            $id_accion_ticket = 9;
+            $sql = "UPDATE tickets SET date_receivekey = NOW(), id_accion_ticket = ".$id_accion_ticket."
+                    WHERE id_ticket = ".$id_ticket.";";
+            $result = Model::getResult($sql, $this->db);
+
+            if ($result) {
+
+                $sqlInsertHistory = sprintf(
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                    (int) $id_ticket,    // Corresponds to p_id_ticket
+                    (int) $id_user,      // Corresponds to p_changedstatus_by
+                    (int) 1,     // Corresponds to p_new_action (assuming it's always 4 based on your function's internal logic)
+                    (int) $id_accion_ticket,        // Corresponds to p_id_action_ticket
+                    (int) 2
+                );
+
+                $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
+                if (!$resultsqlInsertHistory) {
+                    error_log("Error en insertintouser_ticket: ". pg_last_error($this->db->getConnection()));
+                    $this->db->closeConnection();
+                    return array('error' => 'Error al insertar en users_tickets: '. pg_last_error($this->db->getConnection()));
+                }
+                return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory);
+            }
+            return $result;
         } catch (Throwable $e) {
             // Handle exception
         }

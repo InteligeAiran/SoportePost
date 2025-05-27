@@ -178,8 +178,8 @@ class TechnicalConsultionRepository
         return $result;
     }
 
-    public function GetTicketData(){
-        $result = $this->model->GetTicketData();
+    public function GetTicketData($id_user){
+        $result = $this->model->GetTicketData($id_user);
         if ($result) {
             //var_dump($result);  
             $ticket = [];
@@ -195,8 +195,8 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function GetTicketData1(){
-        $result = $this->model->GetTicketData1();
+    public function GetTicketData1($id_user){
+        $result = $this->model->GetTicketData1($id_user);
         if ($result) {
             //var_dump($result);  
             $ticket = [];
@@ -237,8 +237,8 @@ class TechnicalConsultionRepository
         return $result;
     }
 
-    public function GetTicketDataLab(){
-        $result = $this->model->GetTicketDataLab();
+    public function GetTicketDataLab($id_user){
+        $result = $this->model->GetTicketDataLab($id_user);
         if ($result) {
             //var_dump($result);  
             $ticket = [];
@@ -271,7 +271,12 @@ class TechnicalConsultionRepository
 
     public function UpdateTicketStatus($id_new_status, $id_ticket, $id_user){
         $result = $this->model->UpdateTicketStatus($id_new_status,$id_ticket, $id_user);
-        return $result['row']['check_user_status'];
+        return $result;
+    }
+
+    public function UpdateKeyReceiveDate($id_ticket, $id_user){
+        $result = $this->model->UpdateKeyReceiveDate($id_ticket, $id_user);
+        return $result;
     }
 }
 ?>

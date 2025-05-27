@@ -191,7 +191,6 @@
                                     <div class="mb-3">
                                         <label for="modalNewStatus" class="form-label">Nuevo Estatus:</label>
                                         <select class="form-select" id="modalNewStatus" aria-label="Default select example" required>
-
                                         </select>   
                                     </div>
                                 </form>
@@ -204,6 +203,7 @@
                     </div>
                 </div>
             <!--END MODAL PARA SELECCIONAR EL STATUS DEL TALLER DEL TICKET-->
+            <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 
             <div class="fixed-plugin">
                 <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">

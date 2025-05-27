@@ -140,6 +140,10 @@ class Consulta extends Controller {
                     $this->handleUpdateTicketStatus();
                 break;
 
+                case 'UpdateKeyReceiveDate':
+                    $this->handlUpdateKeyReceiveDate();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                 break;
@@ -527,8 +531,9 @@ class Consulta extends Controller {
     }
     
     public function handleGetTicketData1(){
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
-        $result = $repository->GetTicketData1();
+        $result = $repository->GetTicketData1($id_user);
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
@@ -541,8 +546,9 @@ class Consulta extends Controller {
     }
 
     public function handleGetTicketData(){
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
-        $result = $repository->GetTicketData();
+        $result = $repository->GetTicketData($id_user);
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
@@ -602,8 +608,9 @@ class Consulta extends Controller {
     }
 
     public function handleGetTicketDataLab(){
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
-        $result = $repository->GetTicketDataLab();
+        $result = $repository->GetTicketDataLab($id_user);
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
@@ -628,14 +635,13 @@ class Consulta extends Controller {
         $this->response(['success' => false, 'message' => 'Debe Seleccionar un Estatus']);
     }
 
-   public function handleUpdateTicketStatus(){
-        $id_user = isset($_SESSION['id_user'])? $_SESSION['id_user'] : '';
+    public function handleUpdateTicketStatus(){
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
         $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
         $id_new_status = isset($_POST['id_new_status'])? $_POST['id_new_status'] : '';
 
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->UpdateTicketStatus( $id_new_status, $id_ticket, $id_user);
-
         if ($id_new_status != '') {
             if($result){
                 $this->response(['success' => true, 'message' => 'Ticket actualizado con éxito.'], 200); 
@@ -644,6 +650,23 @@ class Consulta extends Controller {
             }
         }else{
             $this->response(['success' => false, 'message' => 'El estatus esta vacio'], 500); // Código de estado 404 Not Found
+        }
+    }
+
+    public function handlUpdateKeyReceiveDate(){
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+        $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        if ($id_ticket!= '') {
+            $result = $repository->UpdateKeyReceiveDate($id_ticket, $id_user);
+            if($result){
+                $this->response(['success' => true, 'message' => 'Ticket actualizado con éxito.'], 200); 
+            }else{
+                $this->response(['success' => false, 'message' => 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
+            }
+        }else{
+            $this->response(['success' => false, 'message' => 'El ticket esta vacio'], 500); // Código de estado 404 Not Found
         }
     }
 }
