@@ -24,4 +24,20 @@ class ReportRepository
             return [];
         }
     }
+
+    public function getDomiciliacionTickets($id_user){
+        $result = $this->model->GetDomiciliacionTickets($id_user);
+        if ($result) {
+            //var_dump($result);  
+            $tickets = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $tickets[] = $agente;
+            }
+            //var_dump($agente);
+            return $tickets;
+        } else {
+            return null;
+        }
+    }
 }

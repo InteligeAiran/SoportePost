@@ -557,7 +557,6 @@ function SendRegions() {
         tableContainer.style.display = '';
         console.error('Error de red');
     };
-
     const RegionSelectValue = document.getElementById('SelectRgions').value;
     const datos = `action=SearchRegionData&id_region=${encodeURIComponent(RegionSelectValue)}`;
     xhr.send(datos);

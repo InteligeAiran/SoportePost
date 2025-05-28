@@ -254,7 +254,7 @@ $(document).ready(function () {
             cancelButtonClass: 'swal2-cancel-hover-red', // Clase personalizada para el hover
             confirmButtonText: "Sí, cargar fecha",
             cancelButtonText: "Cancelar",
-            color: "#000" // Color del texto general del modal
+            color: "#000000" // Color del texto general del modal
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Si el usuario confirma, llamar a la función para guardar la fecha
@@ -281,11 +281,13 @@ $(document).ready(function () {
                 try {
                     const response = JSON.parse(xhr.responseText);
                     if (response.success) {
-                        Swal.fire(
-                            "¡Registrado!",
-                            "La fecha de recepción de llave ha sido guardada.",
-                            "success"
-                        ).then(() => {
+                        Swal.fire({
+                            title: "¡Registrado!",
+                            text: "La fecha de recepción de llave ha sido guardada.",
+                            icon: "success",
+                            confirmButtonText: "Entendido",
+                            color: "black",
+                        }).then(() => {
                             // Opcional: Recargar los datos de la tabla para ver el cambio
                             getTicketData();
                         });

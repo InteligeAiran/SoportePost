@@ -41,6 +41,10 @@ class reportes extends Controller {
                     $this->handleSearchRegionData();
                 break;
 
+                case 'getDomiciliacionTickets':
+                    $this->handlegetDomiciliacionTickets();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -75,5 +79,18 @@ class reportes extends Controller {
             $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
         }
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
+
+    public function handlegetDomiciliacionTickets(){
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $repository = new ReportRepository(); // Inicializa el repositorio
+        $result = $repository->getDomiciliacionTickets($id_user);
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'tickets' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
     }
 }

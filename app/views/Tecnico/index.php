@@ -109,7 +109,7 @@ function mi_navbar() {
                                                 <th  scope="col" style = "width: 12%;">ID ticket</th>
                                                 <th  scope="col" style = "width: 12%;">Serial POS</th>
                                                 <th  scope="col" style = "width: 12%;">Fecha Creacion</th>
-                                                <th  scope="col" style = "width: 11%;">Tecnico Asignador</th>
+                                                <th  scope="col" style = "width: 11%;">Coordinador Asignador</th>
                                                 <th  scope="col" style = "width: 11%;">Accion</th>
                                                 <th  scope="col" style = "width: 11%;">Falla</th>
                                                 <th  scope="col" style = "width: 11%;">Proceso</th>
