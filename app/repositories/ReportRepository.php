@@ -58,4 +58,20 @@ class ReportRepository
         $result = $this->model->getTicketsTotalCount(); // Asumiendo que tienes este método en tu modelo
         return $result['row']['total_tickets_general'];
     }
+
+    public function getTicketPercentageData(){
+        $result = $this->model->getTicketCountsForPercentage();
+        return $result;
+    }
+
+    public function getTicketsResueltosPercentageData(){
+        $result = $this->model->getTicketsResueltosCountsForPercentage();
+        return $result;
+    }
+
+    public function getTotalTicketsPercentageData(){
+        $result = $this->model->getTotalTicketsCountsForPercentage();
+        return $result;
+    }
+    
 }

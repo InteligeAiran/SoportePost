@@ -48,8 +48,8 @@ function mi_navbar() {
                                             <p class="text-sm mb-0 text-uppercase font-weight-bold">Tickets Abiertos</p>
                                             <h5 id="TicketsAbiertos" class="font-weight-bolder"></h5>
                                             <p class="mb-0">
-                                                <span class="text-success text-sm font-weight-bolder">+55%</span>
-                                                Desde Ayer
+                                                <span id="ticketPercentage" class="text-sm font-weight-bolder"></span>
+                                                <span id="percentageText">Desde Ayer</span>
                                             </p>
                                         </div>
                                     </div>
@@ -74,7 +74,7 @@ function mi_navbar() {
                                             <p class="text-sm mb-0 text-uppercase font-weight-bold">Tickets Resueltos</p>
                                             <h5 id="TicketsResuelto" class="font-weight-bolder"></h5>
                                             <p class="mb-0">
-                                                <span class="text-success text-sm font-weight-bolder">+3%</span>
+                                                <span id="ticketResueltoPercentage" class="text-sm font-weight-bolder"></span>
                                                 Desde Ayer
                                             </p>
                                         </div>
@@ -82,8 +82,8 @@ function mi_navbar() {
                                     <div class="col-4 text-end">
                                         <div
                                             class="icon icon-shape bg-gradient-danger shadow-danger text-center rounded-circle">
-                                            <svg style = "margin-top:14px" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-ticket-detailed-fill" viewBox="0 0 16 16">
-                                                <path d="M0 4.5A1.5 1.5 0 0 1 1.5 3h13A1.5 1.5 0 0 1 16 4.5V6a.5.5 0 0 1-.5.5 1.5 1.5 0 0 0 0 3 .5.5 0 0 1 .5.5v1.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5V10a.5.5 0 0 1 .5-.5 1.5 1.5 0 1 0 0-3A.5.5 0 0 1 0 6zm4 1a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5m0 5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5M4 8a1 1 0 0 0 1 1h6a1 1 0 1 0 0-2H5a1 1 0 0 0-1 1"/>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="white" class="bi bi-check" viewBox="0 0 16 16">
+                                                <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
                                             </svg>
                                         </div>
                                     </div>
@@ -100,16 +100,15 @@ function mi_navbar() {
                                             <p class="text-sm mb-0 text-uppercase font-weight-bold">Total Tickets</p>
                                             <h5 id="TotalTicket" class="font-weight-bolder"></h5>
                                             <p class="mb-0">
-                                                <span class="text-danger text-sm font-weight-bolder">-2%</span>
+                                                <span id="totalTicketPercentage" class="text-sm font-weight-bolder"></span>
                                                 Desde Ayer
                                             </p>
                                         </div>
                                     </div>
                                     <div class="col-4 text-end">
                                         <div class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
-                                            <svg style = "margin-top: 14px;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-wrench-adjustable" viewBox="0 0 16 16">
-                                                <path d="M16 4.5a4.5 4.5 0 0 1-1.703 3.526L13 5l2.959-1.11q.04.3.041.61"/>
-                                                <path d="M11.5 9c.653 0 1.273-.139 1.833-.39L12 5.5 11 3l3.826-1.53A4.5 4.5 0 0 0 7.29 6.092l-6.116 5.096a2.583 2.583 0 1 0 3.638 3.638L9.908 8.71A4.5 4.5 0 0 0 11.5 9m-1.292-4.361-.596.893.809-.27a.25.25 0 0 1 .287.377l-.596.893.809-.27.158.475-1.5.5a.25.25 0 0 1-.287-.376l.596-.893-.809.27a.25.25 0 0 1-.287-.377l.596-.893-.809.27-.158-.475 1.5-.5a.25.25 0 0 1 .287.376M3 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                                            <svg style = "margin-top:14px" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-ticket-detailed-fill" viewBox="0 0 16 16">
+                                                <path d="M0 4.5A1.5 1.5 0 0 1 1.5 3h13A1.5 1.5 0 0 1 16 4.5V6a.5.5 0 0 1-.5.5 1.5 1.5 0 0 0 0 3 .5.5 0 0 1 .5.5v1.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5V10a.5.5 0 0 1 .5-.5 1.5 1.5 0 1 0 0-3A.5.5 0 0 1 0 6zm4 1a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5m0 5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5M4 8a1 1 0 0 0 1 1h6a1 1 0 1 0 0-2H5a1 1 0 0 0-1 1"/>
                                             </svg>
                                         </div>
                                     </div>
@@ -136,8 +135,9 @@ function mi_navbar() {
                                     <div class="col-4 text-end">
                                         <div
                                             class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle">
-                                            <svg style = "margin-top:14px" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-bar-chart-line-fill" viewBox="0 0 16 16">
-                                                <path d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1z"/>
+                                            <svg style = "margin-top: 14px;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-wrench-adjustable" viewBox="0 0 16 16">
+                                                <path d="M16 4.5a4.5 4.5 0 0 1-1.703 3.526L13 5l2.959-1.11q.04.3.041.61"/>
+                                                <path d="M11.5 9c.653 0 1.273-.139 1.833-.39L12 5.5 11 3l3.826-1.53A4.5 4.5 0 0 0 7.29 6.092l-6.116 5.096a2.583 2.583 0 1 0 3.638 3.638L9.908 8.71A4.5 4.5 0 0 0 11.5 9m-1.292-4.361-.596.893.809-.27a.25.25 0 0 1 .287.377l-.596.893.809-.27.158.475-1.5.5a.25.25 0 0 1-.287-.376l.596-.893-.809.27a.25.25 0 0 1-.287-.377l.596-.893-.809.27-.158-.475 1.5-.5a.25.25 0 0 1 .287.376M3 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
                                             </svg>  
                                         </div>
                                     </div>

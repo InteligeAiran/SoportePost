@@ -434,8 +434,49 @@ function getTicketOpen() {
     const datos = 'action=getTicketAbiertoCount';
     xhr.send(datos);
 }
-// Llama a la función getUserCount() cuando la página se cargue
-window.addEventListener('load', getTicketOpen());
+
+function getTicketPercentage() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketPercentage`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const percentage = response.percentage;
+                    const percentageSpan = document.getElementById('ticketPercentage');
+
+                    percentageSpan.textContent = (percentage > 0 ? '+' : '') + percentage + '%';
+
+                    if (percentage < 0) {
+                        percentageSpan.classList.remove('text-success');
+                        percentageSpan.classList.add('text-danger');
+                    } else {
+                        percentageSpan.classList.remove('text-danger');
+                        percentageSpan.classList.add('text-success');
+                    }
+                } else {
+                    console.error('Error:', response.message);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON for percentage:', error);
+            }
+        } else {
+            console.error('Error fetching percentage:', xhr.status, xhr.statusText);
+        }
+    };
+
+    const datos = 'action=getTicketPercentage';
+    xhr.send(datos);
+}
+
+// Llama a la función getTicketPercentage() cuando la página se cargue
+window.addEventListener('load', () => {
+    getTicketOpen();
+    getTicketPercentage(); // Agrega esta línea
+});
 
 function getTicketResolve() {
     const xhr = new XMLHttpRequest();
@@ -462,8 +503,49 @@ function getTicketResolve() {
     const datos = 'action=getTicketsResueltosCount';
     xhr.send(datos);
 }
-// Llama a la función getUserCount() cuando la página se cargue
-window.addEventListener('load', getTicketResolve());
+
+function getTicketsResueltosPercentage() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsResueltosPercentage`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const percentage = response.percentage;
+                    const percentageSpan = document.getElementById('ticketResueltoPercentage');
+
+                    percentageSpan.textContent = (percentage > 0 ? '+' : '') + percentage + '%';
+
+                    if (percentage < 0) {
+                        percentageSpan.classList.remove('text-success');
+                        percentageSpan.classList.add('text-danger');
+                    } else {
+                        percentageSpan.classList.remove('text-danger');
+                        percentageSpan.classList.add('text-success');
+                    }
+                } else {
+                    console.error('Error:', response.message);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON for Tickets Resueltos percentage:', error);
+            }
+        } else {
+            console.error('Error fetching Tickets Resueltos percentage:', xhr.status, xhr.statusText);
+        }
+    };
+
+    const datos = 'action=getTicketsResueltosPercentage';
+    xhr.send(datos);
+}
+
+// Llama a las funciones cuando la página se cargue
+window.addEventListener('load', () => {
+    getTicketResolve();
+    getTicketsResueltosPercentage(); // Agrega esta línea
+});
 
 function getTicketTotal() {
     const xhr = new XMLHttpRequest();
@@ -490,8 +572,46 @@ function getTicketTotal() {
     const datos = 'action=getTicketsTotalCount';
     xhr.send(datos);
 }
-// Llama a la función getUserCount() cuando la página se cargue
-window.addEventListener('load', getTicketTotal());
 
+function getTotalTicketsPercentage() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTotalTicketsPercentage`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const percentage = response.percentage;
+                    const percentageSpan = document.getElementById('totalTicketPercentage');
 
+                    percentageSpan.textContent = (percentage > 0 ? '+' : '') + percentage + '%';
+
+                    if (percentage < 0) {
+                        percentageSpan.classList.remove('text-success');
+                        percentageSpan.classList.add('text-danger');
+                    } else {
+                        percentageSpan.classList.remove('text-danger');
+                        percentageSpan.classList.add('text-success');
+                    }
+                } else {
+                    console.error('Error:', response.message);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON for Total Tickets percentage:', error);
+            }
+        } else {
+            console.error('Error fetching Total Tickets percentage:', xhr.status, xhr.statusText);
+        }
+    };
+
+    const datos = 'action=getTotalTicketsPercentage';
+    xhr.send(datos);
+}
+
+// Llama a las funciones cuando la página se cargue
+window.addEventListener('load', () => {
+    getTicketTotal();
+    getTotalTicketsPercentage(); // Agrega esta línea
+});
