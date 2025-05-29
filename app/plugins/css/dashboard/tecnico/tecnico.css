@@ -66,3 +66,21 @@ button.btn-wrench-custom:hover{
     color: white !important;
     border-color: green !important; /* Asegura que el borde también cambie si lo tiene */
 }
+
+#saveStatusDomiciliacionChangeBtn{
+    background-color: #003594; /* Tu color azul deseado */
+    border-color: #003594;     /* Importante: el borde también debe coincidir */
+    color: #ffffff;           /* Color del icono/texto para asegurar contraste */
+}
+
+#saveStatusDomiciliacionChangeBtn:hover{
+    background-color: green; /* Color más oscuro al pasar el ratón */
+    border-color: white;     /* Cambia el borde también */
+    color: white;           /* Color del icono/texto al pasar el ratón */
+}
+
+#BtnChange{
+      background-color: #003594; /* Tu color azul deseado */
+    border-color: #003594;     /* Importante: el borde también debe coincidir */
+    color: #ffffff;           /* Color del icono/texto para asegurar contraste */
+}

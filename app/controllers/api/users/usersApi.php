@@ -405,7 +405,6 @@ class users extends Controller {
         }
         $this->response(['success' => false,'message' => 'Error al verificar el estado del usuario.'], 500);
     }
-
     // ... otras funciones handleSearchSerialData, etc.
 }
 ?>

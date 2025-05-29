@@ -16,6 +16,11 @@
         const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
         const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
     </script>
+    <style>
+        #sidenav-collapse-main ul{
+            position: absolute;
+        }
+    </style>
 </head>
 <body class="g-sidenav-show bg-gray-100">
     <aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-1" id="sidenav-main">

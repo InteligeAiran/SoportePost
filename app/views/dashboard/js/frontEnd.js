@@ -408,3 +408,90 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = "cerrar_session"; // Cambia 'login.php' por la ruta real de tu página de login
   });
 });
+
+function getTicketOpen() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketAbiertoCount`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    document.getElementById('TicketsAbiertos').textContent = response.count; // Selecciona por ID
+                } else {
+                    console.error('Error:', response.message);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+        }
+    };
+
+    const datos = 'action=getTicketAbiertoCount';
+    xhr.send(datos);
+}
+// Llama a la función getUserCount() cuando la página se cargue
+window.addEventListener('load', getTicketOpen());
+
+function getTicketResolve() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsResueltosCount`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    document.getElementById('TicketsResuelto').textContent = response.count; // Selecciona por ID
+                } else {
+                    console.error('Error:', response.message);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+        }
+    };
+
+    const datos = 'action=getTicketsResueltosCount';
+    xhr.send(datos);
+}
+// Llama a la función getUserCount() cuando la página se cargue
+window.addEventListener('load', getTicketResolve());
+
+function getTicketTotal() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsTotalCount`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    document.getElementById('TotalTicket').textContent = response.count; // Selecciona por ID
+                } else {
+                    console.error('Error:', response.message);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+            }
+        } else {
+            console.error('Error:', xhr.status, xhr.statusText);
+        }
+    };
+
+    const datos = 'action=getTicketsTotalCount';
+    xhr.send(datos);
+}
+// Llama a la función getUserCount() cuando la página se cargue
+window.addEventListener('load', getTicketTotal());
+
+
+

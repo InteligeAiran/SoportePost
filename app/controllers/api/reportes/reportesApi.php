@@ -45,6 +45,18 @@ class reportes extends Controller {
                     $this->handlegetDomiciliacionTickets();
                 break;
 
+                case 'getTicketAbiertoCount':
+                    $this->handlegetgetTicketAbiertoCount();
+                break;
+
+                case 'getTicketsResueltosCount':
+                    $this->handlegetTicketsResueltosCount();
+                break;
+
+                case 'getTicketsTotalCount':
+                    $this->handlegetTicketsTotalCount();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -92,5 +104,38 @@ class reportes extends Controller {
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
+    }
+
+    public function handlegetgetTicketAbiertoCount(){
+        $repository = new ReportRepository();
+        $result = $repository->getTicketabiertoCount();
+        if ($result) {
+            $this->response(['success' => true, 'count' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'userCount' => 0], 200);
+        }
+        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Tickets Abiertos.'], 500);
+    }
+
+    public function handlegetTicketsResueltosCount(){
+        $repository = new ReportRepository();
+        $result = $repository->getTicketsResueltosCount();
+        if ($result) {
+            $this->response(['success' => true, 'count' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'userCount' => 0], 200);
+        }
+        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Tickets Resueltos.'], 500);
+    }
+
+    public function handlegetTicketsTotalCount(){
+        $repository = new ReportRepository();
+        $result = $repository->getTicketsTotalCount();
+        if ($result) {
+            $this->response(['success' => true, 'count' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'userCount' => 0], 200);
+        }
+        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Total de Tickets.'], 500);
     }
 }

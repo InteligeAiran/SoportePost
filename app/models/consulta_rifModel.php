@@ -687,4 +687,54 @@ class consulta_rifModel extends Model
             // Handle exception
         }
     }
+
+    public function GetStatusDomiciliacion(){
+        try {
+            $sql = "SELECT * FROM GetStatusDomiciliacion()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function UpdateStatusDomiciliacion($id_new_status,$id_ticket, $id_user){
+        try {
+            $sql = "UPDATE tickets SET id_status_domiciliacion = ".$id_new_status." WHERE id_ticket = ".$id_ticket.";";
+            ///var_dump("SQL: ".$sql);
+            $result = Model::getResult($sql, $this->db);
+
+            if($result) {
+                $id_accion_ticket  = 9;
+                $id_new_status_lab = 2;
+                $sqlInsertHistory = sprintf(
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                    (int) $id_ticket,    // Corresponds to p_id_ticket
+                    (int) $id_user,      // Corresponds to p_changedstatus_by
+                    (int) 1,     // Corresponds to p_new_action (assuming it's always 4 based on your function's internal logic)
+                    (int) $id_accion_ticket,        // Corresponds to p_id_action_ticket
+                    (int) $id_new_status_lab,
+                    (int) $id_new_status
+                );
+                $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
+                if (!$resultsqlInsertHistory) {
+                    error_log("Error en insertintouser_ticket: ". pg_last_error($this->db->getConnection()));
+                    $this->db->closeConnection();
+                    return array('error' => 'Error al insertar en users_tickets: '. pg_last_error($this->db->getConnection()));
+                }
+
+                if($resultsqlInsertHistory){
+                    $sqlStatusUpdate = "UPDATE tickets_status_domiciliacion SET id_status_domiciliacion = ".$id_new_status." WHERE id_ticket = ".$id_ticket.";";
+                    $resultStatusUpdate = Model::getResult($sqlStatusUpdate, $this->db);
+                    if (!$resultStatusUpdate) {
+                        error_log("Error al actualizar estado del ticket a laboratorio: ". $id_ticket);
+                        return ['success' => false,'message' => 'Error al actualizar el estado del ticket a laboratorio.'];
+                    }
+                    return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory, 'status_update_result' => $resultStatusUpdate);
+                }
+            }
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }

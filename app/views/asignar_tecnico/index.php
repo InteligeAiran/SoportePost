@@ -1,283 +1,303 @@
 <?php
-function mi_navbar() {
-
-}
+function mi_navbar() {}
 ?>
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-        <link rel="icon" type="image/png" href="../assets/img/favicon.png">
-        <title>
-            Soporte POST
-        </title>
 
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
+    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    <title>
+        Soporte POST
+    </title>
 
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css"/>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/dataTables.min.css"/>
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/bootstrap.css"/>
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/datatable.css"/>
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
 
 
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/tecnico/tecnico.css"/>
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
+    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
 
-      <style>
-            div.dataTables_wrapper div.dataTables_length label {
-                font-weight: bold; /* Ejemplo: Texto en negrita */
-                color: #333; /* Ejemplo: Color del texto */
-                margin-right: 10px; /* Ejemplo: Espacio a la derecha del label */
-            }
+    <style>
+        div.dataTables_wrapper div.dataTables_length label {
+            font-weight: bold;
+            /* Ejemplo: Texto en negrita */
+            color: #333;
+            /* Ejemplo: Color del texto */
+            margin-right: 10px;
+            /* Ejemplo: Espacio a la derecha del label */
+        }
 
-            /* Estilizar el select dropdown del lengthMenu */
-            div.dataTables_wrapper div.dataTables_length select {
-                border: 1px solid #ccc; /* Ejemplo: Borde */
-                border-radius: 5px; /* Ejemplo: Bordes redondeados */
-                padding: 5px 10px; /* Ejemplo: Espaciado interno */
-                font-size: 0.9em; /* Ejemplo: Tamaño de la fuente */
-                width: 18%;
-            }
+        /* Estilizar el select dropdown del lengthMenu */
+        div.dataTables_wrapper div.dataTables_length select {
+            border: 1px solid #ccc;
+            /* Ejemplo: Borde */
+            border-radius: 5px;
+            /* Ejemplo: Bordes redondeados */
+            padding: 5px 10px;
+            /* Ejemplo: Espaciado interno */
+            font-size: 0.9em;
+            /* Ejemplo: Tamaño de la fuente */
+            width: 18%;
+        }
 
-            /* Estilizar el label "Buscar:" */
-            div.dataTables_wrapper div.dataTables_filter label {
-                font-weight: bold; /* Ejemplo: Texto en negrita */
-                color: #333; /* Ejemplo: Color del texto */
-                margin-right: 0.5em; /* Ejemplo: Espacio a la derecha del label */
-                    margin-left: -100%;
-            }
+        /* Estilizar el label "Buscar:" */
+        div.dataTables_wrapper div.dataTables_filter label {
+            font-weight: bold;
+            /* Ejemplo: Texto en negrita */
+            color: #333;
+            /* Ejemplo: Color del texto */
+            margin-right: 0.5em;
+            /* Ejemplo: Espacio a la derecha del label */
+            margin-left: -100%;
+        }
 
-            /* Estilizar el input de búsqueda */
-            div.dataTables_wrapper div.dataTables_filter input[type="search"] {
-                border: 1px solid #ccc; /* Ejemplo: Borde */
-                border-radius: 0.25rem; /* Ejemplo: Bordes redondeados */
-                padding: 0.375rem 0.75rem; /* Ejemplo: Espaciado interno */
-                font-size: 1rem; /* Ejemplo: Tamaño de la fuente */
-                color: #495057; /* Ejemplo: Color del texto del input */
-                background-color: #fff; /* Ejemplo: Color de fondo del input */
-                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* Ejemplo: Transiciones suaves */
-            }
+        /* Estilizar el input de búsqueda */
+        div.dataTables_wrapper div.dataTables_filter input[type="search"] {
+            border: 1px solid #ccc;
+            /* Ejemplo: Borde */
+            border-radius: 0.25rem;
+            /* Ejemplo: Bordes redondeados */
+            padding: 0.375rem 0.75rem;
+            /* Ejemplo: Espaciado interno */
+            font-size: 1rem;
+            /* Ejemplo: Tamaño de la fuente */
+            color: #495057;
+            /* Ejemplo: Color del texto del input */
+            background-color: #fff;
+            /* Ejemplo: Color de fondo del input */
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            /* Ejemplo: Transiciones suaves */
+        }
 
-            /* Estilizar el input de búsqueda al enfocarlo */
-            div.dataTables_wrapper div.dataTables_filter input[type="search"]:focus {
-                color: #495057;
-                background-color: #fff;
-                border-color: #007bff; /* Ejemplo: Color del borde al enfocar */
-                outline: 0;
-                box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Ejemplo: Sombra al enfocar */
-            }
-        </style>
-        <!-- CSS Files -->
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
-    </head>
+        /* Estilizar el input de búsqueda al enfocarlo */
+        div.dataTables_wrapper div.dataTables_filter input[type="search"]:focus {
+            color: #495057;
+            background-color: #fff;
+            border-color: #007bff;
+            /* Ejemplo: Color del borde al enfocar */
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            /* Ejemplo: Sombra al enfocar */
+        }
+    </style>
+    <!-- CSS Files -->
+    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
+    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
+</head>
 
-    <body id="fondo" class="g-sidenav-show bg-gray-100">
-        <div class="min-height-300 bg-dark position-absolute w-100">
-            <div class="d-lg-none fixed-top bg-dark p-2">
-                <button class="btn btn-dark" id="filter-toggle">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-list-task" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z"/>
-                        <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z"/>
-                        <path fill-rule="evenodd" d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z"/>
-                    </svg>
-                </button>
+<body id="fondo" class="g-sidenav-show bg-gray-100">
+    <div class="min-height-300 bg-dark position-absolute w-100"></div>
+    <div class="d-lg-none fixed-top bg-dark p-2">
+        <button class="btn btn-dark" id="filter-toggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-list-task" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z" />
+                <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z" />
+                <path fill-rule="evenodd" d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z" />
+            </svg>
+        </button>
+    </div>
+    <?php require_once 'app/core/components/navbar/index.php';
+    mi_navbar(); ?>
+    <main class="main-content position-relative border-radius-lg">
+        <div class="container-fluid py-4">
+            <div id="Row" class="row mt-4">
+                <div class="cord">
+
+                    <div class="card">
+                        <div class="card-header pb-0 p-3">
+                            <div class="col-lg-12 col-md-12 mt-4 mb-4">
+                                <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
+                                    <strong>
+                                        <h5 class="text-black text-capitalize ps-3">TICKETS</h5>
+                                    </strong>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
+                                <thead>
+                                    <th style="width: 11%; height: 10px;">ID ticket</th>
+                                    <th style="width: 11%;">Serial POS</th>
+                                    <th style="width: 11%;">Fecha Creacion</th>
+                                    <th style="width: 11%;">Tecnico Asignador</th>
+                                    <th style="width: 11%;">Accion</th>
+                                    <th style="width: 11%;">Falla</th>
+                                    <th style="width: 11%;">Proceso</th>
+                                    <th style="width: 11%;">Estatus</th>
+                                    <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-ticket-body">
+                                    <tr>
+                                        <td colspan="3">No hay datos</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <?php require_once 'app/core/components/navbar/index.php'; mi_navbar(); ?>
-            <main class="main-content position-relative border-radius-lg" >
-                <div class="container-fluid py-4">
-                    <div id = "Row" class="row mt-4">
-                        <div class = "cord">
-                        
-                            <div class="card">
-                                <div class="card-header pb-0 p-3">
-                                    <div class="col-lg-12 col-md-12 mt-4 mb-4">
-                                        <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                            <strong><h5 class="text-black text-capitalize ps-3">TICKETS</h5></strong>
-                                        </div>
-                                    </div>   
-                                    <div class="d-flex justify-content-between">
-                                        <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
-                                    </div>
-                                </div>
-                                <div class="table-responsive">
-                                    <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
-                                        <thead>
-                                            <th style = "width: 11%; height: 10px;">ID ticket</th>
-                                            <th style = "width: 11%;">Serial POS</th>
-                                            <th style = "width: 11%;">Fecha Creacion</th>
-                                            <th style = "width: 11%;">Tecnico Asignador</th>
-                                            <th style = "width: 11%;">Accion</th>
-                                            <th style = "width: 11%;">Falla</th>
-                                            <th style = "width: 11%;">Proceso</th>
-                                            <th style = "width: 11%;">Estatus</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody  id="table-ticket-body">
-                                            <tr>
-                                                <td colspan="3">No hay datos</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
         </div>
+    </main>
 
-            <!-- MODAL PARA SELECCIONAR TECNICO -->
-                <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div id="ModalSelecttecnico" class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="staticBackdropLabel">Seleccione un Técnico</h1>
-                            <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <select id="idSelectionTec" class="form-select" onchange="GetRegionUser()" aria-label="Default select example"></select>
-                            <div class="row mt-4">
-                                <label class="col-sm-2 col-form-label">Región</label>
-                            </div>
-                            <input  id="InputRegion" class="form-control" type="text" value="" aria-label="readonly input example" style="width: 100%;" readonly>                    
-                        </div>
-                        <div class="modal-footer">
-                            <button id="close-button" type="button" class="btn btn-secondary">Cerrar</button>
-                            <button id="assingment-button" type="button" class="btn btn-primary">Asignar</button>
-                        </div>
-                        </div>
+    <!-- MODAL PARA SELECCIONAR TECNICO -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div id="ModalSelecttecnico" class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Seleccione un Técnico</h1>
+                    <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <select id="idSelectionTec" class="form-select" onchange="GetRegionUser()" aria-label="Default select example"></select>
+                    <div class="row mt-4">
+                        <label class="col-sm-2 col-form-label">Región</label>
+                    </div>
+                    <input id="InputRegion" class="form-control" type="text" value="" aria-label="readonly input example" style="width: 100%;" readonly>
+                </div>
+                <div class="modal-footer">
+                    <button id="close-button" type="button" class="btn btn-secondary">Cerrar</button>
+                    <button id="assingment-button" type="button" class="btn btn-primary">Asignar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--MODAL PARA SELECCIONAR TECNICO-->
+
+    <div class="fixed-plugin">
+        <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
+            <i class="fa fa-cog py-2"> </i>
+        </a>
+        <div class="card shadow-lg">
+            <div class="card-header pb-0 pt-3 ">
+                <div class="float-start">
+                    <h5 class="mt-3 mb-0">Argon Configurator</h5>
+                    <p>See our dashboard options.</p>
+                </div>
+                <div class="float-end mt-4">
+                    <button class="btn btn-link text-dark p-0 fixed-plugin-close-button">
+                        <i class="fa fa-close"></i>
+                    </button>
+                </div>
+                <!-- End Toggle Button -->
+            </div>
+            <hr class="horizontal dark my-1">
+            <div class="card-body pt-sm-3 pt-0 overflow-auto">
+                <!-- Sidebar Backgrounds -->
+                <div>
+                    <h6 class="mb-0">Sidebar Colors</h6>
+                </div>
+                <a href="javascript:void(0)" class="switch-trigger background-color">
+                    <div class="badge-colors my-2 text-start">
+                        <span class="badge filter bg-gradient-primary active" data-color="primary"
+                            onclick="sidebarColor(this)"></span>
+                        <span class="badge filter bg-gradient-dark" data-color="dark"
+                            onclick="sidebarColor(this)"></span>
+                        <span class="badge filter bg-gradient-info" data-color="info"
+                            onclick="sidebarColor(this)"></span>
+                        <span class="badge filter bg-gradient-success" data-color="success"
+                            onclick="sidebarColor(this)"></span>
+                        <span class="badge filter bg-gradient-warning" data-color="warning"
+                            onclick="sidebarColor(this)"></span>
+                        <span class="badge filter bg-gradient-danger" data-color="danger"
+                            onclick="sidebarColor(this)"></span>
+                    </div>
+                </a>
+                <!-- Sidenav Type -->
+                <div class="mt-3">
+                    <h6 class="mb-0">Sidenav Type</h6>
+                    <p class="text-sm">Choose between 2 different sidenav types.</p>
+                </div>
+                <div class="d-flex">
+                    <button class="btn bg-gradient-primary w-100 px-3 mb-2 active me-2" data-class="bg-white"
+                        onclick="sidebarType(this)">White</button>
+                    <button class="btn bg-gradient-primary w-100 px-3 mb-2" data-class="bg-default"
+                        onclick="sidebarType(this)">Dark</button>
+                </div>
+                <p class="text-sm d-xl-none d-block mt-2">You can change the sidenav type just on desktop view.</p>
+                <!-- Navbar Fixed -->
+                <div class="d-flex my-3">
+                    <h6 class="mb-0">Navbar Fixed</h6>
+                    <div class="form-check form-switch ps-0 ms-auto my-auto">
+                        <input class="form-check-input mt-1 ms-auto" type="checkbox" id="navbarFixed"
+                            onclick="navbarFixed(this)">
                     </div>
                 </div>
-            <!--MODAL PARA SELECCIONAR TECNICO-->
-
-        <div class="fixed-plugin">
-            <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
-                <i class="fa fa-cog py-2"> </i>
-            </a>
-            <div class="card shadow-lg">
-                <div class="card-header pb-0 pt-3 ">
-                    <div class="float-start">
-                        <h5 class="mt-3 mb-0">Argon Configurator</h5>
-                        <p>See our dashboard options.</p>
+                <hr class="horizontal dark my-sm-4">
+                <div class="mt-2 mb-5 d-flex">
+                    <h6 class="mb-0">Light / Dark</h6>
+                    <div class="form-check form-switch ps-0 ms-auto my-auto">
+                        <input class="form-check-input mt-1 ms-auto" type="checkbox" id="dark-version"
+                            onclick="darkMode(this)">
                     </div>
-                    <div class="float-end mt-4">
-                        <button class="btn btn-link text-dark p-0 fixed-plugin-close-button">
-                            <i class="fa fa-close"></i>
-                        </button>
-                    </div>
-                    <!-- End Toggle Button -->
                 </div>
-                <hr class="horizontal dark my-1">
-                <div class="card-body pt-sm-3 pt-0 overflow-auto">
-                    <!-- Sidebar Backgrounds -->
-                    <div>
-                        <h6 class="mb-0">Sidebar Colors</h6>
-                    </div>
-                    <a href="javascript:void(0)" class="switch-trigger background-color">
-                        <div class="badge-colors my-2 text-start">
-                            <span class="badge filter bg-gradient-primary active" data-color="primary"
-                                onclick="sidebarColor(this)"></span>
-                            <span class="badge filter bg-gradient-dark" data-color="dark"
-                                onclick="sidebarColor(this)"></span>
-                            <span class="badge filter bg-gradient-info" data-color="info"
-                                onclick="sidebarColor(this)"></span>
-                            <span class="badge filter bg-gradient-success" data-color="success"
-                                onclick="sidebarColor(this)"></span>
-                            <span class="badge filter bg-gradient-warning" data-color="warning"
-                                onclick="sidebarColor(this)"></span>
-                            <span class="badge filter bg-gradient-danger" data-color="danger"
-                                onclick="sidebarColor(this)"></span>
-                        </div>
+                <a class="btn bg-gradient-dark w-100"
+                    href="https://www.creative-tim.com/product/argon-dashboard">Free Download</a>
+                <a class="btn btn-outline-dark w-100"
+                    href="https://www.creative-tim.com/learning-lab/bootstrap/license/argon-dashboard">View
+                    documentation</a>
+                <div class="w-100 text-center">
+                    <a class="github-button" href="https://github.com/creativetimofficial/argon-dashboard"
+                        data-icon="octicon-star" data-size="large" data-show-count="true"
+                        aria-label="Star creativetimofficial/argon-dashboard on GitHub">Star</a>
+                    <h6 class="mt-3">Thank you for sharing!</h6>
+                    <a href="https://twitter.com/intent/tweet?text=Check%20Argon%20Dashboard%20made%20by%20%40CreativeTim%20%23webdesign%20%23dashboard%20%23bootstrap5&amp;url=https%3A%2F%2Fwww.creative-tim.com%2Fproduct%2Fargon-dashboard"
+                        class="btn btn-dark mb-0 me-2" target="_blank">
+                        <i class="fab fa-twitter me-1" aria-hidden="true"></i> Tweet
                     </a>
-                    <!-- Sidenav Type -->
-                    <div class="mt-3">
-                        <h6 class="mb-0">Sidenav Type</h6>
-                        <p class="text-sm">Choose between 2 different sidenav types.</p>
-                    </div>
-                    <div class="d-flex">
-                        <button class="btn bg-gradient-primary w-100 px-3 mb-2 active me-2" data-class="bg-white"
-                            onclick="sidebarType(this)">White</button>
-                        <button class="btn bg-gradient-primary w-100 px-3 mb-2" data-class="bg-default"
-                            onclick="sidebarType(this)">Dark</button>
-                    </div>
-                    <p class="text-sm d-xl-none d-block mt-2">You can change the sidenav type just on desktop view.</p>
-                    <!-- Navbar Fixed -->
-                    <div class="d-flex my-3">
-                        <h6 class="mb-0">Navbar Fixed</h6>
-                        <div class="form-check form-switch ps-0 ms-auto my-auto">
-                            <input class="form-check-input mt-1 ms-auto" type="checkbox" id="navbarFixed"
-                                onclick="navbarFixed(this)">
-                        </div>
-                    </div>
-                    <hr class="horizontal dark my-sm-4">
-                    <div class="mt-2 mb-5 d-flex">
-                        <h6 class="mb-0">Light / Dark</h6>
-                        <div class="form-check form-switch ps-0 ms-auto my-auto">
-                            <input class="form-check-input mt-1 ms-auto" type="checkbox" id="dark-version"
-                                onclick="darkMode(this)">
-                        </div>
-                    </div>
-                    <a class="btn bg-gradient-dark w-100"
-                        href="https://www.creative-tim.com/product/argon-dashboard">Free Download</a>
-                    <a class="btn btn-outline-dark w-100"
-                        href="https://www.creative-tim.com/learning-lab/bootstrap/license/argon-dashboard">View
-                        documentation</a>
-                    <div class="w-100 text-center">
-                        <a class="github-button" href="https://github.com/creativetimofficial/argon-dashboard"
-                            data-icon="octicon-star" data-size="large" data-show-count="true"
-                            aria-label="Star creativetimofficial/argon-dashboard on GitHub">Star</a>
-                        <h6 class="mt-3">Thank you for sharing!</h6>
-                        <a href="https://twitter.com/intent/tweet?text=Check%20Argon%20Dashboard%20made%20by%20%40CreativeTim%20%23webdesign%20%23dashboard%20%23bootstrap5&amp;url=https%3A%2F%2Fwww.creative-tim.com%2Fproduct%2Fargon-dashboard"
-                            class="btn btn-dark mb-0 me-2" target="_blank">
-                            <i class="fab fa-twitter me-1" aria-hidden="true"></i> Tweet
-                        </a>
-                        <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.creative-tim.com/product/argon-dashboard"
-                            class="btn btn-dark mb-0 me-2" target="_blank">
-                            <i class="fab fa-facebook-square me-1" aria-hidden="true"></i> Share
-                        </a>
-                    </div>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.creative-tim.com/product/argon-dashboard"
+                        class="btn btn-dark mb-0 me-2" target="_blank">
+                        <i class="fab fa-facebook-square me-1" aria-hidden="true"></i> Share
+                    </a>
                 </div>
             </div>
         </div>
-  
-        <script src="<?php echo APP;?>app/plugins/jquery/jquery.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/js/popper.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.min.js"></script>
+    </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
-        <script src = "<?php echo APP;?>app/plugins/datatables/datatables.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
-        <script src="<?php echo APP;?>app/plugins/chart.js/chart.min.js"></script>
-        <script src = "<?php echo APP;?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.min.js"></script>
 
-        <script src="<?php echo APP;?>app/plugins/js/perfect-scrollbar.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/js/smooth-scrollbar.min.js"></script>
-        <script src="<?php echo APP;?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
-        <script src="<?php echo APP;?>app/plugins/js/sb-admin-2.min.js"></script>
-        
-        <?php
-            if (isset($this->js)){
-                foreach ($this->js as $js){
-                    echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'"></script>'; 
-                }
-            }
-        ?>
-  <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-  <?php
-        $expired_sessions = json_encode($this->expired_sessions);
-        $message = json_encode($this->message);
-        $redirect = json_encode($this->redirect);
-        $usuario_id = json_encode($this->usuario_id);
-        $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
+    <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/chart.js/chart.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
+
+    <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
+    <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
+    <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
+
+    <?php
+    if (isset($this->js)) {
+        foreach ($this->js as $js) {
+            echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '"></script>';
+        }
+    }
+    ?>
+    <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
+    <?php
+    $expired_sessions = json_encode($this->expired_sessions);
+    $message = json_encode($this->message);
+    $redirect = json_encode($this->redirect);
+    $usuario_id = json_encode($this->usuario_id);
+    $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
 
     ?>
     <script>
@@ -306,7 +326,7 @@ function mi_navbar() {
                         window.location.href = redirect; // Recarga la página después del temporizador
                     }, 500); // Espera 0.5 segundos (igual que el temporizador)
                 }
-            })// Programar la recarga después de que el SweetAlert se cierre
+            }) // Programar la recarga después de que el SweetAlert se cierre
         }
 
         // Agregar lógica de recarga automática
@@ -318,4 +338,5 @@ function mi_navbar() {
     </script>
     <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
 </body>
+
 </html>

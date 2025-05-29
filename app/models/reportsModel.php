@@ -31,7 +31,37 @@ class reportsModel extends Model
 
     public function GetDomiciliacionTickets($id_user){
         try{
-            $sql = "SELECT * FROM get_tickets_domiciliacion(".$id_user.")";
+            $sql = "SELECT * FROM   (".$id_user.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function getTicketabiertoCount(){
+        try{
+            $sql = "SELECT COUNT(*) as total_tickets_abiertos FROM tickets WHERE id_status_ticket = 1;";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function getTicketsResueltosCount(){
+        try{
+            $sql = "SELECT COUNT(*) as total_tickets_resuelto FROM tickets WHERE id_status_ticket = 3;";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function getTicketsTotalCount(){
+        try{
+            $sql = "SELECT COUNT(*) as total_tickets_general FROM tickets";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

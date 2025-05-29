@@ -1,5 +1,3 @@
-// Función para buscar tickets de domiciliación
-// Función para buscar tickets de domiciliación
 function searchDomiciliacionTickets() {
     const xhr = new XMLHttpRequest();
     // Cambia la ruta de la API para que sea más descriptiva para esta funcionalidad
@@ -19,7 +17,7 @@ function searchDomiciliacionTickets() {
         $('#tabla-ticket thead').empty();
         $('#tabla-ticket tbody').empty();
     }
-    
+
     // Limpiar mensajes previos de "No hay datos" o "Error"
     if (tableContainerParent) {
         // Eliminar todos los párrafos de mensajes dentro del tableContainerParent
@@ -64,10 +62,17 @@ function searchDomiciliacionTickets() {
 
                     // Iterar sobre la primera fila de datos para obtener las claves y crear los encabezados
                     // Esto asegura que la tabla siempre tenga los encabezados correctos de los datos recibidos
-                    if (TicketData && TicketData.length > 0) {
+                   if (TicketData && TicketData.length > 0) {
                         const firstTicket = TicketData[0];
                         for (const key in firstTicket) {
                             if (firstTicket.hasOwnProperty(key)) {
+                                // === INICIO DE LA MODIFICACIÓN ===
+                                // Excluir la columna id_status_domiciliacion
+                                if (key === 'id_status_domiciliacion') {
+                                    continue; // Salta esta iteración, no se agrega esta columna
+                                }
+                                // === FIN DE LA MODIFICACIÓN ===
+
                                 const th = document.createElement('th');
                                 th.textContent = columnTitles[key] || key; // Usa el título definido o el nombre de la clave
                                 headerRow.appendChild(th);
@@ -91,13 +96,12 @@ function searchDomiciliacionTickets() {
                                 const idTicket = row.id_ticket;
                                 const currentStatusDomiciliacion = row.id_status_domiciliacion; // Usamos el ID del estado de domiciliación
                                 const currentNameStatusDomiciliacion = row.name_status_domiciliacion; // Usamos el nombre del estado de domiciliación
-
                                 // Si el id_status_domiciliacion es 2 (Solvente), el botón estará deshabilitado
-                                if (currentStatusDomiciliacion === 2) {
+                                if (currentStatusDomiciliacion === '2') {
                                     return `<button class="btn btn-secondary btn-sm" disabled>Solvente</button>`;
                                 } else {
                                     // Si no es 2, el botón estará habilitado para cambiar estatus
-                                    return `<button type="button" class="btn btn-primary btn-sm cambiar-estatus-domiciliacion-btn"
+                                    return `<button type="button" id= "BtnChange" class="btn btn-primary btn-sm cambiar-estatus-domiciliacion-btn"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#changeStatusDomiciliacionModal"
                                                 data-id="${idTicket}"
@@ -216,7 +220,7 @@ function searchDomiciliacionTickets() {
     };
 
     // Asegúrate de que este ID corresponda al input donde el usuario introduce el ID
-    const id_user_input = document.getElementById('idTicket'); // Asumiendo que 'idTicket' es el ID de tu input
+    const id_user_input = document.getElementById('iduser'); // Asumiendo que 'idTicket' es el ID de tu input
     let id_user_value = '';
     if (id_user_input) {
         id_user_value = id_user_input.value;
@@ -230,69 +234,12 @@ function searchDomiciliacionTickets() {
     const datos = `action=getDomiciliacionTickets&id_user=${id_user_value}`;
     xhr.send(datos);
 }
-
-// Asegúrate de que esta función se llama cuando el DOM esté completamente cargado.
-// Si tienes un botón para buscar, asóciala a ese botón.
 document.addEventListener('DOMContentLoaded', searchDomiciliacionTickets);
 
-// Si tienes un botón de búsqueda, podrías hacer algo como:
-// document.getElementById('searchButtonId').addEventListener('click', searchDomiciliacionTickets);
-
-// --- LÓGICA PARA EL MODAL DE CAMBIO DE ESTATUS DE DOMICILIACIÓN (EJEMPLO) ---
-// Necesitarás un modal en tu HTML con el ID 'changeStatusDomiciliacionModal'
-// Y elementos dentro de él para mostrar el ID del ticket, el estatus actual y un select para el nuevo estatus.
-
-/*
-Ejemplo de HTML para el modal (debes adaptarlo a tu estructura de Bootstrap/HTML):
-<div class="modal fade" id="changeStatusDomiciliacionModal" tabindex="-1" aria-labelledby="changeStatusDomiciliacionModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="changeStatusDomiciliacionModalLabel">Cambiar Estatus de Domiciliación</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="changeStatusDomiciliacionForm">
-          <div class="mb-3">
-            <label for="modalTicketIdDomiciliacion" class="form-label">ID Ticket:</label>
-            <input type="text" class="form-control" id="modalTicketIdDomiciliacion" readonly>
-          </div>
-          <div class="mb-3">
-            <label for="modalCurrentStatusDomiciliacion" class="form-label">Estatus Actual:</label>
-            <input type="text" class="form-control" id="modalCurrentStatusDomiciliacion" readonly>
-          </div>
-          <div class="mb-3">
-            <label for="modalNewStatusDomiciliacionSelect" class="form-label">Nuevo Estatus:</label>
-            <select class="form-select" id="modalNewStatusDomiciliacionSelect">
-              <option value="">Seleccione un nuevo estatus</option>
-              <option value="1">Pendiente</option>
-              <option value="2">Solvente</option>
-              <option value="3">Rechazado</option>
-              </select>
-          </div>
-          <div id="errorMessageDomiciliacion" class="alert alert-danger" style="display:none;"></div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-primary" id="saveStatusDomiciliacionChangeBtn">Guardar Cambios</button>
-      </div>
-    </div>
-  </div>
-</div>
-*/
-
-// Lógica para manejar el modal de cambio de estatus de domiciliación
-// Asegúrate de que SweetAlert2 (Swal) esté cargado si lo estás utilizando
-// <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-// --- LÓGICA PARA MANEJAR EL MODAL DE CAMBIO DE ESTATUS DE DOMICILIACIÓN ---
-$(document).ready(function() {
+$(document).ready(function () {
     const changeStatusDomiciliacionModalElement = document.getElementById("changeStatusDomiciliacionModal");
 
     if (changeStatusDomiciliacionModalElement) {
-        // Crea una instancia del modal de Bootstrap 5
-        // Es CRÍTICO tener esta instancia para controlar el modal programáticamente
         const changeStatusDomiciliacionModal = new bootstrap.Modal(changeStatusDomiciliacionModalElement);
 
         const modalTicketIdDomiciliacion = changeStatusDomiciliacionModalElement.querySelector("#modalTicketIdDomiciliacion");
@@ -301,28 +248,16 @@ $(document).ready(function() {
         const saveStatusDomiciliacionChangeBtn = changeStatusDomiciliacionModalElement.querySelector("#saveStatusDomiciliacionChangeBtn");
         const errorMessageDomiciliacion = changeStatusDomiciliacionModalElement.querySelector("#errorMessageDomiciliacion");
 
-        // Event listener para el botón "Cambiar Estatus"
-        // Utilizamos delegación de eventos con jQuery porque los botones se cargan dinámicamente con DataTables.
-        // Cuando se hace clic en cualquier elemento con la clase 'cambiar-estatus-domiciliacion-btn'
-        // dentro del 'document' (o un contenedor estático más cercano), se ejecuta la función.
-        $(document).on('click', '.cambiar-estatus-domiciliacion-btn', function() {
+        $(document).on('click', '.cambiar-estatus-domiciliacion-btn', function () {
             const idTicket = $(this).data('id');
             const currentStatusName = $(this).data('current-status-name');
             const currentStatusId = $(this).data('current-status-id');
 
-            // Rellenar los campos del modal
-            if (modalTicketIdDomiciliacion) modalTicketIdDomiciliacion.value = idTicket;
+            document.getElementById('idTicket').value = idTicket;
+            const getIdTicket = document.getElementById('idTicket').value;
+
+            if (modalTicketIdDomiciliacion) modalTicketIdDomiciliacion.value = getIdTicket;
             if (modalCurrentStatusDomiciliacion) modalCurrentStatusDomiciliacion.value = currentStatusName;
-
-            // Seleccionar el estatus actual en el dropdown si existe
-            if (modalNewStatusDomiciliacionSelect) {
-                // Reiniciar el select a la opción por defecto o al estatus actual
-                modalNewStatusDomiciliacionSelect.value = currentStatusId;
-
-                // Opcional: remover la deshabilitación de opciones anteriores y luego deshabilitar la actual
-                // $(modalNewStatusDomiciliacionSelect).find('option').prop('disabled', false);
-                // $(modalNewStatusDomiciliacionSelect).find(`option[value="${currentStatusId}"]`).prop('disabled', true);
-            }
 
             // Limpiar cualquier mensaje de error previo
             if (errorMessageDomiciliacion) {
@@ -330,19 +265,19 @@ $(document).ready(function() {
                 errorMessageDomiciliacion.innerHTML = '';
             }
 
-            // ABRIR EL MODAL EXPLICITAMENTE AQUÍ USANDO LA INSTANCIA DE BOOTSTRAP
-            // Esto asegura que el modal se abra cada vez que se haga clic en un botón,
-            // especialmente si el botón fue agregado dinámicamente.
+            // *** LLAMADA CLAVE: Cargar los estatus excluyendo el actual ***
+            // Pasa el nombre del estado actual para que no se muestre en el select.
+            getStatusDom(currentStatusName);
+
+            // ABRIR EL MODAL EXPLICITAMENTE
             changeStatusDomiciliacionModal.show();
         });
 
-        // Event listener para el botón "Guardar Cambios" dentro del modal
         if (saveStatusDomiciliacionChangeBtn) {
-            saveStatusDomiciliacionChangeBtn.addEventListener('click', function() {
-                const idTicket = modalTicketIdDomiciliacion.value;
+            saveStatusDomiciliacionChangeBtn.addEventListener('click', function () {
+                const idTicket = document.getElementById('idTicket').value;
                 const newStatusId = modalNewStatusDomiciliacionSelect.value;
-                // Asumiendo que 'idTicket' es el ID de tu input donde se guarda el ID del usuario logueado
-                const id_user_input = document.getElementById('idTicket');
+                const id_user_input = document.getElementById('iduser');
                 let id_user = '';
                 if (id_user_input) {
                     id_user = id_user_input.value;
@@ -350,7 +285,6 @@ $(document).ready(function() {
                     console.warn("Elemento con ID 'idTicket' (para el ID de usuario) no encontrado.");
                 }
 
-                // Validar que se haya seleccionado un nuevo estatus
                 if (!newStatusId || newStatusId === "" || newStatusId === "0") {
                     if (errorMessageDomiciliacion) {
                         errorMessageDomiciliacion.textContent = 'Por favor, selecciona un "Nuevo Estatus".';
@@ -359,33 +293,46 @@ $(document).ready(function() {
                     return;
                 }
 
-                // Llamar a la función para actualizar el estatus en el backend
-                updateDomiciliacionStatus(idTicket, newStatusId, id_user);
-
-                // No necesitas cerrar el modal aquí si `updateDomiciliacionStatus`
-                // ya lo cierra con Swal.fire willClose o una llamada directa a `changeStatusDomiciliacionModal.hide();`
+                updateDomiciliacionStatus(idTicket, newStatusId, id_user, changeStatusDomiciliacionModal);
             });
         }
 
-        // Lógica para cerrar el modal usando la instancia de Bootstrap dentro de Swal.fire willClose
-        // En tu función updateDomiciliacionStatus:
-        // willClose: () => {
-        //     searchDomiciliacionTickets();
-        //     changeStatusDomiciliacionModal.hide(); // <<--- Asegúrate de usar esta instancia para cerrar
-        // }
+        changeStatusDomiciliacionModalElement.addEventListener('hidden.bs.modal', function () {
+            if (modalTicketIdDomiciliacion) modalTicketIdDomiciliacion.value = '';
+            if (modalCurrentStatusDomiciliacion) modalCurrentStatusDomiciliacion.value = '';
+            if (modalNewStatusDomiciliacionSelect) modalNewStatusDomiciliacionSelect.value = '';
+            if (errorMessageDomiciliacion) {
+                errorMessageDomiciliacion.style.display = 'none';
+                errorMessageDomiciliacion.innerHTML = '';
+            }
+        });
+
+        const closeIconBtn = changeStatusDomiciliacionModalElement.querySelector("#Close-icon");
+        const closeButton = changeStatusDomiciliacionModalElement.querySelector("#close-button");
+
+        if (closeIconBtn) {
+            closeIconBtn.addEventListener('click', function () {
+                changeStatusDomiciliacionModal.hide();
+            });
+        }
+
+        if (closeButton) {
+            closeButton.addEventListener('click', function () {
+                changeStatusDomiciliacionModal.hide();
+            });
+        }
     }
 });
 
 // Función para enviar la actualización del estatus de domiciliación al backend
 function updateDomiciliacionStatus(idTicket, newStatusId, id_user) {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/tickets/updateDomiciliacionStatus`); // Nueva ruta de API para actualizar
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/updateDomiciliacionStatus`); // Nueva ruta de API para actualizar
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
     const changeStatusDomiciliacionModal = document.getElementById("changeStatusDomiciliacionModal");
     const errorMessageDomiciliacion = changeStatusDomiciliacionModal.querySelector("#errorMessageDomiciliacion");
 
-    xhr.onload = function() {
+    xhr.onload = function () {
         if (errorMessageDomiciliacion) {
             errorMessageDomiciliacion.style.display = 'none';
             errorMessageDomiciliacion.innerHTML = '';
@@ -395,23 +342,25 @@ function updateDomiciliacionStatus(idTicket, newStatusId, id_user) {
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
+                    // Si la respuesta es exitosa, muestra el SweetAlert de éxito
                     Swal.fire({
-                        title: '¡Éxito!',
-                        text: 'Estatus de domiciliación actualizado correctamente.',
-                        icon: 'success',
-                        confirmButtonText: 'Entendido',
-                        confirmButtonColor: '#28a745',
-                        color: 'black',
-                        timer: 1500,
-                        timerProgressBar: true,
+                        title: "¡Éxito!",
+                        text: "Estatus del ticket actualizado correctamente.",
+                        icon: "success",
+                        confirmButtonText: "Entendido",
+                        confirmButtonColor: "#28a745",
+                        color: "black",
+                        // willClose ya no tiene location.reload() si quieres un flujo más suave
+                        // Si QUERES recargar la página, manten el location.reload() y elimina lo de abajo.
                         willClose: () => {
-                            // Recargar la tabla para reflejar los cambios
-                            searchDomiciliacionTickets();
-                            // Cerrar el modal (Bootstrap lo hace automáticamente con data-bs-dismiss)
-                            // Si no usas Bootstrap, llama a tu función de cerrar modal aquí
-                            $(changeStatusDomiciliacionModal).modal('hide'); // Para Bootstrap
-                        }
+                            location.reload();
+                        },
                     });
+                    const changeStatusDomiciliacionModalElement = document.getElementById("changeStatusDomiciliacionModal");
+                    const changeStatusDomiciliacionModal = new bootstrap.Modal(changeStatusDomiciliacionModalElement);
+
+                    changeStatusDomiciliacionModal.hide();
+                    searchDomiciliacionTickets
                 } else {
                     if (errorMessageDomiciliacion) {
                         errorMessageDomiciliacion.textContent = response.message || 'Error al actualizar el estatus de domiciliación.';
@@ -435,7 +384,7 @@ function updateDomiciliacionStatus(idTicket, newStatusId, id_user) {
         }
     };
 
-    xhr.onerror = function() {
+    xhr.onerror = function () {
         if (errorMessageDomiciliacion) {
             errorMessageDomiciliacion.textContent = 'Error de red al intentar actualizar el estatus.';
             errorMessageDomiciliacion.style.display = 'block';
@@ -446,5 +395,57 @@ function updateDomiciliacionStatus(idTicket, newStatusId, id_user) {
     const datos = `action=updateDomiciliacionStatus&id_ticket=${idTicket}&new_status_id=${newStatusId}&id_user=${id_user}`;
     xhr.send(datos);
 }
-// Si tienes un botón de búsqueda, podrías hacer algo como:
-// document.getElementById('searchButtonId').addEventListener('click', searchDomiciliacionTickets);
+
+function getStatusDom(currentStatusNameToExclude = null) {
+    // Acepta un parámetro opcional
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetStatusDomiciliacion`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const select = document.getElementById("modalNewStatusDomiciliacionSelect");
+
+                    select.innerHTML = '<option value="" disabled selected hidden>Seleccione</option>'; // Limpiar y agregar la opción por defecto
+                    if (Array.isArray(response.estatus) && response.estatus.length > 0) {
+                        response.estatus.forEach((status) => {
+                            // *** AQUÍ ESTÁ LA LÓGICA CLAVE: FILTRAR LA OPCIÓN ACTUAL ***
+                            if (status.name_status_domiciliacion !== currentStatusNameToExclude) {
+                                const option = document.createElement("option");
+                                option.value = status.id_status_domiciliacion;
+                                option.textContent = status.name_status_domiciliacion;
+                                select.appendChild(option);
+                            }
+                        });
+                    } else {
+                        const option = document.createElement("option");
+                        option.value = "";
+                        option.textContent = "No hay status Disponibles";
+                        select.appendChild(option);
+                    }
+                } else {
+                    document.getElementById("rifMensaje").innerHTML +=
+                        "<br>Error al obtener los status.";
+                    console.error("Error al obtener los status:", response.message);
+                }
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+                document.getElementById("rifMensaje").innerHTML +=
+                    "<br>Error al procesar la respuesta de los status.";
+            }
+        } else {
+            console.error("Error:", xhr.status, xhr.statusText);
+            document.getElementById("rifMensaje").innerHTML +=
+                "<br>Error de conexión con el servidor para los status.";
+        }
+    };
+
+    const datos = `action=GetStatusDomiciliacion`; // Asegúrate de que esta acción en el backend devuelva los técnicos filtrados
+    xhr.send(datos);
+}
+
+document.addEventListener("DOMContentLoaded", getStatusDom);
+

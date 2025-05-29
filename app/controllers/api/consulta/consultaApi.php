@@ -144,6 +144,10 @@ class Consulta extends Controller {
                     $this->handlUpdateKeyReceiveDate();
                 break;
 
+                case 'GetStatusDomiciliacion':
+                    $this->handleGetStatusDomiciliacion();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                 break;
@@ -667,6 +671,38 @@ class Consulta extends Controller {
             }
         }else{
             $this->response(['success' => false, 'message' => 'El ticket esta vacio'], 500); // Código de estado 404 Not Found
+        }
+    }
+
+    public function handleGetStatusDomiciliacion(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetStatusDomiciliacion();
+
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'estatus' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de Estatus Domiciliación disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false,'message' => 'Error al obtener los Estatus Domiciliación'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false,'message' => 'Debe Seleccionar un Estatus Domiciliación']);
+    }
+
+    public function updateDomiciliacionStatus(){
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+        $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_new_status = isset($_POST['new_status_id'])? $_POST['new_status_id'] : '';
+
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->UpdateDomiciliacionStatus($id_new_status, $id_ticket, $id_user);
+        if ($id_new_status!= '') {
+            if($result){
+                $this->response(['success' => true,'message' => 'Ticket actualizado con éxito.'], 200); 
+            }else{
+                $this->response(['success' => false,'message' => 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
+            }
+        }else{
+            $this->response(['success' => false,'message' => 'El estatus esta vacio'], 500); // Código de estado 404 Not Found
         }
     }
 }

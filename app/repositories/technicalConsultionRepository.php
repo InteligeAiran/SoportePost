@@ -278,5 +278,26 @@ class TechnicalConsultionRepository
         $result = $this->model->UpdateKeyReceiveDate($id_ticket, $id_user);
         return $result;
     }
+
+    public function GetStatusDomiciliacion(){
+        $result = $this->model->GetStatusDomiciliacion();
+        if ($result) {
+            //var_dump($result);  
+            $estatus = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $estatus[] = $agente;
+            }
+            //var_dump($agente);
+            return $estatus;
+        } else {
+            return null;
+        }
+    }
+
+    public function UpdateDomiciliacionStatus($id_new_status, $id_ticket, $id_user){
+        $result = $this->model->UpdateStatusDomiciliacion($id_new_status,$id_ticket, $id_user);
+        return $result;
+    }
 }
 ?>

@@ -40,4 +40,22 @@ class ReportRepository
             return null;
         }
     }
+
+    public  function getTicketabiertoCount(){
+        // Lógica para obtener la cantidad de usuarios
+        $result = $this->model->getTicketabiertoCount(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['total_tickets_abiertos'];
+    }
+
+    public  function getTicketsResueltosCount(){
+        // Lógica para obtener la cantidad de usuarios
+        $result = $this->model->getTicketsResueltosCount(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['total_tickets_resuelto'];
+    }
+
+    public function getTicketsTotalCount(){
+        // Lógica para obtener la cantidad de usuarios
+        $result = $this->model->getTicketsTotalCount(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['total_tickets_general'];
+    }
 }

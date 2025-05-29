@@ -225,7 +225,7 @@ class userModel extends Model{
         }
     }
 
-    public function UpdateSession($id_user,  $session_id){
+    /*public function UpdateSession($id_user,  $session_id){
         try{
             $sql = "UPDATE sessions_users SET end_date = NOW(), active = 0 WHERE id_user = ".$id_user." AND id_session = '". $session_id."';";
             //var_dump($sql);
@@ -234,9 +234,9 @@ class userModel extends Model{
         } catch (Throwable $e) {
             // Handle exception
         }
-    }
+    }*/
 
-    public function GetExpiredSessions($usuario_id, $ahora) {
+    /*public function GetExpiredSessions($usuario_id, $ahora) {
         try {
             $sql = "SELECT id_session FROM sessions_users WHERE id_user = ".$usuario_id." AND active = 1 AND expiry_time <= '".$ahora."';";
             //var_dump($sql);
@@ -245,9 +245,9 @@ class userModel extends Model{
         } catch (Throwable $e) {
             // Manejar excepciones
         }
-    }
+    }*/
 
-    public function UpdateSessionExpired($id_session) {
+   /*public function UpdateSessionExpired($id_session) {
         try {
             $sql = "UPDATE sessions_users SET active = 0, end_date = NOW() WHERE id_session = '".$id_session."';";
             //var_dump($sql);
@@ -256,7 +256,7 @@ class userModel extends Model{
         } catch (Throwable $e) {
             // Manejar excepciones
         }
-    }
+    }*/
 
     public function getUserPermission($userId, $viewName) {
         try {

@@ -1,8 +1,5 @@
 <?php
-function mi_navbar()
-{
-
-}
+function mi_navbar() {}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -95,368 +92,6 @@ function mi_navbar()
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
             /* Ejemplo: Sombra al enfocar */
         }
-
-        /* --- CSS para Diseño de Modal Responsivo (Sin depender de las clases responsivas de Bootstrap para el modal en sí) --- */
-
-        /* Fondo oscuro que cubre toda la pantalla (backdrop) */
-        .modal-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            /* 100% del ancho del viewport */
-            height: 100vh;
-            /* 100% de la altura del viewport */
-            background-color: rgba(0, 0, 0, 0.6);
-            /* Negro semi-transparente */
-            z-index: 1040;
-            /* Capa por debajo del modal */
-            display: none;
-            /* Oculto por defecto */
-            opacity: 0;
-            /* Para la transición de opacidad */
-            transition: opacity 0.3s ease-in-out;
-            /* Animación de aparición/desaparición */
-        }
-
-        .modal-backdrop.show {
-            opacity: 1;
-            /* Mostrar con opacidad completa */
-            display: block;
-            /* Asegurar que se muestre */
-        }
-
-
-        /* Contenedor principal del modal (la ventana visible) */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1050;
-            /* Capa por encima del backdrop */
-            width: 100%;
-            height: 100%;
-            overflow-x: hidden;
-            overflow-y: auto;
-            /* Permite desplazamiento si el contenido es largo */
-            outline: 0;
-            display: none;
-            /* Oculto por defecto */
-            /* Usamos flexbox para centrar el modal vertical y horizontalmente */
-            display: flex;
-            align-items: center;
-            /* Centrado vertical */
-            justify-content: center;
-            /* Centrado horizontal */
-            padding: 1rem;
-            /* Espacio alrededor del modal en pantallas muy pequeñas */
-
-            opacity: 0;
-            /* Para la transición de opacidad */
-            transition: opacity 0.3s ease-in-out;
-            /* Animación de aparición/desaparición */
-        }
-
-        .modal.show {
-            opacity: 1;
-            /* Mostrar con opacidad completa */
-            display: flex;
-            /* Asegurar que se muestre como flex */
-        }
-
-        /* El cuadro del contenido del modal */
-        .modal-dialog {
-            position: relative;
-            width: 95%;
-            /* Ocupa casi todo el ancho en móviles */
-            max-width: 550px;
-            /* Ancho máximo en pantallas grandes */
-            margin: auto;
-            /* Centrado con margen automático */
-            pointer-events: none;
-            /* Permite interacciones a través del diálogo si no hay contenido */
-        }
-
-        /* El contenido real del modal (fondo blanco, bordes, sombra) */
-        .modal-content {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            pointer-events: auto;
-            /* Ahora sí permite interacciones */
-            background-color: #fff;
-            background-clip: padding-box;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            border-radius: 0.5rem;
-            /* Bordes redondeados suaves */
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
-            /* Sombra para profundidad */
-            outline: 0;
-            max-height: 90vh;
-            /* Máxima altura para evitar que se desborde la pantalla */
-            overflow-y: auto;
-            /* Scroll si el contenido del modal es más alto que el max-height */
-        }
-
-        /* Encabezado del modal */
-        .modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1.25rem 1.5rem;
-            /* Más padding para mejor diseño */
-            border-bottom: 1px solid #e9ecef;
-            /* Línea separadora */
-            border-top-left-radius: calc(0.5rem - 1px);
-            border-top-right-radius: calc(0.5rem - 1px);
-            background-color: #f8f9fa;
-            /* Fondo ligeramente gris para el encabezado */
-        }
-
-        .modal-title {
-            margin-bottom: 0;
-            line-height: 1.5;
-            font-size: 1.35rem;
-            /* Título un poco más grande */
-            font-weight: 600;
-            /* Más peso para el título */
-            color: #343a40;
-            /* Color oscuro para el texto */
-        }
-
-        /* Botón de cerrar (la 'X') */
-        .btn-close {
-            background: none;
-            /* Sin fondo */
-            border: none;
-            /* Sin borde */
-            font-size: 1.8rem;
-            /* 'X' más grande y visible */
-            font-weight: 300;
-            /* Más delgada */
-            color: #6c757d;
-            /* Color gris suave */
-            cursor: pointer;
-            padding: 0.5rem;
-            margin: -0.75rem -0.75rem -0.75rem auto;
-            /* Ajuste para centrar y pegarlo a la esquina */
-            transition: color 0.2s ease-in-out;
-        }
-
-        .btn-close:hover {
-            color: #495057;
-            /* Un poco más oscuro al pasar el ratón */
-        }
-
-        /* Cuerpo del modal */
-        .modal-body {
-            position: relative;
-            flex: 1 1 auto;
-            padding: 1.5rem;
-            /* Más padding para el contenido */
-        }
-
-        /* Pie de página del modal */
-        .modal-footer {
-            display: flex;
-            flex-wrap: wrap;
-            /* Permite que los botones salten de línea en pantallas pequeñas */
-            align-items: center;
-            justify-content: flex-end;
-            /* Botones a la derecha */
-            padding: 1rem 1.5rem;
-            border-top: 1px solid #e9ecef;
-            /* Línea separadora */
-            border-bottom-right-radius: calc(0.5rem - 1px);
-            border-bottom-left-radius: calc(0.5rem - 1px);
-            gap: 0.75rem;
-            /* Espacio entre los botones */
-        }
-
-
-        /* --- Estilos para los elementos del formulario dentro del modal (manteniendo un diseño agradable) --- */
-
-        .mb-3 {
-            margin-bottom: 1.25rem;
-            /* Margen inferior para separar campos */
-        }
-
-        .form-label {
-            display: block;
-            /* Hace que la etiqueta ocupe su propia línea */
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            /* Negrita para las etiquetas */
-            color: #495057;
-            /* Color de texto para las etiquetas */
-            font-size: 0.95rem;
-        }
-
-        .form-control,
-        .form-select {
-            display: block;
-            width: 100%;
-            padding: 0.6rem 0.75rem;
-            /* Más padding para mayor área táctil */
-            font-size: 1rem;
-            font-weight: 400;
-            line-height: 1.5;
-            color: #495057;
-            /* Color de texto para los inputs */
-            background-color: #fff;
-            background-clip: padding-box;
-            border: 1px solid #ced4da;
-            border-radius: 0.35rem;
-            /* Bordes ligeramente más redondeados */
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-            -webkit-appearance: none;
-            /* Resetear estilos de apariencia de navegador */
-            -moz-appearance: none;
-            appearance: none;
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            border-color: #80bdff;
-            /* Borde azul al enfocar */
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-            /* Sombra azul al enfocar */
-        }
-
-        .form-control[readonly] {
-            background-color: #e9ecef;
-            /* Fondo gris para campos de solo lectura */
-            opacity: 1;
-            /* Asegurar opacidad normal */
-            cursor: not-allowed;
-            /* Cursor de no permitido */
-        }
-
-        /* Estilos para botones */
-        .btn {
-            display: inline-block;
-            font-weight: 500;
-            /* Peso de fuente ligeramente más fuerte */
-            line-height: 1.5;
-            color: #212529;
-            text-align: center;
-            vertical-align: middle;
-            cursor: pointer;
-            user-select: none;
-            background-color: transparent;
-            border: 1px solid transparent;
-            padding: 0.5rem 1rem;
-            /* Más padding para los botones */
-            font-size: 1rem;
-            border-radius: 0.3rem;
-            /* Bordes redondeados */
-            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-        }
-
-        .btn-primary {
-            color: #fff;
-            background-color: #007bff;
-            /* Azul primario */
-            border-color: #007bff;
-        }
-
-        .btn-primary:hover {
-            color: #fff;
-            background-color: #0069d9;
-            border-color: #0062cc;
-        }
-
-        .btn-secondary {
-            color: #fff;
-            background-color: #6c757d;
-            /* Gris secundario */
-            border-color: #6c757d;
-        }
-
-        .btn-secondary:hover {
-            color: #fff;
-            background-color: #5a6268;
-            border-color: #545b62;
-        }
-
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-            border-radius: 0.2rem;
-        }
-
-        /* Alertas de error */
-        .alert {
-            position: relative;
-            padding: 0.75rem 1.25rem;
-            margin-bottom: 1rem;
-            border: 1px solid transparent;
-            border-radius: 0.25rem;
-        }
-
-        .alert-danger {
-            color: #721c24;
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-        }
-
-        /* Ocultar elementos visualmente para lectores de pantalla pero no para el diseño */
-        .visually-hidden {
-            position: absolute !important;
-            width: 1px !important;
-            height: 1px !important;
-            padding: 0 !important;
-            margin: -1px !important;
-            overflow: hidden !important;
-            clip: rect(0, 0, 0, 0) !important;
-            white-space: nowrap !important;
-            border: 0 !important;
-        }
-
-        /* Estilos para el select en la columna de la tabla */
-        .cambiar-estatus-domiciliacion-btn {
-            white-space: nowrap;
-            /* Evita que el texto del botón se rompa en varias líneas */
-        }
-
-        /* Media query para pantallas más pequeñas si necesitas ajustes específicos,
-        aunque el diseño flexbox ya maneja bien la responsividad básica */
-        @media (max-width: 576px) {
-            .modal-dialog {
-                margin: 0.5rem;
-                /* Reduce el margen en pantallas muy pequeñas */
-                width: calc(100% - 1rem);
-                /* Asegura que el modal no toque los bordes */
-            }
-
-            .modal-header,
-            .modal-body,
-            .modal-footer {
-                padding: 1rem;
-                /* Reduce el padding en pantallas pequeñas */
-            }
-
-            .modal-title {
-                font-size: 1.15rem;
-                /* Título un poco más pequeño en móviles */
-            }
-
-            .btn {
-                width: 100%;
-                /* Botones de footer a ancho completo en móviles */
-                margin-bottom: 0.5rem;
-                /* Espacio entre botones */
-            }
-
-            .modal-footer {
-                flex-direction: column;
-                /* Apila los botones en el footer */
-                align-items: stretch;
-                /* Estira los botones para llenar el ancho */
-            }
-        }
     </style>
     <!-- CSS Files -->
     <link id="pagestyle" rel="stylesheet"
@@ -465,99 +100,89 @@ function mi_navbar()
 </head>
 
 <body id="fondo" class="g-sidenav-show bg-gray-100">
-    <div class="min-height-300 bg-dark position-absolute w-100">
-        <div class="d-lg-none fixed-top bg-dark p-2">
-            <button class="btn btn-dark" id="filter-toggle">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                    class="bi bi-list-task" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd"
-                        d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z" />
-                    <path
-                        d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z" />
-                    <path fill-rule="evenodd"
-                        d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z" />
-                </svg>
-            </button>
-        </div>
-        <?php require_once 'app/core/components/navbar/index.php';
-        mi_navbar(); ?>
-        <main class="main-content position-relative border-radius-lg">
-            <div class="container-fluid py-4">
-                <div id="Row" class="row mt-4">
-                    <div class="cord">
+    <div class="min-height-300 bg-dark position-absolute w-100"></div>
+    <div class="d-lg-none fixed-top bg-dark p-2">
+        <button class="btn btn-dark" id="filter-toggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                class="bi bi-list-task" viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                    d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z" />
+                <path
+                    d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z" />
+                <path fill-rule="evenodd"
+                    d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z" />
+            </svg>
+        </button>
+    </div>
+    <?php require_once 'app/core/components/navbar/index.php';
+    mi_navbar(); ?>
+    <main class="main-content position-relative border-radius-lg">
+        <div class="container-fluid py-4">
+            <div id="Row" class="row mt-4">
+                <div class="cord">
 
-                        <div class="card">
-                            <div class="card-header pb-0 p-3">
-                                <div class="col-lg-12 col-md-12 mt-4 mb-4">
-                                    <div
-                                        class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                        <strong>
-                                            <h5 class="text-black text-capitalize ps-3">TICKETS</h5>
-                                        </strong>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-between">
-                                    <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
+                    <div class="card">
+                        <div class="card-header pb-0 p-3">
+                            <div class="col-lg-12 col-md-12 mt-4 mb-4">
+                                <div
+                                    class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
+                                    <strong>
+                                        <h5 class="text-black text-capitalize ps-3">TICKETS</h5>
+                                    </strong>
                                 </div>
                             </div>
-                            <div class="table-responsive">
-                                <table id="tabla-ticket"
-                                    class="table table-striped table-bordered table-hover table-sm">
-                                    <thead>
-
-                                    </thead>
-                                    <tbody id="table-ticket-body">
-                                        <tr>
-                                            <td colspan="3">No hay datos</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div class="d-flex justify-content-between">
+                                <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
                             </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="tabla-ticket"
+                                class="table table-striped table-bordered table-hover table-sm">
+                                <thead>
+
+                                </thead>
+                                <tbody id="table-ticket-body">
+                                    <tr>
+                                        <td colspan="3">No hay datos</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
-            <input type="hidden" id="idTicket" value="<?php echo $_SESSION['id_user'] ?>">
+        </div>
+        <input type="hidden" id="iduser" value="<?php echo $_SESSION['id_user'] ?>">
             <div class="modal fade" id="changeStatusDomiciliacionModal" tabindex="-1" aria-labelledby="changeStatusDomiciliacionModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="changeStatusDomiciliacionModalLabel">Cambiar Estatus de
-                                Domiciliación</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <h5 class="modal-title" id="changeStatusDomiciliacionModalLabel">Cambiar Estatus de Domiciliación</h5>
+                            <button type="button" id="Close-icon" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <form id="changeStatusDomiciliacionForm">
                                 <div class="mb-3">
-                                    <label for="modalTicketIdDomiciliacion" class="form-label">ID Ticket:</label>
-                                    <input type="text" class="form-control" id="modalTicketIdDomiciliacion" readonly>
+                                    <label for="modalCurrentStatusDomiciliacion" class="form-label">Estado Actual:</label>
+                                    <input type="text" class="form-control" id="modalCurrentStatusDomiciliacion" readonly>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="modalCurrentStatusDomiciliacion" class="form-label">Estado
-                                        Actual:</label>
-                                    <input type="text" class="form-control" id="modalCurrentStatusDomiciliacion"
-                                        readonly>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="modalNewStatusDomiciliacionSelect" class="form-label">Nuevo
-                                        Estado:</label>
-                                    <select class="form-select" id="modalNewStatusDomiciliacionSelect">
+                                    <label for="modalNewStatusDomiciliacionSelect" class="form-label">Nuevo Estado:</label>
+                                    <select class="form-select" id="modalNewStatusDomiciliacionSelect" style="width: 98%;;">
                                         <option value="">Cargando opciones...</option>
                                     </select>
                                 </div>
-                                <div id="errorMessageDomiciliacion" class="alert alert-danger" style="display:none;">
-                                </div>
+                                <div id="errorMessageDomiciliacion" class="alert alert-danger" style="display:none;"></div>
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                            <button type="button" class="btn btn-primary" id="saveStatusDomiciliacionChangeBtn">Guardar
-                                Cambios</button>
+                            <button type="button" class="btn btn-secondary" id="close-button" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-primary" id="saveStatusDomiciliacionChangeBtn">Guardar Cambios</button>
                         </div>
                     </div>
                 </div>
             </div>
-    </div>
+        <input type="hidden" id="idTicket">
     </main>
     <div class="fixed-plugin">
         <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
@@ -701,7 +326,7 @@ function mi_navbar()
     $redirect = json_encode($this->redirect);
     $usuario_id = json_encode($this->usuario_id);
     $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
-    
+
     ?>
     <script>
         var expired_sessions = <?php echo $expired_sessions; ?>;
@@ -729,12 +354,12 @@ function mi_navbar()
                         window.location.href = redirect; // Recarga la página después del temporizador
                     }, 500); // Espera 0.5 segundos (igual que el temporizador)
                 }
-            })// Programar la recarga después de que el SweetAlert se cierre
+            }) // Programar la recarga después de que el SweetAlert se cierre
         }
 
         // Agregar lógica de recarga automática
         if (sessionLifetime) {
-            setTimeout(function () {
+            setTimeout(function() {
                 location.reload(true); // Forzar recarga desde el servidor
             }, sessionLifetime * 1000); // sessionLifetime está en segundos
         }

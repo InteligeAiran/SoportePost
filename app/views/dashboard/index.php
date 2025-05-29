@@ -46,12 +46,10 @@ function mi_navbar() {
                                     <div class="col-8">
                                         <div class="numbers">
                                             <p class="text-sm mb-0 text-uppercase font-weight-bold">Tickets Abiertos</p>
-                                            <h5 class="font-weight-bolder">
-                                                34
-                                            </h5>
+                                            <h5 id="TicketsAbiertos" class="font-weight-bolder"></h5>
                                             <p class="mb-0">
                                                 <span class="text-success text-sm font-weight-bolder">+55%</span>
-                                                since yesterday
+                                                Desde Ayer
                                             </p>
                                         </div>
                                     </div>
@@ -73,13 +71,11 @@ function mi_navbar() {
                                 <div class="row">
                                     <div class="col-8">
                                         <div class="numbers">
-                                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Ticktes Cerrados</p>
-                                            <h5 class="font-weight-bolder">
-                                                20
-                                            </h5>
+                                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Tickets Resueltos</p>
+                                            <h5 id="TicketsResuelto" class="font-weight-bolder"></h5>
                                             <p class="mb-0">
                                                 <span class="text-success text-sm font-weight-bolder">+3%</span>
-                                                since last week
+                                                Desde Ayer
                                             </p>
                                         </div>
                                     </div>
@@ -101,13 +97,11 @@ function mi_navbar() {
                                 <div class="row">
                                     <div class="col-8">
                                         <div class="numbers">
-                                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Pendiente Por Respuesto</p>
-                                            <h5 id="userCount" class="font-weight-bolder">
-                                                
-                                            </h5>
+                                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Total Tickets</p>
+                                            <h5 id="TotalTicket" class="font-weight-bolder"></h5>
                                             <p class="mb-0">
                                                 <span class="text-danger text-sm font-weight-bolder">-2%</span>
-                                                since last quarter
+                                                Desde Ayer
                                             </p>
                                         </div>
                                     </div>
