@@ -110,6 +110,10 @@ $("#rifInput").keyup(function(){
 
 
 function SendRif() {
+
+    const razonCountTableCard = document.querySelector('.card');
+    razonCountTableCard.style.display = 'block'; // Muestra la tabla
+
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchRif`);
     
@@ -275,6 +279,12 @@ function SendRif() {
 }
 
 function SendSerial() {
+
+    const razonCountTableCard = document.querySelector('.card');
+
+    razonCountTableCard.style.display = 'block'; // Muestra la tabla
+
+
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchSerialData`);
     
@@ -445,6 +455,11 @@ function SendSerial() {
 }
 
 function SendRazon() {
+
+        const razonCountTableCard = document.querySelector('.card');
+
+        razonCountTableCard.style.display = 'block'; // Muestra la tabla
+
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchRazonData`);
     
@@ -559,7 +574,17 @@ function SendRazon() {
                     if ($.fn.DataTable.isDataTable('#rifCountTable')) {
                         $('#rifCountTable').DataTable().destroy();
                     }
+
+
                     $('#rifCountTable').DataTable({
+
+                            dom: 'Bfrtip',
+                                buttons: [
+                                    {
+                                        extend: 'excelHtml5', footer: true,
+                                        text: 'Excel'
+                                }],
+
                         responsive: false,
                         "pagingType": "simple_numbers",
                         "lengthMenu": [5],
@@ -762,7 +787,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (buscarPorRazonBtn && razonCountTableCard) {
         buscarPorRazonBtn.addEventListener('click', function() {
-            razonCountTableCard.style.display = 'block'; // Muestra la tabla
+            razonCountTableCard.style.display = 'none'; // Muestra la tabla
             razonInput.style.display = 'block'; // Muestra el input
             buscarRazon.style.display = 'block'; // Oculta el botón
             selectInputRif.style.display = 'none'; // Muestra el select
@@ -777,7 +802,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (buscarPorRifBtn && rifCountTableCard) {
         buscarPorRifBtn.addEventListener('click', function() {
-            rifCountTableCard.style.display = 'block'; // Muestra la tabla
+            rifCountTableCard.style.display = 'none'; // Muestra la tabla
             rifInput.style.display = 'block'; // Muestra el input
             selectInputRif.style.display = 'block'; // Muestra el select
             buscarRif.style.display = 'block'; // Oculta el botón
@@ -794,7 +819,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (buscarPorSerialBtn && serialCountTableCard) {
         buscarPorSerialBtn.addEventListener('click', function() {
-            serialCountTableCard.style.display = 'block'; // Muestra la tabla
+            serialCountTableCard.style.display = 'none'; // Muestra la tabla
             serialInput.style.display = 'block'; // Muestra el input
             buscarSerial.style.display = 'block'; // Oculta el botón
             selectInputRif.style.display = 'none'; // Muestra el select

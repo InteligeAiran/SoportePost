@@ -88,7 +88,12 @@ class users extends Controller {
                 break;
 
                 case 'GuardarUsuarios':
-                    $this->handleGuardarUsuarios();
+                    //$this->handleGuardarUsuarios();
+                    if($method === 'POST'){
+                        $this->handleGuardarUsuarios();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/AsignacionModulo'], 405);
+                    }
                 break;
 
                 case 'GetRegionUsers':
@@ -441,7 +446,7 @@ class users extends Controller {
         $edit_nombreusers = isset($_POST['edit_nombreuser']) ? $_POST['edit_nombreuser'] : '';
         $edit_apellidousers = isset($_POST['edit_apellidouser']) ? $_POST['edit_apellidouser'] : '';
         $edit_usuario = isset($_POST['usuario']) ? $_POST['usuario'] : '';
-        $edit_documento = isset($_POST['edit_documento']) ? $_POST['edit_documento'] : '';
+        $identificacion = isset($_POST['identificacion']) ? $_POST['identificacion'] : '';
         $edit_correo = isset($_POST['edit_email']) ? $_POST['edit_email'] : '';
         $edit_area_users = isset($_POST['edit_areausers']) ? $_POST['edit_areausers'] : '';
         $edit_regionusers = isset($_POST['edit_regionusers']) ? $_POST['edit_regionusers'] : '';
@@ -452,7 +457,7 @@ class users extends Controller {
 
         //var_dump($edit_idnivel);
 
-         $result = $repository->Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$edit_documento,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user);
+         $result = $repository->Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user);
     
         if ($result) {
             $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);

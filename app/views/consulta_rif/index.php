@@ -30,6 +30,11 @@ function mi_navbar()
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
+
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/datatable.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/jquery.dataTables.min.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
+
         <style>
             #rifTipo {
                 width: auto;
@@ -57,7 +62,7 @@ function mi_navbar()
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
-        <div class="min-height-300 bg-dark position-absolute w-100">
+        <div class="min-height-100 bg-dark position-absolute w-100">
             <div class="d-lg-none fixed-top bg-dark p-2">
                 <button class="btn btn-dark" id="filter-toggle">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
@@ -101,19 +106,20 @@ function mi_navbar()
                                 <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
                             </div><br>
                             <div class="card" style="display: none;">
-                                <div class="table-responsive">
-                                    <table id="rifCountTable">
+                                <div class="row">
+                                <div class="col-12">
+                                    <table id="rifCountTable" class="table table-bordered" style="width: 100%">
                                         <thead>
                                             <tr>
                                                 <th style="width: 5%; height: 10px;">ID cliente</th>
                                                 <th style="width: 10%;">Raz&oacuten Social</th>
                                                 <th style="width: 5%;">RIF</th>
                                                 <th style="width: 5%;">Modelo POS</th>
-                                                <th style="width: 5%;">serial POS</th>
-                                                <th style="width: 5%;">Nr Afiliaci&oacuten</th>
+                                                <th style="width: 5%;">Serial POS</th>
+                                                <th style="width: 5%;">N° Afiliaci&oacuten</th>
                                                 <th style="width: 5%;">Fecha Instalaci&oacuten</th>
                                                 <th style="width: 5%;">Banco</th>
-                                                <th style="width: 5%;">Direcci&oacuten Instalaci&oacuten</th>
+                                                <th style="width: 15%;">Direcci&oacuten Instalaci&oacuten</th>
                                                 <th style="width: 5%;">Estado</th>
                                                 <th style="width: 5%;">Municipio</th>
                                             </tr>
@@ -124,6 +130,7 @@ function mi_navbar()
                                             </tr>
                                         </tbody>
                                     </table>
+                                </div>
                                 </div>
                                 <div id="ModalSerial" class="modal">
                                     <div id="ModalSerial-content" class="modal-content">
@@ -158,7 +165,7 @@ function mi_navbar()
                     </div>
                 <!-- AVISA LAS GARANTIAS --->
             </main>
-        </div>
+        
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
                 <i class="fa fa-cog py-2"> </i>
@@ -248,7 +255,7 @@ function mi_navbar()
                 </div>
             </div>
         </div>
-
+</div>
         <!-- Github buttons -->
         <script async defer src="https://buttons.github.io/buttons.js"></script>
         <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
@@ -273,6 +280,23 @@ function mi_navbar()
         <!-- Datatable -->
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
+
+
+        <script src = "<?php echo APP;?>DataTable/jquery.dataTables.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/dataTables.buttons.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.print.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.flash.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/pdfmake.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/jszip.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/vfs_fonts.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.html5.min.js"></script>
+
+
+         <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
+         <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
+         <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
+         <script src = "<?php echo APP;?>js/datatables.js"></script>
+
 
         <!-- Chart -->
         <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>

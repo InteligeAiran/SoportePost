@@ -19,59 +19,22 @@ function mi_navbar() {
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css"/>
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/dataTables.min.css"/>
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/bootstrap.css"/>
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/datatable.css"/>
+
 
 
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/tecnico/tecnico.css"/>
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
 
-      <style>
-            div.dataTables_wrapper div.dataTables_length label {
-                font-weight: bold; /* Ejemplo: Texto en negrita */
-                color: #333; /* Ejemplo: Color del texto */
-                margin-right: 10px; /* Ejemplo: Espacio a la derecha del label */
-            }
+                <!-- <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/bootstrap1.min.css"> -->
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/datatable.css">
+        <!-- <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/bootstrap.min.css"> -->
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/jquery.dataTables.min.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
 
-            /* Estilizar el select dropdown del lengthMenu */
-            div.dataTables_wrapper div.dataTables_length select {
-                border: 1px solid #ccc; /* Ejemplo: Borde */
-                border-radius: 5px; /* Ejemplo: Bordes redondeados */
-                padding: 5px 10px; /* Ejemplo: Espaciado interno */
-                font-size: 0.9em; /* Ejemplo: Tamaño de la fuente */
-                width: 18%;
-            }
+        <!-- Font Awesome Icons -->
 
-            /* Estilizar el label "Buscar:" */
-            div.dataTables_wrapper div.dataTables_filter label {
-                font-weight: bold; /* Ejemplo: Texto en negrita */
-                color: #333; /* Ejemplo: Color del texto */
-                margin-right: 0.5em; /* Ejemplo: Espacio a la derecha del label */
-                    margin-left: -100%;
-            }
-
-            /* Estilizar el input de búsqueda */
-            div.dataTables_wrapper div.dataTables_filter input[type="search"] {
-                border: 1px solid #ccc; /* Ejemplo: Borde */
-                border-radius: 0.25rem; /* Ejemplo: Bordes redondeados */
-                padding: 0.375rem 0.75rem; /* Ejemplo: Espaciado interno */
-                font-size: 1rem; /* Ejemplo: Tamaño de la fuente */
-                color: #495057; /* Ejemplo: Color del texto del input */
-                background-color: #fff; /* Ejemplo: Color de fondo del input */
-                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* Ejemplo: Transiciones suaves */
-            }
-
-            /* Estilizar el input de búsqueda al enfocarlo */
-            div.dataTables_wrapper div.dataTables_filter input[type="search"]:focus {
-                color: #495057;
-                background-color: #fff;
-                border-color: #007bff; /* Ejemplo: Color del borde al enfocar */
-                outline: 0;
-                box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Ejemplo: Sombra al enfocar */
-            }
-        </style>
+    
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
@@ -247,22 +210,65 @@ function mi_navbar() {
             </div>
         </div>
   
-        <script src="<?php echo APP;?>app/plugins/jquery/jquery.min.js"></script>
+        
+         <!-- Github buttons -->
+         <script async defer src="https://buttons.github.io/buttons.js"></script>
+        <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
+        <!-- Bootstrap core JavaScript-->
+         <!--JQUERY-->
+         <script src="<?php echo APP;?>app/plugins/jquery/jquery.min.js"></script>
+        <script src="<?php echo APP;?>app/plugins/jquery/jquery-3.5.1.js"></script>
         <script src="<?php echo APP;?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/js/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
+
+
+        <!-- Bootstrap-->
         <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.min.js"></script>
+        <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.js"></script>
 
-        <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
-        <script src = "<?php echo APP;?>app/plugins/datatables/datatables.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
-        <script src="<?php echo APP;?>app/plugins/chart.js/chart.min.js"></script>
-        <script src = "<?php echo APP;?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
-
+        <!--   Core JS Files   -->
+        <script src="<?php echo APP;?>app/plugins/js/popper.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/js/perfect-scrollbar.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/js/smooth-scrollbar.min.js"></script>
         <script src="<?php echo APP;?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
-        <script src="<?php echo APP;?>app/plugins/js/sb-admin-2.min.js"></script>
+        
+        <!-- Datatable -->
+        <script src = "<?php echo APP;?>app/plugins/datatables/datatables.min.js"></script>
+        <script src = "<?php echo APP;?>app/plugins/datatables/datatables.js"></script>
+
+        <!-- Datatable otro sistema-->
+
+        <script src = "<?php echo APP;?>DataTable/jquery.dataTables.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/dataTables.buttons.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.print.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.flash.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/pdfmake.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/jszip.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/vfs_fonts.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.html5.min.js"></script>
+
+
+         <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
+         <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
+         <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
+         <script src = "<?php echo APP;?>js/datatables.js"></script>
+
+
+
+
+        <!-- Chart -->
+        <script src="<?php echo APP;?>app/plugins/chart.js/chart.js"></script>
+        <script src="<?php echo APP;?>app/plugins/chart.js/chart.min.js"></script>
+
+        <!--  SweetAlert   -->
+        <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.js"></script>
+        <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
+
+        <!--  Alertify   --> 
+        <script src="<?php echo APP;?>app/plugins/alertify/lib/alertify.js"></script>
+        <script src="<?php echo APP;?>app/plugins/alertify/lib/alertify.min.js"></script>
+        <script src="<?php echo APP;?>app/plugins/alertify/src/alertify.js"></script>
         
         <?php
             if (isset($this->js)){

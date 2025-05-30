@@ -1,6 +1,8 @@
 <?php
 function mi_navbar() {
 
+    
+
 }?>
 <!DOCTYPE html>
 <lang="en">

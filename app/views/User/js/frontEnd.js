@@ -537,6 +537,7 @@ function GuardarUsuariosNew() {
     formData.append('id_nivel', id_nivel);
     formData.append('action', 'GuardarUsuarios');
 
+
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/GuardarUsuarios`);
 
@@ -558,9 +559,9 @@ function GuardarUsuariosNew() {
                             Swal.showLoading();
                         },
                         willClose: () => {
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
+                            // setTimeout(() => {
+                            //     location.reload();
+                            // }, 1000);
                         }
                     });
                     $("#miModal").css("display", "none");
@@ -726,7 +727,7 @@ function EditarUsuarios() {
     const idusuario_edit = document.getElementById('idusuario_edit').value;
     const nombre_usuario = document.getElementById('edit_nombreuser').value;
     const apellido_usuario = document.getElementById('edit_apellidouser').value;
-    //const tipo_doc = document.getElementById('tipodoc').value;
+    const tipo_doc = document.getElementById('tipodoc').value;
     const documento = document.getElementById('edit_documento').value;
     const iusuario = document.getElementById('edit_usuario').value;
     const correo = document.getElementById('edit_email').value;
@@ -735,6 +736,8 @@ function EditarUsuarios() {
     const tipo_usuario = document.getElementById('edit_tipousers').value;
     const id_nivel = document.getElementById('edit_idnivel').value;
     const usuariocarga = document.getElementById('id_user').value
+    
+    const identificacion=tipo_doc+documento;
 
     //alert(nombre_usuario +'/'+ apellido_usuario +'/'+ iusuario +'/'+ documento +'/'+ correo +'/'+ area_usuario +'/'+ tipo_usuario +'/'+ regionusers);
 
@@ -746,7 +749,7 @@ function EditarUsuarios() {
     formData.append('edit_apellidouser', apellido_usuario);
     //formData.append('tipodoc', tipo_doc);
     //formData.append('coddocumento', documento);
-    formData.append('edit_documento', documento);
+    formData.append('identificacion', identificacion);
     formData.append('usuario', iusuario);
     formData.append('edit_email', correo);
     formData.append('edit_areausers', area_usuario);

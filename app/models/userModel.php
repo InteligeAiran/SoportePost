@@ -142,13 +142,13 @@ class userModel extends Model{
     }   
 
 
-    public function Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$edit_documento,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user){
+    public function Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user){
         try {
             $escaped_idusuario_edit = pg_escape_literal($this->db->getConnection(), $idusuario_edit);
             $escaped_edit_nombreusers = pg_escape_literal($this->db->getConnection(), $edit_nombreusers);
             $escaped_edit_apellidousers = pg_escape_literal($this->db->getConnection(), $edit_apellidousers);
             $escaped_edit_usuario = pg_escape_literal($this->db->getConnection(), $edit_usuario);
-            $escaped_edit_documento = pg_escape_literal($this->db->getConnection(), $edit_documento);
+            $escaped_identificacion = pg_escape_literal($this->db->getConnection(), $identificacion);
             $escaped_edit_correo = pg_escape_literal($this->db->getConnection(), $edit_correo);
             $escaped_edit_area_users = pg_escape_literal($this->db->getConnection(), $edit_area_users);
             $escaped_edit_regionusers = pg_escape_literal($this->db->getConnection(), $edit_regionusers);
@@ -156,15 +156,13 @@ class userModel extends Model{
             $escaped_edit_idnivel = pg_escape_literal($this->db->getConnection(), $edit_idnivel);
             $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
 
-    
             $sql = "SELECT * FROM sp_editarusuarios(".$escaped_idusuario_edit.", ".$escaped_edit_nombreusers.", ".$escaped_edit_apellidousers.", ".$escaped_edit_usuario.",
-                    ".$escaped_edit_documento.", ".$escaped_edit_correo.", ".$escaped_edit_area_users.",".$escaped_edit_regionusers.",".$escaped_edit_tipo_users.", ".$escaped_edit_idnivel.",".$escaped_id_user.")";
+                    ".$escaped_identificacion.", ".$escaped_edit_correo.", ".$escaped_edit_area_users.",".$escaped_edit_regionusers.",".$escaped_edit_tipo_users.", ".$escaped_edit_idnivel.",".$escaped_id_user.")";
+            //echo $sql;
             $result = Model::getResult($sql, $this->db);
             return $result;
 
-            //echo $sql;
                } catch (Throwable $e) {
-            // Handle exception
         } 
     }    
     public function GetUserData($username, $password){
