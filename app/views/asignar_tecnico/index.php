@@ -46,17 +46,6 @@ function mi_navbar() {}
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
     </head>
 
-        /* Estilizar el input de búsqueda al enfocarlo */
-        div.dataTables_wrapper div.dataTables_filter input[type="search"]:focus {
-            color: #495057;
-            background-color: #fff;
-            border-color: #007bff;
-            /* Ejemplo: Color del borde al enfocar */
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-            /* Ejemplo: Sombra al enfocar */
-        }
-    </style>
     <!-- CSS Files -->
     <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
     <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
