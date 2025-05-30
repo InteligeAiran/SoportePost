@@ -74,6 +74,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Estilo para el span "No file chosen"
     const noFileChosenStyle = 'color: gray; font-style: italic; margin-left: 5px;';
 
+    // Función para acortar el nombre del archivo, preservando la extensión
+    function shortenFileName(fileName, maxLength = 15) { // Puedes ajustar maxLength
+        const lastDotIndex = fileName.lastIndexOf('.');
+        let nameWithoutExtension;
+        let extension = '';
+
+        // Separar el nombre del archivo de su extensión
+        if (lastDotIndex > -1) {
+            nameWithoutExtension = fileName.substring(0, lastDotIndex);
+            extension = fileName.substring(lastDotIndex); // Incluye el punto
+        } else {
+            nameWithoutExtension = fileName;
+        }
+
+        // Acortar solo la parte del nombre sin la extensión
+        if (nameWithoutExtension.length > maxLength) {
+            return nameWithoutExtension.substring(0, maxLength - 3) + '...' + extension;
+        }
+
+        return fileName; // Si no es necesario acortar, retorna el nombre completo
+    }
+
     // Para el botón de Envío
     const cargarBtnEnvio = document.getElementById('DownloadEnvi');
     const envioInputFile = document.getElementById('EnvioInput');
@@ -88,17 +110,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // MODIFICACIÓN IMPORTANTE:
     if (cargarBtnEnvio && envioInputFile) {
         cargarBtnEnvio.addEventListener('click', function(event) {
-            event.preventDefault(); // Evita la recarga si el botón es de tipo submit (aunque no lo parece)
-            envioInputFile.click(); // Simula el clic en el input file
+            event.preventDefault();
+            envioInputFile.click();
         });
     }
 
     if (envioInputFile) {
         envioInputFile.addEventListener('change', function() {
             if (this.files.length > 0) {
-                fileChosenSpanEnvio.textContent = this.files[0].name;
-                fileChosenSpanEnvio.style.cssText = 'margin-left: 5px; font-size: 9px; display: block;'; // Remover estilo de "no file"
+                // *** AQUÍ SE APLICA LA FUNCIÓN PARA ACORTAR EL NOMBRE ***
+                fileChosenSpanEnvio.textContent = shortenFileName(this.files[0].name);
+                fileChosenSpanEnvio.style.cssText = 'margin-left: 5px; font-size: 9px; display: block;';
             } else {
+                fileChosenSpanEnvio.textContent = ''; // Limpiar si no hay archivo
                 fileChosenSpanEnvio.style.cssText = noFileChosenStyle;
             }
         });
@@ -117,8 +141,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (cargarBtnExo && exoInputFile) {
         cargarBtnExo.addEventListener('click', function() {
-            event.preventDefault(); // Evita la recarga si el botón es de tipo submit (aunque no lo parece)
-            exoInputFile.click(); // Simula el clic en el input file
+            event.preventDefault();
+            exoInputFile.click();
         });
     }
 
@@ -132,12 +156,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     text: 'Por favor, selecciona un archivo PDF, JPG o JPEG.',
                     color: 'black'
                 });
-                this.value = ''; // Limpiar el valor del input
+                this.value = '';
+                fileChosenSpanExo.textContent = ''; // Limpiar si hay error
                 fileChosenSpanExo.style.cssText = noFileChosenStyle;
             } else if (file) {
-                fileChosenSpanExo.textContent = file.name;
-                fileChosenSpanExo.style.cssText = 'margin-left: 5px; font-size: 9px; display: block;'; // Remover estilo de "no file"
+                // *** AQUÍ SE APLICA LA FUNCIÓN PARA ACORTAR EL NOMBRE ***
+                fileChosenSpanExo.textContent = shortenFileName(file.name);
+                fileChosenSpanExo.style.cssText = 'margin-left: 5px; font-size: 9px; display: block;';
             } else {
+                fileChosenSpanExo.textContent = ''; // Limpiar si no hay archivo
                 fileChosenSpanExo.style.cssText = noFileChosenStyle;
             }
         });
@@ -156,8 +183,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (cargarBtnAntici && anticiInputFile) {
         cargarBtnAntici.addEventListener('click', function() {
-            event.preventDefault(); // Evita la recarga si el botón es de tipo submit (aunque no lo parece)
-            anticiInputFile.click(); // Simula el clic en el input file
+            event.preventDefault();
+            anticiInputFile.click();
         });
     }
 
@@ -171,12 +198,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     text: 'Por favor, selecciona un archivo PDF, JPG o JPEG.',
                     color: 'black'
                 });
-                this.value = ''; // Limpiar el valor del input
+                this.value = '';
+                fileChosenSpanAntici.textContent = ''; // Limpiar si hay error
                 fileChosenSpanAntici.style.cssText = noFileChosenStyle;
             } else if (file) {
-                fileChosenSpanAntici.textContent = file.name;
-                fileChosenSpanAntici.style.cssText = 'margin-left: 5px; font-size: 9px; display: block;'; // Remover estilo de "no file"
+                // *** AQUÍ SE APLICA LA FUNCIÓN PARA ACORTAR EL NOMBRE ***
+                fileChosenSpanAntici.textContent = shortenFileName(file.name);
+                fileChosenSpanAntici.style.cssText = 'margin-left: 5px; font-size: 9px; display: block;';
             } else {
+                fileChosenSpanAntici.textContent = ''; // Limpiar si no hay archivo
                 fileChosenSpanAntici.style.cssText = noFileChosenStyle;
             }
         });

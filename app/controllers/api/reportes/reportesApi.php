@@ -41,6 +41,34 @@ class reportes extends Controller {
                     $this->handleSearchRegionData();
                 break;
 
+                case 'getDomiciliacionTickets':
+                    $this->handlegetDomiciliacionTickets();
+                break;
+
+                case 'getTicketAbiertoCount':
+                    $this->handlegetgetTicketAbiertoCount();
+                break;
+
+                case 'getTicketsResueltosCount':
+                    $this->handlegetTicketsResueltosCount();
+                break;
+
+                case 'getTicketsTotalCount':
+                    $this->handlegetTicketsTotalCount();
+                break;
+
+                case 'getTicketPercentage':
+                    $this->handleGetTicketPercentage();
+                break;
+
+                case 'getTicketsResueltosPercentage':
+                    $this->handleGetTicketsResueltosPercentage();
+                break;
+
+                case 'getTotalTicketsPercentage':
+                    $this->handleGetTotalTicketsPercentage();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -75,5 +103,103 @@ class reportes extends Controller {
             $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
         }
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
+
+    public function handlegetDomiciliacionTickets(){
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $repository = new ReportRepository(); // Inicializa el repositorio
+        $result = $repository->getDomiciliacionTickets($id_user);
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'tickets' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+    public function handlegetgetTicketAbiertoCount(){
+        $repository = new ReportRepository();
+        $result = $repository->getTicketabiertoCount();
+        if ($result !== null) {
+            $this->response(['success' => true, 'count' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'userCount' => 0], 200);
+        }
+        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Tickets Abiertos.'], 500);
+    }
+
+    public function handlegetTicketsResueltosCount(){
+        $repository = new ReportRepository();
+        $result = $repository->getTicketsResueltosCount();
+        if ($result) {
+            $this->response(['success' => true, 'count' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'userCount' => 0], 200);
+        }
+        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Tickets Resueltos.'], 500);
+    }
+
+    public function handlegetTicketsTotalCount(){
+        $repository = new ReportRepository();
+        $result = $repository->getTicketsTotalCount();
+        if ($result) {
+            $this->response(['success' => true, 'count' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'userCount' => 0], 200);
+        }
+        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Total de Tickets.'], 500);
+    }
+
+    // Luego, crea la función handleGetTicketPercentage
+    public function handleGetTicketPercentage(){
+        $repository = new ReportRepository();
+        $data = $repository->getTicketPercentageData();
+
+        $ticketsToday = $data['today'];
+        $ticketsYesterday = $data['yesterday'];
+
+        $percentageChange = 0;
+        if ($ticketsYesterday > 0) {
+            $percentageChange = (($ticketsToday - $ticketsYesterday) / $ticketsYesterday) * 100;
+        } elseif ($ticketsToday > 0) { // Si ayer fue 0 pero hoy hay tickets
+            $percentageChange = 100;
+        }
+        // Si ambos son 0, el porcentaje de cambio sigue siendo 0.
+        $this->response(['success' => true, 'percentage' => round($percentageChange, 2)], 200);
+    }
+
+    public function handleGetTicketsResueltosPercentage(){
+        $repository = new ReportRepository();
+        $data = $repository->getTicketsResueltosPercentageData();
+
+        $ticketsToday = $data['today'];
+        $ticketsYesterday = $data['yesterday'];
+
+        $percentageChange = 0;
+        if ($ticketsYesterday > 0) {
+            $percentageChange = (($ticketsToday - $ticketsYesterday) / $ticketsYesterday) * 100;
+        } elseif ($ticketsToday > 0) { // Si ayer fue 0 pero hoy hay tickets
+            $percentageChange = 100; // Un aumento del 100% desde cero
+        }
+        // Si ambos son 0, el porcentaje de cambio sigue siendo 0.
+        $this->response(['success' => true, 'percentage' => round($percentageChange, 2)], 200);
+    }
+
+    public function handleGetTotalTicketsPercentage(){
+        $repository = new ReportRepository();
+        $data = $repository->getTotalTicketsPercentageData();
+
+        $ticketsToday = $data['today'];
+        $ticketsYesterday = $data['yesterday'];
+
+        $percentageChange = 0;
+        if ($ticketsYesterday > 0) {
+            $percentageChange = (($ticketsToday - $ticketsYesterday) / $ticketsYesterday) * 100;
+        } elseif ($ticketsToday > 0) { // Si ayer fue 0 pero hoy hay tickets
+            $percentageChange = 100; // Un aumento del 100% desde cero
+        }
+        // Si ambos son 0, el porcentaje de cambio sigue siendo 0.
+        $this->response(['success' => true, 'percentage' => round($percentageChange, 2)], 200);
     }
 }

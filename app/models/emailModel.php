@@ -117,9 +117,9 @@ class emailModel extends Model{
         }
     }
 
-    public function GetTicketNivel(){
+    public function GetTicketNivel($serial, $id_level_failure){
         try{
-            $sql = "SELECT * FROM id_level_failure()";
+            $sql = "SELECT * FROM id_level_failure('".$serial."', ".$id_level_failure.");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

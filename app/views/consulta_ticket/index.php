@@ -1,8 +1,5 @@
 <?php
-function mi_navbar()
-{
-
-}
+function mi_navbar() {}
 ?>
 <!DOCTYPE html>
 <lang="en">
@@ -27,9 +24,9 @@ function mi_navbar()
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
         <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/flatpickr-4.6.13/dist/flatpickr.min.css">
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/dataTables.min.css"/>
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/datatable.css"/>
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/DataTable/bootstrap.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/bootstrap.css" />
         <style>
             #rifTipo {
                 width: auto;
@@ -37,56 +34,79 @@ function mi_navbar()
                 padding: 0.5rem 0.75rem;
                 font-size: 1rem;
                 height: auto;
-                -webkit-appearance: none; /* Elimina la apariencia nativa en navegadores WebKit */
-                -moz-appearance: none; /* Elimina la apariencia nativa en Firefox */
-                appearance: none; /* Elimina la apariencia nativa en otros navegadores */
+                -webkit-appearance: none;
+                /* Elimina la apariencia nativa en navegadores WebKit */
+                -moz-appearance: none;
+                /* Elimina la apariencia nativa en Firefox */
+                appearance: none;
+                /* Elimina la apariencia nativa en otros navegadores */
                 background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>');
                 background-repeat: no-repeat;
                 background-position: right 0.5rem center;
                 background-size: 1em;
-                border-radius: 0.25rem; /* Mantén o ajusta el radio del borde */
-                border: 1px solid #ced4da; /* Mantén o ajusta el color del borde */
-                color: #495057; /* Mantén o ajusta el color del texto */
+                border-radius: 0.25rem;
+                /* Mantén o ajusta el radio del borde */
+                border: 1px solid #ced4da;
+                /* Mantén o ajusta el color del borde */
+                color: #495057;
+                /* Mantén o ajusta el color del texto */
             }
 
             /* Opcional: Para eliminar el espaciado extra en algunos navegadores */
             #rifTipo::-ms-expand {
                 display: none;
             }
-            
+
             div.dataTables_wrapper div.dataTables_length label {
-                font-weight: bold; /* Ejemplo: Texto en negrita */
-                color: #333; /* Ejemplo: Color del texto */
-                margin-right: 10px; /* Ejemplo: Espacio a la derecha del label */
+                font-weight: bold;
+                /* Ejemplo: Texto en negrita */
+                color: #333;
+                /* Ejemplo: Color del texto */
+                margin-right: 10px;
+                /* Ejemplo: Espacio a la derecha del label */
                 margin-top: 23px;
             }
 
             /* Estilizar el select dropdown del lengthMenu */
             div.dataTables_wrapper div.dataTables_length select {
-                border: 1px solid #ccc; /* Ejemplo: Borde */
-                border-radius: 5px; /* Ejemplo: Bordes redondeados */
-                padding: 5px 10px; /* Ejemplo: Espaciado interno */
-                font-size: 0.9em; /* Ejemplo: Tamaño de la fuente */
+                border: 1px solid #ccc;
+                /* Ejemplo: Borde */
+                border-radius: 5px;
+                /* Ejemplo: Bordes redondeados */
+                padding: 5px 10px;
+                /* Ejemplo: Espaciado interno */
+                font-size: 0.9em;
+                /* Ejemplo: Tamaño de la fuente */
                 width: 29%;
             }
 
             /* Estilizar el label "Buscar:" */
             div.dataTables_wrapper div.dataTables_filter label {
-                font-weight: bold; /* Ejemplo: Texto en negrita */
-                color: #333; /* Ejemplo: Color del texto */
-                margin-right: 0.5em; /* Ejemplo: Espacio a la derecha del label */
+                font-weight: bold;
+                /* Ejemplo: Texto en negrita */
+                color: #333;
+                /* Ejemplo: Color del texto */
+                margin-right: 0.5em;
+                /* Ejemplo: Espacio a la derecha del label */
                 margin-left: -100%;
             }
 
             /* Estilizar el input de búsqueda */
             div.dataTables_wrapper div.dataTables_filter input[type="search"] {
-                border: 1px solid #ccc; /* Ejemplo: Borde */
-                border-radius: 0.25rem; /* Ejemplo: Bordes redondeados */
-                padding: 0.375rem 0.75rem; /* Ejemplo: Espaciado interno */
-                font-size: 1rem; /* Ejemplo: Tamaño de la fuente */
-                color: #495057; /* Ejemplo: Color del texto del input */
-                background-color: #fff; /* Ejemplo: Color de fondo del input */
-                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* Ejemplo: Transiciones suaves */
+                border: 1px solid #ccc;
+                /* Ejemplo: Borde */
+                border-radius: 0.25rem;
+                /* Ejemplo: Bordes redondeados */
+                padding: 0.375rem 0.75rem;
+                /* Ejemplo: Espaciado interno */
+                font-size: 1rem;
+                /* Ejemplo: Tamaño de la fuente */
+                color: #495057;
+                /* Ejemplo: Color del texto del input */
+                background-color: #fff;
+                /* Ejemplo: Color de fondo del input */
+                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+                /* Ejemplo: Transiciones suaves */
                 margin-top: 18px;
             }
 
@@ -94,9 +114,11 @@ function mi_navbar()
             div.dataTables_wrapper div.dataTables_filter input[type="search"]:focus {
                 color: #495057;
                 background-color: #fff;
-                border-color: #007bff; /* Ejemplo: Color del borde al enfocar */
+                border-color: #007bff;
+                /* Ejemplo: Color del borde al enfocar */
                 outline: 0;
-                box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Ejemplo: Sombra al enfocar */
+                box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+                /* Ejemplo: Sombra al enfocar */
             }
 
             #rifCountTable {
@@ -107,7 +129,7 @@ function mi_navbar()
             #rifCountTable td {
                 white-space: nowrap;
                 overflow: hidden;
-               /* max-width: 150px; /* ajusta este valor según tus necesidades */
+                /* max-width: 150px; /* ajusta este valor según tus necesidades */
             }
 
             .dataTables_wrapper {
@@ -124,108 +146,110 @@ function mi_navbar()
             /* Estilos para columnas específicas si es necesario */
             #rifCountTable th:nth-child(1),
             #rifCountTable td:nth-child(1) {
-                min-width: 50px; /* ID Ticket */
+                min-width: 50px;
+                /* ID Ticket */
             }
 
             #rifCountTable th:nth-child(2),
             #rifCountTable td:nth-child(2) {
-                min-width: 100px; /* Create Ticket */
+                min-width: 100px;
+                /* Create Ticket */
             }
+
             /* Añade más estilos específicos para otras columnas según sea necesario */
 
             #rifCountTable tbody tr {
-                margin-bottom: 5px; /* Ajusta este valor según necesites */
-                }
-
+                margin-bottom: 5px;
+                /* Ajusta este valor según necesites */
+            }
         </style>
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
-        <div class="min-height-300 bg-dark position-absolute w-100">
-            <div class="d-lg-none fixed-top bg-dark p-2">
-                <button class="btn btn-dark" id="filter-toggle">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                        class="bi bi-list-task" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd"
-                            d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z" />
-                        <path
-                            d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z" />
-                        <path fill-rule="evenodd"
-                            d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z" />
-                    </svg>
-                </button>
-            </div>
-            <?php require_once 'app/core/components/navbar/index.php';
-            mi_navbar(); ?>
-            <main class="main-content position-relative border-radius-lg ">
-                <div class="container-fluid py-4">
-                    <div id="Row" class="row mt-4">
-                        <div class="cord">
-                            <div class="d-flex justify-content-start mt-2">
-                                <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorRangoBtn">Buscar por Rango de Fecha</button>
-                                <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
-                                <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
-                                <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRegionsBtn">Buscar Por Region</button>
+        <div class="min-height-300 bg-dark position-absolute w-100"></div>
+        <div class="d-lg-none fixed-top bg-dark p-2">
+            <button class="btn btn-dark" id="filter-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                    class="bi bi-list-task" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                        d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z" />
+                    <path
+                        d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z" />
+                    <path fill-rule="evenodd"
+                        d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z" />
+                </svg>
+            </button>
+        </div>
+        <?php require_once 'app/core/components/navbar/index.php';
+        mi_navbar(); ?>
+        <main class="main-content position-relative border-radius-lg ">
+            <div class="container-fluid py-4">
+                <div id="Row" class="row mt-4">
+                    <div class="cord">
+                        <div class="d-flex justify-content-start mt-2">
+                            <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorRangoBtn">Buscar por Rango de Fecha</button>
+                            <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
+                            <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
+                            <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRegionsBtn">Buscar Por Region</button>
+                        </div>
+                        <div id="SearchRif" class="mb-3 d-flex align-items-center">
+
+                            <div class="d-flex align-items-center">
+                                <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none;">
+                                    <option value="J">J</option>
+                                    <option value="V" selected>V</option>
+                                    <option value="E">E</option>
+                                    <option value="G">G</option>
+                                </select>
+                                <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
+                                <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;  margin-top: 15px;">Buscar</button><br>
                             </div>
-                            <div id="SearchRif" class="mb-3 d-flex align-items-center">
 
-                                <div class="d-flex align-items-center">
-                                    <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none;">     
-                                        <option value="J">J</option>
-                                        <option value="V" selected>V</option>
-                                        <option value="E">E</option>
-                                        <option value="G">G</option>
-                                    </select>
-                                    <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
-                                    <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;  margin-top: 15px;">Buscar</button><br>
-                                </div>
+                            <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none;" maxlength="24">
+                            <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none; margin-top: 15px;">Buscar</button>
 
-                                <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none;" maxlength="24">
-                                <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none; margin-top: 15px;">Buscar</button>
+                            <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
+                            <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
 
-                                <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
-                                <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
+                            <div class="d-flex align-items-center">
+                                <input type="text" class="form-control me-2 flatpickr-input" id="date-ini" placeholder="dd/mm/yyyy" style="display: none; width: 150px;">
+                                <input type="text" class="form-control me-2 flatpickr-input" placeholder="dd/mm/yyyy" id="date-end" style="display: none; width: 150px;">
+                                <button type="button" class="btn btn-primary" onclick="SendRango()" id="buscarRango" style="display: none; margin-top: 19px;">Buscar</button>
+                            </div>
 
-                                <div class="d-flex align-items-center">
-                                    <input type="text" class="form-control me-2 flatpickr-input" id="date-ini" placeholder="dd/mm/yyyy" style="display: none; width: 150px;">
-                                    <input type="text" class="form-control me-2 flatpickr-input" placeholder="dd/mm/yyyy" id="date-end" style="display: none; width: 150px;">
-                                    <button type="button" class="btn btn-primary" onclick="SendRango()" id="buscarRango" style="display: none; margin-top: 19px;">Buscar</button>
-                                </div>
+                            <div class="d-flex align-items-center">
+                                <select id="SelectRgions" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
+                                </select>
+                                <button type="button" class="btn btn-primary" onclick="SendRegions()" id="buscarRegions" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
+                            </div>
 
-                                <div class="d-flex align-items-center">
-                                    <select id="SelectRgions" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
-                                    </select>
-                                    <button type="button" class="btn btn-primary" onclick="SendRegions()" id="buscarRegions" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
-                                </div>
-
-                            </div><br>
-                            <div class="card" style="display: none;">
-                                <div class="table-responsive">
-                                    <table id="rifCountTable" class="table table-striped table-bordered table-hover table-sm">
-                                        <thead>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td colspan="15">No hay datos</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div id="ModalSerial" class="modal">
-                                    <div id="ModalSerial-content" class="modal-content">
-                                        <span id="ModalSerial-close" class="close">&times;</span>
-                                        <div style="text-align: center; margin-bottom: 20px;">
-                                            <h2>Detalles del POS</h2>
+                        </div><br>
+                        <div class="card" style="display: none;">
+                            <div class="table-responsive">
+                                <table id="rifCountTable" class="table table-striped table-bordered table-hover table-sm">
+                                    <thead>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="15">No hay datos</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="ModalSerial" class="modal">
+                                <div id="ModalSerial-content" class="modal-content">
+                                    <span id="ModalSerial-close" class="close">&times;</span>
+                                    <div style="text-align: center; margin-bottom: 20px;">
+                                        <h2>Detalles del POS</h2>
+                                    </div>
+                                    <div style="display: flex;">
+                                        <div style="flex: 1; margin-right: 20px;">
+                                            <table id="serialCountTable">
+                                                <tbody></tbody>
+                                            </table>
                                         </div>
-                                        <div style="display: flex;">
-                                            <div style="flex: 1; margin-right: 20px;">
-                                                <table id="serialCountTable">
-                                                    <tbody></tbody>
-                                                </table>
-                                            </div>
-                                            <div style="width: 150px;">
-                                                <img src="" alt="Imagen del POS"> </img>
-                                            </div>
+                                        <div style="width: 150px;">
+                                            <img src="" alt="Imagen del POS"> </img>
                                         </div>
                                     </div>
                                 </div>
@@ -233,18 +257,18 @@ function mi_navbar()
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- AVISA LAS GARANTIAS --->
-                    <div id="garantiaModal" class="modal">
-                        <div id="garantiaModal-content" class="modal-content">
-                            <span id="garantiaModal-close" class="close">&times;</span>
-                            <h2 id="garantiaModal-titulo">¡Alerta de Garantía!</h2>
-                            <p id="garantiaModal-mensaje"></p>
-                        </div>
-                    </div>
-                <!-- AVISA LAS GARANTIAS --->
-            </main>
-        </div>
+            <!-- AVISA LAS GARANTIAS --->
+            <div id="garantiaModal" class="modal">
+                <div id="garantiaModal-content" class="modal-content">
+                    <span id="garantiaModal-close" class="close">&times;</span>
+                    <h2 id="garantiaModal-titulo">¡Alerta de Garantía!</h2>
+                    <p id="garantiaModal-mensaje"></p>
+                </div>
+            </div>
+            <!-- AVISA LAS GARANTIAS --->
+        </main>
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
                 <i class="fa fa-cog py-2"> </i>
@@ -372,9 +396,9 @@ function mi_navbar()
         <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
 
         <!-- Custom scripts for all pages-->
-        <script src="<?php echo APP;?>app/plugins/js/sb-admin-2.min.js"></script>
-        <script src="<?php echo APP;?>app/views/consulta_ticket/js/frontEnd.js"></script>
-        <script src="<?php echo APP;?>app/plugins/flatpickr-4.6.13/dist/flatpickr.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
+        <script src="<?php echo APP; ?>app/views/consulta_ticket/js/frontEnd.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/flatpickr-4.6.13/dist/flatpickr.js"></script>
 
 
         <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
@@ -384,7 +408,7 @@ function mi_navbar()
         $redirect = json_encode($this->redirect);
         $usuario_id = json_encode($this->usuario_id);
         $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
-        
+
         ?>
         <script>
             var expired_sessions = <?php echo $expired_sessions; ?>;
@@ -412,16 +436,17 @@ function mi_navbar()
                             window.location.href = redirect; // Recarga la página después del temporizador
                         }, 500); // Espera 0.5 segundos (igual que el temporizador)
                     }
-                })// Programar la recarga después de que el SweetAlert se cierre
+                }) // Programar la recarga después de que el SweetAlert se cierre
             }
 
             // Agregar lógica de recarga automática
             if (sessionLifetime) {
-                setTimeout(function () {
+                setTimeout(function() {
                     location.reload(true); // Forzar recarga desde el servidor
                 }, sessionLifetime * 1000); // sessionLifetime está en segundos
             }
         </script>
         <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
     </body>
+
     </html>

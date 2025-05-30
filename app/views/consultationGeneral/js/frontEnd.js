@@ -4,16 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     contenedorConsulta.classList.add('cargando');
 
-    // Función para obtener el valor de un parámetro de la URL por su nombre
-    function getParameterByName(name, url = window.location.href) {
-        name = name.replace(/[\[\]\\^$.|?*+()]/g, '\\$&');
-        var regex = new RegExp('([?&])' + name + '(=([^&#]*)|&|#|$)'),
-            results = regex.exec(url);
-        if (!results) return null;
-        if (!results[3]) return '';
-        return decodeURIComponent(results[3].replace(/\+/g, ' '));
-    }
-
     // Obtener los valores de los parámetros 'Serial' y 'Proceso' de la URL
     const serialValue = getParameterByName('Serial');
     const procesoValue = getParameterByName('Proceso');
@@ -50,6 +40,7 @@ function getParameterByName(name, url = window.location.href) {
 function SendDataSearching() {
     const serialValue = getParameterByName('Serial');
     const procesoValue = getParameterByName('Proceso');
+    const id_level_failure = getParameterByName('id_level_failure');
     const tablaResultados = document.querySelector('.tabla-resultados tbody');
     const tablaHeaders = document.querySelector('.tabla-resultados thead tr'); // Get the table headers
     const noResultadosDiv = document.querySelector('.no-resultados');
@@ -66,7 +57,7 @@ function SendDataSearching() {
     }
 
     if (serialValue !== null && procesoValue !== null) {
-        const dataToSend = `action=consultationHistorial&serial=${encodeURIComponent(serialValue)}&proceso=${encodeURIComponent(procesoValue)}`;
+        const dataToSend = `action=consultationHistorial&serial=${encodeURIComponent(serialValue)}&proceso=${encodeURIComponent(procesoValue)}&id_level_failure=${encodeURIComponent(id_level_failure)}`;
 
         fetch(`${ENDPOINT_BASE}${APP_PATH}api/email/consultationHistorial`, {
             method: 'POST',

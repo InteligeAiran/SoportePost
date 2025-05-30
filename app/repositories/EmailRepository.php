@@ -52,11 +52,10 @@ class EmailRepository
         return $result ? $result['row'] : null;
     }
 
-    public function GetDataTicketConCliente()
+    public function GetDataTicketConCliente($serial, $id_level_failure)
     {
         // Obtener los datos del ticket
-        $result = $this->model->GetTicketNivel();
-
+        $result = $this->model->GetTicketNivel($serial, $id_level_failure);
         if($result['row']['id_level_failure'] == 1){
             $ticketData = $this->model->GetDataTicket1();
             $ticket = $ticketData ? $ticketData['row'] : null;
