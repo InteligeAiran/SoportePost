@@ -10,7 +10,7 @@ function mi_navbar() {}
         <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
         <link rel="icon" type="image/png" href="../assets/img/favicon.png">
         <title>
-            Argon Dashboard 3 by Creative Tim
+            <?php echo tituloPagina; ?>
         </title>
         <!--     Fonts and icons     -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
@@ -27,6 +27,11 @@ function mi_navbar() {}
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
+
+
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/datatable.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/jquery.dataTables.min.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
 
         <style>
             #rifTipo {
@@ -61,41 +66,30 @@ function mi_navbar() {}
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
-        <div class="min-height-300 bg-dark position-absolute w-100"></div>
-        <div class="d-lg-none fixed-top bg-dark p-2">
-            <button class="btn btn-dark" id="filter-toggle">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                    class="bi bi-list-task" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd"
-                        d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z" />
-                    <path
-                        d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z" />
-                    <path fill-rule="evenodd"
-                        d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z" />
-                </svg>
-            </button>
-        </div>
-        <?php require_once 'app/core/components/navbar/index.php';
-        mi_navbar(); ?>
-        <main class="main-content position-relative border-radius-lg ">
-            <div class="container-fluid py-4">
-                <div id="Row" class="row mt-4">
-                    <div class="cord">
-                        <div class="d-flex justify-content-start mt-2">
-                            <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorNombreBtn">Buscar por Razón Social</button>
-                            <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
-                            <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
-                        </div>
-                        <div id="SearchRif" class="mb-3 d-flex align-items-center">
-                            <div class="d-flex align-items-center">
-                                <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none;">
-                                    <option value="J">J</option>
-                                    <option value="V" selected>V</option>
-                                    <option value="E">E</option>
-                                    <option value="G">G</option>
-                                </select>
-                                <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
-                                <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;">Buscar</button><br>
+        <div class="min-height-100 bg-dark position-absolute w-100">
+            <div class="d-lg-none fixed-top bg-dark p-2">
+                <button class="btn btn-dark" id="filter-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                        class="bi bi-list-task" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z" />
+                        <path
+                            d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z" />
+                        <path fill-rule="evenodd"
+                            d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z" />
+                    </svg>
+                </button>
+            </div>
+            <?php require_once 'app/core/components/navbar/index.php';
+            mi_navbar(); ?>
+            <main class="main-content position-relative border-radius-lg ">
+                <div class="container-fluid py-4">
+                    <div id="Row" class="row mt-4">
+                        <div class="cord">
+                            <div class="d-flex justify-content-start mt-2">
+                                <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorNombreBtn">Buscar por Razón Social</button>
+                                <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
+                                <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
                             </div>
 
                             <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none;" maxlength="24">
@@ -135,11 +129,45 @@ function mi_navbar() {}
                                     <div style="text-align: center; margin-bottom: 20px;">
                                         <h2>Detalles del POS</h2>
                                     </div>
-                                    <div style="display: flex;">
-                                        <div style="flex: 1; margin-right: 20px;">
-                                            <table id="serialCountTable">
-                                                <tbody></tbody>
-                                            </table>
+
+                                <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none;" maxlength="24">
+                                <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none;">Buscar</button>
+
+                                <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
+                                <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
+                            </div><br>
+                            <div class="card" style="display: none;">
+                                <div class="row">
+                                <div class="col-12">
+                                    <table id="rifCountTable" class="table table-bordered" style="width: 100%">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 5%; height: 10px;">ID cliente</th>
+                                                <th style="width: 10%;">Raz&oacuten Social</th>
+                                                <th style="width: 5%;">RIF</th>
+                                                <th style="width: 5%;">Modelo POS</th>
+                                                <th style="width: 5%;">Serial POS</th>
+                                                <th style="width: 5%;">N° Afiliaci&oacuten</th>
+                                                <th style="width: 5%;">Fecha Instalaci&oacuten</th>
+                                                <th style="width: 5%;">Banco</th>
+                                                <th style="width: 15%;">Direcci&oacuten Instalaci&oacuten</th>
+                                                <th style="width: 5%;">Estado</th>
+                                                <th style="width: 5%;">Municipio</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="3">No hay datos</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                </div>
+                                <div id="ModalSerial" class="modal">
+                                    <div id="ModalSerial-content" class="modal-content">
+                                        <span id="ModalSerial-close" class="close">&times;</span>
+                                        <div style="text-align: center; margin-bottom: 20px;">
+                                            <h2>Detalles del POS</h2>
                                         </div>
                                         <div style="width: 150px;">
                                             <img src="" alt="Imagen del POS"> </img>
@@ -152,16 +180,17 @@ function mi_navbar() {}
                 </div>
             </div>
 
-            <!-- AVISA LAS GARANTIAS --->
-            <div id="garantiaModal" class="modal">
-                <div id="garantiaModal-content" class="modal-content">
-                    <span id="garantiaModal-close" class="close">&times;</span>
-                    <h2 id="garantiaModal-titulo">¡Alerta de Garantía!</h2>
-                    <p id="garantiaModal-mensaje"></p>
-                </div>
-            </div>
-            <!-- AVISA LAS GARANTIAS --->
-        </main>
+                <!-- AVISA LAS GARANTIAS --->
+                    <div id="garantiaModal" class="modal">
+                        <div id="garantiaModal-content" class="modal-content">
+                            <span id="garantiaModal-close" class="close">&times;</span>
+                            <h2 id="garantiaModal-titulo">¡Alerta de Garantía!</h2>
+                            <p id="garantiaModal-mensaje"></p>
+                        </div>
+                    </div>
+                <!-- AVISA LAS GARANTIAS --->
+            </main>
+        
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
                 <i class="fa fa-cog py-2"> </i>
@@ -251,7 +280,7 @@ function mi_navbar() {}
                 </div>
             </div>
         </div>
-
+</div>
         <!-- Github buttons -->
         <script async defer src="https://buttons.github.io/buttons.js"></script>
         <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
@@ -276,6 +305,23 @@ function mi_navbar() {}
         <!-- Datatable -->
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
+
+
+        <script src = "<?php echo APP;?>DataTable/jquery.dataTables.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/dataTables.buttons.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.print.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.flash.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/pdfmake.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/jszip.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/vfs_fonts.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.html5.min.js"></script>
+
+
+         <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
+         <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
+         <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
+         <script src = "<?php echo APP;?>js/datatables.js"></script>
+
 
         <!-- Chart -->
         <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>

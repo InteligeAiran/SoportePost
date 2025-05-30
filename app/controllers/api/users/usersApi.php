@@ -88,7 +88,12 @@ class users extends Controller {
                 break;
 
                 case 'GuardarUsuarios':
-                    $this->handleGuardarUsuarios();
+                    //$this->handleGuardarUsuarios();
+                    if($method === 'POST'){
+                        $this->handleGuardarUsuarios();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/AsignacionModulo'], 405);
+                    }
                 break;
 
                 case 'GetRegionUsers':
@@ -98,6 +103,42 @@ class users extends Controller {
                 case 'GetRegionUsersAssign':
                     $this->handleGetRegionUsersById();
                 break;
+
+                case 'EditarUsuarios':
+                    $this->handleEditarUsuarios();
+                break;
+
+                case 'GetMostrarUsuarioEdit':
+                $id_user = isset($_POST['id_user']) ? trim($_POST['id_user']) : '';
+                    $this->handleGetMostrarUsuarioEdit($id_user);
+                break;   
+
+                case 'ModuloUsers':
+                    if ($method === 'POST') {
+                        //var_dump($_POST); // Para depuración
+                        $this->handleGetUsersModulos();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/ModuloUsers'], 405);
+                    }
+                break; 
+
+                case 'AsignacionModulo':
+                    if($method === 'POST'){
+                        $this->handleAsignacionModulo();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/AsignacionModulo'], 405);
+                    }
+
+                break; 
+                
+                case 'checkUsernameAvailability':
+                    if($method === 'POST'){
+                        $this->handleCheckUsernameAvailability();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/AsignacionModulo'], 405);
+                    }
+
+                break; 
 
                 case 'checkStatus':
                     $this->handlecheckUserStatus();
@@ -379,6 +420,131 @@ class users extends Controller {
             $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
         }
     }
+
+
+    public function handleGetMostrarUsuarioEdit($id_user){
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
+            
+        $repository = new   UserRepository(); // Inicializa el repositorio
+        $result = $repository->MostrarUsuarioEdit($id_user);
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'users' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay usuarios disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
+    
+
+    public function handleEditarUsuarios(){
+        $repository = new UserRepository(); // Inicializa el repositorio
+            
+        $idusuario_edit = isset($_POST['idusuario_edit']) ? $_POST['idusuario_edit'] : ''; // id del usuario que se esta editando
+        $edit_nombreusers = isset($_POST['edit_nombreuser']) ? $_POST['edit_nombreuser'] : '';
+        $edit_apellidousers = isset($_POST['edit_apellidouser']) ? $_POST['edit_apellidouser'] : '';
+        $edit_usuario = isset($_POST['usuario']) ? $_POST['usuario'] : '';
+        $identificacion = isset($_POST['identificacion']) ? $_POST['identificacion'] : '';
+        $edit_correo = isset($_POST['edit_email']) ? $_POST['edit_email'] : '';
+        $edit_area_users = isset($_POST['edit_areausers']) ? $_POST['edit_areausers'] : '';
+        $edit_regionusers = isset($_POST['edit_regionusers']) ? $_POST['edit_regionusers'] : '';
+        $edit_tipo_users = isset($_POST['edit_tipousers']) ? $_POST['edit_tipousers'] : '';
+        $edit_idnivel = isset($_POST['edit_idnivel']) ? $_POST['edit_idnivel'] : '';
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : ''; // id del usuario logueado
+        //$identificacion = isset($_POST['identificacion']) ? $_POST['identificacion'] : '';
+
+        //var_dump($edit_idnivel);
+
+         $result = $repository->Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user);
+    
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
+        }
+ }
+
+
+    public function handleGetUsersModulos(){
+
+        $id_usuario = isset($_POST['id_usuario']) ? $_POST['id_usuario'] : '';
+
+        //var_dump($id_usuario );
+
+        $repository = new   UserRepository(); // Inicializa el repositorio
+        $result = $repository->getModuloUsers($id_usuario);
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'users' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay usuarios disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
+
+
+
+    public function handleAsignacionModulo(){
+        $id_modulo     = isset($_POST['id_modulo']) ? $_POST['id_modulo'] : '';
+        $id_usuario      = isset($_POST['id_usuario']) ? $_POST['id_usuario'] : '';
+        $idcheck_value      = isset($_POST['idcheck_value']) ? $_POST['idcheck_value'] : '';
+
+        //var_dump($id_modulo,$id_usuario,$idcheck_value);
+      
+        $repository = new UserRepository(); // Inicializa el repositorio
+        $result = $repository->AsignacionModulo($id_modulo, $id_usuario,$idcheck_value);
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
+        }
+    }
+
+
+public function handleCheckUsernameAvailability() {
+    header('Content-Type: application/json');
+    
+    $nombre = $_POST['nombre'] ?? '';   // Nuevo parámetro
+    $apellido = $_POST['apellido'] ?? ''; // Nuevo parámetro
+
+    if (empty($nombre) || empty($apellido)) {
+        $this->response(['available' => false, 'message' => 'Nombre o apellido vacío.', 'suggested_username' => null], 400);
+    }
+
+    $repository = new UserRepository();
+    $check_result = $repository->VerificaUsuario($nombre, $apellido); // Llama con nombre y apellido
+
+    if (is_array($check_result) && isset($check_result['status'])) {
+        if ($check_result['status'] === 'available') {
+            $this->response([
+                'available' => true,
+                'message' => $check_result['message'],
+                'suggested_username' => $check_result['suggested_username']
+            ], 200);
+        } elseif ($check_result['status'] === 'exists') {
+            $this->response([
+                'available' => false,
+                'message' => $check_result['message'],
+                'suggested_username' => $check_result['suggested_username']
+            ], 200);
+        } else { // status === 'error'
+            $this->response([
+                'available' => false,
+                'message' => $check_result['message'],
+                'suggested_username' => null
+            ], 500);
+        }
+    } else {
+        error_log("VerificaUsuario no devolvió el formato esperado: " . print_r($check_result, true));
+        $this->response(['available' => false, 'message' => 'Error interno al procesar la verificación.', 'suggested_username' => null], 500);
+    }
+}
+
 
     public function handlecheckUserStatus(){
         $id_user = isset($_POST['userId']) ? $_POST['userId'] : '';

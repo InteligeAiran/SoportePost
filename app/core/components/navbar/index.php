@@ -259,13 +259,10 @@
                                 <div id="RightSelects">
                                     <div>
                                         <label class="form-label" for="selectAdicional1">Opción 1:</label>
-                                        <select class="form-select" id="selectAdicional1" name="selectAdicional1">
-                                            <option value="">Seleccionar</option>
-                                            <option value="valor1">Valor 1</option>
-                                            <option value="valor2">Valor 2</option>
-                                        </select>
+                                        <select class="form control" name="coord_ejec[]" id="coord_ejec" multiple="multiple" >
+                       </select>
                                     </div>
-                                    <div>
+                                    <!-- <div>
                                         <label class="form-label" for="selectAdicional2">Opción 2:</label>
                                         <select class="form-select" id="selectAdicional2" name="selectAdicional2">
                                             <option value="">Seleccionar</option>
@@ -288,7 +285,7 @@
                                             <option value="uno">Uno</option>
                                             <option value="dos">Dos</option>
                                         </select>
-                                    </div>
+                                    </div> -->
                                 </div>
                                 <input type="hidden" id="id_user" name="userId" value = <?php echo $_SESSION['id_user']?>>
                             </div>

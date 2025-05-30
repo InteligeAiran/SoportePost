@@ -78,6 +78,8 @@ class UserRepository
         $encry_passw = sha1(md5($defaul_pass));
 
         $result = $this->model->Guardar_Usuario($id_user, $nombreusers, $apellidousers, $encry_passw, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel);
+
+        return $result;
     }
 
    public function getUserPermissions($userId) {
@@ -112,6 +114,25 @@ class UserRepository
                 }
         }
         return $permissions;
+    }
+
+    public function MostrarUsuarioEdit($idusuario){
+
+        $result = $this->model->MostrarUsuarioEdit($idusuario);
+
+        for ($i = 0; $i < $result['numRows']; $i++) {
+            $agente = pg_fetch_assoc($result['query'], $i);
+            $edit[] = $agente;
+            //var_dump($agente);
+        }
+        return $edit;
+    }    
+
+
+    public function Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user){
+        $result = $this->model->Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user);
+
+        return $result;
     }
 
     public function GetUsernameUser($username){
@@ -170,6 +191,36 @@ class UserRepository
         return $result ? $result['numRows'] : null;
     }
 
+    public function getModuloUsers($id_usuario){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->getModuloUsers($id_usuario); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result($result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
+    public function AsignacionModulo($id_modulo, $id_usuario,$idcheck_value){
+        $result = $this->model->AsignacionModulo($id_modulo, $id_usuario,$idcheck_value);
+        return $result;
+    }
+
+    // public function VerificaUsuario($username){
+    //     $result = $this->model->VerificaUsuario($username);
+    //     return $result;
+    // }
+
+    public function VerificaUsuario($nombre,$apellido){
+        $result = $this->model->VerificaUsuario($nombre,$apellido);
+        return $result;
+    }
+    
     public function checkUserStatus($id_user){
         // Lógica para verificar el estado del usuario
         $result = $this->model->checkUserStatus($id_user); // Asumiendo que tienes este método en tu modelo
