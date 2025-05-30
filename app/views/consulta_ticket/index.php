@@ -26,7 +26,8 @@ function mi_navbar() {}
         <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/flatpickr-4.6.13/dist/flatpickr.min.css">
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/bootstrap.css" />
+        <!--link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/bootstrap.css" /-->
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
         <style>
             #rifTipo {
                 width: auto;
@@ -162,9 +163,51 @@ function mi_navbar() {}
                 margin-bottom: 5px;
                 /* Ajusta este valor según necesites */
             }
-        </style>
-    </head>
 
+ 
+
+        .date-input-container {
+            display: flex;
+            gap: 2rem; /* Espacio entre los inputs */
+            padding: 2.5rem;
+            border-radius: 1rem;
+            /* box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); // Sombra opcional */
+        }
+        .date-input-wrapper {
+            position: relative;
+        }
+        input[type="text"] {
+            padding: 1rem 1.5rem; /* Más padding */
+            border: none; /* Sin borde por defecto */
+            border-radius: 0.75rem; /* Bordes más redondeados */
+            font-size: 1.25rem; /* Texto más grande */
+            width: 200px; /* Ancho fijo para cada input */
+            text-align: center;
+            background-color: #ffffff; /* Fondo blanco */
+            color: #333;
+            outline: none; /* Quita el outline por defecto en focus */
+            transition: box-shadow 0.2s ease-in-out;
+        }
+        input[type="text"]:focus {
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.4); /* Sombra azul al enfocar */
+        }
+        .error-message {
+            color: #ef4444; /* Rojo para mensajes de error */
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            position: absolute;
+            width: 100%;
+            left: 0;
+        }
+
+        #inputsDate{
+                margin-left: -190%;
+    margin-top: -18%;
+
+        }
+    </style>
+    </head>
     <body id="fondo" class="g-sidenav-show bg-gray-100">
         <div class="min-height-300 bg-dark position-absolute w-100"></div>
         <div class="d-lg-none fixed-top bg-dark p-2">
@@ -211,11 +254,19 @@ function mi_navbar() {}
                             <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
                             <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
 
-                            <div class="d-flex align-items-center">
-                                <input type="text" class="form-control me-2 flatpickr-input" id="date-ini" placeholder="dd/mm/yyyy" style="display: none; width: 150px;">
-                                <input type="text" class="form-control me-2 flatpickr-input" placeholder="dd/mm/yyyy" id="date-end" style="display: none; width: 150px;">
-                                <button type="button" class="btn btn-primary" onclick="SendRango()" id="buscarRango" style="display: none; margin-top: 19px;">Buscar</button>
-                            </div>
+                            <div id="inputsDate" class="date-input-container">
+                                    <div class="date-input-wrapper">
+                                        <input type="text" class="form-control me-2 flatpickr-input date-field" id="date-ini" placeholder="dd/mm/yyyy" style="display: block;">
+                                        <div id="errorDateIni" class="error-message"></div>
+                                    </div>
+
+                                    <div class="date-input-wrapper">
+                                        <input type="text" class="form-control me-2 flatpickr-input date-field" placeholder="dd/mm/yyyy" id="date-end" style="display: block;">
+                                        <div id="errorDateEnd" class="error-message"></div>
+                                    </div>
+
+                                    <button type="button" class="btn btn-primary" onclick="SendRango()" id="buscarRango" style="display: block; height: 10%; margin-top: 1%;">Buscar</button>
+                                </div>
 
                             <div class="d-flex align-items-center">
                                 <select id="SelectRgions" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
@@ -226,7 +277,7 @@ function mi_navbar() {}
                         </div><br>
                         <div class="card" style="display: none;">
                             <div class="table-responsive">
-                                <table id="rifCountTable" class="table table-striped table-bordered table-hover table-sm">
+                                <table id="rifCountTable" style="display: none;">
                                     <thead>
                                     </thead>
                                     <tbody>
@@ -235,24 +286,6 @@ function mi_navbar() {}
                                         </tr>
                                     </tbody>
                                 </table>
-                            </div>
-                            <div id="ModalSerial" class="modal">
-                                <div id="ModalSerial-content" class="modal-content">
-                                    <span id="ModalSerial-close" class="close">&times;</span>
-                                    <div style="text-align: center; margin-bottom: 20px;">
-                                        <h2>Detalles del POS</h2>
-                                    </div>
-                                    <div style="display: flex;">
-                                        <div style="flex: 1; margin-right: 20px;">
-                                            <table id="serialCountTable">
-                                                <tbody></tbody>
-                                            </table>
-                                        </div>
-                                        <div style="width: 150px;">
-                                            <img src="" alt="Imagen del POS"> </img>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>

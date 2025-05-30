@@ -41,6 +41,18 @@ class reportes extends Controller {
                     $this->handleSearchRegionData();
                 break;
 
+                case 'SearchRifData':
+                    $this->handleSearchRifData();
+                break;
+
+                case 'SearchSerialData':
+                    $this->handleSearchSerialData();
+                break;
+
+                case 'SearchRangeDate':
+                    $this->handleSearchRangeData();
+                break;
+
                 case 'getDomiciliacionTickets':
                     $this->handlegetDomiciliacionTickets();
                 break;
@@ -103,6 +115,51 @@ class reportes extends Controller {
             $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500); // Código 500 Internal Server Error
         }
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
+    }
+
+    public function handleSearchRifData(){
+        $rif = isset($_POST['rif'])? $_POST['rif'] : null;
+        $repository = new ReportRepository(); // Inicializa el repositorio
+        $result = $repository->SearchRif($rif);
+
+         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay rif disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los rif'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Coloque un rif']);
+    }
+
+    public function handleSearchSerialData(){
+        $serial = isset($_POST['serial'])? $_POST['serial'] : null;
+        $repository = new ReportRepository(); // Inicializa el repositorio
+        $result = $repository->SearchSerial($serial);
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay serial disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los serial'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Coloque un serial']);
+    }
+
+    public function handleSearchRangeData(){
+        $repository = new ReportRepository();
+        $ini_date = isset($_POST['initial'])? $_POST['initial'] : null;
+        $end_date = isset($_POST['second'])? $_POST['second'] : null; 
+        $result = $repository->SearchRangeData($ini_date, $end_date);
+        if($ini_date !== null && $end_date !== null) {
+            if ($result) {
+                $this->response(['success' => true, 'ticket' => $result], 200);
+            }else{
+                $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Tickets Abiertos por Mes.'], 500);
+            }
+        }else{
+            $this->response(['success' => false,'message' => 'Debe ingresar una fecha.'], 400);
+        }
     }
 
     public function handlegetDomiciliacionTickets(){
