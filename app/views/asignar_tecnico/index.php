@@ -3,7 +3,7 @@ function mi_navbar() {}
 ?>
 <!DOCTYPE html>
 <html lang="en">
-    <head>
+        <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
@@ -12,44 +12,29 @@ function mi_navbar() {}
             <?php echo tituloPagina; ?>
         </title>
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
-    <title>
-        Soporte POST
-    </title>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
 
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/bootstrap.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
-
-
-                <!-- <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/bootstrap1.min.css"> -->
+        <!-- <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/bootstrap1.min.css"> -->
         <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/datatable.css">
         <!-- <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/bootstrap.min.css"> -->
         <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/jquery.dataTables.min.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
 
         <!-- Font Awesome Icons -->
-
-    
+      
         <!-- CSS Files -->
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
+
+
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+
     </head>
 
-    <!-- CSS Files -->
-    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
-</head>
 
 <body id="fondo" class="g-sidenav-show bg-gray-100">
     <div class="min-height-300 bg-dark position-absolute w-100"></div>
@@ -62,47 +47,41 @@ function mi_navbar() {}
             </svg>
         </button>
     </div>
-    <?php require_once 'app/core/components/navbar/index.php';
-    mi_navbar(); ?>
+    <?php require_once 'app/core/components/navbar/index.php'; mi_navbar(); ?>
     <main class="main-content position-relative border-radius-lg">
         <div class="container-fluid py-4">
             <div id="Row" class="row mt-4">
                 <div class="cord">
-
                     <div class="card">
                         <div class="card-header pb-0 p-3">
                             <div class="col-lg-12 col-md-12 mt-4 mb-4">
                                 <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
                                     <strong>
-                                        <h5 class="text-black text-capitalize ps-3">TICKETS</h5>
+                                        <h5 class="text-black text-capitalize ps-3">Asignación de Tickets</h5>
                                     </strong>
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-between">
-                                <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
-                            </div>
                         </div>
-                        <div class="table-responsive">
                             <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
                                 <thead>
-                                    <th style="width: 11%; height: 10px;">ID ticket</th>
-                                    <th style="width: 11%;">Serial POS</th>
-                                    <th style="width: 11%;">Fecha Creacion</th>
-                                    <th style="width: 11%;">Tecnico Asignador</th>
-                                    <th style="width: 11%;">Accion</th>
-                                    <th style="width: 11%;">Falla</th>
-                                    <th style="width: 11%;">Proceso</th>
-                                    <th style="width: 11%;">Estatus</th>
+                                    <tr> 
+                                    <th style="width: 12%; height: 10px;">ID ticket</th>
+                                    <th style="width: 12%;">Serial POS</th>
+                                    <th style="width: 12%;">Fecha Creacion</th>
+                                    <th style="width: 12%;">Tecnico Asignador</th>
+                                    <th style="width: 12%;">Accion</th>
+                                    <th style="width: 12%;">Falla</th>
+                                    <th style="width: 12%;">Proceso</th>
+                                    <th style="width: 12%;">Estatus</th>
                                     <th>Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody id="table-ticket-body">
+                                <tbody class="table-group-divider" id="table-ticket-body">
                                     <tr>
                                         <td colspan="3">No hay datos</td>
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -228,26 +207,21 @@ function mi_navbar() {}
         <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
         <!-- Bootstrap core JavaScript-->
          <!--JQUERY-->
+
+        <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
+
          <script src="<?php echo APP;?>app/plugins/jquery/jquery.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/jquery/jquery-3.5.1.js"></script>
         <script src="<?php echo APP;?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
 
 
-        <!-- Bootstrap-->
-        <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.js"></script>
-
         <!--   Core JS Files   -->
         <script src="<?php echo APP;?>app/plugins/js/popper.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/js/perfect-scrollbar.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/js/smooth-scrollbar.min.js"></script>
         <script src="<?php echo APP;?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
-        
-        <!-- Datatable -->
-        <script src = "<?php echo APP;?>app/plugins/datatables/datatables.min.js"></script>
-        <script src = "<?php echo APP;?>app/plugins/datatables/datatables.js"></script>
 
         <!-- Datatable otro sistema-->
 
@@ -267,20 +241,9 @@ function mi_navbar() {}
          <script src = "<?php echo APP;?>js/datatables.js"></script>
 
 
-
-
-        <!-- Chart -->
-        <script src="<?php echo APP;?>app/plugins/chart.js/chart.js"></script>
-        <script src="<?php echo APP;?>app/plugins/chart.js/chart.min.js"></script>
-
         <!--  SweetAlert   -->
         <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.js"></script>
         <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
-
-        <!--  Alertify   --> 
-        <script src="<?php echo APP;?>app/plugins/alertify/lib/alertify.js"></script>
-        <script src="<?php echo APP;?>app/plugins/alertify/lib/alertify.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/alertify/src/alertify.js"></script>
         
         <?php
             if (isset($this->js)){

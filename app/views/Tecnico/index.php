@@ -15,89 +15,28 @@ function mi_navbar()
         <title>
             <?php echo tituloPagina; ?>
         </title>
-        <!--     Fonts and icons     -->
+
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-        <!-- Nucleo Icons -->
+
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
 
-        <link rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <link rel="stylesheet" type="text/css"
-            href="<?php echo APP; ?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/bootstrap.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
+
+        <!-- <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/bootstrap1.min.css"> -->
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/datatable.css">
+        <!-- <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/bootstrap.min.css"> -->
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/jquery.dataTables.min.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
+
+        <!-- Font Awesome Icons -->
+      
+        <!-- CSS Files -->
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
+
+
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
 
-        <style>
-            div.dataTables_wrapper div.dataTables_length label {
-                font-weight: bold;
-                /* Ejemplo: Texto en negrita */
-                color: #333;
-                /* Ejemplo: Color del texto */
-                margin-right: 10px;
-                /* Ejemplo: Espacio a la derecha del label */
-            }
-
-            /* Estilizar el select dropdown del lengthMenu */
-            div.dataTables_wrapper div.dataTables_length select {
-                border: 1px solid #ccc;
-                /* Ejemplo: Borde */
-                border-radius: 5px;
-                /* Ejemplo: Bordes redondeados */
-                padding: 5px 10px;
-                /* Ejemplo: Espaciado interno */
-                font-size: 0.9em;
-                /* Ejemplo: Tamaño de la fuente */
-                width: 29%;
-            }
-
-            /* Estilizar el label "Buscar:" */
-            div.dataTables_wrapper div.dataTables_filter label {
-                font-weight: bold;
-                /* Ejemplo: Texto en negrita */
-                color: #333;
-                /* Ejemplo: Color del texto */
-                margin-right: 0.5em;
-                /* Ejemplo: Espacio a la derecha del label */
-                margin-left: -100%;
-            }
-
-            /* Estilizar el input de búsqueda */
-            div.dataTables_wrapper div.dataTables_filter input[type="search"] {
-                border: 1px solid #ccc;
-                /* Ejemplo: Borde */
-                border-radius: 0.25rem;
-                /* Ejemplo: Bordes redondeados */
-                padding: 0.375rem 0.75rem;
-                /* Ejemplo: Espaciado interno */
-                font-size: 1rem;
-                /* Ejemplo: Tamaño de la fuente */
-                color: #495057;
-                /* Ejemplo: Color del texto del input */
-                background-color: #fff;
-                /* Ejemplo: Color de fondo del input */
-                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-                /* Ejemplo: Transiciones suaves */
-            }
-
-            /* Estilizar el input de búsqueda al enfocarlo */
-            div.dataTables_wrapper div.dataTables_filter input[type="search"]:focus {
-                color: #495057;
-                background-color: #fff;
-                border-color: #007bff;
-                /* Ejemplo: Color del borde al enfocar */
-                outline: 0;
-                box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-                /* Ejemplo: Sombra al enfocar */
-            }
-        </style>
-
-        <!-- CSS Files -->
-        <link id="pagestyle" rel="stylesheet"
-            href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -115,28 +54,22 @@ function mi_navbar()
                 </svg>
             </button>
         </div>
-        <?php require_once 'app/core/components/navbar/index.php';
-        mi_navbar(); ?>
+        <?php require_once 'app/core/components/navbar/index.php'; mi_navbar(); ?>
+
+
         <main class="main-content position-relative border-radius-lg ">
-            <div class="container-fluid py-4" style="margin-top: 2%;">
+            <div class="container-fluid py-4">
                 <div id="Row" class="row mt-4">
                     <div class="cord">
                         <div class="card">
                             <div class="card-header pb-0 p-3">
                                 <div class="col-lg-12 col-md-12 mt-4 mb-4">
-                                    <div
-                                        class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                        <strong>
-                                            <h5 class="text-black text-capitalize ps-3">TICKETS</h5>
-                                        </strong>
+                                    <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
+                                        <strong><h5 class="text-black text-capitalize ps-3">TICKETS</h5></strong>
                                     </div>
                                 </div>
-                                <div class="d-flex justify-content-between">
-                                </div>
                             </div>
-                            <div class="table-responsive">
-                                <table id="tabla-ticket"
-                                    class="table table-striped table-bordered table-hover table-sm">
+                                <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
                                     <thead>
                                         <tr>
                                             <th scope="col" style="width: 12%;">ID ticket</th>
@@ -156,7 +89,6 @@ function mi_navbar()
                                         </tr>
                                     </tbody>
                                 </table>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -298,9 +230,20 @@ function mi_navbar()
         <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
         <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
 
-        <!-- Datatable -->
-        <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
-        <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
+        <script src = "<?php echo APP;?>DataTable/jquery.dataTables.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/dataTables.buttons.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.print.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.flash.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/pdfmake.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/jszip.min.js"></script>
+        <script src = "<?php echo APP;?>DataTable/vfs_fonts.js"></script>
+        <script src = "<?php echo APP;?>DataTable/buttons.html5.min.js"></script>
+
+
+         <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
+         <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
+         <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
+         <script src = "<?php echo APP;?>js/datatables.js"></script>
 
         <!--  SweetAlert   -->
         <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>

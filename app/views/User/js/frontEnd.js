@@ -255,7 +255,6 @@ function getUserData() {
                         modifyButton.onclick = function() {
                           
                          const idusuario = data.id_user;
-                            console.log(idusuario);
                          $('#ModalEditUsers').modal('show'); // abrir
                          VerUsuario(idusuario);
                         };
