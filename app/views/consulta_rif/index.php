@@ -1,9 +1,11 @@
 <?php
-function mi_navbar() {}
+function mi_navbar()
+{
+
+}
 ?>
 <!DOCTYPE html>
 <lang="en">
-
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -21,7 +23,7 @@ function mi_navbar() {}
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/desktop/form.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/mobile/mobile.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/laptop/laptop.css" />
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/General.css" />
+                    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/General.css" />
 
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
@@ -40,22 +42,16 @@ function mi_navbar() {}
                 padding: 0.5rem 0.75rem;
                 font-size: 1rem;
                 height: auto;
-                -webkit-appearance: none;
-                /* Elimina la apariencia nativa en navegadores WebKit */
-                -moz-appearance: none;
-                /* Elimina la apariencia nativa en Firefox */
-                appearance: none;
-                /* Elimina la apariencia nativa en otros navegadores */
+                -webkit-appearance: none; /* Elimina la apariencia nativa en navegadores WebKit */
+                -moz-appearance: none; /* Elimina la apariencia nativa en Firefox */
+                appearance: none; /* Elimina la apariencia nativa en otros navegadores */
                 background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>');
                 background-repeat: no-repeat;
                 background-position: right 0.5rem center;
                 background-size: 1em;
-                border-radius: 0.25rem;
-                /* Mantén o ajusta el radio del borde */
-                border: 1px solid #ced4da;
-                /* Mantén o ajusta el color del borde */
-                color: #495057;
-                /* Mantén o ajusta el color del texto */
+                border-radius: 0.25rem; /* Mantén o ajusta el radio del borde */
+                border: 1px solid #ced4da; /* Mantén o ajusta el color del borde */
+                color: #495057; /* Mantén o ajusta el color del texto */
             }
 
             /* Opcional: Para eliminar el espaciado extra en algunos navegadores */
@@ -91,9 +87,20 @@ function mi_navbar() {}
                                 <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
                                 <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
                             </div>
+                            <div id="SearchRif" class="mb-3 d-flex align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none;">     
+                                            <option value="J">J</option>
+                                            <option value="V" selected>V</option>
+                                            <option value="E">E</option>
+                                            <option value="G">G</option>
+                                        </select>
+                                        <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
+                                        <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;">Buscar</button><br>
+                                    </div>
 
-                            <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none;" maxlength="24">
-                            <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none;">Buscar</button>
+                                <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none;" maxlength="24">
+                                <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none;">Buscar</button>
 
                                 <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
                                 <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
@@ -131,8 +138,15 @@ function mi_navbar() {}
                                         <div style="text-align: center; margin-bottom: 20px;">
                                             <h2>Detalles del POS</h2>
                                         </div>
-                                        <div style="width: 150px;">
-                                            <img src="" alt="Imagen del POS"> </img>
+                                        <div style="display: flex;">
+                                            <div style="flex: 1; margin-right: 20px;">
+                                                <table id="serialCountTable">
+                                                    <tbody></tbody>
+                                                </table>
+                                            </div>
+                                            <div style="width: 150px;">
+                                                <img src="" alt="Imagen del POS"> </img>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -140,7 +154,6 @@ function mi_navbar() {}
                         </div>
                     </div>
                 </div>
-            </div>
 
                 <!-- AVISA LAS GARANTIAS --->
                     <div id="garantiaModal" class="modal">
@@ -307,7 +320,7 @@ function mi_navbar() {}
         $redirect = json_encode($this->redirect);
         $usuario_id = json_encode($this->usuario_id);
         $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
-
+        
         ?>
         <script>
             var expired_sessions = <?php echo $expired_sessions; ?>;
@@ -335,17 +348,16 @@ function mi_navbar() {}
                             window.location.href = redirect; // Recarga la página después del temporizador
                         }, 500); // Espera 0.5 segundos (igual que el temporizador)
                     }
-                }) // Programar la recarga después de que el SweetAlert se cierre
+                })// Programar la recarga después de que el SweetAlert se cierre
             }
 
             // Agregar lógica de recarga automática
             if (sessionLifetime) {
-                setTimeout(function() {
+                setTimeout(function () {
                     location.reload(true); // Forzar recarga desde el servidor
                 }, sessionLifetime * 1000); // sessionLifetime está en segundos
             }
         </script>
         <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
     </body>
-
     </html>
