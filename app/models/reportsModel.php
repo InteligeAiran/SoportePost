@@ -31,7 +31,7 @@ class reportsModel extends Model
 
     public function GetDomiciliacionTickets($id_user){
         try{
-            $sql = "SELECT * FROM   (".$id_user.")";
+            $sql = "SELECT * FROM  get_tickets_domiciliacion(".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

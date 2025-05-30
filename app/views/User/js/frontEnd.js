@@ -101,19 +101,20 @@ function nameUsuario() {
                     usuarioInput.value = response.suggested_username; // ¡Actualiza el input con la sugerencia del backend!
 
                     if (response.available) {
-                        usuarioStatusDiv.innerHTML = '<span style="color: green;">Nombre de usuario disponible.</span>';
+                        //usuarioStatusDiv.innerHTML = '<span style="color: green;">Nombre de usuario disponible.</span>';
                         usuarioInput.classList.remove('is-invalid');
                         usuarioInput.classList.add('is-valid');
                     } else {
                         // Si no está disponible pero hay sugerencia (ej. YQUIJADA -> YAQUIJADA)
-                        usuarioStatusDiv.innerHTML = `<span style="color: red;">${response.message}</span>`;
-                        usuarioInput.classList.add('is-invalid');
-                        usuarioInput.classList.remove('is-valid');
+                        //usuarioStatusDiv.innerHTML = '<span style="color: red;">.response.suggested_username.</span>';
+                        //usuarioStatusDiv.innerHTML = '<span style="color: green;">Nombre de usuario disponible.</span>';
+                        usuarioInput.classList.add('is-valid');
+                        usuarioInput.classList.remove('is-invalid');
                     }
                 } else {
                     // Si no hay suggested_username (ej. error fatal en el SP)
                     usuarioInput.value = ''; // Limpiar si no hay sugerencia válida
-                    usuarioStatusDiv.innerHTML = `<span style="color: orange;">${response.message || 'Error al verificar disponibilidad.'}</span>`;
+                    usuarioStatusDiv.innerHTML = '<span style="color: orange;">${response.message || Error al verificar disponibilidad.}</span>';
                     usuarioInput.classList.remove('is-valid');
                     usuarioInput.classList.add('is-invalid');
                 }
@@ -254,7 +255,7 @@ function getUserData() {
                         modifyButton.onclick = function() {
                           
                          const idusuario = data.id_user;
-
+                            console.log(idusuario);
                          $('#ModalEditUsers').modal('show'); // abrir
                          VerUsuario(idusuario);
                         };
@@ -273,13 +274,10 @@ function getUserData() {
                         $('#tabla-ticket').DataTable().destroy();
                     }
                     $('#tabla-ticket').DataTable({
-                       
-                            
                         responsive: true,
                         "pagingType": "simple_numbers",
                         "lengthMenu": [5],
                         autoWidth: false,
-
                         "language": {
                             "lengthMenu": "Mostrar _MENU_ registros", // Esta línea es la clave
                             "emptyTable": "No hay datos disponibles en la tabla",
@@ -560,8 +558,8 @@ function GuardarUsuariosNew() {
                         },
                         willClose: () => {
                             // setTimeout(() => {
-                            //     location.reload();
-                            // }, 1000);
+                                location.reload();
+                            //   }, 1000);
                         }
                     });
                     $("#miModal").css("display", "none");
@@ -591,12 +589,11 @@ function VerUsuario(idusuario) {
 
     // const selectAreas = document.getElementById('edit_areausers');
     // selectAreas.innerHTML = '';
-
+   
     xhrUsuario.onload = function() {
         const responseUsuario = JSON.parse(xhrUsuario.responseText);
         if (responseUsuario.success && responseUsuario.users && Array.isArray(responseUsuario.users) && responseUsuario.users.length > 0) {
             const userData = responseUsuario.users[0];
-            
             $("#idusuario_edit").val(userData.id_usuario);
             $("#edit_nombreuser").val(userData.inombre);
             $("#edit_apellidouser").val(userData.iapellido);
@@ -612,7 +609,6 @@ function VerUsuario(idusuario) {
                     $('#nivelEditar').css('display', 'block');
                 } else {
 
-                    console.log('njh');
                     $('#nivelEditar').css('display', 'none') ;
                 }
 
@@ -739,6 +735,7 @@ function EditarUsuarios() {
     
     const identificacion=tipo_doc+documento;
 
+        console.log(idusuario_edit);
     //alert(nombre_usuario +'/'+ apellido_usuario +'/'+ iusuario +'/'+ documento +'/'+ correo +'/'+ area_usuario +'/'+ tipo_usuario +'/'+ regionusers);
 
 
@@ -763,7 +760,7 @@ function EditarUsuarios() {
 
     // Depuración
     /*for (const [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
+        console.log(${key}:, value);
     }
     console.log(formData);*/
 
@@ -999,8 +996,6 @@ function closedModal() {
 
 
 function closedModalCreated() {
-
-
     $('#nombreuser').val('');
     $('#apellidouser').val('');
     $('#documento').val('');

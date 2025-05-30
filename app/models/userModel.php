@@ -100,7 +100,7 @@ class userModel extends Model{
                 $row_check_user = pg_fetch_row($result_check_user);
                 if ($row_check_user[0] > 0) {
                     return ['success' => false, 'message' => 'El nombre de usuario "' . $users . '" ya está registrado.'];
-        }
+                }
 
             $sql_sp  = "SELECT * FROM sp_guardarusuarios(".$escaped_id_user.", ".$escaped_nombreusers.", ".$escaped_apellidousers.", ".$escaped_encry_passw.",
                     ".$escaped_identificacion.", ".$escaped_users.", ".$escaped_correo.",".$escaped_area_users.",".$escaped_tipo_users.", ".$escaped_regionusers.", ".$escaped_id_nivel.")";
@@ -109,12 +109,12 @@ class userModel extends Model{
             if ($result_sp) {
              // Asumiendo que sp_guardarusuarios aún inserta y no devuelve success/message.
              // Si el SP ahora devuelve success/message, usa la lógica de la Opción 1.
-             return ['success' => true, 'message' => 'Usuario guardado exitosamente.'];
-        } else {
-            return ['success' => false, 'message' => 'Error al ejecutar procedimiento de guardar usuario: '];
-        }
+              return ['success' => true, 'message' => 'Usuario guardado exitosamente.'];
+            } else {
+                return ['success' => false, 'message' => 'Error al ejecutar procedimiento de guardar usuario: '];
+            }
 
-        } catch (Throwable $e) {
+            } catch (Throwable $e) {
             error_log("Error al obtener permisos del usuario: " . $e->getMessage());
             return ['success' => false, 'error' => 'Error al obtener permisos'];
         }
@@ -158,7 +158,7 @@ class userModel extends Model{
 
             $sql = "SELECT * FROM sp_editarusuarios(".$escaped_idusuario_edit.", ".$escaped_edit_nombreusers.", ".$escaped_edit_apellidousers.", ".$escaped_edit_usuario.",
                     ".$escaped_identificacion.", ".$escaped_edit_correo.", ".$escaped_edit_area_users.",".$escaped_edit_regionusers.",".$escaped_edit_tipo_users.", ".$escaped_edit_idnivel.",".$escaped_id_user.")";
-            //echo $sql;
+            echo $sql;
             $result = Model::getResult($sql, $this->db);
             return $result;
 
@@ -433,6 +433,7 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
         }
 
         $row = pg_fetch_assoc($result_check_user_query);
+        //var_dump($row);
         if ($row) {
             return [
                 'status' => ($row['available'] === 't' ? 'available' : 'exists'),
