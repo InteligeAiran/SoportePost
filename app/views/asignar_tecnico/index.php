@@ -27,8 +27,7 @@ function mi_navbar() {}
 
         <!-- Font Awesome Icons -->
       
-        <!-- CSS Files -->
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
+       
 
 
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
@@ -72,6 +71,9 @@ function mi_navbar() {}
                                     <th style="width: 12%;">Accion</th>
                                     <th style="width: 12%;">Falla</th>
                                     <th style="width: 12%;">Proceso</th>
+                                    <th style="width: 12%;">Estatus</th>
+                                    <th style="width: 12%;">Estatus</th>
+                                    <th style="width: 12%;">Estatus</th>
                                     <th style="width: 12%;">Estatus</th>
                                     <th>Acciones</th>
                                     </tr>

@@ -116,6 +116,7 @@ function searchDomiciliacionTickets() {
 
                         // Inicializa DataTable en la tabla existente
                         $(existingTable).DataTable({
+                            
                             responsive: true,
                             data: TicketData,
                             columns: columnsConfig,
