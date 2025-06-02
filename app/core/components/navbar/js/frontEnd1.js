@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setActiveLink('gestion_users', 'gestionusers');
     setActiveLink('estadisticas-link', 'pages/profile.html');
     setActiveLink('taller', 'taller');
+    setActiveLink('pendiente_entrega', 'pendiente_entrega');
 });
 
 document.addEventListener('DOMContentLoaded', function() {

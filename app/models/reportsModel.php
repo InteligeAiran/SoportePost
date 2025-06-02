@@ -20,9 +20,45 @@ class reportsModel extends Model
             $escaped_id_region = pg_escape_literal($this->db->getConnection(), $id_region); // Assuming '$this->db' is now a valid PgSql\Connection
             $sql = "SELECT * FROM public.GetTicketsByRegion(".$escaped_id_region.");";  
             //var_dump($sql);
-   
             $result = $this->getResult($sql, $this->db);
             $this->db->closeConnection(); // Close the connection if needed
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetTicketsByRif($rif){
+        try {
+            $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif); // Assuming '$this->db' is now a valid PgSql\Connection
+            $sql = "SELECT * FROM getticketsbyrif('%" . substr($escaped_rif, 1, -1) . "%')";
+            $result = Model::getResult($sql, $this->db);
+            $this->db->closeConnection(); // Close the connection if needed
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+
+    public function SearchSerial($serial){
+        try {
+            $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); // Assuming '$this->db' is now a valid PgSql\Connection
+            $sql = "SELECT * FROM GetTicketsBySearchSerial('%" . substr($escaped_serial, 1, -1) . "%')";
+            $result = Model::getResult($sql, $this->db);
+            $this->db->closeConnection(); // Close the connection if needed
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function SearchRangeData($ini_date, $end_date){
+        try {
+            $escaped_ini_date = pg_escape_literal($this->db->getConnection(), $ini_date);
+            $escaped_end_date = pg_escape_literal($this->db->getConnection(), $end_date);
+            $sql = "SELECT * FROM getticketsbysearchrangedate(".$escaped_ini_date.", ".$escaped_end_date.")";
+            $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
             // Handle exception
@@ -135,6 +171,27 @@ class reportsModel extends Model
             return ['today' => 0, 'yesterday' => 0];
         }
     }
+
+    public function GetDataTicketFinal(){
+        try{
+            $sql = "SELECT * FROM GetDataTicketFinal()";
+            //var_dump($sql);
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
     
+    public function saveDocument($id_ticket, $uniqueFileName, $originalDocumentName, $documentSize, $mimeTypeFromFrontend, $relativePathForDb){
+        try{
+            $sql = "INSERT INTO tickets (id_ticket, nombre_archivo, fecha_creacion, tipo_archivo, id_usuario_creador) VALUES (".$id_ticket.", '".$uniqueFileName."', '".$originalDocumentName."', '".$documentSize."', '".$mimeTypeFromFrontend."', '".$relativePathForDb."')";
+            var_dump($sql);
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
 ?>

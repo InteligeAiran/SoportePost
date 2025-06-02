@@ -25,8 +25,54 @@ class ReportRepository
         }
     }
 
+    public function SearchRif($rif){
+       // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketsByRif($rif); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result($result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
+    public function SearchSerial($serial){
+        $result = $this->model->SearchSerial($serial);
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result($result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
     public function getDomiciliacionTickets($id_user){
         $result = $this->model->GetDomiciliacionTickets($id_user);
+        if ($result) {
+            //var_dump($result);  
+            $tickets = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $tickets[] = $agente;
+            }
+            //var_dump($agente);
+            return $tickets;
+        } else {
+            return null;
+        }
+    }
+
+    public function SearchRangeData($ini_date, $end_date){
+        $result = $this->model->SearchRangeData($ini_date, $end_date);
+
         if ($result) {
             //var_dump($result);  
             $tickets = [];
@@ -73,5 +119,31 @@ class ReportRepository
         $result = $this->model->getTotalTicketsCountsForPercentage();
         return $result;
     }
+
+    public function getTicketDataFinal(){
+        $result = $this->model->GetDataTicketFinal();
+        
+        if ($result) {
+            //var_dump($result);  
+            $tickets = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $tickets[] = $agente;
+            }
+            return $tickets;
+        } else {
+            return null;
+        }
+    }
+
+    public function saveDocument($id_ticket, $uniqueFileName,         // Nombre del archivo en el servidor 
+                                        $originalDocumentName,   // Nombre original del archivo (para mostrar al usuario si es necesario)
+                                        $documentSize,
+                                        $mimeTypeFromFrontend,   // O $documentType, según cuál prefieras usar o validar
+                                        $relativePathForDb       // La ruta relativa que se guarda en la DB para acceder al archivo
+        ) {
+            $result = $this->model->saveDocument($id_ticket, $uniqueFileName, $originalDocumentName, $documentSize, $mimeTypeFromFrontend, $relativePathForDb);
+            return $result;
+        }
     
 }

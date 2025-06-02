@@ -791,7 +791,7 @@ progress {
   --bs-gutter-x: 1.5rem;
   --bs-gutter-y: 0;
   width: 100%;
-  padding-right: calc(var(--bs-gutter-x) * 0.5);
+  /*padding-right: calc(var(--bs-gutter-x) * 0.5);*/  /* LO MODIFICO AIRAN*/
   padding-left: calc(var(--bs-gutter-x) * 0.5);
   margin-right: auto;
   margin-left: auto;
@@ -2585,7 +2585,7 @@ progress {
   --bs-table-accent-bg: transparent;
   /*--bs-table-striped-color: #67748e;*/
   --bs-table-striped-color: black;
-  --bs-table-striped-bg: rgba(0, 0, 0, 0.05);
+  --bs-table-striped-bg: rgba(0, 0, 0, 0.1);
   /*--bs-table-active-color: #67748e;*/
   --bs-table-active-color: black;
   --bs-table-active-bg: rgba(0, 0, 0, 0.1);
