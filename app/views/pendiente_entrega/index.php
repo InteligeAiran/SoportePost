@@ -218,6 +218,11 @@ function mi_navbar() {
     min-height: 40px;              /* Asegura un alto mínimo para que sea clickeable */
     cursor: pointer !important;    /* Muestra el cursor de puntero */
 }
+
+.message-box.info {
+    background-color: #e0f2fe; /* light blue */
+    color: #0c4a6e; /* dark blue */
+}
         </style>
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
@@ -296,8 +301,29 @@ function mi_navbar() {
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+    <div class="modal-dialog modal-dialog-centered modal-xl"> <div class="modal-content">
+            <div class="modal-header">
+                <strong><h5 class="modal-title text-lg font-semibold text-gray-800" id="viewDocumentModalLabel">Documento para Ticket: <span id="viewModalTicketId"></span></h5></strong>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3 text-center">
+                    <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen" style="max-width: 100%; height: auto; display: none;">
+                    <div id="pdfViewViewer" style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
+                </div>
+                <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
             <!--END MODAL PARA SELECCIONAR EL STATUS DEL TALLER DEL TICKET-->
             <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
+</div>
 
             <div class="fixed-plugin">
                 <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
