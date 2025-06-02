@@ -17,6 +17,7 @@ $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' 
 $host = $_SERVER['HTTP_HOST'];
 define('ENDPOINT_BASE_DYNAMIC', $protocol . $host);
 define('APP_BASE_PATH', '/SoportePost/');
+define('tituloPagina', 'Soporte Post Venta');
 /* ENDPOINT*/ 
 
 

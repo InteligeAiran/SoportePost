@@ -1,12 +1,15 @@
 <?php
 
+require_once __DIR__ . "/../../libs/session.php";
+require_once __DIR__ . "/../../libs/Controller.php";
 
-class gestionusers extends Controller {
+session_start();
+class pendiente_entrega
+ extends Controller {
         public $view;
 
     function __construct() {
         parent::__construct();
-        session_start();
         if (empty($_SESSION["id_user"])) {
             // Si no hay una sesión activa, redirigir a la página de inicio de sesión
             $this->view->message = 'Por favor inicie sesión para acceder al sistema.';
@@ -20,10 +23,7 @@ class gestionusers extends Controller {
      exit();
     }
 
-
     public function index(): void {
-        Model::exists('user');
-
         Model::exists('consulta_rif');
 
         // Agregar sessionLifetime a la respuesta
@@ -40,8 +40,8 @@ class gestionusers extends Controller {
         $this->validataExpiresSessions($usuario_id);
 
         // Incorporates the FrontEnd Controller
-        $this->view->js = array('User/js/frontEnd.js');
-        $this->view->render('User/index', 1);
+        $this->view->js = array('pendiente_entrega/js/frontEnd.js');
+        $this->view->render('pendiente_entrega/index', 1);
     }
 
     private function validataExpiresSessions($usuario_id) {

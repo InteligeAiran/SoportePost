@@ -12,7 +12,6 @@ function mi_navbar() {}
     <title>
         Soporte POST
     </title>
-
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css"

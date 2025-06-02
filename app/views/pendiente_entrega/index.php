@@ -1,5 +1,5 @@
-    <?php
-    function mi_navbar() {
+<?php
+function mi_navbar() {
 
 }
 ?>
@@ -16,12 +16,21 @@
     <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-icons.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-svg.css" />
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/bootstrap.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+        <link rel="stylesheet" type="text/css"
+        href="<?php echo APP; ?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
+
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
+    <link rel="stylesheet" type="text/css"
+        href="<?php echo APP; ?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+
         <style>
             div.dataTables_wrapper div.dataTables_length label {
                 font-weight: bold;
@@ -146,6 +155,74 @@
             #icon-close:hover {
                 background-color: red;
             }
+
+             body {
+            font-family: "Inter", sans-serif;
+            background-color: #f0f2f5;
+        }
+        .modal-content {
+            border-radius: 0.75rem; /* Rounded corners for the modal */
+        }
+        .btn-primary {
+            background-color: #3b82f6; /* Blue color for primary button */
+            border-color: #3b82f6;
+            border-radius: 0.5rem; /* Rounded corners for buttons */
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+        .btn-info {
+            background-color: #0ea5e9; /* Light blue for info button */
+            border-color: #0ea5e9;
+            border-radius: 0.5rem;
+        }
+        .btn-info:hover {
+            background-color: #0284c7;
+            border-color: #0284c7;
+        }
+        .form-control {
+            border-radius: 0.5rem; /* Rounded corners for inputs */
+        }
+        .img-preview {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        .message-box {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .message-box.success {
+            background-color: #d1fae5; /* Green for success */
+            color: #065f46;
+        }
+        .message-box.error {
+            background-color: #fee2e2; /* Red for error */
+            color: #991b1b;
+        }
+
+        #documentFile {
+    /* Estas propiedades fuerzan la visibilidad del input de tipo file nativo */
+    display: block !important;     /* Asegura que el elemento se muestre como un bloque */
+    opacity: 1 !important;         /* Asegura que no sea transparente */
+    visibility: visible !important; /* Asegura que sea visible */
+    position: relative !important; /* A veces, la posición puede ocultarlo */
+    z-index: 1000 !important;      /* Lo trae al frente de otros elementos si hay superposiciones */
+    width: 100% !important;        /* Asegura que tenga un ancho */
+    height: auto !important;       /* Permite que el alto se ajuste automáticamente */
+    min-height: 40px;              /* Asegura un alto mínimo para que sea clickeable */
+    cursor: pointer !important;    /* Muestra el cursor de puntero */
+}
+
+.message-box.info {
+    background-color: #e0f2fe; /* light blue */
+    color: #0c4a6e; /* dark blue */
+}
         </style>
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
@@ -166,7 +243,7 @@
             <?php require_once 'app/core/components/navbar/index.php';
             mi_navbar(); ?>
             <main class="main-content position-relative border-radius-lg">
-                <div class="container-fluid py-4">
+                <div class="container-fluid py-4" style="padding-left: 2%;">
                     <div id="Row" class="row mt-4">
                         <div class="cord">
 
@@ -197,36 +274,56 @@
             </main>
 
             <!--MODAL PARA SELECCIONAR EL STATUS DEL TALLER DEL TICKET-->
-            <div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="changeStatusModalLabel">Cambiar Estatus del Ticket</h5>
-                            <button type="button" id="icon-close" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true"  style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <strong><h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir Documento para Ticket: <span id="modalTicketId"></span></h5></strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadForm">
+                        <div class="mb-3">
+                            <label for="documentFile" class="form-label text-gray-700">Seleccionar Archivo:</label>
+                            <input class="form-control" type="file" id="documentFile" accept="image/*,application/pdf" style = "display:block">
+                            <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
                         </div>
-                        <div class="modal-body">
-                            <form id="changeStatusForm">
-                                <input type="hidden" id="modalTicketId">
-                                <div class="mb-3">
-                                    <label for="modalCurrentStatus" class="form-label">Estatus Actual:</label>
-                                    <input type="text" class="form-control" id="modalCurrentStatus" readonly>
-                                </div><br>
-                                <div class="mb-3">
-                                    <label for="modalNewStatus" class="form-label">Nuevo Estatus:</label>
-                                    <select class="form-select" id="modalNewStatus" aria-label="Default select example" required>
-                                    </select>
-                                </div>
-                            </form>
+                        <div class="mb-3 text-center">
+                            <img id="imagePreview" class="img-preview" src="#" alt="Previsualización de Imagen">
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" id="CerrarBoton" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-                            <button type="button" class="btn btn-primary" id="saveStatusChangeBtn">Guardar Cambios</button>
-                        </div>
-                    </div>
+                        <div id="uploadMessage" class="message-box hidden"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+    <div class="modal-dialog modal-dialog-centered modal-xl"> <div class="modal-content">
+            <div class="modal-header">
+                <strong><h5 class="modal-title text-lg font-semibold text-gray-800" id="viewDocumentModalLabel">Documento para Ticket: <span id="viewModalTicketId"></span></h5></strong>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3 text-center">
+                    <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen" style="max-width: 100%; height: auto; display: none;">
+                    <div id="pdfViewViewer" style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
+                </div>
+                <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
             <!--END MODAL PARA SELECCIONAR EL STATUS DEL TALLER DEL TICKET-->
             <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
+</div>
 
             <div class="fixed-plugin">
                 <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
@@ -317,25 +414,44 @@
                     </div>
                 </div>
             </div>
-            <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
-            <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
+            <!-- Github buttons -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
 
-            <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-            <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.js"></script>
+    <!-- Bootstrap-->
+    <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
 
-            <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
-            <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
-            <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
+    <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.js"></script>
 
-            <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
+    <!--JQUERY-->
+    <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
 
-            <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>
-            <script src="<?php echo APP; ?>app/plugins/chart.js/chart.min.js"></script>
-            <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
-            <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
-            <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
-            <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <!--   Core JS Files   -->
+    <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
+    <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
+
+    <!-- Datatable -->
+    <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
+
+    <!--  SweetAlert   -->
+    <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
+    <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
+
+    <!--MASCARAS JQUERY-->
+    <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
+
 
 
             <?php
