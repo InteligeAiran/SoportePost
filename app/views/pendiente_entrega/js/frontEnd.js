@@ -138,6 +138,30 @@ function getTicketDataFinaljs() {
               },
             });
 
+            columnsConfig.push({
+              data: null, // Esta columna no mapea directamente a un campo de datos
+              title: "Imagen",
+              orderable: false,
+              searchable: false,
+              width: "8%",
+              render: function (data, type, row) {
+                const idTicket = row.id_ticket;
+
+                // "cuando el status de name_accion_ticket sea: Llaves Cargadas me tiene que aparecer un boton para subir una imagen"
+                if (idTicket) {
+return `<button type="button" class="btn btn-success btn-sm See_imagen"
+    data-id-ticket="${idTicket}"
+    data-bs-toggle="modal"
+    data-bs-target="#viewDocumentModal"> Ver Imagen
+</button>`;
+                } else {
+                  // Si el estatus del laboratorio es "Reparado" o "Irreparable"
+                  // y no es "Llaves Cargadas", muestra el botón "Cerrado"
+                  return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay imagen</button>`;
+                }
+              },
+            });
+
             // === ADD "CARGA DE LLAVE" COLUMN FIRST ===
             // It's a calculated column, so its data source is `null`
 
@@ -391,3 +415,128 @@ $(document).ready(function() {
         });
     }
 }); // Cierre correcto de $(document).ready
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    // --- Referencias a elementos del MODAL DE VISUALIZACIÓN ---
+    const viewDocumentModalElement = document.getElementById('viewDocumentModal');
+    // Instancia el modal de Bootstrap una vez que el DOM esté cargado
+    const viewDocumentBootstrapModal = new bootstrap.Modal(viewDocumentModalElement);
+
+    const viewModalTicketIdSpan = document.getElementById('viewModalTicketId');
+    const imageViewPreview = document.getElementById('imageViewPreview');
+    const pdfViewViewer = document.getElementById('pdfViewViewer');
+    const viewDocumentMessage = document.getElementById('viewDocumentMessage'); // Para mensajes de carga/error en el modal de vista
+
+    // --- ¡CORRECCIÓN CRÍTICA! Define tus constantes de ruta aquí ---
+    // Asegúrate de que `APP` esté definida en tu PHP y se imprima correctamente aquí.
+    // Ejemplo: Si tu APP es "http://localhost/tu_proyecto/"
+  const ENDPOINT_ROOT = `${ENDPOINT_BASE}`; // Ejemplo: 'http://localhost'
+    const APP_RELATIVE_PATH = `${APP_PATH}`;     // Ejemplo: '/SoportePost/'
+
+    // La URL base completa para tu aplicación
+    const ENDPOINT_BASE1 = ENDPOINT_ROOT + APP_RELATIVE_PATH; // Esto resultará en 'http://localhost/SoportePost/'
+
+    const API_DOCUMENTS_PATH = 'api/reportes/'; // La ruta dentro de tu APP donde está tu controlador PHP de API
+    // --- FIN DE LA CORRECCIÓN CRÍTICA ---
+
+    // --- Función auxiliar para mostrar el documento en el MODAL DE VISUALIZACIÓN ---
+    function displayDocumentInViewModal(filePath, mimeType) {
+        imageViewPreview.style.display = 'none';
+        pdfViewViewer.style.display = 'none';
+        viewDocumentMessage.classList.add('hidden');
+
+        // CONSTRUYE LA URL COMPLETA DE LA IMAGEN/PDF
+        // Ahora `ENDPOINT_BASE` está definida y podemos usarla.
+        // Asegúrate de que `ENDPOINT_BASE` termine con una barra '/' y que `filePath` empiece con una.
+        // Si `filePath` ya tiene una barra al inicio, `replace(/^\//, '')` la quita para evitar '//'.
+        const fullFilePath = ENDPOINT_BASE1 + filePath.replace(/^\//, ''); 
+        
+        // Puedes agregar un console.log aquí para depurar y ver la URL completa que se está generando
+        if (mimeType.startsWith('image/')) {
+            imageViewPreview.src = fullFilePath; // Usa la URL completa
+            imageViewPreview.style.display = 'block';
+        } else if (mimeType === 'application/pdf') {
+            pdfViewViewer.innerHTML = `<embed src="${fullFilePath}" type="application/pdf" width="100%" height="100%">`; // Usa la URL completa
+            pdfViewViewer.style.display = 'block';
+        } else {
+            viewDocumentMessage.classList.remove('hidden', 'success');
+            viewDocumentMessage.classList.add('error');
+            viewDocumentMessage.textContent = 'Tipo de archivo no soportado para previsualización directa.';
+        }
+    }
+
+    // --- Listener para el evento 'click' en el botón 'Ver Imagen' ---
+    document.body.addEventListener('click', function(event) {
+        if (event.target.classList.contains('See_imagen')) {
+            const button = event.target;
+            const idTicket = button.getAttribute('data-id-ticket');
+
+            // Mostrar el modal programáticamente
+            viewDocumentBootstrapModal.show();
+
+            // 1. Limpiar y preparar el modal de visualización
+            viewModalTicketIdSpan.textContent = idTicket;
+            imageViewPreview.src = '#';
+            imageViewPreview.style.display = 'none';
+            pdfViewViewer.innerHTML = '';
+            pdfViewViewer.style.display = 'none';
+            viewDocumentMessage.classList.add('hidden');
+            viewDocumentMessage.textContent = '';
+
+            // 2. Mostrar un mensaje de carga
+            viewDocumentMessage.classList.remove('hidden', 'success', 'error');
+            viewDocumentMessage.textContent = 'Cargando documento...';
+            viewDocumentMessage.classList.add('info');
+
+
+
+            // 3. Preparar los datos a enviar al backend
+            const formData = new FormData();
+            formData.append('ticket_id', idTicket); // ¡Asegúrate que coincida con tu API!
+            formData.append('action', 'getDocument');
+
+            // 4. Construir la URL de la API correctamente
+            // ¡CORRECCIÓN AQUÍ! Usa las constantes definidas al inicio.
+            const getDocumentUrl = `${ENDPOINT_BASE1}${API_DOCUMENTS_PATH}getDocument`; 
+            console.log(`URL de la API para obtener documento: ${getDocumentUrl}`); 
+
+            // 5. Realizar la petición HTTP POST
+            fetch(getDocumentUrl, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // Si la respuesta no es OK, intenta leer el texto para un mejor depurado
+                    return response.text().then(text => { 
+                        throw new Error('Error de red al cargar documento. Respuesta del servidor: ' + text);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Datos recibidos de la API:", data); // Para depurar la respuesta completa
+                if (data.success && data.document && data.document.row) { // Accede a `data.document.row`
+                    const documentPath = data.document.row.file_path; // <--- ¡CORRECCIÓN! Acceder a `row.file_path`
+                    const mimeType = data.document.row.mime_type;     // <--- ¡CORRECCIÓN! Acceder a `row.mime_type`
+                    displayDocumentInViewModal(documentPath, mimeType);
+                    viewDocumentMessage.style.display = 'none';
+                } else {
+                    viewDocumentMessage.classList.remove('hidden', 'success');
+                    viewDocumentMessage.classList.add('error');
+                    viewDocumentMessage.textContent = data.message || 'No se encontró ningún documento para este ticket o el formato de respuesta es incorrecto.';
+                }
+            })
+            .catch(error => {
+                console.error("Error en la petición Fetch:", error); // Muestra el error completo en la consola
+                viewDocumentMessage.classList.remove('hidden', 'success');
+                viewDocumentMessage.classList.add('error');
+                viewDocumentMessage.textContent = 'Error al cargar el documento: ' + error.message;
+            });
+        }
+    });
+});

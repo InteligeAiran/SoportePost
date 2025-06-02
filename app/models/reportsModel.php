@@ -183,10 +183,19 @@ class reportsModel extends Model
         }
     }
     
-    public function saveDocument($id_ticket, $uniqueFileName, $originalDocumentName, $documentSize, $mimeTypeFromFrontend, $relativePathForDb){
+    public function saveDocument($id_ticket, $originalDocumentName, $documentSize, $mimeTypeFromFrontend, $relativePathForDb){
         try{
-            $sql = "INSERT INTO tickets (id_ticket, nombre_archivo, fecha_creacion, tipo_archivo, id_usuario_creador) VALUES (".$id_ticket.", '".$uniqueFileName."', '".$originalDocumentName."', '".$documentSize."', '".$mimeTypeFromFrontend."', '".$relativePathForDb."')";
-            var_dump($sql);
+            $sql = "INSERT INTO archivos_adjuntos_prueba (ticket_id, original_filename, file_path, mime_type, file_size_bytes, uploaded_by_user_id) values (".$id_ticket.", '".$originalDocumentName."', '".$relativePathForDb."',  '".$mimeTypeFromFrontend."', '".$documentSize."', 1)";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function getDocument($id_ticket){
+        try{
+            $sql = "SELECT file_path, mime_type FROM archivos_adjuntos_prueba WHERE ticket_id = (".$id_ticket.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -195,3 +204,4 @@ class reportsModel extends Model
     }
 }
 ?>
+
