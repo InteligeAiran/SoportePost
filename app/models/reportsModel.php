@@ -171,6 +171,27 @@ class reportsModel extends Model
             return ['today' => 0, 'yesterday' => 0];
         }
     }
+
+    public function GetDataTicketFinal(){
+        try{
+            $sql = "SELECT * FROM GetDataTicketFinal()";
+            //var_dump($sql);
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
     
+    public function saveDocument($id_ticket, $uniqueFileName, $originalDocumentName, $documentSize, $mimeTypeFromFrontend, $relativePathForDb){
+        try{
+            $sql = "INSERT INTO tickets (id_ticket, nombre_archivo, fecha_creacion, tipo_archivo, id_usuario_creador) VALUES (".$id_ticket.", '".$uniqueFileName."', '".$originalDocumentName."', '".$documentSize."', '".$mimeTypeFromFrontend."', '".$relativePathForDb."')";
+            var_dump($sql);
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
 ?>

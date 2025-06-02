@@ -81,6 +81,14 @@ class reportes extends Controller {
                     $this->handleGetTotalTicketsPercentage();
                 break;
 
+                case 'GetTicketDataFinal':
+                    $this->handleGetTicketDataFinal();
+                break;
+                
+                case 'uploadDocument':
+                    $this->uploadDocument();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -259,4 +267,96 @@ class reportes extends Controller {
         // Si ambos son 0, el porcentaje de cambio sigue siendo 0.
         $this->response(['success' => true, 'percentage' => round($percentageChange, 2)], 200);
     }
+
+    public function handleGetTicketDataFinal(){
+        $repository = new ReportRepository();
+        $result = $repository->getTicketDataFinal();
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+   public function uploadDocument(){
+    $repository = new ReportRepository();
+
+    $id_ticket = isset($_POST['ticket_id']) ? $_POST['ticket_id'] : null;
+    $file = isset($_FILES['document_file']) ? $_FILES['document_file'] : null;
+
+    // Estos son los datos originales del archivo subido por el cliente
+    $originalDocumentName = $file ? $file['name'] : null;
+    $documentSize = $file ? $file['size'] : null;
+    $documentType = $file ? $file['type'] : null; // PHP's detected MIME type
+
+    // Estos son los datos que el frontend envió explícitamente en el FormData
+    $mimeTypeFromFrontend = isset($_POST['mime_type']) ? $_POST['mime_type'] : null;
+
+    // --- CAMBIO AQUÍ: Generar la ruta de subida automáticamente ---
+    // Asumiendo que '/Downloads/' es una carpeta dentro de tu DOCUMENT_ROOT
+    $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/Downloads/';
+
+    // Asegúrate de que el directorio de subida exista. Si no existe, créalo.
+    if (!is_dir($uploadDir)) {
+        // Los permisos 0755 son una buena práctica para directorios en servidores web.
+        // El 'true' final es para crear directorios recursivamente si es necesario.
+        mkdir($uploadDir, 0755, true);
+    }
+
+    // Generar un nombre de archivo único para evitar colisiones y problemas de seguridad
+    // Es CRÍTICO usar un nombre único en el servidor.
+    $fileExtension = pathinfo($originalDocumentName, PATHINFO_EXTENSION);
+    $uniqueFileName = uniqid() . '.' . $fileExtension; // Ejemplo: 65a8e2b3c4d5f.jpg
+    $uploadPath = $uploadDir . $uniqueFileName; // Ruta COMPLETA donde se guardará el archivo
+
+    // Ruta relativa para guardar en la DB si el archivo es público
+    // Por ejemplo: /Downloads/65a8e2b3c4d5f.jpg
+    $relativePathForDb = '/Downloads/' . $uniqueFileName;
+
+    if ($id_ticket && $file && $file['error'] === UPLOAD_ERR_OK) {
+        if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
+            // *** AQUÍ ES DONDE ENVÍAS LOS DATOS AL REPOSITORIO ***
+            try {
+                // Llama a un método en tu ReportRepository para guardar los detalles del documento.
+                // Los parámetros que pases dependerán de lo que tu método 'saveDocument' o similar espere.
+                $success = $repository->saveDocument(
+                    $id_ticket,
+                    $uniqueFileName,      // Nombre del archivo en el servidor
+                    $originalDocumentName, // Nombre original del archivo (para mostrar al usuario si es necesario)
+                    $documentSize,
+                    $mimeTypeFromFrontend, // O $documentType, según cuál prefieras usar o validar
+                    $relativePathForDb,    // La ruta relativa que se guarda en la DB para acceder al archivo
+                );
+
+                if ($success) {
+                    $this->response(['success' => true, 'message' => 'Documento subido y registrado exitosamente.', 'filePath' => $relativePathForDb], 200);
+                } else {
+                    // Si el saveDocument del repo devuelve false o lanza excepción
+                    // También podrías eliminar el archivo subido si la DB falla
+                    unlink($uploadPath); // Elimina el archivo si no se pudo registrar en la DB
+                    $this->response(['success' => false, 'message' => 'El archivo se subió, pero hubo un error al registrarlo en la base de datos.'], 500);
+                }
+
+            } catch (\Exception $e) {
+                // Captura cualquier excepción que pueda lanzar el repositorio (ej. error de DB)
+                unlink($uploadPath); // Elimina el archivo subido si la operación de DB falla
+                $this->response(['success' => false, 'message' => 'Error interno al guardar el documento: ' . $e->getMessage()], 500);
+            }
+
+        } else {
+            // Error al mover el archivo (ej. permisos insuficientes)
+            $this->response(['success' => false, 'message' => 'Error al mover el archivo subido. Verifique permisos de la carpeta de destino.'], 500);
+        }
+    } else {
+        // Manejar casos donde no hay ticket_id, no hay archivo, o hay un error de subida
+        $errorMessage = 'Error en la subida: ';
+        if (!$id_ticket) $errorMessage .= 'ID de ticket no proporcionado. ';
+        if (!$file) $errorMessage .= 'Archivo no proporcionado. ';
+        if ($file && $file['error'] !== UPLOAD_ERR_OK) $errorMessage .= 'Error de subida: ' . $file['error'];
+
+        $this->response(['success' => false, 'message' => $errorMessage], 400);
+    }
+}
 }

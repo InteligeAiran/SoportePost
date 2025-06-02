@@ -238,18 +238,18 @@ function mi_navbar() {}
                         <div id="SearchRif" class="mb-3 d-flex align-items-center">
 
                             <div class="d-flex align-items-center">
-                                <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none;">
+                                <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none; margin-left: -39%;">
                                     <option value="J">J</option>
                                     <option value="V" selected>V</option>
                                     <option value="E">E</option>
                                     <option value="G">G</option>
                                 </select>
                                 <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
-                                <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;  margin-top: 15px;">Buscar</button><br>
+                                <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;  margin-top: 5px;">Buscar</button><br>
                             </div>
 
-                            <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none;" maxlength="24">
-                            <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none; margin-top: 15px;">Buscar</button>
+                            <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none; margin-left: -107%;" maxlength="24">
+                            <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none; margin-top: 6px;">Buscar</button>
 
                             <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
                             <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
