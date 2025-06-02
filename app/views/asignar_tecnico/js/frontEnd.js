@@ -85,6 +85,7 @@ function getTicketData() {
                     }
                     
                     $('#tabla-ticket').DataTable({
+                        scrollX: '200px',
                         responsive: false,
                         "pagingType": "simple_numbers",
                         "lengthMenu": [5],

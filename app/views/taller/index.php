@@ -187,13 +187,12 @@
                                         <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
                                     </div>
                                 </div>
-                                <div class="table-responsive">
+                                
                                     <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
-                                        </thead>
+                                        
                                         <tbody id="table-ticket-body">
                                         </tbody>
                                     </table>
-                                </div>
                             </div>
                         </div>
                     </div>
