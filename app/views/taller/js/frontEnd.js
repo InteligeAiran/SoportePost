@@ -146,6 +146,7 @@ function getTicketData() {
 
                         // Initialize DataTables
                         const dataTable = $(tableElement).DataTable({
+                            scrollX: '200px',
                             responsive: true,
                             data: TicketData,
                             columns: columnsConfig,

@@ -995,6 +995,14 @@ function closedModal() {
 
 
 function closedModalCreated() {
+
+    const usuarioInput = document.getElementById('usuario');
+
+
+
+
+    usuarioInput.value = '';
+
     $('#nombreuser').val('');
     $('#apellidouser').val('');
     $('#documento').val('');
@@ -1003,6 +1011,7 @@ function closedModalCreated() {
     $('#areausers').val('');
     $('#regionusers').val('');
     $('#tipousers').val('');
+    $('#idnivel').val('');
     $('#idnivel').val('');
 
 }

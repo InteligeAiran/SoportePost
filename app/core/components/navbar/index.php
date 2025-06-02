@@ -265,11 +265,11 @@
                                     </div>
                                 </div>
                                 <div id="RightSelects">
-                                    <div>
+                                    <!--PENDIENTE <div>
                                         <label class="form-label" for="selectAdicional1">Opción 1:</label>
                                         <select class="form control" name="coord_ejec[]" id="coord_ejec" multiple="multiple" >
-                       </select>
-                                    </div>
+                                        </select>
+                                    </div> -->
                                     <!-- <div>
                                         <label class="form-label" for="selectAdicional2">Opción 2:</label>
                                         <select class="form-select" id="selectAdicional2" name="selectAdicional2">

@@ -19,16 +19,13 @@ function mi_navbar() {}
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
-        <!-- <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/bootstrap1.min.css"> -->
+
         <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/datatable.css">
-        <!-- <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/bootstrap.min.css"> -->
         <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/jquery.dataTables.min.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
 
         <!-- Font Awesome Icons -->
       
-       
-
 
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
 
@@ -71,9 +68,6 @@ function mi_navbar() {}
                                     <th style="width: 12%;">Accion</th>
                                     <th style="width: 12%;">Falla</th>
                                     <th style="width: 12%;">Proceso</th>
-                                    <th style="width: 12%;">Estatus</th>
-                                    <th style="width: 12%;">Estatus</th>
-                                    <th style="width: 12%;">Estatus</th>
                                     <th style="width: 12%;">Estatus</th>
                                     <th>Acciones</th>
                                     </tr>

@@ -1351,15 +1351,15 @@ document.getElementById('DownloadExo').addEventListener('click', function(event)
     const archivoExoneracion = inputExoneracion.files[0];
     const inputExoneracion1 = document.getElementById('DownloadExo'); // El botón
 
-    if (inputExoneracion1.style.display !== 'none' && !archivoExoneracion) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Campo requerido',
-            text: 'Por favor, seleccione el PDF de exoneración después de hacer click en \"Cargar Exoneración\".',
-            color: 'black'
-        });
-        return; // Importante: Detener la ejecución si la validación falla
-    }
+    // if (inputExoneracion1.style.display !== 'none' && !archivoExoneracion) {
+    //     Swal.fire({
+    //         icon: 'warning',
+    //         title: 'Campo requerido',
+    //         text: 'Por favor, seleccione el PDF de exoneración después de hacer click en \"Cargar Exoneración\".',
+    //         color: 'black'
+    //     });
+    //     return; // Importante: Detener la ejecución si la validación falla
+    // }
 
     if (archivoExoneracion.size > 5 * 1024 * 1024) {
         Swal.fire({ icon: 'warning', title: 'Archivo muy grande', text: 'El archivo de exoneración no debe superar los 5MB.', color: 'black' });
