@@ -27,7 +27,7 @@
     <div class="sidenav-header">
         <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
             aria-hidden="true" id="iconSidenav"></i>
-        <a class="navbar-brand m-0" href="dashboard"
+        <a class="navbar-brand m-0"
             target="_blank">
             <img src="<?php echo APP; ?>app/public/img/login/Logo.png" width="26px" height="26px"
                 class="navbar-brand-img h-100" alt="main_logo">
@@ -36,7 +36,6 @@
         </a>
     </div>
     <hr class="horizontal dark mt-0">
-
     <div class="collapse navbar-collapse w-auto " id="sidenav-collapse-main">
         <ul class="navbar-nav">
             <li class="nav-item mt-3">
@@ -52,7 +51,7 @@
                 </a>
             </li>
 
-            <hr class="horizontal dark my-3"> <li class="nav-item mt-3">
+            <hr class="horizontal dark my-3"><li class="nav-item mt-3">
                 <h6 style="color: white;" class="ps-4 ms-2">Gestión de Tickets</h6>
             </li>
             <li class="nav-item">

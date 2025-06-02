@@ -273,6 +273,7 @@ function getUserData() {
                         $('#tabla-ticket').DataTable().destroy();
                     }
                     $('#tabla-ticket').DataTable({
+                        scrollX: '200px',
                         responsive: true,
                         "pagingType": "simple_numbers",
                         "lengthMenu": [5],
