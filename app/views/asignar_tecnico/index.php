@@ -23,13 +23,33 @@ function mi_navbar() {}
         <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/datatable.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/jquery.dataTables.min.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
-
         <!-- Font Awesome Icons -->
-      
-
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+        <style>
+            /* Estilo base para el botón de Asignar Técnico */
+            #myUniqueAssingmentButton {
+                background-color: #003594 ; /* Color base: Light Sea Green */
+                color: #ffffff; /* Color del texto/icono: Blanco */
+                border: 1px solid #003594 ; /* Un borde sutil que combine */
+                transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; /* Transición suave para el hover */
+            }
 
+            /* Estilo para el SVG dentro del botón */
+           #myUniqueAssingmentButton svg {
+                vertical-align: middle; /* Alinea el SVG con el texto si lo hubiera */
+                margin-right: 0.25rem; /* Espacio a la derecha del icono si hay texto */
+                /* Puedes ajustar el color del SVG si no se hereda correctamente */
+                fill: currentColor; /* Hace que el SVG use el color del texto del botón */
+            }
+
+            #myUniqueAssingmentButton:hover {
+                background-color: #0067B8; /* Color base: Midnight Blue */
+                border-color: #0067B8; /* Color del borde */
+                box-shadow: 0 0 0 2px rgba(0, 103, 184, 0.1); /* Um efecto de sombra en el hover */
+            }
+        </style>
     </head>
+    
 
 
 <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -64,7 +84,7 @@ function mi_navbar() {}
                                     <th style="width: 12%; height: 10px;">ID ticket</th>
                                     <th style="width: 12%;">Serial POS</th>
                                     <th style="width: 12%;">Fecha Creacion</th>
-                                    <th style="width: 12%;">Tecnico Asignador</th>
+                                    <th style="width: 12%;">Usuario Gestion</th>
                                     <th style="width: 12%;">Accion</th>
                                     <th style="width: 12%;">Falla</th>
                                     <th style="width: 12%;">Proceso</th>

@@ -53,7 +53,7 @@
                         <th>RIF Comercio</th>
                         <th>Serial POS</th>
                         <th>Falla</th>
-                        <th>Fecha de Finalización</th>
+                        <th>Fecha de Creación</th>
                         <th>Estatus</th>
                         <th>Acción</th>
                         <th>Técnico</th>
