@@ -215,8 +215,6 @@ class consulta_rifModel extends Model
             $escaped_coordinador = pg_escape_literal($this->db->getConnection(), $coordinador);  // Usar $coordinador
             $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
             $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif); // Escapar el RIF
-            $idStatusDomiciliacion = $_POST['id_status_domiciliacion'] ?? null; // O de donde venga el dato
-            $escaped_idStatusDomiciliacion = ($idStatusDomiciliacion !== null) ? "'" . pg_escape_string($this->db->getConnection(),  $idStatusDomiciliacion) . "'" : null;
 
 
             $escaped_mimeTypeExo = null;
@@ -235,7 +233,7 @@ class consulta_rifModel extends Model
             }
 
             $sql = "SELECT * FROM save_data_failure2(" . $escaped_serial . "::TEXT, " . $escaped_nivelFalla . "::INTEGER, " . $escaped_id_status_payment . "::INTEGER, " . $escaped_rif . "::VARCHAR,'" . $rutaBaseDatos . "'::TEXT,
-                '" . ($rutaExo ?? '') . "'::TEXT, '" . ($rutaAnticipo ?? '') . "'::TEXT, " . ($escaped_mimeTypeExo !== null ? $escaped_mimeTypeExo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeAnticipo !== null ? $escaped_mimeTypeAnticipo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeEnvio !== null ? $escaped_mimeTypeEnvio . "::TEXT" : 'NULL') . ", " . ($escaped_idStatusDomiciliacion !== null ? $escaped_idStatusDomiciliacion . "::TEXT" : 'NULL') . ");";
+                '" . ($rutaExo ?? '') . "'::TEXT, '" . ($rutaAnticipo ?? '') . "'::TEXT, " . ($escaped_mimeTypeExo !== null ? $escaped_mimeTypeExo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeAnticipo !== null ? $escaped_mimeTypeAnticipo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeEnvio !== null ? $escaped_mimeTypeEnvio . "::TEXT" : 'NULL') . ");";
 
             $result = $this->db->pgquery($sql);
             $ticketData = pg_fetch_assoc($result);
@@ -274,14 +272,16 @@ class consulta_rifModel extends Model
                     $id_user = $_SESSION['id_user'];
                     $id_accion_ticket = 4;
                     $id_status_ticket = 1;
+                    $id_status_domiciliacion = 1;
 
                     // Llamar a insertintouser_ticket AQUI
                     $sqlInsertHistory = sprintf(
-                        "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer);",
+                        "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer);",
                         $idTicketCreado,    // Corresponds to p_id_ticket
                         (int) $id_user,      // Corresponds to p_changedstatus_by
                         (int) $id_status_ticket,         // Corresponds to p_new_action (assuming it's always 4)
                         $id_accion_ticket,         // Corresponds to p_id_action_ticket
+                        $id_status_domiciliacion
                     );
                     //var_dump($sqlInsertHistory); // Descomenta para depurar la cadena final
                     $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
@@ -293,7 +293,18 @@ class consulta_rifModel extends Model
                     }
                     //var_dump($sqlInsertUserTicket);
                 }
-                return array('save_result' => $result, 'failure_result' => $resultFailure, 'user_ticket_result' => $resultUserTicket, 'history_result' => $sqlInsertHistory);
+
+                 if ($resultsqlInsertHistory) {
+                    $sqlInserDomiciliacion = "INSERT INTO  tickets_status_domiciliacion (id_ticket, id_status_domiciliacion) VALUES (".$idTicketCreado.", ".$id_status_domiciliacion.");";
+                    $resultInserDomiciliacion = Model::getResult($sqlInserDomiciliacion, $this->db);
+
+                    if (!$resultInserDomiciliacion) {
+                        error_log("Error al insertar en tickets_status_domiciliacion: ". pg_last_error($this->db->getConnection()));
+                        $this->db->closeConnection();
+                        return array('error' => 'Error al insertar en tickets_status_domiciliacion: '. pg_last_error($this->db->getConnection()));
+                    }
+                }
+                return array('save_result' => $result, 'failure_result' => $resultFailure, 'user_ticket_result' => $resultUserTicket, 'history_result' => $sqlInsertHistory,  'domiciliacion_result' => $resultInserDomiciliacion);
             } else {
                 return $result;
             }
@@ -486,7 +497,7 @@ class consulta_rifModel extends Model
 
             // 1. Ejecutar la primera actualización (fecha del taller)
             $id_status_domiciliacion = 1; // Asignar un valor predeterminado o dinámico según tu lógica
-            $sqlDateUpdate = "SELECT * FROM updateticketdatetaller(" . $escaped_id_ticket . ", ".$id_status_domiciliacion.")";
+            $sqlDateUpdate = "SELECT * FROM updateticketdatetaller(" . $escaped_id_ticket .")";
             $resultDateUpdate = Model::getResult($sqlDateUpdate, $this->db);
 
 
@@ -514,17 +525,15 @@ class consulta_rifModel extends Model
                 $id_user = $_SESSION['id_user'];
                 $id_status_ticket = 1; // Asignar un valor predeterminado o dinámico según tu lógica
                 $id_status_lab = 1; // Asignar un valor predeterminado o dinámico según tu lógica
-                $id_status_domiciliacion = 1; // Asignar un valor predeterminado o dinámico según tu lógica
 
                 // Llamar a insertintouser_ticket AQUI
                 $sqlInsertHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                     (int) $id_ticket,    // Corresponds to p_id_ticket
                     (int) $id_user,      // Corresponds to p_changedstatus_by
                     $id_status_ticket,     // Corresponds to p_new_action (assuming it's always 4 based on your function's internal logic)
                     (int) $id_accion_ticket,         // Corresponds to p_id_action_ticket
                     (int)$id_status_lab,
-                    (int)$id_status_domiciliacion
                 );
                 $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
 
@@ -535,17 +544,8 @@ class consulta_rifModel extends Model
                 }
             }
 
-             if ($resultsqlInsertHistory) {
-                    $sqlInserDomiciliacion = "INSERT INTO  tickets_status_domiciliacion (id_ticket, id_status_domiciliacion) VALUES (".$id_ticket.", ".$id_status_domiciliacion.");";
-                    $resultInserDomiciliacion = Model::getResult($sqlInserDomiciliacion, $this->db);
-
-                    if (!$resultInserDomiciliacion) {
-                        error_log("Error al insertar en tickets_status_domiciliacion: ". pg_last_error($this->db->getConnection()));
-                        $this->db->closeConnection();
-                        return array('error' => 'Error al insertar en tickets_status_domiciliacion: '. pg_last_error($this->db->getConnection()));
-                    }
-                }
-                 return array('save_result' => $resultDateUpdate, 'history_result' => $resultsqlInsertHistory, 'domiciliacion_result' => $resultInserDomiciliacion);
+            
+                 return array('save_result' => $resultDateUpdate, 'history_result' => $resultsqlInsertHistory);
             } catch (Throwable $e) {
             // 6. Manejo general de excepciones: registra la excepción y retorna una respuesta de error genérico.
             error_log("Excepción en SendToTaller para ticket " . $id_ticket . ": " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());

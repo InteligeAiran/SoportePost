@@ -3,54 +3,81 @@ function mi_navbar() {}
 ?>
 <!DOCTYPE html>
 <html lang="en">
-        <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-        <link rel="icon" type="image/png" href="../assets/img/favicon.png">
-        <title>
-            <?php echo tituloPagina; ?>
-        </title>
 
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
+    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    <title>
+        <?php echo tituloPagina; ?>
+    </title>
 
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
 
-        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/datatable.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/jquery.dataTables.min.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
-        <!-- Font Awesome Icons -->
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
-        <style>
-            /* Estilo base para el botón de Asignar Técnico */
-            #myUniqueAssingmentButton {
-                background-color: #003594 ; /* Color base: Light Sea Green */
-                color: #ffffff; /* Color del texto/icono: Blanco */
-                border: 1px solid #003594 ; /* Un borde sutil que combine */
-                transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; /* Transición suave para el hover */
-            }
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+    <style>
+        /* Estilo base para el botón de Asignar Técnico */
+        #myUniqueAssingmentButton{
+            background-color: #003594;
+            /* Color base: Light Sea Green */
+            color: #ffffff;
+            /* Color del texto/icono: Blanco */
+            border: 1px solid #003594;
+            /* Un borde sutil que combine */
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            /* Transición suave para el hover */
+        }
 
-            /* Estilo para el SVG dentro del botón */
-           #myUniqueAssingmentButton svg {
-                vertical-align: middle; /* Alinea el SVG con el texto si lo hubiera */
-                margin-right: 0.25rem; /* Espacio a la derecha del icono si hay texto */
-                /* Puedes ajustar el color del SVG si no se hereda correctamente */
-                fill: currentColor; /* Hace que el SVG use el color del texto del botón */
-            }
+        /* Estilo para el SVG dentro del botón */
+        #myUniqueAssingmentButton svg {
+            vertical-align: middle;
+            /* Alinea el SVG con el texto si lo hubiera */
+            margin-right: 0.25rem;
+            /* Espacio a la derecha del icono si hay texto */
+            /* Puedes ajustar el color del SVG si no se hereda correctamente */
+            fill: currentColor;
+            /* Hace que el SVG use el color del texto del botón */
+        }
 
-            #myUniqueAssingmentButton:hover {
-                background-color: #0067B8; /* Color base: Midnight Blue */
-                border-color: #0067B8; /* Color del borde */
-                box-shadow: 0 0 0 2px rgba(0, 103, 184, 0.1); /* Um efecto de sombra en el hover */
-            }
-        </style>
-    </head>
-    
+        #myUniqueAssingmentButton:hover {
+            background-color: #0067B8;
+            /* Color base: Midnight Blue */
+            border-color: #0067B8;
+            /* Color del borde */
+            box-shadow: 0 0 0 2px rgba(0, 103, 184, 0.1);
+            /* Um efecto de sombra en el hover */
+        }
 
+        #ticket-details-panel table td, table th {
+            white-space: normal !important;
+        }
+
+        #btn-asignados{
+            background-color: #003594;
+            color: #ffffff;
+            border: 1px solid #003594;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+         #btn-por-asignar{
+            color: #ffffff;
+            border: 1px solid #003594;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+                
+    </style>
+</head>
 
 <body id="fondo" class="g-sidenav-show bg-gray-100">
     <div class="min-height-300 bg-dark position-absolute w-100"></div>
@@ -63,41 +90,55 @@ function mi_navbar() {}
             </svg>
         </button>
     </div>
-    <?php require_once 'app/core/components/navbar/index.php'; mi_navbar(); ?>
+    <?php require_once 'app/core/components/navbar/index.php';
+    mi_navbar(); ?>
     <main class="main-content position-relative border-radius-lg">
-        <div class="container-fluid py-4">
-            <div id="Row" class="row mt-4">
-                <div class="cord">
-                    <div class="card">
-                        <div class="card-header pb-0 p-3">
-                            <div class="col-lg-12 col-md-12 mt-4 mb-4">
-                                <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                    <strong>
-                                        <h5 class="text-black text-capitalize ps-3">Asignación de Tickets</h5>
-                                    </strong>
+        <div class="container-fluid py-4" style="height: calc(100vh - 80px);">
+            <div class="row h-100">
+                <div class="col-md-7 h-100 d-flex flex-column">
+
+                    <div id="Row" class="row mt-4">
+                        <div class="cord">
+                            <div class="card">
+                                <div class="card-header pb-0 p-3">
+                                    <div class="col-lg-12 col-md-12 mt-4 mb-4">
+                                        <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
+                                            <strong>
+                                                <h5 class="text-black text-capitalize ps-3">Asignación de Tickets</h5>
+                                            </strong>
+                                        </div>
+                                    </div>
                                 </div>
+                                <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 12%; height: 10px;">ID ticket</th>
+                                            <th style="width: 12%;">Serial POS</th>
+                                            <th style="width: 12%;">Fecha Creacion</th>
+                                            <th style="width: 12%;">Usuario Gestion</th>
+                                            <th style="width: 12%;">Accion</th>
+                                            <th style="width: 12%;">Falla</th>
+                                            <th style="width: 12%;">Proceso</th>
+                                            <th style="width: 12%;">Estatus</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="table-group-divider" id="table-ticket-body">
+                                        <tr>
+                                            <td colspan="3">No hay datos</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                            <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
-                                <thead>
-                                    <tr> 
-                                    <th style="width: 12%; height: 10px;">ID ticket</th>
-                                    <th style="width: 12%;">Serial POS</th>
-                                    <th style="width: 12%;">Fecha Creacion</th>
-                                    <th style="width: 12%;">Usuario Gestion</th>
-                                    <th style="width: 12%;">Accion</th>
-                                    <th style="width: 12%;">Falla</th>
-                                    <th style="width: 12%;">Proceso</th>
-                                    <th style="width: 12%;">Estatus</th>
-                                    <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="table-group-divider" id="table-ticket-body">
-                                    <tr>
-                                        <td colspan="3">No hay datos</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col-md-5 h-100 d-flex flex-column border-start ps-4">
+                    <h3 class="mb-3">Detalles del Ticket</h3>
+                    <div id="ticket-details-panel" class="flex-grow-1 overflow-auto p-3 bg-light rounded">
+                        <p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>
                     </div>
                 </div>
             </div>
@@ -216,104 +257,103 @@ function mi_navbar() {}
                 </div>
             </div>
         </div>
-  
-        
-         <!-- Github buttons -->
-         <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+        <!-- Github buttons -->
+        <script async defer src="https://buttons.github.io/buttons.js"></script>
         <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
         <!-- Bootstrap core JavaScript-->
-         <!--JQUERY-->
+        <!--JQUERY-->
 
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
 
-         <script src="<?php echo APP;?>app/plugins/jquery/jquery.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/jquery/jquery-3.5.1.js"></script>
-        <script src="<?php echo APP;?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
 
 
         <!--   Core JS Files   -->
-        <script src="<?php echo APP;?>app/plugins/js/popper.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/js/perfect-scrollbar.min.js"></script>
-        <script src="<?php echo APP;?>app/plugins/js/smooth-scrollbar.min.js"></script>
-        <script src="<?php echo APP;?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
+        <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
+        <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
 
         <!-- Datatable otro sistema-->
 
-        <script src = "<?php echo APP;?>DataTable/jquery.dataTables.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/dataTables.buttons.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.print.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.flash.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/pdfmake.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/jszip.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/vfs_fonts.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.html5.min.js"></script>
+        <script src="<?php echo APP; ?>DataTable/jquery.dataTables.min.js"></script>
+        <script src="<?php echo APP; ?>DataTable/dataTables.buttons.min.js"></script>
+        <script src="<?php echo APP; ?>DataTable/buttons.print.min.js"></script>
+        <script src="<?php echo APP; ?>DataTable/buttons.flash.min.js"></script>
+        <script src="<?php echo APP; ?>DataTable/pdfmake.min.js"></script>
+        <script src="<?php echo APP; ?>DataTable/jszip.min.js"></script>
+        <script src="<?php echo APP; ?>DataTable/vfs_fonts.js"></script>
+        <script src="<?php echo APP; ?>DataTable/buttons.html5.min.js"></script>
 
 
-         <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
-         <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
-         <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
-         <script src = "<?php echo APP;?>js/datatables.js"></script>
+        <script src="<?php echo APP; ?>js/Datatablebuttons5.js"></script>
+        <script src="<?php echo APP; ?>js/Datatablebuttons.min.js"></script>
+        <script src="<?php echo APP; ?>js/Datatablebuttonsprint.min.js"></script>
+        <script src="<?php echo APP; ?>js/datatables.js"></script>
 
 
         <!--  SweetAlert   -->
-        <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.js"></script>
-        <script src="<?php echo APP;?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
-        
+        <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
+
         <?php
-            if (isset($this->js)){
-                foreach ($this->js as $js){
-                    echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'"></script>'; 
-                }
+        if (isset($this->js)) {
+            foreach ($this->js as $js) {
+                echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '"></script>';
             }
+        }
         ?>
-  <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-  <?php
+        <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
+        <?php
         $expired_sessions = json_encode($this->expired_sessions);
         $message = json_encode($this->message);
         $redirect = json_encode($this->redirect);
         $usuario_id = json_encode($this->usuario_id);
         $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
 
-    ?>
-    <script>
-        var expired_sessions = <?php echo $expired_sessions; ?>;
-        var message = <?php echo $message; ?>;
-        var redirect = <?php echo $redirect; ?>;
-        var usuario_id = <?php echo $usuario_id; ?>;
-        var sessionLifetime = <?php echo $sessionLifetime; ?>; // Asegúrate de que esto esté presente
+        ?>
+        <script>
+            var expired_sessions = <?php echo $expired_sessions; ?>;
+            var message = <?php echo $message; ?>;
+            var redirect = <?php echo $redirect; ?>;
+            var usuario_id = <?php echo $usuario_id; ?>;
+            var sessionLifetime = <?php echo $sessionLifetime; ?>; // Asegúrate de que esto esté presente
 
 
-        // Verificar si hay sesiones expiradas
-        if (expired_sessions) {
-            Swal.fire({
-                icon: 'warning', // Puedes cambiar el icono (warning, error, success, info, question)
-                title: 'Session Expiró.', // Título del SweetAlert
-                text: message, // Mensaje del SweetAlert
-                color: 'black', // Color del texto
-                showConfirmButton: false, // Oculta el botón "Aceptar"
-                timer: 2000, // Cierra el modal después de 2 segundos (2000 ms)
-                timerProgressBar: true, // Opcional: muestra una barra de progreso del tiempo
-                didOpen: () => {
-                    Swal.showLoading();
-                },
-                willClose: () => {
-                    setTimeout(() => {
-                        window.location.href = redirect; // Recarga la página después del temporizador
-                    }, 500); // Espera 0.5 segundos (igual que el temporizador)
-                }
-            }) // Programar la recarga después de que el SweetAlert se cierre
-        }
+            // Verificar si hay sesiones expiradas
+            if (expired_sessions) {
+                Swal.fire({
+                    icon: 'warning', // Puedes cambiar el icono (warning, error, success, info, question)
+                    title: 'Session Expiró.', // Título del SweetAlert
+                    text: message, // Mensaje del SweetAlert
+                    color: 'black', // Color del texto
+                    showConfirmButton: false, // Oculta el botón "Aceptar"
+                    timer: 2000, // Cierra el modal después de 2 segundos (2000 ms)
+                    timerProgressBar: true, // Opcional: muestra una barra de progreso del tiempo
+                    didOpen: () => {
+                        Swal.showLoading();
+                    },
+                    willClose: () => {
+                        setTimeout(() => {
+                            window.location.href = redirect; // Recarga la página después del temporizador
+                        }, 500); // Espera 0.5 segundos (igual que el temporizador)
+                    }
+                }) // Programar la recarga después de que el SweetAlert se cierre
+            }
 
-        // Agregar lógica de recarga automática
-        if (sessionLifetime) {
-            setTimeout(function() {
-                location.reload(true); // Forzar recarga desde el servidor
-            }, sessionLifetime * 1000); // sessionLifetime está en segundos
-        }
-    </script>
-    <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
+            // Agregar lógica de recarga automática
+            if (sessionLifetime) {
+                setTimeout(function() {
+                    location.reload(true); // Forzar recarga desde el servidor
+                }, sessionLifetime * 1000); // sessionLifetime está en segundos
+            }
+        </script>
+        <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
 </body>
-
 </html>
