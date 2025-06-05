@@ -72,7 +72,6 @@ function mi_navbar() {}
 
          #btn-por-asignar{
             color: #ffffff;
-            border: 1px solid #003594;
             transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
                 
@@ -113,13 +112,11 @@ function mi_navbar() {}
                                     <thead>
                                         <tr>
                                             <th style="width: 12%; height: 10px;">ID ticket</th>
-                                            <th style="width: 12%;">Serial POS</th>
+                                            <th style="width: 12%;">RIF</th>
+                                            <th style="width: 12%;">Raz&oacuten Social</th>
                                             <th style="width: 12%;">Fecha Creacion</th>
-                                            <th style="width: 12%;">Usuario Gestion</th>
-                                            <th style="width: 12%;">Accion</th>
-                                            <th style="width: 12%;">Falla</th>
-                                            <th style="width: 12%;">Proceso</th>
-                                            <th style="width: 12%;">Estatus</th>
+                                            <th style="width: 12%;">Accion del Ticket</th>
+                                            <th style="width: 12%;">Nro Ticket</th>
                                             <th>Acciones</th>
                                         </tr>
                                     </thead>

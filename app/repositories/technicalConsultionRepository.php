@@ -89,6 +89,12 @@ class TechnicalConsultionRepository
         return $result ? $result['row']['codmodelopos'] : null;
     }
 
+    public function GetTotalTickets(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTotalTickets();
+        return $result['row']['get_tickets_total_count'];
+    }
+
     public function VerifingClient($rif){
         $result = $this->model->VerifingClient($rif);
         if ($result && is_array($result) && isset($result['row']) && is_array($result['row']) && isset($result['row']['rif'])) {
@@ -98,8 +104,8 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif){
-        $result = $this->model->SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif);
+    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket){
+        $result = $this->model->SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket);
         return $result;
     }
 
@@ -173,8 +179,8 @@ class TechnicalConsultionRepository
         return $failures;
     }
 
-    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio, $rif){
-        $result = $this->model->SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio, $rif);
+    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio, $rif, $Nr_ticket){
+        $result = $this->model->SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio, $rif, $Nr_ticket);
         return $result;
     }
 

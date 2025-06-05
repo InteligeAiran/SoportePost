@@ -144,7 +144,7 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif)
+    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket)
     {
         try {
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial);
@@ -152,9 +152,10 @@ class consulta_rifModel extends Model
             $escaped_nivelFalla = pg_escape_literal($this->db->getConnection(), $nivelFalla);
             $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
             $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif);
+            $escaped_Nr_ticket = pg_escape_literal($this->db->getConnection(), $Nr_ticket);
 
             // Ejecutar la función para guardar la falla y obtener el ID del ticket creado
-            $sqlSave = "SELECT SaveDataFalla(" . $escaped_serial . ", " . $escaped_nivelFalla . ", " . $escaped_rif . ");";
+            $sqlSave = "SELECT SaveDataFalla(" . $escaped_serial . ", " . $escaped_nivelFalla . ", " . $escaped_rif . ", ".$escaped_Nr_ticket.");";
             //var_dump($sqlSave);
             $resultSave = $this->db->pgquery($sqlSave);
             $ticketData = pg_fetch_assoc($resultSave);
@@ -205,113 +206,141 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaBaseDatos, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo = null, $mimeTypeAnticipo = null, $mimeTypeEnvio = null, $rif)
-    {
-        try {
-            $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial);
-            $escaped_descripcion = pg_escape_literal($this->db->getConnection(), $descripcion);
-            $escaped_nivelFalla = pg_escape_literal($this->db->getConnection(), $nivelFalla);
-            $escaped_id_status_payment = pg_escape_literal($this->db->getConnection(), $id_status_payment);
-            $escaped_coordinador = pg_escape_literal($this->db->getConnection(), $coordinador);  // Usar $coordinador
-            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
-            $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif); // Escapar el RIF
 
+// Asumo que tu clase DatabaseConnection (o Model) tiene un método getConnection()
+// que devuelve el recurso de conexión directa de pg_connect().
 
-            $escaped_mimeTypeExo = null;
-            if ($mimeTypeExo !== null) {
-                $escaped_mimeTypeExo = pg_escape_literal($this->db->getConnection(), $mimeTypeExo);
-            }
+public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaBaseDatos, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo = null, $mimeTypeAnticipo = null, $mimeTypeEnvio = null, $rif, $Nr_ticket)
+{
+    try {
+        $db_conn = $this->db->getConnection(); // Obtener el recurso de conexión de PostgreSQL
 
-            $escaped_mimeTypeAnticipo = null;
-            if ($mimeTypeAnticipo !== null) {
-                $escaped_mimeTypeAnticipo = pg_escape_literal($this->db->getConnection(), $mimeTypeAnticipo);
-            }
+        // 1. Escapar todas las variables de cadena (TEXT, VARCHAR)
+        $escaped_serial = pg_escape_literal($db_conn, $serial);
+        // $descripcion no se pasa a save_data_failure2, pero se usa en InsertTicketFailure
+        $escaped_descripcion = pg_escape_literal($db_conn, $descripcion);
+        $escaped_rif = pg_escape_literal($db_conn, $rif);
+        $escaped_Nr_ticket = pg_escape_literal($db_conn, $Nr_ticket);
 
-            $escaped_mimeTypeEnvio = null;
-            if ($mimeTypeEnvio !== null) {
-                $escaped_mimeTypeEnvio = pg_escape_literal($this->db->getConnection(), $mimeTypeEnvio);
-            }
+        // Rutas y tipos MIME
+        $param_rutaBaseDatos = ($rutaBaseDatos !== null && $rutaBaseDatos !== '') ? pg_escape_literal($db_conn, $rutaBaseDatos) . '::TEXT' : 'NULL::TEXT';
+        $param_rutaExo = ($rutaExo !== null && $rutaExo !== '') ? pg_escape_literal($db_conn, $rutaExo) . '::TEXT' : 'NULL::TEXT';
+        $param_rutaAnticipo = ($rutaAnticipo !== null && $rutaAnticipo !== '') ? pg_escape_literal($db_conn, $rutaAnticipo) . '::TEXT' : 'NULL::TEXT';
 
-            $sql = "SELECT * FROM save_data_failure2(" . $escaped_serial . "::TEXT, " . $escaped_nivelFalla . "::INTEGER, " . $escaped_id_status_payment . "::INTEGER, " . $escaped_rif . "::VARCHAR,'" . $rutaBaseDatos . "'::TEXT,
-                '" . ($rutaExo ?? '') . "'::TEXT, '" . ($rutaAnticipo ?? '') . "'::TEXT, " . ($escaped_mimeTypeExo !== null ? $escaped_mimeTypeExo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeAnticipo !== null ? $escaped_mimeTypeAnticipo . "::TEXT" : 'NULL') . ", " . ($escaped_mimeTypeEnvio !== null ? $escaped_mimeTypeEnvio . "::TEXT" : 'NULL') . ");";
+        $param_mimeTypeExo = ($mimeTypeExo !== null) ? pg_escape_literal($db_conn, $mimeTypeExo) . '::TEXT' : 'NULL::TEXT';
+        $param_mimeTypeAnticipo = ($mimeTypeAnticipo !== null) ? pg_escape_literal($db_conn, $mimeTypeAnticipo) . '::TEXT' : 'NULL::TEXT';
+        $param_mimeTypeEnvio = ($mimeTypeEnvio !== null) ? pg_escape_literal($db_conn, $mimeTypeEnvio) . '::TEXT' : 'NULL::TEXT';
 
-            $result = $this->db->pgquery($sql);
-            $ticketData = pg_fetch_assoc($result);
+        // 2. Construir la consulta para save_data_failure2
+        // Los enteros no necesitan pg_escape_literal si ya sabes que son números
+        $sql = "SELECT * FROM public.save_data_failure2("
+                . $escaped_serial . "::TEXT, "
+                . (int)$nivelFalla . "::INTEGER, "
+                . (int)$id_status_payment . "::INTEGER, "
+                . $escaped_rif . "::VARCHAR, "
+                . $escaped_Nr_ticket . "::VARCHAR, " // Nueva variable
+                . $param_rutaBaseDatos . ", "
+                . $param_rutaExo . ", "
+                . $param_rutaAnticipo . ", "
+                . $param_mimeTypeExo . ", "
+                . $param_mimeTypeAnticipo . ", "
+                . $param_mimeTypeEnvio . ");";
 
-            // **Asegúrate de que 'savedatafalla' es el nombre de la columna que devuelve el ID**
-            if (!$ticketData || !isset($ticketData['save_data_failure2'])) {
-                // Es importante manejar el caso donde no se obtiene el ID del ticket
-                error_log("Error: No se pudo obtener el ID del ticket de SaveDataFalla2.");
-                $this->db->closeConnection();
-                return array('error' => 'Error al obtener ID del ticket.');
-            }
-            $idTicketCreado = $ticketData['save_data_failure2']; // Capturar el ID del ticket creado
-            $escaped_id_ticket = pg_escape_literal($this->db->getConnection(), $idTicketCreado);
+        // 3. Ejecutar la consulta
+        // Asegúrate de que $this->db->pgquery() usa pg_query() con el recurso de conexión
+        $result = $this->db->pgquery($sql);
 
-            if ($result) {
-                $sqlFailure = "SELECT InsertTicketFailure(" . $escaped_id_ticket . ", " . $escaped_descripcion . ");";
-
-                $resultFailure = $this->db->pgquery($sqlFailure);
-
-                // Llamar a insertintouser_ticket AQUI
-                $sqlInsertUserTicket = sprintf(
-                    "SELECT public.insertintouser_ticket(%d::integer, %d::integer, NOW()::timestamp without time zone, NULL::timestamp without time zone, %s::integer, NOW()::timestamp without time zone, %s::integer, %s::timestamp without time zone);",
-                    //Los parametros de la funcion insertintouser_ticket son:  p_id_ticket integer, p_id_tecnico_n1 integer, p_date_create_ticket timestamp without time zone, p_date_end_ticket timestamp without time zone, p_id_coordinator integer, p_date_sendcoordinator timestamp without time zone, p_id_tecnico_n2 integer, p_date_assign_tec2 timestamp without time zone
-                    $idTicketCreado,  // Necesitas obtener este valor de alguna parte.  Tal vez de la llamada a savedatafalla2?
-                    (int) $id_user,
-                    (int) $coordinador, // Usar el valor del coordinador
-                    'NULL', // Puedes usar NULL o una variable si tienes el id_tecnico_n2
-                    'NULL',  // Puedes usar NULL o una variable si tienes la fecha
-                    'NULL'  // Puedes usar NULL o una variable si tienes la fecha
-
-                );
-                // var_dump($sqlInsertUserTicket); // Descomenta para depurar la cadena final
-                $resultUserTicket = $this->db->pgquery($sqlInsertUserTicket);
-
-                if ($resultUserTicket) {
-                    $id_user = $_SESSION['id_user'];
-                    $id_accion_ticket = 4;
-                    $id_status_ticket = 1;
-                    $id_status_domiciliacion = 1;
-
-                    // Llamar a insertintouser_ticket AQUI
-                    $sqlInsertHistory = sprintf(
-                        "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer);",
-                        $idTicketCreado,    // Corresponds to p_id_ticket
-                        (int) $id_user,      // Corresponds to p_changedstatus_by
-                        (int) $id_status_ticket,         // Corresponds to p_new_action (assuming it's always 4)
-                        $id_accion_ticket,         // Corresponds to p_id_action_ticket
-                        $id_status_domiciliacion
-                    );
-                    //var_dump($sqlInsertHistory); // Descomenta para depurar la cadena final
-                    $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
-
-                    if (!$resultsqlInsertHistory) {
-                        error_log("Error en insertintouser_ticket: " . pg_last_error($this->db->getConnection()));
-                        $this->db->closeConnection();
-                        return array('error' => 'Error al insertar en users_tickets: ' . pg_last_error($this->db->getConnection()));
-                    }
-                    //var_dump($sqlInsertUserTicket);
-                }
-
-                 if ($resultsqlInsertHistory) {
-                    $sqlInserDomiciliacion = "INSERT INTO  tickets_status_domiciliacion (id_ticket, id_status_domiciliacion) VALUES (".$idTicketCreado.", ".$id_status_domiciliacion.");";
-                    $resultInserDomiciliacion = Model::getResult($sqlInserDomiciliacion, $this->db);
-
-                    if (!$resultInserDomiciliacion) {
-                        error_log("Error al insertar en tickets_status_domiciliacion: ". pg_last_error($this->db->getConnection()));
-                        $this->db->closeConnection();
-                        return array('error' => 'Error al insertar en tickets_status_domiciliacion: '. pg_last_error($this->db->getConnection()));
-                    }
-                }
-                return array('save_result' => $result, 'failure_result' => $resultFailure, 'user_ticket_result' => $resultUserTicket, 'history_result' => $sqlInsertHistory,  'domiciliacion_result' => $resultInserDomiciliacion);
-            } else {
-                return $result;
-            }
-        } catch (Throwable $e) {
-            // Handle exception
+        if ($result === false) {
+            error_log("Error al ejecutar save_data_failure2: " . pg_last_error($db_conn) . " Query: " . $sql);
+            // $this->db->closeConnection(); // Cierra la conexión si es necesario, o déjala para reintentos
+            return ['error' => 'Error al insertar datos de falla principal.'];
         }
+
+        $ticketData = pg_fetch_assoc($result);
+
+        // 4. Verificar el ID del ticket creado
+        // El nombre de la columna que devuelve la función es el mismo nombre de la función si no se usa ALIAS
+        if (!isset($ticketData['save_data_failure2']) || $ticketData['save_data_failure2'] == 0) {
+            error_log("Error: La función save_data_failure2 no devolvió un ID de ticket válido o devolvió 0.");
+            // $this->db->closeConnection();
+            return ['error' => 'Error al obtener ID del ticket de la base de datos.'];
+        }
+        $idTicketCreado = (int)$ticketData['save_data_failure2']; // Capturar el ID del ticket creado
+
+        // 5. Insertar TicketFailure
+        $sqlFailure = "SELECT public.InsertTicketFailure(" . (int)$idTicketCreado . ", " . $escaped_descripcion . ");";
+
+        $resultFailure = $this->db->pgquery($sqlFailure);
+        if ($resultFailure === false) {
+             error_log("Error al insertar TicketFailure: " . pg_last_error($db_conn) . " Query: " . $sqlFailure);
+             // $this->db->closeConnection();
+             return ['error' => 'Error al insertar falla específica del ticket.'];
+        }
+
+
+        // 6. Llamar a insertintouser_ticket
+        // Asegúrate de que los parámetros coincidan con la firma de tu función public.insertintouser_ticket
+        $sqlInsertUserTicket = sprintf(
+            "SELECT public.insertintouser_ticket(%d::integer, %d::integer, NOW()::timestamp without time zone, NULL::timestamp without time zone, %d::integer, NOW()::timestamp without time zone, NULL::integer, NULL::timestamp without time zone);",
+            (int)$idTicketCreado,
+            (int)$id_user,       // p_id_tecnico_n1
+            (int)$coordinador    // p_id_coordinator
+            // Los últimos dos NULLs son para p_id_tecnico_n2 y p_date_assign_tec2
+        );
+
+        $resultUserTicket = $this->db->pgquery($sqlInsertUserTicket);
+        if ($resultUserTicket === false) {
+            error_log("Error al insertar en users_tickets: " . pg_last_error($db_conn) . " Query: " . $sqlInsertUserTicket);
+            // $this->db->closeConnection();
+            return ['error' => 'Error al insertar en users_tickets.'];
+        }
+
+        // 7. Insertar en ticket_status_history
+        $id_accion_ticket = 4; // Valor fijo
+        $id_status_ticket = 1; // Valor fijo
+        $id_status_domiciliacion = 1; // Valor fijo
+        $sqlInsertHistory = sprintf(
+            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer);",
+            (int)$idTicketCreado,
+            (int)$id_user,           // p_changedstatus_by
+            (int)$id_status_ticket,  // p_new_action (asumiendo esto es el estado, no la acción)
+            (int)$id_accion_ticket,  // p_id_action_ticket
+            (int)$id_status_domiciliacion // p_id_status_domiciliacion
+        );
+
+        $resultHistory = $this->db->pgquery($sqlInsertHistory);
+        if ($resultHistory === false) {
+            error_log("Error al insertar en ticket_status_history: " . pg_last_error($db_conn) . " Query: " . $sqlInsertHistory);
+            // $this->db->closeConnection();
+            return ['error' => 'Error al insertar en ticket_status_history.'];
+        }
+
+        // 8. Insertar en tickets_status_domiciliacion
+        $sqlInserDomiciliacion = "INSERT INTO tickets_status_domiciliacion (id_ticket, id_status_domiciliacion) VALUES (" . (int)$idTicketCreado . ", " . (int)$id_status_domiciliacion . ");";
+
+        // Asumo que Model::getResult($sql, $db) devuelve un array o un booleano,
+        // pero para INSERT, es mejor usar pg_query directamente y verificar el resultado.
+        // Si Model::getResult es una función wrapper para pg_query, entonces está bien.
+        $resultInserDomiciliacion = $this->db->pgquery($sqlInserDomiciliacion);
+        if ($resultInserDomiciliacion === false) {
+             error_log("Error al insertar en tickets_status_domiciliacion: " . pg_last_error($db_conn) . " Query: " . $sqlInserDomiciliacion);
+             // $this->db->closeConnection();
+             return ['error' => 'Error al insertar en tickets_status_domiciliacion.'];
+        }
+
+        // Si todo salió bien
+        return [
+            'success' => true,
+            'id_ticket_creado' => $idTicketCreado,
+            // Puedes devolver resultados de las otras inserciones si necesitas
+        ];
+
+    } catch (Throwable $e) {
+        error_log("Excepción en SaveDataFalla2: " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
+        // $this->db->closeConnection(); // Considera si quieres cerrar la conexión en caso de error
+        return ['error' => 'Error inesperado: ' . $e->getMessage()];
     }
+}
 
     public function GetExpiredSessions($usuario_id, $ahora)
     {
@@ -343,6 +372,16 @@ class consulta_rifModel extends Model
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial);
             $sql = "SELECT * FROM Get_last_date_ticket(" . $escaped_serial . ")";
             //var_dump($sql);
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }
+
+    public function GetTotalTickets(){
+        try {
+            $sql = "SELECT * FROM get_tickets_total_count()";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
