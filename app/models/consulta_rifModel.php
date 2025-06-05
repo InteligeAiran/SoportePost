@@ -491,7 +491,7 @@ public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador,
 
             $id_accion_ticket = $ticketData['assigntickettotecnico']; // Capturar el ID del ticket creado
             $id_user = $_SESSION['id_user'];
-            $id_status_ticket = 1; // Asignar un valor predeterminado o dinámico según tu lógica
+            $id_status_ticket = 2; // Asignar un valor predeterminado o dinámico según tu lógica
 
 
             if ($result) {

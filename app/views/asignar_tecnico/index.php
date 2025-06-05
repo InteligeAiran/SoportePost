@@ -135,7 +135,7 @@ function mi_navbar() {}
                 <div class="col-md-5 h-100 d-flex flex-column border-start ps-4">
                     <h3 class="mb-3">Detalles del Ticket</h3>
                     <div id="ticket-details-panel" class="flex-grow-1 overflow-auto p-3 bg-light rounded">
-                        <p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>
+                        <strong><p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p></strong>
                     </div>
                 </div>
             </div>
