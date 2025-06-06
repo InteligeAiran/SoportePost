@@ -95,7 +95,6 @@ function mi_navbar() {}
         <div class="container-fluid py-4" style="height: calc(100vh - 80px);">
             <div class="row h-100">
                 <div class="col-md-7 h-100 d-flex flex-column">
-
                     <div id="Row" class="row mt-4">
                         <div class="cord">
                             <div class="card">
@@ -128,9 +127,7 @@ function mi_navbar() {}
                                 </table>
                             </div>
                         </div>
-                        
-                    </div>
-                    
+                    </div>    
                 </div>
                 <div class="col-md-5 h-100 d-flex flex-column border-start ps-4">
                     <h3 class="mb-3">Detalles del Ticket</h3>

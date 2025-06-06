@@ -65,7 +65,6 @@
                         <span class="nav-link-text ms-3">Crear Ticket</span>
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="crearTicketDropdown">
-                        <li><a class="dropdown-item" href="#" data-value="Soporte POS">Soporte POS</a></li>
                         <li><a class="dropdown-item" href="#" data-value="Sustitución de POS">Sustitución de POS</a></li>
                         <li><a class="dropdown-item" href="#" data-value="Préstamo de POS">Préstamo de POS</a></li>
                         <li><a class="dropdown-item" href="#" data-value="Desafiliación de POS">Desafiliación de POS</a></li>

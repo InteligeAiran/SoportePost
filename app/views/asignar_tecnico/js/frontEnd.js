@@ -68,12 +68,12 @@ function getTicketData() {
               { title: "Acciones", orderable: false },
             ],
             language: {
-              lengthMenu: "Mostrar _MENU_ registros",
-              emptyTable: "No hay datos disponibles en la tabla",
+              lengthMenu: "Mostrar _MENU_ Registros",
+              emptyTable: "No hay Resultados disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "Mostrando página _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
+              info: "Mostrando página _PAGE_ de _PAGES_ ( _TOTAL_ Registro(s) )",
               infoEmpty: "No hay datos disponibles",
-              infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
+              infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
               search: "Buscar:",
               loadingRecords: "Buscando...",
               processing: "Procesando...",
@@ -88,7 +88,7 @@ function getTicketData() {
             dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
             initComplete: function (settings, json) {
               const buttonsHtml = `
-                                <button id="btn-asignados" id = "BotonAssing" class="btn btn-primary me-2">Asignados</button>
+                                <button id="btn-asignados" class="btn btn-primary me-2">Asignados</button>
                                 <button id="btn-por-asignar" class="btn btn-secondary">Por Asignar</button>
                             `;
               $(".dt-buttons-container").html(buttonsHtml);
@@ -96,14 +96,14 @@ function getTicketData() {
               $("#btn-asignados").on("click", function () {
                 dataTableInstance
                   .column(4)
-                  .search("Asignado al Coordinador")
+                  .search("Asignado al Tecnico")
                   .draw();
               });
 
               $("#btn-por-asignar").on("click", function () {
                 dataTableInstance
                   .column(4)
-                  .search("Asignado al Tecnico")
+                  .search("Asignado al Coordinador")
                   .draw();
               });
             },

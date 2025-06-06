@@ -1,0 +1,237 @@
+.col-xl-3,
+.col-sm-6 {
+    flex: 0 0 calc(25% - 20px);
+    max-width: calc(25% - 20px);
+    padding: 10px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+/* Media query para pantallas medianas */
+@media (max-width: 768px) {
+    .col-sm-6 {
+        flex: 0 0 calc(50% - 20px);
+        max-width: calc(50% - 20px);
+    }
+}
+
+/* Media query para pantallas pequeñas */
+@media (max-width: 576px) {
+    .col-xl-3,
+    .col-sm-6 {
+        flex: 0 0 calc(100% - 20px);
+        max-width: calc(100% - 20px);
+    }
+}
+
+/* Estilos de la tarjeta */
+.card {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Efecto hover para la tarjeta */
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilos del cuerpo de la tarjeta */
+.card-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+}
+
+/* Nuevo: Estilos para el contenedor de contenido y el icono */
+.card-content-wrapper {
+    display: flex; /* Habilitar Flexbox */
+    justify-content: space-between; /* Empuja el icono a la derecha y el texto a la izquierda */
+    align-items: center; /* Alinea los elementos verticalmente al centro */
+    gap: 1rem; /* Espacio entre el texto y el icono */
+}
+
+/* Estilos para el contenedor de números/texto (dentro de la tarjeta) */
+.numbers {
+    align-items: center; /* Alinea los elementos verticalmente al centro */
+    gap: 0.5rem; /* Espacio entre los números */
+    padding: 0.5rem; /* Padding para los números */
+    border-radius: 0.25rem; /* Redondeado */
+    width: 100%; /* Ajusta el ancho al contenedor de contenido */
+    justify-content: center; /* Alinea los elementos horizontalmente al centro */
+    align-items: center; /* Alinea los elementos verticalmente al centro */
+    flex-grow: 1; /* Ajusta el ancho al contenedor de contenido */
+    /* No se necesita un width fijo aquí, Flexbox lo ajustará */
+}
+
+/* Estilos para el párrafo del título de la tarjeta */
+.card-category {
+    font-size: 0.875rem; /* 14px */
+    margin-bottom: 0 !important;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #6c757d; /* Un gris más oscuro para el texto de categoría */
+}
+
+/* Estilo específico para el título "Tickets Abiertos" */
+/* Si tu HTML usa una etiqueta p con estilo inline, puede que necesites un selector más específico */
+.card-title {
+    font-size: 1.8rem; /* Tamaño para el número 52, puedes ajustarlo */
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+    color: #343a40; /* Un gris muy oscuro para el número */
+}
+
+.card-text {
+    font-size: 0.875rem; /* Tamaño para "Desde Ayer" */
+    margin-bottom: 0 !important;
+    color: #6c757d; /* Color para "Desde Ayer" */
+}
+
+.card-text span {
+    display: inline-block;
+    vertical-align: middle;
+    font-weight: 700;
+    margin-right: 5px; /* Espacio entre el porcentaje y el texto "Desde Ayer" */
+}
+
+.text-danger {
+    color: #dc3545; /* Rojo */
+}
+
+.text-success {
+    color: #28a745; /* Verde */
+}
+
+/* Estilos del contenedor del icono a la derecha */
+.icon-on-right {
+    flex-shrink: 0; /* Evita que el icono se encoja */
+    /* Aquí no se necesita un width o height específicos, el .icon-shape lo define */
+}
+
+/* Estilos para la forma del icono (círculo o cuadrado con degradado) */
+.icon-shape {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem; /* Tamaño del cuadrado (56px) */
+    height: 3.5rem; /* Tamaño del cuadrado (56px) */
+    border-radius: 0.75rem; /* Bordes redondeados para el cuadrado del icono */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Sombra para el cuadrado del icono */
+    /* overflow: hidden; /* Puede ser útil si el SVG es más grande que el contenedor */
+}
+
+/* Colores de fondo para los iconos (ahora para .icon-shape) */
+.bg-gradient-primary {
+    background-image: linear-gradient(195deg, #ec407a, #da376f); /* Degradado similar a primary */
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(233, 30, 99, 0.4);
+}
+
+.bg-gradient-danger {
+    background-image: linear-gradient(195deg, #ef5350, #e53935); /* Degradado similar a danger */
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(244, 67, 54, 0.4);
+}
+
+.bg-gradient-success {
+    background-image: linear-gradient(195deg, #66bb6a, #43a047); /* Degradado similar a success */
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(76, 175, 80, 0.4);
+}
+
+.bg-gradient-warning {
+    background-image: linear-gradient(195deg, #ffa726, #fb8c00); /* Degradado similar a warning */
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(255, 152, 0, 0.4);
+}
+
+/* Estilos para los SVGs dentro de los iconos */
+.icon-shape svg {
+    display: block; /* Asegura que el SVG se comporte como bloque para centrado */
+    margin: auto; /* Centra el SVG dentro de su contenedor */
+    /* Asegúrate de que el fill sea blanco si quieres que se vea */
+    fill: white;
+}
+
+
+.list-group-item-custom {
+    border: 0; /* Equivalent to border-0 */
+    display: flex; /* Equivalent to d-flex */
+    justify-content: space-between; /* Equivalent to justify-content-between */
+    align-items: center; /* Equivalent to items-center */
+    padding-left: 0; /* Equivalent to ps-0 */
+    margin-bottom: 1rem; /* Equivalent to mb-3 */
+    background-color: #f8f9fa; /* Equivalent to bg-gray-50 */
+    border-radius: 0.5rem; /* Equivalent to rounded-lg */
+    padding: 1rem; /* Equivalent to p-3 */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* Equivalent to shadow-sm */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Added for smooth transition */
+}
+
+.list-group-item-custom:hover {
+    transform: translateY(-3px); /* Slightly lift the card */
+    box-shadow: 0 4px 6px -1px rgba(0, 128, 0, 0.3), 0 2px 4px -1px rgba(0, 128, 0, 0.2); /* Sombreado verde sutil */
+    cursor: pointer; /* Change cursor to a pointer (hand) */
+}
+
+.item-content-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.icon-wrapper {
+    flex-shrink: 0;
+    width: 2.5rem; /* Roughly icon-sm, 20px width + padding */
+    height: 2.5rem; /* Roughly icon-sm, 20px height + padding */
+    margin-right: 0.75rem; /* Equivalent to me-3 */
+    background: linear-gradient(to bottom right, #4a5568, #2d3748); /* Equivalent to bg-gradient-to-br from-gray-700 to-gray-900 */
+    color: white;
+    border-radius: 0.5rem; /* Equivalent to rounded-lg */
+    padding: 0.5rem; /* Equivalent to p-2 */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Equivalent to shadow-lg */
+    display: flex; /* To center the SVG */
+    justify-content: center; /* To center the SVG */
+    align-items: center; /* To center the SVG */
+}
+
+.text-content-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-title {
+    margin-bottom: 0.25rem; /* Equivalent to mb-1 */
+    color: #2d3748; /* Equivalent to text-gray-800 */
+    font-size: 1.125rem; /* Equivalent to text-lg */
+    font-weight: 600; /* Equivalent to font-semibold */
+}
+
+.item-count {
+    font-size: 0.875rem; /* Equivalent to text-sm */
+    color: #4a5568; /* Equivalent to text-gray-600 */
+}
+
+.arrow-wrapper {
+    flex-shrink: 0;
+}
+
+.btn-link.btn-icon-only {
+    background: none;
+    border: none;
+    padding: 0;
+    border-radius: 9999px; /* Equivalent to btn-rounded */
+    width: 2rem; /* Roughly btn-sm */
+    height: 2rem; /* Roughly btn-sm */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #4a5568; /* Equivalent to text-gray-700 */
+    transition: all 0.3s ease; /* Equivalent to transition-all duration-300 */
+}
+
+.btn-link.btn-icon-only:hover {
+    color: #1a202c; /* Equivalent to hover:text-gray-900 */
+    cursor: pointer; /* Ensure the button also has a pointer cursor */
+}

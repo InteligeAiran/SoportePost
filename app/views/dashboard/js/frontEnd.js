@@ -156,6 +156,7 @@ function checkUserStatusAndPromptPassword() {
               showConfirmButton: true, // Mostrar el botón de confirmación
               confirmButtonText: "Okay", // Texto del botón
               confirmButtonColor: "#003594", // Color del botón (opcional, este es el azul predeterminado de SweetAlert)
+              color: "black", // Color del texto (opcional, este es el blanco predeterminado de SweetAlert)
             });
           } else {
             console.error(
@@ -326,7 +327,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 text:
                   response.message || "Contraseña actualizada correctamente.",
                 color: "black", // Color del texto
-                timer: 1500,
+                timer: 3000,
                 timerProgressBar: true,
                 didOpen: () => {
                   Swal.showLoading();

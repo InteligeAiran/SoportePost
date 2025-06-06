@@ -1,11 +1,9 @@
 <?php
-function mi_navbar()
-{
-
-}
+function mi_navbar() {}
 ?>
 <!DOCTYPE html>
 <lang="en">
+
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -20,10 +18,9 @@ function mi_navbar()
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/desktop/desktop.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/desktop/form.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/mobile/mobile.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/laptop/laptop.css" />
-                    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/General.css" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/General.css" />
 
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
@@ -31,9 +28,9 @@ function mi_navbar()
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
 
-        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/datatable.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/jquery.dataTables.min.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
 
         <style>
             #rifTipo {
@@ -42,71 +39,125 @@ function mi_navbar()
                 padding: 0.5rem 0.75rem;
                 font-size: 1rem;
                 height: auto;
-                -webkit-appearance: none; /* Elimina la apariencia nativa en navegadores WebKit */
-                -moz-appearance: none; /* Elimina la apariencia nativa en Firefox */
-                appearance: none; /* Elimina la apariencia nativa en otros navegadores */
+                -webkit-appearance: none;
+                /* Elimina la apariencia nativa en navegadores WebKit */
+                -moz-appearance: none;
+                /* Elimina la apariencia nativa en Firefox */
+                appearance: none;
+                /* Elimina la apariencia nativa en otros navegadores */
                 background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>');
                 background-repeat: no-repeat;
                 background-position: right 0.5rem center;
                 background-size: 1em;
-                border-radius: 0.25rem; /* Mantén o ajusta el radio del borde */
-                border: 1px solid #ced4da; /* Mantén o ajusta el color del borde */
-                color: #495057; /* Mantén o ajusta el color del texto */
+                border-radius: 0.25rem;
+                /* Mantén o ajusta el radio del borde */
+                border: 1px solid #ced4da;
+                /* Mantén o ajusta el color del borde */
+                color: #495057;
+                /* Mantén o ajusta el color del texto */
             }
 
             /* Opcional: Para eliminar el espaciado extra en algunos navegadores */
             #rifTipo::-ms-expand {
                 display: none;
             }
+
+            #createTicketFalla1Btn,
+            #createTicketFalla2Btn,
+            #closeDetailsPanelBtn{
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 1rem;
+                transition: background-color 0.3s ease;
+            }
+
+            #createTicketFalla2Btn {
+                background-color: #3498db; /* Un azul más vibrante, similar al de los enlaces activos del navbar */
+                color: #ffffff; /* Texto blanco */
+                border: 1px solid #3498db;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 1rem;
+                transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+            }
+
+            #createTicketFalla1Btn {
+                background-color: #0056b3; 
+            }
+
+            #createTicketFalla1Btn:hover {
+                background-color: #004494; /* A slightly darker shade for hover */
+            }
+
+            #createTicketFalla2Btn:hover {
+                background-color: #2980b9; /* Un tono más oscuro para el hover */
+                border-color: #2980b9;
+                color: #f8f9fa; /* Ligeramente más blanco para contraste */            
+            }
+
+            #closeDetailsPanelBtn:hover{
+                background-color: red;
+                color: white;
+            }
+
+            tr[id^="status-row-"] th,
+            tr[id^="status-row-"] td {
+                color: red; /* Color rojo */
+                font-weight: bold; /* Opcional: para que se vea más fuerte */
+            }
         </style>
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
-        <div class="min-height-100 bg-dark position-absolute w-100">
-            <div class="d-lg-none fixed-top bg-dark p-2">
-                <button class="btn btn-dark" id="filter-toggle">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                        class="bi bi-list-task" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd"
-                            d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z" />
-                        <path
-                            d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z" />
-                        <path fill-rule="evenodd"
-                            d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z" />
-                    </svg>
-                </button>
-            </div>
-            <?php require_once 'app/core/components/navbar/index.php';
-            mi_navbar(); ?>
-            <main class="main-content position-relative border-radius-lg ">
-                <div class="container-fluid py-4">
-                    <div id="Row" class="row mt-4">
-                        <div class="cord">
-                            <div class="d-flex justify-content-start mt-2">
-                                <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorNombreBtn">Buscar por Razón Social</button>
-                                <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
-                                <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
+        <div class="d-lg-none fixed-top bg-dark p-2">
+            <button class="btn btn-dark" id="filter-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                    class="bi bi-list-task" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                        d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z" />
+                    <path
+                        d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z" />
+                    <path fill-rule="evenodd"
+                        d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z" />
+                </svg>
+            </button>
+        </div>
+        <?php require_once 'app/core/components/navbar/index.php';
+        mi_navbar(); ?>
+        <div class="min-height-300 bg-dark position-absolute w-100"></div>
+        <main class="main-content position-relative border-radius-lg">
+            <div class="container-fluid py-4">
+                <div id="Row" class="row mt-4">
+                    <div class="cord">
+                        <div class="d-flex justify-content-start mt-2">
+                            <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorNombreBtn">Buscar por Razón Social</button>
+                            <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
+                            <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
+                        </div>
+                        <div id="SearchRif" class="mb-3 d-flex align-items-center">
+                            <div class="d-flex align-items-center">
+                                <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none;">
+                                    <option value="J">J</option>
+                                    <option value="V" selected>V</option>
+                                    <option value="E">E</option>
+                                    <option value="G">G</option>
+                                </select>
+                                <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
+                                <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;">Buscar</button><br>
                             </div>
-                            <div id="SearchRif" class="mb-3 d-flex align-items-center">
-                                    <div class="d-flex align-items-center">
-                                        <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none;">     
-                                            <option value="J">J</option>
-                                            <option value="V" selected>V</option>
-                                            <option value="E">E</option>
-                                            <option value="G">G</option>
-                                        </select>
-                                        <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
-                                        <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;">Buscar</button><br>
-                                    </div>
 
-                                <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none;" maxlength="24">
-                                <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none;">Buscar</button>
+                            <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none;" maxlength="24">
+                            <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none;">Buscar</button>
 
-                                <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
-                                <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
-                            </div><br>
-                            <div class="card" style="display: none;">
-                                <div class="row">
+                            <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
+                            <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
+                        </div><br>
+                        <div class="card" style="display: none;">
+                            <div class="row">
                                 <div class="col-12">
                                     <table id="rifCountTable" class="table table-bordered" style="width: 100%">
                                         <thead>
@@ -131,41 +182,223 @@ function mi_navbar()
                                         </tbody>
                                     </table>
                                 </div>
-                                </div>
-                                <div id="ModalSerial" class="modal">
-                                    <div id="ModalSerial-content" class="modal-content">
-                                        <span id="ModalSerial-close" class="close">&times;</span>
-                                        <div style="text-align: center; margin-bottom: 20px;">
-                                            <h2>Detalles del POS</h2>
+                            </div>
+                            <div id="ModalSerial" class="modal">
+                                <div id="ModalSerial-content" class="modal-content">
+                                    <span id="ModalSerial-close" class="close">&times;</span>
+                                    <div style="text-align: center; margin-bottom: 20px;">
+                                        <h2>Detalles del POS</h2>
+                                    </div>
+                                    <div style="display: flex;">
+                                        <div style="flex: 1; margin-right: 20px;">
+                                            <table id="serialCountTable">
+                                                <tbody></tbody>
+                                            </table>
                                         </div>
-                                        <div style="display: flex;">
-                                            <div style="flex: 1; margin-right: 20px;">
-                                                <table id="serialCountTable">
-                                                    <tbody></tbody>
-                                                </table>
-                                            </div>
-                                            <div style="width: 150px;">
-                                                <img src="" alt="Imagen del POS"> </img>
-                                            </div>
+                                        <div style="width: 150px;">
+                                            <img src="" alt="Imagen del POS"> </img>
                                         </div>
+                                    </div>
+                                    <div class="mt-4 w-100 d-flex justify-content-center align-items-center">
+                                        <button type="button" class="btn btn-success me-2" id="createTicketFalla1Btn">Crear Ticket Falla 1</button>
+                                        <button type="button" class="btn btn-warning" id="createTicketFalla2Btn">Crear Ticket Falla 2</button>
+                                    </div>
+                                    <div class="mt-3 w-100 d-flex justify-content-center">
+                                        <button type="button" class="btn btn-secondary w-75" id="closeDetailsPanelBtn">Cerrar Detalles</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- AVISA LAS GARANTIAS --->
-                    <div id="garantiaModal" class="modal">
-                        <div id="garantiaModal-content" class="modal-content">
-                            <span id="garantiaModal-close" class="close">&times;</span>
-                            <h2 id="garantiaModal-titulo">¡Alerta de Garantía!</h2>
-                            <p id="garantiaModal-mensaje"></p>
+            <!-- AVISA LAS GARANTIAS --->
+            <div id="garantiaModal" class="modal">
+                <div id="garantiaModal-content" class="modal-content">
+                    <span id="garantiaModal-close" class="close">&times;</span>
+                    <h2 id="garantiaModal-titulo">¡Alerta de Garantía!</h2>
+                    <p id="garantiaModal-mensaje"></p>
+                </div>
+            </div>
+            <!-- AVISA LAS GARANTIAS --->
+        </main>
+
+        <!--MODAL FALLA NIVEL 2-->
+        <div class="modal" id="miModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"
+            style="background-color: rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px);">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalToggleLabel">Falla Nivel 2</h1>
+                        <button id="cerraModal2" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" style="margin-left: 0;">
+                        <form id="miFormulario" class="row g-3">
+                            <div id="detalle1" class="col-md-6">
+                                <div><br>
+                                    <label for="FallaSelect2" class="form-label">Falla Descrita Por el Cliente</label>
+                                    <div id="FallaSelect2Container">
+                                        <select id="FallaSelect2" name="FallaSelect2" class="form-select">
+                                            <option></option>
+                                        </select>
+                                    </div><br>
+                                </div>
+                                <div style=" display: flex; flex-direction: column;">
+                                    <label id="LabelRifModal2" for="serialInputDetalle1" class="form-label">RIF cliente</label>
+                                    <input type="text" onchange="checkRif()" id="InputRif" class="form-control" placeholder="JV123456789">
+                                    <p style="margin-left: 143%; width: 100%;" id="rifMensaje"></p>
+                                </div>
+                                <div>
+                                    <label id="LabelSerial" class="form-label" for="serialSelect">Seriales de POS:</label>
+                                    <div id="serialSelectContainer">
+                                        <select class="form-select" id="serialSelect" name="serialSelect"></select>
+                                    </div><br>
+                                </div>
+                                <div>
+                                    <label id="LabelCoordinador" class="form-label" for="AsiganrCoordinador">Asignar a Coordinador</label>
+                                    <div id="AsiganrCoordinadorContainer">
+                                        <select id="AsiganrCoordinador" name="AsiganrCoordinador" class="form-select"></select>
+                                    </div><br>
+                                </div>
+                                <div class="contenedor-fechas">
+                                    <div>
+                                        <label class="form-label" id="FechaLast" for="ultimoTicketInput">Fecha del Último Ticket:</label>
+                                        <input class="form-control" type="text" id="ultimateTicketInput" readonly>
+                                        <div style=" margin-left: 5%;" id="resultadoGarantiaReingreso"></div>
+                                    </div><br>
+
+                                    <div>
+                                        <label class="form-label" id="LabelFechaInst" for="InputFechaInstall">Fecha de Instalaci&oacuten POS:</label>
+                                        <input class="form-control" type="text" id="InputFechaInstall" readonly>
+                                        <div style="margin-left: 31%;" id="resultadoGarantiaInstalacion"></div>
+                                    </div>
+                                </div><br>
+                                <div id="FallaSelectContainer1">
+                                    <select class="form-select" style="margin-left: 116%; width: 172px; display: none;" id="FallaSelectt2" name="FallaSelect1">
+                                        <option value="2">Nivel 2</option>
+                                    </select>
+                                </div>
+                                <br>
+                                <div id="DownloadsBotons">
+                                    <div>
+                                        <div id="botonCargaPDFEnv">
+                                            <button id="DownloadEnvi" class="btn btn-outline-secondary btn-sm">Cargar PDF Envio</button>
+                                            <input class="form-control" id="EnvioInput" type="file" style="display: none; margin-left: 10px;"
+                                                accept="application/pdf, image/jpeg, image/jpg">
+                                            <div id="anticipoStatus"></div>
+                                        </div>
+                                    </div><br>
+                                    <div>
+                                        <div style="display: flex; align-items: center; margin-bottom: 6%;">
+                                            <button id="DownloadExo" class="btn btn-outline-secondary btn-sm">Cargar Exoneracion</button>
+                                            <input class="form-control" id="ExoneracionInput" type="file"
+                                                style="display: none; margin-left: 10px;"
+                                                accept="application/pdf, image/jpeg, image/jpg">
+                                            <div id="exoneracionStatus"></div>
+                                        </div>
+                                    </div><br>
+                                    <div>
+                                        <div style="display: flex; align-items: center; margin-bottom: 2%;">
+                                            <button class="form-control" id="DownloadAntici" class="btn btn-outline-secondary btn-sm">Cargar PDF Anticipo</button>
+                                            <input id="AnticipoInput" type="file" style="display: none; margin-left: 10px;"
+                                                accept="application/pdf, image/jpeg, image/jpg">
+                                            <div id="envioStatus"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="RightSelects">
+                                    <!--PENDIENTE <div>
+                                        <label class="form-label" for="selectAdicional1">Opción 1:</label>
+                                        <select class="form control" name="coord_ejec[]" id="coord_ejec" multiple="multiple" >
+                                        </select>
+                                    </div> -->
+                                    <!-- <div>
+                                        <label class="form-label" for="selectAdicional2">Opción 2:</label>
+                                        <select class="form-select" id="selectAdicional2" name="selectAdicional2">
+                                            <option value="">Seleccionar</option>
+                                            <option value="valorA">Valor A</option>
+                                            <option value="valorB">Valor B</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label" for="selectAdicional3">Opción 3:</label>
+                                        <select class="form-select" id="selectAdicional3" name="selectAdicional3">
+                                            <option value="">Seleccionar</option>
+                                            <option value="itemX">Item X</option>
+                                            <option value="itemY">Item Y</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label" for="selectAdicional4">Opción 4:</label>
+                                        <select class="form-select" id="selectAdicional4" name="selectAdicional4">
+                                            <option value="">Seleccionar</option>
+                                            <option value="uno">Uno</option>
+                                            <option value="dos">Dos</option>
+                                        </select>
+                                    </div> -->
+                                </div>
+                                <input type="hidden" id="id_user" name="userId" value=<?php echo $_SESSION['id_user'] ?>>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="SendForm2" class="btn btn-primary">Guardar</button>
+                        <button id="buttonCerrar2" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--END MODAL FALLA NIVEL 2-->
+
+        <!--MODAL FALLA NIVEL 1-->
+        <div class="modal" id="miModal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"
+            data-bs-backdrop="static" data-bs-keyboard="false">
+            <div id="Modal2-div" class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalToggleLabel">Falla Nivel 1</h1>
+                        <button id="cerrar-iconNivel1" type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <label for="FallaSelect1">Falla Descrita Por el Cliente</label>
+                            <div id="FallaSelect1Container">
+                                <select id="FallaSelect1" name="FallaSelect1">
+                                </select>
+                            </div><br>
+                            <label for="serialInputDetalle1">RIF cliente</label>
+                            <input type="text" onchange="checkRif1()" id="InputRif1" placeholder="JV123456789">
+                            <p id="rifMensaje1"></p>
+                            <label for="serialSelect">Seriales de POS:</label>
+                            <div id="serialSelectContainer">
+                                <select id="serialSelect1" name="serialSelect">
+                                </select>
+                            </div><br>
+                            <label style="display: none;" for="FallaSelect">Nivel Falla</label>
+                            <div id="FallaSelectContainer">
+                                <select id="FallaSelectt1" name="FallaSelect" style="display: none;">
+                                    <option value="1">Nivel 1</option>
+                                </select>
+                            </div>
+                            <input type="hidden" id="id_user" name="userId">
+                            <button id="SendForm1" onclick="SendDataFailure1();" class="btn btn-primary">Guardar</button>
+                            <table id="serialCountTableDetalle1" class="table">
+                                <tbody></tbody>
+                            </table>
                         </div>
                     </div>
-                <!-- AVISA LAS GARANTIAS --->
-            </main>
-        
+                    <div class="modal-footer">
+                        <button id="buttonCerrar" type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--END MODAL FALLA NIVEL 1-->
+
+
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
                 <i class="fa fa-cog py-2"> </i>
@@ -255,48 +488,30 @@ function mi_navbar()
                 </div>
             </div>
         </div>
-</div>
+        </div>
         <!-- Github buttons -->
-        <script async defer src="https://buttons.github.io/buttons.js"></script>
-        <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
-        <!-- Bootstrap core JavaScript-->
         <!--JQUERY-->
+
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
         <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
 
         <!-- Bootstrap-->
         <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
+
 
         <!--   Core JS Files   -->
         <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
-        <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
 
         <!-- Datatable -->
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
-
-
-        <script src = "<?php echo APP;?>DataTable/jquery.dataTables.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/dataTables.buttons.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.print.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.flash.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/pdfmake.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/jszip.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/vfs_fonts.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.html5.min.js"></script>
-
-
-         <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
-         <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
-         <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
-         <script src = "<?php echo APP;?>js/datatables.js"></script>
-
 
         <!-- Chart -->
         <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>
@@ -311,6 +526,14 @@ function mi_navbar()
 
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
+
+
+
+
+        <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
+
+        <!-- Custom scripts for all pages-->
+        <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
         <script src="<?php echo APP; ?>app/views/consulta_rif/js/frontEnd.js"></script>
 
         <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
@@ -320,7 +543,7 @@ function mi_navbar()
         $redirect = json_encode($this->redirect);
         $usuario_id = json_encode($this->usuario_id);
         $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
-        
+
         ?>
         <script>
             var expired_sessions = <?php echo $expired_sessions; ?>;
@@ -348,16 +571,17 @@ function mi_navbar()
                             window.location.href = redirect; // Recarga la página después del temporizador
                         }, 500); // Espera 0.5 segundos (igual que el temporizador)
                     }
-                })// Programar la recarga después de que el SweetAlert se cierre
+                }) // Programar la recarga después de que el SweetAlert se cierre
             }
 
             // Agregar lógica de recarga automática
             if (sessionLifetime) {
-                setTimeout(function () {
+                setTimeout(function() {
                     location.reload(true); // Forzar recarga desde el servidor
                 }, sessionLifetime * 1000); // sessionLifetime está en segundos
             }
         </script>
         <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
     </body>
+
     </html>
