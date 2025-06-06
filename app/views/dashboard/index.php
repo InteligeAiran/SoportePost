@@ -145,100 +145,56 @@ function mi_navbar()
                 </div>
 
                 <div class="row mt-4">
+                    
                     <div class="col-lg-7 mb-lg-0 mb-4">
-                        <div class="card z-index-2 h-100">
-                            <div class="card-header pb-0 pt-3 bg-transparent">
-                                <h6 class="text-capitalize">Sales overview</h6>
-                                <p class="text-sm mb-0">
-                                    <i class="fa fa-arrow-up text-success"></i>
-                                    <span class="font-weight-bold">4% more</span> in 2021
+                        <div class="card card-chart"> <div class="card-header bg-gradient-info"> <h5 class="chart-title text-white">Resumen de Ventas</h5>
+                                <p class="chart-subtitle text-white">
+                                    <i class="fa fa-arrow-up text-success"></i> <span class="font-weight-bold">4% más</span> en 2021
                                 </p>
                             </div>
-                            <div class="card-body p-3">
-                                <div class="chart">
-                                    <canvas id="chart-line" class="chart-canvas" height="300"></canvas>
-                                </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="chart-line"></canvas> </div>
                             </div>
                         </div>
                     </div>
+
                     <div class="col-lg-5">
-                        <div class="card card-carousel overflow-hidden h-100 p-0">
-                            <div id="carouselExampleCaptions" class="carousel slide h-100" data-bs-ride="carousel">
-                                <div class="carousel-inner border-radius-lg h-100">
-                                    <div class="carousel-item h-100 active"
-                                        style="background-image: url('<?php echo APP; ?>app/public/img/dashboard/carousel-1.jpg'); background-size: cover;">
-                                        <div
-                                            class="carousel-caption d-none d-md-block bottom-0 text-start start-0 ms-5">
-                                            <div
-                                                class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3">
-                                                <i class="ni ni-camera-compact text-dark opacity-10"></i>
-                                            </div>
-                                            <h5 class="text-white mb-1">Get started with Argon</h5>
-                                            <p>There’s nothing I really wanted to do in life that I wasn’t able to get
-                                                good at.</p>
-                                        </div>
-                                    </div>
-                                    <div class="carousel-item h-100"
-                                        style="background-image: url('<?php echo APP; ?>app/public/img/dashboard/carousel-2.jpg'); background-size: cover;">
-                                        <div
-                                            class="carousel-caption d-none d-md-block bottom-0 text-start start-0 ms-5">
-                                            <div
-                                                class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3">
-                                                <i class="ni ni-bulb-61 text-dark opacity-10"></i>
-                                            </div>
-                                            <h5 class="text-white mb-1">Faster way to create web pages</h5>
-                                            <p>That’s my skill. I’m not really specifically talented at anything except
-                                                for the ability to learn.</p>
-                                        </div>
-                                    </div>
-                                    <div class="carousel-item h-100"
-                                        style="background-image: url('<?php echo APP; ?>app/public/img/dashboard/carousel-3.jpg'); background-size: cover;">
-                                        <div
-                                            class="carousel-caption d-none d-md-block bottom-0 text-start start-0 ms-5">
-                                            <div
-                                                class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3">
-                                                <i class="ni ni-trophy text-dark opacity-10"></i>
-                                            </div>
-                                            <h5 class="text-white mb-1">Share with us your design tips!</h5>
-                                            <p>Don’t be afraid to be wrong because you can’t learn anything from a
-                                                compliment.</p>
-                                        </div>
-                                    </div>
+                        <div class="card card-chart">
+                            <div class="card-header bg-gradient-primary">
+                                <h5 class="chart-title text-white">Tickets por Estado</h5>
+                                <p class="chart-subtitle text-white">Resumen de tickets abiertos, resueltos y pendientes</p>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="ticketsChart"></canvas>
                                 </div>
-                                <button class="carousel-control-prev w-5 me-3" type="button"
-                                    data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
-                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Previous</span>
-                                </button>
-                                <button class="carousel-control-next w-5 me-3" type="button"
-                                    data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
-                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Next</span>
-                                </button>
                             </div>
                         </div>
                     </div>
+
                 </div>
-                <div class="row mt-4">
+
+                <div class="row mt-6">
                     <div class="col-lg-7 mb-lg-0 mb-4">
-                        <div class="card ">
-                            <div class="card-header pb-0 p-3">
-                                <div class="d-flex justify-content-between">
-                                    <h6 class="mb-2">Sales by Country</h6>
+                        <div class="card shadow-md rounded-xl">
+                            <div class="card-header pb-0 p-4 border-b border-gray-200">
+                                <div class="flex justify-between items-center">
+                                    <h6 class="text-2xl font-semibold text-gray-800">Usuarios Registrados</h6>
                                 </div>
                             </div>
                             <div class="table-responsive">
-                                <table id="userCountTable">
+                                <table id="userCountTable" class="min-w-full leading-normal">
                                     <thead>
                                         <tr>
-                                            <th>Nombre de Usuario</th>
-                                            <th>Email</th>
-                                            <th>Fecha de Registro</th>
+                                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nombre de Usuario</th>
+                                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Fecha de Registro</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td colspan="3">Cargando...</td>
+                                            <td colspan="3" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">Cargando...</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -429,7 +385,10 @@ function mi_navbar()
         </main>
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
-                <i class="fa fa-cog py-2"> </i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="25" fill="black" class="bi bi-gear" viewBox="0 0 16 16">
+                    <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+                    <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+                </svg>
             </a>
             <div class="card shadow-lg">
                 <div class="card-header pb-0 pt-3 ">
@@ -547,87 +506,166 @@ function mi_navbar()
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
 
         <script>
-            var ctx1 = document.getElementById("chart-line").getContext("2d");
+   // El script para chart-line ya es bastante bueno, solo asegúrate de que se ejecute después del DOM
+document.addEventListener('DOMContentLoaded', function() {
+    var ctx1 = document.getElementById("chart-line").getContext("2d");
 
-            var gradientStroke1 = ctx1.createLinearGradient(0, 230, 0, 50);
+    var gradientStroke1 = ctx1.createLinearGradient(0, 230, 0, 50);
 
-            gradientStroke1.addColorStop(1, 'rgba(94, 114, 228, 0.2)');
-            gradientStroke1.addColorStop(0.2, 'rgba(94, 114, 228, 0.0)');
-            gradientStroke1.addColorStop(0, 'rgba(94, 114, 228, 0)');
-            new Chart(ctx1, {
-                type: "line",
-                data: {
-                    labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-                    datasets: [{
-                        label: "Mobile apps",
-                        tension: 0.4,
-                        borderWidth: 0,
-                        pointRadius: 0,
-                        borderColor: "#5e72e4",
-                        backgroundColor: gradientStroke1,
-                        borderWidth: 3,
-                        fill: true,
-                        data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
-                        maxBarThickness: 6
-
-                    }],
+    gradientStroke1.addColorStop(1, 'rgba(94, 114, 228, 0.2)');
+    gradientStroke1.addColorStop(0.2, 'rgba(94, 114, 228, 0.0)');
+    gradientStroke1.addColorStop(0, 'rgba(94, 114, 228, 0)');
+    new Chart(ctx1, {
+        type: "line",
+        data: {
+            labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            datasets: [{
+                label: "Mobile apps", // O "Ventas" si prefieres
+                tension: 0.4,
+                borderWidth: 0,
+                pointRadius: 0,
+                borderColor: "#5e72e4",
+                backgroundColor: gradientStroke1,
+                borderWidth: 3,
+                fill: true,
+                data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
+                maxBarThickness: 6
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // ¡Esencial para que se adapte!
+            plugins: {
+                legend: {
+                    display: false,
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            },
+            scales: {
+                y: {
+                    grid: {
+                        drawBorder: false,
+                        display: true,
+                        drawOnChartArea: true,
+                        drawTicks: false,
+                        borderDash: [5, 5],
+                        color: 'rgba(0,0,0,0.05)' // Asegura un color de cuadrícula visible
+                    },
+                    ticks: {
+                        display: true,
+                        padding: 10,
+                        color: '#6c757d', // Cambiado a un color oscuro para visibilidad
+                        font: {
+                            size: 12, // Aumenta el tamaño de fuente para legibilidad
+                            family: "Open Sans",
+                            style: 'normal',
+                            lineHeight: 2
+                        },
+                    }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false,
+                x: {
+                    grid: {
+                        drawBorder: false,
+                        display: false, // Puedes hacerla true si quieres líneas verticales
+                        drawOnChartArea: false,
+                        drawTicks: false,
+                        borderDash: [5, 5]
+                    },
+                    ticks: {
+                        display: true,
+                        color: '#6c757d', // Cambiado a un color oscuro para visibilidad
+                        padding: 20,
+                        font: {
+                            size: 12, // Aumenta el tamaño de fuente para legibilidad
+                            family: "Open Sans",
+                            style: 'normal',
+                            lineHeight: 2
+                        },
+                    }
+                },
+            },
+        },
+    });
+});
+        </script>
+        <script>
+            // Asegúrate de que este script se ejecute después de que el DOM esté cargado
+// Asegúrate de que este script se ejecute después de que el DOM esté cargado
+document.addEventListener('DOMContentLoaded', function() {
+    var ctx = document.getElementById('ticketsChart').getContext('2d');
+    var ticketsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Abiertos', 'Resueltos', 'Pendientes'],
+            datasets: [{
+                label: 'Cantidad de Tickets',
+                data: [52, 3, 5],
+                backgroundColor: [
+                    'rgba(138, 43, 226, 0.8)', // Morado/Índigo
+                    'rgba(75, 192, 192, 0.8)', // Verde/Teal
+                    'rgba(255, 99, 132, 0.8)'  // Rojo/Rosa
+                ],
+                borderColor: [
+                    'rgba(138, 43, 226, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1,
+                // --- AJUSTES PARA EL ANCHO DE LAS BARRAS ---
+                categoryPercentage: 0.7, // Espacio ocupado por las categorías (grupos de barras)
+                barPercentage: 0.8      // Espacio ocupado por cada barra dentro de su categoría
+                // Puedes jugar con estos valores. 1.0 (100%) para que no haya espacio.
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // ¡Muy importante!
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#6c757d',
+                        font: {
+                            size: 12 // Aumenta un poco el tamaño de la fuente para mejor legibilidad
                         }
                     },
-                    interaction: {
-                        intersect: false,
-                        mode: 'index',
-                    },
-                    scales: {
-                        y: {
-                            grid: {
-                                drawBorder: false,
-                                display: true,
-                                drawOnChartArea: true,
-                                drawTicks: false,
-                                borderDash: [5, 5]
-                            },
-                            ticks: {
-                                display: true,
-                                padding: 10,
-                                color: '#fbfbfb',
-                                font: {
-                                    size: 11,
-                                    family: "Open Sans",
-                                    style: 'normal',
-                                    lineHeight: 2
-                                },
-                            }
-                        },
-                        x: {
-                            grid: {
-                                drawBorder: false,
-                                display: false,
-                                drawOnChartArea: false,
-                                drawTicks: false,
-                                borderDash: [5, 5]
-                            },
-                            ticks: {
-                                display: true,
-                                color: '#ccc',
-                                padding: 20,
-                                font: {
-                                    size: 11,
-                                    family: "Open Sans",
-                                    style: 'normal',
-                                    lineHeight: 2
-                                },
-                            }
-                        },
-                    },
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)',
+                        drawBorder: false // Quita el borde del grid si no lo quieres
+                    }
                 },
-            });
+                x: {
+                    ticks: {
+                        color: '#6c757d',
+                        font: {
+                            size: 12 // Aumenta un poco el tamaño de la fuente para mejor legibilidad
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)',
+                        drawBorder: false // Quita el borde del grid si no lo quieres
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false, // Si el gráfico es simple y las etiquetas son claras
+                    labels: {
+                        color: '#343a40'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    titleColor: 'white',
+                    bodyColor: 'white'
+                }
+            }
+        }
+    });
+});
         </script>
         <script>
             var win = navigator.platform.indexOf('Win') > -1;

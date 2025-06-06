@@ -235,3 +235,115 @@
     color: #1a202c; /* Equivalent to hover:text-gray-900 */
     cursor: pointer; /* Ensure the button also has a pointer cursor */
 }
+
+/* --- Nuevos estilos para la tarjeta del gráfico --- */
+.card-chart {
+    height: 100%; /* Asegura que la tarjeta del gráfico ocupe toda la altura disponible */
+    display: flex;
+    flex-direction: column;
+}
+
+.card-chart .card-header {
+    padding: 1.5rem; /* Padding para el encabezado */
+    border-top-left-radius: 0.75rem; /* Mantener bordes redondeados superiores */
+    border-top-right-radius: 0.75rem;
+    position: relative; /* Para sombras o elementos posicionados */
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(233, 30, 99, 0.4); /* Sombra similar a los iconos */
+}
+
+.card-chart .chart-title {
+    font-size: 1.5rem; /* Tamaño del título del gráfico */
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: white; /* Color del título */
+}
+
+.card-chart .chart-subtitle {
+    font-size: 0.9rem; /* Tamaño del subtítulo */
+    color: rgba(255, 255, 255, 0.8); /* Blanco con opacidad */
+    margin-bottom: 0;
+}
+
+.card-chart .card-body {
+    flex-grow: 1; /* Permite que el cuerpo del gráfico ocupe el espacio restante */
+    display: flex;
+    align-items: center; /* Centra el canvas verticalmente si es necesario */
+    justify-content: center; /* Centra el canvas horizontalmente si es necesario */
+    padding: 1.5rem; /* Mismo padding que otras tarjetas */
+}
+
+.chart-container {
+    width: 100%; /* Asegura que el contenedor del canvas ocupe el ancho del body */
+    height: 100%; /* Asegura que el contenedor del canvas ocupe el alto del body */
+    max-height: 300px; /* Puedes ajustar la altura máxima de tu gráfico si el alto de la tarjeta es variable */
+    position: relative; /* Necesario para que Chart.js funcione correctamente */
+}
+
+/* --- Nuevos estilos para la tarjeta del gráfico --- */
+.card-chart {
+    height: 100%; /* Esencial para que la tarjeta del gráfico ocupe toda la altura disponible */
+    display: flex;
+    flex-direction: column;
+    /* Asegúrate de que las sombras y bordes estén ya definidos en .card general,
+       o añade aquí si esta tarjeta es una excepción. */
+    border-radius: 0.75rem; /* Asegura bordes redondeados */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Sombra */
+}
+
+.card-chart .card-header {
+    padding: 1.5rem;
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+    position: relative;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(233, 30, 99, 0.4); /* Sombra similar a los iconos */
+}
+
+.card-chart .chart-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.card-chart .chart-subtitle {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0;
+}
+
+.card-chart .card-body {
+    flex-grow: 1; /* Permite que el cuerpo del gráfico ocupe el espacio restante */
+    display: flex; /* Añadimos flexbox para centrar y controlar el tamaño del canvas */
+    align-items: center; /* Centra el canvas verticalmente */
+    justify-content: center; /* Centra el canvas horizontalmente */
+    padding: 1.5rem;
+}
+
+.chart-container {
+    width: 100%; /* Ocupa todo el ancho disponible */
+    height: 100%; /* Ocupa todo el alto disponible dentro del card-body */
+    max-height: 300px; /* <--- Ajusta esta altura si lo necesitas.
+                           Puedes darle una altura fija aquí si el contenedor no es lo suficientemente alto.
+                           Sin embargo, si tu `col-lg-5` y `card` ya tienen `h-100`, este `max-height` podría limitar el crecimiento.
+                           Lo ideal es dejarlo sin `max-height` si el contenedor padre ya gestiona la altura. */
+    position: relative; /* Crucial para Chart.js */
+}
+
+/* El canvas de Chart.js dentro del contenedor */
+.chart-container canvas {
+    width: 100% !important; /* Asegura que el canvas ocupe todo el ancho de su contenedor */
+    height: 100% !important; /* Asegura que el canvas ocupe todo el alto de su contenedor */
+}
+
+/* Asegúrate de que tus clases de degradado estén definidas, por ejemplo: */
+.bg-gradient-primary {
+    background-image: linear-gradient(195deg, #ec407a, #da376f); /* Rojo/Rosa, este es el que usas en el encabezado */
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(233, 30, 99, 0.4);
+}
+/* Y los otros degradados que ya tienes:
+.bg-gradient-success { ... }
+.bg-gradient-info { ... }
+.bg-gradient-warning { ... }
+.bg-gradient-danger { ... }
+.bg-gradient-purple-indigo { ... }
+*/
