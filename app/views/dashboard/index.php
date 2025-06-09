@@ -58,9 +58,9 @@ function mi_navbar()
                                         <div class="numbers">
                                             <p class="card-category text-sm mb-0 text-uppercase font-weight-bold">
                                                 Tickets Abiertos</p>
-                                            <h5 class="card-title font-weight-bolder">52</h5>
+                                            <h5 class="card-title font-weight-bolder"></h5>
                                             <p class="card-text mb-0">
-                                                <span class="text-danger font-weight-bolder">-92.86%</span>
+                                                <span class="text-danger font-weight-bolder"></span>
                                                 Desde Ayer
                                             </p>
                                         </div>
@@ -206,11 +206,32 @@ function mi_navbar()
                         </div>
                     </div>
 
+                    <div class="modal fade" id="RegionTicketsModal" tabindex="-1"
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-gradient-info text-white">
+                                    <h5 class="modal-title"  style = "color: white" id="monthlyTicketsModalLabel">Detalle de Tickets Regionales
+                                    </h5>
+                                    <button type="button" class="btn-close" id="ModalStadisticRegionIcon" data-bs-dismiss="modal"
+                                        aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="RegionTicketsContent"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id= "ModalStadisticRegion" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-lg-5">
-                        <div class="card card-chart">
+                        <div class="card card-chart" id="RegionTicketsCard">
                             <div class="card-header bg-gradient-primary">
-                                <h5 class="chart-title text-white">Tickets por Estado</h5>
-                                <p class="chart-subtitle text-white">Resumen de tickets abiertos, resueltos y pendientes
+                                <h5 class="chart-title text-white">Tickets por Regiones</h5>
+                                <p class="chart-subtitle text-white">Resumen de tickets Regionales
                                 </p>
                             </div>
                             <div class="card-body">
@@ -220,7 +241,6 @@ function mi_navbar()
                             </div>
                         </div>
                     </div>
-
                 </div>
 
                 <div class="row mt-6">
@@ -586,7 +606,7 @@ function mi_navbar()
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
 
         
-        <script>
+        <!--script>
             // Asegúrate de que este script se ejecute después de que el DOM esté cargado
             // Asegúrate de que este script se ejecute después de que el DOM esté cargado
             document.addEventListener('DOMContentLoaded', function () {
@@ -670,7 +690,7 @@ function mi_navbar()
                 }
                 Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
             }
-        </script>
+        </script-->
         <?php
         if (isset($this->js)) {
             foreach ($this->js as $js) {

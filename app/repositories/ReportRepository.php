@@ -213,9 +213,54 @@ class ReportRepository
         }
     }
 
+    public function GetMonthlyCreatedTicketsForChartForState(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetMonthlyCreatedTicketsForChartForState(); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
+    public function GetRegionsTicketDetails(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetRegionsTicketDetails(); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
     public function GetMonthlyTicketPercentageChange(){
         // Lógica para obtener todos los usuarios
         $result = $this->model->GetMonthlyTicketPercentageChange(); // Asumiendo que tienes este método en tu modelo
         return $result['row']['overall_percentage_change'];
+    }
+
+    public function GetIndividualTicketDetailsByRegion($id_region){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetIndividualTicketDetailsByRegion($id_region); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
     }
 }

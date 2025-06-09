@@ -213,6 +213,17 @@ class reportsModel extends Model
         }
     }
 
+    public function GetIndividualTicketDetailsByRegion($id_region){
+        try {
+            $escaped_id_region = pg_escape_literal($this->db->getConnection(), $id_region);
+            $sql = "SELECT * FROM get_individual_ticket_details_by_region(".$escaped_id_region.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
     public function GetIndividualTicketDetails($month, $status){
         try {
             $escaped_month = pg_escape_literal($this->db->getConnection(), $month);
@@ -238,6 +249,26 @@ class reportsModel extends Model
     public function GetMonthlyTicketPercentageChange(){
         try {
             $sql = "SELECT * FROM get_latest_monthly_ticket_percentage_change()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetMonthlyCreatedTicketsForChartForState(){
+        try {
+            $sql = "SELECT * FROM GetTicketsByRegion()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetRegionsTicketDetails(){
+        try {
+            $sql = "SELECT * FROM GetTicketsByRegion()";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
