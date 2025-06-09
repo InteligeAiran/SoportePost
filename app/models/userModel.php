@@ -158,7 +158,7 @@ class userModel extends Model{
 
             $sql = "SELECT * FROM sp_editarusuarios(".$escaped_idusuario_edit.", ".$escaped_edit_nombreusers.", ".$escaped_edit_apellidousers.", ".$escaped_edit_usuario.",
                     ".$escaped_identificacion.", ".$escaped_edit_correo.", ".$escaped_edit_area_users.",".$escaped_edit_regionusers.",".$escaped_edit_tipo_users.", ".$escaped_edit_idnivel.",".$escaped_id_user.")";
-            echo $sql;
+            //echo $sql;
             $result = Model::getResult($sql, $this->db);
             return $result;
 

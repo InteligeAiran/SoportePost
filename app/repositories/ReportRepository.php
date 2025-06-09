@@ -1,16 +1,20 @@
 <?php
 namespace App\Repositories; // Usar namespaces para organizar tus clases
-require_once __DIR__. '/../models/reportsModel.php'; // Asegúrate de que el modelo de usuario esté incluido
+
+require_once __DIR__ . '/../models/reportsModel.php'; // Asegúrate de que el modelo de usuario esté incluido
 use reportsModel; // Asegúrate de que tu modelo de usuario exista
+
 class ReportRepository
 {
     private $model;
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->model = new reportsModel(); // Instancia tu modelo de usuario
     }
 
-    public function GetAllDataTicket($id_region){
+    public function GetAllDataTicket($id_region)
+    {
         // Lógica para obtener todos los usuarios
         $result = $this->model->GetTicketsByRegion($id_region); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
@@ -25,8 +29,9 @@ class ReportRepository
         }
     }
 
-    public function SearchRif($rif){
-       // Lógica para obtener todos los usuarios
+    public function SearchRif($rif)
+    {
+        // Lógica para obtener todos los usuarios
         $result = $this->model->GetTicketsByRif($rif); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
@@ -40,7 +45,8 @@ class ReportRepository
         }
     }
 
-    public function SearchSerial($serial){
+    public function SearchSerial($serial)
+    {
         $result = $this->model->SearchSerial($serial);
         if ($result && $result['numRows'] > 0) {
             $rows = [];
@@ -54,7 +60,8 @@ class ReportRepository
         }
     }
 
-    public function getDomiciliacionTickets($id_user){
+    public function getDomiciliacionTickets($id_user)
+    {
         $result = $this->model->GetDomiciliacionTickets($id_user);
         if ($result) {
             //var_dump($result);  
@@ -70,7 +77,8 @@ class ReportRepository
         }
     }
 
-    public function SearchRangeData($ini_date, $end_date){
+    public function SearchRangeData($ini_date, $end_date)
+    {
         $result = $this->model->SearchRangeData($ini_date, $end_date);
 
         if ($result) {
@@ -87,42 +95,49 @@ class ReportRepository
         }
     }
 
-    public  function getTicketabiertoCount(){
+    public function getTicketabiertoCount()
+    {
         // Lógica para obtener la cantidad de usuarios
         $result = $this->model->getTicketabiertoCount(); // Asumiendo que tienes este método en tu modelo
         return $result['row']['total_tickets_abiertos'];
     }
 
-    public  function getTicketsResueltosCount(){
+    public function getTicketsResueltosCount()
+    {
         // Lógica para obtener la cantidad de usuarios
         $result = $this->model->getTicketsResueltosCount(); // Asumiendo que tienes este método en tu modelo
         return $result['row']['total_tickets_resuelto'];
     }
 
-    public function getTicketsTotalCount(){
+    public function getTicketsTotalCount()
+    {
         // Lógica para obtener la cantidad de usuarios
         $result = $this->model->getTicketsTotalCount(); // Asumiendo que tienes este método en tu modelo
         return $result['row']['total_tickets_general'];
     }
 
-    public function getTicketPercentageData(){
+    public function getTicketPercentageData()
+    {
         $result = $this->model->getTicketCountsForPercentage();
         return $result;
     }
 
-    public function getTicketsResueltosPercentageData(){
+    public function getTicketsResueltosPercentageData()
+    {
         $result = $this->model->getTicketsResueltosCountsForPercentage();
         return $result;
     }
 
-    public function getTotalTicketsPercentageData(){
+    public function getTotalTicketsPercentageData()
+    {
         $result = $this->model->getTotalTicketsCountsForPercentage();
         return $result;
     }
 
-    public function getTicketDataFinal(){
+    public function getTicketDataFinal()
+    {
         $result = $this->model->GetDataTicketFinal();
-        
+
         if ($result) {
             //var_dump($result);  
             $tickets = [];
@@ -136,18 +151,71 @@ class ReportRepository
         }
     }
 
-    public function saveDocument($id_ticket,
-                $filePathForDatabase,    // La ruta relativa que se guarda en la DB
-                $mimeTypeFromFrontend,   // El tipo MIME
-                $originalDocumentName,   // Nombre original del archivo
-                $documentSize            // La ruta relativa que se guarda en la DB para acceder al archivo
-        ) {
-            $result = $this->model->saveDocument($id_ticket,  $originalDocumentName, $documentSize, $mimeTypeFromFrontend, $filePathForDatabase);
-            return $result;
-        }
+    public function saveDocument(
+        $id_ticket,
+        $filePathForDatabase,    // La ruta relativa que se guarda en la DB
+        $mimeTypeFromFrontend,   // El tipo MIME
+        $originalDocumentName,   // Nombre original del archivo
+        $documentSize            // La ruta relativa que se guarda en la DB para acceder al archivo
+    ) {
+        $result = $this->model->saveDocument($id_ticket, $originalDocumentName, $documentSize, $mimeTypeFromFrontend, $filePathForDatabase);
+        return $result;
+    }
 
-        public function getDocument($id_ticket){
-            $result = $this->model->getDocument($id_ticket);
-            return $result;
+    public function getDocument($id_ticket)
+    {
+        $result = $this->model->getDocument($id_ticket);
+        return $result;
+    }
+
+    public function GetMonthlyTicketDetails(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetMonthlyTicketDetails(); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
         }
+    }
+
+    public function GetIndividualTicketDetails($month, $status){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetIndividualTicketDetails($month, $status); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
+    public function GetMonthlyCreatedTicketsForChart(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetMonthlyCreatedTicketsForChart(); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
+    public function GetMonthlyTicketPercentageChange(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetMonthlyTicketPercentageChange(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['overall_percentage_change'];
+    }
 }

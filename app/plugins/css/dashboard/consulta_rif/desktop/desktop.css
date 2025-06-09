@@ -334,6 +334,7 @@
         max-width: 800px; /* Ajusta según sea necesario */
         position: relative;
         margin-left: 35%;
+        margin-top: 4%;
     }
 
     #ModalSerial-content h2 {
@@ -346,6 +347,7 @@
     #serialCountTable {
         width: 65%;
         border-collapse: collapse;
+        margin-left: 6%;
     }
 
     #serialCountTable td:hover {
@@ -476,19 +478,20 @@
     }
 
     .ingenico-ict220{
-        margin-left: -179%;
-        margin-top: -1%;
+        margin-left: -152%;
+        margin-top: -8%;
         height: 99%;
     }
 
     .move-2500{
-        margin-left: -144px;
-        height: 78%;
+        margin-left: -93px;
+        height: 71%;
     }
 
     .ingenico-iwl220{
-        margin-top: -15%;
+        margin-top: -43%;
         margin-left: -179%;
+        height: 110%;
     }
 
     .sunmi-P2mini{

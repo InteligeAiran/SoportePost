@@ -338,9 +338,14 @@ class Consulta extends Controller {
         $falla = isset($_POST['falla']) ? $_POST['falla'] : '';
         $nivelFalla = isset($_POST['nivelFalla']) ? $_POST['nivelFalla'] : '';
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $hoy = date('dmo');
+        $resultado = $repository->GetTotalTickets();
+        $totaltickets = $resultado + 1;
+        $paddedTicketNumber = sprintf("%05d", $totaltickets);
+        $Nr_ticket = $hoy. $paddedTicketNumber;
         //var_dump($id_user, $serial, $falla, $nivelFalla);
         if($serial != '' && $falla != '' && $nivelFalla != '' && $id_user != '' && $rif != ''){
-            $result = $repository->SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif);
+            $result = $repository->SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket);
             if ($result) {
                 $this->response(['success' => true, 'message' => 'Se guardaron los datos del Ticket correctamente.'], 200); // Código de estado 200 OK por defecto
             } else {
@@ -367,8 +372,14 @@ class Consulta extends Controller {
         $mimeTypeEnvio = null;
 
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
-    
+
         if (!empty($serial)) {
+            $hoy = date('dmo');
+            $resultado = $repository->GetTotalTickets();
+            $totaltickets = $resultado + 1;
+            $paddedTicketNumber = sprintf("%05d", $totaltickets);
+            $Nr_ticket = $hoy. $paddedTicketNumber;
+
             if (!empty($descripcion)) {
                 if (!empty($coordinador)) {
                     // Guardar archivo de envío
@@ -415,7 +426,7 @@ class Consulta extends Controller {
                             return;
                         }
                     }
-                    $result = $repository->SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio, $rif);
+                    $result = $repository->SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio, $rif, $Nr_ticket);
     
                     if ($result) {
                         $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
