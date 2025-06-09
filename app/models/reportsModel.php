@@ -202,6 +202,48 @@ class reportsModel extends Model
             // Handle exception
         }
     }
+
+    public function GetMonthlyTicketDetails(){
+        try {
+            $sql = "SELECT * FROM get_monthly_ticket_details()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetIndividualTicketDetails($month, $status){
+        try {
+            $escaped_month = pg_escape_literal($this->db->getConnection(), $month);
+            $escaped_status = pg_escape_literal($this->db->getConnection(), $status);
+            $sql = "SELECT * FROM get_individual_ticket_details(".$escaped_status.", ".$escaped_month.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetMonthlyCreatedTicketsForChart(){
+        try {
+            $sql = "SELECT * FROM get_monthly_created_tickets_for_chart()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetMonthlyTicketPercentageChange(){
+        try {
+            $sql = "SELECT * FROM get_latest_monthly_ticket_percentage_change()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
 ?>
 

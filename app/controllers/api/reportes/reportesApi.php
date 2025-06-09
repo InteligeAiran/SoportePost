@@ -93,6 +93,22 @@ class reportes extends Controller {
                     $this->getDocument();
                 break;
 
+                case 'GetMonthlyTicketDetails':
+                    $this->GetMonthlyTicketDetails();
+                break;
+
+                case 'GetIndividualTicketDetails':
+                    $this->GetIndividualTicketDetails();
+                break;
+
+                case 'GetMonthlyCreatedTicketsForChart':
+                    $this->GetMonthlyCreatedTicketsForChart();
+                break;
+
+                case 'GetMonthlyTicketPercentageChange':
+                    $this->GetMonthlyTicketPercentageChange();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -388,6 +404,60 @@ class reportes extends Controller {
             }
         } else {
 
+        }
+    }
+
+    function GetMonthlyTicketDetails(){
+        $repository = new ReportRepository();
+        $result = $repository->GetMonthlyTicketDetails();
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'details' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+    function GetIndividualTicketDetails(){
+        $repository = new ReportRepository();
+        $month = isset($_POST['month'])? $_POST['month'] : null;
+        $status = isset($_POST['status'])? $_POST['status'] : null;
+        if ($month && $status) {
+            $result = $repository->GetIndividualTicketDetails($status, $month);
+            if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+                $this->response(['success' => true, 'details' => $result], 200);
+            } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+                $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+            } else {
+                $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+            }
+        } else {
+            $this->response(['success' => false, 'message' => 'Debe proporcionar un ID de ticket'], 400); // Código 400 Bad Request
+        }
+    }
+
+    public function GetMonthlyCreatedTicketsForChart(){
+        $repository = new ReportRepository();
+        $result = $repository->GetMonthlyCreatedTicketsForChart();
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'details' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+    public function GetMonthlyTicketPercentageChange(){
+        $repository = new ReportRepository();
+        $result = $repository->GetMonthlyTicketPercentageChange();
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'porcent' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 }

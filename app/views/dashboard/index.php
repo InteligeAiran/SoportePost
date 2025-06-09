@@ -2,7 +2,7 @@
 function mi_navbar()
 {
 
-} 
+}
 ?>
 <!DOCTYPE html>
 <lang="en">
@@ -21,7 +21,7 @@ function mi_navbar()
         <!-- Nucleo Icons -->
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/carts.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/carts.css" />
         <!-- Font Awesome Icons -->
 
         <!-- CSS Files -->
@@ -54,17 +54,22 @@ function mi_navbar()
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
                             <div class="card">
                                 <div class="card-body">
-                                    <div class="card-content-wrapper"> <div class="numbers">
-                                            <p class="card-category text-sm mb-0 text-uppercase font-weight-bold">Tickets Abiertos</p>
+                                    <div class="card-content-wrapper">
+                                        <div class="numbers">
+                                            <p class="card-category text-sm mb-0 text-uppercase font-weight-bold">
+                                                Tickets Abiertos</p>
                                             <h5 class="card-title font-weight-bolder">52</h5>
                                             <p class="card-text mb-0">
                                                 <span class="text-danger font-weight-bolder">-92.86%</span>
                                                 Desde Ayer
                                             </p>
                                         </div>
-                                        <div class="icon-on-right"> <div class="icon-shape bg-gradient-primary">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-ticket-fill" viewBox="0 0 16 16">
-                                                    <path d="M1.5 3A1.5 1.5 0 0 0 0 4.5V6a.5.5 0 0 0 .5.5 1.5 1.5 0 1 1 0 3 .5.5 0 0 0-.5.5v1.5A1.5 1.5 0 0 0 1.5 13h13a1.5 1.5 0 0 0 1.5-1.5V10a.5.5 0 0 0-.5-.5 1.5 1.5 0 0 1 0-3A.5.5 0 0 0 16 6V4.5A1.5 1.5 0 0 0 14.5 3z"/>
+                                        <div class="icon-on-right">
+                                            <div class="icon-shape bg-gradient-primary">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                                    fill="white" class="bi bi-ticket-fill" viewBox="0 0 16 16">
+                                                    <path
+                                                        d="M1.5 3A1.5 1.5 0 0 0 0 4.5V6a.5.5 0 0 0 .5.5 1.5 1.5 0 1 1 0 3 .5.5 0 0 0-.5.5v1.5A1.5 1.5 0 0 0 1.5 13h13a1.5 1.5 0 0 0 1.5-1.5V10a.5.5 0 0 0-.5-.5 1.5 1.5 0 0 1 0-3A.5.5 0 0 0 16 6V4.5A1.5 1.5 0 0 0 14.5 3z" />
                                                 </svg>
                                             </div>
                                         </div>
@@ -81,13 +86,19 @@ function mi_navbar()
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
                                             <p class="card-category">Tickets Resueltos</p>
-                                            <h5 id="TicketsResuelto" class="card-title">3</h5> <p class="card-text">
-                                                <span id="ticketResueltoPercentage" class="text-success-percentage">10%</span> <span class="text-muted">Desde Ayer</span>
+                                            <h5 id="TicketsResuelto" class="card-title">3</h5>
+                                            <p class="card-text">
+                                                <span id="ticketResueltoPercentage"
+                                                    class="text-success-percentage">10%</span> <span
+                                                    class="text-muted">Desde Ayer</span>
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
-                                            <div class="icon-shape bg-gradient-success"> <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
-                                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+                                            <div class="icon-shape bg-gradient-success"> <svg
+                                                    xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                                    fill="white" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                                    <path
+                                                        d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
                                                 </svg>
                                             </div>
                                         </div>
@@ -97,20 +108,26 @@ function mi_navbar()
                         </div>
                     </div>
 
-                   <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
                             <div class="card">
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
                                             <p class="card-category">Total Tickets</p>
-                                            <h5 id="TotalTicket" class="card-title">56</h5> <p class="card-text">
-                                                <span id="totalTicketPercentage" class="text-info-percentage">5.71%</span> <span class="text-muted">Desde Ayer</span>
+                                            <h5 id="TotalTicket" class="card-title">56</h5>
+                                            <p class="card-text">
+                                                <span id="totalTicketPercentage"
+                                                    class="text-info-percentage">5.71%</span> <span
+                                                    class="text-muted">Desde Ayer</span>
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
-                                            <div class="icon-shape bg-gradient-info"> <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-ticket-detailed-fill" viewBox="0 0 16 16">
-                                                    <path d="M0 4.5A1.5 1.5 0 0 1 1.5 3h13A1.5 1.5 0 0 1 16 4.5V6a.5.5 0 0 1-.5.5 1.5 1.5 0 0 0 0 3 .5.5 0 0 1 .5.5v1.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5V10a.5.5 0 0 1 .5-.5 1.5 1.5 0 1 0 0-3A.5.5 0 0 1 0 6zm4 1a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5m0 5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5M4 8a1 1 0 0 0 1 1h6a1 1 0 1 0 0-2H5a1 1 0 0 0-1 1" />
+                                            <div class="icon-shape bg-gradient-info"> <svg
+                                                    xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                                    fill="white" class="bi bi-ticket-detailed-fill" viewBox="0 0 16 16">
+                                                    <path
+                                                        d="M0 4.5A1.5 1.5 0 0 1 1.5 3h13A1.5 1.5 0 0 1 16 4.5V6a.5.5 0 0 1-.5.5 1.5 1.5 0 0 0 0 3 .5.5 0 0 1 .5.5v1.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5V10a.5.5 0 0 1 .5-.5 1.5 1.5 0 1 0 0-3A.5.5 0 0 1 0 6zm4 1a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5m0 5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5M4 8a1 1 0 0 0 1 1h6a1 1 0 1 0 0-2H5a1 1 0 0 0-1 1" />
                                                 </svg>
                                             </div>
                                         </div>
@@ -127,13 +144,18 @@ function mi_navbar()
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
                                             <p class="card-category">Actividad Mensual</p>
-                                            <h5 class="card-title">4</h5> <p class="card-text">
-                                                <span class="text-success-percentage">+5%</span> <span class="text-muted">Último mes</span>
+                                            <h5 class="card-title">4</h5>
+                                            <p class="card-text">
+                                                <span class="text-success-percentage">+5%</span> <span
+                                                    class="text-muted">Último mes</span>
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
-                                            <div class="icon-shape bg-gradient-warning"> <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-calendar-check-fill" viewBox="0 0 16 16">
-                                                    <path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2m-5.146-5.146-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708" />
+                                            <div class="icon-shape bg-gradient-warning"> <svg
+                                                    xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                                    fill="white" class="bi bi-calendar-check-fill" viewBox="0 0 16 16">
+                                                    <path
+                                                        d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2m-5.146-5.146-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708" />
                                                 </svg>
                                             </div>
                                         </div>
@@ -145,16 +167,41 @@ function mi_navbar()
                 </div>
 
                 <div class="row mt-4">
-                    
+
                     <div class="col-lg-7 mb-lg-0 mb-4">
-                        <div class="card card-chart"> <div class="card-header bg-gradient-info"> <h5 class="chart-title text-white">Resumen de Ventas</h5>
+                        <div class="card card-chart" id="monthlyTicketsCard">
+                            <div class="card-header bg-gradient-info">
+                                <h5 class="chart-title text-white">Ticket Mensuales</h5>
                                 <p class="chart-subtitle text-white">
-                                    <i class="fa fa-arrow-up text-success"></i> <span class="font-weight-bold">4% más</span> en 2021
+                                    <i class="fa fa-arrow-up text-success"></i> 
+                                    <span id="porcent" class="font-weight-bold"></span>
                                 </p>
                             </div>
                             <div class="card-body">
                                 <div class="chart-container">
-                                    <canvas id="chart-line"></canvas> </div>
+                                    <canvas id="chart-line"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="monthlyTicketsModal" tabindex="-1"
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-gradient-info text-white">
+                                    <h5 class="modal-title"  style = "color: white" id="monthlyTicketsModalLabel">Detalle de Tickets Mensuales
+                                    </h5>
+                                    <button type="button" class="btn-close" id="ModalStadisticMonthIcon" data-bs-dismiss="modal"
+                                        aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="monthlyTicketsContent"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id= "ModalStadisticMonth" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cerrar</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -163,7 +210,8 @@ function mi_navbar()
                         <div class="card card-chart">
                             <div class="card-header bg-gradient-primary">
                                 <h5 class="chart-title text-white">Tickets por Estado</h5>
-                                <p class="chart-subtitle text-white">Resumen de tickets abiertos, resueltos y pendientes</p>
+                                <p class="chart-subtitle text-white">Resumen de tickets abiertos, resueltos y pendientes
+                                </p>
                             </div>
                             <div class="card-body">
                                 <div class="chart-container">
@@ -187,14 +235,22 @@ function mi_navbar()
                                 <table id="userCountTable" class="min-w-full leading-normal">
                                     <thead>
                                         <tr>
-                                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nombre de Usuario</th>
-                                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
-                                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Fecha de Registro</th>
+                                            <th
+                                                class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                Nombre de Usuario</th>
+                                            <th
+                                                class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                Email</th>
+                                            <th
+                                                class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                Fecha de Registro</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td colspan="3" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">Cargando...</td>
+                                            <td colspan="3"
+                                                class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">
+                                                Cargando...</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -213,9 +269,13 @@ function mi_navbar()
                                     <li class="list-group-item list-group-item-custom">
                                         <div class="item-content-wrapper">
                                             <div class="icon-wrapper">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-wrench-adjustable" viewBox="0 0 16 16">
-                                                    <path d="M16 4.5a4.5 4.5 0 0 1-1.703 3.526L13 5l2.959-1.11q.04.3.041.61"/>
-                                                    <path d="M11.5 9c.653 0 1.273-.139 1.833-.39L12 5.5 11 3l3.826-1.53A4.5 4.5 0 0 0 7.29 6.092l-6.116 5.096a2.583 2.583 0 1 0 3.638 3.638L9.908 8.71A4.5 4.5 0 0 0 11.5 9m-1.292-4.361-.596.893.809-.27a.25.25 0 0 1 .287.377l-.596.893.809-.27.158.475-1.5.5a.25.25 0 0 1-.287-.376l.596-.893-.809.27a.25.25 0 0 1-.287-.377l.596-.893-.809.27-.158-.475 1.5-.5a.25.25 0 0 1 .287.376M3 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                    fill="currentColor" class="bi bi-wrench-adjustable"
+                                                    viewBox="0 0 16 16">
+                                                    <path
+                                                        d="M16 4.5a4.5 4.5 0 0 1-1.703 3.526L13 5l2.959-1.11q.04.3.041.61" />
+                                                    <path
+                                                        d="M11.5 9c.653 0 1.273-.139 1.833-.39L12 5.5 11 3l3.826-1.53A4.5 4.5 0 0 0 7.29 6.092l-6.116 5.096a2.583 2.583 0 1 0 3.638 3.638L9.908 8.71A4.5 4.5 0 0 0 11.5 9m-1.292-4.361-.596.893.809-.27a.25.25 0 0 1 .287.377l-.596.893.809-.27.158.475-1.5.5a.25.25 0 0 1-.287-.376l.596-.893-.809.27a.25.25 0 0 1-.287-.377l.596-.893-.809.27-.158-.475 1.5-.5a.25.25 0 0 1 .287.376M3 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
                                                 </svg>
                                             </div>
                                             <div class="text-content-wrapper">
@@ -225,8 +285,10 @@ function mi_navbar()
                                         </div>
                                         <div class="arrow-wrapper">
                                             <button class="btn-link btn-icon-only">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                    fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                                    <path fill-rule="evenodd"
+                                                        d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
                                                 </svg>
                                             </button>
                                         </div>
@@ -235,8 +297,11 @@ function mi_navbar()
                                     <li class="list-group-item list-group-item-custom">
                                         <div class="item-content-wrapper">
                                             <div class="icon-wrapper">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-file-post-fill" viewBox="0 0 16 16">
-                                                    <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M4.5 3h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1m0 2h7a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5"/>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                    fill="currentColor" class="bi bi-file-post-fill"
+                                                    viewBox="0 0 16 16">
+                                                    <path
+                                                        d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M4.5 3h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1m0 2h7a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5" />
                                                 </svg>
                                             </div>
                                             <div class="text-content-wrapper">
@@ -246,8 +311,10 @@ function mi_navbar()
                                         </div>
                                         <div class="arrow-wrapper">
                                             <button class="btn-link btn-icon-only">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                    fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                                    <path fill-rule="evenodd"
+                                                        d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
                                                 </svg>
                                             </button>
                                         </div>
@@ -256,9 +323,13 @@ function mi_navbar()
                                     <li class="list-group-item list-group-item-custom">
                                         <div class="item-content-wrapper">
                                             <div class="icon-wrapper">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                                                    <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                    fill="currentColor" class="bi bi-person-check-fill"
+                                                    viewBox="0 0 16 16">
+                                                    <path fill-rule="evenodd"
+                                                        d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0" />
+                                                    <path
+                                                        d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
                                                 </svg>
                                             </div>
                                             <div class="text-content-wrapper">
@@ -268,8 +339,10 @@ function mi_navbar()
                                         </div>
                                         <div class="arrow-wrapper">
                                             <button class="btn-link btn-icon-only">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                    fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                                    <path fill-rule="evenodd"
+                                                        d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
                                                 </svg>
                                             </button>
                                         </div>
@@ -278,8 +351,10 @@ function mi_navbar()
                                     <li class="list-group-item list-group-item-custom">
                                         <div class="item-content-wrapper">
                                             <div class="icon-wrapper">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-file-x-fill" viewBox="0 0 16 16">
-                                                    <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M6.854 6.146 8 7.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 8l1.147 1.146a.5.5 0 0 1-.708.708L8 8.707 6.854 9.854a.5.5 0 0 1-.708-.708L7.293 8 6.146 6.854a.5.5 0 1 1 .708-.708"/>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                    fill="currentColor" class="bi bi-file-x-fill" viewBox="0 0 16 16">
+                                                    <path
+                                                        d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M6.854 6.146 8 7.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 8l1.147 1.146a.5.5 0 0 1-.708.708L8 8.707 6.854 9.854a.5.5 0 0 1-.708-.708L7.293 8 6.146 6.854a.5.5 0 1 1 .708-.708" />
                                                 </svg>
                                             </div>
                                             <div class="text-content-wrapper">
@@ -289,8 +364,10 @@ function mi_navbar()
                                         </div>
                                         <div class="arrow-wrapper">
                                             <button class="btn-link btn-icon-only">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                    fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                                    <path fill-rule="evenodd"
+                                                        d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
                                                 </svg>
                                             </button>
                                         </div>
@@ -385,9 +462,12 @@ function mi_navbar()
         </main>
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="25" fill="black" class="bi bi-gear" viewBox="0 0 16 16">
-                    <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
-                    <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="25" fill="black" class="bi bi-gear"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0" />
+                    <path
+                        d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z" />
                 </svg>
             </a>
             <div class="card shadow-lg">
@@ -505,167 +585,82 @@ function mi_navbar()
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
 
-        <script>
-   // El script para chart-line ya es bastante bueno, solo asegúrate de que se ejecute después del DOM
-document.addEventListener('DOMContentLoaded', function() {
-    var ctx1 = document.getElementById("chart-line").getContext("2d");
-
-    var gradientStroke1 = ctx1.createLinearGradient(0, 230, 0, 50);
-
-    gradientStroke1.addColorStop(1, 'rgba(94, 114, 228, 0.2)');
-    gradientStroke1.addColorStop(0.2, 'rgba(94, 114, 228, 0.0)');
-    gradientStroke1.addColorStop(0, 'rgba(94, 114, 228, 0)');
-    new Chart(ctx1, {
-        type: "line",
-        data: {
-            labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-            datasets: [{
-                label: "Mobile apps", // O "Ventas" si prefieres
-                tension: 0.4,
-                borderWidth: 0,
-                pointRadius: 0,
-                borderColor: "#5e72e4",
-                backgroundColor: gradientStroke1,
-                borderWidth: 3,
-                fill: true,
-                data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
-                maxBarThickness: 6
-            }],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false, // ¡Esencial para que se adapte!
-            plugins: {
-                legend: {
-                    display: false,
-                }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index',
-            },
-            scales: {
-                y: {
-                    grid: {
-                        drawBorder: false,
-                        display: true,
-                        drawOnChartArea: true,
-                        drawTicks: false,
-                        borderDash: [5, 5],
-                        color: 'rgba(0,0,0,0.05)' // Asegura un color de cuadrícula visible
-                    },
-                    ticks: {
-                        display: true,
-                        padding: 10,
-                        color: '#6c757d', // Cambiado a un color oscuro para visibilidad
-                        font: {
-                            size: 12, // Aumenta el tamaño de fuente para legibilidad
-                            family: "Open Sans",
-                            style: 'normal',
-                            lineHeight: 2
-                        },
-                    }
-                },
-                x: {
-                    grid: {
-                        drawBorder: false,
-                        display: false, // Puedes hacerla true si quieres líneas verticales
-                        drawOnChartArea: false,
-                        drawTicks: false,
-                        borderDash: [5, 5]
-                    },
-                    ticks: {
-                        display: true,
-                        color: '#6c757d', // Cambiado a un color oscuro para visibilidad
-                        padding: 20,
-                        font: {
-                            size: 12, // Aumenta el tamaño de fuente para legibilidad
-                            family: "Open Sans",
-                            style: 'normal',
-                            lineHeight: 2
-                        },
-                    }
-                },
-            },
-        },
-    });
-});
-        </script>
+        
         <script>
             // Asegúrate de que este script se ejecute después de que el DOM esté cargado
-// Asegúrate de que este script se ejecute después de que el DOM esté cargado
-document.addEventListener('DOMContentLoaded', function() {
-    var ctx = document.getElementById('ticketsChart').getContext('2d');
-    var ticketsChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Abiertos', 'Resueltos', 'Pendientes'],
-            datasets: [{
-                label: 'Cantidad de Tickets',
-                data: [52, 3, 5],
-                backgroundColor: [
-                    'rgba(138, 43, 226, 0.8)', // Morado/Índigo
-                    'rgba(75, 192, 192, 0.8)', // Verde/Teal
-                    'rgba(255, 99, 132, 0.8)'  // Rojo/Rosa
-                ],
-                borderColor: [
-                    'rgba(138, 43, 226, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(255, 99, 132, 1)'
-                ],
-                borderWidth: 1,
-                // --- AJUSTES PARA EL ANCHO DE LAS BARRAS ---
-                categoryPercentage: 0.7, // Espacio ocupado por las categorías (grupos de barras)
-                barPercentage: 0.8      // Espacio ocupado por cada barra dentro de su categoría
-                // Puedes jugar con estos valores. 1.0 (100%) para que no haya espacio.
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false, // ¡Muy importante!
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: '#6c757d',
-                        font: {
-                            size: 12 // Aumenta un poco el tamaño de la fuente para mejor legibilidad
-                        }
+            // Asegúrate de que este script se ejecute después de que el DOM esté cargado
+            document.addEventListener('DOMContentLoaded', function () {
+                var ctx = document.getElementById('ticketsChart').getContext('2d');
+                var ticketsChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Abiertos', 'Resueltos', 'Pendientes'],
+                        datasets: [{
+                            label: 'Cantidad de Tickets',
+                            data: [52, 3, 5],
+                            backgroundColor: [
+                                'rgba(138, 43, 226, 0.8)', // Morado/Índigo
+                                'rgba(75, 192, 192, 0.8)', // Verde/Teal
+                                'rgba(255, 99, 132, 0.8)'  // Rojo/Rosa
+                            ],
+                            borderColor: [
+                                'rgba(138, 43, 226, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(255, 99, 132, 1)'
+                            ],
+                            borderWidth: 1,
+                            // --- AJUSTES PARA EL ANCHO DE LAS BARRAS ---
+                            categoryPercentage: 0.7, // Espacio ocupado por las categorías (grupos de barras)
+                            barPercentage: 0.8      // Espacio ocupado por cada barra dentro de su categoría
+                            // Puedes jugar con estos valores. 1.0 (100%) para que no haya espacio.
+                        }]
                     },
-                    grid: {
-                        color: 'rgba(0,0,0,0.05)',
-                        drawBorder: false // Quita el borde del grid si no lo quieres
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: '#6c757d',
-                        font: {
-                            size: 12 // Aumenta un poco el tamaño de la fuente para mejor legibilidad
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // ¡Muy importante!
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: '#6c757d',
+                                    font: {
+                                        size: 12 // Aumenta un poco el tamaño de la fuente para mejor legibilidad
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0,0,0,0.05)',
+                                    drawBorder: false // Quita el borde del grid si no lo quieres
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: '#6c757d',
+                                    font: {
+                                        size: 12 // Aumenta un poco el tamaño de la fuente para mejor legibilidad
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0,0,0,0.05)',
+                                    drawBorder: false // Quita el borde del grid si no lo quieres
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false, // Si el gráfico es simple y las etiquetas son claras
+                                labels: {
+                                    color: '#343a40'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0,0,0,0.7)',
+                                titleColor: 'white',
+                                bodyColor: 'white'
+                            }
                         }
-                    },
-                    grid: {
-                        color: 'rgba(0,0,0,0.05)',
-                        drawBorder: false // Quita el borde del grid si no lo quieres
                     }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false, // Si el gráfico es simple y las etiquetas son claras
-                    labels: {
-                        color: '#343a40'
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                    titleColor: 'white',
-                    bodyColor: 'white'
-                }
-            }
-        }
-    });
-});
+                });
+            });
         </script>
         <script>
             var win = navigator.platform.indexOf('Win') > -1;
