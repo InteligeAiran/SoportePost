@@ -121,6 +121,14 @@ class reportes extends Controller {
                     $this->GetIndividualTicketDetailsByRegion();
                 break;
 
+                case 'getTicketsSendTallerTotalCount':
+                    $this->handleGgetTicketsSendTallerTotalCount();
+                break;
+
+                case 'getTotalTicketsPercentageSendToTaller':
+                    $this->handlegetTotalTicketsPercentageSendToTaller();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -251,53 +259,38 @@ class reportes extends Controller {
     // Luego, crea la función handleGetTicketPercentage
     public function handleGetTicketPercentage(){
         $repository = new ReportRepository();
-        $data = $repository->getTicketPercentageData();
-
-        $ticketsToday = $data['today'];
-        $ticketsYesterday = $data['yesterday'];
-
-        $percentageChange = 0;
-        if ($ticketsYesterday > 0) {
-            $percentageChange = (($ticketsToday - $ticketsYesterday) / $ticketsYesterday) * 100;
-        } elseif ($ticketsToday > 0) { // Si ayer fue 0 pero hoy hay tickets
-            $percentageChange = 100;
+        $result = $repository->getTicketPercentageData();
+        
+        if ($result) {
+            $this->response(['success' => true, 'count' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'userCount' => 0], 200);
         }
-        // Si ambos son 0, el porcentaje de cambio sigue siendo 0.
-        $this->response(['success' => true, 'percentage' => round($percentageChange, 2)], 200);
+        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Total de Tickets.'], 500);
     }
 
     public function handleGetTicketsResueltosPercentage(){
         $repository = new ReportRepository();
-        $data = $repository->getTicketsResueltosPercentageData();
+        $result = $repository->getTicketsResueltosPercentageData();
 
-        $ticketsToday = $data['today'];
-        $ticketsYesterday = $data['yesterday'];
-
-        $percentageChange = 0;
-        if ($ticketsYesterday > 0) {
-            $percentageChange = (($ticketsToday - $ticketsYesterday) / $ticketsYesterday) * 100;
-        } elseif ($ticketsToday > 0) { // Si ayer fue 0 pero hoy hay tickets
-            $percentageChange = 100; // Un aumento del 100% desde cero
+        if ($result) {
+            $this->response(['success' => true, 'count' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'userCount' => 0], 200);
         }
-        // Si ambos son 0, el porcentaje de cambio sigue siendo 0.
-        $this->response(['success' => true, 'percentage' => round($percentageChange, 2)], 200);
+        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Total de Tickets.'], 500);
     }
 
     public function handleGetTotalTicketsPercentage(){
         $repository = new ReportRepository();
-        $data = $repository->getTotalTicketsPercentageData();
+        $result = $repository->getTotalTicketsPercentageData();
 
-        $ticketsToday = $data['today'];
-        $ticketsYesterday = $data['yesterday'];
-
-        $percentageChange = 0;
-        if ($ticketsYesterday > 0) {
-            $percentageChange = (($ticketsToday - $ticketsYesterday) / $ticketsYesterday) * 100;
-        } elseif ($ticketsToday > 0) { // Si ayer fue 0 pero hoy hay tickets
-            $percentageChange = 100; // Un aumento del 100% desde cero
+        if ($result) {
+            $this->response(['success' => true, 'count' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'userCount' => 0], 200);
         }
-        // Si ambos son 0, el porcentaje de cambio sigue siendo 0.
-        $this->response(['success' => true, 'percentage' => round($percentageChange, 2)], 200);
+        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Total de Tickets.'], 500);
     }
 
     public function handleGetTicketDataFinal(){
@@ -511,6 +504,30 @@ class reportes extends Controller {
             }
         } else {
             $this->response(['success' => false, 'message' => 'Debe proporcionar un ID de region'], 400); // Código 400 Bad Request
+        }
+    }
+
+    public function handleGgetTicketsSendTallerTotalCount(){
+        $repository = new ReportRepository();
+        $result = $repository->GetTicketsSendTallerTotalCount();
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'count' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+    public function handlegetTotalTicketsPercentageSendToTaller(){
+        $repository = new ReportRepository();
+        $result = $repository->GetTotalTicketsPercentageSendToTaller();
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'porcent' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 }

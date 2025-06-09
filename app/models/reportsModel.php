@@ -77,7 +77,7 @@ class reportsModel extends Model
 
     public function getTicketabiertoCount(){
         try{
-            $sql = "SELECT COUNT(*) as total_tickets_abiertos FROM tickets WHERE id_status_ticket = 1;";
+            $sql = "SELECT * FROM get_total_open_tickets();";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -97,7 +97,7 @@ class reportsModel extends Model
 
     public function getTicketsTotalCount(){
         try{
-            $sql = "SELECT COUNT(*) as total_tickets_general FROM tickets";
+            $sql = "SELECT * FROM get_total_tickets()";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -108,67 +108,33 @@ class reportsModel extends Model
     public function getTicketCountsForPercentage() {
         try {
             // Tickets abiertos de hoy
-            $sqlToday = "SELECT get_total_open_tickets_for_date(CURRENT_DATE) as total_tickets_today;";
+            $sqlToday = "SELECT * FROM get_percentage_open_tickets()";
             $resultToday = Model::getResult($sqlToday, $this->db);
-            $ticketsToday = $resultToday['row']['total_tickets_today']; // Esto te dará el valor que esperas
-
-            // Tickets abiertos de ayer usando la nueva función SQL
-            $sqlYesterday = "SELECT get_total_open_tickets_yesterday() as total_tickets_yesterday;";
-            $resultYesterday = Model::getResult($sqlYesterday, $this->db);
-            $ticketsYesterday = $resultYesterday['row']['total_tickets_yesterday'];
-
-            return [
-                'today' => $ticketsToday,
-                'yesterday' => $ticketsYesterday
-            ];
+            return $resultToday;
         } catch (Throwable $e) {
             // Manejar la excepción, loguear o devolver un valor por defecto.
             error_log("Error in getTicketCountsForPercentage: " . $e->getMessage());
-            return ['today' => 0, 'yesterday' => 0];
         }
     }
 
     public function getTicketsResueltosCountsForPercentage() {
         try {
             // Tickets resueltos de hoy (id_status_ticket = 3)
-            $sqlToday = "SELECT get_total_resolve_tickets_for_date(CURRENT_DATE) as total_tickets_today;";
+            $sqlToday = "SELECT * FROM get_percentage_resolved_tickets();";
             $resultToday = Model::getResult($sqlToday, $this->db);
-            $ticketsToday = $resultToday['row']['total_tickets_today'];
-
-            // Tickets resueltos de ayer (id_status_ticket = 3)
-            $sqlYesterday = "SELECT get_total_resolve_tickets_yesterday() as total_tickets_yesterday;  -- Nueva función para obtener tickets resueltos de ayer.";
-            $resultYesterday = Model::getResult($sqlYesterday, $this->db);
-            $ticketsYesterday = $resultYesterday['row']['total_tickets_yesterday'];
-
-            return [
-                'today' => $ticketsToday,
-                'yesterday' => $ticketsYesterday
-            ];
+            return $resultToday;
         } catch (Throwable $e) {
             error_log("Error in getTicketsResueltosCountsForPercentage: " . $e->getMessage());
-            return ['today' => 0, 'yesterday' => 0];
         }
     }
 
     public function getTotalTicketsCountsForPercentage() {
         try {
-            // Total de tickets creados hoy
-            $sqlToday = "SELECT get_total_tickets_for_date(CURRENT_DATE) as total_tickets_today;";
+            $sqlToday = "SELECT * FROM get_monthly_tickets_percentage_of_100_base();";
             $resultToday = Model::getResult($sqlToday, $this->db);
-            $ticketsToday = $resultToday['row']['total_tickets_today'];
-
-            // Total de tickets creados ayer
-            $sqlYesterday = "SELECT get_total_tickets_yesterday() as total_tickets_yesterday;";
-            $resultYesterday = Model::getResult($sqlYesterday, $this->db);
-            $ticketsYesterday = $resultYesterday['row']['total_tickets_yesterday'];
-
-            return [
-                'today' => $ticketsToday,
-                'yesterday' => $ticketsYesterday
-            ];
+            return $resultToday;
         } catch (Throwable $e) {
             error_log("Error in getTotalTicketsCountsForPercentage: " . $e->getMessage());
-            return ['today' => 0, 'yesterday' => 0];
         }
     }
 
@@ -269,6 +235,26 @@ class reportsModel extends Model
     public function GetRegionsTicketDetails(){
         try {
             $sql = "SELECT * FROM GetTicketsByRegion()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetTicketsSendTallerTotalCount(){
+        try {
+            $sql = "SELECT * FROM get_total_tickets_lab();";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetTotalTicketsPercentageSendToTaller(){
+        try {
+            $sql = "SELECT * FROM get_percentage_tickets_in_lab_of_total();";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
