@@ -343,7 +343,7 @@ function getTicketDataFinaljs() {
   const columnTitles = {
     id_ticket: "ID Ticket",
     full_name_tecnico1: "Nombre Técnico 1",
-    create_ticket: "Fecha Creacion",
+    create_ticket: "Fecha Creación",
     serial_pos: "Serial POS",
     rif: "RIF",
     name_failure: "Falla",
@@ -359,11 +359,11 @@ function getTicketDataFinaljs() {
     status_taller: "Estatus Taller",
     name_accion_ticket: "Acción Ticket",
     fecha_carga_llaves: "Fecha Carga Llaves",
-    verificacion_de_solvencia: "Verificacion de Solvencia",
+    verificacion_de_solvencia: "Verificación de Solvencia",
     name_status_domiciliacion: "Estatus Domiciliación",
     name_status_ticket: "Estatus Ticket",
     fecha_carga_llaves: "Fecha Carga Llaves",
-    fecha_envio_destino: "Fecha Envio a Destino",
+    fecha_envio_destino: "Fecha Envío a Destino",
   };
 
   xhr.onload = function () {

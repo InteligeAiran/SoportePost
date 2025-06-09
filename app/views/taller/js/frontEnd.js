@@ -164,7 +164,7 @@ function getTicketData() {
                                 lengthMenu: "Mostrar _MENU_ registros",
                                 emptyTable: "No hay datos disponibles en la tabla",
                                 zeroRecords: "No se encontraron resultados para la búsqueda",
-                                info: "Mostrando página _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
+                                info: "Mostrando página _PAGE_ de _PAGES_ ( _TOTAL_ registro(s) )",
                                 infoEmpty: "No hay datos disponibles",
                                 infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
                                 search: "Buscar:",
@@ -513,7 +513,7 @@ $(document).ready(function () {
                                 confirmButtonText: "Entendido",
                                 confirmButtonColor: "#28a745",
                                 color: "black",
-                                timer: 1500,
+                                timer: 3500,
                                 timerProgressBar: true,
                                 didOpen: () => {
                                     Swal.showLoading();

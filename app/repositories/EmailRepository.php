@@ -12,8 +12,11 @@ class EmailRepository
     }
 
     public function ChangePassForCode($email, $code){
+
+        $defaul_pass = $code;
+        $encry_passw = sha1(md5($defaul_pass));
         // Lógica para cambiar la contraseña por código
-        $result = $this->model->ChangePassForCode($email, $code);
+        $result = $this->model->ChangePassForCode($email, $encry_passw);
         return $result;
     }
 

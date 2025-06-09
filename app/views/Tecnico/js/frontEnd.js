@@ -89,7 +89,7 @@ function getTicketData() {
                             "lengthMenu": "Mostrar _MENU_ registros", // Esta línea es la clave
                             "emptyTable": "No hay datos disponibles en la tabla",
                             "zeroRecords": "No se encontraron resultados para la búsqueda",
-                            "info": "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
+                            "info": "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ registro(s) )",
                             "infoEmpty": "No hay datos disponibles",
                             "infoFiltered": "(Filtrado de _MAX_ datos disponibles)",
                             "search": "Buscar:",
@@ -187,7 +187,7 @@ function handleSendToTallerClick() {
                         title: 'El ticket del Dispostitivo POS fue enviado a Taller',
                         text: response.message,
                         color: 'black',
-                        timer: 1500,
+                        timer: 3500,
                         timerProgressBar: true,
                         didOpen: () => {
                             Swal.showLoading();
@@ -195,7 +195,7 @@ function handleSendToTallerClick() {
                         willClose: () => {
                             setTimeout(() => {
                                 location.reload();
-                            }, 1000);
+                            }, 3500);
                         }
                     });
                     modalInstance.hide(); // Cierra el modal

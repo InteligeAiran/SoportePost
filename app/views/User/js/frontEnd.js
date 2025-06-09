@@ -273,7 +273,7 @@ function getUserData() {
               lengthMenu: "Mostrar _MENU_ registros", // Esta línea es la clave
               emptyTable: "No hay datos disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
+              info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ registro(s) )",
               infoEmpty: "No hay datos disponibles",
               infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
               search: "Buscar:",
@@ -500,7 +500,7 @@ document
 function GuardarUsuariosNew() {
   const nombre_usuario = document.getElementById("nombreuser").value;
   const apellido_usuario = document.getElementById("apellidouser").value;
-  const tipo_doc = document.getElementById("tipodoc").value;
+  const tipo_doc = document.getElementById("tipo_doc").value;
   const documento = document.getElementById("documento").value;
   const iusuario = document.getElementById("usuario").value;
   const correo = document.getElementById("email").value;
@@ -510,21 +510,16 @@ function GuardarUsuariosNew() {
   const id_nivel = document.getElementById("idnivel").value;
   const id_user = document.getElementById("id_user").value;
 
-  const identificacion = tipo_doc + documento;
+  const identificacion = tipo_doc+'-'+documento;
+  console.log(identificacion);
 
   // Validaciones generales
-  if (
-    !nombre_usuario &&
-    !apellido_usuario &&
-    !documento &&
-    !correo &&
-    !area_usuario &&
-    !tipo_usuario &&
-    !regionusers
-  ) {
+  if ((nombre_usuario=='') || (apellido_usuario=='') || (documento=='') || (correo=='') || (area_usuario=='') || (tipo_usuario=='') || (regionusers=='')) {
     alertify.error("Los campos no pueden estar vacios");
-    return;
+    return false;
   }
+
+  else { 
 
   //alert(nombre_usuario + apellido_usuario + iusuario + identificacion + correo + area_usuario + tipo_usuario + regionusers + id_nivel);
 
@@ -557,7 +552,7 @@ function GuardarUsuariosNew() {
             title: "Guardado exitoso",
             text: response.message,
             color: "black",
-            timer: 1500,
+            timer: 3500,
             timerProgressBar: true,
             didOpen: () => {
               Swal.showLoading();
@@ -599,6 +594,7 @@ function GuardarUsuariosNew() {
   };
   xhr.send(formData);
 }
+ }
 
 function VerUsuario(idusuario) {
   var infoDiv = document.getElementById("nivelEditar").value;
@@ -831,7 +827,7 @@ function EditarUsuarios() {
             title: "El usuario ha sido modificado exitosamente",
             text: response.message,
             color: "black",
-            timer: 1500,
+            timer: 4000,
             timerProgressBar: true,
             didOpen: () => {
               Swal.showLoading();
@@ -839,7 +835,7 @@ function EditarUsuarios() {
             willClose: () => {
               setTimeout(() => {
                 location.reload();
-              }, 1000);
+              }, 5000);
             },
           });
           $("#miModal").css("display", "none");
@@ -993,23 +989,23 @@ function AsignacionModulo(idmodulo, iusuario, idcheck) {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          Swal.fire({
-            icon: "success",
-            title: "Asignado",
-            text: response.message,
-            color: "black",
-            timer: 2500,
-            allowOutsideClick: false,
-            timerProgressBar: true,
-            didOpen: () => {
-              Swal.showLoading();
-            },
+          // Swal.fire({
+          //   icon: "success",
+          //   title: "Asignado",
+          //   text: response.message,
+          //   color: "black",
+          //   timer: 2500,
+          //   allowOutsideClick: false,
+          //   timerProgressBar: true,
+          //   didOpen: () => {
+          //     Swal.showLoading();
+          //   },
             // willClose: () => {
             //     setTimeout(() => {
             //         location.reload(); // Recarga la página después del temporizador
             //     }, 1000);
             // }
-          });
+          //});
         } else {
           Swal.fire({
             icon: "error",

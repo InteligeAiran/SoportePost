@@ -127,7 +127,7 @@ function searchDomiciliacionTickets() {
                                 "lengthMenu": "Mostrar _MENU_ registros",
                                 "emptyTable": "No hay datos disponibles en la tabla",
                                 "zeroRecords": "No se encontraron resultados para la búsqueda",
-                                "info": "Mostrando página _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
+                                "info": "Mostrando página _PAGE_ de _PAGES_ ( _TOTAL_ registro(s) )",
                                 "infoEmpty": "No hay datos disponibles",
                                 "infoFiltered": "(Filtrado de _MAX_ datos disponibles)",
                                 "search": "Buscar:",

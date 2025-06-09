@@ -51,7 +51,7 @@
 
   <div id="loading-overlay" style="display: none;">
     <div class="spinner"></div>
-    <p>Espere Por Favor</p>
+    <p>Enviando correo</p>
   </div>
 
   <div id="modal" class="modal">
