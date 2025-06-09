@@ -338,10 +338,11 @@ class Consulta extends Controller {
         $falla = isset($_POST['falla']) ? $_POST['falla'] : '';
         $nivelFalla = isset($_POST['nivelFalla']) ? $_POST['nivelFalla'] : '';
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
-        $hoy = date('dmo');
-        $resultado = $repository->GetTotalTickets();
+        $hoy = date('dmy');
+        $fecha_para_db = date('Y-m-d');
+        $resultado = $repository->GetTotalTickets($fecha_para_db);
         $totaltickets = $resultado + 1;
-        $paddedTicketNumber = sprintf("%05d", $totaltickets);
+        $paddedTicketNumber = sprintf("%04d", $totaltickets);
         $Nr_ticket = $hoy. $paddedTicketNumber;
         //var_dump($id_user, $serial, $falla, $nivelFalla);
         if($serial != '' && $falla != '' && $nivelFalla != '' && $id_user != '' && $rif != ''){

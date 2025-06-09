@@ -6,18 +6,49 @@
 });*/
 
 document.addEventListener("DOMContentLoaded", function () {
-
   // Obtén la referencia al botón cerrar FUERA de la función getTicketData y del bucle
   const cerrar = document.getElementById("ModalStadisticMonth");
   const icon = document.getElementById("ModalStadisticMonthIcon");
 
   const modalElement = document.getElementById("monthlyTicketsModal");
 
+  const ModalStadisticRegionIcon = document.getElementById("ModalStadisticRegionIcon");
+  const ModalStadisticRegion = document.getElementById("ModalStadisticRegion");
+
+  const modalElementRegion = document.getElementById("RegionTicketsModal");
+
+  ModalStadisticRegionIcon.addEventListener("click", function () {
+    if (modalElementRegion) {
+       modalElementRegion.style.display = "none";
+      modalElementRegion.style.backdropFilter = "none"; // Asegúrate de que el backdrop no esté visible
+      modalElementRegion.classList.remove("show"); // Elimina la clase 'show' para ocultar el modal
+      document.body.classList.remove("modal-open"); // Elimina la clase 'modal-open' del body
+      const modalBackdropRegion = document.querySelector(".modal-backdrop");
+      if (modalBackdropRegion) {
+        modalBackdropRegion.remove(); // Elimina el backdrop si existe
+      }
+    }
+  });
+
+  ModalStadisticRegion.addEventListener("click", function () {
+    if (modalElementRegion) {
+      modalElementRegion.style.display = "none";
+      modalElementRegion.style.backdropFilter = "none"; // Asegúrate de que el backdrop no esté visible
+      modalElementRegion.classList.remove("show"); // Elimina la clase 'show' para ocultar el modal
+      document.body.classList.remove("modal-open"); // Elimina la clase 'modal-open' del body
+      const modalBackdropRegion = document.querySelector(".modal-backdrop");
+      if (modalBackdropRegion) {
+        modalBackdropRegion.remove(); // Elimina el backdrop si existe
+      }
+    }
+  });
+
+
   // Agrega el event listener al botón cerrar
   cerrar.addEventListener("click", function () {
     if (modalElement) {
-      modalElement.style.display = 'none';
-      modalElement.style.backdropFilter = 'none'; // Asegúrate de que el backdrop no esté visible
+      modalElement.style.display = "none";
+      modalElement.style.backdropFilter = "none"; // Asegúrate de que el backdrop no esté visible
       modalElement.classList.remove("show"); // Elimina la clase 'show' para ocultar el modal
       document.body.classList.remove("modal-open"); // Elimina la clase 'modal-open' del body
       const modalBackdrop = document.querySelector(".modal-backdrop");
@@ -29,8 +60,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   icon.addEventListener("click", function () {
     if (modalElement) {
-      modalElement.style.display = 'none';
-      modalElement.style.backdropFilter = 'none'; // Asegúrate de que el backdrop no esté visible
+      modalElement.style.display = "none";
+      modalElement.style.backdropFilter = "none"; // Asegúrate de que el backdrop no esté visible
       modalElement.classList.remove("show"); // Elimina la clase 'show' para ocultar el modal
       document.body.classList.remove("modal-open"); // Elimina la clase 'modal-open' del body
       const modalBackdrop = document.querySelector(".modal-backdrop");
@@ -42,29 +73,29 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Para el campo "Nueva Contraseña"
-jQuery('#clickme1').on('click', function () {
-  jQuery('#newPassword').attr('type', function (index, currentAttr) {
+jQuery("#clickme1").on("click", function () {
+  jQuery("#newPassword").attr("type", function (index, currentAttr) {
     // Si el tipo actual es 'password', cámbialo a 'text' (mostrar).
     // Si no (es decir, es 'text'), cámbialo a 'password' (ocultar).
-    return currentAttr === 'password' ? 'text' : 'password';
+    return currentAttr === "password" ? "text" : "password";
   });
 });
 
 // Para el campo "Confirmar Contraseña"
-jQuery('#clickme').on('click', function () {
-  jQuery('#confirmNewPassword').attr('type', function (index, currentAttr) {
+jQuery("#clickme").on("click", function () {
+  jQuery("#confirmNewPassword").attr("type", function (index, currentAttr) {
     // Misma lógica para el campo de confirmación.
-    return currentAttr === 'password' ? 'text' : 'password';
+    return currentAttr === "password" ? "text" : "password";
   });
 });
 
 $("#newPassword").keyup(function () {
   let string = $("#newPassword").val();
-  $("#newPassword").val(string.replace(/ /g, ""))
+  $("#newPassword").val(string.replace(/ /g, ""));
 });
 $("#confirmNewPassword").keyup(function () {
   let string = $("#confirmNewPassword").val();
-  $("#confirmNewPassword").val(string.replace(/ /g, ""))
+  $("#confirmNewPassword").val(string.replace(/ /g, ""));
 });
 //Llamar a la función PHP usando fetch    SESSION EXPIRE DEL USER
 fetch("/SoportePost/app/controllers/dashboard.php", {
@@ -129,17 +160,19 @@ function checkUserStatusAndPromptPassword() {
         const userStatus = response.isVerified; // Asignar un valor por defecto si no existe
 
         if (userStatus.id_status === "1") {
-          const newPasswordModalElement = document.getElementById("newPasswordModal");
+          const newPasswordModalElement =
+            document.getElementById("newPasswordModal");
 
           if (newPasswordModalElement) {
-            const modalBootstrap = new bootstrap.Modal(newPasswordModalElement, {
-              backdrop: 'static'
-              // Puedes añadir más opciones de configuración aquí si es necesario
-
-            });
+            const modalBootstrap = new bootstrap.Modal(
+              newPasswordModalElement,
+              {
+                backdrop: "static",
+                // Puedes añadir más opciones de configuración aquí si es necesario
+              }
+            );
             modalInstance = modalBootstrap; // Asigna la instancia a la variable
             modalBootstrap.show();
-
 
             newPasswordModalElement.style.display = "block";
             newPasswordModalElement.style.opacity = "1"; // Si tienes transiciones, esto podría ayudar
@@ -209,9 +242,11 @@ function checkUserStatusAndPromptPassword() {
           );
           // Opcional: mostrar un SweetAlert de error o un mensaje en algún div general
           Swal.fire({
-            icon: 'error',
-            title: 'Error de Verificación',
-            text: response.message || 'No se pudo verificar el estatus del usuario.',
+            icon: "error",
+            title: "Error de Verificación",
+            text:
+              response.message ||
+              "No se pudo verificar el estatus del usuario.",
           });
         }
       } catch (error) {
@@ -257,7 +292,6 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("passwordVerification").innerHTML = ""; // Limpiar mensajes de verificación
       document.getElementById("confirmPasswordError").innerHTML = ""; // Limpiar mensajes de confirmación
       document.getElementById("modalUserIdForPassword").value = ""; // Limpiar ID si se usó
-
     });
   }
 
@@ -401,9 +435,10 @@ document.addEventListener("DOMContentLoaded", function () {
           Swal.fire({
             icon: "error",
             title: "Error de Conexión",
-            text: `Error ${xhrUpdate.status}: ${xhrUpdate.statusText ||
+            text: `Error ${xhrUpdate.status}: ${
+              xhrUpdate.statusText ||
               "No se pudo conectar con el servidor para actualizar la contraseña."
-              }`,
+            }`,
             color: "black",
           });
         }
@@ -447,241 +482,406 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function getTicketOpen() {
   const xhr = new XMLHttpRequest();
-  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketAbiertoCount`);
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketAbiertoCount`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
     if (xhr.status === 200) {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          document.getElementById('TicketsAbiertos').textContent = response.count; // Selecciona por ID
+          document.getElementById("TicketsAbiertos").textContent =
+            response.count; // Selecciona por ID
         } else {
-          console.error('Error:', response.message);
+          console.error("Error:", response.message);
         }
       } catch (error) {
-        console.error('Error parsing JSON:', error);
+        console.error("Error parsing JSON:", error);
       }
     } else {
-      console.error('Error:', xhr.status, xhr.statusText);
+      console.error("Error:", xhr.status, xhr.statusText);
     }
   };
 
-  const datos = 'action=getTicketAbiertoCount';
+  const datos = "action=getTicketAbiertoCount";
   xhr.send(datos);
 }
 
 function getTicketPercentage() {
   const xhr = new XMLHttpRequest();
-  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketPercentage`);
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketPercentage`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
     if (xhr.status === 200) {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          const percentage = response.percentage;
-          const percentageSpan = document.getElementById('ticketPercentage');
+          // Convertir el string a número y redondear a 2 decimales
+          // parseFloat convierte el string a un número flotante
+          // toFixed(2) redondea a 2 decimales y devuelve un string
+          const percentage = parseFloat(response.count);
+          const displayPercentage = percentage.toFixed(2); // Redondea a 2 decimales
 
-          percentageSpan.textContent = (percentage > 0 ? '+' : '') + percentage + '%';
+          const percentageSpan = document.getElementById("TicketPorcentOpen");
 
-          if (percentage < 0) {
-            percentageSpan.classList.remove('text-success');
-            percentageSpan.classList.add('text-danger');
+          // Aquí usamos displayPercentage para mostrar, pero percentage (el número original) para la lógica del signo y color
+          percentageSpan.textContent =
+            (percentage > 0 ? "+" : "") + displayPercentage + "%";
+
+          if (percentage >= 50) { // Usamos el número original para la comparación
+            percentageSpan.classList.remove("text-success");
+            percentageSpan.classList.add("text-danger");
           } else {
-            percentageSpan.classList.remove('text-danger');
-            percentageSpan.classList.add('text-success');
+            percentageSpan.classList.remove("text-danger");
+            percentageSpan.classList.add("text-success");
           }
         } else {
-          console.error('Error:', response.message);
+          console.error("Error:", response.message);
         }
       } catch (error) {
-        console.error('Error parsing JSON for percentage:', error);
+        console.error("Error parsing JSON for percentage:", error);
       }
     } else {
-      console.error('Error fetching percentage:', xhr.status, xhr.statusText);
+      console.error("Error fetching percentage:", xhr.status, xhr.statusText);
     }
   };
 
-  const datos = 'action=getTicketPercentage';
+  const datos = "action=getTicketPercentage";
   xhr.send(datos);
 }
 
 // Llama a la función getTicketPercentage() cuando la página se cargue
-window.addEventListener('load', () => {
+window.addEventListener("load", () => {
   getTicketOpen();
   getTicketPercentage(); // Agrega esta línea
 });
 
 function getTicketResolve() {
   const xhr = new XMLHttpRequest();
-  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsResueltosCount`);
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsResueltosCount`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
     if (xhr.status === 200) {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          document.getElementById('TicketsResuelto').textContent = response.count; // Selecciona por ID
+          document.getElementById("TicketsResuelto").textContent =
+            response.count; // Selecciona por ID
         } else {
-          console.error('Error:', response.message);
+          console.error("Error:", response.message);
         }
       } catch (error) {
-        console.error('Error parsing JSON:', error);
+        console.error("Error parsing JSON:", error);
       }
     } else {
-      console.error('Error:', xhr.status, xhr.statusText);
+      console.error("Error:", xhr.status, xhr.statusText);
     }
   };
 
-  const datos = 'action=getTicketsResueltosCount';
+  const datos = "action=getTicketsResueltosCount";
   xhr.send(datos);
 }
 
 function getTicketsResueltosPercentage() {
   const xhr = new XMLHttpRequest();
-  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsResueltosPercentage`);
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsResueltosPercentage`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
     if (xhr.status === 200) {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          const percentage = response.percentage;
-          const percentageSpan = document.getElementById('ticketResueltoPercentage');
+          // 1. Convertir el string a número
+          const percentage = parseFloat(response.count);
 
-          percentageSpan.textContent = (percentage > 0 ? '+' : '') + percentage + '%';
+          // 2. Redondear a 2 decimales y almacenar en displayPercentage
+          const displayPercentage = percentage.toFixed(2);
 
-          if (percentage < 0) {
-            percentageSpan.classList.remove('text-success');
-            percentageSpan.classList.add('text-danger');
-          } else {
-            percentageSpan.classList.remove('text-danger');
-            percentageSpan.classList.add('text-success');
+          const percentageSpan = document.getElementById("ticketResueltoPercentage");
+
+          // Usar displayPercentage para mostrar y percentage (el número original) para la lógica de color
+          percentageSpan.textContent =
+            (percentage > 0 ? "+" : "") + displayPercentage + "%";
+
+          // === CAMBIO CLAVE AQUÍ ===
+          // Definir el umbral: si el porcentaje de tickets resueltos es menor que esto, será rojo.
+          // Si es igual o mayor, será verde.
+          const thresholdForGood = 50; // Quieres que sea verde si es >= 50%
+
+          if (percentage < thresholdForGood) { // Si es MENOR que el umbral (50%), es "malo" (rojo)
+            percentageSpan.classList.remove("text-success"); // Asegúrate de quitar la clase verde
+            percentageSpan.classList.add("text-danger");    // Añadir la clase roja
+          } else { // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
+            percentageSpan.classList.remove("text-danger"); // Asegúrate de quitar la clase roja
+            percentageSpan.classList.add("text-success");   // Añadir la clase verde
           }
+          // =========================
+
         } else {
-          console.error('Error:', response.message);
+          console.error("Error:", response.message);
         }
       } catch (error) {
-        console.error('Error parsing JSON for Tickets Resueltos percentage:', error);
+        console.error(
+          "Error parsing JSON for Tickets Resueltos percentage:",
+          error
+        );
       }
     } else {
-      console.error('Error fetching Tickets Resueltos percentage:', xhr.status, xhr.statusText);
+      console.error(
+        "Error fetching Tickets Resueltos percentage:",
+        xhr.status,
+        xhr.statusText
+      );
     }
   };
 
-  const datos = 'action=getTicketsResueltosPercentage';
+  const datos = "action=getTicketsResueltosPercentage";
   xhr.send(datos);
 }
 
 // Llama a las funciones cuando la página se cargue
-window.addEventListener('load', () => {
+window.addEventListener("load", () => {
   getTicketResolve();
   getTicketsResueltosPercentage(); // Agrega esta línea
 });
 
 function getTicketTotal() {
   const xhr = new XMLHttpRequest();
-  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsTotalCount`);
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsTotalCount`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
     if (xhr.status === 200) {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          document.getElementById('TotalTicket').textContent = response.count; // Selecciona por ID
+          document.getElementById("TotalTicket").textContent = response.count; // Selecciona por ID
         } else {
-          console.error('Error:', response.message);
+          console.error("Error:", response.message);
         }
       } catch (error) {
-        console.error('Error parsing JSON:', error);
+        console.error("Error parsing JSON:", error);
       }
     } else {
-      console.error('Error:', xhr.status, xhr.statusText);
+      console.error("Error:", xhr.status, xhr.statusText);
     }
   };
 
-  const datos = 'action=getTicketsTotalCount';
+  const datos = "action=getTicketsTotalCount";
+  xhr.send(datos);
+}
+
+function getTicketTotalSendTotaller() {
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsSendTallerTotalCount`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          document.getElementById("TotalEnviadoTaller").textContent = response.count; // Selecciona por ID
+        } else {
+          console.error("Error:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  const datos = "action=getTicketsSendTallerTotalCount";
+  xhr.send(datos);
+}
+
+function getTotalTicketsPercentageOFSendTaller() {
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTotalTicketsPercentageSendToTaller`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          const percentage = parseFloat(response.porcent);
+
+          // 2. Redondear a 2 decimales y almacenar en displayPercentage
+          const displayPercentage = percentage.toFixed(2);
+
+          const percentageSpan = document.getElementById("PorcentSendToTaller");
+
+          // Usar displayPercentage para mostrar y percentage (el número original) para la lógica de color
+          percentageSpan.textContent =
+            (percentage > 0 ? "+" : "") + displayPercentage + "%";
+
+          // === CAMBIO CLAVE AQUÍ ===
+          // Definir el umbral: si el porcentaje de tickets resueltos es menor que esto, será rojo.
+          // Si es igual o mayor, será verde.
+          const thresholdForGood = 50; // Quieres que sea verde si es >= 50%
+
+          if (percentage < thresholdForGood) { // Si es MENOR que el umbral (50%), es "malo" (rojo)
+            percentageSpan.classList.remove("text-success"); // Asegúrate de quitar la clase verde
+            percentageSpan.classList.add("text-danger");    // Añadir la clase roja
+          } else { // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
+            percentageSpan.classList.remove("text-danger"); // Asegúrate de quitar la clase roja
+            percentageSpan.classList.add("text-success");   // Añadir la clase verde
+          }
+          // =========================
+        } else {
+          console.error("Error:", response.message);
+        }
+      } catch (error) {
+        console.error(
+          "Error parsing JSON for Total Tickets percentage:",
+          error
+        );
+      }
+    } else {
+      console.error(
+        "Error fetching Total Tickets percentage:",
+        xhr.status,
+        xhr.statusText
+      );
+    }
+  };
+
+  const datos = "action=getTotalTicketsPercentageSendToTaller";
   xhr.send(datos);
 }
 
 function getTotalTicketsPercentage() {
   const xhr = new XMLHttpRequest();
-  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTotalTicketsPercentage`);
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTotalTicketsPercentage`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
     if (xhr.status === 200) {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          const percentage = response.percentage;
-          const percentageSpan = document.getElementById('totalTicketPercentage');
+          const percentage = parseFloat(response.count);
 
-          percentageSpan.textContent = (percentage > 0 ? '+' : '') + percentage + '%';
+          // 2. Redondear a 2 decimales y almacenar en displayPercentage
+          const displayPercentage = percentage.toFixed(2);
 
-          if (percentage < 0) {
-            percentageSpan.classList.remove('text-success');
-            percentageSpan.classList.add('text-danger');
-          } else {
-            percentageSpan.classList.remove('text-danger');
-            percentageSpan.classList.add('text-success');
+          const percentageSpan = document.getElementById("totalTicketPercentage");
+
+          // Usar displayPercentage para mostrar y percentage (el número original) para la lógica de color
+          percentageSpan.textContent =
+            (percentage > 0 ? "+" : "") + displayPercentage + "%";
+
+          // === CAMBIO CLAVE AQUÍ ===
+          // Definir el umbral: si el porcentaje de tickets resueltos es menor que esto, será rojo.
+          // Si es igual o mayor, será verde.
+          const thresholdForGood = 50; // Quieres que sea verde si es >= 50%
+
+          if (percentage < thresholdForGood) { // Si es MENOR que el umbral (50%), es "malo" (rojo)
+            percentageSpan.classList.remove("text-success"); // Asegúrate de quitar la clase verde
+            percentageSpan.classList.add("text-danger");    // Añadir la clase roja
+          } else { // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
+            percentageSpan.classList.remove("text-danger"); // Asegúrate de quitar la clase roja
+            percentageSpan.classList.add("text-success");   // Añadir la clase verde
           }
+          // =========================
         } else {
-          console.error('Error:', response.message);
+          console.error("Error:", response.message);
         }
       } catch (error) {
-        console.error('Error parsing JSON for Total Tickets percentage:', error);
+        console.error(
+          "Error parsing JSON for Total Tickets percentage:",
+          error
+        );
       }
     } else {
-      console.error('Error fetching Total Tickets percentage:', xhr.status, xhr.statusText);
+      console.error(
+        "Error fetching Total Tickets percentage:",
+        xhr.status,
+        xhr.statusText
+      );
     }
   };
 
-  const datos = 'action=getTotalTicketsPercentage';
+  const datos = "action=getTotalTicketsPercentage";
   xhr.send(datos);
 }
 
 // Llama a las funciones cuando la página se cargue
-window.addEventListener('load', () => {
+window.addEventListener("load", () => {
   getTicketTotal();
   getTotalTicketsPercentage(); // Agrega esta línea
+  getTicketTotalSendTotaller();
+  getTotalTicketsPercentageOFSendTaller();
 });
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener("DOMContentLoaded", function () {
   // Referencia al elemento de la tarjeta de estadística
-  const monthlyTicketsCard = document.getElementById('monthlyTicketsCard');
+  const monthlyTicketsCard = document.getElementById("monthlyTicketsCard");
 
   // Referencia al elemento del modal
-  const monthlyTicketsModalElement = document.getElementById('monthlyTicketsModal');
+  const monthlyTicketsModalElement = document.getElementById(
+    "monthlyTicketsModal"
+  );
 
   // Asegúrate de que ambos elementos existan antes de añadir el event listener
   if (monthlyTicketsCard && monthlyTicketsModalElement) {
-    monthlyTicketsCard.addEventListener('click', function (event) {
+    monthlyTicketsCard.addEventListener("click", function (event) {
       // Evita el comportamiento predeterminado si el clic es en un enlace o botón.
       // Aunque monthlyTicketsCard es un div, es una buena práctica si en el futuro
       // se convierte en un elemento interactivo con un comportamiento por defecto.
       event.preventDefault();
 
       // Crea una instancia del modal de Bootstrap y muéstralo
-      const monthlyTicketsModal = new bootstrap.Modal(monthlyTicketsModalElement);
+      const monthlyTicketsModal = new bootstrap.Modal(
+        monthlyTicketsModalElement
+      );
       monthlyTicketsModal.show();
       loadMonthlyTicketDetails();
     });
   } else {
-    console.error('No se encontraron los elementos monthlyTicketsCard o monthlyTicketsModal.');
+    console.error(
+      "No se encontraron los elementos monthlyTicketsCard o monthlyTicketsModal."
+    );
   }
 
   // *** NUEVO: Event listener delegado para los botones de detalle de tickets ***
-  const monthlyTicketsContent = document.getElementById('monthlyTicketsContent');
+  const monthlyTicketsContent = document.getElementById(
+    "monthlyTicketsContent"
+  );
   if (monthlyTicketsContent) {
-    monthlyTicketsContent.addEventListener('click', function (event) {
+    monthlyTicketsContent.addEventListener("click", function (event) {
       // Verifica si el clic fue en un botón con la clase 'monthly-tickets-detail'
-      const clickedButton = event.target.closest('.monthly-tickets-detail');
+      const clickedButton = event.target.closest(".monthly-tickets-detail");
       if (clickedButton) {
         const month = clickedButton.dataset.month; // Ej: "2025-04"
         const status = clickedButton.dataset.status; // Ej: "Abierto", "En proceso", "Cerrado"
@@ -693,28 +893,285 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
           // Opcional: mostrar un mensaje si no hay tickets
           Swal.fire({
-            icon: 'info', // Puedes usar 'success', 'error', 'warning', 'info', 'question'
-            title: 'Sin Tickets',
+            icon: "info", // Puedes usar 'success', 'error', 'warning', 'info', 'question'
+            title: "Sin Tickets",
             html: `No hay tickets ${status.toLowerCase()}s en la fecha <strong>${month}</strong>.`,
-            confirmButtonText: 'Entendido',
-            confirmButtonColor: '#003594' // Esto es un color HEX para rojo (como el de Bootstrap danger)
-          });        
-      }
+            confirmButtonText: "Entendido",
+            confirmButtonColor: "#003594", // Esto es un color HEX para rojo (como el de Bootstrap danger)
+          });
+        }
       }
     });
   }
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+  // Referencia al elemento de la tarjeta de estadística para tickets regionales
+  const regionTicketsCard = document.getElementById("RegionTicketsCard");
+
+  // Referencia al elemento del modal para tickets regionales
+  const regionTicketsModalElement = document.getElementById("RegionTicketsModal");
+
+  // Asegúrate de que ambos elementos existan antes de añadir el event listener
+  if (regionTicketsCard && regionTicketsModalElement) {
+    regionTicketsCard.addEventListener("click", function (event) {
+      // Evita el comportamiento predeterminado si el clic es en un enlace o botón.
+      event.preventDefault();
+
+      // Crea una instancia del modal de Bootstrap y muéstralo
+      const regionTicketsModal = new bootstrap.Modal(regionTicketsModalElement);
+      regionTicketsModal.show();
+      loadRegionTicketDetails(); // Carga los detalles regionales al abrir el modal
+    });
+  } else {
+    console.error(
+      "No se encontraron los elementos RegionTicketsCard o RegionTicketsModal."
+    );
+  }
+
+  // Event listener delegado para los botones de detalle de tickets regionales
+  const regionTicketsContent = document.getElementById("RegionTicketsContent");
+  if (regionTicketsContent) {
+    regionTicketsContent.addEventListener("click", function (event) {
+      // Verifica si el clic fue en un botón con la clase 'region-tickets-detail'
+      const clickedButton = event.target.closest(".region-tickets-total-detail");
+      if (clickedButton) {
+        const region = clickedButton.dataset.region; // Ej: "Central"
+        const count = clickedButton.dataset.count; // Ej: "1"
+
+        // Solo si hay tickets para mostrar, llamamos a la función de carga de detalles
+        if (parseInt(count) > 0) {
+          loadIndividualRegionTicketDetails(region);
+        } else {
+          // Opcional: mostrar un mensaje si no hay tickets
+          Swal.fire({
+            icon: "info",
+            title: "Sin Tickets",
+            html: `No hay tickets para la región de <strong>${region}</strong>.`,
+            confirmButtonText: "Entendido",
+            confirmButtonColor: "#003594",
+          });
+        }
+      }
+    });
+  }
+});
+
+function loadRegionTicketDetails() {
+  const contentDiv = document.getElementById("RegionTicketsContent");
+  contentDiv.innerHTML = "<p>Cargando información regional...</p>"; // Mensaje de carga
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChartForState`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        contentDiv.innerHTML = formatRegionDetails(data.details); // Renderizar los datos
+      } else {
+        contentDiv.innerHTML =
+          "<p>Error al cargar los detalles regionales: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error("Error en los datos de la API para regiones:", data.message);
+      }
+    })
+    .catch((error) => {
+      contentDiv.innerHTML =
+        "<p>Error de red al cargar los detalles regionales. Por favor, intente de nuevo más tarde.</p>";
+      console.error("Error fetching regional details:", error);
+    });
+}
+
+// Función para cargar los detalles de tickets individuales por región (sin estado inicial)
+
+
+// Función para formatear la tabla de tickets por región (ajustada)
+function formatRegionDetails(details) {
+  let html = `
+        <p>Haz clic en el número de tickets para ver el detalle de todos los tickets en esa región.</p>
+        <table class="table table-striped table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Región</th>
+                    <th>Tickets Realizados</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+  details.forEach((item) => {
+    html += `
+            <tr>
+                <td>${item.region_name || "N/A"}</td>
+                <td>
+                    <button class="btn btn-link p-0 region-tickets-total-detail"
+                            data-region="${item.region_name}"
+                            data-count="${item.total_tickets || 0}">
+                        ${item.total_tickets || 0}
+                    </button>
+                </td>
+            </tr>
+        `;
+  });
+
+  html += `
+            </tbody>
+        </table>
+        <p class="text-muted mt-3">Resumen de tickets realizados por región.</p>
+    `;
+  return html;
+}
+
+// Función para formatear los tickets individuales por región
+function formatIndividualRegionTickets(tickets, region) {
+
+  if (tickets.length === 0) {
+    return `<p>No hay tickets para la región ${region}.</p>
+                  <button class="btn btn-primary mt-3" onclick="loadRegionTicketDetails()">Volver al resumen regional</button>`;
+  }
+
+  let html = `
+        <h5>Tickets para la región ${region}</h5>
+        <div class="ticket-details-list mt-3">
+    `;
+
+  // Asegúrate de que las propiedades del objeto `ticket` coincidan con lo que tu API de detalles individuales devuelve
+  tickets.forEach((ticket) => {
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
+
+    html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Region:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.region_ticket || "N/A"
+                        }</dd>
+
+                    
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente  || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
+                        
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${ticket.date_create_ticket}</dd>
+                    </dl>
+                </div>
+            </div>
+        `;
+  });
+
+  html += `
+        </div>
+        <button class="btn btn-primary mt-3" onclick="loadRegionTicketDetails()">Volver al resumen regional</button>
+    `;
+  return html;
+}
+
+function loadIndividualRegionTicketDetails(region) { // status es opcional ahora
+  const contentDiv = document.getElementById("RegionTicketsContent");
+  let loadingMessage = `Cargando tickets para la región ${region}...`;
+  if (region) {
+    loadingMessage = `Cargando tickets para la región ${region}...`;
+  }
+  contentDiv.innerHTML = `<p>${loadingMessage}</p>`;
+
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetIndividualTicketDetailsByRegion`
+  ); // Asumiendo que este endpoint puede filtrar solo por región
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success && response.details) {
+          // Llama a la función de formateo de tickets individuales por región
+          contentDiv.innerHTML = formatIndividualRegionTickets(
+            response.details,
+            region,
+          );
+        } else {
+          contentDiv.innerHTML =
+            `<p>Error al cargar el detalle de tickets: ` +
+            (response.message || "Error desconocido") +
+            `</p>`;
+          console.error(
+            "Error en los datos de la API para tickets individuales por región:",
+            response.message
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Error parsing JSON for individual regional ticket details:",
+          error
+        );
+        contentDiv.innerHTML = `<p>Error de procesamiento de datos al cargar el detalle de tickets.</p>`;
+      }
+    } else {
+      console.error(
+        "Error fetching individual regional ticket details:",
+        xhr.status,
+        xhr.statusText
+      );
+      contentDiv.innerHTML = `<p>Error de red al cargar el detalle de tickets. Por favor, intente de nuevo más tarde.</p>`;
+    }
+  };
+
+  xhr.onerror = function () {
+    console.error("Network error during individual regional ticket details fetch.");
+    contentDiv.innerHTML = `<p>Error de conexión al cargar el detalle de tickets.</p>`;
+  };
+
+  // Prepara los datos a enviar: solo la región
+  let dataToSend = `action=GetIndividualTicketDetailsByRegion&region=${encodeURIComponent(region)}`;
+  // Si tu API GetIndividualTicketDetailsByRegion puede filtrar por status, puedes añadirlo aquí
+  xhr.send(dataToSend);
+}
+
 // *** NUEVA FUNCIÓN: Para cargar los detalles de tickets individuales ***
 function loadIndividualTicketDetails(month, status) {
-  const contentDiv = document.getElementById('monthlyTicketsContent');
+  const contentDiv = document.getElementById("monthlyTicketsContent");
   contentDiv.innerHTML = `<p>Cargando tickets ${status.toLowerCase()}s en la fecha ${month}...</p>`; // Mensaje de carga
 
   const xhr = new XMLHttpRequest();
   // Use POST as requested, so the parameters will be sent in the request body
-  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetIndividualTicketDetails`);
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetIndividualTicketDetails`
+  );
   // Set the Content-Type header to indicate that we're sending URL-encoded data
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
     if (xhr.status === 200) {
@@ -722,31 +1179,50 @@ function loadIndividualTicketDetails(month, status) {
         const response = JSON.parse(xhr.responseText);
         if (response.success && response.details) {
           // Función para formatear los tickets individuales
-          contentDiv.innerHTML = formatIndividualTickets(response.details, month, status);
+          contentDiv.innerHTML = formatIndividualTickets(
+            response.details,
+            month,
+            status
+          );
         } else {
           // Check for data.message in case of API error, or provide a generic one
-          contentDiv.innerHTML = `<p>Error al cargar el detalle de tickets ${status.toLowerCase()}s: ` + (response.message || 'Error desconocido') + `</p>`;
-          console.error('Error en los datos de la API para tickets individuales:', response.message);
+          contentDiv.innerHTML =
+            `<p>Error al cargar el detalle de tickets ${status.toLowerCase()}s: ` +
+            (response.message || "Error desconocido") +
+            `</p>`;
+          console.error(
+            "Error en los datos de la API para tickets individuales:",
+            response.message
+          );
         }
       } catch (error) {
-        console.error('Error parsing JSON for individual ticket details:', error);
+        console.error(
+          "Error parsing JSON for individual ticket details:",
+          error
+        );
         contentDiv.innerHTML = `<p>Error de procesamiento de datos al cargar el detalle de tickets ${status.toLowerCase()}s.</p>`;
       }
     } else {
-      console.error('Error fetching individual ticket details:', xhr.status, xhr.statusText);
+      console.error(
+        "Error fetching individual ticket details:",
+        xhr.status,
+        xhr.statusText
+      );
       contentDiv.innerHTML = `<p>Error de red al cargar el detalle de tickets ${status.toLowerCase()}s. Por favor, intente de nuevo más tarde.</p>`;
     }
   };
 
   // Handle network errors
   xhr.onerror = function () {
-    console.error('Network error during individual ticket details fetch.');
+    console.error("Network error during individual ticket details fetch.");
     contentDiv.innerHTML = `<p>Error de conexión al cargar el detalle de tickets ${status.toLowerCase()}s.</p>`;
   };
 
   // Prepare the data to be sent in the request body
   // encodeURIComponent is crucial for sending parameters in URL-encoded format
-  const dataToSend = `action=GetIndividualTicketDetails&month=${encodeURIComponent(month)}&status=${encodeURIComponent(status)}`;
+  const dataToSend = `action=GetIndividualTicketDetails&month=${encodeURIComponent(
+    month
+  )}&status=${encodeURIComponent(status)}`;
   xhr.send(dataToSend);
 }
 
@@ -762,31 +1238,41 @@ function formatIndividualTickets(tickets, month, status) {
         <div class="ticket-details-list mt-3">
     `;
 
-  tickets.forEach(ticket => {
+  tickets.forEach((ticket) => {
     // Formatear la fecha de creación del ticket para una mejor visualización
-    const creationDate = ticket.date_create_ticket ? new Date(ticket.date_create_ticket).toLocaleString() : 'N/A';
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
 
     html += `
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.id_ticket || 'N/A'}</strong>
+                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
                         <dt class="col-sm-4">Serial POS:</dt>
-                        <dd class="col-sm-8">${ticket.serial_pos_ticket || 'N/A'}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Razón Social Cliente:</dt>
-                        <dd class="col-sm-8">${ticket.razon_social_cliente || 'N/A'}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Rif Cliente:</dt>
-                        <dd class="col-sm-8">${ticket.rif_cliente || 'N/A'}</dd>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
 
                         <dt class="col-sm-4">Modelo POS:</dt>
-                        <dd class="col-sm-8">${ticket.name_modelopos_cliente || 'N/A'}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Estado Ticket:</dt>
-                        <dd class="col-sm-8">${ticket.status_name_ticket || 'N/A'}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
                         
                         <dt class="col-sm-4">Fecha Creación:</dt>
                         <dd class="col-sm-8">${ticket.date_create_ticket}</dd>
@@ -804,27 +1290,31 @@ function formatIndividualTickets(tickets, month, status) {
 }
 
 function loadMonthlyTicketDetails() {
-  const contentDiv = document.getElementById('monthlyTicketsContent');
-  contentDiv.innerHTML = '<p>Cargando información...</p>'; // Mensaje de carga
+  const contentDiv = document.getElementById("monthlyTicketsContent");
+  contentDiv.innerHTML = "<p>Cargando información...</p>"; // Mensaje de carga
 
   fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyTicketDetails`)
-    .then(response => {
+    .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       return response.json();
     })
-    .then(data => {
+    .then((data) => {
       if (data.success) {
         contentDiv.innerHTML = formatMonthlyDetails(data.details); // Renderizar los datos
       } else {
-        contentDiv.innerHTML = '<p>Error al cargar los detalles: ' + (data.message || 'Error desconocido') + '</p>';
-        console.error('Error en los datos de la API:', data.message);
+        contentDiv.innerHTML =
+          "<p>Error al cargar los detalles: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error("Error en los datos de la API:", data.message);
       }
     })
-    .catch(error => {
-      contentDiv.innerHTML = '<p>Error de red al cargar los detalles. Por favor, intente de nuevo más tarde.</p>';
-      console.error('Error fetching monthly details:', error);
+    .catch((error) => {
+      contentDiv.innerHTML =
+        "<p>Error de red al cargar los detalles. Por favor, intente de nuevo más tarde.</p>";
+      console.error("Error fetching monthly details:", error);
     });
 }
 
@@ -845,7 +1335,7 @@ function formatMonthlyDetails(details) {
             <tbody>
     `;
 
-  details.forEach(item => {
+  details.forEach((item) => {
     const monthName = item.month_name.trim();
     const year = item.year_month.substring(0, 4);
 
@@ -890,21 +1380,73 @@ function formatMonthlyDetails(details) {
 }
 
 let monthlyTicketsChartInstance; // Variable global para la instancia del gráfico
+let monthlyTicketsChartInstanceForState;
 
 function loadMonthlyCreatedTicketsChart() {
-  const ctx = document.getElementById('chart-line').getContext('2d');
+  // Array para los colores de fondo con degradado (ej. para Chart.js)
+  // Cada objeto contiene los colores de inicio y fin para el degradado de una barra.
+  const gradientColors = [
+    // Enero: Azul Oscuro a Azul Medio
+    { start: "rgba(41, 128, 185, 0.9)", end: "rgba(52, 152, 219, 0.9)" },
+    // Febrero: Azul Marino Oscuro a Azul Grisáceo
+    { start: "rgba(44, 62, 80, 0.9)", end: "rgba(52, 73, 94, 0.9)" },
+    // Marzo: Verde Esmeralda Oscuro a Verde Esmeralda
+    { start: "rgba(39, 174, 96, 0.9)", end: "rgba(46, 204, 113, 0.9)" },
+    // Abril: Turquesa Oscuro a Turquesa Brillante
+    { start: "rgba(22, 160, 133, 0.9)", end: "rgba(26, 188, 156, 0.9)" },
+    // Mayo: Naranja-Amarillo a Amarillo Dorado
+    { start: "rgba(243, 156, 18, 0.9)", end: "rgba(241, 196, 15, 0.9)" },
+    // Junio: Naranja a Naranja Oscuro
+    { start: "rgba(230, 126, 34, 0.9)", end: "rgba(211, 84, 0, 0.9)" },
+    // Julio: Púrpura Profundo a Púrpura Medio
+    { start: "rgba(142, 68, 173, 0.9)", end: "rgba(155, 89, 182, 0.9)" },
+    // Agosto: Rojo-Rosa a Rojo Oscuro
+    { start: "rgba(231, 76, 60, 0.9)", end: "rgba(192, 57, 43, 0.9)" },
+    // Septiembre: Verde Bosque Oscuro a Verde Bosque
+    { start: "rgba(39, 174, 96, 0.9)", end: "rgba(46, 204, 113, 0.9)" },
+    // Octubre: Gris Oscuro Azulado a Gris Claro Azulado
+    { start: "rgba(127, 140, 141, 0.9)", end: "rgba(149, 165, 166, 0.9)" },
+    // Noviembre: Azul Muy Oscuro a Azul Más Oscuro
+    { start: "rgba(31, 44, 58, 0.9)", end: "rgba(41, 61, 81, 0.9)" },
+    // Diciembre: Azul Brillante a Azul Más Claro
+    { start: "rgba(52, 152, 219, 0.9)", end: "rgba(93, 173, 226, 0.9)" },
+  ];
 
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChart`) // <-- Asegúrate de que tu API exponga esta función SQL
-    .then(response => {
+  // Array para los colores del borde (generalmente un tono más oscuro o el color inicial del degradado)
+  const borderColors = [
+    "rgba(41, 128, 185, 1)", // Enero
+    "rgba(44, 62, 80, 1)", // Febrero
+    "rgba(39, 174, 96, 1)", // Marzo
+    "rgba(22, 160, 133, 1)", // Abril
+    "rgba(243, 156, 18, 1)", // Mayo
+    "rgba(230, 126, 34, 1)", // Junio
+    "rgba(142, 68, 173, 1)", // Julio
+    "rgba(231, 76, 60, 1)", // Agosto
+    "rgba(39, 174, 96, 1)", // Septiembre
+    "rgba(127, 140, 141, 1)", // Octubre
+    "rgba(31, 44, 58, 1)", // Noviembre
+    "rgba(52, 152, 219, 1)", // Diciembre
+  ];
+
+  const ctx = document.getElementById("chart-line").getContext("2d");
+
+  fetch(
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChart`
+  )
+    .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       return response.json();
     })
-    .then(data => {
+    .then((data) => {
       if (data.success && data.details && data.details.length > 0) {
-        const labels = data.details.map(item => `${item.month_name} ${item.year_month.substring(0, 4)}`); // "Enero 2024"
-        const chartData = data.details.map(item => item.total_tickets_creados_mes);
+        const labels = data.details.map(
+          (item) => `${item.month_name} ${item.year_month.substring(0, 4)}`
+        ); // "Enero 2024"
+        const chartData = data.details.map(
+          (item) => item.total_tickets_creados_mes
+        );
 
         // Si ya existe una instancia del gráfico, la destruimos antes de crear una nueva
         if (monthlyTicketsChartInstance) {
@@ -912,26 +1454,52 @@ function loadMonthlyCreatedTicketsChart() {
         }
 
         monthlyTicketsChartInstance = new Chart(ctx, {
-          type: 'bar', // Puedes probar 'line' para ver la tendencia también
+          type: "bar", // Puedes probar 'line' para ver la tendencia también
           data: {
             labels: labels, // Nombres de los meses como etiquetas
-            datasets: [{
-              label: 'Total de Tickets Creados',
-              data: chartData, // Los totales de tickets creados por mes
-              backgroundColor: [
-                'rgba(75, 192, 192, 0.8)',  // Turquesa (por ejemplo, para "Abiertos")
-                'rgba(255, 206, 86, 0.8)',  // Amarillo (por ejemplo, para "En proceso")
-                'rgba(255, 99, 132, 0.8)'   // Rojo (por ejemplo, para "Cerrados")
-              ],
-              borderColor: [
-                'rgba(75, 192, 192, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(255, 99, 132, 1)'
-              ],
-              borderWidth: 1,
-              categoryPercentage: 0.7,
-              barPercentage: 0.8
-            }]
+            datasets: [
+              {
+                label: "Total de Tickets Creados",
+                data: chartData, // Los totales de tickets creados por mes
+                backgroundColor: function (context) {
+                  // Aquí es donde creamos el degradado para cada barra
+                  const chart = context.chart;
+                  const { ctx, chartArea } = chart;
+
+                  if (!chartArea) {
+                    // Esto sucede en la carga inicial del gráfico
+                    return;
+                  }
+
+                  // Crea el degradado vertical desde la parte inferior de la barra hasta la superior
+                  const gradient = ctx.createLinearGradient(
+                    0,
+                    chartArea.bottom,
+                    0,
+                    chartArea.top
+                  );
+
+                  const index = context.dataIndex; // Índice del mes actual
+                  const colorInfo =
+                    gradientColors[index % gradientColors.length]; // Usamos % para repetir los colores si hay más de 12 meses
+
+                  if (colorInfo) {
+                    gradient.addColorStop(0, colorInfo.start); // Color de inicio (abajo)
+                    gradient.addColorStop(1, colorInfo.end); // Color final (arriba)
+                  } else {
+                    // Color de fallback si no se encuentra información de color
+                    gradient.addColorStop(0, "rgba(0,0,0,0.7)");
+                    gradient.addColorStop(1, "rgba(0,0,0,0.5)");
+                  }
+
+                  return gradient;
+                },
+                borderColor: borderColors, // Los bordes pueden ser colores sólidos
+                borderWidth: 1,
+                categoryPercentage: 0.7,
+                barPercentage: 0.8,
+              },
+            ],
           },
           options: {
             responsive: true,
@@ -940,112 +1508,291 @@ function loadMonthlyCreatedTicketsChart() {
               y: {
                 beginAtZero: true,
                 ticks: {
-                  color: '#6c757d',
-                  font: { size: 12 }
+                  color: "#6c757d",
+                  font: { size: 12 },
                 },
                 grid: {
-                  color: 'rgba(0,0,0,0.05)',
-                  drawBorder: false
-                }
+                  color: "rgba(0,0,0,0.05)",
+                  drawBorder: false,
+                },
               },
               x: {
                 ticks: {
-                  color: '#6c757d',
-                  font: { size: 12 }
+                  color: "#6c757d",
+                  font: { size: 12 },
                 },
                 grid: {
-                  color: 'rgba(0,0,0,0.05)',
-                  drawBorder: false
-                }
-              }
+                  color: "rgba(0,0,0,0.05)",
+                  drawBorder: false,
+                },
+              },
             },
             plugins: {
               legend: {
                 display: true, // Mostrar la leyenda para el nombre del dataset
-                labels: { color: '#343a40' }
+                labels: { color: "#343a40" },
               },
               tooltip: {
-                backgroundColor: 'rgba(0,0,0,0.7)',
-                titleColor: 'white',
-                bodyColor: 'white'
-              }
-            }
-          }
+                backgroundColor: "rgba(0,0,0,0.7)",
+                titleColor: "white",
+                bodyColor: "white",
+              },
+            },
+          },
         });
-        console.log('Gráfico de tickets creados por mes cargado con éxito.');
-
       } else {
-        console.warn('No hay datos disponibles para el gráfico de tickets creados por mes o la respuesta no fue exitosa.');
+        console.warn(
+          "No hay datos disponibles para el gráfico de tickets creados por mes o la respuesta no fue exitosa."
+        );
         // Destruir el gráfico si no hay datos para mostrar un lienzo vacío
         if (monthlyTicketsChartInstance) {
           monthlyTicketsChartInstance.destroy();
         }
         // O mostrar un mensaje en el canvas si es posible
-        ctx.fillText("No hay datos para mostrar.", ctx.canvas.width / 2, ctx.canvas.height / 2);
+        ctx.fillText(
+          "No hay datos para mostrar.",
+          ctx.canvas.width / 2,
+          ctx.canvas.height / 2
+        );
       }
     })
-    .catch(error => {
-      console.error('Error al cargar los datos del gráfico de tickets creados por mes:', error);
+    .catch((error) => {
+      console.error(
+        "Error al cargar los datos del gráfico de tickets creados por mes:",
+        error
+      );
       if (monthlyTicketsChartInstance) {
         monthlyTicketsChartInstance.destroy();
       }
-      ctx.fillText("Error al cargar el gráfico.", ctx.canvas.width / 2, ctx.canvas.height / 2);
+      ctx.fillText(
+        "Error al cargar el gráfico.",
+        ctx.canvas.width / 2,
+        ctx.canvas.height / 2
+      );
     });
 }
 
-// Asegúrate de que ENDPOINT_BASE y APP_PATH estén definidos
-// const ENDPOINT_BASE = 'http://localhost:8080/';
-// const APP_PATH = 'your-app-path/';
-
 async function updateTicketMonthlyPercentageChange() {
-    const porcentElement = document.getElementById('porcent'); 
-    
-    if (porcentElement) porcentElement.textContent = 'Cargando...'; 
+  const porcentElement = document.getElementById("porcent");
 
-    try {
-        const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyTicketPercentageChange`); 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log("Respuesta completa de la API:", data); // Esto te mostrará la estructura real: { success: true, porcent: -50.0... }
+  if (porcentElement) porcentElement.textContent = "Cargando...";
 
-        // ** CAMBIO CRÍTICO AQUÍ: Accede directamente a data.porcent **
-            let percentage = data.porcent; // Toma el número directamente
-
-            let textContent = '';
-            let color = 'gray'; 
-
-            if (percentage === null || isNaN(percentage)) { // Aunque ya verificamos que es número, mantenemos isNaN por si acaso
-                textContent = `N/A`; 
-            } else {
-                const roundedPercentage = Math.round(percentage); // Redondea al entero más cercano
-                
-                if (roundedPercentage >= 0) {
-                    textContent = `+${roundedPercentage}% más`;
-                    color = 'green';
-                } else {
-                    textContent = `${roundedPercentage}% menos`;
-                    color = 'red';
-                }
-            }
-            
-            if (porcentElement) {
-                porcentElement.textContent = textContent;
-                porcentElement.style.color = color;
-            }
-    } catch (error) {
-        if (porcentElement) {
-            porcentElement.textContent = '0%'; // Valor por defecto en caso de error
-            porcentElement.style.color = 'grey';
-        }
+  try {
+    const response = await fetch(
+      `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyTicketPercentageChange`
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    const data = await response.json();
+
+    // ** CAMBIO CRÍTICO AQUÍ: Accede directamente a data.porcent **
+    let percentage = data.porcent; // Toma el número directamente
+
+    let textContent = "";
+    let color = "gray";
+
+    if (percentage === null || isNaN(percentage)) {
+      // Aunque ya verificamos que es número, mantenemos isNaN por si acaso
+      textContent = `N/A`;
+    } else {
+      const roundedPercentage = Math.round(percentage); // Redondea al entero más cercano
+
+      if (roundedPercentage >= 0) {
+        textContent = `+${roundedPercentage}% más`;
+        color = "green";
+      } else {
+        textContent = `${roundedPercentage}% menos`;
+        color = "red";
+      }
+    }
+
+    if (porcentElement) {
+      porcentElement.textContent = textContent;
+      porcentElement.style.color = color;
+    }
+  } catch (error) {
+    if (porcentElement) {
+      porcentElement.textContent = "0%"; // Valor por defecto en caso de error
+      porcentElement.style.color = "grey";
+    }
+  }
 }
 
+function loadMonthlyCreatedTicketsChartForState() {
+  // Array para los colores de fondo con degradado para los estados/regiones (7 colores distintos)
+  const gradientColorsForState = [
+    // Región 1: Azul Profundo a Azul Cielos
+    { start: "rgba(46, 116, 181, 0.9)", end: "rgba(74, 160, 217, 0.9)" },
+    // Región 2: Verde Esmeralda a Verde Claro
+    { start: "rgba(46, 204, 113, 0.9)", end: "rgba(77, 219, 137, 0.9)" },
+    // Región 3: Púrpura Vibrante a Lavanda
+    { start: "rgba(155, 89, 182, 0.9)", end: "rgba(189, 119, 218, 0.9)" },
+    // Región 4: Cian Oscuro a Cian Claro
+    { start: "rgba(0, 128, 128, 0.9)", end: "rgba(0, 178, 178, 0.9)" },
+    // Región 5: Oro Oxidado a Amarillo Naranja
+    { start: "rgba(204, 102, 0, 0.9)", end: "rgba(255, 153, 51, 0.9)" },
+    // Región 6: Gris Azulado Profundo a Gris Claro
+    { start: "rgba(90, 100, 110, 0.9)", end: "rgba(130, 140, 150, 0.9)" },
+    // Región 7: Rojo Vivo a Rosa Salmón
+    { start: "rgba(231, 76, 60, 0.9)", end: "rgba(241, 148, 138, 0.9)" },
+  ];
+
+  // Array para los colores del borde para los estados/regiones
+  const borderColorsForState = [
+    "rgba(46, 116, 181, 1)",
+    "rgba(46, 204, 113, 1)",
+    "rgba(155, 89, 182, 1)",
+    "rgba(0, 128, 128, 1)",
+    "rgba(204, 102, 0, 1)",
+    "rgba(90, 100, 110, 1)",
+    "rgba(231, 76, 60, 1)",
+  ];
+
+  const ctx = document.getElementById("ticketsChart").getContext("2d");
+
+  fetch(
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChartForState`
+  ) // <-- Asegúrate de que tu API exponga esta función SQL
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success && data.details && data.details.length > 0) {
+        const labels = data.details.map((item) => `${item.region_name}`);
+        const chartData = data.details.map((item) => item.total_tickets);
+
+        // Si ya existe una instancia del gráfico, la destruimos antes de crear una nueva
+        if (monthlyTicketsChartInstanceForState) {
+          monthlyTicketsChartInstanceForState.destroy();
+        }
+
+        monthlyTicketsChartInstanceForState = new Chart(ctx, {
+          type: "bar", // Puedes probar 'line' para ver la tendencia también
+          data: {
+            labels: labels, // Nombres de las regiones como etiquetas
+            datasets: [
+              {
+                label: "Total de Tickets Creados por Región",
+                data: chartData, // Los totales de tickets creados por región
+                backgroundColor: function (context) {
+                  const chart = context.chart;
+                  const { ctx, chartArea } = chart;
+
+                  if (!chartArea) {
+                    return;
+                  }
+
+                  const gradient = ctx.createLinearGradient(
+                    0,
+                    chartArea.bottom,
+                    0,
+                    chartArea.top
+                  );
+
+                  const index = context.dataIndex;
+                  // Usamos el operador módulo para ciclar a través de los colores si hay más regiones que colores definidos
+                  const colorInfo =
+                    gradientColorsForState[
+                      index % gradientColorsForState.length
+                    ];
+
+                  if (colorInfo) {
+                    gradient.addColorStop(0, colorInfo.start);
+                    gradient.addColorStop(1, colorInfo.end);
+                  } else {
+                    // Color de fallback
+                    gradient.addColorStop(0, "rgba(100,100,100,0.7)");
+                    gradient.addColorStop(1, "rgba(150,150,150,0.5)");
+                  }
+
+                  return gradient;
+                },
+                borderColor: borderColorsForState, // Los bordes pueden ser colores sólidos
+                borderWidth: 1,
+                categoryPercentage: 0.7,
+                barPercentage: 0.8,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: "#6c757d",
+                  font: { size: 12 },
+                },
+                grid: {
+                  color: "rgba(0,0,0,0.05)",
+                  drawBorder: false,
+                },
+              },
+              x: {
+                ticks: {
+                  color: "#6c757d",
+                  font: { size: 12 },
+                },
+                grid: {
+                  color: "rgba(0,0,0,0.05)",
+                  drawBorder: false,
+                },
+              },
+            },
+            plugins: {
+              legend: {
+                display: true, // Mostrar la leyenda para el nombre del dataset
+                labels: { color: "#343a40" },
+              },
+              tooltip: {
+                backgroundColor: "rgba(0,0,0,0.7)",
+                titleColor: "white",
+                bodyColor: "white",
+              },
+            },
+          },
+        });
+      } else {
+        console.warn(
+          "No hay datos disponibles para el gráfico de tickets creados por región o la respuesta no fue exitosa."
+        );
+        // Destruir el gráfico si no hay datos para mostrar un lienzo vacío
+        if (monthlyTicketsChartInstanceForState) {
+          monthlyTicketsChartInstanceForState.destroy();
+        }
+        // O mostrar un mensaje en el canvas si es posible
+        ctx.fillText(
+          "No hay datos para mostrar.",
+          ctx.canvas.width / 2,
+          ctx.canvas.height / 2
+        );
+      }
+    })
+    .catch((error) => {
+      console.error(
+        "Error al cargar los datos del gráfico de tickets creados por región:",
+        error
+      );
+      if (monthlyTicketsChartInstanceForState) {
+        monthlyTicketsChartInstanceForState.destroy();
+      }
+      ctx.fillText(
+        "Error al cargar el gráfico.",
+        ctx.canvas.width / 2,
+        ctx.canvas.height / 2
+      );
+    });
+}
 
 // Llama a esta función para cargar el gráfico cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener("DOMContentLoaded", function () {
   loadMonthlyCreatedTicketsChart();
+  loadMonthlyCreatedTicketsChartForState();
   updateTicketMonthlyPercentageChange();
   // ... (resto de tu código DOMContentLoaded para modals, estadísticas de cards, etc.)
 });

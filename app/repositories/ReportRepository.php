@@ -99,7 +99,7 @@ class ReportRepository
     {
         // Lógica para obtener la cantidad de usuarios
         $result = $this->model->getTicketabiertoCount(); // Asumiendo que tienes este método en tu modelo
-        return $result['row']['total_tickets_abiertos'];
+        return $result['row']['get_total_open_tickets'];
     }
 
     public function getTicketsResueltosCount()
@@ -113,25 +113,25 @@ class ReportRepository
     {
         // Lógica para obtener la cantidad de usuarios
         $result = $this->model->getTicketsTotalCount(); // Asumiendo que tienes este método en tu modelo
-        return $result['row']['total_tickets_general'];
+        return $result['row']['get_total_tickets'];
     }
 
     public function getTicketPercentageData()
     {
         $result = $this->model->getTicketCountsForPercentage();
-        return $result;
+        return $result['row']['get_percentage_open_tickets'];
     }
 
     public function getTicketsResueltosPercentageData()
     {
         $result = $this->model->getTicketsResueltosCountsForPercentage();
-        return $result;
+        return $result['row']['get_percentage_resolved_tickets'];
     }
 
     public function getTotalTicketsPercentageData()
     {
         $result = $this->model->getTotalTicketsCountsForPercentage();
-        return $result;
+        return $result['row']['percentage_of_100_base'];;
     }
 
     public function getTicketDataFinal()
@@ -213,9 +213,67 @@ class ReportRepository
         }
     }
 
+    public function GetMonthlyCreatedTicketsForChartForState(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetMonthlyCreatedTicketsForChartForState(); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
+    public function GetRegionsTicketDetails(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetRegionsTicketDetails(); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
     public function GetMonthlyTicketPercentageChange(){
         // Lógica para obtener todos los usuarios
         $result = $this->model->GetMonthlyTicketPercentageChange(); // Asumiendo que tienes este método en tu modelo
-        return $result['row']['overall_percentage_change'];
+        return $result['row']['average_monthly_percentage_change'];
     }
+
+    public function GetIndividualTicketDetailsByRegion($id_region){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetIndividualTicketDetailsByRegion($id_region); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
+    public function GetTicketsSendTallerTotalCount(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketsSendTallerTotalCount(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['get_total_tickets_lab'];
+    }
+
+    public function GetTotalTicketsPercentageSendToTaller(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTotalTicketsPercentageSendToTaller(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['get_percentage_tickets_in_lab_of_total'];
+    }
+
 }

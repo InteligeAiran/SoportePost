@@ -56,12 +56,10 @@ function mi_navbar()
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
-                                            <p class="card-category text-sm mb-0 text-uppercase font-weight-bold">
-                                                Tickets Abiertos</p>
-                                            <h5 class="card-title font-weight-bolder">52</h5>
+                                            <p class="card-category">Tickets Abiertos</p>
+                                            <h5 class="card-title font-weight-bolder" id="TicketsAbiertos"></h5>
                                             <p class="card-text mb-0">
-                                                <span class="text-danger font-weight-bolder">-92.86%</span>
-                                                Desde Ayer
+                                                <span class="text-danger font-weight-bolder" id="TicketPorcentOpen"></span>Del total de tickets
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
@@ -86,11 +84,9 @@ function mi_navbar()
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
                                             <p class="card-category">Tickets Resueltos</p>
-                                            <h5 id="TicketsResuelto" class="card-title">3</h5>
+                                            <h5 id="TicketsResuelto" class="card-title"></h5>
                                             <p class="card-text">
-                                                <span id="ticketResueltoPercentage"
-                                                    class="text-success-percentage">10%</span> <span
-                                                    class="text-muted">Desde Ayer</span>
+                                                <span id="ticketResueltoPercentage" class="text font-weight-bolder"></span> Del total de tickets
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
@@ -115,11 +111,9 @@ function mi_navbar()
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
                                             <p class="card-category">Total Tickets</p>
-                                            <h5 id="TotalTicket" class="card-title">56</h5>
+                                            <h5 id="TotalTicket" class="card-title"></h5>
                                             <p class="card-text">
-                                                <span id="totalTicketPercentage"
-                                                    class="text-info-percentage">5.71%</span> <span
-                                                    class="text-muted">Desde Ayer</span>
+                                                <span class="text font-weight-bolder"  id="totalTicketPercentage"></span> De 100 Mensual
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
@@ -143,7 +137,37 @@ function mi_navbar()
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
-                                            <p class="card-category">Actividad Mensual</p>
+                                            <p class="card-category">POS ENVIADO A TALLER</p>
+                                            <h5 class="card-title" id="TotalEnviadoTaller"></h5>
+                                            <p class="card-text">
+                                                <span class="text-percentage" id="PorcentSendToTaller"></span><span
+                                                    class="text-muted">Último mes</span>
+                                            </p>
+                                        </div>
+                                        <div class="icon-on-right">
+                                            <div class="icon-shape bg-gradient-warning"> <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                                    fill="currentColor" class="bi bi-wrench-adjustable"
+                                                    viewBox="0 0 16 16">
+                                                    <path
+                                                        d="M16 4.5a4.5 4.5 0 0 1-1.703 3.526L13 5l2.959-1.11q.04.3.041.61" />
+                                                    <path
+                                                        d="M11.5 9c.653 0 1.273-.139 1.833-.39L12 5.5 11 3l3.826-1.53A4.5 4.5 0 0 0 7.29 6.092l-6.116 5.096a2.583 2.583 0 1 0 3.638 3.638L9.908 8.71A4.5 4.5 0 0 0 11.5 9m-1.292-4.361-.596.893.809-.27a.25.25 0 0 1 .287.377l-.596.893.809-.27.158.475-1.5.5a.25.25 0 0 1-.287-.376l.596-.893-.809.27a.25.25 0 0 1-.287-.377l.596-.893-.809.27-.158-.475 1.5-.5a.25.25 0 0 1 .287.376M3 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                        <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="card-content-wrapper">
+                                        <div class="numbers">
+                                            <p class="card-category">POS GESTION COMERCIAL</p>
                                             <h5 class="card-title">4</h5>
                                             <p class="card-text">
                                                 <span class="text-success-percentage">+5%</span> <span
@@ -151,7 +175,7 @@ function mi_navbar()
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
-                                            <div class="icon-shape bg-gradient-warning"> <svg
+                                            <div class="icon-shape bg-gradient-danger"> <svg
                                                     xmlns="http://www.w3.org/2000/svg" width="30" height="30"
                                                     fill="white" class="bi bi-calendar-check-fill" viewBox="0 0 16 16">
                                                     <path
@@ -206,11 +230,32 @@ function mi_navbar()
                         </div>
                     </div>
 
+                    <div class="modal fade" id="RegionTicketsModal" tabindex="-1"
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-gradient-info text-white">
+                                    <h5 class="modal-title"  style = "color: white" id="monthlyTicketsModalLabel">Detalle de Tickets Regionales
+                                    </h5>
+                                    <button type="button" class="btn-close" id="ModalStadisticRegionIcon" data-bs-dismiss="modal"
+                                        aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="RegionTicketsContent"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id= "ModalStadisticRegion" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-lg-5">
-                        <div class="card card-chart">
+                        <div class="card card-chart" id="RegionTicketsCard">
                             <div class="card-header bg-gradient-primary">
-                                <h5 class="chart-title text-white">Tickets por Estado</h5>
-                                <p class="chart-subtitle text-white">Resumen de tickets abiertos, resueltos y pendientes
+                                <h5 class="chart-title text-white">Tickets por Regiones</h5>
+                                <p class="chart-subtitle text-white">Resumen de tickets Regionales
                                 </p>
                             </div>
                             <div class="card-body">
@@ -220,7 +265,6 @@ function mi_navbar()
                             </div>
                         </div>
                     </div>
-
                 </div>
 
                 <div class="row mt-6">
@@ -584,93 +628,6 @@ function mi_navbar()
         <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
-
-        
-        <script>
-            // Asegúrate de que este script se ejecute después de que el DOM esté cargado
-            // Asegúrate de que este script se ejecute después de que el DOM esté cargado
-            document.addEventListener('DOMContentLoaded', function () {
-                var ctx = document.getElementById('ticketsChart').getContext('2d');
-                var ticketsChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Abiertos', 'Resueltos', 'Pendientes'],
-                        datasets: [{
-                            label: 'Cantidad de Tickets',
-                            data: [52, 3, 5],
-                            backgroundColor: [
-                                'rgba(138, 43, 226, 0.8)', // Morado/Índigo
-                                'rgba(75, 192, 192, 0.8)', // Verde/Teal
-                                'rgba(255, 99, 132, 0.8)'  // Rojo/Rosa
-                            ],
-                            borderColor: [
-                                'rgba(138, 43, 226, 1)',
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(255, 99, 132, 1)'
-                            ],
-                            borderWidth: 1,
-                            // --- AJUSTES PARA EL ANCHO DE LAS BARRAS ---
-                            categoryPercentage: 0.7, // Espacio ocupado por las categorías (grupos de barras)
-                            barPercentage: 0.8      // Espacio ocupado por cada barra dentro de su categoría
-                            // Puedes jugar con estos valores. 1.0 (100%) para que no haya espacio.
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false, // ¡Muy importante!
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    color: '#6c757d',
-                                    font: {
-                                        size: 12 // Aumenta un poco el tamaño de la fuente para mejor legibilidad
-                                    }
-                                },
-                                grid: {
-                                    color: 'rgba(0,0,0,0.05)',
-                                    drawBorder: false // Quita el borde del grid si no lo quieres
-                                }
-                            },
-                            x: {
-                                ticks: {
-                                    color: '#6c757d',
-                                    font: {
-                                        size: 12 // Aumenta un poco el tamaño de la fuente para mejor legibilidad
-                                    }
-                                },
-                                grid: {
-                                    color: 'rgba(0,0,0,0.05)',
-                                    drawBorder: false // Quita el borde del grid si no lo quieres
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false, // Si el gráfico es simple y las etiquetas son claras
-                                labels: {
-                                    color: '#343a40'
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(0,0,0,0.7)',
-                                titleColor: 'white',
-                                bodyColor: 'white'
-                            }
-                        }
-                    }
-                });
-            });
-        </script>
-        <script>
-            var win = navigator.platform.indexOf('Win') > -1;
-            if (win && document.querySelector('#sidenav-scrollbar')) {
-                var options = {
-                    damping: '0.5'
-                }
-                Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-            }
-        </script>
         <?php
         if (isset($this->js)) {
             foreach ($this->js as $js) {

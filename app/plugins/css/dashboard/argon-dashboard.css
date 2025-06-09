@@ -2062,7 +2062,8 @@ progress {
 
   .col-xl-3 {
     flex: 0 0 auto;
-    width: 25%;
+    /*ESTABA EN 25%*/
+    width: 20%;
   }
 
   .col-xl-4 {

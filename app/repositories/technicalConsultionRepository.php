@@ -89,9 +89,9 @@ class TechnicalConsultionRepository
         return $result ? $result['row']['codmodelopos'] : null;
     }
 
-    public function GetTotalTickets(){
+    public function GetTotalTickets($fecha_para_db){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTotalTickets();
+        $result = $this->model->GetTotalTickets($fecha_para_db);
         return $result['row']['get_tickets_total_count'];
     }
 
