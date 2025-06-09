@@ -261,6 +261,16 @@ class reportsModel extends Model
             // Handle exception
         }
     }
+
+    public function GetTicketOpenDetails(){
+        try {
+            $sql = "SELECT * FROM get_individual_open_tickets_details()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
 ?>
 

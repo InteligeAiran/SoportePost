@@ -510,6 +510,138 @@ function getTicketOpen() {
   xhr.send(datos);
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+    // Referencia al elemento de la tarjeta de estadística para tickets regionales
+    const TicketsOpenCard = document.getElementById("Card-Ticket-open");
+
+    // Referencia al elemento del modal para tickets regionales
+    const OpenTicketsModalElement = document.getElementById("OpenTicketModal");
+
+    // Declarar la instancia del modal fuera del if/else para que sea accesible
+    let OpenTicketsModalInstance = null;
+
+    // Asegúrate de que ambos elementos existan antes de añadir el event listener
+    if (TicketsOpenCard && OpenTicketsModalElement) {
+        // **Crear la instancia del modal de Bootstrap una sola vez.**
+        OpenTicketsModalInstance = new bootstrap.Modal(OpenTicketsModalElement);
+
+        TicketsOpenCard.addEventListener("click", function (event) {
+            // Evita el comportamiento predeterminado si el clic es en un enlace o botón.
+            event.preventDefault();
+
+            // Muestra el modal usando la instancia de Bootstrap
+            OpenTicketsModalInstance.show();
+            loadOpenTicketDetails(); // Carga los detalles regionales al abrir el modal
+        });
+    } else {
+        console.error(
+            "No se encontraron los elementos TicketsOpenCard o OpenTicketsModalElement."
+        );
+    }
+
+    // --- Lógica para los botones de cierre ---
+    // Obtén la referencia a los botones de cierre
+    const cerrarBoton = document.getElementById("ModalOpen"); // El botón "Cerrar" en el footer
+    const iconoCerrar = document.getElementById("ModalOpenIcon"); // El botón "x" en el header
+
+    // Asegúrate de que la instancia del modal ya haya sido creada antes de intentar usarla
+    if (OpenTicketsModalInstance) {
+        if (cerrarBoton) {
+            cerrarBoton.addEventListener("click", function () {
+                // Simplemente llama al método hide() de la instancia del modal de Bootstrap
+                OpenTicketsModalInstance.hide();
+            });
+        }
+
+        if (iconoCerrar) {
+            iconoCerrar.addEventListener("click", function () {
+                // Simplemente llama al método hide() de la instancia del modal de Bootstrap
+                OpenTicketsModalInstance.hide();
+            });
+        }
+    } else {
+        console.error("La instancia de OpenTicketsModal no está disponible para los botones de cierre.");
+    }
+});
+
+function loadOpenTicketDetails() {
+  const contentDiv = document.getElementById("OpenTicketModalContent");
+  contentDiv.innerHTML = "<p>Cargando información De tickets Abiertos...</p>"; // Mensaje de carga
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketOpenDetails`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        contentDiv.innerHTML = formatOpenDetails(data.details); // Renderizar los datos
+      } else {
+        contentDiv.innerHTML =
+          "<p>Error al cargar los detalles regionales: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error("Error en los datos de la API para regiones:", data.message);
+      }
+    })
+    .catch((error) => {
+      contentDiv.innerHTML =
+        "<p>Error de red al cargar los detalles regionales. Por favor, intente de nuevo más tarde.</p>";
+      console.error("Error fetching regional details:", error);
+    });
+}
+
+function formatOpenDetails(details) {
+    if (!Array.isArray(details)) {
+        console.error("Expected 'details' to be an array, but received:", details);
+        return "<p>Formato de datos inesperado.</p>";
+    }
+
+    let html = `
+        <h5>Tickets Abiertos</h5>
+        <div class="ticket-details-list mt-3">
+    `;
+
+    details.forEach((ticket) => { // <-- ¡Corregido aquí! Ahora usa 'details'
+        // Formatear la fecha de creación del ticket para una mejor visualización
+        const creationDate = ticket.date_create_ticket
+            ? new Date(ticket.date_create_ticket).toLocaleString()
+            : "N/A";
+
+        html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${ticket.serial_pos_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.razon_social_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${ticket.name_modelopos_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dd class="col-sm-8">${ticket.status_name_ticket || "N/A"}</dd>
+                        
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${ticket.date_create_ticket}</dd> <!-- Usar la variable formateada -->
+                    </dl>
+                </div>
+            </div>
+        `;
+    });
+    return html;
+}
+
 function getTicketPercentage() {
   const xhr = new XMLHttpRequest();
   xhr.open(

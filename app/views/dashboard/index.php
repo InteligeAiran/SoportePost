@@ -52,7 +52,7 @@ function mi_navbar()
                 <div class="row">
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
-                            <div class="card">
+                            <div class="card" id="Card-Ticket-open">
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
@@ -72,6 +72,27 @@ function mi_navbar()
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="OpenTicketModal" tabindex="-1"
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-gradient-info text-white">
+                                    <h5 class="modal-title"  style = "color: white" id="monthlyTicketsModalLabel">Detalle de Tickets Abiertos
+                                    </h5>
+                                    <button type="button" class="btn-close" id="ModalOpenIcon" data-bs-dismiss="modal"
+                                        aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="OpenTicketModalContent"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id= "ModalOpen" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cerrar</button>
                                 </div>
                             </div>
                         </div>

@@ -797,6 +797,18 @@ class consulta_rifModel extends Model
                     }
                     return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory, 'status_update_result' => $resultStatusUpdate);
                 }
+
+                /*if($id_new_status == 3 && $id_new_status == 4){
+                    $sqlUpdateTicket = "UPDATE tickets SET id_status_domiciliacion = 2 WHERE id_ticket = ". $id_ticket. ";";
+                    $resultUpdateTicket = Model::getResult($sqlUpdateTicket, $this->db);
+                    if (!$resultUpdateTicket) {
+                        error_log("Error al actualizar estado del ticket a domiciliación: ". $id_ticket);
+                        return ['success' => false,'message' => 'Error al actualizar el estado del ticket a domiciliación.'];
+                    }
+                    return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory, 'status_update_result' => $resultStatusUpdate, 'update_ticket_result' => $resultUpdateTicket);
+                } else {
+                    return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory, 'status_update_result' => $resultStatusUpdate);
+                }*/
             }
         } catch (Throwable $e) {
             // Handle exception
