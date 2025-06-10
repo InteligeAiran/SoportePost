@@ -271,6 +271,26 @@ class reportsModel extends Model
             // Handle exception
         }
     }
+
+    public function GetResolveTicketsForCard(){
+        try {
+            $sql = "SELECT * FROM get_individual_resolve_tickets_for_card()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetTallerTicketsForCard(){
+        try {
+            $sql = "SELECT * FROM get_individual_taller_tickets_for_card()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
 ?>
 

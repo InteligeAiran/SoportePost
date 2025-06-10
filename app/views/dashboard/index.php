@@ -1,7 +1,6 @@
 <?php
 function mi_navbar()
 {
-
 }
 ?>
 <!DOCTYPE html>
@@ -59,7 +58,8 @@ function mi_navbar()
                                             <p class="card-category">Tickets Abiertos</p>
                                             <h5 class="card-title font-weight-bolder" id="TicketsAbiertos"></h5>
                                             <p class="card-text mb-0">
-                                                <span class="text-danger font-weight-bolder" id="TicketPorcentOpen"></span>Del total de tickets
+                                                <span class="text-danger font-weight-bolder"
+                                                    id="TicketPorcentOpen"></span>Del total de tickets
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
@@ -78,11 +78,13 @@ function mi_navbar()
                     </div>
 
                     <div class="modal fade" id="OpenTicketModal" tabindex="-1"
-                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true"
+                        style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header bg-gradient-info text-white">
-                                    <h5 class="modal-title"  style = "color: white" id="monthlyTicketsModalLabel">Detalle de Tickets Abiertos
+                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
+                                        de Tickets Abiertos
                                     </h5>
                                     <button type="button" class="btn-close" id="ModalOpenIcon" data-bs-dismiss="modal"
                                         aria-label="Cerrar"></button>
@@ -91,7 +93,7 @@ function mi_navbar()
                                     <div id="OpenTicketModalContent"></div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" id= "ModalOpen" class="btn btn-secondary"
+                                    <button type="button" id="ModalOpen" class="btn btn-secondary"
                                         data-bs-dismiss="modal">Cerrar</button>
                                 </div>
                             </div>
@@ -100,14 +102,15 @@ function mi_navbar()
 
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
-                            <div class="card">
+                            <div class="card" id="Card-resolve-ticket">
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
                                             <p class="card-category">Tickets Resueltos</p>
                                             <h5 id="TicketsResuelto" class="card-title"></h5>
-                                            <p class="card-text">
-                                                <span id="ticketResueltoPercentage" class="text font-weight-bolder"></span> Del total de tickets
+                                            <p class="card-text mb-0" >
+                                                <span id="ticketResueltoPercentage"
+                                                    class="text font-weight-bolder"></span>Del total de tickets
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
@@ -125,6 +128,29 @@ function mi_navbar()
                         </div>
                     </div>
 
+                    <div class="modal fade" id="ResolveTicketsModal" tabindex="-1"
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true"
+                        style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-gradient-info text-white">
+                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
+                                        de Tickets Resueltos
+                                    </h5>
+                                    <button type="button" class="btn-close" id="ModalResolveIcon"
+                                        data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="ResolveTicketsContent"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id="ModalResolveRegion" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
                             <div class="card">
@@ -133,8 +159,8 @@ function mi_navbar()
                                         <div class="numbers">
                                             <p class="card-category">Total Tickets</p>
                                             <h5 id="TotalTicket" class="card-title"></h5>
-                                            <p class="card-text">
-                                                <span class="text font-weight-bolder"  id="totalTicketPercentage"></span> De 100 Mensual
+                                            <p class="card-text mb-0">
+                                                <span class="text font-weight-bolder" id="totalTicketPercentage"></span>De 100 Mensual
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
@@ -154,19 +180,19 @@ function mi_navbar()
 
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
-                            <div class="card">
+                            <div class="card" id="Card-Send-To-Taller">
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
-                                            <p class="card-category">POS ENVIADO A TALLER</p>
+                                            <p class="card-category">POS EN TALLER</p>
                                             <h5 class="card-title" id="TotalEnviadoTaller"></h5>
-                                            <p class="card-text">
-                                                <span class="text-percentage" id="PorcentSendToTaller"></span><span
-                                                    class="text-muted">Último mes</span>
+                                            <p class="card-text mb-0">
+                                                <span class="text-percentage" id="PorcentSendToTaller"></span>Del total de tickets
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
-                                            <div class="icon-shape bg-gradient-warning"> <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                            <div class="icon-shape bg-gradient-warning"> <svg
+                                                    xmlns="http://www.w3.org/2000/svg" width="30" height="30"
                                                     fill="currentColor" class="bi bi-wrench-adjustable"
                                                     viewBox="0 0 16 16">
                                                     <path
@@ -182,16 +208,39 @@ function mi_navbar()
                         </div>
                     </div>
 
+                    <div class="modal fade" id="SendTallerTicketsModal" tabindex="-1"
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true"
+                        style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-gradient-info text-white">
+                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
+                                        de Tickets Resueltos
+                                    </h5>
+                                    <button type="button" class="btn-close" id="ModalTallerIcon"
+                                        data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="TallerTicketsContent"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id="ModalTallerRegion" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
                             <div class="card">
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
-                                            <p class="card-category">POS GESTION COMERCIAL</p>
+                                            <p class="card-category">GESTION COMERCIAL</p>
                                             <h5 class="card-title">4</h5>
                                             <p class="card-text">
-                                                <span class="text-success-percentage">+5%</span> <span
+                                                <span class="text-success-percentage">+5%</span><span
                                                     class="text-muted">Último mes</span>
                                             </p>
                                         </div>
@@ -218,7 +267,7 @@ function mi_navbar()
                             <div class="card-header bg-gradient-info">
                                 <h5 class="chart-title text-white">Ticket Mensuales</h5>
                                 <p class="chart-subtitle text-white">
-                                    <i class="fa fa-arrow-up text-success"></i> 
+                                    <i class="fa fa-arrow-up text-success"></i>
                                     <span id="porcent" class="font-weight-bold"></span>
                                 </p>
                             </div>
@@ -231,20 +280,22 @@ function mi_navbar()
                     </div>
 
                     <div class="modal fade" id="monthlyTicketsModal" tabindex="-1"
-                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true"
+                        style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header bg-gradient-info text-white">
-                                    <h5 class="modal-title"  style = "color: white" id="monthlyTicketsModalLabel">Detalle de Tickets Mensuales
+                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
+                                        de Tickets Mensuales
                                     </h5>
-                                    <button type="button" class="btn-close" id="ModalStadisticMonthIcon" data-bs-dismiss="modal"
-                                        aria-label="Cerrar"></button>
+                                    <button type="button" class="btn-close" id="ModalStadisticMonthIcon"
+                                        data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div id="monthlyTicketsContent"></div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" id= "ModalStadisticMonth" class="btn btn-secondary"
+                                    <button type="button" id="ModalStadisticMonth" class="btn btn-secondary"
                                         data-bs-dismiss="modal">Cerrar</button>
                                 </div>
                             </div>
@@ -252,20 +303,22 @@ function mi_navbar()
                     </div>
 
                     <div class="modal fade" id="RegionTicketsModal" tabindex="-1"
-                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true"
+                        style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header bg-gradient-info text-white">
-                                    <h5 class="modal-title"  style = "color: white" id="monthlyTicketsModalLabel">Detalle de Tickets Regionales
+                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
+                                        de Tickets Regionales
                                     </h5>
-                                    <button type="button" class="btn-close" id="ModalStadisticRegionIcon" data-bs-dismiss="modal"
-                                        aria-label="Cerrar"></button>
+                                    <button type="button" class="btn-close" id="ModalStadisticRegionIcon"
+                                        data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div id="RegionTicketsContent"></div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" id= "ModalStadisticRegion" class="btn btn-secondary"
+                                    <button type="button" id="ModalStadisticRegion" class="btn btn-secondary"
                                         data-bs-dismiss="modal">Cerrar</button>
                                 </div>
                             </div>
@@ -666,7 +719,6 @@ function mi_navbar()
         
         ?>
         <script>
-
             var expired_sessions = <?php echo $expired_sessions; ?>;
             var message = <?php echo $message; ?>;
             var redirect = <?php echo $redirect; ?>;
@@ -692,7 +744,7 @@ function mi_navbar()
                             window.location.href = redirect; // Recarga la página después del temporizador
                         }, 500); // Espera 0.5 segundos (igual que el temporizador)
                     }
-                })// Programar la recarga después de que el SweetAlert se cierre
+                }) // Programar la recarga después de que el SweetAlert se cierre
             }
 
             // Agregar lógica de recarga automática
@@ -703,7 +755,6 @@ function mi_navbar()
             }
         </script>
         <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-
     </body>
 
     </html>

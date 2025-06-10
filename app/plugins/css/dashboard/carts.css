@@ -351,7 +351,17 @@
     background-color: red; /* Cambia el color de fondo al pasar el mouse */
 }
 
-#ModalStadisticMonth, #ModalStadisticRegion{
+#ModalResolveRegion:hover{
+    color: white;
+    background-color: red; /* Cambia el color de fondo al pasar el mouse */
+}
+
+#ModalTallerRegion:hover{
+    color: white;
+    background-color: red; /* Cambia el color de fondo al pasar el mouse */
+}
+
+#ModalStadisticMonth, #ModalStadisticRegion, #ModalOpen, #ModalResolveRegion, #ModalTallerRegion{
     color: #fff; /* Color del texto */
     background-color: #8392ab; /* Color de fondo */
     border: none; /* Sin borde */
@@ -361,7 +371,7 @@
     cursor: pointer;
 }
 
-#ModalStadisticMonthIcon, #ModalStadisticRegionIcon{
+#ModalStadisticMonthIcon, #ModalStadisticRegionIcon, #ModalOpenIcon, #ModalResolveIcon, #ModalTallerIcon{
     color: #fff; /* Color del texto */
     background-color: #8392ab; /* Color de fondo */
     transition: background-color 0.3s ease; /* Transición suave para el cambio de color */
@@ -375,7 +385,27 @@
     background-color: red;
 }
 
+#ModalTallerIcon:hover{
+    color: white;
+    background-color: red; /* Cambia el color de fondo al pasar el mouse */
+}
+
+#ModalResolveIcon:hover{
+    color: white;
+    background-color: red;
+}
+
+#ModalOpenIcon:hover{
+    color: white;
+    background-color: red;
+}
+
 #ModalStadisticRegionIcon:hover{
+    color: white;
+    background-color: red;
+}
+
+#ModalOpen:hover{
     color: white;
     background-color: red;
 }
@@ -387,3 +417,9 @@
 .bg-gradient-danger { ... }
 .bg-gradient-purple-indigo { ... }
 */
+
+@media (max-width: 1550px) {
+    .card-text{
+        font-size: 0.775rem;        
+    }
+}

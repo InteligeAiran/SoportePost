@@ -6,71 +6,369 @@
 });*/
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Obtén la referencia al botón cerrar FUERA de la función getTicketData y del bucle
-  const cerrar = document.getElementById("ModalStadisticMonth");
-  const icon = document.getElementById("ModalStadisticMonthIcon");
+    // --- Referencias a los elementos HTML de los Modales ---
+    const monthlyTicketsModalElement = document.getElementById("monthlyTicketsModal");
+    const regionTicketsModalElement = document.getElementById("RegionTicketsModal");
+    const openTicketsModalElement = document.getElementById("OpenTicketModal");
+    const resolveTicketsModalElement = document.getElementById("ResolveTicketsModal");
+    const sendTallerTicketsModalElement = document.getElementById("SendTallerTicketsModal"); // ¡NUEVO MODAL!
 
-  const modalElement = document.getElementById("monthlyTicketsModal");
+    // --- Instancias de Bootstrap Modals (declaradas para ser accesibles globalmente dentro de este scope) ---
+    let monthlyTicketsModalInstance = null;
+    let regionTicketsModalInstance = null;
+    let openTicketsModalInstance = null;
+    let resolveTicketsModalInstance = null;
+    let sendTallerTicketsModalInstance = null; // ¡NUEVA INSTANCIA!
 
-  const ModalStadisticRegionIcon = document.getElementById("ModalStadisticRegionIcon");
-  const ModalStadisticRegion = document.getElementById("ModalStadisticRegion");
-
-  const modalElementRegion = document.getElementById("RegionTicketsModal");
-
-  ModalStadisticRegionIcon.addEventListener("click", function () {
-    if (modalElementRegion) {
-       modalElementRegion.style.display = "none";
-      modalElementRegion.style.backdropFilter = "none"; // Asegúrate de que el backdrop no esté visible
-      modalElementRegion.classList.remove("show"); // Elimina la clase 'show' para ocultar el modal
-      document.body.classList.remove("modal-open"); // Elimina la clase 'modal-open' del body
-      const modalBackdropRegion = document.querySelector(".modal-backdrop");
-      if (modalBackdropRegion) {
-        modalBackdropRegion.remove(); // Elimina el backdrop si existe
-      }
+    // --- Inicializar las instancias de los modales (UNA SOLA VEZ al cargar la página) ---
+    if (monthlyTicketsModalElement) {
+        monthlyTicketsModalInstance = new bootstrap.Modal(monthlyTicketsModalElement);
     }
-  });
-
-  ModalStadisticRegion.addEventListener("click", function () {
-    if (modalElementRegion) {
-      modalElementRegion.style.display = "none";
-      modalElementRegion.style.backdropFilter = "none"; // Asegúrate de que el backdrop no esté visible
-      modalElementRegion.classList.remove("show"); // Elimina la clase 'show' para ocultar el modal
-      document.body.classList.remove("modal-open"); // Elimina la clase 'modal-open' del body
-      const modalBackdropRegion = document.querySelector(".modal-backdrop");
-      if (modalBackdropRegion) {
-        modalBackdropRegion.remove(); // Elimina el backdrop si existe
-      }
+    if (regionTicketsModalElement) {
+        regionTicketsModalInstance = new bootstrap.Modal(regionTicketsModalElement);
     }
-  });
-
-
-  // Agrega el event listener al botón cerrar
-  cerrar.addEventListener("click", function () {
-    if (modalElement) {
-      modalElement.style.display = "none";
-      modalElement.style.backdropFilter = "none"; // Asegúrate de que el backdrop no esté visible
-      modalElement.classList.remove("show"); // Elimina la clase 'show' para ocultar el modal
-      document.body.classList.remove("modal-open"); // Elimina la clase 'modal-open' del body
-      const modalBackdrop = document.querySelector(".modal-backdrop");
-      if (modalBackdrop) {
-        modalBackdrop.remove(); // Elimina el backdrop si existe
-      }
+    if (openTicketsModalElement) {
+        openTicketsModalInstance = new bootstrap.Modal(openTicketsModalElement);
     }
-  });
-
-  icon.addEventListener("click", function () {
-    if (modalElement) {
-      modalElement.style.display = "none";
-      modalElement.style.backdropFilter = "none"; // Asegúrate de que el backdrop no esté visible
-      modalElement.classList.remove("show"); // Elimina la clase 'show' para ocultar el modal
-      document.body.classList.remove("modal-open"); // Elimina la clase 'modal-open' del body
-      const modalBackdrop = document.querySelector(".modal-backdrop");
-      if (modalBackdrop) {
-        modalBackdrop.remove(); // Elimina el backdrop si existe
-      }
+    if (resolveTicketsModalElement) {
+        resolveTicketsModalInstance = new bootstrap.Modal(resolveTicketsModalElement);
     }
-  });
+    if (sendTallerTicketsModalElement) { // ¡NUEVO!
+        sendTallerTicketsModalInstance = new bootstrap.Modal(sendTallerTicketsModalElement);
+    }
+
+    // --- Event Listeners para ABRIR Modales (desde tarjetas/botones) ---
+
+    // 1. Abrir monthlyTicketsModal
+    const monthlyTicketsCard = document.getElementById("monthlyTicketsCard");
+    if (monthlyTicketsCard && monthlyTicketsModalInstance) {
+        monthlyTicketsCard.addEventListener("click", function (event) {
+            event.preventDefault();
+            monthlyTicketsModalInstance.show();
+            loadMonthlyTicketDetails();
+        });
+    } else {
+        console.error("monthlyTicketsCard o monthlyTicketsModal no encontrados.");
+    }
+
+    // 2. Abrir OpenTicketModal
+    const TicketsOpenCard = document.getElementById("Card-Ticket-open");
+    if (TicketsOpenCard && openTicketsModalInstance) {
+        TicketsOpenCard.addEventListener("click", function (event) {
+            event.preventDefault();
+            openTicketsModalInstance.show();
+            loadOpenTicketDetails();
+        });
+    } else {
+        console.error("TicketsOpenCard o OpenTicketModal no encontrados.");
+    }
+
+    // 3. Abrir RegionTicketsModal
+    const regionTicketsCard = document.getElementById("RegionTicketsCard");
+    if (regionTicketsCard && regionTicketsModalInstance) {
+        regionTicketsCard.addEventListener("click", function (event) {
+            event.preventDefault();
+            regionTicketsModalInstance.show();
+            loadRegionTicketDetails();
+        });
+    } else {
+        console.error("RegionTicketsCard o RegionTicketsModal no encontrados.");
+    }
+
+    // 4. Abrir ResolveTicketsModal
+    // Nota: Habías cambiado el ID a "Card-resolve-ticket" aquí. Lo mantengo.
+    const resolveTicketsCard = document.getElementById("Card-resolve-ticket");
+    if (resolveTicketsCard && resolveTicketsModalInstance) {
+        resolveTicketsCard.addEventListener("click", function (event) {
+            event.preventDefault();
+            resolveTicketsModalInstance.show();
+            loadResolveTicketDetails();
+        });
+    } else {
+        console.error("Card-resolve-ticket o ResolveTicketsModal no encontrados.");
+    }
+
+    // 5. Abrir SendTallerTicketsModal (¡NUEVO!)
+    // ASUMO: Que la tarjeta para este modal tendrá el ID "Card-Send-To-Taller".
+    const sendTallerTicketsCard = document.getElementById("Card-Send-To-Taller");
+    if (sendTallerTicketsCard && sendTallerTicketsModalInstance) {
+        sendTallerTicketsCard.addEventListener("click", function (event) {
+            event.preventDefault();
+            sendTallerTicketsModalInstance.show();
+            loadTallerTicketDetails(); // Nueva función para cargar detalles
+        });
+    } else {
+        console.error("Card-Send-To-Taller o SendTallerTicketsModal no encontrados.");
+    }
+
+
+    // --- Event Listeners para CERRAR Modales (desde botones dentro del modal) ---
+
+    // 1. Botones de cierre para monthlyTicketsModal
+    const cerrarMonthly = document.getElementById("ModalStadisticMonth");
+    const iconMonthly = document.getElementById("ModalStadisticMonthIcon");
+
+    if (cerrarMonthly && monthlyTicketsModalInstance) {
+        cerrarMonthly.addEventListener("click", function () {
+            monthlyTicketsModalInstance.hide();
+        });
+    }
+    if (iconMonthly && monthlyTicketsModalInstance) {
+        iconMonthly.addEventListener("click", function () {
+            monthlyTicketsModalInstance.hide();
+        });
+    }
+
+    // 2. Botones de cierre para RegionTicketsModal
+    const cerrarRegion = document.getElementById("ModalStadisticRegion");
+    const iconRegion = document.getElementById("ModalStadisticRegionIcon");
+
+    if (cerrarRegion && regionTicketsModalInstance) {
+        cerrarRegion.addEventListener("click", function () {
+            regionTicketsModalInstance.hide();
+        });
+    }
+    if (iconRegion && regionTicketsModalInstance) {
+        iconRegion.addEventListener("click", function () {
+            regionTicketsModalInstance.hide();
+        });
+    }
+
+    // 3. Botones de cierre para OpenTicketModal
+    const cerrarOpen = document.getElementById("ModalOpen");
+    const iconOpen = document.getElementById("ModalOpenIcon");
+
+    if (cerrarOpen && openTicketsModalInstance) {
+        cerrarOpen.addEventListener("click", function () {
+            openTicketsModalInstance.hide();
+        });
+    }
+    if (iconOpen && openTicketsModalInstance) {
+        iconOpen.addEventListener("click", function () {
+            openTicketsModalInstance.hide();
+        });
+    }
+
+    // 4. Botones de cierre para ResolveTicketsModal
+    const cerrarResolve = document.getElementById("ModalResolveRegion");
+    const iconResolve = document.getElementById("ModalResolveIcon");
+
+    if (cerrarResolve && resolveTicketsModalInstance) {
+        cerrarResolve.addEventListener("click", function () {
+            resolveTicketsModalInstance.hide();
+        });
+    }
+    if (iconResolve && resolveTicketsModalInstance) {
+        iconResolve.addEventListener("click", function () {
+            resolveTicketsModalInstance.hide();
+        });
+    }
+
+    // 5. Botones de cierre para SendTallerTicketsModal (¡NUEVO!)
+    const cerrarTaller = document.getElementById("ModalTallerRegion"); // El ID de tu botón "Cerrar" en el footer
+    const iconTaller = document.getElementById("ModalTallerIcon"); // El ID de tu botón "x" en el header
+
+    if (cerrarTaller && sendTallerTicketsModalInstance) {
+        cerrarTaller.addEventListener("click", function () {
+            sendTallerTicketsModalInstance.hide();
+        });
+    }
+    if (iconTaller && sendTallerTicketsModalInstance) {
+        iconTaller.addEventListener("click", function () {
+            sendTallerTicketsModalInstance.hide();
+        });
+    }
+
+
+    // --- Lógica para Event Listeners Delegados (clics dentro de contenido de modales) ---
+
+    // A. Clics dentro de monthlyTicketsContent
+    const monthlyTicketsContent = document.getElementById("monthlyTicketsContent");
+    if (monthlyTicketsContent) {
+        monthlyTicketsContent.addEventListener("click", function (event) {
+            const clickedButton = event.target.closest(".monthly-tickets-detail");
+            if (clickedButton) {
+                const month = clickedButton.dataset.month;
+                const status = clickedButton.dataset.status;
+                const count = clickedButton.dataset.count;
+
+                if (parseInt(count) > 0) {
+                    loadIndividualTicketDetails(month, status);
+                } else {
+                    Swal.fire({
+                        icon: "info",
+                        title: "Sin Tickets",
+                        html: `No hay tickets ${status.toLowerCase()}s en la fecha <strong>${month}</strong>.`,
+                        confirmButtonText: "Entendido",
+                        confirmButtonColor: "#003594",
+                    });
+                }
+            }
+        });
+    }
+
+    // B. Clics dentro de RegionTicketsContent
+    const regionTicketsContent = document.getElementById("RegionTicketsContent");
+    if (regionTicketsContent) {
+        regionTicketsContent.addEventListener("click", function (event) {
+            const clickedButton = event.target.closest(".region-tickets-total-detail");
+            if (clickedButton) {
+                const region = clickedButton.dataset.region;
+                const count = clickedButton.dataset.count;
+
+                if (parseInt(count) > 0) {
+                    loadIndividualRegionTicketDetails(region);
+                } else {
+                    Swal.fire({
+                        icon: "info",
+                        title: "Sin Tickets",
+                        html: `No hay tickets para la región de <strong>${region}</strong>.`,
+                        confirmButtonText: "Entendido",
+                        confirmButtonColor: "#003594",
+                    });
+                }
+            }
+        });
+    }
+
+    // C. Clics dentro de ResolveTicketsContent (Si aplicara)
+    // const resolveTicketsContent = document.getElementById("ResolveTicketsContent");
+    // if (resolveTicketsContent) {
+    //     resolveTicketsContent.addEventListener("click", function(event) {
+    //         const clickedButton = event.target.closest(".resolve-ticket-detail");
+    //         if (clickedButton) {
+    //             const ticketId = clickedButton.dataset.ticketId;
+    //             loadSpecificResolvedTicket(ticketId);
+    //         }
+    //     });
+    // }
+
+    // D. Clics dentro de TallerTicketsContent (¡NUEVO! Si aplicara)
+    const tallerTicketsContent = document.getElementById("TallerTicketsContent");
+    if (tallerTicketsContent) {
+        tallerTicketsContent.addEventListener("click", function(event) {
+            const clickedButton = event.target.closest(".taller-ticket-detail"); // Clase de tus botones dentro de este modal
+            if (clickedButton) {
+                const ticketId = clickedButton.dataset.ticketId;
+                // Si necesitas cargar más detalles de un ticket específico en el taller:
+                // loadSpecificTallerTicketDetails(ticketId);
+                console.log(`Clic en detalle de ticket de taller, ID: ${ticketId}`);
+            }
+        });
+    }
 });
+
+function loadTallerTicketDetails() {
+  const contentDiv = document.getElementById("TallerTicketsContent");
+  contentDiv.innerHTML = "<p>Cargando información de Tickets de Taller...</p>"; // Mensaje de carga
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTallerTicketsForCard`)
+     .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        contentDiv.innerHTML = formatTallerDetails(data.details); // Renderizar los datos
+      } else {
+        contentDiv.innerHTML =
+          "<p>Error al cargar los detalles de Taller: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error("Error en los datos de la API para Taller:", data.message);
+      }
+    })
+    .catch((error) => {
+      contentDiv.innerHTML =
+        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
+      console.error("Error fetching taller details:", error);
+    });
+    // TODO: Agregar más lógica para mostrar los detalles de tickets de taller
+    //...
+  }
+
+  function formatTallerDetails(details) {
+    if (!Array.isArray(details)) {
+        console.error("Expected 'details' to be an array, but received:", details);
+        return "<p>Formato de datos inesperado.</p>";
+    }
+
+    let html = `
+        <h5>Tickets Resueltos</h5>
+        <div class="ticket-details-list mt-3">
+    `;
+
+    details.forEach((ticket) => { // <-- ¡Corregido aquí! Ahora usa 'details'
+        // Formatear la fecha de creación del ticket para una mejor visualización
+        const creationDate = ticket.date_create_ticket
+            ? new Date(ticket.date_create_ticket).toLocaleString()
+            : "N/A";
+
+        html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${ticket.serial_pos_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.razon_social_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${ticket.name_modelopos_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dd class="col-sm-8">${ticket.status_name_ticket || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${ticket.name_accion_ticket || "N/A"}</dd>
+                        
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${ticket.date_create_ticket}</dd> <!-- Usar la variable formateada -->
+                    </dl>
+                </div>
+            </div>
+        `;
+    });
+    return html;
+}
+
+function loadResolveTicketDetails() {
+  const contentDiv = document.getElementById("ResolveTicketsContent");
+  contentDiv.innerHTML = "<p>Cargando información de Tickets Resueltos...</p>"; // Mensaje de carga
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetResolveTicketsForCard`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        contentDiv.innerHTML = formatResolveDetails(data.details); // Renderizar los datos
+      } else {
+        contentDiv.innerHTML =
+          "<p>Error al cargar los detalles regionales: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error("Error en los datos de la API para regiones:", data.message);
+      }
+    })
+    .catch((error) => {
+      contentDiv.innerHTML =
+        "<p>Error de red al cargar los detalles regionales. Por favor, intente de nuevo más tarde.</p>";
+      console.error("Error fetching regional details:", error);
+    });
+}
+
 
 // Para el campo "Nueva Contraseña"
 jQuery("#clickme1").on("click", function () {
@@ -80,6 +378,58 @@ jQuery("#clickme1").on("click", function () {
     return currentAttr === "password" ? "text" : "password";
   });
 });
+
+function formatResolveDetails(details) {
+    if (!Array.isArray(details)) {
+        console.error("Expected 'details' to be an array, but received:", details);
+        return "<p>Formato de datos inesperado.</p>";
+    }
+
+    let html = `
+        <h5>Tickets Resueltos</h5>
+        <div class="ticket-details-list mt-3">
+    `;
+
+    details.forEach((ticket) => { // <-- ¡Corregido aquí! Ahora usa 'details'
+        // Formatear la fecha de creación del ticket para una mejor visualización
+        const creationDate = ticket.date_create_ticket
+            ? new Date(ticket.date_create_ticket).toLocaleString()
+            : "N/A";
+
+        html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${ticket.serial_pos_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.razon_social_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${ticket.name_modelopos_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dd class="col-sm-8">${ticket.status_name_ticket || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${ticket.name_accion_ticket || "N/A"}</dd>
+                        
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${ticket.date_create_ticket}</dd> <!-- Usar la variable formateada -->
+                    </dl>
+                </div>
+            </div>
+        `;
+    });
+    return html;
+}
 
 // Para el campo "Confirmar Contraseña"
 jQuery("#clickme").on("click", function () {
@@ -548,14 +898,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (OpenTicketsModalInstance) {
         if (cerrarBoton) {
             cerrarBoton.addEventListener("click", function () {
-                // Simplemente llama al método hide() de la instancia del modal de Bootstrap
-                OpenTicketsModalInstance.hide();
+              OpenTicketsModalInstance.hide();
             });
         }
 
         if (iconoCerrar) {
             iconoCerrar.addEventListener("click", function () {
-                // Simplemente llama al método hide() de la instancia del modal de Bootstrap
                 OpenTicketsModalInstance.hide();
             });
         }
@@ -631,6 +979,9 @@ function formatOpenDetails(details) {
 
                         <dt class="col-sm-4">Estado Ticket:</dt>
                         <dd class="col-sm-8">${ticket.status_name_ticket || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dd class="col-sm-8">${ticket.name_accion_ticket || "N/A"}</dd>
                         
                         <dt class="col-sm-4">Fecha Creación:</dt>
                         <dd class="col-sm-8">${ticket.date_create_ticket}</dd> <!-- Usar la variable formateada -->
@@ -976,119 +1327,6 @@ window.addEventListener("load", () => {
   getTotalTicketsPercentageOFSendTaller();
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-  // Referencia al elemento de la tarjeta de estadística
-  const monthlyTicketsCard = document.getElementById("monthlyTicketsCard");
-
-  // Referencia al elemento del modal
-  const monthlyTicketsModalElement = document.getElementById(
-    "monthlyTicketsModal"
-  );
-
-  // Asegúrate de que ambos elementos existan antes de añadir el event listener
-  if (monthlyTicketsCard && monthlyTicketsModalElement) {
-    monthlyTicketsCard.addEventListener("click", function (event) {
-      // Evita el comportamiento predeterminado si el clic es en un enlace o botón.
-      // Aunque monthlyTicketsCard es un div, es una buena práctica si en el futuro
-      // se convierte en un elemento interactivo con un comportamiento por defecto.
-      event.preventDefault();
-
-      // Crea una instancia del modal de Bootstrap y muéstralo
-      const monthlyTicketsModal = new bootstrap.Modal(
-        monthlyTicketsModalElement
-      );
-      monthlyTicketsModal.show();
-      loadMonthlyTicketDetails();
-    });
-  } else {
-    console.error(
-      "No se encontraron los elementos monthlyTicketsCard o monthlyTicketsModal."
-    );
-  }
-
-  // *** NUEVO: Event listener delegado para los botones de detalle de tickets ***
-  const monthlyTicketsContent = document.getElementById(
-    "monthlyTicketsContent"
-  );
-  if (monthlyTicketsContent) {
-    monthlyTicketsContent.addEventListener("click", function (event) {
-      // Verifica si el clic fue en un botón con la clase 'monthly-tickets-detail'
-      const clickedButton = event.target.closest(".monthly-tickets-detail");
-      if (clickedButton) {
-        const month = clickedButton.dataset.month; // Ej: "2025-04"
-        const status = clickedButton.dataset.status; // Ej: "Abierto", "En proceso", "Cerrado"
-        const count = clickedButton.dataset.count; // Ej: "1"
-
-        // Solo si hay tickets para mostrar, llamamos a la función de carga de detalles
-        if (parseInt(count) > 0) {
-          loadIndividualTicketDetails(month, status);
-        } else {
-          // Opcional: mostrar un mensaje si no hay tickets
-          Swal.fire({
-            icon: "info", // Puedes usar 'success', 'error', 'warning', 'info', 'question'
-            title: "Sin Tickets",
-            html: `No hay tickets ${status.toLowerCase()}s en la fecha <strong>${month}</strong>.`,
-            confirmButtonText: "Entendido",
-            confirmButtonColor: "#003594", // Esto es un color HEX para rojo (como el de Bootstrap danger)
-          });
-        }
-      }
-    });
-  }
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-  // Referencia al elemento de la tarjeta de estadística para tickets regionales
-  const regionTicketsCard = document.getElementById("RegionTicketsCard");
-
-  // Referencia al elemento del modal para tickets regionales
-  const regionTicketsModalElement = document.getElementById("RegionTicketsModal");
-
-  // Asegúrate de que ambos elementos existan antes de añadir el event listener
-  if (regionTicketsCard && regionTicketsModalElement) {
-    regionTicketsCard.addEventListener("click", function (event) {
-      // Evita el comportamiento predeterminado si el clic es en un enlace o botón.
-      event.preventDefault();
-
-      // Crea una instancia del modal de Bootstrap y muéstralo
-      const regionTicketsModal = new bootstrap.Modal(regionTicketsModalElement);
-      regionTicketsModal.show();
-      loadRegionTicketDetails(); // Carga los detalles regionales al abrir el modal
-    });
-  } else {
-    console.error(
-      "No se encontraron los elementos RegionTicketsCard o RegionTicketsModal."
-    );
-  }
-
-  // Event listener delegado para los botones de detalle de tickets regionales
-  const regionTicketsContent = document.getElementById("RegionTicketsContent");
-  if (regionTicketsContent) {
-    regionTicketsContent.addEventListener("click", function (event) {
-      // Verifica si el clic fue en un botón con la clase 'region-tickets-detail'
-      const clickedButton = event.target.closest(".region-tickets-total-detail");
-      if (clickedButton) {
-        const region = clickedButton.dataset.region; // Ej: "Central"
-        const count = clickedButton.dataset.count; // Ej: "1"
-
-        // Solo si hay tickets para mostrar, llamamos a la función de carga de detalles
-        if (parseInt(count) > 0) {
-          loadIndividualRegionTicketDetails(region);
-        } else {
-          // Opcional: mostrar un mensaje si no hay tickets
-          Swal.fire({
-            icon: "info",
-            title: "Sin Tickets",
-            html: `No hay tickets para la región de <strong>${region}</strong>.`,
-            confirmButtonText: "Entendido",
-            confirmButtonColor: "#003594",
-          });
-        }
-      }
-    });
-  }
-});
-
 function loadRegionTicketDetails() {
   const contentDiv = document.getElementById("RegionTicketsContent");
   contentDiv.innerHTML = "<p>Cargando información regional...</p>"; // Mensaje de carga
@@ -1212,6 +1450,12 @@ function formatIndividualRegionTickets(tickets, region) {
                         <dd class="col-sm-8">${
                           ticket.status_name_ticket || "N/A"
                         }</dd>
+
+                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
+                        
                         
                         <dt class="col-sm-4">Fecha Creación:</dt>
                         <dd class="col-sm-8">${ticket.date_create_ticket}</dd>
@@ -1406,6 +1650,11 @@ function formatIndividualTickets(tickets, month, status) {
                           ticket.status_name_ticket || "N/A"
                         }</dd>
                         
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
+
                         <dt class="col-sm-4">Fecha Creación:</dt>
                         <dd class="col-sm-8">${ticket.date_create_ticket}</dd>
                     </dl>

@@ -133,7 +133,7 @@ function mi_navbar() {}
             <div class="container-fluid py-4">
                 <div id="Row" class="row mt-4">
                     <div class="cord">
-                        <div class="d-flex justify-content-start mt-2">
+                        <div class="d-flex justify-content-start mt-2 flex-wrap">
                             <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorNombreBtn">Buscar por Razón Social</button>
                             <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
                             <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>

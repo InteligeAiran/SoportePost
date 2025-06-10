@@ -1,4 +1,3 @@
-@media (max-width: 2500px) AND (min-width: 1050px) AND (max-height: 1050px) AND (min-height: 400px){
 
     #buscarPorRifBtn, #buscarPorSerialBtn, #buscarPorNombreBtn, #buscarPorRangoBtn, #buscarPorRegionsBtn{
         background-color: #001f3f; /* Azul oscuro */
@@ -16,6 +15,16 @@
 
     #buscarPorNombreBtn{
         margin-left: 24%;
+    }
+
+    .mt-2 {
+        margin-top: 0.5rem ;
+    }
+
+    @media (max-width: 1550px) {
+        .mt-2 {
+            margin-top: 10.5rem ;
+        }
     }
 
     #buscarPorRifBtn:hover {
@@ -523,4 +532,3 @@
         margin-left: -200px;
     }*/
     
-}
