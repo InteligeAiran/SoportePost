@@ -6,263 +6,603 @@
 });*/
 
 document.addEventListener("DOMContentLoaded", function () {
-    // --- Referencias a los elementos HTML de los Modales ---
-    const monthlyTicketsModalElement = document.getElementById("monthlyTicketsModal");
-    const regionTicketsModalElement = document.getElementById("RegionTicketsModal");
-    const openTicketsModalElement = document.getElementById("OpenTicketModal");
-    const resolveTicketsModalElement = document.getElementById("ResolveTicketsModal");
-    const sendTallerTicketsModalElement = document.getElementById("SendTallerTicketsModal"); // ¡NUEVO MODAL!
+  // --- Referencias a los elementos HTML de los Modales ---
+  const monthlyTicketsModalElement = document.getElementById(
+    "monthlyTicketsModal"
+  );
+  const regionTicketsModalElement =
+    document.getElementById("RegionTicketsModal");
+  const openTicketsModalElement = document.getElementById("OpenTicketModal");
+  const resolveTicketsModalElement = document.getElementById(
+    "ResolveTicketsModal"
+  );
+  const sendTallerTicketsModalElement = document.getElementById(
+    "SendTallerTicketsModal"
+  ); // ¡NUEVO MODAL!
 
-    // --- Instancias de Bootstrap Modals (declaradas para ser accesibles globalmente dentro de este scope) ---
-    let monthlyTicketsModalInstance = null;
-    let regionTicketsModalInstance = null;
-    let openTicketsModalInstance = null;
-    let resolveTicketsModalInstance = null;
-    let sendTallerTicketsModalInstance = null; // ¡NUEVA INSTANCIA!
+  const ModalReparacion = document.getElementById("procesoReparacionModal"); // ��NUEVO ELEMENTO!
+  const ModalReparado = document.getElementById("ReparadosModal"); // ��NUEVO ELEMENTO! 
 
-    // --- Inicializar las instancias de los modales (UNA SOLA VEZ al cargar la página) ---
-    if (monthlyTicketsModalElement) {
-        monthlyTicketsModalInstance = new bootstrap.Modal(monthlyTicketsModalElement);
-    }
-    if (regionTicketsModalElement) {
-        regionTicketsModalInstance = new bootstrap.Modal(regionTicketsModalElement);
-    }
-    if (openTicketsModalElement) {
-        openTicketsModalInstance = new bootstrap.Modal(openTicketsModalElement);
-    }
-    if (resolveTicketsModalElement) {
-        resolveTicketsModalInstance = new bootstrap.Modal(resolveTicketsModalElement);
-    }
-    if (sendTallerTicketsModalElement) { // ¡NUEVO!
-        sendTallerTicketsModalInstance = new bootstrap.Modal(sendTallerTicketsModalElement);
-    }
+  // --- Instancias de Bootstrap Modals (declaradas para ser accesibles globalmente dentro de este scope) ---
+  let monthlyTicketsModalInstance = null;
+  let regionTicketsModalInstance = null;
+  let openTicketsModalInstance = null;
+  let resolveTicketsModalInstance = null;
+  let sendTallerTicketsModalInstance = null; // ¡NUEVA INSTANCIA!
+  let ModalProcesoReparacion = null; // ��NUEVO ELEMENTO!
+  let ModalReparados = null; // ��NUEVO ELEMENTO!
 
-    // --- Event Listeners para ABRIR Modales (desde tarjetas/botones) ---
+  // --- Inicializar las instancias de los modales (UNA SOLA VEZ al cargar la página) ---
+  if (monthlyTicketsModalElement) {
+    monthlyTicketsModalInstance = new bootstrap.Modal(
+      monthlyTicketsModalElement
+    );
+  }
 
-    // 1. Abrir monthlyTicketsModal
-    const monthlyTicketsCard = document.getElementById("monthlyTicketsCard");
-    if (monthlyTicketsCard && monthlyTicketsModalInstance) {
-        monthlyTicketsCard.addEventListener("click", function (event) {
-            event.preventDefault();
-            monthlyTicketsModalInstance.show();
-            loadMonthlyTicketDetails();
-        });
-    } else {
-        console.error("monthlyTicketsCard o monthlyTicketsModal no encontrados.");
-    }
+  if (regionTicketsModalElement) {
+    regionTicketsModalInstance = new bootstrap.Modal(regionTicketsModalElement);
+  }
 
-    // 2. Abrir OpenTicketModal
-    const TicketsOpenCard = document.getElementById("Card-Ticket-open");
-    if (TicketsOpenCard && openTicketsModalInstance) {
-        TicketsOpenCard.addEventListener("click", function (event) {
-            event.preventDefault();
-            openTicketsModalInstance.show();
-            loadOpenTicketDetails();
-        });
-    } else {
-        console.error("TicketsOpenCard o OpenTicketModal no encontrados.");
-    }
+  if (openTicketsModalElement) {
+    openTicketsModalInstance = new bootstrap.Modal(openTicketsModalElement);
+  }
 
-    // 3. Abrir RegionTicketsModal
-    const regionTicketsCard = document.getElementById("RegionTicketsCard");
-    if (regionTicketsCard && regionTicketsModalInstance) {
-        regionTicketsCard.addEventListener("click", function (event) {
-            event.preventDefault();
-            regionTicketsModalInstance.show();
-            loadRegionTicketDetails();
-        });
-    } else {
-        console.error("RegionTicketsCard o RegionTicketsModal no encontrados.");
-    }
+  if (resolveTicketsModalElement) {
+    resolveTicketsModalInstance = new bootstrap.Modal(
+      resolveTicketsModalElement
+    );
+  }
 
-    // 4. Abrir ResolveTicketsModal
-    // Nota: Habías cambiado el ID a "Card-resolve-ticket" aquí. Lo mantengo.
-    const resolveTicketsCard = document.getElementById("Card-resolve-ticket");
-    if (resolveTicketsCard && resolveTicketsModalInstance) {
-        resolveTicketsCard.addEventListener("click", function (event) {
-            event.preventDefault();
-            resolveTicketsModalInstance.show();
-            loadResolveTicketDetails();
-        });
-    } else {
-        console.error("Card-resolve-ticket o ResolveTicketsModal no encontrados.");
-    }
+  if (sendTallerTicketsModalElement) {
+    // ¡NUEVO!
+    sendTallerTicketsModalInstance = new bootstrap.Modal(
+      sendTallerTicketsModalElement
+    );
+  }
 
-    // 5. Abrir SendTallerTicketsModal (¡NUEVO!)
-    // ASUMO: Que la tarjeta para este modal tendrá el ID "Card-Send-To-Taller".
-    const sendTallerTicketsCard = document.getElementById("Card-Send-To-Taller");
-    if (sendTallerTicketsCard && sendTallerTicketsModalInstance) {
-        sendTallerTicketsCard.addEventListener("click", function (event) {
-            event.preventDefault();
-            sendTallerTicketsModalInstance.show();
-            loadTallerTicketDetails(); // Nueva función para cargar detalles
-        });
-    } else {
-        console.error("Card-Send-To-Taller o SendTallerTicketsModal no encontrados.");
-    }
+  if (ModalReparacion) {
+    // ��NUEVO!
+    ModalProcesoReparacion = new bootstrap.Modal(ModalReparacion);
+  }
 
+  if (ModalReparado) {
+    // ��NUEVO!
+    ModalReparados = new bootstrap.Modal(ModalReparado);
+  }
 
-    // --- Event Listeners para CERRAR Modales (desde botones dentro del modal) ---
+  // --- Event Listeners para ABRIR Modales (desde tarjetas/botones) ---
 
-    // 1. Botones de cierre para monthlyTicketsModal
-    const cerrarMonthly = document.getElementById("ModalStadisticMonth");
-    const iconMonthly = document.getElementById("ModalStadisticMonthIcon");
+  // 1. Abrir monthlyTicketsModal
+  const monthlyTicketsCard = document.getElementById("monthlyTicketsCard");
+  if (monthlyTicketsCard && monthlyTicketsModalInstance) {
+    monthlyTicketsCard.addEventListener("click", function (event) {
+      event.preventDefault();
+      monthlyTicketsModalInstance.show();
+      loadMonthlyTicketDetails();
+    });
+  } else {
+    console.error("monthlyTicketsCard o monthlyTicketsModal no encontrados.");
+  }
 
-    if (cerrarMonthly && monthlyTicketsModalInstance) {
-        cerrarMonthly.addEventListener("click", function () {
-            monthlyTicketsModalInstance.hide();
-        });
-    }
-    if (iconMonthly && monthlyTicketsModalInstance) {
-        iconMonthly.addEventListener("click", function () {
-            monthlyTicketsModalInstance.hide();
-        });
-    }
+  // 2. Abrir OpenTicketModal
+  const TicketsOpenCard = document.getElementById("Card-Ticket-open");
+  if (TicketsOpenCard && openTicketsModalInstance) {
+    TicketsOpenCard.addEventListener("click", function (event) {
+      event.preventDefault();
+      openTicketsModalInstance.show();
+      loadOpenTicketDetails();
+    });
+  } else {
+    console.error("TicketsOpenCard o OpenTicketModal no encontrados.");
+  }
 
-    // 2. Botones de cierre para RegionTicketsModal
-    const cerrarRegion = document.getElementById("ModalStadisticRegion");
-    const iconRegion = document.getElementById("ModalStadisticRegionIcon");
+  // 3. Abrir RegionTicketsModal
+  const regionTicketsCard = document.getElementById("RegionTicketsCard");
+  if (regionTicketsCard && regionTicketsModalInstance) {
+    regionTicketsCard.addEventListener("click", function (event) {
+      event.preventDefault();
+      regionTicketsModalInstance.show();
+      loadRegionTicketDetails();
+    });
+  } else {
+    console.error("RegionTicketsCard o RegionTicketsModal no encontrados.");
+  }
 
-    if (cerrarRegion && regionTicketsModalInstance) {
-        cerrarRegion.addEventListener("click", function () {
-            regionTicketsModalInstance.hide();
-        });
-    }
-    if (iconRegion && regionTicketsModalInstance) {
-        iconRegion.addEventListener("click", function () {
-            regionTicketsModalInstance.hide();
-        });
-    }
+  // 4. Abrir ResolveTicketsModal
+  // Nota: Habías cambiado el ID a "Card-resolve-ticket" aquí. Lo mantengo.
+  const resolveTicketsCard = document.getElementById("Card-resolve-ticket");
+  if (resolveTicketsCard && resolveTicketsModalInstance) {
+    resolveTicketsCard.addEventListener("click", function (event) {
+      event.preventDefault();
+      resolveTicketsModalInstance.show();
+      loadResolveTicketDetails();
+    });
+  } else {
+    console.error("Card-resolve-ticket o ResolveTicketsModal no encontrados.");
+  }
 
-    // 3. Botones de cierre para OpenTicketModal
-    const cerrarOpen = document.getElementById("ModalOpen");
-    const iconOpen = document.getElementById("ModalOpenIcon");
+  // 5. Abrir SendTallerTicketsModal (¡NUEVO!)
+  // ASUMO: Que la tarjeta para este modal tendrá el ID "Card-Send-To-Taller".
+  const sendTallerTicketsCard = document.getElementById("Card-Send-To-Taller");
+  if (sendTallerTicketsCard && sendTallerTicketsModalInstance) {
+    sendTallerTicketsCard.addEventListener("click", function (event) {
+      event.preventDefault();
+      sendTallerTicketsModalInstance.show();
+      loadTallerTicketDetails(); // Nueva función para cargar detalles
+    });
+  } else {
+    console.error(
+      "Card-Send-To-Taller o SendTallerTicketsModal no encontrados."
+    );
+  }
 
-    if (cerrarOpen && openTicketsModalInstance) {
-        cerrarOpen.addEventListener("click", function () {
-            openTicketsModalInstance.hide();
-        });
-    }
-    if (iconOpen && openTicketsModalInstance) {
-        iconOpen.addEventListener("click", function () {
-            openTicketsModalInstance.hide();
-        });
-    }
+  const OpenModalReparacion = document.getElementById("ModalPostReparacion");
+  if (OpenModalReparacion && ModalProcesoReparacion) {
+    OpenModalReparacion.addEventListener("click", function (event) {
+      event.preventDefault();
+      ModalProcesoReparacion.show();
+      loadIndividualProceessReparacion(); // Nueva función para cargar detalles del proceso de reparación
+      // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
+    });
+  } else {
+    console.error(
+      "OpenModalReparacion o ModalProcesoReparacion no encontrados."
+    );
+  }
 
-    // 4. Botones de cierre para ResolveTicketsModal
-    const cerrarResolve = document.getElementById("ModalResolveRegion");
-    const iconResolve = document.getElementById("ModalResolveIcon");
+  const OpenModalReparado = document.getElementById("OpenModalPostReparado");
+  if (OpenModalReparado && ModalReparados) {
+    OpenModalReparado.addEventListener("click", function (event) {
+      event.preventDefault();
+      ModalReparados.show();
+      loadIndividualReparado(); // Nueva función para cargar detalles del ticket de reparación
+      // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
+    });
+  }
 
-    if (cerrarResolve && resolveTicketsModalInstance) {
-        cerrarResolve.addEventListener("click", function () {
-            resolveTicketsModalInstance.hide();
-        });
-    }
-    if (iconResolve && resolveTicketsModalInstance) {
-        iconResolve.addEventListener("click", function () {
-            resolveTicketsModalInstance.hide();
-        });
-    }
+  // --- Event Listeners para CERRAR Modales (desde botones dentro del modal) ---
 
-    // 5. Botones de cierre para SendTallerTicketsModal (¡NUEVO!)
-    const cerrarTaller = document.getElementById("ModalTallerRegion"); // El ID de tu botón "Cerrar" en el footer
-    const iconTaller = document.getElementById("ModalTallerIcon"); // El ID de tu botón "x" en el header
+  // 1. Botones de cierre para monthlyTicketsModal
+  const cerrarMonthly = document.getElementById("ModalStadisticMonth");
+  const iconMonthly = document.getElementById("ModalStadisticMonthIcon");
 
-    if (cerrarTaller && sendTallerTicketsModalInstance) {
-        cerrarTaller.addEventListener("click", function () {
-            sendTallerTicketsModalInstance.hide();
-        });
-    }
-    if (iconTaller && sendTallerTicketsModalInstance) {
-        iconTaller.addEventListener("click", function () {
-            sendTallerTicketsModalInstance.hide();
-        });
-    }
+  if (cerrarMonthly && monthlyTicketsModalInstance) {
+    cerrarMonthly.addEventListener("click", function () {
+      monthlyTicketsModalInstance.hide();
+    });
+  }
 
+  if (iconMonthly && monthlyTicketsModalInstance) {
+    iconMonthly.addEventListener("click", function () {
+      monthlyTicketsModalInstance.hide();
+    });
+  }
 
-    // --- Lógica para Event Listeners Delegados (clics dentro de contenido de modales) ---
+  // 2. Botones de cierre para RegionTicketsModal
+  const cerrarRegion = document.getElementById("ModalStadisticRegion");
+  const iconRegion = document.getElementById("ModalStadisticRegionIcon");
 
-    // A. Clics dentro de monthlyTicketsContent
-    const monthlyTicketsContent = document.getElementById("monthlyTicketsContent");
-    if (monthlyTicketsContent) {
-        monthlyTicketsContent.addEventListener("click", function (event) {
-            const clickedButton = event.target.closest(".monthly-tickets-detail");
-            if (clickedButton) {
-                const month = clickedButton.dataset.month;
-                const status = clickedButton.dataset.status;
-                const count = clickedButton.dataset.count;
+  if (cerrarRegion && regionTicketsModalInstance) {
+    cerrarRegion.addEventListener("click", function () {
+      regionTicketsModalInstance.hide();
+    });
+  }
 
-                if (parseInt(count) > 0) {
-                    loadIndividualTicketDetails(month, status);
-                } else {
-                    Swal.fire({
-                        icon: "info",
-                        title: "Sin Tickets",
-                        html: `No hay tickets ${status.toLowerCase()}s en la fecha <strong>${month}</strong>.`,
-                        confirmButtonText: "Entendido",
-                        confirmButtonColor: "#003594",
-                    });
-                }
-            }
-        });
-    }
+  if (iconRegion && regionTicketsModalInstance) {
+    iconRegion.addEventListener("click", function () {
+      regionTicketsModalInstance.hide();
+    });
+  }
 
-    // B. Clics dentro de RegionTicketsContent
-    const regionTicketsContent = document.getElementById("RegionTicketsContent");
-    if (regionTicketsContent) {
-        regionTicketsContent.addEventListener("click", function (event) {
-            const clickedButton = event.target.closest(".region-tickets-total-detail");
-            if (clickedButton) {
-                const region = clickedButton.dataset.region;
-                const count = clickedButton.dataset.count;
+  // 3. Botones de cierre para OpenTicketModal
+  const cerrarOpen = document.getElementById("ModalOpen");
+  const iconOpen = document.getElementById("ModalOpenIcon");
 
-                if (parseInt(count) > 0) {
-                    loadIndividualRegionTicketDetails(region);
-                } else {
-                    Swal.fire({
-                        icon: "info",
-                        title: "Sin Tickets",
-                        html: `No hay tickets para la región de <strong>${region}</strong>.`,
-                        confirmButtonText: "Entendido",
-                        confirmButtonColor: "#003594",
-                    });
-                }
-            }
-        });
-    }
+  if (cerrarOpen && openTicketsModalInstance) {
+    cerrarOpen.addEventListener("click", function () {
+      openTicketsModalInstance.hide();
+    });
+  }
 
-    // C. Clics dentro de ResolveTicketsContent (Si aplicara)
-    // const resolveTicketsContent = document.getElementById("ResolveTicketsContent");
-    // if (resolveTicketsContent) {
-    //     resolveTicketsContent.addEventListener("click", function(event) {
-    //         const clickedButton = event.target.closest(".resolve-ticket-detail");
-    //         if (clickedButton) {
-    //             const ticketId = clickedButton.dataset.ticketId;
-    //             loadSpecificResolvedTicket(ticketId);
-    //         }
-    //     });
-    // }
+  if (iconOpen && openTicketsModalInstance) {
+    iconOpen.addEventListener("click", function () {
+      openTicketsModalInstance.hide();
+    });
+  }
 
-    // D. Clics dentro de TallerTicketsContent (¡NUEVO! Si aplicara)
-    const tallerTicketsContent = document.getElementById("TallerTicketsContent");
-    if (tallerTicketsContent) {
-        tallerTicketsContent.addEventListener("click", function(event) {
-            const clickedButton = event.target.closest(".taller-ticket-detail"); // Clase de tus botones dentro de este modal
-            if (clickedButton) {
-                const ticketId = clickedButton.dataset.ticketId;
-                // Si necesitas cargar más detalles de un ticket específico en el taller:
-                // loadSpecificTallerTicketDetails(ticketId);
-                console.log(`Clic en detalle de ticket de taller, ID: ${ticketId}`);
-            }
-        });
-    }
+  // 4. Botones de cierre para ResolveTicketsModal
+  const cerrarResolve = document.getElementById("ModalResolveRegion");
+  const iconResolve = document.getElementById("ModalResolveIcon");
+
+  if (cerrarResolve && resolveTicketsModalInstance) {
+    cerrarResolve.addEventListener("click", function () {
+      resolveTicketsModalInstance.hide();
+    });
+  }
+
+  if (iconResolve && resolveTicketsModalInstance) {
+    iconResolve.addEventListener("click", function () {
+      resolveTicketsModalInstance.hide();
+    });
+  }
+
+  // 5. Botones de cierre para SendTallerTicketsModal (¡NUEVO!)
+  const cerrarTaller = document.getElementById("ModalTallerRegion"); // El ID de tu botón "Cerrar" en el footer
+  const iconTaller = document.getElementById("ModalTallerIcon"); // El ID de tu botón "x" en el header
+
+  if (cerrarTaller && sendTallerTicketsModalInstance) {
+    cerrarTaller.addEventListener("click", function () {
+      sendTallerTicketsModalInstance.hide();
+    });
+  }
+
+  if (iconTaller && sendTallerTicketsModalInstance) {
+    iconTaller.addEventListener("click", function () {
+      sendTallerTicketsModalInstance.hide();
+    });
+  }
+
+  const cerrarPenReparacion = document.getElementById("ModalProcessReparacion");
+  const iconPenReparacion = document.getElementById(
+    "ModalProcessReparacionIcon"
+  );
+
+  if (cerrarPenReparacion && ModalProcesoReparacion) {
+    cerrarPenReparacion.addEventListener("click", function () {
+      ModalProcesoReparacion.hide();
+    });
+  }
+
+  if (iconPenReparacion && ModalProcesoReparacion) {
+    iconPenReparacion.addEventListener("click", function () {
+      ModalProcesoReparacion.hide();
+    });
+  }
+
+  const cerrarPenReparado = document.getElementById("ModalReparado");
+  const iconPenReparado = document.getElementById(
+    "ModalReparadoIcon"
+  );
+
+  if (cerrarPenReparado && ModalReparados) {
+    cerrarPenReparado.addEventListener("click", function () {
+      ModalReparados.hide();
+    });
+  }
+  
+  if (iconPenReparado && ModalReparados) {
+    iconPenReparado.addEventListener("click", function () {
+      ModalReparados.hide();
+    });
+  }
+  // A. Clics dentro de monthlyTicketsContent
+  const monthlyTicketsContent = document.getElementById(
+    "monthlyTicketsContent"
+  );
+  if (monthlyTicketsContent) {
+    monthlyTicketsContent.addEventListener("click", function (event) {
+      const clickedButton = event.target.closest(".monthly-tickets-detail");
+      if (clickedButton) {
+        const month = clickedButton.dataset.month;
+        const status = clickedButton.dataset.status;
+        const count = clickedButton.dataset.count;
+
+        if (parseInt(count) > 0) {
+          loadIndividualTicketDetails(month, status);
+        } else {
+          Swal.fire({
+            icon: "info",
+            title: "Sin Tickets",
+            html: `No hay tickets ${status.toLowerCase()}s en la fecha <strong>${month}</strong>.`,
+            confirmButtonText: "Entendido",
+            confirmButtonColor: "#003594",
+          });
+        }
+      }
+    });
+  }
+
+  // B. Clics dentro de RegionTicketsContent
+  const regionTicketsContent = document.getElementById("RegionTicketsContent");
+  if (regionTicketsContent) {
+    regionTicketsContent.addEventListener("click", function (event) {
+      const clickedButton = event.target.closest(
+        ".region-tickets-total-detail"
+      );
+      if (clickedButton) {
+        const region = clickedButton.dataset.region;
+        const count = clickedButton.dataset.count;
+
+        if (parseInt(count) > 0) {
+          loadIndividualRegionTicketDetails(region);
+        } else {
+          Swal.fire({
+            icon: "info",
+            title: "Sin Tickets",
+            html: `No hay tickets para la región de <strong>${region}</strong>.`,
+            confirmButtonText: "Entendido",
+            confirmButtonColor: "#003594",
+          });
+        }
+      }
+    });
+  }
+
+  // D. Clics dentro de TallerTicketsContent (¡NUEVO! Si aplicara)
+  const tallerTicketsContent = document.getElementById("TallerTicketsContent");
+  if (tallerTicketsContent) {
+    tallerTicketsContent.addEventListener("click", function (event) {
+      const clickedButton = event.target.closest(".taller-ticket-detail"); // Clase de tus botones dentro de este modal
+      if (clickedButton) {
+        const ticketId = clickedButton.dataset.ticketId;
+        // Si necesitas cargar más detalles de un ticket específico en el taller:
+        // loadSpecificTallerTicketDetails(ticketId);
+        console.log(`Clic en detalle de ticket de taller, ID: ${ticketId}`);
+      }
+    });
+  }
 });
+
+function loadIndividualReparado(){
+  const contentDiv = document.getElementById("ReparadoModalTicketsContent");
+  contentDiv.innerHTML =
+    "<p>Cargando información de los POS Reparado..</p>"; // Mensaje de carga
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsYaEstanReparados`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        contentDiv.innerHTML = formatReparadoTicketsDetails(data.details); // Renderizar los datos
+
+      } else {
+        contentDiv.innerHTML =
+          "<p>Error al cargar los detalles de Taller: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error(
+          "Error en los datos de la API para Taller:",
+          data.message
+        );
+      }
+    })
+    .catch((error) => {
+      contentDiv.innerHTML =
+        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
+      console.error("Error fetching taller details:", error);
+    });
+}
+
+function formatReparadoTicketsDetails(details){
+if (!Array.isArray(details)) {
+    console.error("Expected 'details' to be an array, but received:", details);
+    return "<p>Formato de datos inesperado.</p>";
+  }
+
+  let html = `
+        <h5>POS Reparados</h5>
+        <div class="ticket-details-list mt-3">
+    `;
+
+  details.forEach((ticket) => {
+    // <-- ¡Corregido aquí! Ahora usa 'details'
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
+
+    html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
+                        
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.date_create_ticket
+                        }</dd> <!-- Usar la variable formateada -->
+                    </dl>
+                </div>
+            </div>
+        `;
+  });
+  return html;
+}
+
+function getTicketProcessReparacion() {
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsProcessReparacionCount`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          document.getElementById("CountProcessReparacion").textContent =
+            response.count; // Selecciona por ID
+        } else {
+          console.error("Error:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  const datos = "action=getTicketsProcessReparacionCount";
+  xhr.send(datos);
+}
+
+function getTicketReparados() {
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsReparadosCount`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          document.getElementById("ReparadopsCount").textContent =
+            response.count; // Selecciona por ID
+        } else {
+          console.error("Error:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  const datos = "action=getTicketsReparadosCount";
+  xhr.send(datos);
+}
+
+function loadIndividualProceessReparacion() {
+  const contentDiv = document.getElementById("ReparacionModalTicketsContent");
+  contentDiv.innerHTML =
+    "<p>Cargando información de los POS en proceso de reparaci&oacuten..</p>"; // Mensaje de carga
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendienteReparacion`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        contentDiv.innerHTML = formatProcessReparacionDetails(data.details); // Renderizar los datos
+      } else {
+        contentDiv.innerHTML =
+          "<p>Error al cargar los detalles de Taller: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error(
+          "Error en los datos de la API para Taller:",
+          data.message
+        );
+      }
+    })
+    .catch((error) => {
+      contentDiv.innerHTML =
+        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
+      console.error("Error fetching taller details:", error);
+    });
+}
+
+function formatProcessReparacionDetails(details) {
+  if (!Array.isArray(details)) {
+    console.error("Expected 'details' to be an array, but received:", details);
+    return "<p>Formato de datos inesperado.</p>";
+  }
+
+  let html = `
+        <h5>POS En Proceso De reparaci&oacuten</h5>
+        <div class="ticket-details-list mt-3">
+    `;
+
+  details.forEach((ticket) => {
+    // <-- ¡Corregido aquí! Ahora usa 'details'
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
+
+    html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
+                        
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.date_create_ticket
+                        }</dd> <!-- Usar la variable formateada -->
+                    </dl>
+                </div>
+            </div>
+        `;
+  });
+  return html;
+}
 
 function loadTallerTicketDetails() {
   const contentDiv = document.getElementById("TallerTicketsContent");
   contentDiv.innerHTML = "<p>Cargando información de Tickets de Taller...</p>"; // Mensaje de carga
   fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTallerTicketsForCard`)
-     .then((response) => {
+    .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -276,7 +616,10 @@ function loadTallerTicketDetails() {
           "<p>Error al cargar los detalles de Taller: " +
           (data.message || "Error desconocido") +
           "</p>";
-        console.error("Error en los datos de la API para Taller:", data.message);
+        console.error(
+          "Error en los datos de la API para Taller:",
+          data.message
+        );
       }
     })
     .catch((error) => {
@@ -284,28 +627,29 @@ function loadTallerTicketDetails() {
         "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
       console.error("Error fetching taller details:", error);
     });
-    // TODO: Agregar más lógica para mostrar los detalles de tickets de taller
-    //...
+  // TODO: Agregar más lógica para mostrar los detalles de tickets de taller
+  //...
+}
+
+function formatTallerDetails(details) {
+  if (!Array.isArray(details)) {
+    console.error("Expected 'details' to be an array, but received:", details);
+    return "<p>Formato de datos inesperado.</p>";
   }
 
-  function formatTallerDetails(details) {
-    if (!Array.isArray(details)) {
-        console.error("Expected 'details' to be an array, but received:", details);
-        return "<p>Formato de datos inesperado.</p>";
-    }
-
-    let html = `
-        <h5>Tickets Resueltos</h5>
+  let html = `
+        <h5>Tickets En Taller</h5>
         <div class="ticket-details-list mt-3">
     `;
 
-    details.forEach((ticket) => { // <-- ¡Corregido aquí! Ahora usa 'details'
-        // Formatear la fecha de creación del ticket para una mejor visualización
-        const creationDate = ticket.date_create_ticket
-            ? new Date(ticket.date_create_ticket).toLocaleString()
-            : "N/A";
+  details.forEach((ticket) => {
+    // <-- ¡Corregido aquí! Ahora usa 'details'
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
 
-        html += `
+    html += `
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
                     Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
@@ -313,31 +657,43 @@ function loadTallerTicketDetails() {
                 <div class="card-body">
                     <dl class="row mb-0">
                         <dt class="col-sm-4">Serial POS:</dt>
-                        <dd class="col-sm-8">${ticket.serial_pos_cliente || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Razón Social Cliente:</dt>
-                        <dd class="col-sm-8">${ticket.razon_social_cliente || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Rif Cliente:</dt>
                         <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
 
                         <dt class="col-sm-4">Modelo POS:</dt>
-                        <dd class="col-sm-8">${ticket.name_modelopos_cliente || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Estado Ticket:</dt>
-                        <dd class="col-sm-8">${ticket.status_name_ticket || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Accion Ticket:</dt>
-                        <dd class="col-sm-8">${ticket.name_accion_ticket || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
                         
                         <dt class="col-sm-4">Fecha Creación:</dt>
-                        <dd class="col-sm-8">${ticket.date_create_ticket}</dd> <!-- Usar la variable formateada -->
+                        <dd class="col-sm-8">${
+                          ticket.date_create_ticket
+                        }</dd> <!-- Usar la variable formateada -->
                     </dl>
                 </div>
             </div>
         `;
-    });
-    return html;
+  });
+  return html;
 }
 
 function loadResolveTicketDetails() {
@@ -359,7 +715,10 @@ function loadResolveTicketDetails() {
           "<p>Error al cargar los detalles regionales: " +
           (data.message || "Error desconocido") +
           "</p>";
-        console.error("Error en los datos de la API para regiones:", data.message);
+        console.error(
+          "Error en los datos de la API para regiones:",
+          data.message
+        );
       }
     })
     .catch((error) => {
@@ -368,7 +727,6 @@ function loadResolveTicketDetails() {
       console.error("Error fetching regional details:", error);
     });
 }
-
 
 // Para el campo "Nueva Contraseña"
 jQuery("#clickme1").on("click", function () {
@@ -380,23 +738,24 @@ jQuery("#clickme1").on("click", function () {
 });
 
 function formatResolveDetails(details) {
-    if (!Array.isArray(details)) {
-        console.error("Expected 'details' to be an array, but received:", details);
-        return "<p>Formato de datos inesperado.</p>";
-    }
+  if (!Array.isArray(details)) {
+    console.error("Expected 'details' to be an array, but received:", details);
+    return "<p>Formato de datos inesperado.</p>";
+  }
 
-    let html = `
+  let html = `
         <h5>Tickets Resueltos</h5>
         <div class="ticket-details-list mt-3">
     `;
 
-    details.forEach((ticket) => { // <-- ¡Corregido aquí! Ahora usa 'details'
-        // Formatear la fecha de creación del ticket para una mejor visualización
-        const creationDate = ticket.date_create_ticket
-            ? new Date(ticket.date_create_ticket).toLocaleString()
-            : "N/A";
+  details.forEach((ticket) => {
+    // <-- ¡Corregido aquí! Ahora usa 'details'
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
 
-        html += `
+    html += `
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
                     Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
@@ -404,31 +763,43 @@ function formatResolveDetails(details) {
                 <div class="card-body">
                     <dl class="row mb-0">
                         <dt class="col-sm-4">Serial POS:</dt>
-                        <dd class="col-sm-8">${ticket.serial_pos_cliente || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Razón Social Cliente:</dt>
-                        <dd class="col-sm-8">${ticket.razon_social_cliente || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Rif Cliente:</dt>
                         <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
 
                         <dt class="col-sm-4">Modelo POS:</dt>
-                        <dd class="col-sm-8">${ticket.name_modelopos_cliente || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Estado Ticket:</dt>
-                        <dd class="col-sm-8">${ticket.status_name_ticket || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Accion Ticket:</dt>
-                        <dd class="col-sm-8">${ticket.name_accion_ticket || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
                         
                         <dt class="col-sm-4">Fecha Creación:</dt>
-                        <dd class="col-sm-8">${ticket.date_create_ticket}</dd> <!-- Usar la variable formateada -->
+                        <dd class="col-sm-8">${
+                          ticket.date_create_ticket
+                        }</dd> <!-- Usar la variable formateada -->
                     </dl>
                 </div>
             </div>
         `;
-    });
-    return html;
+  });
+  return html;
 }
 
 // Para el campo "Confirmar Contraseña"
@@ -488,12 +859,6 @@ fetch("/SoportePost/app/controllers/dashboard.php", {
     console.error("Fetch error:", error);
   });
 
-//// END  SESSION EXPIRE DEL USER
-
-// Asegúrate de que ENDPOINT_BASE y APP_PATH estén definidos globalmente.
-// Por ejemplo:
-// const ENDPOINT_BASE = "http://localhost/";
-// const APP_PATH = "your_app_path/";
 
 function checkUserStatusAndPromptPassword() {
   const id_user = document.getElementById("userIdForPassword").value;
@@ -861,55 +1226,57 @@ function getTicketOpen() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Referencia al elemento de la tarjeta de estadística para tickets regionales
-    const TicketsOpenCard = document.getElementById("Card-Ticket-open");
+  // Referencia al elemento de la tarjeta de estadística para tickets regionales
+  const TicketsOpenCard = document.getElementById("Card-Ticket-open");
 
-    // Referencia al elemento del modal para tickets regionales
-    const OpenTicketsModalElement = document.getElementById("OpenTicketModal");
+  // Referencia al elemento del modal para tickets regionales
+  const OpenTicketsModalElement = document.getElementById("OpenTicketModal");
 
-    // Declarar la instancia del modal fuera del if/else para que sea accesible
-    let OpenTicketsModalInstance = null;
+  // Declarar la instancia del modal fuera del if/else para que sea accesible
+  let OpenTicketsModalInstance = null;
 
-    // Asegúrate de que ambos elementos existan antes de añadir el event listener
-    if (TicketsOpenCard && OpenTicketsModalElement) {
-        // **Crear la instancia del modal de Bootstrap una sola vez.**
-        OpenTicketsModalInstance = new bootstrap.Modal(OpenTicketsModalElement);
+  // Asegúrate de que ambos elementos existan antes de añadir el event listener
+  if (TicketsOpenCard && OpenTicketsModalElement) {
+    // **Crear la instancia del modal de Bootstrap una sola vez.**
+    OpenTicketsModalInstance = new bootstrap.Modal(OpenTicketsModalElement);
 
-        TicketsOpenCard.addEventListener("click", function (event) {
-            // Evita el comportamiento predeterminado si el clic es en un enlace o botón.
-            event.preventDefault();
+    TicketsOpenCard.addEventListener("click", function (event) {
+      // Evita el comportamiento predeterminado si el clic es en un enlace o botón.
+      event.preventDefault();
 
-            // Muestra el modal usando la instancia de Bootstrap
-            OpenTicketsModalInstance.show();
-            loadOpenTicketDetails(); // Carga los detalles regionales al abrir el modal
-        });
-    } else {
-        console.error(
-            "No se encontraron los elementos TicketsOpenCard o OpenTicketsModalElement."
-        );
+      // Muestra el modal usando la instancia de Bootstrap
+      OpenTicketsModalInstance.show();
+      loadOpenTicketDetails(); // Carga los detalles regionales al abrir el modal
+    });
+  } else {
+    console.error(
+      "No se encontraron los elementos TicketsOpenCard o OpenTicketsModalElement."
+    );
+  }
+
+  // --- Lógica para los botones de cierre ---
+  // Obtén la referencia a los botones de cierre
+  const cerrarBoton = document.getElementById("ModalOpen"); // El botón "Cerrar" en el footer
+  const iconoCerrar = document.getElementById("ModalOpenIcon"); // El botón "x" en el header
+
+  // Asegúrate de que la instancia del modal ya haya sido creada antes de intentar usarla
+  if (OpenTicketsModalInstance) {
+    if (cerrarBoton) {
+      cerrarBoton.addEventListener("click", function () {
+        OpenTicketsModalInstance.hide();
+      });
     }
 
-    // --- Lógica para los botones de cierre ---
-    // Obtén la referencia a los botones de cierre
-    const cerrarBoton = document.getElementById("ModalOpen"); // El botón "Cerrar" en el footer
-    const iconoCerrar = document.getElementById("ModalOpenIcon"); // El botón "x" en el header
-
-    // Asegúrate de que la instancia del modal ya haya sido creada antes de intentar usarla
-    if (OpenTicketsModalInstance) {
-        if (cerrarBoton) {
-            cerrarBoton.addEventListener("click", function () {
-              OpenTicketsModalInstance.hide();
-            });
-        }
-
-        if (iconoCerrar) {
-            iconoCerrar.addEventListener("click", function () {
-                OpenTicketsModalInstance.hide();
-            });
-        }
-    } else {
-        console.error("La instancia de OpenTicketsModal no está disponible para los botones de cierre.");
+    if (iconoCerrar) {
+      iconoCerrar.addEventListener("click", function () {
+        OpenTicketsModalInstance.hide();
+      });
     }
+  } else {
+    console.error(
+      "La instancia de OpenTicketsModal no está disponible para los botones de cierre."
+    );
+  }
 });
 
 function loadOpenTicketDetails() {
@@ -931,7 +1298,10 @@ function loadOpenTicketDetails() {
           "<p>Error al cargar los detalles regionales: " +
           (data.message || "Error desconocido") +
           "</p>";
-        console.error("Error en los datos de la API para regiones:", data.message);
+        console.error(
+          "Error en los datos de la API para regiones:",
+          data.message
+        );
       }
     })
     .catch((error) => {
@@ -942,23 +1312,24 @@ function loadOpenTicketDetails() {
 }
 
 function formatOpenDetails(details) {
-    if (!Array.isArray(details)) {
-        console.error("Expected 'details' to be an array, but received:", details);
-        return "<p>Formato de datos inesperado.</p>";
-    }
+  if (!Array.isArray(details)) {
+    console.error("Expected 'details' to be an array, but received:", details);
+    return "<p>Formato de datos inesperado.</p>";
+  }
 
-    let html = `
+  let html = `
         <h5>Tickets Abiertos</h5>
         <div class="ticket-details-list mt-3">
     `;
 
-    details.forEach((ticket) => { // <-- ¡Corregido aquí! Ahora usa 'details'
-        // Formatear la fecha de creación del ticket para una mejor visualización
-        const creationDate = ticket.date_create_ticket
-            ? new Date(ticket.date_create_ticket).toLocaleString()
-            : "N/A";
+  details.forEach((ticket) => {
+    // <-- ¡Corregido aquí! Ahora usa 'details'
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
 
-        html += `
+    html += `
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
                     Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
@@ -966,31 +1337,43 @@ function formatOpenDetails(details) {
                 <div class="card-body">
                     <dl class="row mb-0">
                         <dt class="col-sm-4">Serial POS:</dt>
-                        <dd class="col-sm-8">${ticket.serial_pos_cliente || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Razón Social Cliente:</dt>
-                        <dd class="col-sm-8">${ticket.razon_social_cliente || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Rif Cliente:</dt>
                         <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
 
                         <dt class="col-sm-4">Modelo POS:</dt>
-                        <dd class="col-sm-8">${ticket.name_modelopos_cliente || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Estado Ticket:</dt>
-                        <dd class="col-sm-8">${ticket.status_name_ticket || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
 
                         <dt class="col-sm-4">Estado Ticket:</dt>
-                        <dd class="col-sm-8">${ticket.name_accion_ticket || "N/A"}</dd>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
                         
                         <dt class="col-sm-4">Fecha Creación:</dt>
-                        <dd class="col-sm-8">${ticket.date_create_ticket}</dd> <!-- Usar la variable formateada -->
+                        <dd class="col-sm-8">${
+                          ticket.date_create_ticket
+                        }</dd> <!-- Usar la variable formateada -->
                     </dl>
                 </div>
             </div>
         `;
-    });
-    return html;
+  });
+  return html;
 }
 
 function getTicketPercentage() {
@@ -1018,7 +1401,8 @@ function getTicketPercentage() {
           percentageSpan.textContent =
             (percentage > 0 ? "+" : "") + displayPercentage + "%";
 
-          if (percentage >= 50) { // Usamos el número original para la comparación
+          if (percentage >= 50) {
+            // Usamos el número original para la comparación
             percentageSpan.classList.remove("text-success");
             percentageSpan.classList.add("text-danger");
           } else {
@@ -1095,7 +1479,9 @@ function getTicketsResueltosPercentage() {
           // 2. Redondear a 2 decimales y almacenar en displayPercentage
           const displayPercentage = percentage.toFixed(2);
 
-          const percentageSpan = document.getElementById("ticketResueltoPercentage");
+          const percentageSpan = document.getElementById(
+            "ticketResueltoPercentage"
+          );
 
           // Usar displayPercentage para mostrar y percentage (el número original) para la lógica de color
           percentageSpan.textContent =
@@ -1106,15 +1492,16 @@ function getTicketsResueltosPercentage() {
           // Si es igual o mayor, será verde.
           const thresholdForGood = 50; // Quieres que sea verde si es >= 50%
 
-          if (percentage < thresholdForGood) { // Si es MENOR que el umbral (50%), es "malo" (rojo)
+          if (percentage < thresholdForGood) {
+            // Si es MENOR que el umbral (50%), es "malo" (rojo)
             percentageSpan.classList.remove("text-success"); // Asegúrate de quitar la clase verde
-            percentageSpan.classList.add("text-danger");    // Añadir la clase roja
-          } else { // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
+            percentageSpan.classList.add("text-danger"); // Añadir la clase roja
+          } else {
+            // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
             percentageSpan.classList.remove("text-danger"); // Asegúrate de quitar la clase roja
-            percentageSpan.classList.add("text-success");   // Añadir la clase verde
+            percentageSpan.classList.add("text-success"); // Añadir la clase verde
           }
           // =========================
-
         } else {
           console.error("Error:", response.message);
         }
@@ -1185,7 +1572,8 @@ function getTicketTotalSendTotaller() {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          document.getElementById("TotalEnviadoTaller").textContent = response.count; // Selecciona por ID
+          document.getElementById("TotalEnviadoTaller").textContent =
+            response.count; // Selecciona por ID
         } else {
           console.error("Error:", response.message);
         }
@@ -1230,12 +1618,14 @@ function getTotalTicketsPercentageOFSendTaller() {
           // Si es igual o mayor, será verde.
           const thresholdForGood = 50; // Quieres que sea verde si es >= 50%
 
-          if (percentage < thresholdForGood) { // Si es MENOR que el umbral (50%), es "malo" (rojo)
+          if (percentage < thresholdForGood) {
+            // Si es MENOR que el umbral (50%), es "malo" (rojo)
             percentageSpan.classList.remove("text-success"); // Asegúrate de quitar la clase verde
-            percentageSpan.classList.add("text-danger");    // Añadir la clase roja
-          } else { // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
+            percentageSpan.classList.add("text-danger"); // Añadir la clase roja
+          } else {
+            // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
             percentageSpan.classList.remove("text-danger"); // Asegúrate de quitar la clase roja
-            percentageSpan.classList.add("text-success");   // Añadir la clase verde
+            percentageSpan.classList.add("text-success"); // Añadir la clase verde
           }
           // =========================
         } else {
@@ -1278,7 +1668,9 @@ function getTotalTicketsPercentage() {
           // 2. Redondear a 2 decimales y almacenar en displayPercentage
           const displayPercentage = percentage.toFixed(2);
 
-          const percentageSpan = document.getElementById("totalTicketPercentage");
+          const percentageSpan = document.getElementById(
+            "totalTicketPercentage"
+          );
 
           // Usar displayPercentage para mostrar y percentage (el número original) para la lógica de color
           percentageSpan.textContent =
@@ -1289,12 +1681,14 @@ function getTotalTicketsPercentage() {
           // Si es igual o mayor, será verde.
           const thresholdForGood = 50; // Quieres que sea verde si es >= 50%
 
-          if (percentage < thresholdForGood) { // Si es MENOR que el umbral (50%), es "malo" (rojo)
+          if (percentage < thresholdForGood) {
+            // Si es MENOR que el umbral (50%), es "malo" (rojo)
             percentageSpan.classList.remove("text-success"); // Asegúrate de quitar la clase verde
-            percentageSpan.classList.add("text-danger");    // Añadir la clase roja
-          } else { // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
+            percentageSpan.classList.add("text-danger"); // Añadir la clase roja
+          } else {
+            // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
             percentageSpan.classList.remove("text-danger"); // Asegúrate de quitar la clase roja
-            percentageSpan.classList.add("text-success");   // Añadir la clase verde
+            percentageSpan.classList.add("text-success"); // Añadir la clase verde
           }
           // =========================
         } else {
@@ -1331,7 +1725,9 @@ function loadRegionTicketDetails() {
   const contentDiv = document.getElementById("RegionTicketsContent");
   contentDiv.innerHTML = "<p>Cargando información regional...</p>"; // Mensaje de carga
 
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChartForState`)
+  fetch(
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChartForState`
+  )
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -1346,7 +1742,10 @@ function loadRegionTicketDetails() {
           "<p>Error al cargar los detalles regionales: " +
           (data.message || "Error desconocido") +
           "</p>";
-        console.error("Error en los datos de la API para regiones:", data.message);
+        console.error(
+          "Error en los datos de la API para regiones:",
+          data.message
+        );
       }
     })
     .catch((error) => {
@@ -1357,7 +1756,6 @@ function loadRegionTicketDetails() {
 }
 
 // Función para cargar los detalles de tickets individuales por región (sin estado inicial)
-
 
 // Función para formatear la tabla de tickets por región (ajustada)
 function formatRegionDetails(details) {
@@ -1398,7 +1796,6 @@ function formatRegionDetails(details) {
 
 // Función para formatear los tickets individuales por región
 function formatIndividualRegionTickets(tickets, region) {
-
   if (tickets.length === 0) {
     return `<p>No hay tickets para la región ${region}.</p>
                   <button class="btn btn-primary mt-3" onclick="loadRegionTicketDetails()">Volver al resumen regional</button>`;
@@ -1430,7 +1827,7 @@ function formatIndividualRegionTickets(tickets, region) {
                     
                         <dt class="col-sm-4">Serial POS:</dt>
                         <dd class="col-sm-8">${
-                          ticket.serial_pos_cliente  || "N/A"
+                          ticket.serial_pos_cliente || "N/A"
                         }</dd>
 
                         <dt class="col-sm-4">Razón Social Cliente:</dt>
@@ -1472,7 +1869,8 @@ function formatIndividualRegionTickets(tickets, region) {
   return html;
 }
 
-function loadIndividualRegionTicketDetails(region) { // status es opcional ahora
+function loadIndividualRegionTicketDetails(region) {
+  // status es opcional ahora
   const contentDiv = document.getElementById("RegionTicketsContent");
   let loadingMessage = `Cargando tickets para la región ${region}...`;
   if (region) {
@@ -1495,7 +1893,7 @@ function loadIndividualRegionTicketDetails(region) { // status es opcional ahora
           // Llama a la función de formateo de tickets individuales por región
           contentDiv.innerHTML = formatIndividualRegionTickets(
             response.details,
-            region,
+            region
           );
         } else {
           contentDiv.innerHTML =
@@ -1525,12 +1923,16 @@ function loadIndividualRegionTicketDetails(region) { // status es opcional ahora
   };
 
   xhr.onerror = function () {
-    console.error("Network error during individual regional ticket details fetch.");
+    console.error(
+      "Network error during individual regional ticket details fetch."
+    );
     contentDiv.innerHTML = `<p>Error de conexión al cargar el detalle de tickets.</p>`;
   };
 
   // Prepara los datos a enviar: solo la región
-  let dataToSend = `action=GetIndividualTicketDetailsByRegion&region=${encodeURIComponent(region)}`;
+  let dataToSend = `action=GetIndividualTicketDetailsByRegion&region=${encodeURIComponent(
+    region
+  )}`;
   // Si tu API GetIndividualTicketDetailsByRegion puede filtrar por status, puedes añadirlo aquí
   xhr.send(dataToSend);
 }
@@ -2175,5 +2577,7 @@ document.addEventListener("DOMContentLoaded", function () {
   loadMonthlyCreatedTicketsChart();
   loadMonthlyCreatedTicketsChartForState();
   updateTicketMonthlyPercentageChange();
+  getTicketProcessReparacion();
+  getTicketReparados();
   // ... (resto de tu código DOMContentLoaded para modals, estadísticas de cards, etc.)
 });

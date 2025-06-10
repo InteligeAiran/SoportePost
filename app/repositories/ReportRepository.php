@@ -321,10 +321,45 @@ class ReportRepository
         }
     }
 
-    public function GetTallerTicketsPercentage(){
+    public function GetTicketsPendienteReparacion(){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTallerTicketsPercentage(); // Asumiendo que tienes este método en tu modelo
-        return $result['row']['total_tickets_priority'];
+        $result = $this->model->GetTicketsPendienteReparacion(); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
     }
 
+    public function GetTicketsProcessReparacionCount(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketsProcessReparacionCount(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['get_total_proceso_reparacion'];
+    }
+
+    public function GetTicketsReparadosCount(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketsReparadosCount(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['get_total_reparados'];
+    }
+
+    public function handleGetTicketsPendienteReparacion(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->handleGetTicketsPendienteReparacion(); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
 }

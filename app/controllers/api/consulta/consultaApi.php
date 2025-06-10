@@ -375,10 +375,11 @@ class Consulta extends Controller {
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
 
         if (!empty($serial)) {
-            $hoy = date('dmo');
-            $resultado = $repository->GetTotalTickets();
+            $hoy = date('dmy');
+            $fecha_para_db = date('Y-m-d');
+            $resultado = $repository->GetTotalTickets($fecha_para_db);
             $totaltickets = $resultado + 1;
-            $paddedTicketNumber = sprintf("%05d", $totaltickets);
+            $paddedTicketNumber = sprintf("%04d", $totaltickets);
             $Nr_ticket = $hoy. $paddedTicketNumber;
 
             if (!empty($descripcion)) {

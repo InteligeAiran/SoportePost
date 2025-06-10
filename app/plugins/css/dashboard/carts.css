@@ -361,7 +361,17 @@
     background-color: red; /* Cambia el color de fondo al pasar el mouse */
 }
 
-#ModalStadisticMonth, #ModalStadisticRegion, #ModalOpen, #ModalResolveRegion, #ModalTallerRegion{
+#ModalProcessReparacion:hover{
+    color: white;
+    background-color: red;
+}
+
+#ModalReparado:hover{
+    color: white;
+    background-color: red; /* Cambia el color de fondo al pasar el mouse */
+}
+
+#ModalStadisticMonth, #ModalStadisticRegion, #ModalOpen, #ModalResolveRegion, #ModalTallerRegion, #ModalProcessReparacion, #ModalReparado{
     color: #fff; /* Color del texto */
     background-color: #8392ab; /* Color de fondo */
     border: none; /* Sin borde */
@@ -371,13 +381,23 @@
     cursor: pointer;
 }
 
-#ModalStadisticMonthIcon, #ModalStadisticRegionIcon, #ModalOpenIcon, #ModalResolveIcon, #ModalTallerIcon{
+#ModalStadisticMonthIcon, #ModalStadisticRegionIcon, #ModalOpenIcon, #ModalResolveIcon, #ModalTallerIcon, #ModalProcessReparacionIcon, #ModalReparadoIcon{
     color: #fff; /* Color del texto */
     background-color: #8392ab; /* Color de fondo */
     transition: background-color 0.3s ease; /* Transición suave para el cambio de color */
     cursor: pointer;
     border: none; /* Sin borde */
     border-radius: 0.375rem; /* Bordes redondeados */
+}
+
+#ModalProcessReparacionIcon:hover{
+    color: white;
+    background-color: red; /* Cambia el color de fondo al pasar el mouse */
+}
+
+#ModalReparadoIcon:hover{
+    color: white;
+    background-color: red; /* Cambia el color de fondo al pasar el mouse */
 }
 
 #ModalStadisticMonthIcon:hover{
