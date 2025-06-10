@@ -331,6 +331,46 @@ class reportsModel extends Model
             // Handle exception
         }
     }
+
+    public function GetTicketsPendientesPorRepuestos(){
+        try {
+            $sql = "SELECT * FROM get_individual_tickets_pendientes_por_repuestos()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetTicketPendienteRepuestoCount(){
+        try {
+            $sql = "SELECT * FROM get_total_pendiente_repuesto()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetTicketIrreparablesCount(){
+        try {
+            $sql = "SELECT * FROM get_total_irreparable()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetTicketsIrreparables(){
+        try {
+            $sql = "SELECT * FROM get_individual_tickets_irreparables()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
 ?>
 

@@ -440,7 +440,7 @@ function mi_navbar()
                                         </div>
                                     </li>
 
-                                    <li class="list-group-item list-group-item-custom">
+                                    <li class="list-group-item list-group-item-custom" id="OpenModalPendienteRepuesto">
                                         <div class="item-content-wrapper">
                                             <div class="icon-wrapper">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
@@ -452,7 +452,7 @@ function mi_navbar()
                                             </div>
                                             <div class="text-content-wrapper">
                                                 <h6 class="item-title">POS Pendiente Por repuestos</h6>
-                                                <span class="item-count">9</span>
+                                                <span class="item-count" id="PendientePorRepuesto"></span>
                                             </div>
                                         </div>
                                         <div class="arrow-wrapper">
@@ -494,7 +494,7 @@ function mi_navbar()
                                         </div>
                                     </li>
 
-                                    <li class="list-group-item list-group-item-custom">
+                                    <li class="list-group-item list-group-item-custom" id="OpenModalIrreparable">
                                         <div class="item-content-wrapper">
                                             <div class="icon-wrapper">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
@@ -505,7 +505,7 @@ function mi_navbar()
                                             </div>
                                             <div class="text-content-wrapper">
                                                 <h6 class="item-title">Irreparables</h6>
-                                                <span class="item-count">1</span>
+                                                <span class="item-count" id="CountIrreparable"></span>
                                             </div>
                                         </div>
                                         <div class="arrow-wrapper">
@@ -546,7 +546,7 @@ function mi_navbar()
                     </div>
                 </div>
 
-                 <div class="modal fade" id="ReparadosModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                <div class="modal fade" id="ReparadosModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                         <div class="modal-content">
                             <div class="modal-header bg-gradient-info text-white">
@@ -568,45 +568,23 @@ function mi_navbar()
                     </div>
                 </div>
 
-                <div class="modal fade" id="pendienteRepuestosModal" tabindex="-1"
-                    aria-labelledby="pendienteRepuestosModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-xl">
+                <div class="modal fade" id="pendienterespuestoModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                         <div class="modal-content">
-                            <div class="modal-header bg-gradient-primary">
-                                <h5 class="modal-title text-white" id="pendienteRepuestosModalLabel">Tickets: POS
-                                    Pendiente Por Repuestos</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                    aria-label="Close" id="ModalPendienteRepuestosIcon"></button>
-                            </div>
-                            <div class="modal-body" id="pendienteRepuestosContent">
-                                <p class="chart-subtitle text-gray-700 mb-4">Listado de tickets de Puntos de Venta (POS)
-                                    que están pendientes debido a la espera de repuestos.</p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                                    id="ModalPendienteRepuestosCerrar">Cerrar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal fade" id="irreparablesModal" tabindex="-1" aria-labelledby="irreparablesModalLabel"
-                    aria-hidden="true">
-                    <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
-                            <div class="modal-header bg-gradient-primary">
-                                <h5 class="modal-title text-white" id="irreparablesModalLabel">Tickets: POS Irreparables
+                            <div class="modal-header bg-gradient-info text-white">
+                                <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Ticket:
+                                    Detalles
+                                    de los POS Que requieren de Repuestos
                                 </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                    aria-label="Close" id="ModalIrreparablesIcon"></button>
+                                <button type="button" class="btn-close" id="ModalpendiRespIcon"
+                                    data-bs-dismiss="modal" aria-label="Cerrar"></button>
                             </div>
-                            <div class="modal-body" id="irreparablesContent">
-                                <p class="chart-subtitle text-gray-700 mb-4">Listado de tickets de Puntos de Venta (POS)
-                                    clasificados como irreparables.</p>
+                            <div class="modal-body">
+                                <div id="PendienteRespuesModalTicketsContent"></div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                                    id="ModalIrreparablesCerrar">Cerrar</button>
+                                <button type="button" id="ModalPendiRespuu" class="btn btn-secondary"
+                                    data-bs-dismiss="modal">Cerrar</div>
                             </div>
                         </div>
                     </div>
@@ -634,23 +612,23 @@ function mi_navbar()
                     </div>
                 </div>
 
-                <div class="modal fade" id="SendTallerTicketsModal" tabindex="-1"
-                    aria-labelledby="SendTallerTicketsModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-xl">
+                <div class="modal fade" id="IrreparableModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                         <div class="modal-content">
-                            <div class="modal-header bg-gradient-primary">
-                                <h5 class="modal-title text-white" id="SendTallerTicketsModalLabel">Tickets: Enviados a
-                                    Taller</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                    aria-label="Close" id="ModalTallerIcon"></button>
+                            <div class="modal-header bg-gradient-info text-white">
+                                <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Ticket:
+                                    Detalles
+                                    de los POS Irreparables
+                                </h5>
+                                <button type="button" class="btn-close" id="ModalIrreparabltikIcon"
+                                    data-bs-dismiss="modal" aria-label="Cerrar"></button>
                             </div>
-                            <div class="modal-body" id="sendTallerContent">
-                                <p class="chart-subtitle text-gray-700 mb-4">Listado de tickets de Puntos de Venta (POS)
-                                    que han sido enviados al taller para reparación.</p>
+                            <div class="modal-body">
+                                <div id="IrreparableTikModalTicketsContent"></div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                                    id="ModalTallerRegion">Cerrar</button>
+                                <button type="button" id="ModalIrreparableTik" class="btn btn-secondary"
+                                    data-bs-dismiss="modal">Cerrar</buttModalProcessReparacionon>
                             </div>
                         </div>
                     </div>

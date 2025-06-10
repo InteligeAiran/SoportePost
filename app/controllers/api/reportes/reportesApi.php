@@ -157,6 +157,22 @@ class reportes extends Controller {
                     $this->handleGetTicketsReparado();
                 break;
 
+                case 'GetTicketsPendientesPorRepuestos':
+                    $this->handleGetTicketsPendientesPorRepuestos();
+                break;
+
+                case 'getTicketPendienteRepuestoCount':
+                    $this->handlegetTicketPendienteRepuestoCount();
+                break;
+
+                case 'getTicketIrreparablesCount':
+                    $this->handleGetTicketIrreparablesCount();
+                break;
+
+                case 'GetTicketsIrreparables':
+                    $this->handleGetTicketsIrreparables();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -644,5 +660,51 @@ class reportes extends Controller {
         }
     }
 
+    public function handleGetTicketsPendientesPorRepuestos(){
+        $repository = new ReportRepository();
+        $result = $repository->GetTicketsPendientesPorRepuestos();
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'details' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
 
+    public function handlegetTicketPendienteRepuestoCount(){
+        $repository = new ReportRepository();
+        $result = $repository->GetTicketPendienteRepuestoCount();
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'count' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+    public function handleGetTicketIrreparablesCount(){
+        $repository = new ReportRepository();
+        $result = $repository->GetTicketIrreparablesCount();
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'count' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+    public function handleGetTicketsIrreparables(){
+        $repository = new ReportRepository();
+        $result = $repository->GetTicketsIrreparables();
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'details' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
 }

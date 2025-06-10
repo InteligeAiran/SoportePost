@@ -362,4 +362,46 @@ class ReportRepository
             return [];
         }
     }
+
+    public function GetTicketsPendientesPorRepuestos(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketsPendientesPorRepuestos(); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
+    public function GetTicketPendienteRepuestoCount(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketPendienteRepuestoCount(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['get_total_pendiente_repuesto'];
+    }
+
+    public function GetTicketIrreparablesCount(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketIrreparablesCount(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['get_total_irreparable'];
+    }
+
+    public function GetTicketsIrreparables(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketsIrreparables(); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
 }

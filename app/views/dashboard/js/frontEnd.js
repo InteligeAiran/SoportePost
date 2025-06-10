@@ -21,7 +21,10 @@ document.addEventListener("DOMContentLoaded", function () {
   ); // ¡NUEVO MODAL!
 
   const ModalReparacion = document.getElementById("procesoReparacionModal"); // ��NUEVO ELEMENTO!
-  const ModalReparado = document.getElementById("ReparadosModal"); // ��NUEVO ELEMENTO! 
+  const ModalReparado = document.getElementById("ReparadosModal"); // ��NUEVO ELEMENTO!
+  const ModalPendienteRepuesto = document.getElementById("pendienterespuestoModal"); // ��NUEVO ELEMENTO!
+  const ModalTikIrreparable = document.getElementById("IrreparableModal"); // ��NUEVO ELEMENTO!
+
 
   // --- Instancias de Bootstrap Modals (declaradas para ser accesibles globalmente dentro de este scope) ---
   let monthlyTicketsModalInstance = null;
@@ -31,6 +34,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let sendTallerTicketsModalInstance = null; // ¡NUEVA INSTANCIA!
   let ModalProcesoReparacion = null; // ��NUEVO ELEMENTO!
   let ModalReparados = null; // ��NUEVO ELEMENTO!
+  let ModalPendiRepuesto = null; // ��NUEVO ELEMENTO!
+  let ModalIrreparable = null; // ��NUEVO ELEMENTO!
 
   // --- Inicializar las instancias de los modales (UNA SOLA VEZ al cargar la página) ---
   if (monthlyTicketsModalElement) {
@@ -70,6 +75,13 @@ document.addEventListener("DOMContentLoaded", function () {
     ModalReparados = new bootstrap.Modal(ModalReparado);
   }
 
+  if(ModalPendienteRepuesto) {
+    modalPendienteRepa = new bootstrap.Modal(ModalPendienteRepuesto);
+  }
+
+  if(ModalTikIrreparable) {
+    ModalIrreparable = new bootstrap.Modal(ModalTikIrreparable);
+  }
   // --- Event Listeners para ABRIR Modales (desde tarjetas/botones) ---
 
   // 1. Abrir monthlyTicketsModal
@@ -156,6 +168,26 @@ document.addEventListener("DOMContentLoaded", function () {
       event.preventDefault();
       ModalReparados.show();
       loadIndividualReparado(); // Nueva función para cargar detalles del ticket de reparación
+      // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
+    });
+  }
+
+  const OpenModalPendienteRepuesto = document.getElementById("OpenModalPendienteRepuesto");
+  if (OpenModalPendienteRepuesto && modalPendienteRepa) {
+    OpenModalPendienteRepuesto.addEventListener("click", function (event) {
+      event.preventDefault();
+      modalPendienteRepa.show();
+      loadIndividualPendienteRepuesto(); // Nueva función para cargar detalles del ticket de reparación
+      // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
+    });
+  }
+
+  const OpenModalIrreparable = document.getElementById("OpenModalIrreparable");
+  if (OpenModalIrreparable && ModalIrreparable) {
+    OpenModalIrreparable.addEventListener("click", function (event) {
+      event.preventDefault();
+      ModalIrreparable.show();
+      loadIndividualIrreparable(); // Nueva función para cargar detalles del ticket de reparación
       // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
     });
   }
@@ -269,12 +301,51 @@ document.addEventListener("DOMContentLoaded", function () {
       ModalReparados.hide();
     });
   }
-  
+
   if (iconPenReparado && ModalReparados) {
     iconPenReparado.addEventListener("click", function () {
       ModalReparados.hide();
     });
   }
+
+  const cerrarPenPendienteRepuesto = document.getElementById(
+    "ModalPendiRespuu"
+  );
+  const iconPenPendienteRepuesto = document.getElementById(
+    "ModalpendiRespIcon"
+  );
+
+  if(cerrarPenPendienteRepuesto && modalPendienteRepa) {
+    cerrarPenPendienteRepuesto.addEventListener("click", function () {
+      modalPendienteRepa.hide();
+    });
+  }
+
+  if (iconPenPendienteRepuesto && modalPendienteRepa) {
+    iconPenPendienteRepuesto.addEventListener("click", function () {
+      modalPendienteRepa.hide();
+    });
+  }
+
+  const cerrarPenIrreparable = document.getElementById(
+    "ModalIrreparableTik"
+  );
+  const iconPenIrreparable = document.getElementById(
+    "ModalIrreparabltikIcon"
+  );
+
+  if (cerrarPenIrreparable && ModalIrreparable) {
+    cerrarPenIrreparable.addEventListener("click", function () {
+      ModalIrreparable.hide();
+    });
+  }
+
+  if (iconPenIrreparable && ModalIrreparable) {
+    iconPenIrreparable.addEventListener("click", function () {
+      ModalIrreparable.hide();
+    });
+  }
+
   // A. Clics dentro de monthlyTicketsContent
   const monthlyTicketsContent = document.getElementById(
     "monthlyTicketsContent"
@@ -342,6 +413,211 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+function loadIndividualIrreparable(){
+  const contentDiv = document.getElementById("IrreparableTikModalTicketsContent");
+  contentDiv.innerHTML =
+    "<p>Cargando información de los POS Irreparables..</p>"; // Mensaje de carga
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsIrreparables`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+      })
+    .then((data) => {
+      if (data.success) {
+        contentDiv.innerHTML = formatIrreparableTicketsDetails(data.details); // Renderizar los datos
+        } else {
+          contentDiv.innerHTML =
+            "<p>Error al cargar los detalles de Taller: " +
+            (data.message || "Error desconocido") +
+            "</p>";
+        console.error(
+          "Error en los datos de la API para Taller:",
+          data.message
+        );
+         }
+    })
+    .catch((error) => {
+      contentDiv.innerHTML =
+        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
+      console.error("Error fetching taller details:", error);
+    }); 
+}
+
+function formatIrreparableTicketsDetails(details){
+  if (!Array.isArray(details)) {
+    console.error("Expected 'details' to be an array, but received:", details);
+    return "<p>Formato de datos inesperado.</p>";
+  }
+
+  let html = `
+        <h5>POS Irreparables</h5>
+        <div class="ticket-details-list mt-3">
+    `;
+
+  details.forEach((ticket) => {
+    // <-- ¡Corregido aquí! Ahora usa 'details'
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
+
+    html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
+                        
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.date_create_ticket
+                        }</dd> <!-- Usar la variable formateada -->
+                    </dl>
+                </div>
+            </div>
+        `;
+  });
+  return html;
+}
+
+function loadIndividualPendienteRepuesto(){
+  const contentDiv = document.getElementById("PendienteRespuesModalTicketsContent");
+  contentDiv.innerHTML =
+    "<p>Cargando información de los POS Pendiente de Respuesta..</p>"; // Mensaje de carga
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendientesPorRepuestos`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+      })
+    .then((data) => {
+      if (data.success) {
+        contentDiv.innerHTML = formatPendinRespueTicketsDetails(data.details); // Renderizar los datos
+
+      } else {
+        contentDiv.innerHTML =
+          "<p>Error al cargar los detalles de Taller: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error(
+          "Error en los datos de la API para Taller:",
+          data.message
+        );
+      }
+    })
+    .catch((error) => {
+      contentDiv.innerHTML =
+        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
+      console.error("Error fetching taller details:", error);
+    });
+}
+
+function formatPendinRespueTicketsDetails(details){
+  if (!Array.isArray(details)) {
+    console.error("Expected 'details' to be an array, but received:", details);
+    return "<p>Formato de datos inesperado.</p>";
+  }
+
+  let html = `
+        <h5>POS Pendiente Por Repuestos</h5>
+        <div class="ticket-details-list mt-3">
+    `;
+
+  details.forEach((ticket) => {
+    // <-- ¡Corregido aquí! Ahora usa 'details'
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
+
+    html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
+                        
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.date_create_ticket
+                        }</dd> <!-- Usar la variable formateada -->
+                    </dl>
+                </div>
+            </div>
+        `;
+  });
+  return html;
+}
 
 function loadIndividualReparado(){
   const contentDiv = document.getElementById("ReparadoModalTicketsContent");
@@ -428,6 +704,11 @@ if (!Array.isArray(details)) {
                         <dd class="col-sm-8">${
                           ticket.name_accion_ticket || "N/A"
                         }</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
                         
                         <dt class="col-sm-4">Fecha Creación:</dt>
                         <dd class="col-sm-8">${
@@ -498,6 +779,66 @@ function getTicketReparados() {
   };
 
   const datos = "action=getTicketsReparadosCount";
+  xhr.send(datos);
+}
+
+function getTicketPendienteRepuesto() {
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketPendienteRepuestoCount`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          document.getElementById("PendientePorRepuesto").textContent =
+            response.count; // Selecciona por ID
+        } else {
+          console.error("Error:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  const datos = "action=getTicketPendienteRepuestoCount";
+  xhr.send(datos);
+}
+
+function getTicketIrreparables() {
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketIrreparablesCount`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          document.getElementById("CountIrreparable").textContent =
+            response.count; // Selecciona por ID
+        } else {
+          console.error("Error:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  const datos = "action=getTicketIrreparablesCount";
   xhr.send(datos);
 }
 
@@ -586,6 +927,11 @@ function formatProcessReparacionDetails(details) {
                           ticket.name_accion_ticket || "N/A"
                         }</dd>
                         
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
+
                         <dt class="col-sm-4">Fecha Creación:</dt>
                         <dd class="col-sm-8">${
                           ticket.date_create_ticket
@@ -2579,5 +2925,7 @@ document.addEventListener("DOMContentLoaded", function () {
   updateTicketMonthlyPercentageChange();
   getTicketProcessReparacion();
   getTicketReparados();
+  getTicketPendienteRepuesto();
+  getTicketIrreparables();
   // ... (resto de tu código DOMContentLoaded para modals, estadísticas de cards, etc.)
 });
