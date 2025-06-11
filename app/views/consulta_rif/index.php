@@ -227,129 +227,145 @@ function mi_navbar() {}
 
         <!--MODAL FALLA NIVEL 2-->
         <div class="modal" id="miModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"
-            style="background-color: rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px);">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalToggleLabel">Falla Nivel 2</h1>
-                        <button id="cerraModal2" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" style="margin-left: 0;">
-                        <form id="miFormulario" class="row g-3">
-                            <div id="detalle1" class="col-md-6">
-                                <div><br>
-                                    <label for="FallaSelect2" class="form-label">Falla Descrita Por el Cliente</label>
-                                    <div id="FallaSelect2Container">
-                                        <select id="FallaSelect2" name="FallaSelect2" class="form-select">
-                                            <option></option>
-                                        </select>
-                                    </div><br>
-                                </div>
-                                <div style=" display: flex; flex-direction: column;">
-                                    <label id="LabelRifModal2" for="serialInputDetalle1" class="form-label">RIF cliente</label>
-                                    <input type="text" onchange="checkRif()" id="InputRif" class="form-control" placeholder="JV123456789">
-                                    <p style="margin-left: 143%; width: 100%;" id="rifMensaje"></p>
-                                </div>
-                                <div>
-                                    <label id="LabelSerial" class="form-label" for="serialSelect">Seriales de POS:</label>
-                                    <div id="serialSelectContainer">
-                                        <select class="form-select" id="serialSelect" name="serialSelect"></select>
-                                    </div><br>
-                                </div>
-                                <div>
-                                    <label id="LabelCoordinador" class="form-label" for="AsiganrCoordinador">Asignar a Coordinador</label>
-                                    <div id="AsiganrCoordinadorContainer">
-                                        <select id="AsiganrCoordinador" name="AsiganrCoordinador" class="form-select"></select>
-                                    </div><br>
-                                </div>
-                                <div class="contenedor-fechas">
-                                    <div>
-                                        <label class="form-label" id="FechaLast" for="ultimoTicketInput">Fecha del Último Ticket:</label>
-                                        <input class="form-control" type="text" id="ultimateTicketInput" readonly>
-                                        <div style=" margin-left: 5%;" id="resultadoGarantiaReingreso"></div>
-                                    </div><br>
+    style="background-color: rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px);">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalToggleLabel">Falla Nivel 2</h1>
+                <button id="cerraModal2" type="button" class="btn-close" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="margin-left: 0;">
+                <form id="miFormulario" class="row g-3">
+                    <div id="detalle1" class="col-md-6">
+                        <div><br>
+                            <label for="FallaSelect2" class="form-label">Falla Descrita Por el Cliente</label>
+                            <div id="FallaSelect2Container">
+                                <select id="FallaSelect2" name="FallaSelect2" class="form-select">
+                                    <option></option>
+                                </select>
+                            </div><br>
+                        </div>
+                        <div style=" display: flex; flex-direction: column;">
+                            <label id="LabelRifModal2" for="serialInputDetalle1" class="form-label">RIF
+                                cliente</label>
+                            <input type="text" onchange="checkRif()" id="InputRif" class="form-control"
+                                placeholder="JV123456789">
+                            <p style="margin-left: 143%; width: 100%;" id="rifMensaje"></p>
+                        </div>
+                        <div>
+                            <label id="LabelSerial" class="form-label" for="serialSelect">Seriales de POS:</label>
+                            <div id="serialSelectContainer">
+                                <select class="form-select" id="serialSelect" name="serialSelect"></select>
+                            </div><br>
+                        </div>
+                        <div>
+                            <label id="LabelCoordinador" class="form-label" for="AsiganrCoordinador">Asignar a
+                                Coordinador</label>
+                            <div id="AsiganrCoordinadorContainer">
+                                <select id="AsiganrCoordinador" name="AsiganrCoordinador" class="form-select">
+                                    <option></option>
+                                </select>
+                            </div><br>
+                        </div>
+                        <div class="contenedor-fechas">
+                            <div>
+                                <label class="form-label" id="FechaLast" for="ultimoTicketInput">Fecha del Último
+                                    Ticket:</label>
+                                <input class="form-control" type="text" id="ultimateTicketInput" readonly>
+                                <div style=" margin-left: 5%;" id="resultadoGarantiaReingreso"></div>
+                            </div><br>
 
-                                    <div>
-                                        <label class="form-label" id="LabelFechaInst" for="InputFechaInstall">Fecha de Instalaci&oacuten POS:</label>
-                                        <input class="form-control" type="text" id="InputFechaInstall" readonly>
-                                        <div style="margin-left: 31%;" id="resultadoGarantiaInstalacion"></div>
-                                    </div>
-                                </div><br>
-                                <div id="FallaSelectContainer1">
-                                    <select class="form-select" style="margin-left: 116%; width: 172px; display: none;" id="FallaSelectt2" name="FallaSelect1">
-                                        <option value="2">Nivel 2</option>
-                                    </select>
-                                </div>
-                                <br>
-                                <div id="DownloadsBotons">
-                                    <div>
-                                        <div id="botonCargaPDFEnv">
-                                            <button id="DownloadEnvi" class="btn btn-outline-secondary btn-sm">Cargar PDF Envio</button>
-                                            <input class="form-control" id="EnvioInput" type="file" style="display: none; margin-left: 10px;"
-                                                accept="application/pdf, image/jpeg, image/jpg">
-                                            <div id="anticipoStatus"></div>
-                                        </div>
-                                    </div><br>
-                                    <div>
-                                        <div style="display: flex; align-items: center; margin-bottom: 6%;">
-                                            <button id="DownloadExo" class="btn btn-outline-secondary btn-sm">Cargar Exoneracion</button>
-                                            <input class="form-control" id="ExoneracionInput" type="file"
-                                                style="display: none; margin-left: 10px;"
-                                                accept="application/pdf, image/jpeg, image/jpg">
-                                            <div id="exoneracionStatus"></div>
-                                        </div>
-                                    </div><br>
-                                    <div>
-                                        <div style="display: flex; align-items: center; margin-bottom: 2%;">
-                                            <button class="form-control" id="DownloadAntici" class="btn btn-outline-secondary btn-sm">Cargar PDF Anticipo</button>
-                                            <input id="AnticipoInput" type="file" style="display: none; margin-left: 10px;"
-                                                accept="application/pdf, image/jpeg, image/jpg">
-                                            <div id="envioStatus"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="RightSelects">
-                                    <!--PENDIENTE <div>
-                                        <label class="form-label" for="selectAdicional1">Opción 1:</label>
-                                        <select class="form control" name="coord_ejec[]" id="coord_ejec" multiple="multiple" >
-                                        </select>
-                                    </div> -->
-                                    <!-- <div>
-                                        <label class="form-label" for="selectAdicional2">Opción 2:</label>
-                                        <select class="form-select" id="selectAdicional2" name="selectAdicional2">
-                                            <option value="">Seleccionar</option>
-                                            <option value="valorA">Valor A</option>
-                                            <option value="valorB">Valor B</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="form-label" for="selectAdicional3">Opción 3:</label>
-                                        <select class="form-select" id="selectAdicional3" name="selectAdicional3">
-                                            <option value="">Seleccionar</option>
-                                            <option value="itemX">Item X</option>
-                                            <option value="itemY">Item Y</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="form-label" for="selectAdicional4">Opción 4:</label>
-                                        <select class="form-select" id="selectAdicional4" name="selectAdicional4">
-                                            <option value="">Seleccionar</option>
-                                            <option value="uno">Uno</option>
-                                            <option value="dos">Dos</option>
-                                        </select>
-                                    </div> -->
-                                </div>
-                                <input type="hidden" id="id_user" name="userId" value=<?php echo $_SESSION['id_user'] ?>>
+                            <div>
+                                <label class="form-label" id="LabelFechaInst" for="InputFechaInstall">Fecha de
+                                    Instalaci&oacuten POS:</label>
+                                <input class="form-control" type="text" id="InputFechaInstall" readonly>
+                                <div style="margin-left: 31%;" id="resultadoGarantiaInstalacion"></div>
                             </div>
-                        </form>
+                        </div><br>
+                        <div id="FallaSelectContainer1">
+                            <select class="form-select" style="margin-left: 116%; width: 172px; display: none;"
+                                id="FallaSelectt2" name="FallaSelect1">
+                                <option value="2">Nivel 2</option>
+                            </select>
+                        </div>
+                        <br>
+
+                        <div class="mb-3"  style="width: 100%; margin-left: 165%; margin-top: 36%;">
+                            <label class="form-label">¿Deseas cargar los documentos ahora?</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="uploadOption" id="uploadNow"
+                                    value="yes">
+                                <label class="form-check-label" for="uploadNow">Sí</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="uploadOption" id="uploadLater"
+                                    value="no" checked>
+                                <label class="form-check-label" for="uploadLater">No (Pendiente por cargar
+                                    documentos)</label>
+                            </div>
+                        </div>
+
+                        <div id="documentUploadOptions" class="mb-3" style = "margin-left: 270%; width: 83%; margin-top: 12%;">
+                            <label class="form-label">Selecciona los documentos a cargar:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="checkEnvio" value="envio">
+                                <label class="form-check-label" for="checkEnvio">Cargar PDF Envío</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="checkExoneracion"
+                                    value="exoneracion">
+                                <label class="form-check-label" for="checkExoneracion">Cargar Exoneración</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="checkAnticipo" value="anticipo">
+                                <label class="form-check-label" for="checkAnticipo">Cargar PDF Anticipo</label>
+                            </div>
+                        </div>
+
+                        <div id="DownloadsBotons">
+                            <div id="botonCargaPDFEnv" style="display: none;">
+                                <button id="DownloadEnvi" class="btn btn-outline-secondary btn-sm"
+                                    type="button">Cargar PDF Envio</button>
+                                <input class="form-control" id="EnvioInput" type="file"
+                                    style="display: none; margin-left: 10px;"
+                                    accept="application/pdf, image/jpeg, image/jpg">
+                                <div id="envioStatus"></div>
+                            </div><br>
+
+                            <div style="display: flex; align-items: center; margin-bottom: 6%; display: none;"
+                                id="botonCargaExoneracion">
+                                <button id="DownloadExo" class="btn btn-outline-secondary btn-sm"
+                                    type="button">Cargar Exoneracion</button>
+                                <input class="form-control" id="ExoneracionInput" type="file"
+                                    style="display: none; margin-left: 10px;"
+                                    accept="application/pdf, image/jpeg, image/jpg">
+                                <div id="exoneracionStatus"></div>
+                            </div><br>
+
+                            <div style="display: flex; align-items: center; margin-bottom: 2%; display: none;"
+                                id="botonCargaAnticipo">
+                                <button class="form-control" id="DownloadAntici" class="btn btn-outline-secondary btn-sm"
+                                    type="button">Cargar PDF Anticipo</button>
+                                <input id="AnticipoInput" type="file" style="display: none; margin-left: 10px;"
+                                    accept="application/pdf, image/jpeg, image/jpg">
+                                <div id="anticipoStatus"></div>
+                            </div>
+                        </div>
+                        <div id="RightSelects">
+                            </div>
+                        <input type="hidden" id="id_user" name="userId" value=<?php echo $_SESSION['id_user'] ?>>
                     </div>
-                    <div class="modal-footer">
-                        <button id="SendForm2" class="btn btn-primary">Guardar</button>
-                        <button id="buttonCerrar2" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="SendForm2" class="btn btn-primary">Guardar</button>
+                <button id="buttonCerrar2" type="button" class="btn btn-secondary"
+                    data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
+    </div>
+</div>
         <!--END MODAL FALLA NIVEL 2-->
 
         <!--MODAL FALLA NIVEL 1-->
@@ -527,9 +543,6 @@ function mi_navbar() {}
 
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
-
-
-
 
         <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
 

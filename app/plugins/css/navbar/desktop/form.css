@@ -564,7 +564,9 @@
 
     #DownloadsBotons {
         margin-left: -55%;
-        margin-top: 4%;
+        /*margin-top: 4%;*/
+        margin-top: -111%;
+
     }
 
     #SendForm2 {
