@@ -499,7 +499,7 @@ function formatIrreparableTicketsDetails(details){
                           ticket.name_accion_ticket || "N/A"
                         }</dd>
 
-                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dt class="col-sm-4">Estatus Laboratorio:</dt>
                         <dd class="col-sm-8">${
                           ticket.name_status_lab || "N/A"
                         }</dd>
@@ -602,7 +602,7 @@ function formatPendinRespueTicketsDetails(details){
                           ticket.name_accion_ticket || "N/A"
                         }</dd>
 
-                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dt class="col-sm-4">Estatus Taller:</dt>
                         <dd class="col-sm-8">${
                           ticket.name_status_lab || "N/A"
                         }</dd>
@@ -705,7 +705,7 @@ if (!Array.isArray(details)) {
                           ticket.name_accion_ticket || "N/A"
                         }</dd>
 
-                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dt class="col-sm-4">Estatus Taller:</dt>
                         <dd class="col-sm-8">${
                           ticket.name_status_lab || "N/A"
                         }</dd>
@@ -927,7 +927,7 @@ function formatProcessReparacionDetails(details) {
                           ticket.name_accion_ticket || "N/A"
                         }</dd>
                         
-                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dt class="col-sm-4">Estatus Taller:</dt>
                         <dd class="col-sm-8">${
                           ticket.name_status_lab || "N/A"
                         }</dd>
@@ -1705,7 +1705,7 @@ function formatOpenDetails(details) {
                           ticket.status_name_ticket || "N/A"
                         }</dd>
 
-                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dt class="col-sm-4">Accion Ticket:</dt>
                         <dd class="col-sm-8">${
                           ticket.name_accion_ticket || "N/A"
                         }</dd>
@@ -2194,7 +2194,7 @@ function formatIndividualRegionTickets(tickets, region) {
                           ticket.status_name_ticket || "N/A"
                         }</dd>
 
-                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dt class="col-sm-4">Accion Ticket:</dt>
                         <dd class="col-sm-8">${
                           ticket.name_accion_ticket || "N/A"
                         }</dd>

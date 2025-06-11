@@ -96,7 +96,7 @@ function getTicketData() {
               $("#btn-asignados").on("click", function () {
                 dataTableInstance
                   .column(4)
-                  .search("Asignado al Tecnico")
+                  .search("Asignado al Técnico")
                   .draw();
               });
 

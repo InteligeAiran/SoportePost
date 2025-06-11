@@ -15,6 +15,8 @@ error_reporting(E_ALL);
 use App\Repositories\technicalConsultionRepository;
 use Controller;
 use DatabaseCon;
+use DateTime;
+use DateInterval;
 
 class Consulta extends Controller {
     private $db;
@@ -332,30 +334,92 @@ class Consulta extends Controller {
     }
 
     public function handleSaveFalla1(){
-        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
-        $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
-        $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
-        $falla = isset($_POST['falla']) ? $_POST['falla'] : '';
-        $nivelFalla = isset($_POST['nivelFalla']) ? $_POST['nivelFalla'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+    $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
+    $rif = isset($_POST['rif']) ? $_POST['rif'] : ''; // RIF del nuevo ticket que se intenta crear
+    $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
+    $falla_id = isset($_POST['falla']) ? $_POST['falla'] : '';
+    $nivelFalla_id = isset($_POST['nivelFalla']) ? $_POST['nivelFalla'] : '';
+    $falla_text = isset($_POST['falla_text']) ? $_POST['falla_text'] : '';
+    $nivelFalla_text = isset($_POST['nivelFalla_text']) ? $_POST['nivelFalla_text'] : '';
+
+    $repository = new technicalConsultionRepository();
+
+    // --- LÓGICA DE VALIDACIÓN DE TIEMPO ---
+    $lastTicketInfo = $repository->getLastUserTicketInfo($id_user); // Usamos tu nuevo método aquí
+
+    if ($lastTicketInfo) {
+        $lastTicketDateTime = $lastTicketInfo['date_create_ticket']; // Ya es un objeto DateTime
+        $lastTicketRif = $lastTicketInfo['rif_last_ticket']; // El RIF del último ticket
+        $currentDateTime = new DateTime(); // Fecha y hora actual (ej: 2025-06-11 11:47:02 AM)
+
+        // Ajusta la zona horaria si es necesario. Si tu DB guarda en UTC, puedes hacer:
+        // $currentDateTime->setTimezone(new DateTimeZone('UTC'));
+
+        $interval = $currentDateTime->diff($lastTicketDateTime);
+        // Calcula los minutos totales
+        $minutesPassed = $interval->i + ($interval->h * 60) + ($interval->days * 24 * 60);
+
+        // Define los límites de tiempo en minutos
+        $tiempoLimiteMismoCliente = 10; // 10 minutos
+        $tiempoLimiteDiferenteCliente = 5; // 5 minutos
+
+        if ($rif === $lastTicketRif) {
+            // Es la misma institución (mismo RIF)
+            if ($minutesPassed < $tiempoLimiteMismoCliente) {
+                $this->response([
+                    'success' => false,
+                    'message' => "Debes esperar " . ($tiempoLimiteMismoCliente - $minutesPassed) . " minutos para crear otro ticket para el misma cliente."
+                ], 429);
+                return;
+            }
+        } else {
+            // Es para un cliente diferente
+            if ($minutesPassed < $tiempoLimiteDiferenteCliente) {
+                 $this->response([
+                    'success' => false,
+                    'message' => "Debes esperar " . ($tiempoLimiteDiferenteCliente - $minutesPassed) . " minutos para crear otro ticket para un cliente diferente."
+                ], 429);
+                return;
+            }
+        }
+    }
+    // --- FIN LÓGICA DE VALIDACIÓN DE TIEMPO ---
+
+
+    // Si la validación pasa o no hay tickets anteriores, continuamos con la creación
+    if($serial != '' && $falla_id != '' && $nivelFalla_id != '' && $id_user != '' && $rif != ''){
         $hoy = date('dmy');
         $fecha_para_db = date('Y-m-d');
         $resultado = $repository->GetTotalTickets($fecha_para_db);
         $totaltickets = $resultado + 1;
         $paddedTicketNumber = sprintf("%04d", $totaltickets);
-        $Nr_ticket = $hoy. $paddedTicketNumber;
-        //var_dump($id_user, $serial, $falla, $nivelFalla);
-        if($serial != '' && $falla != '' && $nivelFalla != '' && $id_user != '' && $rif != ''){
-            $result = $repository->SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket);
-            if ($result) {
-                $this->response(['success' => true, 'message' => 'Se guardaron los datos del Ticket correctamente.'], 200); // Código de estado 200 OK por defecto
-            } else {
-                $this->response(['success' => false, 'message' => 'Error al guardar los datos de falla.'], 500); // Código de estado 500 Internal Server Error
-            }
-        } else{
-            $this->response(['success'=> false, 'message'=> 'Hay un campo vacio.'], 400); // Código de estado 400 Bad Request
+        $Nr_ticket = $hoy . $paddedTicketNumber;
+
+        $result = $repository->SaveDataFalla($serial, $falla_id, $nivelFalla_id, $id_user, $rif, $Nr_ticket);
+        
+        if ($result) {
+            // Devolver los datos incluyendo los textos para el modal del frontend
+            $this->response([
+                'success' => true,
+                'message' => 'Se guardaron los datos del Ticket correctamente.',
+                'ticket_data' => [
+                    'Nr_ticket' => $Nr_ticket,
+                    'serial' => $serial,
+                    'falla' => $falla_id,
+                    'falla_text' => $falla_text,
+                    'nivelFalla' => $nivelFalla_id,
+                    'nivelFalla_text' => $nivelFalla_text,
+                    'rif' => $rif,
+                    'id_user' => $id_user
+                ]
+            ], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al guardar los datos de falla.'], 500);
         }
+    } else {
+        $this->response(['success'=> false, 'message'=> 'Hay un campo vacio.'], 400);
     }
+}
 
     public function handleSaveFalla2(){
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';

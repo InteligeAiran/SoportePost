@@ -2,6 +2,7 @@
 namespace App\Repositories; // Usar namespaces para organizar tus clases
 require_once __DIR__. '/../models/consulta_rifModel.php'; // Asegúrate de que el modelo de usuario esté incluido
 use consulta_rifModel; // Asegúrate de que tu modelo de usuario exista
+use \DateTime;
 session_start(); // Inicia la sesión
 class TechnicalConsultionRepository
 {
@@ -304,6 +305,17 @@ class TechnicalConsultionRepository
     public function UpdateDomiciliacionStatus($id_new_status, $id_ticket, $id_user){
         $result = $this->model->UpdateStatusDomiciliacion($id_new_status,$id_ticket, $id_user);
         return $result;
+    }
+
+    public function getLastUserTicketInfo($id_user){
+        $result = $this->model->GetLastUserTicketInfo($id_user);
+        if ($result) {
+            return [
+                'date_create_ticket' => new DateTime($result['row']['date_create_ticket']), // Convertir a objeto DateTime
+                'rif_last_ticket' => $result['row']['rif']
+            ];
+        }
+        return null;
     }
 }
 ?>

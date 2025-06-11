@@ -814,4 +814,15 @@ class consulta_rifModel extends Model
             // Handle exception
         }
     }
+
+    public function GetLastUserTicketInfo($id_user){
+        try{
+            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user); // Assuming '$this->db' is now a valid PgSql\Connection
+            $sql = "SELECT date_create_ticket, rif FROM GetLastTicketDataForUser(".$escaped_id_user.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
