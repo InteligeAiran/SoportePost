@@ -74,7 +74,7 @@ class UserRepository
 
     public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel){
 
-        $defaul_pass = 123456;
+        $defaul_pass = 1234567;
         $encry_passw = sha1(md5($defaul_pass));
 
         $result = $this->model->Guardar_Usuario($id_user, $nombreusers, $apellidousers, $encry_passw, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel);

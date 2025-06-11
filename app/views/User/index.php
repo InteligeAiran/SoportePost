@@ -75,13 +75,13 @@ function mi_navbar() {
                                         <th>id</th>
                                         <th>Nombre y Apellido</th>
                                         <th>Usuario</th>
-                                        <th>Cedula</th>
+                                        <th>Cédula</th>
                                         <th>Correo</th>
                                         <th>Estatus</th>
                                         <th>Rol</th>
-                                        <th>Area</th>
-                                        <th>Nivel Tecnico</th>
-                                        <th>Region</th>
+                                        <th>Área</th>
+                                        <th>Nivel Técnico</th>
+                                        <th>Región</th>
                                         <th>Modulos</th>
                                         <th>Acciones</th>
                                     </tr>
@@ -127,54 +127,65 @@ function mi_navbar() {
 
                 <div class="row">
                     <div class="col-md-6">
-                        <label for="">Documentacion</label>
-                        <div class="input-group" style="width: 92%;">
-                          <input name="tipodoc" id="tipodoc" type="text" value="V-" class="form-control" disabled>
+                        <label for="">Cédula</label>
+                        <div class="input-group" style="width: 94%;">
+                        <select class="form-control" id="tipo_doc" name="tipo_doc">
+                            <option value="V">V</option>
+                            <option value="E">E</option>
+                            <option value="J">J</option>
+                        </select>
                           <span class="input-group-addon"></span>
                           <input style="width: 70%;" class="form-control" type="text" name="documento" id="documento"  maxlength="9" onkeypress="return soloNumeros(event)" >
                         </div>
                     </div>
-                      <div class="col-md-6">
+                    <div class="col-md-6">
                         <label for="usuario">Usuario:</label>
                         <input type="text" id="usuario" class="form-control" name="usuario" disabled onchange="nameUsuario()" style="text-transform:uppercase; color:#000000;" onkeyup="javascript:this.value=this.value.toUpperCase();">  
 
                         <div id="usuario-status" class="mt-1"></div>
                         <br>
-                      </div>
+                    </div>
+  
                 </div>  
 
                 <div class="row">
-                      
+                    <div class="col-md-6">
+                        <label for="apellido">Clave:</label>
+                        <input type="text" id="apellidouser" class="form-control" name="apellidouser" value="1234567" disabled>
+                    </div>
+
                       <div class="col-md-6">
                         <label for="email">Correo:</label>
                             <input type="text" id="email" class="form-control" name="email" onchange="validarEmail(this)">
                             <span class="alert-danger" id="resultcorreo"></span>
                       </div>
-                      <div class="col-md-6">
-                        <label for="area">Area:</label>
+                      
+                </div>    
+                <br>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="area">Área:</label>
                         <div id="AreaUsersContainer">
                             <select id="areausers" name="areausers"></select>
                             <p id="rifMensaje1"></p>
                         </div>
                       </div>
-                </div>    
-                <br>
-                <div class="row">
                       <div class="col-md-6">
-                        <label for="apellido">Region:</label>
+                        <label for="apellido">Región:</label>
                        <div id="TipoUsersContainer">
                             <select id="regionusers" name="regionusers"></select>
                         </div>
                       </div>
-                      <div class="col-md-6">
+                      
+                </div>  
+                <br> 
+                <div class="row">
+                    <div class="col-md-6">
                         <label for="apellido">Tipo Usuario:</label>
                        <div id="TipoUsersContainer">
                             <select id="tipousers" name="tipousers" onchange="levelTecnico()"></select>
                         </div>
                       </div>
-                </div>  
-                <br> 
-                <div class="row">
                       <div class="col-md-6" id="nivel" style="display: none;">
                         <label for="apellido">Nivel Técnico:</label>
                        <div id="TipoUsersContainer">
@@ -186,7 +197,7 @@ function mi_navbar() {
                         </div>
                       </div>
                       <input name="id_user" id="id_user" type="hidden" value="<?php echo $_SESSION['id_user']?>">
-                </div>  
+                </div> 
             </div> 
           </div>   
           <div class="modal-footer">

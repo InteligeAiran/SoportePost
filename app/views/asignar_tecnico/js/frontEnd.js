@@ -837,7 +837,7 @@ function AssignTicket() {
             willClose: () => {
               setTimeout(() => {
                 location.reload(); // Recarga la página después del temporizador
-              }, 1000);
+              }, 3000);
             },
           });
           document.getElementById("idSelectionTec").value = "";

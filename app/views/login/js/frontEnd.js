@@ -342,7 +342,7 @@ function SendEmail() {
                     title: 'Se ha enviado la nueva contraseña con éxito. Verifique su bandeja de entrada.',
                     text: response.message, // Muestra el mensaje específico del backend
                     color: 'black',
-                    timer: 3500, // Cierra el modal después de 2.5 segundos (2500 ms)
+                    timer: 5000, // Cierra el modal después de 2.5 segundos (2500 ms)
                     timerProgressBar: true, // Opcional: muestra una barra de progreso del tiempo
                     didOpen: () => {
                      Swal.showLoading();
@@ -350,7 +350,7 @@ function SendEmail() {
                     willClose: () => {
                         setTimeout(() => {
                             location.reload(); // Recarga la página después del temporizador
-                        }, 2500); // Espera 2.5 segundos (igual que el temporizador)
+                        }, 5000); // Espera 2.5 segundos (igual que el temporizador)
                     }
                 });
                 document.getElementById('modal').style.display = 'none'; // Cierra el modal

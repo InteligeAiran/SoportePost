@@ -43,9 +43,9 @@ class emailModel extends Model{
         }
     }
 
-    public function ChangePassForCode($email, $codigo){
+    public function ChangePassForCode($email, $encry_passw){
         try{
-            $escaped_codigo = pg_escape_literal($this->db->getConnection(), $codigo);
+            $escaped_codigo = pg_escape_literal($this->db->getConnection(), $encry_passw);
             $escaped_email = pg_escape_literal($this->db->getConnection(), $email); 
             $sql = "CALL update_user_password_by_email(".$escaped_email.", ".$escaped_codigo.");";
             //var_dump($sql);
