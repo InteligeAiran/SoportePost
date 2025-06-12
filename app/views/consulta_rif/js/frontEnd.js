@@ -1176,7 +1176,14 @@ function UpdateGuarantees() {
         idStatusPayment = 11; // Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)
       }
       // Si solo se marcó y/o cargó el PDF de Envío
-      else if (!checkEnvio.checked && archivoAnticipo && !checkExoneracion.checked && !archivoExoneracion && checkAnticipo.checked && !archivoEnvio) {
+      else if (
+        !checkEnvio.checked &&
+        archivoAnticipo &&
+        !checkExoneracion.checked &&
+        !archivoExoneracion &&
+        checkAnticipo.checked &&
+        !archivoEnvio
+      ) {
         idStatusPayment = 11; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
       }
       // Caso por defecto si se eligió "Sí" pero no se cumple ninguna de las condiciones anteriores
@@ -1326,7 +1333,7 @@ document
     const archivoAnticipo = inputAnticipo.files[0];
     const inputAnticipo1 = document.getElementById("DownloadAntici"); // El botón
 
-    if (inputAnticipo1.style.display !== "none" && !archivoAnticipo) {
+    /*if (inputAnticipo1.style.display !== "none" && !archivoAnticipo) {
       Swal.fire({
         icon: "warning",
         title: "Campo requerido",
@@ -1334,7 +1341,7 @@ document
         color: "black",
       });
       return; // Importante: Detener la ejecución si la validación falla
-    }
+    }*/
 
     // Puedes agregar aquí validación de tamaño para el archivo de anticipo si es necesario
 
@@ -1346,7 +1353,8 @@ function SendDataFailure2(idStatusPayment) {
   // AHORA: Obtener el valor (ID) y el texto de la falla
   const fallaSelect = document.getElementById("FallaSelect2");
   const descrpFailure_id = fallaSelect.value; // El valor (ID) de la falla
-  const descrpFailure_text =fallaSelect.options[fallaSelect.selectedIndex].text; // El TEXTO visible de la falla
+  const descrpFailure_text =
+    fallaSelect.options[fallaSelect.selectedIndex].text; // El TEXTO visible de la falla
 
   const id_user = document.getElementById("id_user").value;
   const rif = document.getElementById("InputRif").value;
@@ -1354,15 +1362,16 @@ function SendDataFailure2(idStatusPayment) {
   const selectElement = document.getElementById("AsiganrCoordinador");
   const coordinador = selectElement.value;
 
-// Finalmente, para obtener el texto de la opción seleccionada:
-// selectElement.options es una colección de todas las opciones.
-// selectElement.selectedIndex es el índice de la opción actualmente seleccionada.
-const coordinadorNombre = selectElement.options[selectElement.selectedIndex].text;
-
+  // Finalmente, para obtener el texto de la opción seleccionada:
+  // selectElement.options es una colección de todas las opciones.
+  // selectElement.selectedIndex es el índice de la opción actualmente seleccionada.
+  const coordinadorNombre =
+    selectElement.options[selectElement.selectedIndex].text;
 
   const nivelFallaSelect = document.getElementById("FallaSelectt2");
   const nivelFallaValue = nivelFallaSelect.value; // El ID del nivel de falla
-  const nivelFallaText = nivelFallaSelect.options[nivelFallaSelect.selectedIndex].text; // El texto del nivel de falla
+  const nivelFallaText =
+    nivelFallaSelect.options[nivelFallaSelect.selectedIndex].text; // El texto del nivel de falla
 
   const uploadNowRadio = document.getElementById("uploadNow");
 
@@ -1471,7 +1480,6 @@ const coordinadorNombre = selectElement.options[selectElement.selectedIndex].tex
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          console.log("Respuesta del backend:", response);
           // Lógica del correo para Nivel 2
           const xhrEmail = new XMLHttpRequest();
           xhrEmail.open(
@@ -1486,7 +1494,6 @@ const coordinadorNombre = selectElement.options[selectElement.selectedIndex].tex
           xhrEmail.onload = function () {
             if (xhrEmail.status === 200) {
               const responseEmail = JSON.parse(xhrEmail.responseText);
-              console.log("Respuesta del envío de correo:", responseEmail);
             } else {
               console.error(
                 "Error al solicitar el envío de correo:",
@@ -1549,11 +1556,13 @@ const coordinadorNombre = selectElement.options[selectElement.selectedIndex].tex
         <strong>🏢 RIF Cliente:</strong> ${ticketData.rif || "N/A"}
     </p>
     <p style="margin-bottom: 8px;">
-        <strong>👤 ID Usuario:</strong> ${ticketData.id_user || "N/A"}
+        <strong>👤 Usuario Gesti&oacuten:</strong> ${
+          ticketData.user_gestion || "N/A"
+        }
     </p>
     <p style="margin-bottom: 8px;">
         <strong>🧑‍💻 Coordinador Asignado:</strong> ${
-          ticketData.coordinadorNombre || "N/A"
+          ticketData.coordinador || "N/A"
         }
     </p>
     <strong>
@@ -1826,7 +1835,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function SendDataFailure1() {
   // Obtener el valor del botón "Nivel 1"
-  const nivelFalla = document.getElementById("FallaSelectt1").value;
+  const nivelFallaSe = document.getElementById("FallaSelectt1");
+  const nivelFalla = nivelFallaSe.value;
+  const nivelFallaText = nivelFallaSe.options[nivelFallaSe.selectedIndex].text; // Captura el texto
+
+
   const serial = document.getElementById("serialSelect1").value; // Usar serialSelect
   const falla = document.getElementById("FallaSelect1").value;
   const id_user = document.getElementById("id_user").value;
@@ -1899,6 +1912,11 @@ function SendDataFailure1() {
                                         }</span>
                                     </p>
                                     <p style="margin-bottom: 8px;">
+                                        <strong>👤 Usuario Gesti&oacuten:</strong> ${
+                                          ticketData.user_gestion || "N/A"
+                                        }
+                                    </p>
+                                    <p style="margin-bottom: 8px;">
                                         <strong>⚙️ Serial del Equipo:</strong> ${
                                           ticketData.serial
                                         }
@@ -1910,7 +1928,7 @@ function SendDataFailure1() {
                                     </p>
                                     <p style="margin-bottom: 8px;">
                                         <strong>📊 Nivel de Falla:</strong> ${
-                                          ticketData.nivelFalla
+                                          ticketData.nivelFalla_text
                                         }
                                     </p>
                                     <p style="margin-bottom: 8px;">
@@ -2037,13 +2055,7 @@ function SendDataFailure1() {
     });
   };
   const rif = document.getElementById("InputRif1").value;
-  const datos = `action=SaveDataFalla&serial=${encodeURIComponent(
-    serial
-  )}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(
-    nivelFalla
-  )}&id_user=${encodeURIComponent(id_user)}&rif=${encodeURIComponent(
-    rif
-  )}&falla_text=${encodeURIComponent(fallaText)}`;
+  const datos = `action=SaveDataFalla&serial=${encodeURIComponent(serial)}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(nivelFalla)}&id_user=${encodeURIComponent(id_user)}&rif=${encodeURIComponent(rif)}&falla_text=${encodeURIComponent(fallaText)}&nivelFalla_text=${encodeURIComponent(nivelFallaText)}`;
   xhr.send(datos);
 }
 

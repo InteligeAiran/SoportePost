@@ -414,7 +414,7 @@ class Consulta extends Controller
                         'nivelFalla' => $nivelFalla_id,
                         'nivelFalla_text' => $nivelFalla_text,
                         'rif' => $rif,
-                        'id_user' => $id_user
+                        'user_gestion' => $_SESSION['nombres'] . ' ' . $_SESSION['apellidos']
                     ]
                 ], 200);
             } else {
@@ -581,7 +581,7 @@ class Consulta extends Controller
                     'falla_text' => $falla_text,
                     'nivelFalla_text' => $nivelFalla_text,
                     'rif' => $rif,
-                    'id_user' => $id_user,
+                    'user_gestion' => $_SESSION['nombres'] . ' ' . $_SESSION['apellidos'],
                     'coordinador' => $coordinador_nombre
                 ]
             ], 200);
