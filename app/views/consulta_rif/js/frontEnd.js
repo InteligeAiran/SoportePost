@@ -1839,7 +1839,6 @@ function SendDataFailure1() {
   const nivelFalla = nivelFallaSe.value;
   const nivelFallaText = nivelFallaSe.options[nivelFallaSe.selectedIndex].text; // Captura el texto
 
-
   const serial = document.getElementById("serialSelect1").value; // Usar serialSelect
   const falla = document.getElementById("FallaSelect1").value;
   const id_user = document.getElementById("id_user").value;
@@ -2055,7 +2054,15 @@ function SendDataFailure1() {
     });
   };
   const rif = document.getElementById("InputRif1").value;
-  const datos = `action=SaveDataFalla&serial=${encodeURIComponent(serial)}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(nivelFalla)}&id_user=${encodeURIComponent(id_user)}&rif=${encodeURIComponent(rif)}&falla_text=${encodeURIComponent(fallaText)}&nivelFalla_text=${encodeURIComponent(nivelFallaText)}`;
+  const datos = `action=SaveDataFalla&serial=${encodeURIComponent(
+    serial
+  )}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(
+    nivelFalla
+  )}&id_user=${encodeURIComponent(id_user)}&rif=${encodeURIComponent(
+    rif
+  )}&falla_text=${encodeURIComponent(
+    fallaText
+  )}&nivelFalla_text=${encodeURIComponent(nivelFallaText)}`;
   xhr.send(datos);
 }
 
@@ -2918,7 +2925,7 @@ function fetchSerialData(serial, rif) {
               td.setAttribute("data-column-name", formattedKey);
 
               // Si la clave es 'Estatus_pos' y el valor es 'Equipo Desafiliado' o 'Equipo Inactivo'
-              if (key === "Estatus_pos") {
+              if (key === "Estatus_Pos") {
                 globalEstatusPos = serialData[key]; // ¡Aquí se asigna el valor!
 
                 // El resto de tu lógica para poner la fila en rojo
