@@ -475,7 +475,7 @@ class users extends Controller {
 
         $repository = new   UserRepository(); // Inicializa el repositorio
         $result = $repository->getModuloUsers($id_usuario);
-
+        
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'users' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores

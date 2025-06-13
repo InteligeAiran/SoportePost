@@ -872,8 +872,8 @@ function EditarUsuarios() {
 }
 
 function VerModulos(idusuario) {
-  const id_usuario = idusuario;
-
+  const id_usuario  = idusuario;
+  const id_usuario1 = document.getElementById('id_user').value; 
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/ModuloUsers`);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -930,7 +930,7 @@ function VerModulos(idusuario) {
             modulosCell.appendChild(idCheck);
 
             idCheck.onclick = function () {
-              const iusuario = idusuario;
+              const iusuario = id_usuario1;
               const idmodulo = data.idmodulo;
               const idcheck = data.estatus;
 

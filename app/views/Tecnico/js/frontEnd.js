@@ -173,7 +173,7 @@ function getTicketData() {
                         "zeroRecords": "No se encontraron resultados para la búsqueda",
                         "info": "(_PAGE_/_PAGES_) _TOTAL_ Registros",
                         "infoEmpty": "No hay datos disponibles",
-                        "infoFiltered": "(Filtrado de _MAX_ datos disponibles)",
+                        "infoFiltered": " de _MAX_ Disponibles",
                         "search": "Buscar:",
                         "loadingRecords": "Cargando...",
                         "processing": "Procesando...",
@@ -181,9 +181,53 @@ function getTicketData() {
                             "first": "Primero", "last": "Último", "next": "Siguiente", "previous": "Anterior"
                         }
                     },
-                    initComplete: function(settings, json) {
-                        $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+
+                    dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+            initComplete: function (settings, json) {
+                const buttonsHtml = `
+                    <button id="btn-asignados" class="btn btn-primary me-2">Asignados</button>
+                    <button id="btn-por-asignar" class="btn btn-secondary">Enviados Taller</button>
+                `;
+                $(".dt-buttons-container").html(buttonsHtml);
+
+                // ************* INICIO CAMBIOS PARA LOS BOTONES *************
+
+                // Función para manejar la selección de botones
+                function setActiveButton(activeButtonId) {
+                    // Remover clases de los botones y añadir las clases correctas
+                    $("#btn-asignados").removeClass("btn-primary btn-secondary");
+                    $("#btn-por-asignar").removeClass("btn-primary btn-secondary");
+
+                    if (activeButtonId === "btn-asignados") {
+                        $("#btn-asignados").addClass("btn-primary");
+                        $("#btn-por-asignar").addClass("btn-secondary");
+                    } else {
+                        $("#btn-asignados").addClass("btn-secondary");
+                        $("#btn-por-asignar").addClass("btn-primary");
                     }
+                }
+
+                // Inicialmente, establecer "Asignados" como activo (porque el filtro por defecto lo será)
+                setActiveButton("btn-asignados");
+
+                $("#btn-asignados").on("click", function () {
+                    dataTableInstance
+                        .column(5)
+                        .search("Asignado al Técnico")
+                        .draw();
+                    setActiveButton("btn-asignados"); // Llamar a la función para actualizar el estilo
+                });
+
+                $("#btn-por-asignar").on("click", function () {
+                    dataTableInstance
+                        .column(5)
+                        .search("Enviado a taller")
+                        .draw();
+                    setActiveButton("btn-por-asignar"); // Llamar a la función para actualizar el estilo
+                });
+                // ************* FIN CAMBIOS PARA LOS BOTONES *************
+            },
+                
                 });
 
                 if ($.fn.tooltip) {

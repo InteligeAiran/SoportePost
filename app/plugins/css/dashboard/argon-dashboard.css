@@ -9714,7 +9714,7 @@ fieldset:disabled .btn {
 
 .my-3 {
   margin-top: 1rem !important;
-  margin-bottom: 1rem !important;
+  /*margin-bottom: 1rem !important;*/
 }
 
 .my-4 {
@@ -22474,7 +22474,7 @@ fieldset:disabled .btn {
 
   .dropdown .dropdown-menu:before {
     font-family: "FontAwesome";
-    content: "\f0d8";
+    /*content: "\f0d8";*/
     position: absolute;
     top: 0;
     left: 28px;
@@ -22555,7 +22555,7 @@ fieldset:disabled .btn {
 
   .dropdown .dropdown-menu:before {
     font-family: "FontAwesome";
-    content: "\f0d8";
+    /*content: "\f0d8";*/
     position: absolute;
     top: 0;
     left: 28px;
@@ -23435,7 +23435,7 @@ hr.horizontal.gray-light {
 }
 
 .border-radius-xl {
-  border-radius: 1rem;
+  border-radius: 2rem;
 }
 
 .border-radius-2xl {
@@ -23888,7 +23888,7 @@ hr.horizontal.gray-light {
   top: 0;
   bottom: 0;
   width: 100%;
-  max-width: 15.625rem !important;
+  max-width: 16.625rem !important;
   overflow-y: auto;
   padding: 0;
   box-shadow: none;
@@ -26176,7 +26176,7 @@ h5,
 
 h6,
 .h6 {
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: 1.625;
 }
 

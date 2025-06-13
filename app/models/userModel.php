@@ -324,7 +324,6 @@ class userModel extends Model{
             $escaped_id_usuario = pg_escape_literal($this->db->getConnection(), $id_usuario); 
 
             $sql = "SELECT * FROM sp_vermoduloactivo(".$escaped_id_usuario.")";
-            //echo $sql;
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

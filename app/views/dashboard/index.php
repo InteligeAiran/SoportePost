@@ -53,7 +53,7 @@ function mi_navbar(){
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
-                                            <p class="card-category">Tickets Abiertos</p>
+                                            <p class="card-category" style="color: black">Tickets Abiertos</p>
                                             <h5 class="card-title font-weight-bolder" id="TicketsAbiertos"></h5>
                                             <p class="card-text mb-0">
                                                 <span class="text-danger font-weight-bolder"
@@ -104,18 +104,16 @@ function mi_navbar(){
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
-                                            <p class="card-category">TICKETS EN PROCESO</p>
+                                            <p class="card-category" style="color: black">TICKETS EN PROCESO</p>
                                             <h5 class="card-title" id="ProcessTicketNumber"></h5>
                                             <p class="card-text">
                                                 <span class="text font-weight-bolder" id="Process_Tickets"></span>Del total de tickets
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
-                                            <div class="icon-shape bg-gradient-danger"> <svg
-                                                    xmlns="http://www.w3.org/2000/svg" width="30" height="30"
-                                                    fill="white" class="bi bi-calendar-check-fill" viewBox="0 0 16 16">
-                                                    <path
-                                                        d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2m-5.146-5.146-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708" />
+                                            <div class="icon-shape bg-gradient-secondary"> 
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-hourglass-split" viewBox="0 0 16 16">
+                                                    <path d="M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2zm3 6.35c0 .701-.478 1.236-1.011 1.492A3.5 3.5 0 0 0 4.5 13s.866-1.299 3-1.48zm1 0v3.17c2.134.181 3 1.48 3 1.48a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351z"/>
                                                 </svg>
                                             </div>
                                         </div>
@@ -125,14 +123,13 @@ function mi_navbar(){
                         </div>
                     </div>
 
-
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
                             <div class="card" id="Card-resolve-ticket">
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
-                                            <p class="card-category">Tickets Cerrados</p>
+                                            <p class="card-category" style="color: black">Tickets Cerrados</p>
                                             <h5 id="TicketsResuelto" class="card-title"></h5>
                                             <p class="card-text mb-0">
                                                 <span id="ticketResueltoPercentage"
@@ -183,9 +180,9 @@ function mi_navbar(){
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
-                                            <p class="card-category">Total Tickets</p>
+                                            <p class="card-category" style="color: black">Total Tickets</p>
                                             <h5 id="TotalTicket" class="card-title"></h5>
-                                            <p class="card-text mb-0"><br><br>
+                                            <p class="card-text mb-0"><br><br><br>
                                                 <!--span class="text font-weight-bolder"
                                                     id="totalTicketPercentage"></span>De 100 Mensual-->
                                             </p>
@@ -211,7 +208,7 @@ function mi_navbar(){
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
-                                            <p class="card-category">POS EN TALLER</p>
+                                            <p class="card-category" style="color: black">POS EN TALLER</p>
                                             <h5 class="card-title" id="TotalEnviadoTaller"></h5>
                                             <p class="card-text mb-0">
                                                 <span class="text-percentage" id="PorcentSendToTaller"></span>Del total
@@ -265,11 +262,10 @@ function mi_navbar(){
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
-                                            <p class="card-category">GESTI&OacuteN COMERCIAL</p>
-                                            <h5 class="card-title"></h5>
+                                            <p class="card-category" style="color: black">GESTI&OacuteN COMERCIAL</p>
+                                            <h5 class="card-title">5</h5>
                                             <p class="card-text">
-                                                <span class="text-success-percentage">+5%</span><span
-                                                    class="text-muted">Último mes</span>
+                                                <span class="text-success-percentage">+5.77%</span>Del total de Tickets
                                             </p>
                                         </div>
                                         <div class="icon-on-right">

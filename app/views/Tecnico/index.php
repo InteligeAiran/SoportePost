@@ -94,6 +94,84 @@ function mi_navbar()
             color: #003594; /* Azul suave para el texto al hacer hover, o puedes mantener el gris oscuro si prefieres menos cambio */
             border-color: white; /* Borde un poco más visible al hacer hover */
         }
+
+          #btn-asignados{
+            background-color: #003594;
+            color: #ffffff;
+            border: 1px solid #003594;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+         #btn-por-asignar{
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* CSS para los botones de Asignados/Por Asignar */
+        /* Estilo base para el botón Asignados cuando es el activo */
+        #btn-asignados.btn-primary {
+            background-color: #003594; /* Tu azul fuerte */
+            border-color: #003594;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Asignados cuando es el activo */
+        #btn-asignados.btn-primary:hover,
+        #btn-asignados.btn-primary:focus {
+            background-color: #0045B4; /* Un tono un poco más oscuro o claro al hover */
+            border-color: #0045B4;
+            box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25); /* Sombra de enfoque/hover */
+        }
+
+        /* Estilo para el botón Asignados cuando NO es el activo (es gris) */
+        #btn-asignados.btn-secondary {
+            background-color: #A0A0A0; /* Tu gris sutil */
+            border-color: #A0A0A0;
+            color: #ffffff; /* O un gris oscuro si el fondo es claro */
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Asignados cuando NO es el activo */
+        #btn-asignados.btn-secondary:hover,
+        #btn-asignados.btn-secondary:focus {
+            background-color: #B0B0B0;
+            border-color: #B0B0B0;
+            box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+        }
+
+
+        /* Estilo base para el botón Por Asignar cuando es el activo */
+        #btn-por-asignar.btn-primary {
+            background-color: #003594; /* Tu azul fuerte */
+            border-color: #003594;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Por Asignar cuando es el activo */
+        #btn-por-asignar.btn-primary:hover,
+        #btn-por-asignar.btn-primary:focus {
+            background-color: #0045B4;
+            border-color: #0045B4;
+            box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+        }
+
+        /* Estilo para el botón Por Asignar cuando NO es el activo (es gris) */
+        #btn-por-asignar.btn-secondary {
+            background-color: #A0A0A0;
+            border-color: #A0A0A0;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Por Asignar cuando NO es el activo */
+        #btn-por-asignar.btn-secondary:hover,
+        #btn-por-asignar.btn-secondary:focus {
+            background-color: #B0B0B0;
+            border-color: #B0B0B0;
+            box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+        }
     </style>
     </head>
 
@@ -128,7 +206,7 @@ function mi_navbar()
                                             <div
                                                 class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
                                                 <strong>
-                                                    <h5 class="text-black text-capitalize ps-3">Gestión de Técnico</h5>
+                                                    <h5 class="text-black text-capitalize ps-3">Gestión Técnico</h5>
                                                 </strong>
                                             </div>
                                         </div>
