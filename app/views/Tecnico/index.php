@@ -16,27 +16,64 @@ function mi_navbar()
             <?php echo tituloPagina; ?>
         </title>
 
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
 
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
-
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-
-        <!-- <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/bootstrap1.min.css"> -->
-        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/datatable.css">
-        <!-- <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/bootstrap.min.css"> -->
-        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/jquery.dataTables.min.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
-
-        <!-- Font Awesome Icons -->
-      
-        <!-- CSS Files -->
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
 
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+    <style>
+         #ticket-details-panel table td, table th {
+            white-space: normal !important;
+        }
 
+        #ticket-details-panel table th {
+            font-weight: bold;
+        }
+
+        #tabla-ticket td,
+#tabla-ticket th {
+    white-space: normal; /* Permite que el texto se envuelva en varias líneas */
+    word-wrap: break-word; /* Rompe palabras largas si es necesario */
+    overflow-wrap: break-word; /* Estilo similar a word-wrap, para mayor compatibilidad */
+    vertical-align: middle; /* Alinea el contenido de la celda verticalmente al centro */
+    box-sizing: border-box; /* Asegura que padding y border se incluyan en el ancho/alto */
+}
+
+/* Opcional: Ajusta el tamaño de la fuente para las celdas de datos si el contenido sigue siendo demasiado grande */
+#tabla-ticket td {
+    font-size: 0.85rem; /* Reduce el tamaño de la fuente para que quepa más contenido. Ajusta según sea necesario. */
+}
+
+/* Contenedor flexbox para los botones en la columna "Acciones" */
+/* Esto permite que los botones se organicen y envuelvan a la siguiente línea si no hay espacio */
+#tabla-ticket .acciones-container {
+    display: flex; /* Habilita el modelo de caja flexible */
+    flex-wrap: wrap; /* Permite que los elementos hijos (botones) se envuelvan a la siguiente línea */
+    gap: 5px; /* Crea un espacio de 5px entre los elementos flexibles (botones). Alternativa a ml-2 */
+    justify-content: center; /* Centra los botones horizontalmente dentro de la celda */
+    align-items: center; /* Centra los botones verticalmente */
+    width: 100%; /* Asegura que el contenedor ocupe todo el ancho de la celda */
+}
+
+/* Estilos para los botones dentro del contenedor de acciones */
+#tabla-ticket .acciones-container .btn {
+    white-space: nowrap; /* Evita que el texto de los botones se rompa a la siguiente línea */
+    /* Quita los márgenes de Bootstrap como ml-2 si usas 'gap' en el contenedor */
+    /* margin-left: 0 !important; */
+}
+
+/* Ajusta el tamaño del icono dentro del botón si es necesario */
+#tabla-ticket .acciones-container .btn svg {
+    width: 1rem; /* O el tamaño que consideres adecuado */
+    height: 1rem;
+}
+    </style>
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -54,42 +91,55 @@ function mi_navbar()
                 </svg>
             </button>
         </div>
-        <?php require_once 'app/core/components/navbar/index.php'; mi_navbar(); ?>
+        <?php require_once 'app/core/components/navbar/index.php';
+        mi_navbar(); ?>
 
 
         <main class="main-content position-relative border-radius-lg ">
-            <div class="container-fluid py-4">
-                <div id="Row" class="row mt-4">
-                    <div class="cord">
-                        <div class="card">
-                            <div class="card-header pb-0 p-3">
-                                <div class="col-lg-12 col-md-12 mt-4 mb-4">
-                                    <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                        <strong><h5 class="text-black text-capitalize ps-3">Gestión de Técnico</h5></strong>
+            <div class="container-fluid py-4" style="height: calc(100vh - 80px);">
+                <div class="row h-100">
+                    <div class="col-md-7 h-100 d-flex flex-column">
+                        <div id="Row" class="row mt-4">
+                            <div class="cord">
+                                <div class="card">
+                                    <div class="card-header pb-0 p-3">
+                                        <div class="col-lg-12 col-md-12 mt-4 mb-4">
+                                            <div
+                                                class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
+                                                <strong>
+                                                    <h5 class="text-black text-capitalize ps-3">Gestión de Técnico</h5>
+                                                </strong>
+                                            </div>
+                                        </div>
                                     </div>
+                                   <table id="tabla-ticket"
+                                        class="table table-striped table-bordered table-hover table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">ID ticket</th>
+                                                <th scope="col">RIF</th>
+                                                <th scope="col">Razon Social</th>
+                                                <th scope="col">Fecha Creacion</th>
+                                                <th scope="col">Serial POS</th>
+                                                <th scope="col">Coordinador Gestor</th>
+                                                <th scope="col">Nro Ticket</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="table-group-divider" id="table-ticket-body">
+                                            <tr>
+                                                <td colspan="3">No hay datos</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                                <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col" style="width: 12%;">ID ticket</th>
-                                            <th scope="col" style="width: 12%;">Serial POS</th>
-                                            <th scope="col" style="width: 12%;">Fecha Creacion</th>
-                                            <th scope="col" style="width: 11%;">Coordinador Asignador</th>
-                                            <th scope="col" style="width: 11%;">Accion</th>
-                                            <th scope="col" style="width: 11%;">Falla</th>
-                                            <th scope="col" style="width: 11%;">Proceso</th>
-                                            <th scope="col" style="width: 11%;">Estatus</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="table-group-divider" id="table-ticket-body">
-                                        <tr>
-                                            <td colspan="3">No hay datos</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
                         </div>
+                    </div>
+                    <div class="col-md-5 h-100 d-flex flex-column border-start ps-4">
+                        <h3 class="mb-3">Detalles del Ticket</h3>
+                        <div id="ticket-details-panel" class="flex-grow-1 overflow-auto p-3 bg-light rounded">
+                        <strong><p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p></strong>
                     </div>
                 </div>
             </div>
@@ -115,6 +165,73 @@ function mi_navbar()
             </div>
         </div>
         <!--MODAL PARA SELECCIONAR TECNICO-->
+
+        <!--MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
+            <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel"
+                aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <strong>
+                                <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
+                                    Documento para Ticket: <span id="modalTicketId"></span></h5>
+                            </strong>
+                            <button type="button" id="icon-close" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="uploadForm">
+                                <div class="mb-3">
+                                    <label for="documentFile" class="form-label text-gray-700">Seleccionar Archivo:</label>
+                                    <input class="form-control" type="file" id="documentFile" accept="image/*,application/pdf"
+                                        style="display:block">
+                                    <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
+                                </div>
+                                <div class="mb-3 text-center">
+                                    <img id="imagePreview" class="img-preview" src="#" alt="Previsualización de Imagen">
+                                </div>
+                                <div id="uploadMessage" class="message-box hidden"></div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" id="CerrarBoton"
+                                data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <!-- END MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
+
+        <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
+            <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel"
+                aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                <div class="modal-dialog modal-dialog-centered modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <strong>
+                                <h5 class="modal-title text-lg font-semibold text-gray-800" id="viewDocumentModalLabel">
+                                    Documento para Ticket: <span id="viewModalTicketId"></span></h5>
+                            </strong>
+                            <button type="button" class="btn-close" id="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3 text-center">
+                                <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen"
+                                    style="max-width: 100%; height: auto; display: none;">
+                                <div id="pdfViewViewer"
+                                    style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
+                            </div>
+                            <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" id="modalCerrarshow" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
+    <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
@@ -205,23 +322,21 @@ function mi_navbar()
                 </div>
             </div>
         </div>
-
+        
         <!-- Github buttons -->
         <script async defer src="https://buttons.github.io/buttons.js"></script>
         <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
+        <!-- Bootstrap core JavaScript-->
+        <!--JQUERY-->
 
-        <!-- Bootstrap-->
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
 
-        <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-        <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.js"></script>
-
-        <!--JQUERY-->
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
         <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
+
 
         <!--   Core JS Files   -->
         <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
@@ -229,31 +344,27 @@ function mi_navbar()
         <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
         <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
 
-        <script src = "<?php echo APP;?>DataTable/jquery.dataTables.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/dataTables.buttons.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.print.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.flash.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/pdfmake.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/jszip.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/vfs_fonts.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.html5.min.js"></script>
+        <!-- Datatable otro sistema-->
+
+        <script src="<?php echo APP; ?>DataTable/jquery.dataTables.min.js"></script>
+        <script src="<?php echo APP; ?>DataTable/dataTables.buttons.min.js"></script>
+        <script src="<?php echo APP; ?>DataTable/buttons.print.min.js"></script>
+        <script src="<?php echo APP; ?>DataTable/buttons.flash.min.js"></script>
+        <script src="<?php echo APP; ?>DataTable/pdfmake.min.js"></script>
+        <script src="<?php echo APP; ?>DataTable/jszip.min.js"></script>
+        <script src="<?php echo APP; ?>DataTable/vfs_fonts.js"></script>
+        <script src="<?php echo APP; ?>DataTable/buttons.html5.min.js"></script>
 
 
-        <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
-        <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
-        <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
-        <script src = "<?php echo APP;?>js/datatables.js"></script>
+        <script src="<?php echo APP; ?>js/Datatablebuttons5.js"></script>
+        <script src="<?php echo APP; ?>js/Datatablebuttons.min.js"></script>
+        <script src="<?php echo APP; ?>js/Datatablebuttonsprint.min.js"></script>
+        <script src="<?php echo APP; ?>js/datatables.js"></script>
+
 
         <!--  SweetAlert   -->
         <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
         <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
-
-        <!--MASCARAS JQUERY-->
-        <script
-            src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
-
-        <!-- Custom scripts for all pages-->
-        <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
 
         <?php
         if (isset($this->js)) {

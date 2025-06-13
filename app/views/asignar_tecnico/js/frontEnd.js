@@ -191,183 +191,6 @@ function getTicketData() {
   xhr.send(datos);
 }
 
-/*function getTicketData() {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketData`);
-
-    const tbody = document.getElementById('tabla-ticket').getElementsByTagName('tbody')[0];
-
-    // Destruye DataTables si ya está inicializado
-    if ($.fn.DataTable.isDataTable('#tabla-ticket')) {
-        $('#tabla-ticket').DataTable().destroy();
-        tbody.innerHTML = ''; // Limpia el tbody después de destruir DataTables
-    }
-
-    xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                    const TicketData = response.ticket;
-                    const modalElement = document.getElementById('staticBackdrop');
-                    const detailsPanel = document.getElementById('ticket-details-panel'); // Referencia al panel de detalles
-
-                    // Limpiar el panel de detalles al cargar nuevos datos de la tabla
-                    detailsPanel.innerHTML = '<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>';
-
-                    const dataForDataTable = [];
-
-                    TicketData.forEach(data => {
-                        dataForDataTable.push([
-                            data.id_ticket,
-                            data.serial_pos,
-                            data.create_ticket,
-                            data.full_name_tecnico,
-                            data.name_accion_ticket,
-                            data.name_failure,
-                            data.name_process_ticket,
-                            data.name_status_ticket,
-                            // Acciones
-                            `
-                            <button id="myUniqueAssingmentButton"
-                                class="btn btn-sm btn-assign-tech"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                title="Asignar Técnico"
-                                data-ticket-id="${data.id_ticket}"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>
-                            </button>`
-                        ]);
-                    });
-
-                    // Inicialización de DataTables
-                    const dataTableInstance = $('#tabla-ticket').DataTable({
-                        data: dataForDataTable,
-                        scrollX: '200px',
-                        responsive: false,
-                        "pagingType": "simple_numbers",
-                        "lengthMenu": [5],
-                        autoWidth: false,
-                        columns: [
-                            { title: "ID ticket" },
-                            { title: "Serial POS" },
-                            { title: "Fecha Creacion" },
-                            { title: "Usuario Gestion" },
-                            { title: "Accion" },
-                            { title: "Falla" },
-                            { title: "Proceso" },
-                            { title: "Estatus" },
-                            { title: "Acciones", orderable: false }
-                        ],
-                        "language": {
-                            "lengthMenu": "Mostrar _MENU_ registros",
-                            "emptyTable": "No hay datos disponibles en la tabla",
-                            "zeroRecords": "No se encontraron resultados para la búsqueda",
-                            "info": "Mostrando página _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
-                            "infoEmpty": "No hay datos disponibles",
-                            "infoFiltered": "(Filtrado de _MAX_ datos disponibles)",
-                            "search": "Buscar:",
-                            "loadingRecords": "Buscando...",
-                            "processing": "Procesando...",
-                            "paginate": {
-                                "first": "Primero",
-                                "last": "Último",
-                                "next": "Siguiente",
-                                "previous": "Anterior"
-                            }
-                        },
-                        // ************ CAMBIOS CLAVE AQUI ************
-                        "dom": '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-                        "initComplete": function(settings, json) {
-                            const buttonsHtml = `
-                                <button id="btn-asignados" id = "BotonAssing" class="btn btn-primary me-2">Asignados</button>
-                                <button id="btn-por-asignar" class="btn btn-secondary">Por Asignar</button>
-                            `;
-                            $('.dt-buttons-container').html(buttonsHtml);
-
-                            $('#btn-asignados').on('click', function() {
-                                dataTableInstance.column(4).search('Asignado al Coordinador').draw();
-                            });
-
-                            $('#btn-por-asignar').on('click', function() {
-                                dataTableInstance.column(4).search('Asignado al Tecnico').draw();
-                            });
-                        }
-                        // ************ FIN CAMBIOS CLAVE ************
-                    });
-
-                    $('#tabla-ticket').resizableColumns();
-
-                    $('#tabla-ticket tbody').off('click', 'tr').on('click', 'tr', function () {
-                        const tr = $(this);
-                        const rowData = dataTableInstance.row(tr).data();
-
-                        if (!rowData) {
-                            return;
-                        }
-
-                        $('#tabla-ticket tbody tr').removeClass('table-active');
-                        tr.addClass('table-active');
-
-                        const ticketId = rowData[0];
-
-                        const selectedTicketDetails = TicketData.find(t => t.id_ticket == ticketId);
-
-                        if (selectedTicketDetails) {
-                            detailsPanel.innerHTML = formatTicketDetailsPanel(selectedTicketDetails);
-                            loadTicketHistory(ticketId);
-                            if (selectedTicketDetails.serial_pos) {
-                                downloadImageModal(selectedTicketDetails.serial_pos);
-                            } else {
-                                const imgElement = document.getElementById('device-ticket-image');
-                                if (imgElement) {
-                                    imgElement.src = '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png';
-                                    imgElement.alt = 'Serial no disponible';
-                                }
-                            }
-                        } else {
-                            detailsPanel.innerHTML = '<p>No se encontraron detalles para este ticket.</p>';
-                        }
-                    });
-
-                    $('#tabla-ticket tbody').off('click', '.btn-assign-tech').on('click', '.btn-assign-tech', function (e) {
-                        e.stopPropagation();
-                        const ticketId = $(this).data('ticket-id');
-                        currentTicketId = ticketId;
-                        const modalBootstrap = new bootstrap.Modal(modalElement, {
-                            backdrop: 'static'
-                        });
-                        modalInstance = modalBootstrap;
-                        modalBootstrap.show();
-                    });
-
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="9">Error al cargar</td></tr>';
-                    console.error('Error:', response.message);
-                }
-            } catch (error) {
-                tbody.innerHTML = '<tr><td colspan="9">Error al procesar la respuesta</td></tr>';
-                console.error('Error parsing JSON:', error);
-            }
-        } else if (xhr.status === 404) {
-            tbody.innerHTML = '<tr><td colspan="9">No se encontraron usuarios</td></tr>';
-        } else {
-            tbody.innerHTML = '<tr><td colspan="9">Error de conexión</td></tr>';
-            console.error('Error:', xhr.status, xhr.statusText);
-        }
-    };
-    xhr.onerror = function () {
-        tbody.innerHTML = '<tr><td colspan="9">Error de conexión</td></tr>';
-        console.error('Error de red');
-    };
-    const datos = `action=GetTicketData`;
-    xhr.send(datos);
-}*/
-
-// Nueva función para formatear el contenido del panel de detalles
-// =============================================================================
-// Función para formatear y mostrar los detalles de un ticket
-// Utiliza un objeto de datos (d) para construir el HTML
-// =============================================================================
 function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
 
@@ -428,71 +251,6 @@ function formatTicketDetailsPanel(d) {
          <div id="ticket-history-content">
             <p>Selecciona un ticket para cargar su historial.</p>
         </div>
-    `;
-}
-function formatTicketDetailsPanel(d) {
-  // d es el objeto `data` completo del ticket
-
-  // La imageUrl inicial puede ser una imagen de "cargando" o un placeholder.
-  // La imagen real se cargará después vía AJAX.
-  const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
-  const initialImageAlt = "Cargando imagen del dispositivo...";
-
-  return `
-<div class="row">
-    <div class=" text-start">
-        <div id="device-image-container" style="width: 120px; height: 120px; margin-left: auto;">
-            <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}"
-                 class="img-fluid rounded" style="width: 100%; height: 100%; object-fit: fill;">
-        </div>
-    </div>
-    <div class="col-9" style = "margin-top: -20%;">
-        <h4>Ticket #${d.id_ticket}</h4>
-        <hr>
-        <div class="row mb-2">
-            <div class="col-sm-6 text-muted">Serial POS:</div>
-            <div class="col-sm-6"><strong>${d.serial_pos}</strong></div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-sm-6 text-muted">Estatus POS:</div>
-            <div class="col-sm-6">${d.estatus_inteliservices}</div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-sm-6 text-muted">Fecha Instalación POS:</div>
-            <div class="col-sm-6">${d.fecha_instalacion}</div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-sm-6 text-muted">Fecha Creación ticket:</div>
-            <div class="col-sm-6">${d.create_ticket}</div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-sm-6 text-muted">Usuario Gestión:</div>
-            <div class="col-sm-6">${d.full_name_tecnico}</div>
-        </div>
-
-        <div class="row mb-2">
-            <div class="col-sm-6 text-muted">Acción:</div>
-            <div class="col-sm-6">${d.name_accion_ticket}</div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-sm-6 text-muted">Falla:</div>
-            <div class="col-sm-6">${d.name_failure}</div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-sm-6 text-muted">Proceso:</div>
-            <div class="col-sm-6">${d.name_process_ticket}</div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-sm-6 text-muted">Estatus Ticket:</div>
-            <div class="col-sm-6">${d.name_status_ticket}</div>
-        </div>
-
-        <hr> <h5>Gestión / Historial:</h5>
-        <div id="ticket-history-content">
-            <p>Selecciona un ticket para cargar su historial.</p>
-        </div>
-    </div>
-</div>
     `;
 }
 
@@ -668,7 +426,7 @@ function loadTicketHistory(ticketId) {
                                             data-toggle="collapse" data-target="#${collapseId}"
                                             aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="${collapseId}"
                                             style="${textColor}">
-                                        Historial de ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
+                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
                                     </button>
                                 </h2>
                             </div>
@@ -705,6 +463,10 @@ function loadTicketHistory(ticketId) {
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
                                                     <td>${item.name_status_domiciliacion || 'N/A'}</td>
+                                                </tr>
+                                                 <tr>
+                                                    <th class="text-start">Estatus Pago:</th>
+                                                    <td>${item.name_status_payment || 'N/A'}</td>
                                                 </tr>
                                             </tbody>
                                         </table>

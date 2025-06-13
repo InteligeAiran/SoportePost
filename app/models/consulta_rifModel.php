@@ -278,7 +278,7 @@ class consulta_rifModel extends Model
                 "SELECT public.insertintouser_ticket(%d::integer, %d::integer, NOW()::timestamp without time zone, NULL::timestamp without time zone, %d::integer, NOW()::timestamp without time zone, NULL::integer, NULL::timestamp without time zone);",
                 (int) $idTicketCreado,
                 (int) $id_user,       // p_id_tecnico_n1
-                (int) $coordinador    // p_id_coordinator
+                (int) $coordinador,   // p_id_coordinator
                 // Los últimos dos NULLs son para p_id_tecnico_n2 y p_date_assign_tec2
             );
 
@@ -294,11 +294,12 @@ class consulta_rifModel extends Model
             $id_status_ticket = 1; // Valor fijo
             $id_status_domiciliacion = 1; // Valor fijo
             $sqlInsertHistory = sprintf(
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer);",
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer);",
                 (int) $idTicketCreado,
                 (int) $id_user,           // p_changedstatus_by
                 (int) $id_status_ticket,  // p_new_action (asumiendo esto es el estado, no la acción)
                 (int) $id_accion_ticket,  // p_id_action_ticket
+                $id_status_payment,
                 (int) $id_status_domiciliacion // p_id_status_domiciliacion
             );
 

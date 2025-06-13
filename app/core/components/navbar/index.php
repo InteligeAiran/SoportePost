@@ -177,32 +177,8 @@
             </li>
         </ul>
     </div>
+    <input type="hidden" id="id_user" value="<?php echo $_SESSION['id_user']?>"/> 
 </aside>
-
-    <!--MODAL SELECIONAR TIPO DE FALLA -->
-    <div class="modal" id="nivelFallaModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div id="NivelFalla-div" class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="nivelFallaModalLabel">¿Cuál es el nivel de la falla?</h1>
-                    <button type="button" id="cerrar-icon" class="btn-close" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-
-                </div>
-                <div class="modal-body text-center">
-                    <button value="1" id="nivel1Btn" type="button" class="btn btn-success me-2"
-                        data-bs-dismiss="modal">Nivel 1</button>
-                    <button value="2" id="nivel2Btn" type="button" class="btn btn-primary" data-bs-dismiss="modal">Nivel
-                        2</button>
-                </div>
-                <div class="modal-footer">
-                    <button id="cerrar" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!--END MODAL SELECCIONAR TIPO DE FALLA -->
 
 
     <!--JQUERY-->
