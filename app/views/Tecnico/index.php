@@ -28,51 +28,10 @@ function mi_navbar()
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
     <style>
-         #ticket-details-panel table td, table th {
+      
+        #ticket-details-panel table td, table th {
             white-space: normal !important;
         }
-
-        #ticket-details-panel table th {
-            font-weight: bold;
-        }
-
-        #tabla-ticket td,
-#tabla-ticket th {
-    white-space: normal; /* Permite que el texto se envuelva en varias líneas */
-    word-wrap: break-word; /* Rompe palabras largas si es necesario */
-    overflow-wrap: break-word; /* Estilo similar a word-wrap, para mayor compatibilidad */
-    vertical-align: middle; /* Alinea el contenido de la celda verticalmente al centro */
-    box-sizing: border-box; /* Asegura que padding y border se incluyan en el ancho/alto */
-}
-
-/* Opcional: Ajusta el tamaño de la fuente para las celdas de datos si el contenido sigue siendo demasiado grande */
-#tabla-ticket td {
-    font-size: 0.85rem; /* Reduce el tamaño de la fuente para que quepa más contenido. Ajusta según sea necesario. */
-}
-
-/* Contenedor flexbox para los botones en la columna "Acciones" */
-/* Esto permite que los botones se organicen y envuelvan a la siguiente línea si no hay espacio */
-#tabla-ticket .acciones-container {
-    display: flex; /* Habilita el modelo de caja flexible */
-    flex-wrap: wrap; /* Permite que los elementos hijos (botones) se envuelvan a la siguiente línea */
-    gap: 5px; /* Crea un espacio de 5px entre los elementos flexibles (botones). Alternativa a ml-2 */
-    justify-content: center; /* Centra los botones horizontalmente dentro de la celda */
-    align-items: center; /* Centra los botones verticalmente */
-    width: 100%; /* Asegura que el contenedor ocupe todo el ancho de la celda */
-}
-
-/* Estilos para los botones dentro del contenedor de acciones */
-#tabla-ticket .acciones-container .btn {
-    white-space: nowrap; /* Evita que el texto de los botones se rompa a la siguiente línea */
-    /* Quita los márgenes de Bootstrap como ml-2 si usas 'gap' en el contenedor */
-    /* margin-left: 0 !important; */
-}
-
-/* Ajusta el tamaño del icono dentro del botón si es necesario */
-#tabla-ticket .acciones-container .btn svg {
-    width: 1rem; /* O el tamaño que consideres adecuado */
-    height: 1rem;
-}
     </style>
     </head>
 
@@ -115,17 +74,16 @@ function mi_navbar()
                                    <table id="tabla-ticket"
                                         class="table table-striped table-bordered table-hover table-sm">
                                        <thead>
-    <tr>
-        <th scope="col">ID Ticket</th>
-        <th scope="col">RIF</th>
-        <th scope="col">Razón Social</th>
-        <th scope="col">Fecha Creación</th>
-        <th scope="col">Serial POS</th>
-        <th scope="col">Técnico Asignado</th>
-        <th scope="col">Nro Ticket</th>
-        <th scope="col">Acción Ticket</th> <th scope="col">Acciones</th>
-    </tr>
-</thead>
+                                            <tr>
+                                                <th scope="col">ID Ticket</th>
+                                                <th scope="col">RIF</th>
+                                                <th scope="col">Razón Social</th>
+                                                <th scope="col">Fecha Creación</th>
+                                                <th scope="col">Técnico Asignado</th>
+                                                <th scope="col">Nro Ticket</th>
+                                                <th scope="col">Acción Ticket</th> <th scope="col">Acciones</th>
+                                            </tr>
+                                        </thead>
                                         <tbody class="table-group-divider" id="table-ticket-body">
                                             <tr>
                                                 <td colspan="3">No hay datos</td>

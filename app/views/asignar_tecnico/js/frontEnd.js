@@ -71,7 +71,7 @@ function getTicketData() {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Resultados disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "Mostrando página _PAGE_ de _PAGES_ ( _TOTAL_ Registro(s) )",
+              info: " _PAGE_ / _PAGES_ de _TOTAL_ Registros",
               infoEmpty: "No hay datos disponibles",
               infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
               search: "Buscar:",
