@@ -1,11 +1,9 @@
 <?php
-function mi_navbar()
-{
+function mi_navbar(){
 }
 ?>
 <!DOCTYPE html>
 <lang="en">
-
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -159,9 +157,9 @@ function mi_navbar()
                                         <div class="numbers">
                                             <p class="card-category">Total Tickets</p>
                                             <h5 id="TotalTicket" class="card-title"></h5>
-                                            <p class="card-text mb-0">
-                                                <span class="text font-weight-bolder"
-                                                    id="totalTicketPercentage"></span>De 100 Mensual
+                                            <p class="card-text mb-0"><br><br>
+                                                <!--span class="text font-weight-bolder"
+                                                    id="totalTicketPercentage"></span>De 100 Mensual-->
                                             </p>
                                         </div>
                                         <div class="icon-on-right">

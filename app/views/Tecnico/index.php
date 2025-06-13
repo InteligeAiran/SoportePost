@@ -114,18 +114,18 @@ function mi_navbar()
                                     </div>
                                    <table id="tabla-ticket"
                                         class="table table-striped table-bordered table-hover table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">ID ticket</th>
-                                                <th scope="col">RIF</th>
-                                                <th scope="col">Razon Social</th>
-                                                <th scope="col">Fecha Creacion</th>
-                                                <th scope="col">Serial POS</th>
-                                                <th scope="col">Coordinador Gestor</th>
-                                                <th scope="col">Nro Ticket</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
+                                       <thead>
+    <tr>
+        <th scope="col">ID Ticket</th>
+        <th scope="col">RIF</th>
+        <th scope="col">Razón Social</th>
+        <th scope="col">Fecha Creación</th>
+        <th scope="col">Serial POS</th>
+        <th scope="col">Técnico Asignado</th>
+        <th scope="col">Nro Ticket</th>
+        <th scope="col">Acción Ticket</th> <th scope="col">Acciones</th>
+    </tr>
+</thead>
                                         <tbody class="table-group-divider" id="table-ticket-body">
                                             <tr>
                                                 <td colspan="3">No hay datos</td>

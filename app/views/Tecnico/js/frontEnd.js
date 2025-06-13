@@ -167,7 +167,7 @@ function getTicketData() {
                         { title: "Técnico Asignado" },
                         { title: "Acción Ticket" },
                         { title: "Nro Ticket" },
-                        { title: "Acciones", orderable: false, width: "15%" }
+                        { title: "Acciones", orderable: false }
                     ],
                     language: {
                         "lengthMenu": "Mostrar _MENU_ registros",
@@ -533,62 +533,78 @@ document.addEventListener('DOMContentLoaded', getTicketData);
 function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
 
-  // La imageUrl inicial puede ser una imagen de "cargando" o un placeholder.
-  // La imagen real se cargará después vía AJAX.
-  const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
-  const initialImageAlt = "Cargando imagen del dispositivo...";
+ const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
+    const initialImageAlt = "Cargando imagen del dispositivo...";
 
-  return `
-<div class="col-3 text-end">
-            <div id="device-image-container" style="width: 120px; height: 120px; margin-left: auto;">
-                <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}"
-                     class="img-fluid rounded" style="width: 100%; height: 100%; margin-right: -302%; object-fit: fill;">
-                     </div>
-        </div>
-            <div class="col-9" style = "margin-top: -21%;"> <h4>Ticket #${d.id_ticket}</h4>
-                <hr>
-                <div class="row mb-2">
-                    <div class="col-sm-6 text-muted">Serial POS:</div>
-                    <div class="col-sm-6"><strong>${d.serial_pos}</strong></div>
+    return `
+        <div class="container-fluid">
+            <div class="row mb-3 align-items-center">
+                <div class="col-md-3 text-center">
+                    <div id="device-image-container" class="p-2">
+                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" class="img-fluid rounded" style="max-width: 120px; height: auto; object-fit: contain;">
+                    </div>
                 </div>
-                <div class="row mb-2">
-                    <div class="col-sm-6 text-muted">Estatus POS:</div>
-                    <div class="col-sm-6">${d.estatus_inteliservices}</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-sm-6 text-muted">Fecha Instalación POS:</div>
-                    <div class="col-sm-6">${d.fecha_instalacion}</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-sm-6 text-muted">Fecha Creación ticket:</div>
-                    <div class="col-sm-6">${d.create_ticket}</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-sm-6 text-muted">Usuario Gestión:</div>
-                    <div class="col-sm-6">${d.full_name_tecnico}</div>
+                <div class="col-md-9">
+                    <h4>Ticket #${d.id_ticket}</h4>
+                    <hr class="mt-2 mb-3">
+                    <div class="row">
+                        <div class="col-sm-6 mb-2">
+                            <strong><div>Serial POS:</div></strong><br>
+                            ${d.serial_pos}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                             <strong><div>Estatus POS:</div></strong><br>
+                            ${d.estatus_inteliservices}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                             <strong><div>Fecha Instalación POS:</div></strong><br>
+                            ${d.fecha_instalacion}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                             <strong><div>Fecha Creación ticket:</div></strong><br>
+                            ${d.create_ticket}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                             <strong><div>Usuario Gestión:</div></strong><br>
+                            ${d.full_name_tecnico}
+                        </div>
+                    </div>
                 </div>
             </div>
-        <div class="row mb-2">
-            <div class="col-sm-4 text-muted">Acción:</div>
-            <div class="col-sm-8">${d.name_accion_ticket}</div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-sm-4 text-muted">Falla:</div>
-            <div class="col-sm-8">${d.name_failure}</div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-sm-4 text-muted">Proceso:</div>
-            <div class="col-sm-8">${d.name_process_ticket}</div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-sm-4 text-muted">Estatus Ticket:</div>
-            <div class="col-sm-8">${d.name_status_ticket}</div>
-        </div>
-        <hr>
 
-        <h5>Gestión / Historial:</h5>
-         <div id="ticket-history-content">
-            <p>Selecciona un ticket para cargar su historial.</p>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="row">
+                        <div class="col-sm-4 mb-2">
+                             <strong><div>Acción:</div></strong><br>
+                            ${d.name_accion_ticket}
+                        </div>
+                        <div class="col-sm-8 mb-2">
+                             <strong><div>Falla:</div></strong><br>
+                            ${d.name_failure}
+                        </div>
+                        <div class="col-sm-4 mb-2">
+                             <strong><div>Proceso:</div></strong><br>
+                            ${d.name_process_ticket}
+                        </div>
+                        <div class="col-sm-8 mb-2">
+                             <strong><div>Estatus Ticket:</div></strong><br>
+                            ${d.name_status_ticket}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="mt-2 mb-3">
+
+            <div class="row">
+                <div class="col-12">
+                    <h5>Gestión / Historial:</h5>
+                    <div id="ticket-history-content">
+                        <p>Selecciona un ticket para cargar su historial.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     `;
 }
