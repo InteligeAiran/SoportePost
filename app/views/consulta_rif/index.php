@@ -73,6 +73,7 @@ function mi_navbar() {}
                 cursor: pointer;
                 font-size: 1rem;
                 transition: background-color 0.3s ease;
+                display: none;
             }
 
             #createTicketFalla2Btn {
@@ -109,6 +110,22 @@ function mi_navbar() {}
             tr[id^="status-row-"] td {
                 color: red; /* Color rojo */
                 font-weight: bold; /* Opcional: para que se vea más fuerte */
+            }
+
+            #rifCountTable .serial-pos-column, #rifCountTable td:nth-child(5) { /* nth-child(5) apunta a la quinta columna (Serial POS) */
+                white-space: nowrap; /* Evita que el texto salte de línea */
+                overflow: visible;   /* Asegura que el contenido no se corte si se desborda */
+                text-overflow: clip; /* Evita los puntos suspensivos (...) */
+                /* Asegúrate de que el width sea suficiente o ajústalo con DataTables columns.width */
+                width: 150px !important; /* Ajusta este valor según el espacio que necesites. Usa !important si es necesario para sobrescribir. */
+                min-width: 150px !important; /* Asegura un ancho mínimo */
+            }
+
+            /* Si quieres que los enlaces dentro de esa celda también se vean bien */
+            #rifCountTable td:nth-child(5) a {
+                white-space: nowrap;
+                overflow: visible;
+                text-overflow: clip;
             }
         </style>
     </head>
@@ -167,7 +184,7 @@ function mi_navbar() {}
                                                 <th style="width: 10%;">Raz&oacuten Social</th>
                                                 <th style="width: 5%;">RIF</th>
                                                 <th style="width: 5%;">Modelo POS</th>
-                                                <th style="width: 5%;">Serial POS</th>
+                                                <th style="width: 5%;" class="serial-pos-column">Serial POS</th>
                                                 <th style="width: 5%;">N° Afiliaci&oacuten</th>
                                                 <th style="width: 5%;">Fecha Instalaci&oacuten</th>
                                                 <th style="width: 5%;">Banco</th>
@@ -204,9 +221,9 @@ function mi_navbar() {}
                                         <button type="button" class="btn btn-success me-2" id="createTicketFalla1Btn">Crear Ticket Falla 1</button>
                                         <button type="button" class="btn btn-warning" id="createTicketFalla2Btn">Crear Ticket Falla 2</button>
                                     </div>
-                                    <div class="mt-3 w-100 d-flex justify-content-center">
+                                    <!--div class="mt-3 w-100 d-flex justify-content-center">
                                         <button type="button" class="btn btn-secondary w-75" id="closeDetailsPanelBtn">Cerrar Detalles</button>
-                                    </div>
+                                    </div-->
                                 </div>
                             </div>
                         </div>

@@ -2924,18 +2924,57 @@ function fetchSerialData(serial, rif) {
               td.textContent = serialData[key];
               td.setAttribute("data-column-name", formattedKey);
 
-              // Si la clave es 'Estatus_pos' y el valor es 'Equipo Desafiliado' o 'Equipo Inactivo'
-              if (key === "Estatus_Pos") {
-                globalEstatusPos = serialData[key]; // ¡Aquí se asigna el valor!
+               // Obtén referencias a los botones
+              const createTicketFalla1Btn = document.getElementById('createTicketFalla1Btn');
+              const createTicketFalla2Btn = document.getElementById('createTicketFalla2Btn');
 
-                // El resto de tu lógica para poner la fila en rojo
-                if (
-                  serialData[key] === "Equipo Desafiliado" ||
-                  serialData[key] === "Equipo Inactivo"
-                ) {
-                  tr.id = `status-row-${serialData.Serial_pos || "unknown"}`;
+              // Verifica si los botones existen antes de intentar manipularlos
+                if (createTicketFalla1Btn && createTicketFalla2Btn) {
+
+                    // Si la clave es 'Estatus_pos' y el valor es 'Equipo Desafiliado' o 'Equipo Inactivo'
+                    if (key === "Estatus_Pos") {
+                        globalEstatusPos = serialData[key]; // ¡Aquí se asigna el valor!
+
+                        // El resto de tu lógica para poner la fila en rojo
+                        if (
+                            serialData[key] === "Equipo Desafiliado" ||
+                            serialData[key] === "Equipo Inactivo"
+                        ) {
+                            tr.id = `status-row-${serialData.Serial_pos || "unknown"}`; // Esto es para la fila, no para los botones.
+
+                            // Ocultar los botones:
+                            createTicketFalla1Btn.style.display = 'none'; // Oculta el primer botón
+                            createTicketFalla2Btn.style.display = 'none'; // Oculta el segundo botón
+
+                            // Si prefieres usar clases de Bootstrap (por ejemplo, d-none):
+                            // createTicketFalla1Btn.classList.add('d-none');
+                            // createTicketFalla2Btn.classList.add('d-none');
+
+                            // Si usas el contenedor de botones:
+                            // if (buttonsContainer) {
+                            //     buttonsContainer.style.display = 'none';
+                            //     // O buttonsContainer.classList.add('d-none');
+                            // }
+
+                        } else {
+                            // Si el estatus NO es "Equipo Desafiliado" ni "Equipo Inactivo", asegúrate de que los botones estén visibles:
+                            createTicketFalla1Btn.style.display = 'block'; // Restablece el display a su valor por defecto
+                            createTicketFalla2Btn.style.display = 'block'; // Restablece el display a su valor por defecto
+
+                            // O si usas clases de Bootstrap:
+                            // createTicketFalla1Btn.classList.remove('d-none');
+                            // createTicketFalla2Btn.classList.remove('d-none');
+
+                            // Si usas el contenedor de botones:
+                            // if (buttonsContainer) {
+                            //     buttonsContainer.style.display = '';
+                            //     // O buttonsContainer.classList.remove('d-none');
+                            // }
+                        }
+                    }
+                } else {
+                    console.warn('Los botones de creación de ticket no fueron encontrados en el DOM.');
                 }
-              }
               tr.appendChild(th);
               tr.appendChild(td);
               tbody.appendChild(tr);

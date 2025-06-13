@@ -74,7 +74,134 @@ function mi_navbar() {}
             color: #ffffff;
             transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
-                
+
+        /* CSS para los botones de Asignados/Por Asignar */
+        /* Estilo base para el botón Asignados cuando es el activo */
+        #btn-asignados.btn-primary {
+            background-color: #003594; /* Tu azul fuerte */
+            border-color: #003594;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Asignados cuando es el activo */
+        #btn-asignados.btn-primary:hover,
+        #btn-asignados.btn-primary:focus {
+            background-color: #0045B4; /* Un tono un poco más oscuro o claro al hover */
+            border-color: #0045B4;
+            box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25); /* Sombra de enfoque/hover */
+        }
+
+        /* Estilo para el botón Asignados cuando NO es el activo (es gris) */
+        #btn-asignados.btn-secondary {
+            background-color: #A0A0A0; /* Tu gris sutil */
+            border-color: #A0A0A0;
+            color: #ffffff; /* O un gris oscuro si el fondo es claro */
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Asignados cuando NO es el activo */
+        #btn-asignados.btn-secondary:hover,
+        #btn-asignados.btn-secondary:focus {
+            background-color: #B0B0B0;
+            border-color: #B0B0B0;
+            box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+        }
+
+
+        /* Estilo base para el botón Por Asignar cuando es el activo */
+        #btn-por-asignar.btn-primary {
+            background-color: #003594; /* Tu azul fuerte */
+            border-color: #003594;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Por Asignar cuando es el activo */
+        #btn-por-asignar.btn-primary:hover,
+        #btn-por-asignar.btn-primary:focus {
+            background-color: #0045B4;
+            border-color: #0045B4;
+            box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+        }
+
+        /* Estilo para el botón Por Asignar cuando NO es el activo (es gris) */
+        #btn-por-asignar.btn-secondary {
+            background-color: #A0A0A0;
+            border-color: #A0A0A0;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Por Asignar cuando NO es el activo */
+        #btn-por-asignar.btn-secondary:hover,
+        #btn-por-asignar.btn-secondary:focus {
+            background-color: #B0B0B0;
+            border-color: #B0B0B0;
+            box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+        }
+        
+        /* Contenedor de paginación de DataTables */
+        .dataTables_wrapper .dataTables_paginate.paging_simple_numbers {
+            /* Puedes ajustar márgenes o padding aquí si es necesario */
+            margin-top: 15px; /* Espacio superior para separar de la tabla */
+        }
+
+        /* Estilo para los elementos LI de la paginación (números, Anterior, Siguiente) */
+        .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button {
+            background-color: #f0f0f0; /* Un gris claro para el fondo */
+            color: black; /* Un gris oscuro para el texto */
+            border: 1px solid #cccccc; /* Un borde sutil */
+            padding: 8px 12px;
+            margin: 0 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Transición suave */
+            border-radius: 4px; /* Bordes ligeramente redondeados */
+            list-style: none; /* Eliminar viñetas de lista */
+            display: inline-block; /* Asegura que se comporten como bloques en línea */
+        }
+
+        /* Estilo al pasar el puntero (hover) sobre los LI que no están activos ni deshabilitados */
+        .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button:hover:not(.active):not(.disabled) {
+            background-color: #fff; /* Un gris ligeramente más oscuro al pasar el puntero */
+            color: #007bff; /* Un azul suave para el texto, o puedes mantener el gris oscuro */
+            border-color: #a0a0a0; /* Un borde un poco más visible */
+            text-decoration: none; /* Asegurar que no haya subrayado si hay un enlace dentro */
+        }
+
+        /* Estilo de la página activa */
+        .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button.active {
+            background-color: #8392ab; /* Azul para la página activa (puedes elegir un color más sutil aquí) */
+            color: #ffffff; /* Texto blanco para la página activa */
+            border-color: #8392ab; /* Borde del mismo color que el fondo */
+            cursor: default; /* No cambia el cursor al pasar por la página actual */
+        }
+
+        /* Estilo para los botones deshabilitados (Anterior, Siguiente, o los "...") */
+        .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button.disabled {
+            background-color: #f8f8f8; /* Un gris muy claro, casi blanco */
+            color: #999999; /* Un gris más claro para el texto */
+            border: 1px solid #e0e0e0; /* Un borde muy sutil */
+            cursor: not-allowed; /* Indica que no es clickeable */
+            pointer-events: none; /* Asegura que no sea clickeable incluso si hay un 'a' dentro */
+        }
+
+        /* Si los "..." tienen una clase específica como 'ellipsis', puedes añadirla aquí,
+        pero generalmente .disabled los cubre si están dentro de un li.paginate_button. */
+        /* .dataTables_wrapper .dataTables_paginate ul.pagination li.ellipsis {
+            background-color: #f8f8f8;
+            color: #999999;
+            border: 1px solid #e0e0e0;
+            cursor: default;
+        } */       
+
+
+        /* Estilo al pasar el puntero (hover) sobre los elementos de paginación NO activos y NO deshabilitados */
+        .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button:hover:not(.active):not(.disabled) {
+            background-color: #fff; /* Un gris ligeramente más oscuro al pasar el puntero (sutil) */
+            color: #003594; /* Azul suave para el texto al hacer hover, o puedes mantener el gris oscuro si prefieres menos cambio */
+            border-color: white; /* Borde un poco más visible al hacer hover */
+        }
     </style>
 </head>
 

@@ -465,8 +465,8 @@ class Consulta extends Controller
             $interval = $currentDateTime->diff($lastTicketDateTime);
             $minutesPassed = $interval->i + ($interval->h * 60) + ($interval->days * 24 * 60);
 
-            $tiempoLimiteMismoCliente = 5; // Ajustado a 1 minuto para pruebas
-            $tiempoLimiteDiferenteCliente = 10; // Ajustado a 1 minuto para pruebas
+            $tiempoLimiteMismoCliente = 10; // Ajustado a 1 minuto para pruebas
+            $tiempoLimiteDiferenteCliente = 5; // Ajustado a 1 minuto para pruebas
 
             if ($rif === $lastTicketRif) {
                 // Es la misma institución (mismo RIF)

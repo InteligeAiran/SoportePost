@@ -98,13 +98,41 @@ function mi_navbar(){
                         </div>
                     </div>
 
+                      <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                        <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="card-content-wrapper">
+                                        <div class="numbers">
+                                            <p class="card-category">TICKETS EN PROCESO</p>
+                                            <h5 class="card-title" id="ProcessTicketNumber"></h5>
+                                            <p class="card-text">
+                                                <span class="text font-weight-bolder" id="Process_Tickets"></span>Del total de tickets
+                                            </p>
+                                        </div>
+                                        <div class="icon-on-right">
+                                            <div class="icon-shape bg-gradient-danger"> <svg
+                                                    xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                                    fill="white" class="bi bi-calendar-check-fill" viewBox="0 0 16 16">
+                                                    <path
+                                                        d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2m-5.146-5.146-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
                             <div class="card" id="Card-resolve-ticket">
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
-                                            <p class="card-category">Tickets Resueltos</p>
+                                            <p class="card-category">Tickets Cerrados</p>
                                             <h5 id="TicketsResuelto" class="card-title"></h5>
                                             <p class="card-text mb-0">
                                                 <span id="ticketResueltoPercentage"
@@ -149,7 +177,7 @@ function mi_navbar(){
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                      <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
                             <div class="card">
                                 <div class="card-body">
@@ -238,7 +266,7 @@ function mi_navbar(){
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
                                             <p class="card-category">GESTI&OacuteN COMERCIAL</p>
-                                            <h5 class="card-title">4</h5>
+                                            <h5 class="card-title"></h5>
                                             <p class="card-text">
                                                 <span class="text-success-percentage">+5%</span><span
                                                     class="text-muted">Último mes</span>
@@ -258,10 +286,11 @@ function mi_navbar(){
                             </div>
                         </div>
                     </div>
+
+                  
                 </div>
 
                 <div class="row mt-4">
-
                     <div class="col-lg-7 mb-lg-0 mb-4">
                         <div class="card card-chart" id="monthlyTicketsCard">
                             <div class="card-header bg-gradient-info">

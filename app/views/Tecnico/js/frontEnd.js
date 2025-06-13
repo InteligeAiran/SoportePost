@@ -154,7 +154,7 @@ function getTicketData() {
                     responsive: false,
                     scrollX: true,
                     pagingType: "simple_numbers",
-                    lengthMenu: [5],
+                    lengthMenu: [[5, 10], ['5', '10']],      
                     autoWidth: false,
                     data: dataForDataTable,
                     columns: [
@@ -168,10 +168,10 @@ function getTicketData() {
                         { title: "Acciones", orderable: false }
                     ],
                     language: {
-                        "lengthMenu": "Mostrar _MENU_ registros",
+                        "lengthMenu": "Mostrar _MENU_ Registros",
                         "emptyTable": "No hay datos disponibles en la tabla",
                         "zeroRecords": "No se encontraron resultados para la búsqueda",
-                        "info": " _PAGE_ / _PAGES_ de _TOTAL_ Registros",
+                        "info": "(_PAGE_/_PAGES_) _TOTAL_ Registros",
                         "infoEmpty": "No hay datos disponibles",
                         "infoFiltered": "(Filtrado de _MAX_ datos disponibles)",
                         "search": "Buscar:",

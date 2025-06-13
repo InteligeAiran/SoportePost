@@ -77,8 +77,8 @@ class reportes extends Controller {
                     $this->handleGetTicketsResueltosPercentage();
                 break;
 
-                case 'getTotalTicketsPercentage':
-                    $this->handleGetTotalTicketsPercentage();
+                case 'getTotalTicketsInProcess':
+                    $this->handlegetTotalTicketsInProcess();
                 break;
 
                 case 'GetTicketDataFinal':
@@ -171,6 +171,10 @@ class reportes extends Controller {
 
                 case 'GetTicketsIrreparables':
                     $this->handleGetTicketsIrreparables();
+                break;
+
+                case 'getTotalTicketsPercentageinprocess':
+                    $this->handlegetTotalTicketsPercentageinprocess();
                 break;
 
                 default:
@@ -316,18 +320,6 @@ class reportes extends Controller {
     public function handleGetTicketsResueltosPercentage(){
         $repository = new ReportRepository();
         $result = $repository->getTicketsResueltosPercentageData();
-
-        if ($result) {
-            $this->response(['success' => true, 'count' => $result], 200);
-        } else {
-            $this->response(['success' => false, 'userCount' => 0], 200);
-        }
-        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Total de Tickets.'], 500);
-    }
-
-    public function handleGetTotalTicketsPercentage(){
-        $repository = new ReportRepository();
-        $result = $repository->getTotalTicketsPercentageData();
 
         if ($result) {
             $this->response(['success' => true, 'count' => $result], 200);
@@ -705,6 +697,30 @@ class reportes extends Controller {
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+    public function handlegetTotalTicketsInProcess(){
+        $repository = new ReportRepository();
+        $result = $repository->GetTotalTicketsInProcess();
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'count' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+    public function handlegetTotalTicketsPercentageinprocess(){
+        $repository = new ReportRepository();
+        $result = $repository->GetTotalTicketsPercentageInProcess();
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'porcent' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 }

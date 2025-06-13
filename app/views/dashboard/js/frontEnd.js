@@ -1996,11 +1996,11 @@ function getTotalTicketsPercentageOFSendTaller() {
   xhr.send(datos);
 }
 
-function getTotalTicketsPercentage() {
+function getTotalPorcentageticket_in_process() {
   const xhr = new XMLHttpRequest();
   xhr.open(
     "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTotalTicketsPercentage`
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTotalTicketsPercentageinprocess`
   );
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
@@ -2009,14 +2009,12 @@ function getTotalTicketsPercentage() {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          const percentage = parseFloat(response.count);
+          const percentage = parseFloat(response.porcent);
 
           // 2. Redondear a 2 decimales y almacenar en displayPercentage
           const displayPercentage = percentage.toFixed(2);
 
-          const percentageSpan = document.getElementById(
-            "totalTicketPercentage"
-          );
+          const percentageSpan = document.getElementById("Process_Tickets");
 
           // Usar displayPercentage para mostrar y percentage (el número original) para la lógica de color
           percentageSpan.textContent =
@@ -2055,16 +2053,46 @@ function getTotalTicketsPercentage() {
     }
   };
 
-  const datos = "action=getTotalTicketsPercentage";
+  const datos = "action=getTotalTicketsPercentageinprocess";
+  xhr.send(datos);
+}
+
+function getTotalTicketsInProcess() {
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTotalTicketsInProcess`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          document.getElementById("ProcessTicketNumber").textContent = response.count; // Selecciona por ID
+        } else {
+          console.error("Error:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  const datos = "action=getTotalTicketsInProcess";
   xhr.send(datos);
 }
 
 // Llama a las funciones cuando la página se cargue
 window.addEventListener("load", () => {
   getTicketTotal();
-  getTotalTicketsPercentage(); // Agrega esta línea
   getTicketTotalSendTotaller();
   getTotalTicketsPercentageOFSendTaller();
+  getTotalTicketsInProcess();
+  getTotalPorcentageticket_in_process();
 });
 
 function loadRegionTicketDetails() {

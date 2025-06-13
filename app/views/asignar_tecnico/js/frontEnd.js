@@ -56,7 +56,7 @@ function getTicketData() {
             scrollX: "200px",
             responsive: false,
             pagingType: "simple_numbers",
-            lengthMenu: [5],
+            lengthMenu: [[5, 10], ['5', '10']],      
             autoWidth: false,
             columns: [
               { title: "ID ticket" },
@@ -71,9 +71,9 @@ function getTicketData() {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Resultados disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: " _PAGE_ / _PAGES_ de _TOTAL_ Registros",
+              info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
               infoEmpty: "No hay datos disponibles",
-              infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
+              infoFiltered: " de _MAX_ Disponibles",
               search: "Buscar:",
               loadingRecords: "Buscando...",
               processing: "Procesando...",
@@ -85,28 +85,53 @@ function getTicketData() {
               },
             },
             // ************ CAMBIOS CLAVE AQUI ************
+            // ... tu configuración de DataTables ...
             dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
             initComplete: function (settings, json) {
-              const buttonsHtml = `
-                                <button id="btn-asignados" class="btn btn-primary me-2">Asignados</button>
-                                <button id="btn-por-asignar" class="btn btn-secondary">Por Asignar</button>
-                            `;
-              $(".dt-buttons-container").html(buttonsHtml);
+                const buttonsHtml = `
+                    <button id="btn-asignados" class="btn btn-primary me-2">Asignados</button>
+                    <button id="btn-por-asignar" class="btn btn-secondary">Por Asignar</button>
+                `;
+                $(".dt-buttons-container").html(buttonsHtml);
 
-              $("#btn-asignados").on("click", function () {
-                dataTableInstance
-                  .column(4)
-                  .search("Asignado al Técnico")
-                  .draw();
-              });
+                // ************* INICIO CAMBIOS PARA LOS BOTONES *************
 
-              $("#btn-por-asignar").on("click", function () {
-                dataTableInstance
-                  .column(4)
-                  .search("Asignado al Coordinador")
-                  .draw();
-              });
+                // Función para manejar la selección de botones
+                function setActiveButton(activeButtonId) {
+                    // Remover clases de los botones y añadir las clases correctas
+                    $("#btn-asignados").removeClass("btn-primary btn-secondary");
+                    $("#btn-por-asignar").removeClass("btn-primary btn-secondary");
+
+                    if (activeButtonId === "btn-asignados") {
+                        $("#btn-asignados").addClass("btn-primary");
+                        $("#btn-por-asignar").addClass("btn-secondary");
+                    } else {
+                        $("#btn-asignados").addClass("btn-secondary");
+                        $("#btn-por-asignar").addClass("btn-primary");
+                    }
+                }
+
+                // Inicialmente, establecer "Asignados" como activo (porque el filtro por defecto lo será)
+                setActiveButton("btn-asignados");
+
+                $("#btn-asignados").on("click", function () {
+                    dataTableInstance
+                        .column(4)
+                        .search("Asignado al Técnico")
+                        .draw();
+                    setActiveButton("btn-asignados"); // Llamar a la función para actualizar el estilo
+                });
+
+                $("#btn-por-asignar").on("click", function () {
+                    dataTableInstance
+                        .column(4)
+                        .search("Asignado al Coordinador")
+                        .draw();
+                    setActiveButton("btn-por-asignar"); // Llamar a la función para actualizar el estilo
+                });
+                // ************* FIN CAMBIOS PARA LOS BOTONES *************
             },
+// ... el resto de tu configuración de DataTables ...
             // ************ FIN CAMBIOS CLAVE ************
           });
 

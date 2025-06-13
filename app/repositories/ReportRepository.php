@@ -128,12 +128,6 @@ class ReportRepository
         return $result['row']['get_percentage_resolved_tickets'];
     }
 
-    public function getTotalTicketsPercentageData()
-    {
-        $result = $this->model->getTotalTicketsCountsForPercentage();
-        return $result['row']['percentage_of_100_base'];;
-    }
-
     public function getTicketDataFinal()
     {
         $result = $this->model->GetDataTicketFinal();
@@ -403,5 +397,17 @@ class ReportRepository
         } else {
             return [];
         }
+    }
+
+    public function GetTotalTicketsInProcess(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTotalTicketsInProcess(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['get_total_in_processtickets'];
+    }
+
+    public function GetTotalTicketsPercentageInProcess(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTotalTicketsPercentageInProcess(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['get_percentage_in_process_tickets'];
     }
 }

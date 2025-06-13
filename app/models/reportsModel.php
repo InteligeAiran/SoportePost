@@ -128,16 +128,6 @@ class reportsModel extends Model
         }
     }
 
-    public function getTotalTicketsCountsForPercentage() {
-        try {
-            $sqlToday = "SELECT * FROM get_monthly_tickets_percentage_of_100_base();";
-            $resultToday = Model::getResult($sqlToday, $this->db);
-            return $resultToday;
-        } catch (Throwable $e) {
-            error_log("Error in getTotalTicketsCountsForPercentage: " . $e->getMessage());
-        }
-    }
-
     public function GetDataTicketFinal(){
         try{
             $sql = "SELECT * FROM GetDataTicketFinal()";
@@ -282,6 +272,16 @@ class reportsModel extends Model
         }
     }
 
+    public function GetTotalTicketsInProcess(){
+        try {
+            $sql = "SELECT * FROM get_total_in_processtickets()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
     public function GetTallerTicketsForCard(){
         try {
             $sql = "SELECT * FROM get_individual_taller_tickets_for_card()";
@@ -365,6 +365,16 @@ class reportsModel extends Model
     public function GetTicketsIrreparables(){
         try {
             $sql = "SELECT * FROM get_individual_tickets_irreparables()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetTotalTicketsPercentageInProcess(){
+        try {
+            $sql = "SELECT * FROM get_percentage_in_process_tickets()";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
