@@ -21,6 +21,7 @@ use DateInterval;
 class Consulta extends Controller
 {
     private $db;
+    private $app_base_path; // Añadido para evitar el error de propiedad indefinida
     // ... otras propiedades que necesites
 
     function __construct()
@@ -32,7 +33,6 @@ class Consulta extends Controller
         header('Access-Control-Allow-Headers: Content-Type');
 
         $this->db = DatabaseCon::getInstance(bd_hostname, mvc_port, bd_usuario, bd_clave, database);
-        // ... instancia tus repositorios y servicios si los usas aquí
     }
 
     public function processApi($urlSegments)
@@ -151,6 +151,14 @@ class Consulta extends Controller
 
                 case 'GetStatusDomiciliacion':
                     $this->handleGetStatusDomiciliacion();
+                    break;
+                
+                case 'getModules':
+                    $this->handleGetModules();
+                    break;
+
+                case 'getSubmodulesForModule':
+                    $this->handleGetSubmodulesForModule();
                     break;
 
                 default:
@@ -885,6 +893,34 @@ class Consulta extends Controller
         }
     }
 
+    public function handleGetModules(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetModules();
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'modules' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron módulos
+            $this->response(['success' => false, 'message' => 'No hay módulos disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los módulos'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+    public function handleGetSubmodulesForModule(){
+        $id_module = isset($_POST['id_module']) ? $_POST['id_module'] : '';
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+
+        if ($id_module != '') {
+            $result = $repository->GetSubmodulesForModule($id_module); // Llama a la función del repositorio
+            if ($result) {
+                $this->response(['success' => true, 'submodules' => $result], 200); // Devuelve el array de submódulos
+            } else {
+                $this->response(['success' => false, 'message' => 'No se encontraron submódulos para el módulo proporcionado.', 'submodules' => []], 404); // Código de estado 404 Not Found
+            }
+        } else {
+            $this->response(['success' => false, 'message' => 'ID de módulo no proporcionado.', 'submodules' => []], 400); // Código de estado 400 Bad Request
+        }
+    }
     
     private function response($data, $status = 200)
     {

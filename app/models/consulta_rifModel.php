@@ -826,4 +826,40 @@ class consulta_rifModel extends Model
             // Handle exception
         }
     }
+
+    public function GetModules()
+    {
+        try {
+            //$sql = "SELECT * FROM GetModules()";
+            $sql = "SELECT id_module, name_module FROM modules ORDER BY id_module ASC";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }
+
+    public function GetSubmodulesForModule($id_module)
+    {
+        try {
+            $escaped_id_module = pg_escape_literal($this->db->getConnection(), $id_module);
+            $sql = "SELECT id_submodule, name_submodule FROM sub_modules WHERE id_module = ".$id_module.";";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }
+
+    public function GetSubSubmodulesForSubmodule($id_submodule)
+    {
+        try {
+            $escaped_id_submodule = pg_escape_literal($this->db->getConnection(), $id_submodule);
+            $sql = "SELECT id_subsubmodule, name_subsubmodule FROM subsub_modules WHERE id_submodule = ".$id_submodule.";";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }
 }
