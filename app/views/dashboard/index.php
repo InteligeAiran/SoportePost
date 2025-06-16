@@ -25,6 +25,51 @@ function mi_navbar(){
         <link id="pagestyle" rel="stylesheet"
             href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
+        <style>
+             /* Estilos generales para asegurar que las celdas se vean bien */
+    #ticketCountSummaryTable th,
+    #ticketCountSummaryTable td {
+        /* Asegura que el padding sea respetado y el box-sizing sea consistente */
+        box-sizing: border-box;
+    }
+
+    /* Opcional: Un estilo más distintivo para las filas pares o impares si quieres un "zebra striping" */
+    #ticketCountsBody tr:nth-child(even) {
+        background-color: #f9fafb; /* Un gris muy claro para las filas pares */
+    }
+
+    #ticketCountsBody tr:nth-child(odd) {
+        background-color: #ffffff; /* Blanco para las filas impares */
+    }
+
+    /* Opcional: Un efecto de hover más pronunciado si el de Tailwind no es suficiente */
+    #ticketCountsBody tr:hover {
+        background-color: #eff6ff; /* Un azul muy suave al pasar el ratón */
+        transition: background-color 0.2s ease-in-out; /* Suaviza la transición del color */
+    }
+
+    /* Opcional: Ajustes para el table-responsive si necesitas un scroll más estético */
+    .table-responsive {
+        /* Asegura que el scrollbar sea más discreto en navegadores que lo soportan */
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* Mejora el scroll en iOS */
+    }
+
+    /* Estilos para navegadores Webkit (Chrome, Safari) */
+    .table-responsive::-webkit-scrollbar {
+        height: 8px; /* Altura del scrollbar horizontal */
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1; /* Color del "pulgar" del scrollbar */
+        border-radius: 10px;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+        background-color: #f1f5f9; /* Color de la "pista" del scrollbar */
+    }
+
+        </style>
     </head>
 
     <body class="g-sidenav-show bg-gray-100">
@@ -367,36 +412,39 @@ function mi_navbar(){
                 </div>
 
                 <div class="row mt-6">
-                    <div class="col-lg-7 mb-lg-0 mb-4">
+                       <div class="col-lg-7 mb-lg-0 mb-4">
                         <div class="card shadow-md rounded-xl">
                             <div class="card-header pb-0 p-4 border-b border-gray-200">
                                 <div class="flex justify-between items-center">
-                                    <h6 class="text-2xl font-semibold text-gray-800">Usuarios Registrados</h6>
+                                    <div class="card-header bg-gradient-primary">
+                                        <h6 class="chart-title text-white">Estadísticas de Tickets por Módulo</h6>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="table-responsive">
-                                <table id="userCountTable" class="min-w-full leading-normal">
-                                    <thead>
-                                        <tr>
-                                            <th
-                                                class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Nombre de Usuario</th>
-                                            <th
-                                                class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Email</th>
-                                            <th
-                                                class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Fecha de Registro</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td colspan="3"
-                                                class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">
-                                                Cargando...</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+
+                            <div class="p-4"> <div class="table-responsive">
+                                    <table id="ticketCountSummaryTable" class="min-w-full leading-normal" style="width: 100%;">
+                                        <thead class="bg-gray-100">
+                                            <tr>
+                                                <th
+                                                    class="px-5 py-4 border-b-2 border-gray-300 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                                    Módulo / Estado del Ticket
+                                                </th>
+                                                <th
+                                                    class="px-5 py-4 border-b-2 border-gray-300 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                                    Cantidad de Tickets
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="ticketCountsBody" class="divide-y divide-gray-200">
+                                            <tr>
+                                                <td colspan="2" class="px-5 py-3 text-sm text-center text-gray-500 bg-white">
+                                                    Cargando resumen de tickets...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>

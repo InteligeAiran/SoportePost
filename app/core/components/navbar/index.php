@@ -68,7 +68,7 @@
         /* Si hay algún padding extra en los enlaces, ajústalo */
         .sidenav .nav-link {
             padding-top: 0.5rem; /* Ajusta el padding superior */
-            padding-bottom: 0.5rem; /* Ajusta el padding inferior */
+            padding-bottom: 1.5rem; /* Ajusta el padding inferior */
         }
 
         /* Para los elementos con el h6 dentro (como Consultas y Reportes, Administración, Configuración) */

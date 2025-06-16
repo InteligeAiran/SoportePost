@@ -17,13 +17,11 @@
     <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-svg.css" />
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/bootstrap.css" />
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
         <!-- CSS Files -->
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
+
         
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
 
@@ -153,7 +151,6 @@
                 background-color: red;
             }
         </style>
-
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -170,31 +167,37 @@
             <?php require_once 'app/core/components/navbar/index.php';
             mi_navbar(); ?>
             <main class="main-content position-relative border-radius-lg">
-                <div class="container-fluid py-4">
-                    <div id="Row" class="row mt-4">
-                        <div class="cord">
-
-                            <div class="card">
-                                <div class="card-header pb-0 p-3">
-                                    <div class="col-lg-12 col-md-12 mt-4 mb-4">
-                                        <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                            <strong>
-                                                <h5 class="text-black text-capitalize ps-3">Equipos en Taller</h5>
-                                            </strong>
+                <div class="container-fluid py-4" style="height: calc(100vh - 80px);">
+                    <div class="row h-100">
+                        <div class="col-md-7 h-100 d-flex flex-column">
+                            <div id="Row" class="row mt-4">
+                                <div class="cord">
+                                    <div class="card">
+                                        <div class="card-header pb-0 p-3">
+                                            <div class="col-lg-12 col-md-12 mt-4 mb-4">
+                                                <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
+                                                    <strong>
+                                                        <h5 class="text-black text-capitalize ps-3">Equipos en Taller</h5>
+                                                    </strong>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
+                                        <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">       
+                                            <tbody id="table-ticket-body"></tbody>
+                                        </table>
                                     </div>
                                 </div>
-                                
-                                    <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
-                                        
-                                        <tbody id="table-ticket-body">
-                                        </tbody>
-                                    </table>
                             </div>
                         </div>
+                        <div class="col-md-5 h-100 d-flex flex-column border-start ps-4">
+                        <h3 class="mb-3">Detalles del Ticket</h3>
+                        <div id="ticket-details-panel" class="flex-grow-1 overflow-auto p-3 bg-light rounded">
+                            <strong><p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p></strong>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </main>

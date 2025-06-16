@@ -14,16 +14,14 @@ function getTicketData() {
     // Define column titles strictly based on your SQL function's output
     const columnTitles = {
         id_ticket: "ID Ticket",
-        create_ticket: "Fecha Creacion",
-        serial_pos: "Serial POS",
+        nro_ticket: "Nro Ticket", 
+        rif: "Rif",
+        razonsocial_cliente: "Razón Social",
         full_name_tecnicoassignado: "Técnico Asignado",
         fecha_envio_a_taller: "Fecha Envío a Taller",
-        name_process_ticket: "Proceso Ticket",
         name_status_payment: "Estatus Pago",
         name_status_lab: "Estatus Taller",
         name_accion_ticket: "Acción Ticket",
-        name_status_ticket: "Estatus Ticket",
-        name_failure: "Falla",
         date_send_torosal_fromlab: "Fecha Envío a Rosal",
         date_sendkey: "Fecha Envío Llave",
         date_receivekey: "Fecha Recibo Llave",
@@ -37,6 +35,11 @@ function getTicketData() {
 
                 if (response.success) {
                     const TicketData = response.ticket;
+                     const detailsPanel = document.getElementById("ticket-details-panel"); // Referencia al panel de detalles
+
+                     // Limpiar el panel de detalles al cargar nuevos datos de la tabla
+                    detailsPanel.innerHTML =
+                        "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
 
                     if (TicketData && TicketData.length > 0) {
                         // Destroy DataTables if it's already initialized on this table
@@ -68,7 +71,7 @@ function getTicketData() {
                                 };
 
                                 // Lógica para aplicar estilo al estado del ticket
-                                if (key === "name_status_ticket") {
+                                /*if (key === "name_status_ticket") {
                                     columnDef.render = function (data, type, row) {
                                         let statusText = String(data || "").trim();
                                         let statusColor = "gray";
@@ -77,11 +80,8 @@ function getTicketData() {
                                             case "Abierto":
                                                 statusColor = "#4CAF50"; // Verde
                                                 break;
-                                            case "Enviado a taller":
+                                            case "En proceso":
                                                 statusColor = "#2196F3"; // Azul
-                                                break;
-                                            case "actualizacion de cifrado":
-                                                statusColor = "#FF9800"; // Naranja
                                                 break;
                                             default:
                                                 if (statusText === "") {
@@ -92,7 +92,7 @@ function getTicketData() {
                                         }
                                         return `<span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
                                     };
-                                }
+                                }*/
                                 columnsConfig.push(columnDef);
                             }
                         }
@@ -110,19 +110,19 @@ function getTicketData() {
 
                                 if (currentStatus !== "Reparado" && currentStatus !== "Irreparable") {
                                     return `<button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-btn" 
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#changeStatusModal" 
-                                                    data-id="${idTicket}" 
-                                                    data-current-status="${currentStatus}">
-                                                    Cambiar Estatus
-                                                </button>`;
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#changeStatusModal" 
+                                                data-id="${idTicket}" 
+                                                data-current-status="${currentStatus}">
+                                                Cambiar Estatus
+                                            </button>`;
                                 } else {
                                     return `<button class="btn btn-secondary btn-sm" disabled>Cerrado</button>`;
                                 }
                             },
                         });
 
-                        // === ADD "CARGA DE LLAVE" COLUMN FIRST ===
+                        // === ADD "CARGA DE LLAVE" COLUMN ===
                         // It's a calculated column, so its data source is `null`
                         columnsConfig.push({
                             data: null,
@@ -145,9 +145,9 @@ function getTicketData() {
                         });
 
                         // Initialize DataTables
-                        const dataTable = $(tableElement).DataTable({
+                        const dataTableInstance = $(tableElement).DataTable({ // <--- Changed var to const and made it accessible
                             scrollX: '200px',
-                            responsive: true,
+                            responsive: false,
                             data: TicketData,
                             columns: columnsConfig,
                             pagingType: "simple_numbers",
@@ -181,6 +181,57 @@ function getTicketData() {
                                 },
                             },
                         });
+
+                        // === ADD THE CLICK EVENT LISTENER FOR TABLE ROWS HERE ===
+                        $("#tabla-ticket tbody")
+                            .off("click", "tr") // .off() to prevent multiple bindings if called multiple times
+                            .on("click", "tr", function () {
+                                const tr = $(this);
+                                const rowData = dataTableInstance.row(tr).data();
+
+                                if (!rowData) {
+                                    return;
+                                }
+
+                                $("#tabla-ticket tbody tr").removeClass("table-active");
+                                tr.addClass("table-active");
+
+                                // The ticketId here needs to match the actual data property (id_ticket)
+                                // since rowData is now an object, not an array by index.
+                                const ticketId = rowData.id_ticket; // <--- IMPORTANT CHANGE HERE
+
+                                const selectedTicketDetails = TicketData.find(
+                                    (t) => t.id_ticket == ticketId
+                                );
+
+                                if (selectedTicketDetails) {
+                                    // Make sure detailsPanel, formatTicketDetailsPanel, loadTicketHistory,
+                                    // and downloadImageModal are defined and accessible in this scope.
+                                    // For example: const detailsPanel = document.getElementById("yourDetailsPanelId");
+                                    // You might need to pass them as arguments to getTicketData or declare them globally.
+                                    detailsPanel.innerHTML = formatTicketDetailsPanel(
+                                        selectedTicketDetails
+                                    );
+                                    loadTicketHistory(ticketId);
+                                    if (selectedTicketDetails.serial_pos) {
+                                        downloadImageModal(selectedTicketDetails.serial_pos);
+                                    } else {
+                                        const imgElement = document.getElementById(
+                                            "device-ticket-image"
+                                        );
+                                        if (imgElement) {
+                                            imgElement.src =
+                                                '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png';
+                                            imgElement.alt = "Serial no disponible";
+                                        }
+                                    }
+                                } else {
+                                    detailsPanel.innerHTML =
+                                        "<p>No se encontraron detalles para este ticket.</p>";
+                                }
+                            });
+                        // === END CLICK EVENT LISTENER ===
+
 
                         if (tableContainer) {
                             tableContainer.style.display = ""; // Show the table container
@@ -231,6 +282,353 @@ function getTicketData() {
     };
 
     xhr.send();
+}
+
+    function formatTicketDetailsPanel(d) {
+    // d es el objeto `data` completo del ticket
+
+    // La imageUrl inicial puede ser una imagen de "cargando" o un placeholder.
+    const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
+    const initialImageAlt = "Cargando imagen del dispositivo...";
+
+    return `<div class="container-fluid">
+                <div class="row mb-3 align-items-center">
+                    <div class="col-md-3 text-center">
+                        <div id="device-image-container" class="p-2">
+                        <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" class="img-fluid rounded" style="max-width: 120px; height: auto; object-fit: contain;">
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <h4 style = "color: black;">Ticket #${d.id_ticket}</h4>
+                        <hr class="mt-2 mb-3">
+                        <div class="row">
+                            <div class="col-sm-6 mb-2">
+                                <strong><div>Serial POS:</div></strong><br>
+                                ${d.serial_pos}
+                            </div>
+                            <div class="col-sm-6 mb-2">
+                                <strong><div>Estatus POS:</div></strong><br>
+                                ${d.estatus_inteliservices}
+                            </div>
+                            <div class="col-sm-6 mb-2">
+                                <strong><div>Fecha Instalación POS:</div></strong><br>
+                                ${d.fecha_instalacion}
+                            </div>
+                            <div class="col-sm-6 mb-2">
+                                <strong><div>Fecha Creación ticket:</div></strong><br>
+                                ${d.create_ticket}
+                            </div>
+                            <div class="col-sm-6 mb-2">
+                                <strong><div>Usuario Gestión:</div></strong><br>
+                                ${d.full_name_tecnico}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-sm-4 mb-2">
+                                <strong><div>Acción:</div></strong><br>
+                                ${d.name_accion_ticket}
+                            </div>
+                            <div class="col-sm-8 mb-2">
+                                <strong><div>Falla:</div></strong><br>
+                                ${d.name_failure}
+                            </div>
+                            <div class="col-sm-4 mb-2">
+                                <strong><div>Proceso:</div></strong><br>
+                                ${d.name_process_ticket}
+                            </div>
+                            <div class="col-sm-8 mb-2">
+                                <strong><div>Estatus Ticket:</div></strong><br>
+                                ${d.name_status_ticket}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="mt-2 mb-3">
+
+                <div class="row">
+                    <div class="col-12">
+                        <h5 style = "color: black;">Gestión / Historial:</h5>
+                        <div id="ticket-history-content">
+                            <p>Selecciona un ticket para cargar su historial.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `};
+
+
+        function downloadImageModal(serial) {
+  // Considera renombrar a loadDeviceImage(serial) para mayor claridad
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhoto`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        //console.log("Respuesta de GetPhoto:", response); // Descomenta para depuración
+
+        // ***** CAMBIO CLAVE AQUÍ *****
+        // Selecciona el elemento de imagen en el panel de detalles, NO en un modal
+        const imgElement = document.getElementById("device-ticket-image");
+
+        if (imgElement) {
+          if (response.success && response.rutaImagen) {
+            const srcImagen = response.rutaImagen;
+            const claseImagen = response.claseImagen || ""; // Obtener la clase CSS, si no hay, usar cadena vacía
+
+            imgElement.src = srcImagen;
+            imgElement.alt = `Imagen del dispositivo ${serial}`; // Actualiza el alt text
+
+            // Opcional: Si 'claseImagen' trae clases CSS específicas que quieres añadir
+            // y no colisionan con img-fluid o rounded, puedes hacer:
+            // if (claseImagen) {
+            //     imgElement.classList.add(claseImagen);
+            // }
+            // Si 'claseImagen' es una clase para reemplazar el estilo (lo cual no es común aquí),
+            // entonces tendrías que asegurarte de que la clase de tu backend incluya
+            // las propiedades de img-fluid y rounded, o volver a añadirlas.
+            // Para este caso, con Bootstrap, probablemente no necesites asignar `className` aquí
+            // ya que `max-height` y `width: auto` en el style ya controlan el tamaño.
+          } else {
+            // Si no hay éxito o rutaImagen, carga una imagen de "no disponible"
+            imgElement.src = "assets/img/image-not-found.png"; // Crea esta imagen
+            imgElement.alt = `Imagen no disponible para serial ${serial}`;
+            console.warn(
+              "No se obtuvo ruta de imagen o éxito de la API para el serial:",
+              serial,
+              response.message
+            );
+          }
+        } else {
+          console.error(
+            'Error: No se encontró el elemento <img> con ID "device-ticket-image" en el DOM.'
+          );
+        }
+      } catch (error) {
+        console.error("Error parsing JSON response for image:", error);
+        const imgElement = document.getElementById("device-ticket-image");
+        if (imgElement) {
+          imgElement.src = "assets/img/error-loading-image.png"; // Crea esta imagen
+          imgElement.alt = "Error al cargar imagen";
+        }
+      }
+    } else {
+      console.error(
+        "Error al obtener la imagen (HTTP):",
+        xhr.status,
+        xhr.statusText
+      );
+      const imgElement = document.getElementById("device-ticket-image");
+      if (imgElement) {
+        imgElement.src = "assets/img/error-loading-image.png";
+        imgElement.alt = "Error de servidor al cargar imagen";
+      }
+    }
+  };
+
+  xhr.onerror = function () {
+    console.error(
+      "Error de red al intentar obtener la imagen para el serial:",
+      serial
+    );
+    const imgElement = document.getElementById("device-ticket-image");
+    if (imgElement) {
+      imgElement.src = "assets/img/network-error-image.png"; // Crea esta imagen
+      imgElement.alt = "Error de red";
+    }
+  };
+
+  const datos = `action=GetPhoto&serial=${encodeURIComponent(serial)}`;
+  xhr.send(datos);
+}
+
+function loadTicketHistory(ticketId) {
+  // 1. Obtener el contenedor del historial y mostrar mensaje de carga (usando jQuery)
+  const historyPanel = $("#ticket-history-content");
+  historyPanel.html(
+    '<p class="text-center text-muted">Cargando historial...</p>'
+  ); // Usar .html() de jQuery
+
+  // 2. Crear y configurar la solicitud AJAX (usando jQuery.ajax)
+  $.ajax({
+    url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
+    type: "POST",
+    data: {
+      // jQuery formatea esto automáticamente a 'application/x-www-form-urlencoded'
+      action: "GetTicketHistory",
+      id_ticket: ticketId,
+    },
+    dataType: "json", // Le decimos a jQuery que esperamos una respuesta JSON
+    success: function (response) {
+
+      // Verificar si la respuesta es exitosa y contiene historial
+      if (response.success && response.history && response.history.length > 0) {
+        let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">'; // Contenedor del acordeón
+
+        // Iterar sobre cada item del historial para construir el HTML
+        response.history.forEach((item, index) => {
+          const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+          const headingId = `headingHistoryItem_${ticketId}_${index}`;
+
+          let statusHeaderClass = "";
+          let statusHeaderText = "";
+
+          // **Colores por defecto si no hay coincidencia o si el estado es nulo/vacío**
+          headerStyle = "background-color: #212529;"; // Gris claro de Bootstrap 'light'
+          textColor = "color: #212529;"; // Texto oscuro de Bootstrap 'dark'
+          statusHeaderText = ""; // Sin texto extra por defecto
+
+          if (item.name_status_ticket) {
+            const statusLower = item.name_status_ticket.toLowerCase();
+            if (statusLower.includes("abierto")) {
+              headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
+              textColor = "color: #ffffff;"; // Texto blanco
+              statusHeaderText = " (Abierto)";
+            } else if (
+              statusLower.includes("cerrado") ||
+              statusLower.includes("resuelto")
+            ) {
+              headerStyle = "background-color: #28a745;"; // Verde
+              textColor = "color: #ffffff;"; // Texto blanco
+              statusHeaderText = " (Cerrado)";
+            } else if (
+              statusLower.includes("pendiente") ||
+              statusLower.includes("en proceso")
+            ) {
+              headerStyle = "background-color: #ffc107;"; // Amarillo
+              textColor = "color: #343a40;"; // Texto oscuro
+              statusHeaderText = " (En Proceso)";
+            } else if (
+              statusLower.includes("cancelado") ||
+              statusLower.includes("rechazado")
+            ) {
+              headerStyle = "background-color: #dc3545;"; // Rojo
+              textColor = "color: #ffffff;"; // Texto blanco
+              statusHeaderText = " (Cancelado)";
+            } else if (statusLower.includes("espera")) {
+              headerStyle = "background-color: #6c757d;"; // Gris
+              textColor = "color: #ffffff;"; // Texto blanco
+              statusHeaderText = " (En Espera)";
+            }
+          }
+
+          historyHtml += `
+                       <div class="card mb-3 custom-history-card"> <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
+                                            data-toggle="collapse" data-target="#${collapseId}"
+                                            aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="${collapseId}"
+                                            style="${textColor}">
+                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="${collapseId}" class="collapse ${index === 0 ? 'show' : ''}"
+                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-borderless mb-0">
+                                            <tbody>
+                                                <tr>
+                                                    <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
+                                                    <td>${item.fecha_de_cambio || 'N/A'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Acción:</th>
+                                                    <td>${item.name_accion_ticket || 'N/A'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Operador de Gestión:</th>
+                                                    <td>${item.full_name_tecnico_gestion || 'N/A'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Coordinador:</th>
+                                                    <td>${item.full_name_coordinador || 'N/A'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Ticket:</th>
+                                                    <td>${item.name_status_ticket || 'N/A'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Laboratorio:</th>
+                                                    <td>${item.name_status_lab || 'N/A'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Domiciliación:</th>
+                                                    <td>${item.name_status_domiciliacion || 'N/A'}</td>
+                                                </tr>
+                                                 <tr>
+                                                    <th class="text-start">Estatus Pago:</th>
+                                                    <td>${item.name_status_payment || 'N/A'}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+        });
+
+        historyHtml += "</div>"; // Cierre del acordeón principal
+        historyPanel.html(historyHtml); // Insertar el HTML generado (con jQuery)
+
+        // === IMPORTANTE: RE-INICIALIZAR COMPONENTES DE BOOTSTRAP SI ES NECESARIO ===
+        // Para Bootstrap 4, los atributos data-toggle/data-parent usualmente se "enganchan"
+        // automáticamente si jQuery y Bootstrap JS están cargados.
+        // No necesitas una inicialización explícita como en Bootstrap 5.
+        // El problema suele ser que los atributos data-toggle/data-parent están mal,
+        // o jQuery/Bootstrap JS no están cargados.
+
+        // Reiniciar tooltips (si usas Bootstrap 4, la sintaxis es diferente para dispose/init)
+        if ($.fn && $.fn.tooltip) {
+          // Para Bootstrap 4, los tooltips se manejan así:
+          $('[data-toggle="tooltip"]').tooltip("dispose"); // Asegúrate de que el atributo es data-toggle
+          $('[data-toggle="tooltip"]').tooltip(); // Y se inicializan con data-toggle
+        }
+
+        // Aquí no se necesita `new bootstrap.Collapse` porque eso es para JS nativo de Bootstrap 5.
+        // Con jQuery y Bootstrap 4, la magia ocurre a través de los atributos data-toggle y data-parent
+        // una vez que el HTML está en el DOM y las librerías cargadas.
+      } else {
+        historyPanel.html(
+          '<p class="text-center text-muted">No hay historial disponible para este ticket.</p>'
+        );
+      }
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      let errorMessage =
+        '<p class="text-center text-danger">Error al cargar el historial.</p>';
+      if (jqXHR.status === 0) {
+        errorMessage =
+          '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+      } else if (jqXHR.status == 404) {
+        errorMessage =
+          '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
+      } else if (jqXHR.status == 500) {
+        errorMessage =
+          '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+      } else if (textStatus === "parsererror") {
+        errorMessage =
+          '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+      } else if (textStatus === "timeout") {
+        errorMessage =
+          '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+      } else if (textStatus === "abort") {
+        errorMessage =
+          '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+      }
+      historyPanel.html(errorMessage);
+      console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+    },
+  });
 }
 
 // Call getTicketData when the document is ready using jQuery

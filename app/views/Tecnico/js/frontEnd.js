@@ -587,7 +587,7 @@ function formatTicketDetailsPanel(d) {
                     </div>
                 </div>
                 <div class="col-md-9">
-                    <h4>Ticket #${d.id_ticket}</h4>
+                    <h4 style = "color: black;">Ticket #${d.id_ticket}</h4>
                     <hr class="mt-2 mb-3">
                     <div class="row">
                         <div class="col-sm-6 mb-2">
@@ -641,7 +641,7 @@ function formatTicketDetailsPanel(d) {
 
             <div class="row">
                 <div class="col-12">
-                    <h5>Gestión / Historial:</h5>
+                    <h5 style = "color: black;" >Gestión / Historial:</h5>
                     <div id="ticket-history-content">
                         <p>Selecciona un ticket para cargar su historial.</p>
                     </div>
@@ -775,7 +775,6 @@ function loadTicketHistory(ticketId) {
           statusHeaderText = ""; // Sin texto extra por defecto
 
           if (item.name_status_ticket) {
-            console.log(item.name_status_ticket);
             const statusLower = item.name_status_ticket.toLowerCase();
             if (statusLower.includes("abierto")) {
               headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste

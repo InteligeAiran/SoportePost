@@ -357,7 +357,7 @@ class TechnicalConsultionRepository
             case "gestión taller":
                 $url_segment = 'taller'; // Usé el de tu HTML inicial
                 break;
-            case "pendiente por entrega":
+            case "pendiente por entregar":
                 $url_segment = 'pendiente_entrega'; // Usé el de tu HTML inicial
                 break;
             case "consultas general":
@@ -445,6 +445,15 @@ class TechnicalConsultionRepository
             return $final_submodules_data;
         } else {
             return []; // Retorna un array vacío si no hay submódulos
+        }
+    }
+
+    public function GetTicketCounts(){
+        $result = $this->model->getTicketCountsGroupedByAction();
+        if ($result) {
+            return $result;
+        } else {
+            return null;
         }
     }
 }

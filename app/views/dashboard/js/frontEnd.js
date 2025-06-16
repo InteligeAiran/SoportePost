@@ -2946,6 +2946,80 @@ function loadMonthlyCreatedTicketsChartForState() {
     });
 }
 
+function getTicketCounts() {
+    const xhrCounts = new XMLHttpRequest();
+    xhrCounts.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketCounts`);
+
+    const tbodyCounts = document.getElementById("ticketCountsBody");
+    
+    tbodyCounts.innerHTML = `
+        <tr>
+            <td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">
+                Cargando resumen de tickets...
+            </td>
+        </tr>
+    `;
+
+    xhrCounts.onload = function () {
+        if (xhrCounts.status >= 200 && xhrCounts.status < 300) {
+            try {
+                const response = JSON.parse(xhrCounts.responseText);
+                if (response.success && Array.isArray(response.counts)) { // Asegúrate de que es un array
+                    const counts = response.counts;
+                    tbodyCounts.innerHTML = ''; 
+
+                    if (counts.length === 0) {
+                        tbodyCounts.innerHTML = '<tr><td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">No hay tickets en los módulos seleccionados.</td></tr>';
+                        return;
+                    }
+
+                    // Puedes definir un orden de visualización si lo necesitas,
+                    // o simplemente iterar sobre los datos tal como vienen de la DB (ya ordenados por ID).
+                    const displayOrderMap = {
+                        4: 'Gestión Técnico',
+                        6: 'Gestión Técnico (Secundario)', // Si 6 es diferente de 4, asigna un nombre claro
+                        7: 'Gestión Taller',
+                        8: 'Proceso Carga Llaves',
+                        9: 'Llaves Cargadas',
+                        5: 'Cerrados'
+                    };
+
+                    // Si quieres ordenar por un orden específico, puedes crear un array de los IDs
+                    // y luego buscar en 'counts'. De lo contrario, simplemente itera 'counts'.
+                    // Por simplicidad, iteraremos directamente sobre 'counts' ya que el SQL lo ordena por ID.
+                    counts.forEach(item => {
+                        const tr = document.createElement('tr');
+                        // Usamos name_accion_ticket directamente, pero puedes usar displayOrderMap[item.id_accion_ticket]
+                        // si quieres sobrescribir el nombre de la DB o asegurarte de un orden específico.
+                        const moduleName = item.name_accion_ticket; 
+                        
+                        tr.innerHTML = `
+                            <td class="px-5 py-5 border-b border-gray-200 text-sm">${moduleName}</td>
+                            <td class="px-5 py-5 border-b border-gray-200 text-sm">${item.total_tickets}</td>
+                        `;
+                        tbodyCounts.appendChild(tr);
+                    });
+
+                } else {
+                    tbodyCounts.innerHTML = '<tr><td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">Error al cargar conteos.</td></tr>';
+                    console.error("Error al cargar conteos:", response.message);
+                }
+            } catch (error) {
+                tbodyCounts.innerHTML = '<tr><td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">Error al procesar conteos.</td></tr>';
+                console.error("Error parsing JSON for counts:", error);
+            }
+        } else {
+            tbodyCounts.innerHTML = '<tr><td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">Error de conexión al obtener conteos.</td></tr>';
+            console.error("Error al obtener conteos:", xhrCounts.status, xhrCounts.statusText);
+        }
+    };
+    xhrCounts.onerror = function () {
+        tbodyCounts.innerHTML = '<tr><td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">Error de red al obtener conteos.</td></tr>';
+        console.error("Error de red al obtener conteos.");
+    };
+    xhrCounts.send();
+}
+
 // Llama a esta función para cargar el gráfico cuando el DOM esté listo
 document.addEventListener("DOMContentLoaded", function () {
   loadMonthlyCreatedTicketsChart();
@@ -2955,5 +3029,6 @@ document.addEventListener("DOMContentLoaded", function () {
   getTicketReparados();
   getTicketPendienteRepuesto();
   getTicketIrreparables();
+  getTicketCounts(); // Para la tabla de conteos
   // ... (resto de tu código DOMContentLoaded para modals, estadísticas de cards, etc.)
 });

@@ -131,7 +131,7 @@ function getTicketData() {
                 });
                 // ************* FIN CAMBIOS PARA LOS BOTONES *************
             },
-// ... el resto de tu configuración de DataTables ...
+            // ... el resto de tu configuración de DataTables ...
             // ************ FIN CAMBIOS CLAVE ************
           });
 
@@ -232,7 +232,7 @@ function formatTicketDetailsPanel(d) {
                     </div>
                 </div>
                 <div class="col-md-9">
-                    <h4>Ticket #${d.id_ticket}</h4>
+                    <h4 style = "color: black;">Ticket #${d.id_ticket}</h4>
                     <hr class="mt-2 mb-3">
                     <div class="row">
                         <div class="col-sm-6 mb-2">
@@ -286,7 +286,7 @@ function formatTicketDetailsPanel(d) {
 
             <div class="row">
                 <div class="col-12">
-                    <h5>Gestión / Historial:</h5>
+                    <h5 style = "color: black;">Gestión / Historial:</h5>
                     <div id="ticket-history-content">
                         <p>Selecciona un ticket para cargar su historial.</p>
                     </div>
@@ -406,7 +406,6 @@ function loadTicketHistory(ticketId) {
     },
     dataType: "json", // Le decimos a jQuery que esperamos una respuesta JSON
     success: function (response) {
-      console.log("Historial recibido:", response.history);
 
       // Verificar si la respuesta es exitosa y contiene historial
       if (response.success && response.history && response.history.length > 0) {
@@ -426,7 +425,6 @@ function loadTicketHistory(ticketId) {
           statusHeaderText = ""; // Sin texto extra por defecto
 
           if (item.name_status_ticket) {
-            console.log(item.name_status_ticket);
             const statusLower = item.name_status_ticket.toLowerCase();
             if (statusLower.includes("abierto")) {
               headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
@@ -778,7 +776,6 @@ function GetRegionUser(id_user) {
       document.getElementById("InputRegion").value = "";
     }
   };
-  console.log("ID del usuario para obtener la región:", id_user);
   const datos = `action=GetRegionUsersAssign&id_user=${encodeURIComponent(
     id_user
   )}`;

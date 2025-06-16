@@ -160,6 +160,10 @@ class Consulta extends Controller
                 case 'getSubmodulesForModule':
                     $this->handleGetSubmodulesForModule();
                     break;
+                
+                case 'GetTicketCounts':
+                    $this->handleGetTicketCounts();
+                    break;
 
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
@@ -767,7 +771,7 @@ class Consulta extends Controller
 
         if ($id_tecnico != '' && $id_ticket != '') {
             if ($result) {
-                $this->response(['success' => true, 'message' => 'Asignado Con Exito'], 200);
+                $this->response(['success' => true, 'message' => 'Asignado Con Éxito'], 200);
             } else {
                 $this->response(['success' => false, 'message' => 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
             }
@@ -919,6 +923,18 @@ class Consulta extends Controller
             }
         } else {
             $this->response(['success' => false, 'message' => 'ID de módulo no proporcionado.', 'submodules' => []], 400); // Código de estado 400 Bad Request
+        }
+    }
+
+    public function handleGetTicketCounts(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetTicketCounts();
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'counts' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron datos
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
     
