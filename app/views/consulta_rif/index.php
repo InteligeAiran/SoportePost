@@ -267,13 +267,13 @@ function mi_navbar() {}
                             <label id="LabelRifModal2" for="serialInputDetalle1" class="form-label">RIF
                                 cliente</label>
                             <input type="text" onchange="checkRif()" id="InputRif" class="form-control"
-                                placeholder="JV123456789">
+                                placeholder="JV123456789" disabled>
                             <p style="margin-left: 143%; width: 100%;" id="rifMensaje"></p>
                         </div>
                         <div>
                             <label id="LabelSerial" class="form-label" for="serialSelect">Seriales de POS:</label>
                             <div id="serialSelectContainer">
-                                <select class="form-select" id="serialSelect" name="serialSelect"></select>
+                                <input type="text" class="form-control" id="serialSelect" name="serialSelect" disabled></input>
                             </div><br>
                         </div>
                         <div>
@@ -289,14 +289,14 @@ function mi_navbar() {}
                             <div>
                                 <label class="form-label" id="FechaLast" for="ultimoTicketInput">Fecha del Último
                                     Ticket:</label>
-                                <input class="form-control" type="text" id="ultimateTicketInput" readonly>
+                                <input class="form-control" type="text" id="ultimateTicketInput" disabled>
                                 <div style=" margin-left: 5%;" id="resultadoGarantiaReingreso"></div>
                             </div><br>
 
                             <div>
                                 <label class="form-label" id="LabelFechaInst" for="InputFechaInstall">Fecha de
                                     Instalaci&oacuten POS:</label>
-                                <input class="form-control" type="text" id="InputFechaInstall" readonly>
+                                <input class="form-control" type="text" id="InputFechaInstall" disabled>
                                 <div style="margin-left: 31%;" id="resultadoGarantiaInstalacion"></div>
                             </div>
                         </div><br>
@@ -332,11 +332,11 @@ function mi_navbar() {}
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="checkExoneracion"
                                     value="exoneracion">
-                                <label class="form-check-label" for="checkExoneracion">Cargar Exoneración</label>
+                                <label class="form-check-label" id="checkExoneracionLabel" for="checkExoneracion">Cargar Exoneración</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="checkAnticipo" value="anticipo">
-                                <label class="form-check-label" for="checkAnticipo">Cargar PDF Anticipo</label>
+                                <label class="form-check-label" id="checkAnticipoLabel" for="checkAnticipo">Cargar PDF Anticipo</label>
                             </div>
                         </div>
 
@@ -403,12 +403,11 @@ function mi_navbar() {}
                                 </select>
                             </div><br>
                             <label for="serialInputDetalle1">RIF cliente</label>
-                            <input type="text" onchange="checkRif1()" id="InputRif1" placeholder="JV123456789">
+                            <input type="text" onchange="checkRif1()" id="InputRif1" placeholder="JV123456789" disabled>
                             <p id="rifMensaje1"></p>
                             <label for="serialSelect">Seriales de POS:</label>
-                            <div id="serialSelectContainer">
-                                <select id="serialSelect1" name="serialSelect">
-                                </select>
+                           <div id="serialSelectContainer">
+                                <input type="text" class="form-control" id="serialSelect1" name="serialSelect" disabled>
                             </div><br>
                             <label style="display: none;" for="FallaSelect">Nivel Falla</label>
                             <div id="FallaSelectContainer">

@@ -164,7 +164,7 @@
                 const heading = document.createElement('h6');
                 heading.style.color = 'white';
                 heading.style.margin = '0';
-                heading.style.paddingLeft = '.5rem';
+                /*heading.style.paddingLeft = '.5rem';*/
                 heading.className = 'flex-grow-1';
                 heading.textContent = itemName;
                 anchor.innerHTML = itemData.icon_svg || getIconSvgForName(itemName);

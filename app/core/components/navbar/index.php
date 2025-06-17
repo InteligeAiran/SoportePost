@@ -61,13 +61,13 @@
 
         /* Reduce el margen superior para los elementos del menú principal */
         .sidenav .nav-item {
-            margin-top: 0.5rem !important; /* Originalmente podría ser 1rem o más con mt-3, ajusta a tu gusto */
+            margin-top: 1.5rem !important; /* Originalmente podría ser 1rem o más con mt-3, ajusta a tu gusto */
             margin-bottom: 1.5rem !important; /* Añade un pequeño margen inferior si lo deseas */
         }
 
         /* Si hay algún padding extra en los enlaces, ajústalo */
         .sidenav .nav-link {
-            padding-top: 0.5rem; /* Ajusta el padding superior */
+            padding-top: 1.5rem; /* Ajusta el padding superior */
             padding-bottom: 1.5rem; /* Ajusta el padding inferior */
         }
 
