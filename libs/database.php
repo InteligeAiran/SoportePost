@@ -20,7 +20,9 @@ define('APP_BASE_PATH', '/SoportePost/');
 define('tituloPagina', 'Soporte Post Venta');
 /* ENDPOINT*/ 
 
-
+// config/config.php (ejemplo)
+define('UPLOAD_BASE_DIR', 'C:\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
+//  define(constant_name: 'UPLOAD_BASE_DIR', 'G:\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
 
 //Envio Correo 
 define('SMTP_HOST', 'smtp.gmail.com');

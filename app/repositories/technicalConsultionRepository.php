@@ -185,9 +185,36 @@ class TechnicalConsultionRepository
         return $failures;
     }
 
-    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio, $rif, $Nr_ticket){
-        $result = $this->model->SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $rutaEnvio, $id_status_payment, $rutaExo, $rutaAnticipo, $id_user, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio, $rif, $Nr_ticket);
+     public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket){
+        // Los parámetros $rutaEnvio, $rutaExo, $rutaAnticipo, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio
+        // DEBEN SER ELIMINADOS de la llamada al modelo si tu función `save_data_failure2` en la DB ya no los recibe.
+        // Si tu DB aún los recibe, pásalos como NULL. Asumiré que tu DB fue ajustada.
+        $result = $this->model->SaveDataFalla2(
+            $serial,
+            $descripcion,
+            $nivelFalla,
+            $coordinador,
+            $id_status_payment,
+            $id_user,
+            $rif,
+            $Nr_ticket
+        );
         return $result;
+    }
+
+    // Nueva función para guardar archivos adjuntos
+    public function saveArchivoAdjunto($ticket_id, $Nr_ticket, $uploaded_by_user_id, array $fileInfo) {
+        return $this->model->saveArchivoAdjunto(
+            $ticket_id,
+            $Nr_ticket, // Pasamos Nr_ticket para que se pueda guardar si es necesario en la DB
+            $uploaded_by_user_id,
+            $fileInfo['original_filename'],
+            $fileInfo['stored_filename'],
+            $fileInfo['file_path'],
+            $fileInfo['mime_type'],
+            $fileInfo['file_size_bytes'],
+            $fileInfo['document_type']
+        );
     }
 
     public function GetTicketData($id_user){

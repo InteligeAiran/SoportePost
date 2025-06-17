@@ -3,6 +3,7 @@ namespace App\Controllers\Api\Consulta; // Define el namespace
 
 require_once __DIR__ . '/../../../../libs/Controller.php';
 require_once __DIR__ . '/../../../../libs/database_cn.php';
+require_once __DIR__ . '/../../../../libs/database.php';
 require_once __DIR__ . '/../../../../libs/View.php';
 require_once __DIR__ . '/../../../../libs/database.php';
 require_once __DIR__ . '/../../../repositories/technicalConsultionRepository.php';
@@ -437,11 +438,12 @@ class Consulta extends Controller
         }
     }
 
-    // ... (Use statements y demás código inicial de tu clase/archivo) ...
+    // ... (Use statements y demás código inicial de tu clase/archivo) ..
+    // ... tus propiedades y métodos existentes ...
 
-     public function handleSaveFalla2()
+   public function handleSaveFalla2()
     {
-        // error_log("handleSaveFalla2: INICIO DE LA PETICIÓN."); // Puedes añadir logs para depurar si fuera necesario
+        // error_log("handleSaveFalla2: INICIO DE LA PETICIÓN.");
 
         // Recoger y sanear los datos de entrada
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
@@ -457,12 +459,10 @@ class Consulta extends Controller
         $id_status_payment = isset($_POST['id_status_payment']) ? $_POST['id_status_payment'] : '';
         $coordinador_nombre = isset($_POST['coordinadorNombre']) ? $_POST['coordinadorNombre'] : '';
 
-        $rutaEnvio = null;
-        $rutaExo = null;
-        $rutaAnticipo = null;
-        $mimeTypeExo = null;
-        $mimeTypeAnticipo = null;
-        $mimeTypeEnvio = null;
+        // Ahora estas variables se pasarán por referencia a la función auxiliar
+        $archivoEnvioInfo = null;
+        $archivoExoneracionInfo = null;
+        $archivoAnticipoInfo = null;
 
         $repository = new technicalConsultionRepository();
 
@@ -470,25 +470,22 @@ class Consulta extends Controller
         $lastTicketInfo = $repository->getLastUserTicketInfo($id_user);
 
         if ($lastTicketInfo) {
-            // 'date_create_ticket' ya es un objeto DateTime
             $lastTicketDateTime = $lastTicketInfo['date_create_ticket'];
             $lastTicketRif = $lastTicketInfo['rif_last_ticket'];
             $currentDateTime = new DateTime();
             $interval = $currentDateTime->diff($lastTicketDateTime);
             $minutesPassed = $interval->i + ($interval->h * 60) + ($interval->days * 24 * 60);
 
-            $tiempoLimiteMismoCliente = 10; // Ajustado a 1 minuto para pruebas
-            $tiempoLimiteDiferenteCliente = 5; // Ajustado a 1 minuto para pruebas
+            $tiempoLimiteMismoCliente = 1; // 10 minutos para el mismo cliente
+            $tiempoLimiteDiferenteCliente = 1;  // 5 minutos para un cliente diferente
 
             if ($rif === $lastTicketRif) {
-                // Es la misma institución (mismo RIF)
                 if ($minutesPassed < $tiempoLimiteMismoCliente) {
                     $this->response([
                         'success' => false,
                         'message' => "Demasiadas Solicitudes. Debes esperar " . ($tiempoLimiteMismoCliente - $minutesPassed) . " minuto(s) para crear otro ticket para la misma cliente (RIF: $rif)."
                     ], 429);
-                    // IMPORTANTE: El `exit()` dentro de $this->response() detendrá la ejecución
-                    return; 
+                    return;
                 }
             } else {
                 if ($minutesPassed < $tiempoLimiteDiferenteCliente) {
@@ -496,7 +493,6 @@ class Consulta extends Controller
                         'success' => false,
                         'message' => "Demasiadas Solicitudes. Debes esperar " . ($tiempoLimiteDiferenteCliente - $minutesPassed) . " minuto(s) para crear otro ticket para un cliente diferente (RIF: $rif)."
                     ], 429);
-                    // IMPORTANTE: El `exit()` dentro de $this->response() detendrá la ejecución
                     return;
                 }
             }
@@ -510,100 +506,195 @@ class Consulta extends Controller
         }
 
         // Generar el número de ticket (Nr_ticket)
-        $hoy = date('dmy');
+         $hoy = date('dmy');
         $fecha_para_db = date('Y-m-d');
         $resultado = $repository->GetTotalTickets($fecha_para_db);
         $totaltickets = $resultado + 1;
         $paddedTicketNumber = sprintf("%04d", $totaltickets);
         $Nr_ticket = $hoy . $paddedTicketNumber;
 
-        // --- Procesamiento de archivos subidos ---
-        $uploadDir = 'C:\\Users\\Airan Bracamonte\\Downloads\\'; // ¡CAMBIAR ESTA RUTA EN PRODUCCIÓN!
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
-        if (isset($_FILES['archivoEnvio']) && $_FILES['archivoEnvio']['error'] === UPLOAD_ERR_OK) {
-            $archivo = $_FILES['archivoEnvio'];
-            $nombreArchivo = uniqid() . '_' . basename($archivo['name']);
-            $rutaArchivo = $uploadDir . $nombreArchivo;
-            $mimeTypeEnvio = mime_content_type($archivo['tmp_name']);
-            if (move_uploaded_file($archivo['tmp_name'], $rutaArchivo)) {
-                $rutaEnvio = $rutaArchivo;
-            } else {
-                $this->response(['success' => false, 'message' => 'Error al guardar el archivo de envío.'], 500);
-                return;
-            }
-        }
-
-        if (isset($_FILES['archivoExoneracion']) && $_FILES['archivoExoneracion']['error'] === UPLOAD_ERR_OK) {
-            $archivoExo = $_FILES['archivoExoneracion'];
-            $nombreArchivoExo = uniqid() . '_' . basename($archivoExo['name']);
-            $rutaArchivoExo = $uploadDir . $nombreArchivoExo;
-            $mimeTypeExo = mime_content_type($archivoExo['tmp_name']);
-            if (move_uploaded_file($archivoExo['tmp_name'], $rutaArchivoExo)) {
-                $rutaExo = $rutaArchivoExo;
-            } else {
-                $this->response(['success' => false, 'message' => 'Error al guardar el archivo de exoneración.'], 500);
-                return;
-            }
-        }
-
-        if (isset($_FILES['archivoAnticipo']) && $_FILES['archivoAnticipo']['error'] === UPLOAD_ERR_OK) {
-            $archivoAnticipo = $_FILES['archivoAnticipo'];
-            $nombreArchivoAnticipo = uniqid() . '_' . basename($archivoAnticipo['name']);
-            $rutaArchivoAnticipo = $uploadDir . $nombreArchivoAnticipo;
-            $mimeTypeAnticipo = mime_content_type($archivoAnticipo['tmp_name']);
-            if (move_uploaded_file($archivoAnticipo['tmp_name'], $rutaArchivoAnticipo)) {
-                $rutaAnticipo = $rutaArchivoAnticipo;
-            } else {
-                $this->response(['success' => false, 'message' => 'Error al guardar el archivo de anticipo.'], 500);
-                return;
-            }
-        }
-        // --- Fin procesamiento de archivos subidos ---
-
-        // Llamar al método del repositorio para guardar los datos del ticket de nivel 2
+        // ** Paso 1: Guardar el ticket principal para obtener el ID **
         $result = $repository->SaveDataFalla2(
             $serial,
             $falla_id,
             $nivelFalla_id,
-            $coordinador, // Usamos $falla_id aquí
-            $rutaEnvio,
+            $coordinador,
             $id_status_payment,
-            $rutaExo,
-            $rutaAnticipo,
             $id_user,
-            $mimeTypeExo,
-            $mimeTypeAnticipo,
-            $mimeTypeEnvio,
             $rif,
             $Nr_ticket
         );
 
-        if ($result) {
-            // Si el ticket se guardó con éxito, enviar la respuesta 200.
-            // AHORA NO HAY NINGUNA VALIDACIÓN DE TIEMPO AQUÍ.
+        if (isset($result['success']) && $result['success']) {
+            $idTicketCreado = $result['id_ticket_creado']; // ID del ticket recién creado (entero, ej. 164)
+
+            // 6. Configurar y Crear la Estructura de Carpetas de Archivos
+            // Sanitizar el serial para el nombre de la carpeta
+            // Esto es crucial para evitar problemas con nombres de carpeta inválidos en el sistema de archivos.
+            // Permite letras (mayúsculas/minúsculas), números, guiones y guiones bajos. Otros caracteres se reemplazan por '_'.
+            $cleanSerial = preg_replace("/[^a-zA-Z0-9_-]/", "_", $serial);
+
+            // Definir la ruta base para la subida de archivos (obtenida de config.php)
+            $baseUploadDir = UPLOAD_BASE_DIR; // Viene de tu config.php
+
+            // Nivel 1: Carpeta principal por SERIAL
+            // Ejemplo: C:\uploads_tickets\J566767676\
+            $serialUploadDir = $baseUploadDir . $cleanSerial . DIRECTORY_SEPARATOR;
+            
+            // Nivel 2: Carpeta por ID_TICKET (dentro de la carpeta del Serial)
+            // Ejemplo: C:\uploads_tickets\J566767676\164\
+            $ticketUploadDir = $serialUploadDir . $idTicketCreado . DIRECTORY_SEPARATOR;
+
+            // Crear los directorios recursivamente si no existen
+            // Se usa 'true' para mkdir para que cree directorios anidados si no existen.
+            // Permisos 0755: Lectura/escritura/ejecución para el propietario, lectura/ejecución para grupo y otros.
+            
+            // Crear el directorio base (ej. C:\uploads_tickets\)
+            if (!is_dir($baseUploadDir)) {
+                if (!mkdir($baseUploadDir, 0755, true)) {
+                    error_log("Error al crear el directorio base: " . $baseUploadDir);
+                    $this->response(['success' => false, 'message' => 'Error interno del servidor al preparar el almacenamiento de archivos (base).'], 500);
+                    return;
+                }
+            }
+            // Crear el directorio del Serial (ej. C:\uploads_tickets\J566767676\)
+            // Esta es la carpeta que agrupará todos los tickets de un mismo serial.
+            if (!is_dir($serialUploadDir)) {
+                if (!mkdir($serialUploadDir, 0755, true)) {
+                    error_log("Error al crear el directorio del serial: " . $serialUploadDir);
+                    $this->response(['success' => false, 'message' => 'Error interno del servidor al preparar el almacenamiento de archivos (serial).'], 500);
+                    return;
+                }
+            }
+            // Crear el directorio del ID_TICKET (ej. C:\uploads_tickets\J566767676\164\)
+            // Esta carpeta se creará para CADA NUEVO TICKET, dentro de la carpeta del Serial.
+            if (!is_dir($ticketUploadDir)) {
+                if (!mkdir($ticketUploadDir, 0755, true)) {
+                    error_log("Error al crear el directorio del ticket: " . $ticketUploadDir);
+                    $this->response(['success' => false, 'message' => 'Error interno del servidor al preparar el almacenamiento de archivos (ticket).'], 500);
+                    return;
+                }
+            }
+
+
+            // 7. Función auxiliar para procesar archivos subidos
+            // Esta función maneja la creación de subcarpetas por tipo de documento y el guardado de archivos.
+            // Parámetros:
+            //   $fileKey:       La clave en $_FILES (ej. 'archivoEnvio')
+            //   $documentType:  El tipo de documento (ej. 'Envio', 'Exoneracion')
+            //   $ticketId:      El ID del ticket (para guardar en DB)
+            //   $nrTicket:      El número de ticket (para guardar en DB)
+            //   $userId:        El ID del usuario que sube (para guardar en DB)
+            //   $repo:          Instancia del repositorio (para guardar en DB)
+            //   $baseTicketDir: La ruta base de la carpeta del ticket (ej. C:\uploads_tickets\SERIAL\ID_TICKET\)
+            //   $dateForFilename: String de fecha/hora para incluir en el nombre del archivo (ej. 20250617_123000)
+            //   &$targetVar:    Variable por referencia para almacenar la info del archivo subido (para la respuesta)
+            $processFile = function($fileKey, $documentType, $ticketId, $nrTicket, $userId, $repo, $baseTicketDir, $dateForFilename, &$targetVar) {
+                // Verificar si el archivo fue subido y no hubo errores
+                if (isset($_FILES[$fileKey]) && $_FILES[$fileKey]['error'] === UPLOAD_ERR_OK) {
+                    $archivo = $_FILES[$fileKey];
+                    $nombreArchivoOriginal = basename($archivo['name']); // Obtiene solo el nombre del archivo
+
+                    // Separar el nombre base del archivo de su extensión
+                    $info = pathinfo($nombreArchivoOriginal);
+                    $nombreSinExtension = $info['filename'];
+                    $extension = isset($info['extension']) ? '.' . $info['extension'] : '';
+
+                    // Limpiar el nombre original (solo la parte antes de la extensión)
+                    // Elimina caracteres que no sean alfanuméricos, guiones, guiones bajos o puntos.
+                    $cleanNombreSinExtension = preg_replace("/[^a-zA-Z0-9_\-.]/", "", $nombreSinExtension);
+
+                    // Construir el nombre del archivo a almacenar en el servidor
+                    // Formato: TIPO_DOCUMENTO_FECHA_HORA_IDUNICO_NOMBRE_ORIGINAL_LIMPIO.EXT
+                    // uniqid() se añade para prevenir colisiones de nombres si se suben varios archivos
+                    // con el mismo nombre original en el mismo segundo o por diferentes usuarios.
+                    $nombreArchivoAlmacenado = $documentType . '_' . $dateForFilename . '_' . uniqid() . '_' . $cleanNombreSinExtension . $extension;
+
+
+                    // Nivel 3: Carpeta para el tipo de documento (dentro de la carpeta del Ticket)
+                    // Ejemplo: C:\uploads_tickets\J566767676\164\Exoneracion\
+                    $documentTypeDir = $baseTicketDir . $documentType . DIRECTORY_SEPARATOR;
+                    if (!is_dir($documentTypeDir)) {
+                        if (!mkdir($documentTypeDir, 0755, true)) {
+                            error_log("Error al crear el directorio del tipo de documento: " . $documentTypeDir);
+                            return false; // Indicar que la creación de la carpeta falló
+                        }
+                    }
+
+                    $rutaArchivoCompleta = $documentTypeDir . $nombreArchivoAlmacenado;
+                    
+                    // Obtener el tipo MIME del archivo subido para validación y seguridad
+                    $mimeType = mime_content_type($archivo['tmp_name']);
+
+                    // Mover el archivo de la ubicación temporal a la ubicación final
+                    if (move_uploaded_file($archivo['tmp_name'], $rutaArchivoCompleta)) {
+                        // Almacenar la información del archivo subido en la variable de referencia
+                        $targetVar = [
+                            'original_filename' => $nombreArchivoOriginal,
+                            'stored_filename' => $nombreArchivoAlmacenado,
+                            'file_path' => $rutaArchivoCompleta, // La ruta completa en el servidor
+                            'mime_type' => $mimeType,
+                            'file_size_bytes' => $archivo['size'],
+                            'document_type' => $documentType
+                        ];
+                        // Guardar la información del archivo adjunto en la base de datos
+                        // Se asume que $repo->saveArchivoAdjunto existe y funciona correctamente.
+                        $repo->saveArchivoAdjunto($ticketId, $nrTicket, $userId, $targetVar);
+                        return true; // Archivo movido y datos guardados exitosamente
+                    } else {
+                        // Registrar errores si el movimiento del archivo falla
+                        error_log("Error al mover el archivo de {$documentType}: " . $rutaArchivoCompleta . " | Código de error: " . $archivo['error'] . " | PHP temp path: " . $archivo['tmp_name']);
+                        return false; // Fallo al mover el archivo
+                    }
+                }
+                // Si el archivo no fue subido (ej. campo vacío) o hubo un error UPLOAD_ERR_NO_FILE,
+                // se considera que el proceso del archivo específico "terminó OK" si no era requerido.
+                // Si fuera requerido, la validación de $_FILES tendría que ir antes de llamar a processFile.
+                return true; 
+            };
+
+                        $fecha_para_nombre_archivo = date('Ymd_His'); // <--- ASEGÚRATE DE QUE ESTA LÍNEA ESTÉ PRESENTE Y CORRECTA
+
+            // 8. Procesar cada tipo de archivo adjunto (Envio, Exoneracion, Anticipo)
+            // Se pasa $fecha_para_nombre_archivo como el penúltimo argumento.
+            $envioOk = $processFile('archivoEnvio', 'Envio', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoEnvioInfo);
+            $exoneracionOk = $processFile('archivoExoneracion', 'Exoneracion', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoExoneracionInfo);
+            $anticipoOk = $processFile('archivoAnticipo', 'Anticipo', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo);
+
+            // Opcional: Puedes añadir una lógica aquí para verificar si alguna subida falló
+            // y responder con un mensaje más específico o realizar acciones de limpieza/rollback.
+            if (!$envioOk || !$exoneracionOk || !$anticipoOk) {
+                error_log("Advertencia: Al menos un archivo adjunto no se pudo guardar correctamente para el ticket " . $idTicketCreado);
+                // Si esto es un error crítico, podrías responder con un error 500 aquí
+                // $this->response(['success' => false, 'message' => 'El ticket fue creado, pero algunos archivos adjuntos fallaron al subir.'], 500);
+            }
+
+            // 9. Responder al cliente con éxito
+            // Se asume que $_SESSION['nombres'] y $_SESSION['apellidos'] existen.
             $this->response([
                 'success' => true,
                 'message' => 'Datos guardados con éxito. El ticket de nivel 2 ha sido creado.',
-                'ticket_data' => [ // Incluir los datos del ticket para que el frontend los muestre en el modal
+                'ticket_data' => [
                     'Nr_ticket' => $Nr_ticket,
                     'serial' => $serial,
                     'falla_text' => $falla_text,
                     'nivelFalla_text' => $nivelFalla_text,
                     'rif' => $rif,
-                    'user_gestion' => $_SESSION['nombres'] . ' ' . $_SESSION['apellidos'],
+                    'user_gestion' => $_SESSION['nombres'] . ' ' . $_SESSION['apellidos'], 
                     'coordinador' => $coordinador_nombre
                 ]
             ], 200);
             return;
+
         } else {
-            // Si hubo un error al guardar en la base de datos
-            $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla en la base de datos.'], 500);
+            // 10. Responder con error si falla el guardado del ticket principal en la base de datos
+            $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla en la base de datos: ' . ($result['error'] ?? 'Desconocido')], 500);
             return;
         }
     }
+
+
+
 
     
     public function handlePosSerials()
