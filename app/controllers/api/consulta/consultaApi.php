@@ -349,94 +349,103 @@ class Consulta extends Controller
         }
     }
 
-    public function handleSaveFalla1()
-    {
-        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
-        $rif = isset($_POST['rif']) ? $_POST['rif'] : ''; // RIF del nuevo ticket que se intenta crear
-        $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
-        $falla_id = isset($_POST['falla']) ? $_POST['falla'] : '';
-        $nivelFalla_id = isset($_POST['nivelFalla']) ? $_POST['nivelFalla'] : '';
-        $falla_text = isset($_POST['falla_text']) ? $_POST['falla_text'] : '';
-        $nivelFalla_text = isset($_POST['nivelFalla_text']) ? $_POST['nivelFalla_text'] : '';
+        public function handleSaveFalla1()
+        {
+            $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
+            $rif = isset($_POST['rif']) ? $_POST['rif'] : ''; // RIF del nuevo ticket que se intenta crear
+            $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
+            $falla_id = isset($_POST['falla']) ? $_POST['falla'] : '';
+            $nivelFalla_id = isset($_POST['nivelFalla']) ? $_POST['nivelFalla'] : '';
+            $falla_text = isset($_POST['falla_text']) ? $_POST['falla_text'] : '';
+            $nivelFalla_text = isset($_POST['nivelFalla_text']) ? $_POST['nivelFalla_text'] : '';
 
-        $repository = new technicalConsultionRepository();
+            $repository = new technicalConsultionRepository();
 
-        // --- LÓGICA DE VALIDACIÓN DE TIEMPO ---
-        $lastTicketInfo = $repository->getLastUserTicketInfo($id_user); // Usamos tu nuevo método aquí
+            // --- LÓGICA DE VALIDACIÓN DE TIEMPO ---
+            $lastTicketInfo = $repository->getLastUserTicketInfo($id_user); // Usamos tu nuevo método aquí
 
-        if ($lastTicketInfo) {
-            $lastTicketDateTime = $lastTicketInfo['date_create_ticket']; // Ya es un objeto DateTime
-            $lastTicketRif = $lastTicketInfo['rif_last_ticket']; // El RIF del último ticket
-            $currentDateTime = new DateTime(); // Fecha y hora actual (ej: 2025-06-11 11:47:02 AM)
+            if ($lastTicketInfo) {
+                $lastTicketDateTime = $lastTicketInfo['date_create_ticket']; // Ya es un objeto DateTime
+                $lastTicketRif = $lastTicketInfo['rif_last_ticket']; // El RIF del último ticket
+                $currentDateTime = new DateTime(); // Fecha y hora actual (ej: 2025-06-11 11:47:02 AM)
 
-            // Ajusta la zona horaria si es necesario. Si tu DB guarda en UTC, puedes hacer:
-            // $currentDateTime->setTimezone(new DateTimeZone('UTC'));
+                // Ajusta la zona horaria si es necesario. Si tu DB guarda en UTC, puedes hacer:
+                // $currentDateTime->setTimezone(new DateTimeZone('UTC'));
 
-            $interval = $currentDateTime->diff($lastTicketDateTime);
-            // Calcula los minutos totales
-            $minutesPassed = $interval->i + ($interval->h * 60) + ($interval->days * 24 * 60);
+                $interval = $currentDateTime->diff($lastTicketDateTime);
+                // Calcula los minutos totales
+                $minutesPassed = $interval->i + ($interval->h * 60) + ($interval->days * 24 * 60);
 
-            // Define los límites de tiempo en minutos
-            $tiempoLimiteMismoCliente = 10; // 10 minutos
-            $tiempoLimiteDiferenteCliente = 5; // 5 minutos
+                // Define los límites de tiempo en minutos
+                $tiempoLimiteMismoCliente = 1; // 10 minutos
+                $tiempoLimiteDiferenteCliente = 1; // 5 minutos
 
-            if ($rif === $lastTicketRif) {
-                // Es la misma institución (mismo RIF)
-                if ($minutesPassed < $tiempoLimiteMismoCliente) {
-                    $this->response([
-                        'success' => false,
-                        'message' => "Debes esperar " . ($tiempoLimiteMismoCliente - $minutesPassed) . " minutos para crear otro ticket para el misma cliente (RIF: $rif)."
-                    ], 429);
-                    return;
-                }
-            } else {
-                // Es para un cliente diferente
-                if ($minutesPassed < $tiempoLimiteDiferenteCliente) {
-                    $this->response([
-                        'success' => false,
-                        'message' => "Debes esperar " . ($tiempoLimiteDiferenteCliente - $minutesPassed) . " minutos para crear otro ticket para un cliente diferente."
-                    ], 429);
-                    return;
+                if ($rif === $lastTicketRif) {
+                    // Es la misma institución (mismo RIF)
+                    if ($minutesPassed < $tiempoLimiteMismoCliente) {
+                        $this->response([
+                            'success' => false,
+                            'message' => "Debes esperar " . ($tiempoLimiteMismoCliente - $minutesPassed) . " minutos para crear otro ticket para el misma cliente (RIF: $rif)."
+                        ], 429);
+                        return;
+                    }
+                } else {
+                    // Es para un cliente diferente
+                    if ($minutesPassed < $tiempoLimiteDiferenteCliente) {
+                        $this->response([
+                            'success' => false,
+                            'message' => "Debes esperar " . ($tiempoLimiteDiferenteCliente - $minutesPassed) . " minutos para crear otro ticket para un cliente diferente."
+                        ], 429);
+                        return;
+                    }
                 }
             }
-        }
-        // --- FIN LÓGICA DE VALIDACIÓN DE TIEMPO ---
+            // --- FIN LÓGICA DE VALIDACIÓN DE TIEMPO ---
 
 
-        // Si la validación pasa o no hay tickets anteriores, continuamos con la creación
-        if ($serial != '' && $falla_id != '' && $nivelFalla_id != '' && $id_user != '' && $rif != '') {
-            $hoy = date('dmy');
-            $fecha_para_db = date('Y-m-d');
-            $resultado = $repository->GetTotalTickets($fecha_para_db);
-            $totaltickets = $resultado + 1;
-            $paddedTicketNumber = sprintf("%04d", $totaltickets);
-            $Nr_ticket = $hoy . $paddedTicketNumber;
+            // Si la validación pasa o no hay tickets anteriores, continuamos con la creación
+            if ($serial != '' && $falla_id != '' && $nivelFalla_id != '' && $id_user != '' && $rif != '') {
+                $hoy = date('dmy');
+                $fecha_para_db = date('Y-m-d');
+                $resultado = $repository->GetTotalTickets($fecha_para_db);
+                $totaltickets = $resultado + 1;
+                $paddedTicketNumber = sprintf("%04d", $totaltickets);
+                $Nr_ticket = $hoy . $paddedTicketNumber;
 
-            $result = $repository->SaveDataFalla($serial, $falla_id, $nivelFalla_id, $id_user, $rif, $Nr_ticket);
+                $result = $repository->SaveDataFalla($serial, $falla_id, $nivelFalla_id, $id_user, $rif, $Nr_ticket);
 
-            if ($result) {
-                // Devolver los datos incluyendo los textos para el modal del frontend
-                $this->response([
-                    'success' => true,
-                    'message' => 'Se guardaron los datos del Ticket correctamente.',
-                    'ticket_data' => [
-                        'Nr_ticket' => $Nr_ticket,
-                        'serial' => $serial,
-                        'falla' => $falla_id,
-                        'falla_text' => $falla_text,
-                        'nivelFalla' => $nivelFalla_id,
-                        'nivelFalla_text' => $nivelFalla_text,
-                        'rif' => $rif,
-                        'user_gestion' => $_SESSION['nombres'] . ' ' . $_SESSION['apellidos']
-                    ]
-                ], 200);
+                if ($result) {
+                    $ticket_status_info = $repository->getTicketStatusInfo($result['row']['savedatafalla']);
+                    if ($ticket_status_info) {
+                        $status_text = $ticket_status_info['name_status_ticket'];
+                    } else {
+                        $status_text = 'Estado Desconocido'; // Valor por defecto si no se encuentra el estado
+                    }
+
+                    // Devolver los datos incluyendo los textos para el modal del frontend
+                    $this->response([
+                        'success' => true,
+                        'message' => 'Se guardaron los datos del Ticket correctamente.',
+                        'ticket_data' => [
+                            'Nr_ticket' => $Nr_ticket,
+                            'serial' => $serial,
+                            'falla' => $falla_id,
+                            'falla_text' => $falla_text,
+                            'nivelFalla' => $nivelFalla_id,
+                            'nivelFalla_text' => $nivelFalla_text,
+                            'rif' => $rif,
+                            'user_gestion' => $_SESSION['nombres'] . ' ' . $_SESSION['apellidos'],
+                            'status_text' => $status_text
+                        ]
+                    ], 200);
+                } else {
+                    $this->response(['success' => false, 'message' => 'Error al guardar los datos de falla.'], 500);
+                }
             } else {
-                $this->response(['success' => false, 'message' => 'Error al guardar los datos de falla.'], 500);
+                $this->response(['success' => false, 'message' => 'Hay un campo vacio.'], 400);
             }
-        } else {
-            $this->response(['success' => false, 'message' => 'Hay un campo vacio.'], 400);
         }
-    }
+         
 
     // ... (Use statements y demás código inicial de tu clase/archivo) ..
     // ... tus propiedades y métodos existentes ...

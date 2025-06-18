@@ -570,11 +570,12 @@
     }
 
     #SendForm2 {
-        margin-right: 71%;
+        margin-right: 82%;
         background-color: #003594;
         color: white;
-        margin-top: -1%;
-        width: 14%;
+        margin-top: 0%;
+        width: 13%;
+        position: absolute;
     }
 
     #SendForm2:hover {

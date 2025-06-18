@@ -400,7 +400,6 @@ class TechnicalConsultionRepository
                 $url_segment = 'cerrar_session'; // Usé el de tu HTML inicial
                 break;
 
-            // -- Rutas para sub-submódulos --
             // Asegúrate que estos nombres coincidan con los de tu DB
             case "sustitución de pos":
                 $url_segment = 'soporte_pos'; // O la URL específica para este tipo de ticket
@@ -482,6 +481,13 @@ class TechnicalConsultionRepository
         } else {
             return null;
         }
+    }
+
+    public function getTicketStatusInfo($id_ticket){
+        $result = $this->model->getStatusTicket($id_ticket);  
+        return 
+        $result['row']['name_status_ticket'] ?? null; // Devuelve el nombre del estado del ticket o null si no se encuentra
+        
     }
 }
 ?>

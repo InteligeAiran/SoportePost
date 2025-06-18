@@ -302,8 +302,8 @@ function inicializeModal() {
             // Puedes seleccionar la opción si lo deseas:
             serialSelectModal1.value = globalSerial;
 
-           // Y luego, para deshabilitarlo:
-           serialSelectModal1.disabled = true; 
+            // Y luego, para deshabilitarlo:
+            serialSelectModal1.disabled = true;
           }
         } else {
           Swal.fire({
@@ -1046,7 +1046,7 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
       botonExoneracion.style.display = "none";
       botonAnticipo.style.display = "none";
       // animation.style.display = 'block';
-       document.getElementById("checkExoneracion").style.display = "none";
+      document.getElementById("checkExoneracion").style.display = "none";
       document.getElementById("checkExoneracionLabel").style.display = "none";
       document.getElementById("checkAnticipo").style.display = "none";
       document.getElementById("checkAnticipoLabel").style.display = "none";
@@ -1098,7 +1098,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
       document.getElementById("checkExoneracionLabel").style.display = "none";
       document.getElementById("checkAnticipo").style.display = "none";
       document.getElementById("checkAnticipoLabel").style.display = "none";
-    
+
       // animation.style.display = 'block';
 
       return 1;
@@ -1546,8 +1546,9 @@ function SendDataFailure2(idStatusPayment) {
                                 <div style="text-align: left; padding: 15px;">
     <h3 style="color: #0056b3; margin-bottom: 15px; text-align: center;">🔧 ¡Ticket Generado! 🔧</h3>
     <p style="font-size: 1.1em; margin-bottom: 10px;">
-        <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.Nr_ticket
-                }</span>
+        <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${
+          ticketData.Nr_ticket
+        }</span>
     </p>
     <p style="margin-bottom: 8px;">
         <strong>⚙️ Serial del Equipo:</strong> ${ticketData.serial}
@@ -1556,19 +1557,22 @@ function SendDataFailure2(idStatusPayment) {
         <strong>📝 Falla Reportada (Texto):</strong> ${ticketData.falla_text}
     </p>
     <p style="margin-bottom: 8px;">
-        <strong>📊 Nivel de Falla (Texto):</strong> ${ticketData.nivelFalla_text
-                }
+        <strong>📊 Nivel de Falla (Texto):</strong> ${
+          ticketData.nivelFalla_text
+        }
     </p>
     <p style="margin-bottom: 8px;">
         <strong>🏢 RIF Cliente:</strong> ${ticketData.rif || "N/A"}
     </p>
     <p style="margin-bottom: 8px;">
-        <strong>👤 Usuario Gesti&oacuten:</strong> ${ticketData.user_gestion || "N/A"
-                }
+        <strong>👤 Usuario Gesti&oacuten:</strong> ${
+          ticketData.user_gestion || "N/A"
+        }
     </p>
     <p style="margin-bottom: 8px;">
-        <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.coordinador || "N/A"
-                }
+        <strong>🧑‍💻 Coordinador Asignado:</strong> ${
+          ticketData.coordinador || "N/A"
+        }
     </p>
     <strong>
         <p style="font-size: 0.9em; color: #6c757d; margin-top: 20px; text-align: center;">
@@ -1911,31 +1915,40 @@ function SendDataFailure1() {
                                 <div style="text-align: left; padding: 15px;">
                                     <h3 style="color: #0056b3; margin-bottom: 15px; text-align: center;">🔧 ¡Ticket Generado! 🔧</h3>
                                     <p style="font-size: 1.1em; margin-bottom: 10px;">
-                                        <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.Nr_ticket
-                }</span>
+                                        <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${
+                                          ticketData.Nr_ticket
+                                        }</span>
                                     </p>
                                     <p style="margin-bottom: 8px;">
-                                        <strong>👤 Usuario Gesti&oacuten:</strong> ${ticketData.user_gestion || "N/A"
-                }
+                                        <strong>👤 Usuario Gesti&oacuten:</strong> ${
+                                          ticketData.user_gestion || "N/A"
+                                        }
                                     </p>
                                     <p style="margin-bottom: 8px;">
-                                        <strong>⚙️ Serial del Equipo:</strong> ${ticketData.serial
-                }
+                                        <strong>⚙️ Serial del Equipo:</strong> ${
+                                          ticketData.serial
+                                        }
                                     </p>
                                     <p style="margin-bottom: 8px;">
-                                        <strong>🚨 Falla Reportada:</strong> ${ticketData.falla_text
-                }
+                                        <strong>🚨 Falla Reportada:</strong> ${
+                                          ticketData.falla_text
+                                        }
                                     </p>
                                     <p style="margin-bottom: 8px;">
-                                        <strong>📊 Nivel de Falla:</strong> ${ticketData.nivelFalla_text
-                }
+                                        <strong>📊 Nivel de Falla:</strong> ${
+                                          ticketData.nivelFalla_text
+                                        }
                                     </p>
                                     <p style="margin-bottom: 8px;">
-                                        <strong>🏢 RIF Cliente:</strong> ${ticketData.rif || "N/A"
-                }
+                                        <strong>🏢 RIF Cliente:</strong> ${
+                                          ticketData.rif || "N/A"
+                                        }
                                     </p>
                                     <stronge><p style="font-size: 0.9em; color: #6c757d; margin-top: 20px; text-align: center;">
                                         Se ha enviado una notificación por correo electrónico.
+                                        <h7>El Estatus del Ticket es: ${
+                                          ticketData.status_text
+                                        }</h7>
                                     </p></stronge>
                                 </div>`;
               Swal.fire({
@@ -2923,12 +2936,15 @@ function fetchSerialData(serial, rif) {
               td.setAttribute("data-column-name", formattedKey);
 
               // Obtén referencias a los botones
-              const createTicketFalla1Btn = document.getElementById('createTicketFalla1Btn');
-              const createTicketFalla2Btn = document.getElementById('createTicketFalla2Btn');
+              const createTicketFalla1Btn = document.getElementById(
+                "createTicketFalla1Btn"
+              );
+              const createTicketFalla2Btn = document.getElementById(
+                "createTicketFalla2Btn"
+              );
 
               // Verifica si los botones existen antes de intentar manipularlos
               if (createTicketFalla1Btn && createTicketFalla2Btn) {
-
                 // Si la clave es 'Estatus_pos' y el valor es 'Equipo Desafiliado' o 'Equipo Inactivo'
                 if (key === "Estatus_Pos") {
                   globalEstatusPos = serialData[key]; // ¡Aquí se asigna el valor!
@@ -2941,8 +2957,8 @@ function fetchSerialData(serial, rif) {
                     tr.id = `status-row-${serialData.Serial_pos || "unknown"}`; // Esto es para la fila, no para los botones.
 
                     // Ocultar los botones:
-                    createTicketFalla1Btn.style.display = 'none'; // Oculta el primer botón
-                    createTicketFalla2Btn.style.display = 'none'; // Oculta el segundo botón
+                    createTicketFalla1Btn.style.display = "none"; // Oculta el primer botón
+                    createTicketFalla2Btn.style.display = "none"; // Oculta el segundo botón
 
                     // Si prefieres usar clases de Bootstrap (por ejemplo, d-none):
                     // createTicketFalla1Btn.classList.add('d-none');
@@ -2953,11 +2969,10 @@ function fetchSerialData(serial, rif) {
                     //     buttonsContainer.style.display = 'none';
                     //     // O buttonsContainer.classList.add('d-none');
                     // }
-
                   } else {
                     // Si el estatus NO es "Equipo Desafiliado" ni "Equipo Inactivo", asegúrate de que los botones estén visibles:
-                    createTicketFalla1Btn.style.display = 'block'; // Restablece el display a su valor por defecto
-                    createTicketFalla2Btn.style.display = 'block'; // Restablece el display a su valor por defecto
+                    createTicketFalla1Btn.style.display = "block"; // Restablece el display a su valor por defecto
+                    createTicketFalla2Btn.style.display = "block"; // Restablece el display a su valor por defecto
 
                     // O si usas clases de Bootstrap:
                     // createTicketFalla1Btn.classList.remove('d-none');
@@ -2971,7 +2986,9 @@ function fetchSerialData(serial, rif) {
                   }
                 }
               } else {
-                console.warn('Los botones de creación de ticket no fueron encontrados en el DOM.');
+                console.warn(
+                  "Los botones de creación de ticket no fueron encontrados en el DOM."
+                );
               }
               tr.appendChild(th);
               tr.appendChild(td);

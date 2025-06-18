@@ -156,6 +156,7 @@ class consulta_rifModel extends Model
             // Ejecutar la función para guardar la falla y obtener el ID del ticket creado
             $sqlSave = "SELECT SaveDataFalla(" . $escaped_serial . ", " . $escaped_nivelFalla . ", " . $escaped_rif . ", " . $escaped_Nr_ticket . ");";
             $resultSave = $this->db->pgquery($sqlSave);
+            var_dump($resultSave); // Para depurar, muestra el resultado de la consulta
             $ticketData = pg_fetch_assoc($resultSave);
 
             // **Asegúrate de que 'savedatafalla' es el nombre de la columna que devuelve el ID**
@@ -199,6 +200,19 @@ class consulta_rifModel extends Model
             return array('error' => $e->getMessage()); // Devolver información del error para depuración
         }
     }
+
+    public function getStatusTicket($id_ticket)
+    {
+        try {
+            $escaped_id_ticket = pg_escape_literal($this->db->getConnection(), $id_ticket); // Assuming '$this->db' is now a valid PgSql\Connection
+            $sql = "SELECT * FROM get_ticket_status_info(" . $escaped_id_ticket . ");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }
+
 
 
     // Asumo que tu clase DatabaseConnection (o Model) tiene un método getConnection()
@@ -342,7 +356,6 @@ class consulta_rifModel extends Model
             return ['error' => 'Error inesperado al guardar archivo adjunto: ' . $e->getMessage()];
         }
     }
-
 
     public function GetExpiredSessions($usuario_id, $ahora)
     {
