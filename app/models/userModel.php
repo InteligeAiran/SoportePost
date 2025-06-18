@@ -459,5 +459,16 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
             // Handle exception
         }
     }
+
+    public function getEmailByUsername($username) {
+        try {
+            $escaped_username = pg_escape_literal($this->db->getConnection(), $username);
+            $sql = "SELECT email FROM users WHERE username = ".$escaped_username.";";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }   
 ?>

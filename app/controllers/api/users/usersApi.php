@@ -148,6 +148,10 @@ class users extends Controller {
                     $this->handleupdatePassword();
                 break;
 
+                case 'getEmailByUsername':
+                    $this->handleGetEmailByUsername();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -570,6 +574,18 @@ public function handleCheckUsernameAvailability() {
             $this->response(['success' => false, 'isVerified' => false], 200);
         }
         $this->response(['success' => false,'message' => 'Error al verificar el estado del usuario.'], 500);
+    }
+
+    public function handleGetEmailByUsername() {
+        $username = isset($_POST['username']) ? $_POST['username'] : '';
+        $repository = new UserRepository();
+        $result = $repository->getEmailByUsername($username);
+        
+        if ($result) {
+            $this->response(['success' => true, 'email' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se encontró el correo electrónico para el usuario'], 404);
+        }
     }
     // ... otras funciones handleSearchSerialData, etc.
 }

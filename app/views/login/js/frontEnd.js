@@ -8,7 +8,7 @@
 // Get the input field
 var input1 = document.getElementById("username");
 var input2 = document.getElementById("password");
-var input3 = document.getElementById("email");
+var input3 = document.getElementById("restoreUsername");
 
 // Execute a function when the user presses a key on the keyboard
 input1.addEventListener("keypress", function(event) {
@@ -232,6 +232,98 @@ function checkUser() {
         const datos = `action=checkUsername&username=${encodeURIComponent(input.value)}`;
         xhr.send(datos);
     }
+}
+
+function GetEmailByUsername() {
+    const usernameInput = document.getElementById('restoreUsername');
+    const emailInput = document.getElementById('email');
+    const usernameErrorDiv = document.getElementById('restoreUsernameError');
+    const usernameVerificationDiv = document.getElementById('restoreUsernameVerification'); // Este div mostrará el mensaje
+
+    // Clear previous messages and styles for username input
+    usernameErrorDiv.innerHTML = '';
+    usernameVerificationDiv.innerHTML = '';
+    usernameVerificationDiv.style.color = '';
+    usernameInput.style.borderColor = '';
+
+    // Always clear the email input when a new username check starts
+    emailInput.value = '';
+    emailInput.style.borderColor = '';
+    document.getElementById('emailError').innerHTML = '';
+    document.getElementById('emailVerification').innerHTML = '';
+
+    if (usernameInput.value.trim() === '') {
+        usernameVerificationDiv.innerHTML = 'Campo de usuario vacío';
+        usernameVerificationDiv.style.color = 'red';
+        usernameInput.style.borderColor = 'red';
+        return;
+    }
+
+    const xhr = new XMLHttpRequest();
+    // La URL de tu API
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/getEmailByUsername`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) { // Éxito (HTTP 200)
+            try {
+                const response = JSON.parse(xhr.responseText);
+
+                if (response.success && response.email) {
+                    usernameVerificationDiv.innerHTML = 'Usuario encontrado. Email asociado cargado.';
+                    usernameVerificationDiv.style.color = 'green';
+                    usernameInput.style.borderColor = 'green';
+                    emailInput.value = response.email;
+                    emailInput.style.borderColor = 'green';
+                } else {
+                    // Si success es false (lo que pasa con status 404 en tu PHP),
+                    // o email no es proporcionado (aunque el status sea 200, por si acaso)
+                    usernameVerificationDiv.innerHTML = response.message || 'Usuario no encontrado o sin email asociado.';
+                    usernameVerificationDiv.style.color = 'red';
+                    usernameInput.style.borderColor = 'red';
+                    emailInput.value = '';
+                    emailInput.style.borderColor = 'red';
+                }
+            } catch (error) {
+                console.error('Error parsing JSON for GetEmailByUsername:', error);
+                usernameErrorDiv.innerHTML = 'Error al procesar la respuesta del servidor.';
+                usernameInput.style.borderColor = 'red';
+                emailInput.value = '';
+                emailInput.style.borderColor = 'red';
+            }
+        } else if (xhr.status === 404) { // Manejo específico para "No encontrado"
+            try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                usernameVerificationDiv.innerHTML = errorResponse.message || 'El usuario no existe.'; // Muestra el mensaje del servidor
+                usernameVerificationDiv.style.color = 'red';
+                usernameInput.style.borderColor = 'red';
+                emailInput.value = '';
+                emailInput.style.borderColor = 'red';
+            } catch (error) {
+                console.error('Error parsing JSON for 404 response:', error);
+                usernameErrorDiv.innerHTML = 'Usuario no encontrado';
+                usernameInput.style.borderColor = 'red';
+                emailInput.value = '';
+                emailInput.style.borderColor = 'red';
+            }
+        } else { // Otros errores HTTP (ej. 500 Internal Server Error, 400 Bad Request, etc.)
+            console.error('Error en GetEmailByUsername:', xhr.status, xhr.statusText);
+            usernameErrorDiv.innerHTML = 'Error de conexión con el servidor. Código: ' + xhr.status; // Más descriptivo
+            usernameInput.style.borderColor = 'red';
+            emailInput.value = '';
+            emailInput.style.borderColor = 'red';
+        }
+    };
+    xhr.onerror = function() { // Maneja errores de red puros (sin respuesta del servidor)
+        console.error('Network Error for GetEmailByUsername');
+        usernameErrorDiv.innerHTML = 'Error de red. No se pudo conectar con el servidor.';
+        usernameInput.style.borderColor = 'red';
+        emailInput.value = '';
+        emailInput.style.borderColor = 'red';
+    };
+
+    const datos = `action=getEmailByUsername&username=${encodeURIComponent(usernameInput.value)}`;
+    xhr.send(datos);
 }
 
 function checkEmail() {
