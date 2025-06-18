@@ -110,9 +110,19 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket){
-        $result = $this->model->SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket);
-        return $result;
+    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket)
+    {
+        // Llama al método SaveDataFalla del modelo.
+        // Este método ahora devolverá el array con 'idTicketCreado' y 'status_info'.
+        $result_from_model = $this->model->SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket);
+        return $result_from_model;
+    }
+
+    public function getTicketStatusInfo($id_ticket)
+    {
+        // Esto ya estaba bien, llama al método del modelo que obtiene el estado.
+        $result = $this->model->getStatusTicket($id_ticket); 
+        return $result; // Esto devolverá ['id_status_ticket' => X, 'name_status_ticket' => Y] o null
     }
 
     public function GetPosSerialsByRif($rif){
@@ -481,13 +491,6 @@ class TechnicalConsultionRepository
         } else {
             return null;
         }
-    }
-
-    public function getTicketStatusInfo($id_ticket){
-        $result = $this->model->getStatusTicket($id_ticket);  
-        return 
-        $result['row']['name_status_ticket'] ?? null; // Devuelve el nombre del estado del ticket o null si no se encuentra
-        
     }
 }
 ?>
