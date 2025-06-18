@@ -195,10 +195,9 @@ class TechnicalConsultionRepository
         return $failures;
     }
 
-     public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket){
-        // Los parámetros $rutaEnvio, $rutaExo, $rutaAnticipo, $mimeTypeExo, $mimeTypeAnticipo, $mimeTypeEnvio
-        // DEBEN SER ELIMINADOS de la llamada al modelo si tu función `save_data_failure2` en la DB ya no los recibe.
-        // Si tu DB aún los recibe, pásalos como NULL. Asumiré que tu DB fue ajustada.
+    
+    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket){
+        // El modelo SaveDataFalla2 ahora devuelve un array con 'success', 'id_ticket_creado', y 'status_info'.
         $result = $this->model->SaveDataFalla2(
             $serial,
             $descripcion,

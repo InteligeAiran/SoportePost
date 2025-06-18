@@ -1574,11 +1574,12 @@ function SendDataFailure2(idStatusPayment) {
           ticketData.coordinador || "N/A"
         }
     </p>
-    <strong>
-        <p style="font-size: 0.9em; color: #6c757d; margin-top: 20px; text-align: center;">
-            Se ha enviado una notificación por correo electrónico.
-        </p>
-    </strong>
+     <strong><p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
+                                        Se ha enviado una notificación por correo electrónico.<br>
+                                        <h7>El Estatus del Ticket es: ${
+                                          ticketData.status_text
+                                        }</h7>
+                                    </p></strong>
 </div>
 `;
 

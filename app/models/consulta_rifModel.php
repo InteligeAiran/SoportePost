@@ -261,7 +261,7 @@ class consulta_rifModel extends Model
     // También asegúrate de que Model::getResult esté correctamente definido si lo usas.
 
 
-      public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket)
+     public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket)
     {
         try {
             $db_conn = $this->db->getConnection();
@@ -273,14 +273,12 @@ class consulta_rifModel extends Model
             $escaped_Nr_ticket = pg_escape_literal($db_conn, $Nr_ticket);
 
             // 2. Construir la consulta para save_data_failure2
-            // Asegúrate de que tu función PostgreSQL 'save_data_failure2'
-            // ya NO espere los parámetros de ruta y MIME type.
             $sql = "SELECT * FROM public.save_data_failure2("
                 . $escaped_serial . "::TEXT, "
                 . (int) $nivelFalla . "::INTEGER, "
                 . (int) $id_status_payment . "::INTEGER, "
                 . $escaped_rif . "::VARCHAR, "
-                . $escaped_Nr_ticket . "::VARCHAR);"; // Eliminados los parámetros de archivo aquí
+                . $escaped_Nr_ticket . "::VARCHAR);";
 
             $result = $this->db->pgquery($sql);
 
@@ -290,6 +288,7 @@ class consulta_rifModel extends Model
             }
 
             $ticketData = pg_fetch_assoc($result);
+            pg_free_result($result); // Liberar el recurso
 
             if (!isset($ticketData['save_data_failure2']) || $ticketData['save_data_failure2'] == 0) {
                 error_log("Error: La función save_data_failure2 no devolvió un ID de ticket válido o devolvió 0.");
@@ -304,6 +303,7 @@ class consulta_rifModel extends Model
                 error_log("Error al insertar TicketFailure: " . pg_last_error($db_conn) . " Query: " . $sqlFailure);
                 return ['error' => 'Error al insertar falla específica del ticket.'];
             }
+            pg_free_result($resultFailure); // Liberar el recurso
 
             // 6. Llamar a insertintouser_ticket
             $sqlInsertUserTicket = sprintf(
@@ -317,18 +317,20 @@ class consulta_rifModel extends Model
                 error_log("Error al insertar en users_tickets: " . pg_last_error($db_conn) . " Query: " . $sqlInsertUserTicket);
                 return ['error' => 'Error al insertar en users_tickets.'];
             }
+            pg_free_result($resultUserTicket); // Liberar el recurso
 
             // 7. Insertar en ticket_status_history
-            $id_accion_ticket = 4;
-            $id_status_ticket = 1;
-            $id_status_domiciliacion = 1;
+            $id_accion_ticket = 4; // Asumiendo que 4 es la acción de creación de ticket
+            $id_status_ticket = 1; // Asumiendo que 1 es el estado inicial (ej. 'Creado' o 'Pendiente')
+            $id_status_domiciliacion = 1; // Asumiendo el estado inicial de domiciliación
+
             $sqlInsertHistory = sprintf(
                 "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer);",
                 (int) $idTicketCreado,
                 (int) $id_user,
-                (int) $id_status_ticket,
+                (int) $id_status_ticket, // El ID del estado inicial del ticket
                 (int) $id_accion_ticket,
-                $id_status_payment,
+                (int) $id_status_payment,
                 (int) $id_status_domiciliacion
             );
             $resultHistory = $this->db->pgquery($sqlInsertHistory);
@@ -336,6 +338,7 @@ class consulta_rifModel extends Model
                 error_log("Error al insertar en ticket_status_history: " . pg_last_error($db_conn) . " Query: " . $sqlInsertHistory);
                 return ['error' => 'Error al insertar en ticket_status_history.'];
             }
+            pg_free_result($resultHistory); // Liberar el recurso
 
             // 8. Insertar en tickets_status_domiciliacion
             $sqlInserDomiciliacion = "INSERT INTO tickets_status_domiciliacion (id_ticket, id_status_domiciliacion) VALUES (" . (int) $idTicketCreado . ", " . (int) $id_status_domiciliacion . ");";
@@ -344,14 +347,25 @@ class consulta_rifModel extends Model
                 error_log("Error al insertar en tickets_status_domiciliacion: " . pg_last_error($db_conn) . " Query: " . $sqlInserDomiciliacion);
                 return ['error' => 'Error al insertar en tickets_status_domiciliacion.'];
             }
+            pg_free_result($resultInserDomiciliacion); // Liberar el recurso
 
+            // **¡AQUÍ ESTÁ LA NUEVA PARTE!** Obtener el estado actual del ticket
+            $currentTicketStatus = $this->getStatusTicket($idTicketCreado);
+            if (!$currentTicketStatus) {
+                error_log("Advertencia: No se pudo obtener el estado del ticket después de la creación para ID: " . $idTicketCreado);
+                // No se considera un error crítico que detenga todo, pero se registra.
+                $currentTicketStatus = ['id_status_ticket' => null, 'name_status_ticket' => 'Desconocido'];
+            }
+
+            // Devolver el resultado completo
             return [
                 'success' => true,
                 'id_ticket_creado' => $idTicketCreado,
+                'status_info' => $currentTicketStatus // Incluye el estado del ticket
             ];
 
         } catch (Throwable $e) {
-            error_log("Excepción en SaveDataFalla2: " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
+            error_log("Excepción en SaveDataFalla2 (General): " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
             return ['error' => 'Error inesperado: ' . $e->getMessage()];
         }
     }
