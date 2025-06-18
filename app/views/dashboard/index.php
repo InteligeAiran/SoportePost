@@ -816,7 +816,7 @@ function mi_navbar(){
                     </div>
                 </div>
 
-                <div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel"
+<div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel"
     aria-hidden="true"
     style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);"
     data-bs-backdrop="static" data-bs-keyboard="false">
@@ -844,6 +844,11 @@ function mi_navbar(){
                                 <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
                             </svg>
                         </div>
+                        <button type="button" id="generatePasswordBtn" class="btn btn-info btn-sm mt-2">Generar Contraseña</button>
+                        <div id="suggestedPasswordContainer" class="mt-2" style="display: none;">
+                            <span class="text-muted">Sugerencia: </span><span id="suggestedPassword" class="font-weight-bold text-success"></span>
+                            <button type="button" id="copySuggestedPasswordBtn" class="btn btn-outline-secondary btn-sm ms-2">Copiar</button>
+                        </div>
                         <div id="passwordError" class="error-message"></div>
                     </div>
 
@@ -860,11 +865,11 @@ function mi_navbar(){
                         </div>
                         <div id="confirmPasswordError" class="error-message"></div>
 
-                         <div id="passwordRequirements" class="password-legend" style="text-align: center; color: black;">
+                        <div id="passwordRequirements" class="password-legend" style="text-align: center; color: black;">
                             La contraseña debe contener al menos:
-                           
+                            
                             <ul><br>
-                                <li id="lengthCheck">5 caracteres de longitud.</li>
+                                <li id="lengthCheck">8 caracteres de longitud.</li>
                                 <li id="uppercaseCheck">Una letra mayúscula.</li>
                                 <li id="lowercaseCheck">Una letra minúscula.</li>
                                 <li id="numberCheck">Un número.</li>
@@ -886,6 +891,7 @@ function mi_navbar(){
         </div>
     </div>
 </div>
+
                 <!-- ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
                 <input type="hidden" id="userIdForPassword" value="<?php echo $_SESSION['id_user']; ?>">
                 <!-- END ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
