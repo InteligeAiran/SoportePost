@@ -69,6 +69,87 @@ function mi_navbar(){
         background-color: #f1f5f9; /* Color de la "pista" del scrollbar */
     }
 
+            /* Estilos para el contenedor de cada grupo de input (ej. para margin-bottom) */
+            .input-group-container {
+                margin-bottom: 1rem; /* Espacio entre los grupos de input */
+            }
+
+            .input-with-icon-wrapper {
+                position: relative; /* FUNDAMENTAL: El contexto para el posicionamiento absoluto del ojo */
+                display: flex; /* Permite que el input ocupe el ancho y el ojo se alinee */
+                align-items: center; /* Centra verticalmente el contenido (si no fuera absoluto) */
+                /* overflow: hidden;  <-- Descomenta esto solo si todo lo demás falla y el ojo se sigue saliendo de forma extraña.
+                                        Puede cortar elementos si no está bien usado. */
+            }
+
+            .password-input {
+                display: block;
+                width: 100%;
+                /* Mantén la altura, padding-vertical, font-size, etc. que te proporciona Bootstrap o tus estilos base */
+                height: calc(2.25rem + 2px); /* Altura estándar de Bootstrap 4/5 para form-control */
+                padding: 0.375rem 1rem; /* Padding vertical y horizontal base */
+                font-size: 1rem;
+                font-weight: 400;
+                line-height: 1.5;
+                color: #212529;
+                background-color: #fff;
+                background-clip: padding-box;
+                border: 1px solid #ced4da;
+                border-radius: 0.25rem;
+                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+                /* *** AJUSTE CRÍTICO: Padding para el espacio del ojo *** */
+                /* AUMENTA este valor. Prueba con 3.5rem o 4rem (56px o 64px) */
+                padding-right: 3.5rem; /* ¡Cambia este valor! */ 
+
+                /* Importante para que el padding no afecte el ancho total */
+                box-sizing: border-box; /* Asegúrate de que esto esté presente y sea efectivo */
+
+                /* Considera añadir esto si el texto sigue solapándose: */
+                text-overflow: ellipsis; /* Esto truncará el texto con '...' si desborda, aunque no es lo ideal para contraseñas */
+                white-space: nowrap; /* Evita que el texto se envuelva */
+                overflow: hidden; /* Oculta el contenido que desborda */
+            }
+
+            .password-toggle-icon {
+                position: absolute;
+                /* Ajusta esta distancia al borde derecho. Puedes probar con 0.5rem (8px) o 0.75rem (12px) */
+                right: 1.75rem; /* ¡Mantén o ajusta este valor! */ 
+                cursor: pointer;
+                z-index: 2; /* Asegura que el ojo esté por encima del texto del input */
+                top: 39%;
+                transform: translateY(-50%);
+            }
+
+            /* Resto de tus estilos... */
+            .error-message {
+                color: red;
+                text-align: center;
+                font-size: 0.875rem;
+                margin-top: 0.25rem;
+                width: 100%;
+                display: block;
+            }
+
+            .password-input.error {
+                border-color: red !important;
+            }
+
+            .password-input.success {
+                border-color: green !important;
+            }
+
+            input[type="password"]{
+                width: calc(100% - 1rem);
+                padding: 0.5rem 0.75rem; 
+                margin-bottom: 0.75rem; 
+                border: 1px solid #ced4da;
+                border-radius: 0.25rem;
+                box-sizing: border-box;
+                font-size: 0.9rem;
+                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+                font-family: 'Arial', sans-serif;
+            }
         </style>
     </head>
 
@@ -706,64 +787,62 @@ function mi_navbar(){
                 </div>
 
                 <div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel"
-                    aria-hidden="true"
-                    style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);"
-                    data-bs-backdrop="static" data-bs-keyboard="false">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content rounded-lg shadow-lg">
-                            <div class="modal-header bg-gradient-primary text-white rounded-t-lg"
-                                id="newPasswordModalHeader">
-                                <h5 class="modal-title text-white" id="newPasswordModalLabel">Ingrese Nueva Contraseña
-                                </h5>
-                                <button type="button" id="CloseIcon" class="btn-close btn-close-white"
-                                    data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body p-6">
-                                <form id="newPasswordForm">
-                                    <input type="hidden" id="modalUserIdForPassword">
-                                    <div id="modalTitulLable" class="mb-4">
-                                        <label for="newPassword" class="form-label text-gray-700 font-semibold">Nueva
-                                            Contraseña:</label>
-                                        <input type="password"
-                                            class="form-control rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                                            id="newPassword" required>
-                                        <svg id="clickme1" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                            fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
-                                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
-                                            <path
-                                                d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
-                                        </svg>
-                                        <div id="passwordError" class="error"></div>
-                                        <div id="passwordVerification" class="success"></div>
-                                    </div>
-                                    <div id="modalTitulLable" class="mb-4">
-                                        <label for="confirmNewPassword"
-                                            class="form-label text-gray-700 font-semibold">Confirmar Contraseña:</label>
-                                        <input type="password"
-                                            class="form-control rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                                            id="confirmNewPassword" required>
-                                        <svg id="clickme" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                            fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
-                                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
-                                            <path
-                                                d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
-                                        </svg>
-                                        <div id="confirmPasswordError" class="error"></div>
-                                    </div>
-                                </form>
-                                <input type="hidden" id="modalUserIdForPassword">
-                            </div>
-                            <div class="modal-footer flex justify-end p-4 bg-gray-50 rounded-b-lg">
-                                <button type="button"
-                                    class="btn btn-secondary rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                    data-bs-dismiss="modal" id="Cerrar-botton">Cancelar</button>
-                                <button type="button"
-                                    class="btn btn-primary rounded-md px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                    id="submitNewPasswordBtn">Guardar Contraseña</button>
-                            </div>
+    aria-hidden="true"
+    style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);"
+    data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-lg shadow-lg">
+            <div class="modal-header bg-gradient-primary text-white rounded-t-lg"
+                id="newPasswordModalHeader">
+                <h5 class="modal-title text-white" id="newPasswordModalLabel">Ingrese Nueva Contraseña
+                </h5>
+                <button type="button" id="CloseIcon" class="btn-close btn-close-white"
+                    data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-6">
+                <form id="newPasswordForm">
+                    <input type="hidden" id="modalUserIdForPassword">
+
+                    <div class="input-group-container"> <label for="newPassword" class="form-label">Nueva
+                            Contraseña:</label>
+                        <div class="input-with-icon-wrapper"> <input type="password" class="form-control password-input" id="newPassword" required>
+                            <svg id="clickme1" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                fill="currentColor" class="bi bi-eye-fill password-toggle-icon"
+                                viewBox="0 0 16 16">
+                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                                <path
+                                    d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+                            </svg>
                         </div>
+                        <div id="passwordError" class="error-message"></div>
                     </div>
-                </div>
+
+                    <div class="input-group-container"> <label for="confirmNewPassword" class="form-label">Confirmar Contraseña:</label>
+                        <div class="input-with-icon-wrapper"> <input type="password" class="form-control password-input" id="confirmNewPassword" required>
+                            <svg id="clickme" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                fill="currentColor" class="bi bi-eye-fill password-toggle-icon"
+                                viewBox="0 0 16 16">
+                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                                <path
+                                    d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+                            </svg>
+                        </div>
+                        <div id="confirmPasswordError" class="error-message"></div>
+                    </div>
+                </form>
+                <input type="hidden" id="modalUserIdForPassword">
+            </div>
+            <div class="modal-footer flex justify-end p-4 bg-gray-50 rounded-b-lg">
+                <button type="button"
+                    class="btn btn-secondary rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    data-bs-dismiss="modal" id="Cerrar-botton">Cancelar</button>
+                <button type="button"
+                    class="btn btn-primary rounded-md px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    id="submitNewPasswordBtn">Guardar Contraseña</button>
+            </div>
+        </div>
+    </div>
+</div>
                 <!-- ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
                 <input type="hidden" id="userIdForPassword" value="<?php echo $_SESSION['id_user']; ?>">
                 <!-- END ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->

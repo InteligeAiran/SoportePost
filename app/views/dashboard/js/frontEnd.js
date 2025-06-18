@@ -1406,7 +1406,58 @@ document.addEventListener("DOMContentLoaded", function () {
         confirmNewPasswordInput.style.borderColor = "red";
         newPasswordInput.focus(); // O enfocar el segundo campo
         return;
-      }
+      }if (newPassword === "") {
+    passwordErrorDiv.innerHTML = "La nueva contraseña no puede estar vacía.";
+    passwordErrorDiv.style.color = "red"; // <-- Puedes dejar esto o confiar en text-red-500 de Tailwind
+    // Elimina o comenta:
+    // passwordErrorDiv.style.marginLeft = "48%";
+    // newPasswordInput.style.position = "absolute";
+    // newPasswordInput.style.width = "100%";
+    // newPasswordInput.style.marginTop = "10%";
+    // newPasswordInput.style.borderColor = "red"; // Mantén este para el borde del input
+    newPasswordInput.style.borderColor = "red"; // Mantén solo la modificación del borde
+    newPasswordInput.focus();
+    return;
+} else {
+    newPasswordInput.style.borderColor = ""; // Limpiar el borde (o a tu color original si lo tienes)
+}
+
+// Cuando confirmNewPassword === ""
+if (confirmNewPassword === "") {
+    confirmPasswordErrorDiv.innerHTML = "Debe confirmar la contraseña.";
+    confirmPasswordErrorDiv.style.color = "red"; // <-- Puedes dejar esto o confiar en text-red-500 de Tailwind
+    // Elimina o comenta:
+    // confirmPasswordErrorDiv.style.marginLeft = "48%"; // Esto no existe en tu código actual, pero para que sepas
+    // newPasswordInput.style.position = "absolute"; // Asegúrate de que no afecte a ningún input
+    // newPasswordInput.style.width = "100%";
+    // newPasswordInput.style.marginTop = "10%";
+    confirmNewPasswordInput.style.borderColor = "red"; // Mantén solo la modificación del borde
+    confirmNewPasswordInput.focus();
+    return;
+} else {
+    confirmNewPasswordInput.style.borderColor = ""; // Limpiar el borde
+}
+
+// Cuando newPassword !== confirmNewPassword
+if (newPassword !== confirmNewPassword) {
+    passwordErrorDiv.innerHTML = "Las contraseñas no coinciden.";
+    passwordErrorDiv.style.color = "red"; // <-- Puedes dejar esto o confiar en text-red-500 de Tailwind
+    newPasswordInput.style.borderColor = "red"; // Mantén este
+    confirmPasswordErrorDiv.innerHTML = "Las contraseñas no coinciden.";
+    confirmPasswordErrorDiv.style.color = "red"; // <-- Puedes dejar esto o confiar en text-red-500 de Tailwind
+    confirmNewPasswordInput.style.borderColor = "red"; // Mantén este
+    newPasswordInput.focus();
+    return;
+}
+
+// Cuando newPassword.length < 8
+if (newPassword.length < 8) {
+    passwordErrorDiv.innerHTML = "La contraseña debe tener al menos 8 caracteres.";
+    passwordErrorDiv.style.color = "red"; // <-- Puedes dejar esto o confiar en text-red-500 de Tailwind
+    newPasswordInput.style.borderColor = "red"; // Mantén este
+    newPasswordInput.focus();
+    return;
+}
 
       // Opcional: Validaciones de complejidad de contraseña (ej. longitud mínima)
       if (newPassword.length < 8) {
@@ -1458,7 +1509,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 text:
                   response.message || "Contraseña actualizada correctamente.",
                 color: "black", // Color del texto
-                timer: 3000,
+                timer: 4000,
                 timerProgressBar: true,
                 didOpen: () => {
                   Swal.showLoading();
@@ -1527,7 +1578,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   var myModal = document.getElementById("CloseIcon");
   var buttonCerrar = document.getElementById("Cerrar-botton");
-
+  
   // Agrega un listener para el evento 'hidden.bs.modal'
   // Este evento se dispara cuando el modal ha terminado de ocultarse (después de la transición CSS)
   myModal.addEventListener("click", function () {
@@ -1539,7 +1590,27 @@ document.addEventListener("DOMContentLoaded", function () {
     // Redirige al usuario a la página de login
     window.location.href = "cerrar_session"; // Cambia 'login.php' por la ruta real de tu página de login
   });
+
+  document.addEventListener('keyup', function(event) {
+    // Verifica si la tecla presionada es 'Escape' (código 27)
+    if (event.key === 'Escape') {
+        // Opcional: Puedes añadir una condición para que solo funcione si el modal está abierto.
+        // Esto es útil si tienes otros elementos en la página que también escuchan 'Escape'.
+        // Tendrías que tener una forma de saber si el modal está visible, por ejemplo,
+        // si tiene la clase 'show' de Bootstrap o su estilo 'display' es 'block'.
+        
+        // Ejemplo de condición (asumiendo que 'changePasswordModal' es tu modal y se muestra/oculta con 'display'):
+            // Si el modal está abierto y se presiona 'Escape', redirige.
+            window.location.href = "cerrar_session";      } 
+        // Si no usas la condición del modal abierto, se redirigirá siempre que se presione Esc.
+        // if (true) { // Si siempre quieres que redirija al presionar Esc, sin importar si el modal está abierto
+        //     window.location.href = "cerrar_session";
+        // }
+    
 });
+})
+
+
 
 function getTicketOpen() {
   const xhr = new XMLHttpRequest();
