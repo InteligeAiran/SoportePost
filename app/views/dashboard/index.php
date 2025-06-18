@@ -150,6 +150,36 @@ function mi_navbar(){
                 transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
                 font-family: 'Arial', sans-serif;
             }
+
+            /* Estilos para la leyenda de contraseña */
+            .password-legend {
+                font-size: 0.875rem; /* Tamaño de fuente más pequeño */
+                color: #6c757d; /* Color gris suave por defecto */
+                margin-top: 0.5rem; /* Espacio superior */
+                padding-left: 0.5rem; /* Indentación ligera para la lista */
+                display: none; /* Inicia oculto, se mostrará al enfocar el input */
+            }
+
+            .password-legend ul {
+                list-style-type: none; /* Quita los puntos de la lista */
+                padding-left: 0; /* Quita el padding por defecto de la lista */
+                margin-bottom: 0; /* Quita el margen inferior por defecto */
+            }
+
+            .password-legend li {
+                margin-bottom: 0.2rem; /* Espacio entre los ítems de la lista */
+                color: #6c757d; /* Color por defecto */
+                transition: color 0.2s ease; /* Transición suave para el cambio de color */
+            }
+
+            /* Clases para indicar si el requisito se cumple o no (se manejarán con JS) */
+            .password-legend li.valid {
+                color: green;
+            }
+
+            .password-legend li.invalid {
+                color: red;
+            }
         </style>
     </head>
 
@@ -803,31 +833,44 @@ function mi_navbar(){
                 <form id="newPasswordForm">
                     <input type="hidden" id="modalUserIdForPassword">
 
-                    <div class="input-group-container"> <label for="newPassword" class="form-label">Nueva
-                            Contraseña:</label>
-                        <div class="input-with-icon-wrapper"> <input type="password" class="form-control password-input" id="newPassword" required>
+                    <div class="input-group-container">
+                        <label for="newPassword" class="form-label">Nueva Contraseña:</label>
+                        <div class="input-with-icon-wrapper">
+                            <input type="password" class="form-control password-input" id="newPassword" required>
                             <svg id="clickme1" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                                 fill="currentColor" class="bi bi-eye-fill password-toggle-icon"
                                 viewBox="0 0 16 16">
                                 <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
-                                <path
-                                    d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
                             </svg>
                         </div>
                         <div id="passwordError" class="error-message"></div>
                     </div>
 
-                    <div class="input-group-container"> <label for="confirmNewPassword" class="form-label">Confirmar Contraseña:</label>
-                        <div class="input-with-icon-wrapper"> <input type="password" class="form-control password-input" id="confirmNewPassword" required>
+                    <div class="input-group-container">
+                        <label for="confirmNewPassword" class="form-label">Confirmar Contraseña:</label>
+                        <div class="input-with-icon-wrapper">
+                            <input type="password" class="form-control password-input" id="confirmNewPassword" required>
                             <svg id="clickme" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                                 fill="currentColor" class="bi bi-eye-fill password-toggle-icon"
                                 viewBox="0 0 16 16">
                                 <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
-                                <path
-                                    d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
                             </svg>
                         </div>
                         <div id="confirmPasswordError" class="error-message"></div>
+
+                         <div id="passwordRequirements" class="password-legend" style="text-align: center; color: black;">
+                            La contraseña debe contener al menos:
+                           
+                            <ul><br>
+                                <li id="lengthCheck">5 caracteres de longitud.</li>
+                                <li id="uppercaseCheck">Una letra mayúscula.</li>
+                                <li id="lowercaseCheck">Una letra minúscula.</li>
+                                <li id="numberCheck">Un número.</li>
+                                <li id="specialCharCheck">Un carácter especial (!@#$%^&*).</li>
+                            </ul>
+                        </div>
                     </div>
                 </form>
                 <input type="hidden" id="modalUserIdForPassword">

@@ -1341,274 +1341,332 @@ function checkUserStatusAndPromptPassword() {
 // --- Event Listeners y la Lógica del Botón 'Guardar Contraseña' del modal ---
 // --- Event Listeners y la Lógica del Botón 'Guardar Contraseña' del modal ---
 document.addEventListener("DOMContentLoaded", function () {
-  checkUserStatusAndPromptPassword(); // Llama a la función para verificar el estatus del usuario al cargar la página
+    checkUserStatusAndPromptPassword();
 
-  const newPasswordModalElement = document.getElementById("newPasswordModal");
+    const newPasswordModalElement = document.getElementById("newPasswordModal");
 
-  if (newPasswordModalElement) {
-    newPasswordModalElement.addEventListener("hidden.bs.modal", function () {
-      document.getElementById("newPassword").value = "";
-      document.getElementById("confirmNewPassword").value = "";
-      document.getElementById("passwordError").innerHTML = ""; // Limpiar mensajes de error
-      document.getElementById("passwordVerification").innerHTML = ""; // Limpiar mensajes de verificación
-      document.getElementById("confirmPasswordError").innerHTML = ""; // Limpiar mensajes de confirmación
-      document.getElementById("modalUserIdForPassword").value = ""; // Limpiar ID si se usó
-    });
-  }
+    if (newPasswordModalElement) {
+        newPasswordModalElement.addEventListener("hidden.bs.modal", function () {
+            document.getElementById("newPassword").value = "";
+            document.getElementById("confirmNewPassword").value = "";
+            document.getElementById("passwordError").innerHTML = "";
+            document.getElementById("confirmPasswordError").innerHTML = "";
+            document.getElementById("modalUserIdForPassword").value = "";
 
-  // *** LÓGICA DEL BOTÓN 'Guardar Contraseña' del modal (Actualización de Contraseña) ***
-  const submitNewPasswordBtn = document.getElementById("submitNewPasswordBtn");
-  if (submitNewPasswordBtn) {
-    submitNewPasswordBtn.addEventListener("click", function () {
-      const newPasswordInput = document.getElementById("newPassword");
-      const confirmNewPasswordInput =
-        document.getElementById("confirmNewPassword");
-      const newPassword = newPasswordInput.value.trim();
-      const confirmNewPassword = confirmNewPasswordInput.value.trim();
-
-      const passwordErrorDiv = document.getElementById("passwordError");
-      const confirmPasswordErrorDiv = document.getElementById(
-        "confirmPasswordError"
-      );
-
-      // Limpiar errores previos
-      passwordErrorDiv.innerHTML = "";
-      confirmPasswordErrorDiv.innerHTML = "";
-
-      // Validaciones iniciales del frontend
-      if (newPassword === "") {
-        passwordErrorDiv.innerHTML =
-          "La nueva contraseña no puede estar vacía.";
-        passwordErrorDiv.style.color = "red";
-        newPasswordInput.style.borderColor = "red";
-        newPasswordInput.focus();
-        return;
-      } else {
-        newPasswordInput.style.borderColor = "green"; // Limpiar el borde rojo
-      }
-
-      if (confirmNewPassword === "") {
-        confirmPasswordErrorDiv.innerHTML = "Debe confirmar la contraseña.";
-        confirmPasswordErrorDiv.style.color = "red";
-        confirmNewPasswordInput.style.borderColor = "red";
-        confirmNewPasswordInput.focus();
-        return;
-      } else {
-        confirmNewPasswordInput.style.borderColor = "green"; // Limpiar el borde rojo
-      }
-
-      if (newPassword !== confirmNewPassword) {
-        passwordErrorDiv.innerHTML = "Las contraseñas no coinciden.";
-        passwordErrorDiv.style.color = "red";
-        newPasswordInput.style.borderColor = "red";
-        confirmPasswordErrorDiv.innerHTML = "Las contraseñas no coinciden.";
-        confirmPasswordErrorDiv.style.color = "red";
-        confirmNewPasswordInput.style.borderColor = "red";
-        newPasswordInput.focus(); // O enfocar el segundo campo
-        return;
-      }if (newPassword === "") {
-    passwordErrorDiv.innerHTML = "La nueva contraseña no puede estar vacía.";
-    passwordErrorDiv.style.color = "red"; // <-- Puedes dejar esto o confiar en text-red-500 de Tailwind
-    // Elimina o comenta:
-    // passwordErrorDiv.style.marginLeft = "48%";
-    // newPasswordInput.style.position = "absolute";
-    // newPasswordInput.style.width = "100%";
-    // newPasswordInput.style.marginTop = "10%";
-    // newPasswordInput.style.borderColor = "red"; // Mantén este para el borde del input
-    newPasswordInput.style.borderColor = "red"; // Mantén solo la modificación del borde
-    newPasswordInput.focus();
-    return;
-} else {
-    newPasswordInput.style.borderColor = ""; // Limpiar el borde (o a tu color original si lo tienes)
-}
-
-// Cuando confirmNewPassword === ""
-if (confirmNewPassword === "") {
-    confirmPasswordErrorDiv.innerHTML = "Debe confirmar la contraseña.";
-    confirmPasswordErrorDiv.style.color = "red"; // <-- Puedes dejar esto o confiar en text-red-500 de Tailwind
-    // Elimina o comenta:
-    // confirmPasswordErrorDiv.style.marginLeft = "48%"; // Esto no existe en tu código actual, pero para que sepas
-    // newPasswordInput.style.position = "absolute"; // Asegúrate de que no afecte a ningún input
-    // newPasswordInput.style.width = "100%";
-    // newPasswordInput.style.marginTop = "10%";
-    confirmNewPasswordInput.style.borderColor = "red"; // Mantén solo la modificación del borde
-    confirmNewPasswordInput.focus();
-    return;
-} else {
-    confirmNewPasswordInput.style.borderColor = ""; // Limpiar el borde
-}
-
-// Cuando newPassword !== confirmNewPassword
-if (newPassword !== confirmNewPassword) {
-    passwordErrorDiv.innerHTML = "Las contraseñas no coinciden.";
-    passwordErrorDiv.style.color = "red"; // <-- Puedes dejar esto o confiar en text-red-500 de Tailwind
-    newPasswordInput.style.borderColor = "red"; // Mantén este
-    confirmPasswordErrorDiv.innerHTML = "Las contraseñas no coinciden.";
-    confirmPasswordErrorDiv.style.color = "red"; // <-- Puedes dejar esto o confiar en text-red-500 de Tailwind
-    confirmNewPasswordInput.style.borderColor = "red"; // Mantén este
-    newPasswordInput.focus();
-    return;
-}
-
-// Cuando newPassword.length < 8
-if (newPassword.length < 8) {
-    passwordErrorDiv.innerHTML = "La contraseña debe tener al menos 8 caracteres.";
-    passwordErrorDiv.style.color = "red"; // <-- Puedes dejar esto o confiar en text-red-500 de Tailwind
-    newPasswordInput.style.borderColor = "red"; // Mantén este
-    newPasswordInput.focus();
-    return;
-}
-
-      // Opcional: Validaciones de complejidad de contraseña (ej. longitud mínima)
-      if (newPassword.length < 8) {
-        passwordErrorDiv.innerHTML =
-          "La contraseña debe tener al menos 8 caracteres.";
-        passwordErrorDiv.style.color = "red";
-        newPasswordInput.style.borderColor = "red";
-        newPasswordInput.focus();
-        return;
-      }
-      // Puedes añadir más reglas (números, mayúsculas, símbolos) si es necesario
-
-      // Mostrar un SweetAlert de carga mientras se procesa la solicitud
-      Swal.fire({
-        title: "Actualizando Contraseña...",
-        text: "Por favor, espere un momento.",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-
-      // Realizar la llamada AJAX para actualizar la contraseña
-      const xhrUpdate = new XMLHttpRequest();
-      const id_user = document.getElementById("modalUserIdForPassword").value;
-      newPasswordInput.style.borderColor = "green"; // Limpiar el borde rojo
-      confirmNewPasswordInput.style.borderColor = "green"; // Limpiar el borde rojo
-      // Este es tu nuevo endpoint en el backend para la actualización
-      xhrUpdate.open(
-        "POST",
-        `${ENDPOINT_BASE}${APP_PATH}api/users/updatePassword`
-      );
-      xhrUpdate.setRequestHeader(
-        "Content-Type",
-        "application/x-www-form-urlencoded"
-      );
-
-      xhrUpdate.onload = function () {
-        Swal.close(); // Cerrar el SweetAlert de carga
-
-        if (xhrUpdate.status === 200) {
-          try {
-            const response = JSON.parse(xhrUpdate.responseText);
-
-            if (response.success) {
-              Swal.fire({
-                icon: "success",
-                title: "¡Éxito!",
-                text:
-                  response.message || "Contraseña actualizada correctamente.",
-                color: "black", // Color del texto
-                timer: 4000,
-                timerProgressBar: true,
-                didOpen: () => {
-                  Swal.showLoading();
-                },
-                // willClose ya no tiene location.reload() si quieres un flujo más suave
-                // Si QUERES recargar la página, manten el location.reload() y elimina lo de abajo.
-                willClose: () => {
-                  location.reload();
-                },
-              });
-            } else {
-              Swal.fire({
-                icon: "error",
-                title: "Error",
-                text:
-                  response.message || "No se pudo actualizar la contraseña.",
-                color: "black",
-              });
+            // Limpiar estilos y mensajes de la leyenda al cerrar el modal
+            const passwordRequirementsDiv = document.getElementById("passwordRequirements");
+            if (passwordRequirementsDiv) {
+                passwordRequirementsDiv.style.display = "none"; // Ocultar la leyenda
+                const reqChecks = document.querySelectorAll(".password-legend li");
+                reqChecks.forEach(li => {
+                    li.classList.remove("valid", "invalid");
+                    li.style.color = ""; // Limpiar color si se aplicó directamente
+                });
             }
-          } catch (error) {
-            console.error("Error parsing JSON for updatePassword:", error);
-            Swal.fire({
-              icon: "error",
-              title: "Error de Respuesta",
-              text: "Error al procesar la respuesta del servidor al actualizar la contraseña.",
-              color: "black",
-            });
-          }
-        } else {
-          console.error(
-            "Error updating password:",
-            xhrUpdate.status,
-            xhrUpdate.statusText
-          );
-          Swal.fire({
-            icon: "error",
-            title: "Error de Conexión",
-            text: `Error ${xhrUpdate.status}: ${
-              xhrUpdate.statusText ||
-              "No se pudo conectar con el servidor para actualizar la contraseña."
-            }`,
-            color: "black",
-          });
-        }
-      };
 
-      xhrUpdate.onerror = function () {
-        Swal.close(); // Cerrar el SweetAlert de carga
-        console.error("Network error for updatePassword request.");
-        Swal.fire({
-          icon: "error",
-          title: "Error de Red",
-          text: "Error de red al intentar actualizar la contraseña. Verifique su conexión.",
-          color: "black",
+            // Limpiar clases de borde al cerrar el modal
+            document.getElementById("newPassword").classList.remove("error", "success");
+            document.getElementById("confirmNewPassword").classList.remove("error", "success");
         });
-      };
+    }
 
-      // Envía la nueva contraseña al backend.
-      // Recuerda: el ID del usuario debe recuperarse de la sesión en el backend para mayor seguridad.
-      const datosUpdate = `action=updatePassword&newPassword=${encodeURIComponent(
-        newPassword
-      )}&userId=${encodeURIComponent(id_user)}`;
-      xhrUpdate.send(datosUpdate);
+    // Lógica para mostrar/ocultar contraseña (los ojitos)
+    const togglePasswordVisibility = (inputId, iconId) => {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (input && icon) {
+            icon.addEventListener('click', () => {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    // Puedes cambiar el icono SVG aquí si tienes uno de ojo abierto.
+                    // Por ejemplo, si usas Font Awesome o Bootstrap Icons diferentes:
+                    // icon.classList.remove('bi-eye-fill');
+                    // icon.classList.add('bi-eye'); // Asume que 'bi-eye' es el icono de ojo abierto
+                } else {
+                    input.type = 'password';
+                    // icon.classList.remove('bi-eye');
+                    // icon.classList.add('bi-eye-fill'); // Vuelve al icono de ojo cerrado
+                }
+            });
+        }
+    };
+
+    togglePasswordVisibility('newPassword', 'clickme1');
+    togglePasswordVisibility('confirmNewPassword', 'clickme');
+
+    // Lógica de validación de contraseña en tiempo real para la leyenda
+    const newPasswordInput = document.getElementById("newPassword");
+    const passwordRequirementsDiv = document.getElementById("passwordRequirements");
+    const lengthCheck = document.getElementById("lengthCheck");
+    const uppercaseCheck = document.getElementById("uppercaseCheck");
+    const lowercaseCheck = document.getElementById("lowercaseCheck");
+    const numberCheck = document.getElementById("numberCheck");
+    const specialCharCheck = document.getElementById("specialCharCheck");
+    const passwordErrorDiv = document.getElementById("passwordError"); // Asegúrate de obtener este elemento
+
+    if (newPasswordInput && passwordRequirementsDiv) {
+        newPasswordInput.addEventListener("focus", function() {
+            passwordRequirementsDiv.style.display = "block"; // Mostrar la leyenda al enfocar
+        });
+
+        newPasswordInput.addEventListener("blur", function() {
+            // Ocultar la leyenda al perder el foco, solo si no hay un mensaje de error activo en passwordErrorDiv
+            if (passwordErrorDiv.innerHTML === "") {
+                passwordRequirementsDiv.style.display = "none";
+            }
+        });
+
+        newPasswordInput.addEventListener("input", function() {
+            const password = newPasswordInput.value;
+
+            // Función para actualizar el estado de un requisito
+            const updateRequirement = (element, isValid) => {
+                element.classList.toggle("valid", isValid);
+                element.classList.toggle("invalid", !isValid);
+            };
+
+            // Validar longitud
+            updateRequirement(lengthCheck, password.length >= 8);
+
+            // Validar mayúscula
+            updateRequirement(uppercaseCheck, /[A-Z]/.test(password));
+
+            // Validar minúscula
+            updateRequirement(lowercaseCheck, /[a-z]/.test(password));
+
+            // Validar número
+            updateRequirement(numberCheck, /\d/.test(password));
+
+            // Validar carácter especial
+            updateRequirement(specialCharCheck, /[!@#$%^&*]/.test(password));
+
+            // Limpiar mensaje de error genérico si ya se cumple la condición
+            // Esto es útil si tienes un mensaje de error como "La contraseña no puede estar vacía"
+            // y luego se empieza a escribir, o "Debe tener al menos 8 caracteres"
+            if (passwordErrorDiv.innerHTML !== "" &&
+                password.length >= 8 &&
+                /[A-Z]/.test(password) &&
+                /[a-z]/.test(password) &&
+                /\d/.test(password) &&
+                /[!@#$%^&*]/.test(password)) {
+                
+                passwordErrorDiv.innerHTML = ""; // Limpia el mensaje de error si todos los criterios se cumplen
+                newPasswordInput.classList.remove("error"); // Quita el borde rojo si todos los criterios se cumplen
+            }
+        });
+    }
+
+    // *** LÓGICA DEL BOTÓN 'Guardar Contraseña' del modal (Actualización de Contraseña) ***
+    const submitNewPasswordBtn = document.getElementById("submitNewPasswordBtn");
+    if (submitNewPasswordBtn) {
+        submitNewPasswordBtn.addEventListener("click", function () {
+            const newPasswordInput = document.getElementById("newPassword");
+            const confirmNewPasswordInput = document.getElementById("confirmNewPassword");
+            const newPassword = newPasswordInput.value.trim();
+            const confirmNewPassword = confirmNewPasswordInput.value.trim();
+
+            const passwordErrorDiv = document.getElementById("passwordError");
+            const confirmPasswordErrorDiv = document.getElementById("confirmPasswordError");
+
+            // Limpiar errores previos y clases de borde
+            passwordErrorDiv.innerHTML = "";
+            confirmPasswordErrorDiv.innerHTML = "";
+            newPasswordInput.classList.remove("error", "success");
+            confirmNewPasswordInput.classList.remove("error", "success");
+
+            let hasError = false; // Bandera para controlar si hay errores
+
+            // Re-validar contra los criterios de la leyenda antes de enviar
+            // y mostrar los errores específicos o el error general
+            // Asegurarse de que la leyenda esté visible al intentar guardar si hay errores de validación
+            passwordRequirementsDiv.style.display = "block"; 
+            
+            // Validaciones detalladas según la leyenda
+            if (newPassword === "") {
+                passwordErrorDiv.innerHTML = "La nueva contraseña no puede estar vacía.";
+                newPasswordInput.classList.add("error");
+                hasError = true;
+            } else if (newPassword.length < 5) {
+                passwordErrorDiv.innerHTML = "La contraseña debe tener al menos 5 caracteres.";
+                newPasswordInput.classList.add("error");
+                hasError = true;
+            } else if (!/[A-Z]/.test(newPassword)) {
+                passwordErrorDiv.innerHTML = "La contraseña debe contener al menos una mayúscula.";
+                newPasswordInput.classList.add("error");
+                hasError = true;
+            } else if (!/[a-z]/.test(newPassword)) {
+                passwordErrorDiv.innerHTML = "La contraseña debe contener al menos una minúscula.";
+                newPasswordInput.classList.add("error");
+                hasError = true;
+            } else if (!/\d/.test(newPassword)) {
+                passwordErrorDiv.innerHTML = "La contraseña debe contener al menos un número.";
+                newPasswordInput.classList.add("error");
+                hasError = true;
+            } else if (!/[!@#$%^&*]/.test(newPassword)) {
+                passwordErrorDiv.innerHTML = "La contraseña debe contener al menos un carácter especial (!@#$%^&*).";
+                newPasswordInput.classList.add("error");
+                hasError = true;
+            }
+            
+            // Si no hay errores en la nueva contraseña hasta aquí, comprobamos la confirmación
+            if (!hasError && confirmNewPassword === "") {
+                confirmPasswordErrorDiv.innerHTML = "Debe confirmar la contraseña.";
+                confirmNewPasswordInput.classList.add("error");
+                hasError = true;
+            }
+
+            // Comprobar que las contraseñas coincidan, solo si no hay errores previos en la nueva contraseña
+            if (!hasError && newPassword !== confirmNewPassword) {
+                passwordErrorDiv.innerHTML = "Las contraseñas no coinciden.";
+                newPasswordInput.classList.add("error");
+                confirmPasswordErrorDiv.innerHTML = "Las contraseñas no coinciden.";
+                confirmNewPasswordInput.classList.add("error");
+                hasError = true;
+            }
+            
+            // Si hay algún error, no se procede con el envío y se enfoca el campo.
+            if (hasError) {
+                // Enfocar el campo que tiene el primer error
+                if (passwordErrorDiv.innerHTML !== "") {
+                    newPasswordInput.focus();
+                } else if (confirmPasswordErrorDiv.innerHTML !== "") {
+                    confirmNewPasswordInput.focus();
+                }
+                return;
+            } else {
+                // Si no hay errores, se pueden poner los bordes verdes y ocultar la leyenda.
+                newPasswordInput.classList.add("success");
+                confirmNewPasswordInput.classList.add("success");
+                passwordRequirementsDiv.style.display = "none";
+            }
+
+            // Mostrar un SweetAlert de carga mientras se procesa la solicitud
+            Swal.fire({
+                title: "Actualizando Contraseña...",
+                text: "Por favor, espere un momento.",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
+            // Realizar la llamada AJAX para actualizar la contraseña
+            const xhrUpdate = new XMLHttpRequest();
+            const id_user = document.getElementById("modalUserIdForPassword").value;
+            
+            xhrUpdate.open(
+                "POST",
+                `${ENDPOINT_BASE}${APP_PATH}api/users/updatePassword`
+            );
+            xhrUpdate.setRequestHeader(
+                "Content-Type",
+                "application/x-www-form-urlencoded"
+            );
+
+            xhrUpdate.onload = function () {
+                Swal.close(); // Cerrar el SweetAlert de carga
+
+                // Después de la respuesta, limpiar clases de éxito o error
+                newPasswordInput.classList.remove("success", "error"); 
+                confirmNewPasswordInput.classList.remove("success", "error");
+
+                if (xhrUpdate.status === 200) {
+                    try {
+                        const response = JSON.parse(xhrUpdate.responseText);
+
+                        if (response.success) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "¡Éxito!",
+                                text: response.message || "Contraseña actualizada correctamente.",
+                                color: "black",
+                                timer: 3000,
+                                timerProgressBar: true,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                },
+                                willClose: () => {
+                                    location.reload();
+                                },
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: response.message || "No se pudo actualizar la contraseña.",
+                                color: "black",
+                            });
+                        }
+                    } catch (error) {
+                        console.error("Error parsing JSON for updatePassword:", error);
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error de Respuesta",
+                            text: "Error al procesar la respuesta del servidor al actualizar la contraseña.",
+                            color: "black",
+                        });
+                    }
+                } else {
+                    console.error(
+                        "Error updating password:",
+                        xhrUpdate.status,
+                        xhrUpdate.statusText
+                    );
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error de Conexión",
+                        text: `Error ${xhrUpdate.status}: ${
+                            xhrUpdate.statusText ||
+                            "No se pudo conectar con el servidor para actualizar la contraseña."
+                        }`,
+                        color: "black",
+                    });
+                }
+            };
+
+            xhrUpdate.onerror = function () {
+                Swal.close();
+                console.error("Network error for updatePassword request.");
+                Swal.fire({
+                    icon: "error",
+                    title: "Error de Red",
+                    text: "Error de red al intentar actualizar la contraseña. Verifique su conexión.",
+                    color: "black",
+                });
+            };
+
+            const datosUpdate = `action=updatePassword&newPassword=${encodeURIComponent(
+                newPassword
+            )}&userId=${encodeURIComponent(id_user)}`;
+            xhrUpdate.send(datosUpdate);
+        });
+    }
+
+    // Funcionalidad de cerrar sesión al cerrar modal o presionar Escape
+    var closeIcon = document.getElementById("CloseIcon");
+    var buttonCerrar = document.getElementById("Cerrar-botton");
+    var modalElement = document.getElementById("newPasswordModal"); 
+
+    if (closeIcon) {
+        closeIcon.addEventListener("click", function () {
+            window.location.href = "cerrar_session";
+        });
+    }
+
+    if (buttonCerrar) {
+        buttonCerrar.addEventListener("click", function () {
+            window.location.href = "cerrar_session";
+        });
+    }
+
+    document.addEventListener('keyup', function(event) {
+        if (event.key === 'Escape' || event.keyCode === 27) {
+            if (modalElement && modalElement.classList.contains('show')) {
+                window.location.href = "cerrar_session";
+            }
+        }
     });
-  }
-
-  var myModal = document.getElementById("CloseIcon");
-  var buttonCerrar = document.getElementById("Cerrar-botton");
-  
-  // Agrega un listener para el evento 'hidden.bs.modal'
-  // Este evento se dispara cuando el modal ha terminado de ocultarse (después de la transición CSS)
-  myModal.addEventListener("click", function () {
-    // Redirige al usuario a la página de login
-    window.location.href = "cerrar_session"; // Cambia 'login.php' por la ruta real de tu página de login
-  });
-
-  buttonCerrar.addEventListener("click", function () {
-    // Redirige al usuario a la página de login
-    window.location.href = "cerrar_session"; // Cambia 'login.php' por la ruta real de tu página de login
-  });
-
-  document.addEventListener('keyup', function(event) {
-    // Verifica si la tecla presionada es 'Escape' (código 27)
-    if (event.key === 'Escape') {
-        // Opcional: Puedes añadir una condición para que solo funcione si el modal está abierto.
-        // Esto es útil si tienes otros elementos en la página que también escuchan 'Escape'.
-        // Tendrías que tener una forma de saber si el modal está visible, por ejemplo,
-        // si tiene la clase 'show' de Bootstrap o su estilo 'display' es 'block'.
-        
-        // Ejemplo de condición (asumiendo que 'changePasswordModal' es tu modal y se muestra/oculta con 'display'):
-            // Si el modal está abierto y se presiona 'Escape', redirige.
-            window.location.href = "cerrar_session";      } 
-        // Si no usas la condición del modal abierto, se redirigirá siempre que se presione Esc.
-        // if (true) { // Si siempre quieres que redirija al presionar Esc, sin importar si el modal está abierto
-        //     window.location.href = "cerrar_session";
-        // }
-    
 });
-})
 
 
 
