@@ -16,7 +16,7 @@ function mi_navbar()
             <?php echo tituloPagina; ?>
         </title>
 
-         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
@@ -206,7 +206,7 @@ function mi_navbar()
                                             <div
                                                 class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
                                                 <strong>
-                                                    <h5 class="text-black text-capitalize ps-3">Gestión Técnico</h5>
+                                                    <h5 class="text-black text-capitalize ps-3" style="color: black;">Gestión Técnico</h5>
                                                 </strong>
                                             </div>
                                         </div>

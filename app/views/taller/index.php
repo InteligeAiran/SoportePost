@@ -17,13 +17,13 @@
     <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/dashboard/nucleo-svg.css" />
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
+
+
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
     <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
     <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
-        <!-- CSS Files -->
-
-        
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
 
 
         <style>
@@ -150,6 +150,68 @@
             #icon-close:hover {
                 background-color: red;
             }
+
+                    /* Contenedor de paginación de DataTables */
+        .dataTables_wrapper .dataTables_paginate.paging_simple_numbers {
+            /* Puedes ajustar márgenes o padding aquí si es necesario */
+            margin-top: 15px; /* Espacio superior para separar de la tabla */
+        }
+
+        /* Estilo para los elementos LI de la paginación (números, Anterior, Siguiente) */
+        .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button {
+            background-color: #f0f0f0; /* Un gris claro para el fondo */
+            color: black; /* Un gris oscuro para el texto */
+            border: 1px solid #cccccc; /* Un borde sutil */
+            padding: 8px 12px;
+            margin: 0 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Transición suave */
+            border-radius: 4px; /* Bordes ligeramente redondeados */
+            list-style: none; /* Eliminar viñetas de lista */
+            display: inline-block; /* Asegura que se comporten como bloques en línea */
+        }
+
+        /* Estilo al pasar el puntero (hover) sobre los LI que no están activos ni deshabilitados */
+        .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button:hover:not(.active):not(.disabled) {
+            background-color: #fff; /* Un gris ligeramente más oscuro al pasar el puntero */
+            color: #007bff; /* Un azul suave para el texto, o puedes mantener el gris oscuro */
+            border-color: #a0a0a0; /* Un borde un poco más visible */
+            text-decoration: none; /* Asegurar que no haya subrayado si hay un enlace dentro */
+        }
+
+        /* Estilo de la página activa */
+        .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button.active {
+            background-color: #8392ab; /* Azul para la página activa (puedes elegir un color más sutil aquí) */
+            color: #ffffff; /* Texto blanco para la página activa */
+            border-color: #8392ab; /* Borde del mismo color que el fondo */
+            cursor: default; /* No cambia el cursor al pasar por la página actual */
+        }
+
+        /* Estilo para los botones deshabilitados (Anterior, Siguiente, o los "...") */
+        .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button.disabled {
+            background-color: #f8f8f8; /* Un gris muy claro, casi blanco */
+            color: #999999; /* Un gris más claro para el texto */
+            border: 1px solid #e0e0e0; /* Un borde muy sutil */
+            cursor: not-allowed; /* Indica que no es clickeable */
+            pointer-events: none; /* Asegura que no sea clickeable incluso si hay un 'a' dentro */
+        }
+
+        /* Si los "..." tienen una clase específica como 'ellipsis', puedes añadirla aquí,
+        pero generalmente .disabled los cubre si están dentro de un li.paginate_button. */
+        /* .dataTables_wrapper .dataTables_paginate ul.pagination li.ellipsis {
+            background-color: #f8f8f8;
+            color: #999999;
+            border: 1px solid #e0e0e0;
+            cursor: default;
+        } */       
+
+
+        /* Estilo al pasar el puntero (hover) sobre los elementos de paginación NO activos y NO deshabilitados */
+        .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button:hover:not(.active):not(.disabled) {
+            background-color: #fff; /* Un gris ligeramente más oscuro al pasar el puntero (sutil) */
+            color: #003594; /* Azul suave para el texto al hacer hover, o puedes mantener el gris oscuro si prefieres menos cambio */
+            border-color: white; /* Borde un poco más visible al hacer hover */
+        }
         </style>
     </head>
 
@@ -177,7 +239,7 @@
                                             <div class="col-lg-12 col-md-12 mt-4 mb-4">
                                                 <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
                                                     <strong>
-                                                        <h5 class="text-black text-capitalize ps-3">Equipos en Taller</h5>
+                                                        <h5 class="text-black text-capitalize ps-3" style="color: black;">Equipos en Taller</h5>
                                                     </strong>
                                                 </div>
                                             </div>
@@ -323,13 +385,17 @@
                     </div>
                 </div>
             </div>
+            <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+            <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
+            <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
+            
+            <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
             <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
             <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
 
-            <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-            <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.js"></script>
-
+            <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
             <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
             <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
             <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
@@ -341,8 +407,11 @@
             <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
             <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
             <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
-            <script async defer src="https://buttons.github.io/buttons.js"></script>
+            <script src="<?php echo APP; ?>js/datatables.js"></script>
 
+             <!--  SweetAlert   -->
+        <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
 
             <?php
             if (isset($this->js)) {

@@ -904,10 +904,8 @@ function mi_navbar(){
                                     <script>
                                         document.write(new Date().getFullYear())
                                     </script>,
-                                    made with <i class="fa fa-heart"></i> by
-                                    <a href="https://www.inteligensa.com/" class="font-weight-bold"
-                                        target="_blank">Creative By Inteligensa</a>
-                                    for a better web.
+                                    Hecho
+                                   <a href="https://www.inteligensa.com/" class="font-weight-bold" target="_blank">Por Intelisoft</a> para una mejor web.
                                 </div>
                             </div>
                         </div>
