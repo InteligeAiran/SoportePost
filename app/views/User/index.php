@@ -79,7 +79,7 @@ function mi_navbar() {
                         <div id="div_user" class="background-color">
                             <div class="col-lg-12 col-md-12 mt-4 mb-4">
                                 <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                    <strong><h5 class="text-black text-capitalize ps-3">LISTA DE USUARIOS</h5></strong>
+                                    <strong><h5 class="text-black text-capitalize ps-3" style="color: black;">LISTA DE USUARIOS</h5></strong>
                                 </div>
                             </div> 
                                   
