@@ -130,9 +130,18 @@ class emailModel extends Model{
     public function GetDataImage($id_ticket){
         try{
             $escaped_id_ticket = pg_escape_literal($this->db->getConnection(), $id_ticket); 
-            $sql = "SELECT downl_exoneration AS exo, mime_type_exo AS mime_type
-FROM tickets WHERE id_ticket = ".$escaped_id_ticket." AND downl_exoneration IS NOT NULL";
-//var_dump($sql);
+            $sql = "SELECT downl_exoneration AS exo, mime_type_exo AS mime_type FROM tickets WHERE id_ticket = ".$escaped_id_ticket." AND downl_exoneration IS NOT NULL"; 
+            //var_dump($sql);
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetEmailUserDataById($id_user){
+        try{
+            $sql = "SELECT * FROM get_email_user_by_id(".$id_user.");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

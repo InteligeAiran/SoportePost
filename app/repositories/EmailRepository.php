@@ -122,4 +122,10 @@ class EmailRepository
         //var_dump($result['mime_type']);
         return $result ? $result['row'] : null;
     }
+
+    public function GetEmailUserDataById($id_user){
+        $result = $this->model->GetEmailUserDataById($id_user);
+        //var_dump($result);
+        return $result ? $result['row'] : null;
+    }
 }

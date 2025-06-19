@@ -538,6 +538,7 @@ class Consulta extends Controller
     if (isset($result['success']) && $result['success']) {
         $idTicketCreado = $result['id_ticket_creado'];
         $ticket_status_info = $result['status_info']; // Directamente del modelo/repositorio
+        $ticket_status_info_payment = $result['status_payment_info'] ?? null; // Información del estado de pago, si está disponible
 
         // Determinar el texto y ID del estado
         $status_text = 'Estado Desconocido';
@@ -545,6 +546,13 @@ class Consulta extends Controller
         if ($ticket_status_info) {
             $status_id = $ticket_status_info['id_status_ticket'] ?? null;
             $status_text = $ticket_status_info['name_status_ticket'] ?? 'Estado Desconocido';
+        }
+
+        if ($ticket_status_info_payment) {
+            $status_payment_text = 'Estado de Pago Desconocido';
+            if ($ticket_status_info_payment) {
+                $status_payment_text = $ticket_status_info_payment['name_status_payment']?? 'Estado de Pago Desconocido';
+            }
         }
 
         // 6. Configurar y Crear la Estructura de Carpetas de Archivos
@@ -643,7 +651,8 @@ class Consulta extends Controller
                 'coordinador' => $coordinador_nombre,
                 'id_ticket_creado' => $idTicketCreado, // Incluye el ID del ticket
                 'status_id' => $status_id,             // Incluye el ID del estado
-                'status_text' => $status_text          // **¡El nombre del estado aquí!**
+                'status_text' => $status_text,          // **¡El nombre del estado aquí!**
+                'status_payment' => $status_payment_text
             ]
         ], 200);
         return;
