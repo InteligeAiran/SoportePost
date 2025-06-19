@@ -2507,7 +2507,7 @@ function SendRif() {
               lengthMenu: "Mostrar _MENU_ Registros", // Esta línea es la clave
               emptyTable: "No hay Registros disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ Registro(s) )",
+              info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
               infoEmpty: "No hay Registros disponibles",
               infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
               search: "Buscar:",
@@ -2688,7 +2688,7 @@ function SendSerial() {
               lengthMenu: "Mostrar _MENU_ Registros", // Esta línea es la clave
               emptyTable: "No hay Registros disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ Registro(s) )",
+              info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
               infoEmpty: "No hay Registros disponibles",
               infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
               search: "Buscar:",
@@ -2875,7 +2875,7 @@ function SendRazon() {
               lengthMenu: "Mostrar _MENU_ Registros", // Esta línea es la clave
               emptyTable: "No hay Registros disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ Registro(s) )",
+              info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
               infoEmpty: "No hay Registros disponibles",
               infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
               search: "Buscar:",
@@ -3036,7 +3036,7 @@ function fetchSerialData(serial, rif) {
               language: {
                 emptyTable: "No hay Registros disponibles en la tabla",
                 zeroRecords: "No se encontraron resultados para la búsqueda",
-                info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ Registro(s) )",
+                info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
                 infoEmpty: "No hay datos disponibles",
                 infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
                 search: "Buscar:",
