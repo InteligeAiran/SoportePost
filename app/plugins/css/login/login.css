@@ -1,3 +1,13 @@
+ :root {
+    --primary-blue: #2c52ed; /* Adjusted blue based on image analysis */
+    --dark-blue-text: #1a202c; /* A darker blue/gray for text */
+    --light-gray-border: #e2e8f0; /* Lighter border color for inputs */
+    --text-color: #4a5568; /* General text color */
+    --error-color: #e53e3e; /* Standard red for errors */
+    --success-color: #38a169; /* Standard green for success */
+    --font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; /* Common sans-serif stack */
+}
+
 .logo{
     width: 100%;
     height: 100%;
@@ -112,6 +122,7 @@ cursor: pointer;
 
 .success.green {
     color: green;
+    margin-top: 15%;
 }
 
 .success.red {
@@ -171,13 +182,18 @@ cursor: pointer;
 }
 
 #restore_passForm button {
-    background-color: #28a745;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-blue);
     color: white;
-    padding: 12px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
     cursor: pointer;
-    font-size: 16px;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s ease-in-out;
+    margin-top: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 #restore_passForm button:hover {
@@ -203,6 +219,176 @@ cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.cerrar {
+    color: #a0aec0; /* Lighter gray for 'x' */
+    font-size: 30px; /* Slightly larger */
+    font-weight: normal; /* Less bold 'x' */
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.cerrar:hover,
+.cerrar:focus {
+    color: red; /* Primary blue on hover/focus */
+    text-decoration: none;
+    outline: none;
+}
+
+
+/* Modal Content Container */
+#modal-content {
+    background-color: #fefefe; /* White background */
+    margin: auto;
+    padding: 30px;
+    border-radius: 12px; /* Smoother rounded corners */
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25); /* Slightly stronger shadow */
+    position: relative;
+    width: 90%;
+    max-width: 400px; /* Slightly narrower max-width for a compact look */
+    animation: fadeIn 0.3s ease-out; /* Fade-in effect */
+    font-family: var(--font-family);
+    color: var(--text-color);
+    text-align: center; /* Center content within the modal */
+    box-sizing: border-box;
+}
+
+
+.modal-contenido h2 {
+    color: var(--dark-blue-text); /* Darker text for title */
+    margin-bottom: 10px;
+    font-size: 1.6em; /* Slightly smaller title */
+    font-weight: 700; /* Bolder title */
+    text-align: center;
+}
+
+.modal-contenido p {
+    color: var(--text-color);
+    margin-bottom: 25px;
+    font-size: 0.95em;
+    line-height: 1.4;
+    text-align: center;
+}
+
+/* Form Controls (Input Fields) */
+.form-control {
+    width: 100%; /* Full width */
+    padding: 12px 15px; /* More padding */
+    margin-bottom: 15px;
+    border: 1px solid var(--light-gray-border);
+    border-radius: 8px; /* Consistent rounded corners */
+    box-sizing: border-box;
+    font-size: 1em;
+    color: var(--text-color);
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: #a0aec0; /* Lighter placeholder text */
+}
+
+.form-control:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(44, 82, 237, 0.2); /* Softer, slightly larger blue glow */
+}
+
+.form-control[disabled] {
+    background-color: #f7fafc; /* Very light gray for disabled, common in modern UIs */
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* Error and Success Messages */
+.errorEmail {
+    color: var(--error-color);
+    font-size: 0.8em; /* Slightly smaller error text */
+    margin-top: -31px;
+    margin-bottom: 44px;
+    text-align: left; /* Keep text aligned to the left */
+}
+
+.successEmail {
+    color: var(--success-color);
+    font-size: 0.8em; /* Slightly smaller success text */
+    margin-top: -58px; /* Adjust spacing */
+    margin-bottom: 15px;
+    text-align: left; /* Keep text aligned to the left */
+}
+
+/* Send Button */
+#Sendmail {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-blue); /* Your primary blue */
+    color: white;
+    border: none;
+    border-radius: 8px; /* Consistent rounded corners */
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s ease-in-out;
+    margin-top: 20px; /* More space above button */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle button shadow */
+}
+
+#Sendmail:hover {
+    background-color: #2441c2; /* Slightly darker blue on hover */
+    transform: translateY(-1px); /* Slight lift */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* More prominent shadow on hover */
+}
+
+#Sendmail:active {
+    background-color: #1e3a9b; /* Even darker on click */
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Reset shadow */
+}
+
+/* Keyframe animation for fade-in */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-30px); } /* Start higher */
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 500px) {
+    .modal-contenido {
+        width: 95%;
+        padding: 25px 20px; /* Slightly less padding on smaller screens */
+    }
+
+    .modal-contenido h2 {
+        font-size: 1.4em;
+    }
+
+    .modal-contenido p {
+        font-size: 0.9em;
+        margin-bottom: 20px;
+    }
+
+    .form-control, #Sendmail {
+        padding: 10px;
+        font-size: 0.9em;
+    }
+}
+
+@media (max-height: 550px) { /* For shorter screens, reduce padding/margins */
+    .modal-contenido {
+        padding: 20px;
+    }
+    .modal-contenido h2 {
+        margin-bottom: 5px;
+    }
+    .modal-contenido p {
+        margin-bottom: 15px;
+    }
+    #Sendmail {
+        margin-top: 15px;
+    }
 }
 
 #modalCodigoVerificacion .modal-contenido {

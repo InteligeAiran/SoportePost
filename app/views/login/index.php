@@ -55,16 +55,21 @@
   </div>
 
   <div id="modal" class="modal">
-    <div class="modal-contenido">
-      <span class="cerrar">&times;</span>
-      <h2>Restablecer Contraseña</h2>
-      <p>Ingresa tu correo electrónico para recibir un codigo.</p>
-      <form id="restore_passForm">
-        <input placeholder = "Coloque su Correo" onblur = "checkEmail()" type="email" id="email" name = "email" required>
-        <div id="emailError" class="error"></div><div id="emailVerification" class="success"></div>
-        <button id="Sendemail" type="button" onclick="SendEmail()">Enviar</button>
-      </form>
-    </div>  
+    <div class="modal-contenido" id="modal-content">
+        <span class="cerrar">&times;</span>
+        <h2>Restablecer Contraseña</h2>
+        <p>Ingresa tu usuario Para Acceder a Tu correo.</p>
+        <form id="restore_passForm">
+            <input class="form-control" placeholder="Coloque su Usuario" type="text" id="restoreUsername"  onblur="GetEmailByUsername()" name="restoreUsername">
+            <div id="restoreUsernameError" class="errorEmail"></div>
+            <div id="restoreUsernameVerification" class="successEmail"></div>
+            <input class="form-control" placeholder="Correo" onblur="checkEmailForPasswordReset()" type="email" id="email" name="email" disabled>
+            <div id="emailError" class="error"></div>
+            <div id="emailVerification" class="successEmail1"></div>
+            
+            <button id="Sendmail" type="button" onclick="SendEmail()">Enviar</button>
+        </form>
+    </div>
   </div>
 
   <div id="modal2" class="modal"></div>

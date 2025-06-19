@@ -23,7 +23,6 @@ function mi_navbar() {
    
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/user/desktop/desktop.css" />
         <!-- CSS Files -->
-            <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
 
@@ -43,6 +42,22 @@ function mi_navbar() {
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.bootstrap.css" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.core.css" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP;?>app/plugins/alertify/themes/alertify.default.css" />
+        <style>
+            #icon-close {
+                background-color: #8392ab;
+                color: #fff;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s ease-in-out;
+                margin-left: 89%;
+                position: absolute;
+            }
+
+            #icon-close:hover {
+                background-color: red;
+            }
+        </style>
     </head>
     <body class="g-sidenav-show bg-gray-100">
         <div class="min-height-300 bg-dark position-absolute w-100"></div>
@@ -105,10 +120,10 @@ function mi_navbar() {
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closedModalCreated()"><span aria-hidden="true">&times;</span>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="icon-close" onclick="closedModalCreated()"><span aria-hidden="true">&times;</span>
                 </button>
-                <div class="panel-heading" style="text-align: center;color:#ffffff;">
-                    <h4>Registro de usuarios</h4>
+                <div class="panel-heading" style="text-align: center; color:grey;">
+                    <h4 style="color: grey;">Registro de usuarios</h4>
                 </div>
             </div> 
 
@@ -216,10 +231,10 @@ function mi_navbar() {
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closedModal()"><span aria-hidden="true">&times;</span>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="icon-close" onclick="closedModal()"><span aria-hidden="true">&times;</span>
                 </button>
                 <div class="panel-heading" style="text-align: center;color:#ffffff;">
-                    <h4>Editar usuarios</h4>
+                    <h4 style="color: grey;">Editar usuarios</h4>
                 </div>
             </div> 
 
@@ -320,10 +335,10 @@ function mi_navbar() {
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="icon-close"><span aria-hidden="true">&times;</span>
                 </button>
                 <div class="panel-heading" style="text-align: center;color:#ffffff;">
-                    <h4>Asignación de Módulos</h4>
+                    <h4 style="color: grey;">Asignación de Módulos</h4>
                 </div>
             </div> 
 

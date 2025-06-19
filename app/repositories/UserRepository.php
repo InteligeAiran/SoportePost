@@ -232,4 +232,10 @@ class UserRepository
         $result = $this->model->UpdateUserStatus($id_user, $contrase); // Asumiendo que tienes este método en tu modelo
         return $result;
     }
+
+    public function getEmailByUsername($username){
+        // Lógica para obtener el correo electrónico de un usuario por su nombre de usuario
+        $result = $this->model->getEmailByUsername($username); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['email']; // Devuelve el correo electrónico o null si no se encuentra
+    }
 }
