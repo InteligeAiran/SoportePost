@@ -105,7 +105,6 @@
                 // Si el menú se acaba de abrir Y tiene un moduleId asociado
                 // Y sus submódulos no han sido cargados aún (controlado por data-submodules-loaded)
                 if (menuElement.classList.contains("show") && moduleId && menuElement.dataset.submodulesLoaded !== 'true') {
-                    console.log(`Dropdown abierto para el módulo ${moduleId}. Cargando submódulos...`);
                     loadSubmodulesForModule(moduleId, menuElement);
                 }
 
@@ -268,8 +267,6 @@
                                 });
                             }
                             targetUlElement.dataset.submodulesLoaded = 'true'; // Marca como cargado
-                            console.log(`Submódulos para el módulo ${moduleId} cargados exitosamente.`);
-
                         } else {
                             console.error("Formato de respuesta inválido para submódulos: Se esperaba 'success: true' y un array 'submodules'.", response); // Actualiza el mensaje de error para reflejar el nombre correcto
                             targetUlElement.innerHTML = '<div class="p-2 text-danger">Error al cargar submódulos.</div>';
@@ -620,3 +617,188 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadFullNavbar(); // Llama a la función para cargar los módulos principales
         }); 
+
+
+
+   
+
+
+
+
+// --- Funciones para manipular la UI y guardar en LocalStorage ---
+
+function sidebarColor(element) {
+    const newColor = element.getAttribute('data-color');
+    const sidebar = document.getElementById('sidenav-main'); // Tu sidebar tiene este ID
+    // Si tu navbar principal también necesita cambiar de color, identifica su ID o clase y manipúlalo aquí.
+    // Por ahora, nos enfocamos en el sidenav ya que es donde las clases de color se aplican en tu HTML.
+
+    if (sidebar) {
+        // Elimina clases de color previas del sidenav
+        sidebar.classList.remove('bg-gradient-primary', 'bg-gradient-dark', 'bg-gradient-info', 'bg-gradient-success', 'bg-gradient-warning', 'bg-gradient-danger', 'bg-white', 'bg-default'); // Asegúrate de quitar bg-white y bg-default también si aplican
+        // Agrega la nueva clase de color
+        sidebar.classList.add(`bg-gradient-${newColor}`);
+        // Para Argon Dashboard, el color del sidebar se aplica directamente con bg-gradient-{color}
+    }
+
+    // Guarda el color seleccionado en LocalStorage
+    localStorage.setItem('sidebarColor', newColor);
+
+    // Actualiza el estado visual de los badges (activo/inactivo) en el panel de configuración
+    document.querySelectorAll('.badge-colors .badge').forEach(badge => {
+        badge.classList.remove('active');
+    });
+    element.classList.add('active');
+}
+
+function sidebarType(element) {
+    const newTypeClass = element.getAttribute('data-class'); // Esto será 'bg-white' o 'bg-default'
+    const sidebar = document.getElementById('sidenav-main'); // Tu sidebar tiene este ID
+
+    if (sidebar) {
+        // Elimina las clases de tipo previas
+        sidebar.classList.remove('bg-white', 'bg-default');
+        // Agrega la nueva clase de tipo
+        sidebar.classList.add(newTypeClass);
+    }
+
+    // Guarda el tipo seleccionado en LocalStorage
+    localStorage.setItem('sidebarType', newTypeClass);
+
+    // Actualiza el estado visual de los botones de tipo
+    document.querySelectorAll('[onclick="sidebarType(this)"]').forEach(button => {
+        button.classList.remove('active');
+    });
+    element.classList.add('active');
+}
+
+function navbarFixed(element) {
+    const isChecked = element.checked;
+    // Debes identificar el elemento de tu navbar principal (el de arriba)
+    // En Argon Dashboard, a menudo es un <nav class="navbar navbar-main"> o similar
+    // Si no tienes un ID, puedes usar una clase general como .navbar-main
+    const navbar = document.querySelector('.navbar-main'); // Ajusta este selector si es diferente
+
+    if (navbar) {
+        if (isChecked) {
+            // Asegúrate de que esta sea la clase correcta para fijar el navbar en Argon
+            navbar.classList.add('position-sticky', 'top-1', 'z-index-sticky');
+            navbar.classList.remove('position-absolute'); // Si se usa position-absolute por defecto
+        } else {
+            navbar.classList.remove('position-sticky', 'top-1', 'z-index-sticky');
+            navbar.classList.add('position-absolute'); // Si se usa position-absolute por defecto
+        }
+    }
+    localStorage.setItem('navbarFixed', isChecked);
+}
+
+function darkMode(element) {
+    const isChecked = element.checked;
+    if (isChecked) {
+        document.body.classList.add('dark-version'); // Esta clase generalmente se aplica al body
+    } else {
+        document.body.classList.remove('dark-version');
+    }
+    localStorage.setItem('darkMode', isChecked);
+}
+
+// --- Cargar las preferencias al inicio de la página (DEBE EJECUTARSE EN CADA MÓDULO) ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Cargar color del sidebar
+    const savedColor = localStorage.getItem('sidebarColor');
+    if (savedColor) {
+        const sidebar = document.getElementById('sidenav-main'); // Tu sidebar
+        if (sidebar) {
+            // Limpia todas las posibles clases de color y tipo antes de aplicar la guardada
+            sidebar.classList.remove('bg-gradient-primary', 'bg-gradient-dark', 'bg-gradient-info', 'bg-gradient-success', 'bg-gradient-warning', 'bg-gradient-danger', 'bg-white', 'bg-default');
+            sidebar.classList.add(`bg-gradient-${savedColor}`);
+            // También activa el badge correspondiente en el panel de configuración
+            const activeBadge = document.querySelector(`.badge-colors .badge[data-color="${savedColor}"]`);
+            if (activeBadge) {
+                // Desactiva cualquier otro badge activo y activa el correcto
+                document.querySelectorAll('.badge-colors .badge').forEach(badge => {
+                    badge.classList.remove('active');
+                });
+                activeBadge.classList.add('active');
+            }
+        }
+    } else {
+        // Si no hay color guardado, asegúrate de que el "primary" esté activo por defecto si es tu estilo inicial
+        const defaultBadge = document.querySelector('.badge-colors .badge.bg-gradient-primary');
+        if (defaultBadge) {
+            defaultBadge.classList.add('active');
+        }
+    }
+
+
+    // Cargar tipo de sidebar (Claro/Oscuro - bg-white/bg-default)
+    const savedType = localStorage.getItem('sidebarType');
+    if (savedType) {
+        const sidebar = document.getElementById('sidenav-main'); // Tu sidebar
+        if (sidebar) {
+            sidebar.classList.remove('bg-white', 'bg-default'); // Quita las clases de tipo
+            sidebar.classList.add(savedType);
+            const activeButton = document.querySelector(`[onclick="sidebarType(this)"][data-class="${savedType}"]`);
+            if (activeButton) {
+                // Desactiva cualquier otro botón activo y activa el correcto
+                document.querySelectorAll('[onclick="sidebarType(this)"]').forEach(button => {
+                    button.classList.remove('active');
+                });
+                activeButton.classList.add('active');
+            }
+        }
+    } else {
+        // Si no hay tipo guardado, activa el botón "Azul" (bg-white) por defecto
+        const defaultTypeButton = document.querySelector('[onclick="sidebarType(this)"][data-class="bg-white"]');
+        if (defaultTypeButton) {
+            defaultTypeButton.classList.add('active');
+        }
+    }
+
+    // Cargar estado de Navbar Fija
+    const savedNavbarFixed = localStorage.getItem('navbarFixed');
+    const navbarFixedCheckbox = document.getElementById('navbarFixed');
+    const navbar = document.querySelector('.navbar-main'); // Tu navbar superior
+
+    if (navbarFixedCheckbox && navbar) {
+        if (savedNavbarFixed !== null) {
+            const isFixed = savedNavbarFixed === 'true';
+            navbarFixedCheckbox.checked = isFixed;
+            if (isFixed) {
+                navbar.classList.add('position-sticky', 'top-1', 'z-index-sticky');
+                navbar.classList.remove('position-absolute');
+            } else {
+                navbar.classList.remove('position-sticky', 'top-1', 'z-index-sticky');
+                navbar.classList.add('position-absolute');
+            }
+        } else {
+            // Si no hay nada guardado, asegura que el checkbox refleje el estado inicial del navbar.
+            // Por ejemplo, si tu navbar es fija por defecto, marca el checkbox.
+            // Esto es más complejo ya que necesitarías saber el estado CSS inicial.
+            // Una opción simple es que, si no hay preferencia, el checkbox esté desmarcado por defecto.
+            navbarFixedCheckbox.checked = false; // Asume que no es fijo si no hay preferencia guardada.
+            navbar.classList.remove('position-sticky', 'top-1', 'z-index-sticky');
+            navbar.classList.add('position-absolute');
+        }
+    }
+
+
+    // Cargar estado de Dark Mode
+    const savedDarkMode = localStorage.getItem('darkMode');
+    const darkModeCheckbox = document.getElementById('dark-version');
+    if (darkModeCheckbox) {
+        if (savedDarkMode !== null) {
+            const isDarkMode = savedDarkMode === 'true';
+            darkModeCheckbox.checked = isDarkMode;
+            if (isDarkMode) {
+                document.body.classList.add('dark-version');
+            } else {
+                document.body.classList.remove('dark-version');
+            }
+        } else {
+            // Si no hay preferencia, el checkbox se desmarca por defecto (modo claro)
+            darkModeCheckbox.checked = false;
+            document.body.classList.remove('dark-version');
+        }
+    }
+});

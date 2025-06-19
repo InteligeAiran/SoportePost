@@ -1,9 +1,9 @@
 <?php
-function mi_navbar(){
-}
+function mi_navbar() {}
 ?>
 <!DOCTYPE html>
 <lang="en">
+
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -26,58 +26,70 @@ function mi_navbar(){
             href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
         <style>
-             /* Estilos generales para asegurar que las celdas se vean bien */
-    #ticketCountSummaryTable th,
-    #ticketCountSummaryTable td {
-        /* Asegura que el padding sea respetado y el box-sizing sea consistente */
-        box-sizing: border-box;
-    }
+            /* Estilos generales para asegurar que las celdas se vean bien */
+            #ticketCountSummaryTable th,
+            #ticketCountSummaryTable td {
+                /* Asegura que el padding sea respetado y el box-sizing sea consistente */
+                box-sizing: border-box;
+            }
 
-    /* Opcional: Un estilo más distintivo para las filas pares o impares si quieres un "zebra striping" */
-    #ticketCountsBody tr:nth-child(even) {
-        background-color: #f9fafb; /* Un gris muy claro para las filas pares */
-    }
+            /* Opcional: Un estilo más distintivo para las filas pares o impares si quieres un "zebra striping" */
+            #ticketCountsBody tr:nth-child(even) {
+                background-color: #f9fafb;
+                /* Un gris muy claro para las filas pares */
+            }
 
-    #ticketCountsBody tr:nth-child(odd) {
-        background-color: #ffffff; /* Blanco para las filas impares */
-    }
+            #ticketCountsBody tr:nth-child(odd) {
+                background-color: #ffffff;
+                /* Blanco para las filas impares */
+            }
 
-    /* Opcional: Un efecto de hover más pronunciado si el de Tailwind no es suficiente */
-    #ticketCountsBody tr:hover {
-        background-color: #eff6ff; /* Un azul muy suave al pasar el ratón */
-        transition: background-color 0.2s ease-in-out; /* Suaviza la transición del color */
-    }
+            /* Opcional: Un efecto de hover más pronunciado si el de Tailwind no es suficiente */
+            #ticketCountsBody tr:hover {
+                background-color: #eff6ff;
+                /* Un azul muy suave al pasar el ratón */
+                transition: background-color 0.2s ease-in-out;
+                /* Suaviza la transición del color */
+            }
 
-    /* Opcional: Ajustes para el table-responsive si necesitas un scroll más estético */
-    .table-responsive {
-        /* Asegura que el scrollbar sea más discreto en navegadores que lo soportan */
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch; /* Mejora el scroll en iOS */
-    }
+            /* Opcional: Ajustes para el table-responsive si necesitas un scroll más estético */
+            .table-responsive {
+                /* Asegura que el scrollbar sea más discreto en navegadores que lo soportan */
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                /* Mejora el scroll en iOS */
+            }
 
-    /* Estilos para navegadores Webkit (Chrome, Safari) */
-    .table-responsive::-webkit-scrollbar {
-        height: 8px; /* Altura del scrollbar horizontal */
-    }
+            /* Estilos para navegadores Webkit (Chrome, Safari) */
+            .table-responsive::-webkit-scrollbar {
+                height: 8px;
+                /* Altura del scrollbar horizontal */
+            }
 
-    .table-responsive::-webkit-scrollbar-thumb {
-        background-color: #cbd5e1; /* Color del "pulgar" del scrollbar */
-        border-radius: 10px;
-    }
+            .table-responsive::-webkit-scrollbar-thumb {
+                background-color: #cbd5e1;
+                /* Color del "pulgar" del scrollbar */
+                border-radius: 10px;
+            }
 
-    .table-responsive::-webkit-scrollbar-track {
-        background-color: #f1f5f9; /* Color de la "pista" del scrollbar */
-    }
+            .table-responsive::-webkit-scrollbar-track {
+                background-color: #f1f5f9;
+                /* Color de la "pista" del scrollbar */
+            }
 
             /* Estilos para el contenedor de cada grupo de input (ej. para margin-bottom) */
             .input-group-container {
-                margin-bottom: 1rem; /* Espacio entre los grupos de input */
+                margin-bottom: 1rem;
+                /* Espacio entre los grupos de input */
             }
 
             .input-with-icon-wrapper {
-                position: relative; /* FUNDAMENTAL: El contexto para el posicionamiento absoluto del ojo */
-                display: flex; /* Permite que el input ocupe el ancho y el ojo se alinee */
-                align-items: center; /* Centra verticalmente el contenido (si no fuera absoluto) */
+                position: relative;
+                /* FUNDAMENTAL: El contexto para el posicionamiento absoluto del ojo */
+                display: flex;
+                /* Permite que el input ocupe el ancho y el ojo se alinee */
+                align-items: center;
+                /* Centra verticalmente el contenido (si no fuera absoluto) */
                 /* overflow: hidden;  <-- Descomenta esto solo si todo lo demás falla y el ojo se sigue saliendo de forma extraña.
                                         Puede cortar elementos si no está bien usado. */
             }
@@ -86,8 +98,10 @@ function mi_navbar(){
                 display: block;
                 width: 100%;
                 /* Mantén la altura, padding-vertical, font-size, etc. que te proporciona Bootstrap o tus estilos base */
-                height: calc(2.25rem + 2px); /* Altura estándar de Bootstrap 4/5 para form-control */
-                padding: 0.375rem 1rem; /* Padding vertical y horizontal base */
+                height: calc(2.25rem + 2px);
+                /* Altura estándar de Bootstrap 4/5 para form-control */
+                padding: 0.375rem 1rem;
+                /* Padding vertical y horizontal base */
                 font-size: 1rem;
                 font-weight: 400;
                 line-height: 1.5;
@@ -100,23 +114,30 @@ function mi_navbar(){
 
                 /* *** AJUSTE CRÍTICO: Padding para el espacio del ojo *** */
                 /* AUMENTA este valor. Prueba con 3.5rem o 4rem (56px o 64px) */
-                padding-right: 3.5rem; /* ¡Cambia este valor! */ 
+                padding-right: 3.5rem;
+                /* ¡Cambia este valor! */
 
                 /* Importante para que el padding no afecte el ancho total */
-                box-sizing: border-box; /* Asegúrate de que esto esté presente y sea efectivo */
+                box-sizing: border-box;
+                /* Asegúrate de que esto esté presente y sea efectivo */
 
                 /* Considera añadir esto si el texto sigue solapándose: */
-                text-overflow: ellipsis; /* Esto truncará el texto con '...' si desborda, aunque no es lo ideal para contraseñas */
-                white-space: nowrap; /* Evita que el texto se envuelva */
-                overflow: hidden; /* Oculta el contenido que desborda */
+                text-overflow: ellipsis;
+                /* Esto truncará el texto con '...' si desborda, aunque no es lo ideal para contraseñas */
+                white-space: nowrap;
+                /* Evita que el texto se envuelva */
+                overflow: hidden;
+                /* Oculta el contenido que desborda */
             }
 
             .password-toggle-icon {
                 position: absolute;
                 /* Ajusta esta distancia al borde derecho. Puedes probar con 0.5rem (8px) o 0.75rem (12px) */
-                right: 1.75rem; /* ¡Mantén o ajusta este valor! */ 
+                right: 1.75rem;
+                /* ¡Mantén o ajusta este valor! */
                 cursor: pointer;
-                z-index: 2; /* Asegura que el ojo esté por encima del texto del input */
+                z-index: 2;
+                /* Asegura que el ojo esté por encima del texto del input */
                 top: 39%;
                 transform: translateY(-50%);
             }
@@ -139,10 +160,10 @@ function mi_navbar(){
                 border-color: green !important;
             }
 
-            input[type="password"]{
+            input[type="password"] {
                 width: calc(100% - 1rem);
-                padding: 0.5rem 0.75rem; 
-                margin-bottom: 0.75rem; 
+                padding: 0.5rem 0.75rem;
+                margin-bottom: 0.75rem;
                 border: 1px solid #ced4da;
                 border-radius: 0.25rem;
                 box-sizing: border-box;
@@ -153,23 +174,34 @@ function mi_navbar(){
 
             /* Estilos para la leyenda de contraseña */
             .password-legend {
-                font-size: 0.875rem; /* Tamaño de fuente más pequeño */
-                color: #6c757d; /* Color gris suave por defecto */
-                margin-top: 0.5rem; /* Espacio superior */
-                padding-left: 0.5rem; /* Indentación ligera para la lista */
-                display: none; /* Inicia oculto, se mostrará al enfocar el input */
+                font-size: 0.875rem;
+                /* Tamaño de fuente más pequeño */
+                color: #6c757d;
+                /* Color gris suave por defecto */
+                margin-top: 0.5rem;
+                /* Espacio superior */
+                padding-left: 0.5rem;
+                /* Indentación ligera para la lista */
+                display: none;
+                /* Inicia oculto, se mostrará al enfocar el input */
             }
 
             .password-legend ul {
-                list-style-type: none; /* Quita los puntos de la lista */
-                padding-left: 0; /* Quita el padding por defecto de la lista */
-                margin-bottom: 0; /* Quita el margen inferior por defecto */
+                list-style-type: none;
+                /* Quita los puntos de la lista */
+                padding-left: 0;
+                /* Quita el padding por defecto de la lista */
+                margin-bottom: 0;
+                /* Quita el margen inferior por defecto */
             }
 
             .password-legend li {
-                margin-bottom: 0.2rem; /* Espacio entre los ítems de la lista */
-                color: #6c757d; /* Color por defecto */
-                transition: color 0.2s ease; /* Transición suave para el cambio de color */
+                margin-bottom: 0.2rem;
+                /* Espacio entre los ítems de la lista */
+                color: #6c757d;
+                /* Color por defecto */
+                transition: color 0.2s ease;
+                /* Transición suave para el cambio de color */
             }
 
             /* Clases para indicar si el requisito se cumple o no (se manejarán con JS) */
@@ -254,7 +286,7 @@ function mi_navbar(){
                         </div>
                     </div>
 
-                      <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
                             <div class="card">
                                 <div class="card-body">
@@ -267,9 +299,9 @@ function mi_navbar(){
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
-                                            <div class="icon-shape bg-gradient-secondary"> 
+                                            <div class="icon-shape bg-gradient-secondary">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-hourglass-split" viewBox="0 0 16 16">
-                                                    <path d="M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2zm3 6.35c0 .701-.478 1.236-1.011 1.492A3.5 3.5 0 0 0 4.5 13s.866-1.299 3-1.48zm1 0v3.17c2.134.181 3 1.48 3 1.48a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351z"/>
+                                                    <path d="M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2zm3 6.35c0 .701-.478 1.236-1.011 1.492A3.5 3.5 0 0 0 4.5 13s.866-1.299 3-1.48zm1 0v3.17c2.134.181 3 1.48 3 1.48a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351z" />
                                                 </svg>
                                             </div>
                                         </div>
@@ -330,7 +362,7 @@ function mi_navbar(){
                         </div>
                     </div>
 
-                      <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
                             <div class="card">
                                 <div class="card-body">
@@ -439,7 +471,7 @@ function mi_navbar(){
                         </div>
                     </div>
 
-                  
+
                 </div>
 
                 <div class="row mt-4">
@@ -523,7 +555,7 @@ function mi_navbar(){
                 </div>
 
                 <div class="row mt-6">
-                       <div class="col-lg-7 mb-lg-0 mb-4">
+                    <div class="col-lg-7 mb-lg-0 mb-4">
                         <div class="card shadow-md rounded-xl">
                             <div class="card-header pb-0 p-4 border-b border-gray-200">
                                 <div class="flex justify-between items-center">
@@ -533,7 +565,8 @@ function mi_navbar(){
                                 </div>
                             </div>
 
-                            <div class="p-4"> <div class="table-responsive">
+                            <div class="p-4">
+                                <div class="table-responsive">
                                     <table id="ticketCountSummaryTable" class="min-w-full leading-normal" style="width: 100%;">
                                         <thead class="bg-gray-100">
                                             <tr>
@@ -744,173 +777,175 @@ function mi_navbar(){
                             </div>
                             <div class="modal-footer">
                                 <button type="button" id="ModalReparado" class="btn btn-secondary"
-                                    data-bs-dismiss="modal">Cerrar</div>
+                                    data-bs-dismiss="modal">Cerrar
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="modal fade" id="pendienterespuestoModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                        <div class="modal-content">
-                            <div class="modal-header bg-gradient-info text-white">
-                                <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Ticket:
-                                    Detalles
-                                    de los POS Que requieren de Repuestos
-                                </h5>
-                                <button type="button" class="btn-close" id="ModalpendiRespIcon"
-                                    data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="PendienteRespuesModalTicketsContent"></div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" id="ModalPendiRespuu" class="btn btn-secondary"
-                                    data-bs-dismiss="modal">Cerrar</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal fade" id="entregadoClienteModal" tabindex="-1"
-                    aria-labelledby="entregadoClienteModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
-                            <div class="modal-header bg-gradient-primary">
-                                <h5 class="modal-title text-white" id="entregadoClienteModalLabel">Tickets: POS
-                                    Entregado a Cliente</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                    aria-label="Close" id="ModalEntregadoClienteIcon"></button>
-                            </div>
-                            <div class="modal-body" id="entregadoClienteContent">
-                                <p class="chart-subtitle text-gray-700 mb-4">Listado de tickets de Puntos de Venta (POS)
-                                    que ya han sido entregados al cliente.</p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                                    id="ModalEntregadoClienteCerrar">Cerrar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal fade" id="IrreparableModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                        <div class="modal-content">
-                            <div class="modal-header bg-gradient-info text-white">
-                                <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Ticket:
-                                    Detalles
-                                    de los POS Irreparables
-                                </h5>
-                                <button type="button" class="btn-close" id="ModalIrreparabltikIcon"
-                                    data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="IrreparableTikModalTicketsContent"></div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" id="ModalIrreparableTik" class="btn btn-secondary"
-                                    data-bs-dismiss="modal">Cerrar</buttModalProcessReparacionon>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-<div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel"
-    aria-hidden="true"
-    style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);"
-    data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-lg shadow-lg">
-            <div class="modal-header bg-gradient-primary text-white rounded-t-lg"
-                id="newPasswordModalHeader">
-                <h5 class="modal-title text-white" id="newPasswordModalLabel">Ingrese Nueva Contraseña
-                </h5>
-                <button type="button" id="CloseIcon" class="btn-close btn-close-white"
-                    data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-6">
-                <form id="newPasswordForm">
-                    <input type="hidden" id="modalUserIdForPassword">
 
-                    <div class="input-group-container">
-                        <label for="newPassword" class="form-label">Nueva Contraseña:</label>
-                        <div class="input-with-icon-wrapper">
-                            <input type="password" class="form-control password-input" id="newPassword" required>
-                            <svg id="clickme1" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                fill="currentColor" class="bi bi-eye-fill password-toggle-icon"
-                                viewBox="0 0 16 16">
-                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
-                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
-                            </svg>
+            <div class="modal fade" id="pendienterespuestoModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header bg-gradient-info text-white">
+                            <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Ticket:
+                                Detalles
+                                de los POS Que requieren de Repuestos
+                            </h5>
+                            <button type="button" class="btn-close" id="ModalpendiRespIcon"
+                                data-bs-dismiss="modal" aria-label="Cerrar"></button>
                         </div>
-                        <button type="button" id="generatePasswordBtn" class="btn btn-info btn-sm mt-2">Generar Contraseña</button>
-                        <div id="suggestedPasswordContainer" class="mt-2" style="display: none;">
-                            <span class="text-muted">Sugerencia: </span><span id="suggestedPassword" class="font-weight-bold text-success"></span>
-                            <button type="button" id="copySuggestedPasswordBtn" class="btn btn-outline-secondary btn-sm ms-2">Copiar</button>
+                        <div class="modal-body">
+                            <div id="PendienteRespuesModalTicketsContent"></div>
                         </div>
-                        <div id="passwordError" class="error-message"></div>
-                    </div>
-
-                    <div class="input-group-container">
-                        <label for="confirmNewPassword" class="form-label">Confirmar Contraseña:</label>
-                        <div class="input-with-icon-wrapper">
-                            <input type="password" class="form-control password-input" id="confirmNewPassword" required>
-                            <svg id="clickme" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                fill="currentColor" class="bi bi-eye-fill password-toggle-icon"
-                                viewBox="0 0 16 16">
-                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
-                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
-                            </svg>
-                        </div>
-                        <div id="confirmPasswordError" class="error-message"></div>
-
-                        <div id="passwordRequirements" class="password-legend" style="text-align: center; color: black;">
-                            La contraseña debe contener al menos:
-                            
-                            <ul><br>
-                                <li id="lengthCheck">8 caracteres de longitud.</li>
-                                <li id="uppercaseCheck">Una letra mayúscula.</li>
-                                <li id="lowercaseCheck">Una letra minúscula.</li>
-                                <li id="numberCheck">Un número.</li>
-                                <li id="specialCharCheck">Un carácter especial (!@#$%^&*).</li>
-                            </ul>
+                        <div class="modal-footer">
+                            <button type="button" id="ModalPendiRespuu" class="btn btn-secondary"
+                                data-bs-dismiss="modal">Cerrar
                         </div>
                     </div>
-                </form>
-                <input type="hidden" id="modalUserIdForPassword">
+                </div>
             </div>
-            <div class="modal-footer flex justify-end p-4 bg-gray-50 rounded-b-lg">
-                <button type="button"
-                    class="btn btn-secondary rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    data-bs-dismiss="modal" id="Cerrar-botton">Cancelar</button>
-                <button type="button"
-                    class="btn btn-primary rounded-md px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    id="submitNewPasswordBtn">Guardar Contraseña</button>
             </div>
-        </div>
-    </div>
-</div>
 
-                <!-- ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
-                <input type="hidden" id="userIdForPassword" value="<?php echo $_SESSION['id_user']; ?>">
-                <!-- END ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
-                <footer class="footer pt-3  ">
-                    <div class="container-fluid">
-                        <div class="row align-items-center justify-content-lg-between">
-                            <div class="col-lg-6 mb-lg-0 mb-4">
-                                <div class="copyright text-center text-sm text-muted text-lg-start">
-                                    ©
-                                    <script>
-                                        document.write(new Date().getFullYear())
-                                    </script>,
-                                    Hecho
-                                   <a href="https://www.inteligensa.com/" class="font-weight-bold" target="_blank">Por Intelisoft</a> para una mejor web.
+            <div class="modal fade" id="entregadoClienteModal" tabindex="-1"
+                aria-labelledby="entregadoClienteModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header bg-gradient-primary">
+                            <h5 class="modal-title text-white" id="entregadoClienteModalLabel">Tickets: POS
+                                Entregado a Cliente</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                aria-label="Close" id="ModalEntregadoClienteIcon"></button>
+                        </div>
+                        <div class="modal-body" id="entregadoClienteContent">
+                            <p class="chart-subtitle text-gray-700 mb-4">Listado de tickets de Puntos de Venta (POS)
+                                que ya han sido entregados al cliente.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                                id="ModalEntregadoClienteCerrar">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="IrreparableModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header bg-gradient-info text-white">
+                            <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Ticket:
+                                Detalles
+                                de los POS Irreparables
+                            </h5>
+                            <button type="button" class="btn-close" id="ModalIrreparabltikIcon"
+                                data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="IrreparableTikModalTicketsContent"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="ModalIrreparableTik" class="btn btn-secondary"
+                                data-bs-dismiss="modal">Cerrar</buttModalProcessReparacionon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel"
+                aria-hidden="true"
+                style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content rounded-lg shadow-lg">
+                        <div class="modal-header bg-gradient-primary text-white rounded-t-lg"
+                            id="newPasswordModalHeader">
+                            <h5 class="modal-title text-white" id="newPasswordModalLabel">Ingrese Nueva Contraseña
+                            </h5>
+                            <button type="button" id="CloseIcon" class="btn-close btn-close-white"
+                                data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-6">
+                            <form id="newPasswordForm">
+                                <input type="hidden" id="modalUserIdForPassword">
+
+                                <div class="input-group-container">
+                                    <label for="newPassword" class="form-label">Nueva Contraseña:</label>
+                                    <div class="input-with-icon-wrapper">
+                                        <input type="password" class="form-control password-input" id="newPassword" required>
+                                        <svg id="clickme1" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                            fill="currentColor" class="bi bi-eye-fill password-toggle-icon"
+                                            viewBox="0 0 16 16">
+                                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+                                        </svg>
+                                    </div>
+                                    <button type="button" id="generatePasswordBtn" class="btn btn-info btn-sm mt-2">Generar Contraseña</button>
+                                    <div id="suggestedPasswordContainer" class="mt-2" style="display: none;">
+                                        <span class="text-muted">Sugerencia: </span><span id="suggestedPassword" class="font-weight-bold text-success"></span>
+                                        <button type="button" id="copySuggestedPasswordBtn" class="btn btn-outline-secondary btn-sm ms-2">Copiar</button>
+                                    </div>
+                                    <div id="passwordError" class="error-message"></div>
                                 </div>
+
+                                <div class="input-group-container">
+                                    <label for="confirmNewPassword" class="form-label">Confirmar Contraseña:</label>
+                                    <div class="input-with-icon-wrapper">
+                                        <input type="password" class="form-control password-input" id="confirmNewPassword" required>
+                                        <svg id="clickme" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                            fill="currentColor" class="bi bi-eye-fill password-toggle-icon"
+                                            viewBox="0 0 16 16">
+                                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+                                        </svg>
+                                    </div>
+                                    <div id="confirmPasswordError" class="error-message"></div>
+
+                                    <div id="passwordRequirements" class="password-legend" style="text-align: center; color: black;">
+                                        La contraseña debe contener al menos:
+
+                                        <ul><br>
+                                            <li id="lengthCheck">8 caracteres de longitud.</li>
+                                            <li id="uppercaseCheck">Una letra mayúscula.</li>
+                                            <li id="lowercaseCheck">Una letra minúscula.</li>
+                                            <li id="numberCheck">Un número.</li>
+                                            <li id="specialCharCheck">Un carácter especial (!@#$%^&*).</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </form>
+                            <input type="hidden" id="modalUserIdForPassword">
+                        </div>
+                        <div class="modal-footer flex justify-end p-4 bg-gray-50 rounded-b-lg">
+                            <button type="button"
+                                class="btn btn-secondary rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                data-bs-dismiss="modal" id="Cerrar-botton">Cancelar</button>
+                            <button type="button"
+                                class="btn btn-primary rounded-md px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                id="submitNewPasswordBtn">Guardar Contraseña</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
+            <input type="hidden" id="userIdForPassword" value="<?php echo $_SESSION['id_user']; ?>">
+            <!-- END ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
+            <footer class="footer pt-3  ">
+                <div class="container-fluid">
+                    <div class="row align-items-center justify-content-lg-between">
+                        <div class="col-lg-6 mb-lg-0 mb-4">
+                            <div class="copyright text-center text-sm text-muted text-lg-start">
+                                ©
+                                <script>
+                                    document.write(new Date().getFullYear())
+                                </script>,
+                                made with <i class="fa fa-heart"></i> by
+                                <a href="https://www.inteligensa.com/" class="font-weight-bold" target="_blank">Plataforma Creada por Intelisoft</a> para una mejor web.
                             </div>
                         </div>
                     </div>
-                </footer>
+                </div>
+            </footer>
             </div>
         </main>
         <div class="fixed-plugin">
@@ -926,21 +961,19 @@ function mi_navbar(){
             <div class="card shadow-lg">
                 <div class="card-header pb-0 pt-3 ">
                     <div class="float-start">
-                        <h5 class="mt-3 mb-0">Argon Configurator</h5>
-                        <p>See our dashboard options.</p>
+                        <h5 class="mt-3 mb-0" style="color: black;">Configuración</h5>
+                        <p>Opciones de diseño y perfil.</p>
                     </div>
                     <div class="float-end mt-4">
                         <button class="btn btn-link text-dark p-0 fixed-plugin-close-button">
                             <i class="fa fa-close"></i>
                         </button>
                     </div>
-                    <!-- End Toggle Button -->
                 </div>
                 <hr class="horizontal dark my-1">
                 <div class="card-body pt-sm-3 pt-0 overflow-auto">
-                    <!-- Sidebar Backgrounds -->
                     <div>
-                        <h6 class="mb-0">Sidebar Colors</h6>
+                        <h6 class="mb-0" style="color: black;">Colores de la barra lateral</h6>
                     </div>
                     <a href="javascript:void(0)" class="switch-trigger background-color">
                         <div class="badge-colors my-2 text-start">
@@ -958,21 +991,19 @@ function mi_navbar(){
                                 onclick="sidebarColor(this)"></span>
                         </div>
                     </a>
-                    <!-- Sidenav Type -->
                     <div class="mt-3">
-                        <h6 class="mb-0">Sidenav Type</h6>
-                        <p class="text-sm">Choose between 2 different sidenav types.</p>
+                        <h6 class="mb-0" style="color: black;">Tipos de barra lateral</h6>
+                        <p class="text-sm" style="color: black;">Elige entre 2 diferentes tipos de barra lateral.</p>
                     </div>
                     <div class="d-flex">
                         <button class="btn bg-gradient-primary w-100 px-3 mb-2 active me-2" data-class="bg-white"
-                            onclick="sidebarType(this)">White</button>
+                            onclick="sidebarType(this)">Claro</button>
                         <button class="btn bg-gradient-primary w-100 px-3 mb-2" data-class="bg-default"
-                            onclick="sidebarType(this)">Dark</button>
+                            onclick="sidebarType(this)">Oscuro</button>
                     </div>
-                    <p class="text-sm d-xl-none d-block mt-2">You can change the sidenav type just on desktop view.</p>
-                    <!-- Navbar Fixed -->
+                    <p class="text-sm d-xl-none d-block mt-2" style="color: black;">You can change the sidenav type just on desktop view.</p>
                     <div class="d-flex my-3">
-                        <h6 class="mb-0">Navbar Fixed</h6>
+                        <h6 class="mb-0" style="color: black;">Barra de navegación fija</h6>
                         <div class="form-check form-switch ps-0 ms-auto my-auto">
                             <input class="form-check-input mt-1 ms-auto" type="checkbox" id="navbarFixed"
                                 onclick="navbarFixed(this)">
@@ -980,33 +1011,24 @@ function mi_navbar(){
                     </div>
                     <hr class="horizontal dark my-sm-4">
                     <div class="mt-2 mb-5 d-flex">
-                        <h6 class="mb-0">Light / Dark</h6>
+                        <h6 class="mb-0" style="color: black;">Modo claro / Modo Oscuro</h6>
                         <div class="form-check form-switch ps-0 ms-auto my-auto">
                             <input class="form-check-input mt-1 ms-auto" type="checkbox" id="dark-version"
                                 onclick="darkMode(this)">
                         </div>
                     </div>
-                    <a class="btn bg-gradient-dark w-100"
-                        href="https://www.creative-tim.com/product/argon-dashboard">Free Download</a>
-                    <a class="btn btn-outline-dark w-100"
-                        href="https://www.creative-tim.com/learning-lab/bootstrap/license/argon-dashboard">View
-                        documentation</a>
-                    <div class="w-100 text-center">
-                        <a class="github-button" href="https://github.com/creativetimofficial/argon-dashboard"
-                            data-icon="octicon-star" data-size="large" data-show-count="true"
-                            aria-label="Star creativetimofficial/argon-dashboard on GitHub">Star</a>
-                        <h6 class="mt-3">Thank you for sharing!</h6>
-                        <a href="https://twitter.com/intent/tweet?text=Check%20Argon%20Dashboard%20made%20by%20%40CreativeTim%20%23webdesign%20%23dashboard%20%23bootstrap5&amp;url=https%3A%2F%2Fwww.creative-tim.com%2Fproduct%2Fargon-dashboard"
-                            class="btn btn-dark mb-0 me-2" target="_blank">
-                            <i class="fab fa-twitter me-1" aria-hidden="true"></i> Tweet
+
+                    <hr class="horizontal dark my-sm-4">
+                    <div class="mt-4 mb-4 text-center">
+                        <h6 class="mb-3" style="color: black;">Gestión de Usuario</h6>
+                        <a class="btn bg-gradient-success w-100 mb-2" href="ruta/a/tu/pagina_editar_perfil.php">
+                            Editar mis datos
                         </a>
-                        <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.creative-tim.com/product/argon-dashboard"
-                            class="btn btn-dark mb-0 me-2" target="_blank">
-                            <i class="fab fa-facebook-square me-1" aria-hidden="true"></i> Share
-                        </a>
+                        <p class="text-sm" style="color: black;">Haz clic para actualizar tu información personal.</p>
                     </div>
                 </div>
             </div>
+        </div>
         </div>
 
         <!-- Github buttons -->
@@ -1051,7 +1073,7 @@ function mi_navbar(){
         $redirect = json_encode($this->redirect);
         $usuario_id = json_encode($this->usuario_id);
         $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
-        
+
         ?>
         <script>
             var expired_sessions = <?php echo $expired_sessions; ?>;
@@ -1084,7 +1106,7 @@ function mi_navbar(){
 
             // Agregar lógica de recarga automática
             if (sessionLifetime) {
-                setTimeout(function () {
+                setTimeout(function() {
                     location.reload(true); // Forzar recarga desde el servidor
                 }, sessionLifetime * 1000); // sessionLifetime está en segundos
             }
