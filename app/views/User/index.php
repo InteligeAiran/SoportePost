@@ -242,9 +242,13 @@ function mi_navbar() {
                 <br>
                 <div class="row">
                     <div class="col-md-6">
-                        <label for="">Documentacion</label>
-                        <div class="input-group" style="width: 92%;">
-                          <input name="tipodoc" id="tipodoc" type="text" value="V-" class="form-control" disabled>
+                        <label for="">Cédula</label>
+                        <div class="input-group" style="width: 94%;">
+                        <select class="form-control" id="tipo_doc" name="tipo_doc">
+                            <option value="V">V</option>
+                            <option value="E">E</option>
+                            <option value="J">J</option>
+                        </select>
                           <span class="input-group-addon"></span>
                           <input style="width: 70%;" class="form-control" type="text" name="edit_documento" id="edit_documento"  maxlength="9" onkeypress="return soloNumeros(event)" >
                         </div>
