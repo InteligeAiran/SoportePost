@@ -1912,8 +1912,8 @@ function SendDataFailure1() {
           xhrEmail.onerror = function () {
             console.error("Error de red al solicitar el envío de correo.");
           };
-
-          xhrEmail.send(); // No necesitas enviar datos adicionales si tu backend ya tiene la información
+          const paramsEmail = `id_user=${encodeURIComponent(id_user)}`; // Asegúrate de enviar el ID del usuario para el correo
+          xhrEmail.send(paramsEmail); // No necesitas enviar datos adicionales si tu backend ya tiene la información
           // **FIN DE LA LÓGICA DEL CORREO**
           Swal.fire({
             icon: "success",
@@ -1966,9 +1966,7 @@ function SendDataFailure1() {
                                     </p>
                                     <strong><p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
                                         Se ha enviado una notificación por correo electrónico.<br>
-                                        <h7>El Estatus del Ticket es: ${
-                                          ticketData.status_text
-                                        }</h7>
+                                        <h7>El Estatus del Ticket es: <span style = "color: red";>${ticketData.status_text}</h7></span>
                                     </p></strong>
                                 </div>`;
               Swal.fire({
@@ -1986,10 +1984,17 @@ function SendDataFailure1() {
                 allowOutsideClick: false,
                 allowEscapeKey: false,
               }).then(() => {
-                location.reload(); // Recarga la página después de cerrar este modal
-              });
+                // Este bloque de código se ejecuta DESPUÉS de que el usuario interactúa y el modal de SweetAlert2 se cierra.
 
-              $("#miModal1").css("display", "none"); // Cerrar el modal de entrada
+                // Oculta tu modal personalizado (si lo tienes y estás usando jQuery)
+                // Es crucial que esto se haga ANTES de la recarga.
+                $("#miModal1").css("display", "none");
+
+                // Establece un temporizador para recargar la página después de 2 segundos.
+                setTimeout(() => {
+                  location.reload(); // Recarga la página
+                }, 1000); // 2000 milisegundos = 2 segundos
+              }); // Este cierra el .then()
             },
           });
         } else {

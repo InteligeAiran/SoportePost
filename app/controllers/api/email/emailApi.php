@@ -162,150 +162,189 @@ class email extends Controller {
         }
     }
 
-    public function handleSendTicket1(){
-        $repository = new EmailRepository();
+    public function handleSendTicket1() {
+    $repository = new EmailRepository();
 
-            $result  = $repository->GetEmailCoorData();
-            $email   = $result['email']; //EL GMAIL DEL COORDINADOR 
-            $nombre  = $result['full_name']; // EL NOMBRE DEL COORDINADOR
-            $result1 = $repository->GetDataTicket1();
-            $nombre_tecnico   = $result1['full_name_tecnico']; 
-            $ticketNivelFalla = $result1['id_level_failure'];
-            $ticketfinished   = $result1['create_ticket'];
-            $ticketstatus     = $result1['name_status_ticket'];
-            $ticketprocess    = $result1['name_process_ticket'];
-            $ticketaccion     = $result1['name_accion_ticket'];
-            $ticketserial     = $result1['serial_pos'];
+    // 1. Get Coordinator's Data
+    $result = $repository->GetEmailCoorData();
+    $email_coordinator = $result['email'];
+    $nombre_coordinator = $result['full_name'];
 
-            $result2 = $repository->GetClientInfo($ticketserial);
-          //$clientName = $result2['razonsocial'];
-            $clientRif  = $result2['coddocumento'];
-            
-            if ($result > 0) {
+    // 2. Get Ticket Data
+    $result1 = $repository->GetDataTicket1();
+    $nombre_tecnico_ticket = $result1['full_name_tecnico']; // Name of the technician as stored in the ticket
+    $ticketNivelFalla = $result1['id_level_failure'];
+    $ticketfinished = $result1['create_ticket'];
+    $ticketstatus = $result1['name_status_ticket'];
+    $ticketprocess = $result1['name_process_ticket'];
+    $ticketaccion = $result1['name_accion_ticket'];
+    $ticketserial = $result1['serial_pos'];
+    $ticketnro = $result1['nro_ticket'];
+    // 3. Get Client Information
+    $result2 = $repository->GetClientInfo($ticketserial);
+    $clientRif = $result2['coddocumento'];
 
-                $subject = 'Notificación de Ticket Finalizado';
-                $body = '
-                <!DOCTYPE html>
-                <html lang="es">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Ticket Finalizado</title>
-                    <style>
-                        body {
-                            font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif;
-                            background-color: #f8f9fa;
-                            padding: 30px;
-                            display: flex;
-                            justify-content: center;
-                            align-items: center;
-                            min-height: 100vh;
-                            margin: 0;
-                        }
-                        .ticket-container {
-                            background-color: #fff;
-                            border: 1px solid #ced4da;
-                            border-radius: 10px;
-                            padding: 30px;
-                            max-width: 600px;
-                            width: 100%;
-                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-                        }
-                        .ticket-header {
-                            background-color: #003594;
-                            color: #fff;
-                            padding: 20px;
-                            text-align: center;
-                            border-radius: 8px 8px 0 0;
-                            margin-bottom: 25px;
-                        }
-                        .ticket-title {
-                            font-size: 1.8em;
-                            margin-bottom: 10px;
-                            font-weight: bold;
-                        }
-                        .greeting {
-                            margin-bottom: 20px;
-                            color: #495057;
-                            font-size: 1.1em;
-                        }
-                        .info-list {
-                            list-style: none;
-                            padding-left: 0;
-                            margin-bottom: 20px;
-                        }
-                        .info-item {
-                            margin-bottom: 12px;
-                            color: #343a40;
-                            font-size: 1em;
-                            display: flex;
-                            align-items: baseline;
-                        }
-                        .info-item strong {
-                            font-weight: bold;
-                            color: #007bff;
-                            margin-right: 10px;
-                            width: 150px; /* Ajusta el ancho según necesites */
-                            display: inline-block;
-                        }
-                        .footer {
-                            text-align: center;
-                            margin-top: -12px;
-                            color: #6c757d;
-                            font-size: 0.9em;
-                        }
-                        .logo {
-                            display: block;
-                            margin: 20px auto 0;
-                            max-width: 150px;
-                            margin-top: -40px;
-                        }
-                        hr {
-                            border-top: 1px solid #dee2e6;
-                            margin: 20px 0;
-                            margin-top: -50px;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="ticket-container">
-                        <div class="ticket-header">
-                            <h2 class="ticket-title">¡Ticket Finalizado!</h2>
-                        </div>
-                        <p class="greeting">Hola, '.$nombre.'</p>
-                        <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">Nos complace informarle que el Técnico <strong>' . $nombre_tecnico . '</strong> ha finalizado el siguiente ticket:</p>
-                        <ul class="info-list">
-                            <li class="info-item"><strong>RIF Cliente:</strong> '.$clientRif.'</li>
-                            <li class="info-item"><strong>Serial POS:</strong> '.$ticketserial.'</li>
-                            <li class="info-item"><strong>Nivel Falla:</strong> '.$ticketNivelFalla.'</li>
-                            <li class="info-item"><strong>Fecha de Creación:</strong> '.$ticketfinished.'</li>
-                            <li class="info-item"><strong>Estatus:</strong><span style=" color: red;">'.$ticketstatus.'</li>
-                            <li class="info-item"><strong>Acción:</strong> '.$ticketaccion.'</li>
-                        </ul>
-                            <p><a href="http://localhost/SoportePost/consultationGeneral?Serial='.$ticketserial.'&Proceso='.$ticketprocess.'&id_level_failure='.$ticketNivelFalla.'" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
-                        <hr>
-                        <p class="footer" >Atentamente,</p>
-                        <p class="footer">El equipo de InteliSoft</p>
-                        ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
-                    </div>
-                </body>
-                </html>
-                ';
-                $embeddedImages = [];
-                if (defined('FIRMA_CORREO')) {
-                    $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
+    // 4. Get Technician's Email and Full Name from User Data (using their ID)
+    $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
+    $result_tecnico = $repository->GetEmailUserDataById($id_user);
+    $email_tecnico = $result_tecnico['user_email'];
+    $nombre_tecnico_full = $result_tecnico['full_name']; // Full name of the technician from their user profile
+
+    // Check if we have essential data for both
+    if (($result > 0 && !empty($email_coordinator)) && ($result_tecnico && !empty($email_tecnico))) {
+
+        $subject = 'Notificación de Ticket Finalizado';
+
+        // Base HTML structure for the email
+        $base_body_html = '
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Ticket Finalizado</title>
+            <style>
+                body {
+                    font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif;
+                    background-color: #f8f9fa;
+                    padding: 30px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    margin: 0;
                 }
-                if ($this->emailService->sendEmail($email, $subject, $body, [], $embeddedImages)){
-                    $this->response(['success' => true, 'message' => 'Se ha enviado un   Aviso a su correo electrónico.', 'color' => 'green']);
-                } else {
-                    var_dump($email, $subject, $body);
-
-                    $this->response(['success' => false, 'message' => 'Error al enviar el correo.', 'color' => 'red']);
+                .ticket-container {
+                    background-color: #fff;
+                    border: 1px solid #ced4da;
+                    border-radius: 10px;
+                    padding: 30px;
+                    max-width: 600px;
+                    width: 100%;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
                 }
-            } else {
-            $this->response(['success' => false, 'message' => 'Correo No Existe', 'color'=> 'red']);
+                .ticket-header {
+                    background-color: #003594;
+                    color: #fff;
+                    padding: 20px;
+                    text-align: center;
+                    border-radius: 8px 8px 0 0;
+                    margin-bottom: 25px;
+                }
+                .ticket-title {
+                    font-size: 1.8em;
+                    margin-bottom: 10px;
+                    font-weight: bold;
+                }
+                .greeting {
+                    margin-bottom: 20px;
+                    color: #495057;
+                    font-size: 1.1em;
+                }
+                .info-list {
+                    list-style: none;
+                    padding-left: 0;
+                    margin-bottom: 20px;
+                }
+                .info-item {
+                    margin-bottom: 12px;
+                    color: #343a40;
+                    font-size: 1em;
+                    display: flex;
+                    align-items: baseline;
+                }
+                .info-item strong {
+                    font-weight: bold;
+                    color: #007bff;
+                    margin-right: 10px;
+                    width: 150px;
+                    display: inline-block;
+                }
+                .footer {
+                    text-align: center;
+                    margin-top: -12px;
+                    color: #6c757d;
+                    font-size: 0.9em;
+                }
+                .logo {
+                    display: block;
+                    margin: 20px auto 0;
+                    max-width: 150px;
+                    margin-top: -40px;
+                }
+                hr {
+                    border-top: 1px solid #dee2e6;
+                    margin: 20px 0;
+                    margin-top: -50px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="ticket-container">
+                <div class="ticket-header">
+                    <h2 class="ticket-title">¡Ticket Finalizado!</h2>
+                </div>
+                <p class="greeting">Hola, [NOMBRE_DESTINATARIO]</p>
+                <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">[MENSAJE_PRINCIPAL]</p>
+                <ul class="info-list">
+                    <li class="info-item"><strong>Nro. Ticket:</strong> ' . $ticketnro . '</li>
+                    <li class="info-item"><strong>RIF Cliente:</strong> ' . $clientRif . '</li>
+                    <li class="info-item"><strong>Serial POS:</strong> ' . $ticketserial . '</li>
+                    <li class="info-item"><strong>Nivel Falla:</strong> ' . $ticketNivelFalla . '</li>
+                    <li class="info-item"><strong>Fecha de Creación:</strong> ' . $ticketfinished . '</li>
+                    <li class="info-item"><strong>Estatus:</strong><span style=" color: red;">' . $ticketstatus . '</li></span>
+                    <li class="info-item"><strong>Acción:</strong> ' . $ticketaccion . '</li>
+                </ul>
+                <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . $ticketserial . '&Proceso=' . $ticketprocess . '&id_level_failure=' . $ticketNivelFalla . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
+                <hr>
+                <p class="footer" >Atentamente,</p>
+                <p class="footer">El equipo de InteliSoft</p>
+                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
+            </div>
+        </body>
+        </html>
+        ';
+
+        $embeddedImages = [];
+        if (defined('FIRMA_CORREO')) {
+            $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
         }
+
+        // --- Send Email to Coordinator ---
+        $message_coordinator = 'Nos complace informarle que el Técnico <strong>' . $nombre_tecnico_ticket . '</strong> ha finalizado el siguiente ticket:';
+        $body_coordinator = str_replace(
+            ['[NOMBRE_DESTINATARIO]', '[MENSAJE_PRINCIPAL]'],
+            [$nombre_coordinator, $message_coordinator],
+            $base_body_html
+        );
+
+        $coordinator_email_sent = $this->emailService->sendEmail($email_coordinator, $subject, $body_coordinator, [], $embeddedImages);
+
+        // --- Send Email to Technician ---
+        $message_tecnico = 'Le informamos que ha cerrado exitosamente el siguiente ticket:';
+        $body_tecnico = str_replace(
+            ['[NOMBRE_DESTINATARIO]', '[MENSAJE_PRINCIPAL]'],
+            [$nombre_tecnico_full, $message_tecnico],
+            $base_body_html
+        );
+
+        $tecnico_email_sent = $this->emailService->sendEmail($email_tecnico, $subject, $body_tecnico, [], $embeddedImages);
+
+        // --- Handle Responses ---
+        if ($coordinator_email_sent && $tecnico_email_sent) {
+            $this->response(['success' => true, 'message' => 'Se ha enviado un aviso a los correos electrónicos del coordinador y del técnico.', 'color' => 'green']);
+        } elseif ($coordinator_email_sent) {
+            $this->response(['success' => false, 'message' => 'El correo al coordinador se envió correctamente, pero hubo un error al enviar el correo al técnico.', 'color' => 'orange']);
+        } elseif ($tecnico_email_sent) {
+            $this->response(['success' => false, 'message' => 'El correo al técnico se envió correctamente, pero hubo un error al enviar el correo al coordinador.', 'color' => 'orange']);
+        } else {
+            $this->response(['success' => false, 'message' => 'Hubo un error al enviar los correos electrónicos al coordinador y al técnico.', 'color' => 'red']);
+        }
+
+    } else {
+        $this->response(['success' => false, 'message' => 'No se pudo obtener la información necesaria (correo del coordinador o del técnico).', 'color' => 'red']);
     }
+}
 
     public function handleSendTicket2() {
         $repository = new EmailRepository(); // Inicialización aquí si no se hace en el constructor
