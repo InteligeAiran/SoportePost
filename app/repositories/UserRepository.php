@@ -245,6 +245,11 @@ class UserRepository
         return $this->model->InvalidateAllSessionsForUser($userId);
     }
 
+      public function IsSessionActuallyActive($sessionId, $userId) {
+        // Llama al método del modelo para verificar el estado de la sesión
+        return $this->model->IsSessionActuallyActive($sessionId, $userId);
+    }
+
 // Y InsertSession
    
 }

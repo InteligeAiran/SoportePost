@@ -308,7 +308,7 @@ class users extends Controller {
     } else {
         $this->response(['error' => 'Error al guardar la información de la sesión'], 500);
     }
-}
+    }
 
 
     function handleUsers($method, $urlSegments) {
