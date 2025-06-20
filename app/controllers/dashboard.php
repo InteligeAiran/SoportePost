@@ -25,7 +25,6 @@ class dashboard extends Controller {
     
         if (isset($_SESSION['id_user']) && isset($_SESSION['session_id'])) {
             $model = new UserModel(); // O pásalo por inyección de dependencias
-            var_dump($_SESSION['session_id'], $_SESSION['id_user']);
             // Verifica si la sesión actual del navegador está activa en la DB
             // Verifica si la sesión actual del navegador sigue siendo activa en la DB
             if (!$model->IsSessionActuallyActive($_SESSION['session_id'], $_SESSION['id_user'])) {
