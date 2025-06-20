@@ -252,7 +252,6 @@ class userModel extends Model{
             $escaped_ip_address = pg_escape_literal($this->db->getConnection(), $ip_address);
             $sql = "CALL insert_session_user(".$escaped_session_id.", ".$escaped_id_user.", '".$start_date."', ".$escaped_user_agent.", 
             ".$escaped_ip_address.", ".$active.", '".$expiry_time."');";
-            //var_dump($sql);
             $result = $this->db->pgquery($sql);
             return $result;
         } catch (Throwable $e) {
@@ -468,6 +467,21 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
             return $result;
         } catch (Throwable $e) {
             // Handle exception
+        }
+    }
+
+    public function InvalidateAllSessionsForUser($userId) {
+        try {
+            $sql = "UPDATE sessions_users 
+                    SET active = 0, end_date = NOW() 
+                    WHERE id_user = " . (int)$userId . " AND active = 1";
+            
+            //var_dump($sql); // Para depuración
+            $result = $this->db->pgquery($sql);
+            return $result; // Devuelve true en éxito, false en fallo
+        } catch (Throwable $e) {
+            error_log("Error en Model::InvalidateAllSessionsForUser: " . $e->getMessage());
+            return false;
         }
     }
 }   
