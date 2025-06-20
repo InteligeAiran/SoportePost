@@ -405,6 +405,9 @@ class TechnicalConsultionRepository
             case "gestión usuario":
                 $url_segment = 'gestionusers'; // Usé el de tu HTML inicial
                 break;
+            case "gestión comercial":
+                $url_segment = 'gestion_comercial'; // Usé el de tu HTML inicial
+                break;
             case "cerrar sesión":
                 $url_segment = 'cerrar_session'; // Usé el de tu HTML inicial
                 break;

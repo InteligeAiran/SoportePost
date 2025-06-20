@@ -224,7 +224,7 @@ class email extends Controller {
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
                 }
                 .ticket-header {
-                    background-color: #003594;
+                    background-color: #0035F6;
                     color: #fff;
                     padding: 20px;
                     text-align: center;
@@ -291,7 +291,7 @@ class email extends Controller {
                     <li class="info-item"><strong>RIF Cliente:</strong> ' . $clientRif . '</li>
                     <li class="info-item"><strong>Serial POS:</strong> ' . $ticketserial . '</li>
                     <li class="info-item"><strong>Nivel Falla:</strong> ' . $ticketNivelFalla . '</li>
-                    <li class="info-item"><strong>Fecha de Creación:</strong> ' . $ticketfinished . '</li>
+                    <li class="info-item"><strong>Fecha de Cierre:</strong> ' . $ticketfinished . '</li>
                     <li class="info-item"><strong>Estatus:</strong><span style=" color: red;">' . $ticketstatus . '</li></span>
                     <li class="info-item"><strong>Acción:</strong> ' . $ticketaccion . '</li>
                 </ul>
@@ -398,7 +398,7 @@ class email extends Controller {
                 <style>
                     body { font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 30px; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
                     .ticket-container { background-color: #fff; border: 1px solid #ced4da; border-radius: 10px; padding: 30px; max-width: 600px; width: 100%; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); }
-                    .ticket-header { background-color: #003594; color: #fff; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin-bottom: 25px; }
+                    .ticket-header { background-color: #0035F6; color: #fff; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin-bottom: 25px; }
                     .ticket-title { font-size: 1.8em; margin-bottom: 10px; font-weight: bold; }
                     .greeting { margin-bottom: 20px; color: #495057; font-size: 1.1em; }
                     .info-list { list-style: none; padding-left: 0; margin-bottom: 20px; }
