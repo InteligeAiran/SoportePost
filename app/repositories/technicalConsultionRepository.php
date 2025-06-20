@@ -431,7 +431,7 @@ class TechnicalConsultionRepository
             case "consulta de rif":
                 $url_segment = 'consulta_rif'; // Usé el de tu HTML inicial
                 break;
-            case "reportes tickets":
+            case "consulta tickets":
                 $url_segment = 'consulta_ticket'; // Usé el de tu HTML inicial
                 break;
             // Añade más casos aquí si tienes otros nombres que se mapeen a URLs específicas

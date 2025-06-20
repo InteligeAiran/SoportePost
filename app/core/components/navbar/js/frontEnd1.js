@@ -54,7 +54,7 @@
                 case "Migración de Bancos":
                 case "Cambio de Razón Social":
                 case "Consulta de Rif":
-                case "Reportes Tickets":
+                case "Consulta Tickets":
                 default:
                     iconSvg = '';
             }
@@ -184,7 +184,14 @@
 
                 if (itemData.subsub_modules && itemData.subsub_modules.length > 0) {
                     listItem.classList.add('dropend');
-                    anchor.classList.add('dropdown-toggle'); // Necesario para que setupCustomDropdown lo identifique
+                    anchor.classList.add('dropdown-toggle'); 
+
+                    const dropdownIndicator = document.createElement('span');
+                    dropdownIndicator.className = 'dropdown-indicator ms-auto'; 
+                    // Asegúrate de que la clase 'dropdown-arrow' esté aquí
+                    dropdownIndicator.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right dropdown-arrow m-2" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>';
+                    
+                    anchor.appendChild(dropdownIndicator);
                 }
 
             } else if (type === 'subsubmodule') {

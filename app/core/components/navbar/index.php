@@ -71,10 +71,33 @@
             padding-bottom: 1.5rem; /* Ajusta el padding inferior */
         }
 
-        /* Para los elementos con el h6 dentro (como Consultas y Reportes, Administración, Configuración) */
         .sidenav .nav-link h6 {
             margin: 0; /* Asegura que el h6 no tenga márgenes propios que añadan espacio */
             padding: 0; /* Asegura que el h6 no tenga padding propio */
+        }
+
+        .dropdown-indicator {
+            margin-left: 10%; /* Empuja la flecha hacia la derecha */
+        }
+
+        .dropend .dropdown-menu {
+            left: 100%;
+            margin-left: .125rem;
+        }
+
+        /* Asegura que el contenedor de la flecha permita la transición */
+        .dropdown-indicator .dropdown-arrow {
+            transition: transform 0.3s ease; /* Transición suave para la rotación */
+        }
+
+        /* Cuando el dropdown está abierto (aria-expanded="true"), rota la flecha */
+        .dropdown-item.dropdown-toggle[aria-expanded="true"] .dropdown-arrow {
+            transform: rotate(90deg); /* Rota 90 grados para que apunte hacia abajo (si inicialmente apunta a la derecha) */
+        }
+
+        /* Cuando el dropdown está cerrado (aria-expanded="false"), la flecha vuelve a su posición original */
+        .dropdown-item.dropdown-toggle[aria-expanded="false"] .dropdown-arrow {
+            transform: rotate(0deg); /* Vuelve a la posición original (apuntando a la derecha) */
         }
     </style>
 </head>
