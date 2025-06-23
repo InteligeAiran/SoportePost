@@ -98,7 +98,7 @@ class TechnicalConsultionRepository
     public function GetTotalTickets($fecha_para_db){
         // Lógica para obtener todos los usuarios
         $result = $this->model->GetTotalTickets($fecha_para_db);
-        return $result['row']['get_tickets_total_count'];
+        return $result['get_tickets_total_count'];
     }
 
     public function VerifingClient($rif){
@@ -350,13 +350,17 @@ class TechnicalConsultionRepository
 
     public function getLastUserTicketInfo($id_user){
         $result = $this->model->GetLastUserTicketInfo($id_user);
-        if ($result) {
-            return [
-                'date_create_ticket' => new DateTime($result['row']['date_create_ticket']), // Convertir a objeto DateTime
-                'rif_last_ticket' => $result['row']['rif']
-            ];
+        // Si Model::getResult devuelve un array con 'num_rows' => 0 o simplemente null/false
+        if ($result && isset($result['num_rows']) && $result['num_rows'] > 0 && isset($result['row'])) {
+            // Asegúrate de que las claves existan
+            if (isset($result['row']['date_create_ticket']) && isset($result['row']['rif'])) {
+                return [
+                    'date_create_ticket' => new DateTime($result['row']['date_create_ticket']),
+                    'rif_last_ticket' => $result['row']['rif']
+                ];
+            }
         }
-        return null;
+        return null; // Si no hay resultados válidos, devuelve null
     }
 
     public function GetModules(){

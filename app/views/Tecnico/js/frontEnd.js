@@ -141,11 +141,11 @@ function getTicketData() {
                     return [
                         ticket.id_ticket,
                         ticket.rif,
+                        ticket.nro_ticket,
                         ticket.razonsocial_cliente,
                         ticket.create_ticket,
                         ticket.full_name_tecnico,
                         ticket.name_accion_ticket,
-                        ticket.nro_ticket,
                         finalActionColumnHTML
                     ];
                 });
@@ -159,12 +159,12 @@ function getTicketData() {
                     data: dataForDataTable,
                     columns: [
                         { title: "ID ticket" },
-                        { title: "RIF" },
+                        { title: "Rif" },
+                        { title: "Nro Ticket" },
                         { title: "Razón Social" },
                         { title: "Fecha Creación" },
                         { title: "Técnico Asignado" },
                         { title: "Acción Ticket" },
-                        { title: "Nro Ticket" },
                         { title: "Acciones", orderable: false }
                     ],
                     language: {
@@ -324,7 +324,6 @@ function getTicketData() {
                         const ticketId = $(this).data('ticket-id');
                         const documentType = $(this).data('document-type');
                         const fileUrl = $(this).data('file-url'); // URL del archivo a visualizar
-                        console.log(`Clic en Ver Documento para Ticket ID: ${ticketId}, Tipo: ${documentType}, URL: ${fileUrl}`);
                         openViewModal(ticketId, fileUrl, documentType); // Llama a la función para abrir el modal de visualización
                     });
 
@@ -587,7 +586,7 @@ function formatTicketDetailsPanel(d) {
                     </div>
                 </div>
                 <div class="col-md-9">
-                    <h4 style = "color: black;">Ticket #${d.id_ticket}</h4>
+                    <h4 style = "color: black;">Ticket #${d.nro_ticket}</h4>
                     <hr class="mt-2 mb-3">
                     <div class="row">
                         <div class="col-sm-6 mb-2">
@@ -599,11 +598,11 @@ function formatTicketDetailsPanel(d) {
                             ${d.estatus_inteliservices}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Fecha Instalación POS:</div></strong><br>
+                             <strong><div>Fecha Instalación:</div></strong><br>
                             ${d.fecha_instalacion}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Fecha Creación ticket:</div></strong><br>
+                             <strong><div>Creación ticket:</div></strong><br>
                             ${d.create_ticket}
                         </div>
                         <div class="col-sm-6 mb-2">
@@ -807,6 +806,19 @@ function loadTicketHistory(ticketId) {
               statusHeaderText = " (En Espera)";
             }
           }
+
+           // Esta lógica ANULA cualquier color establecido por el estado si la condición se cumple.
+            if (index === response.history.length - 1) {
+              // Es la última gestión (la "actual")
+              headerStyle = "background-color: #ffc107;"; // Amarillo
+              textColor = "color: #343a40;"; // Texto oscuro
+              statusHeaderText = ` (${item.name_status_ticket || 'Desconocido'})`; // Agrega el estatus actual o 'Desconocido' si no existe. // Sobrescribe el texto del estado si ya estaba.
+            } else {
+              // Son gestiones pasadas
+              headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
+              textColor = "color: #ffffff;"; // Texto blanco
+              // No sobrescribimos statusHeaderText aquí a menos que quieras algo como "(Pasada)"
+            }
 
           historyHtml += `
                         <div class="card mb-3 custom-history-card"> <div class="card-header p-0" id="${headingId}" style="${headerStyle}">

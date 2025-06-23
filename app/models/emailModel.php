@@ -106,6 +106,16 @@ class emailModel extends Model{
         }
     }
 
+    public function GetDataTicketConsultation(){
+        try{
+            $sql = "SELECT * FROM GetDataTicketConsultation()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
     public function GetClientInfo($serial){
         try{
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); 

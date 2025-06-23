@@ -217,10 +217,10 @@ function mi_navbar()
                                             <tr>
                                                 <th scope="col">ID Ticket</th>
                                                 <th scope="col">RIF</th>
+                                                <th scope="col">Nro Ticket</th>
                                                 <th scope="col">Razón Social</th>
                                                 <th scope="col">Fecha Creación</th>
                                                 <th scope="col">Técnico Asignado</th>
-                                                <th scope="col">Nro Ticket</th>
                                                 <th scope="col">Acción Ticket</th> <th scope="col">Acciones</th>
                                             </tr>
                                         </thead>

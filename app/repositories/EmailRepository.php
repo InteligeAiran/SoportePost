@@ -77,7 +77,7 @@ class EmailRepository
                 }
             }
         }else{
-            $ticketData = $this->model->GetDataTicket2();
+            $ticketData = $this->model->GetDataTicketConsultation();
             $ticket = $ticketData ? $ticketData['row'] : null;
             if ($ticket && isset($ticket['serial_pos'])) {
                 // Obtener la información del cliente utilizando el serial del ticket
@@ -95,6 +95,12 @@ class EmailRepository
             }
         }
         return null; // Si no se pudieron obtener los datos del ticket iniciales
+    }
+
+    public function GetDataTicketConsultation(){
+        // Lógica para obtener datos de ticket
+        $result = $this->model->GetDataTicketConsultation();
+        return $result? $result['row'] : null;
     }
 
     public function GetDataTicket1(){

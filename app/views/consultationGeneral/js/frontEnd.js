@@ -117,24 +117,21 @@ function SendDataSearching() {
                         <td>${item.name_accion_ticket || ''}</td>
                         <td>${item.full_name_tecnico || ''}</td>
                     `;
-                } else {
-                    headersHTML += `
-                        <th>Exoneración</th>
-                        <th>Anticipo</th>
-                        <th>Envío</th>
-                    `;
-                    rowCells += `
-                        <td>
-                            <button onclick="ShowImageExo('${item.id_ticket}')">Ver Exoneración</button>
-                        </td>
-                        <td>
-                            <button onclick="mostrarImagen('${item.anticipo}')">Ver Anticipo</button>
-                        </td>
-                        <td>
-                            <button onclick="mostrarEnvio('${item.envio}')">Ver Envío</button>
-                        </td>
-                    `;
-                }
+               } else {
+                headersHTML += `<th>Exoneración</th>
+                    <th>Anticipo</th>
+                    <th>Envío</th>`; // La primera línea comienza justo después de `
+
+                rowCells += `<td>
+                        <button onclick="openViewModal('${item.id_ticket}', '${item.exoneracion_url}', 'Exoneración')">Ver Exoneración</button>
+                    </td>
+                    <td>
+                        <button onclick="openViewModal('${item.id_ticket}', '${item.anticipo}', 'Anticipo')">Ver Anticipo</button>
+                    </td>
+                    <td>
+                        <button onclick="openViewModal('${item.id_ticket}', '${item.envio}', 'Envío')">Ver Envío</button>
+                    </td>`;
+            }
 
                 tablaHeaders.innerHTML = `<tr>${headersHTML}</tr>`;
                 tablaResultados.innerHTML = `<tr>${rowCells}</tr>`;
@@ -189,45 +186,79 @@ function SendDataSearching() {
     }
 }
 
-function ShowImageExo(id_ticket) {
-    const apiUrl = `10.225.1.136/SoportePost/api/email/GetImageExo?id=${encodeURIComponent(id_ticket)}`;
+function openViewModal(ticketId, fileUrl, documentType) {
+    const viewDocumentModalElement = document.getElementById('viewDocumentModal');
+    const viewModalTicketIdSpan = document.getElementById('viewModalTicketId');
+    const imageViewPreview = document.getElementById('imageViewPreview');
+    const pdfViewViewer = document.getElementById('pdfViewViewer');
+    const viewDocumentMessage = document.getElementById('viewDocumentMessage');
 
-    fetch(apiUrl, {
-        method: 'GET',
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.blob(); // Obtener los datos como Blob
-    })
-    .then(blob => {
-        console.log("Blob:", blob);
-        console.log("Tipo de contenido (Blob):", blob.type);
+    if (viewDocumentModalElement && typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
+        const viewModalBootstrap = new bootstrap.Modal(viewDocumentModalElement);
 
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
+        // Limpiar y ocultar elementos de previsualización
+        imageViewPreview.style.display = 'none';
+        imageViewPreview.src = '#';
+        pdfViewViewer.style.display = 'none';
+        pdfViewViewer.innerHTML = ''; // Limpiar contenido previo del visor de PDF
+        viewDocumentMessage.classList.add('hidden');
+        viewDocumentMessage.textContent = '';
 
-        let filename = 'documento';
-        if (blob.type === 'application/pdf') {
-            filename += '.pdf';
-        } else if (blob.type.startsWith('image/')) {
-            const fileExtension = blob.type.split('/')[1];
-            filename += `.${fileExtension}`;
+        // Establecer el ID del ticket en el modal
+        viewModalTicketIdSpan.textContent = ticketId;
+
+        if (fileUrl) {
+            const fileExtension = fileUrl.split('.').pop().toLowerCase();
+
+            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+                imageViewPreview.src = fileUrl;
+                imageViewPreview.style.display = 'block';
+            } else if (fileExtension === 'pdf') {
+                // Usar un visor de PDF (por ejemplo, pdf.js o un iframe simple)
+                // Para un iframe simple:
+                pdfViewViewer.innerHTML = `<iframe src="${fileUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
+                pdfViewViewer.style.display = 'block';
+
+                // Si necesitas algo más robusto como pdf.js, tendrías que integrarlo
+                // Ejemplo con pdf.js (requiere la librería):
+                /*
+                pdfViewViewer.innerHTML = ''; // Asegúrate de que esté vacío
+                const loadingTask = pdfjsLib.getDocument(fileUrl);
+                loadingTask.promise.then(function(pdf) {
+                    pdf.getPage(1).then(function(page) {
+                        const scale = 1.5;
+                        const viewport = page.getViewport({ scale: scale });
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        pdfViewViewer.appendChild(canvas);
+
+                        const renderContext = {
+                            canvasContext: context,
+                            viewport: viewport
+                        };
+                        page.render(renderContext);
+                        pdfViewViewer.style.display = 'block';
+                    });
+                }).catch(function(error) {
+                    console.error('Error al cargar el PDF:', error);
+                    viewDocumentMessage.textContent = 'Error al cargar el PDF.';
+                    viewDocumentMessage.classList.remove('hidden');
+                });
+                */
+            } else {
+                viewDocumentMessage.textContent = 'Formato de archivo no soportado para previsualización.';
+                viewDocumentMessage.classList.remove('hidden');
+            }
         } else {
-            filename += '.bin'; // Tipo genérico si no se reconoce
+            viewDocumentMessage.textContent = 'No se ha subido ningún documento para este tipo.';
+            viewDocumentMessage.classList.remove('hidden');
         }
 
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url); // Limpiar la URL del objeto
-    })
-    .catch(error => {
-        console.error('Error al hacer la petición del archivo:', error);
-        alert('Error al descargar el archivo.');
-        console.log("Error details:", error);
-    });
+        // Mostrar el modal
+        viewModalBootstrap.show();
+    } else {
+        console.error("No se pudo inicializar el modal de visualización: viewDocumentModalElement o Bootstrap Modal no están disponibles.");
+    }
 }

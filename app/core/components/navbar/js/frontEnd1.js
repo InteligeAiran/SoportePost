@@ -635,6 +635,9 @@
 
 
 
+  // --- // --- // --- // --- // --- // --- // --- // --- // --- // --- // --- // --- // --- // --- // ---       
+
+
 // --- Funciones para manipular la UI y guardar en LocalStorage ---
 
 function sidebarColor(element) {

@@ -109,6 +109,20 @@ function mi_navbar() {}
         }
 
 
+
+        #btn-asignados, #btn-por-asignar, #btn-recibidos{
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 13px;
+        }
+
+        #btn-recibidos{
+            background-color: #A0A0A0;
+            color: #ffffff;
+            border: 1px solid #A0A0A0;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
         /* Estilo base para el botón Por Asignar cuando es el activo */
         #btn-por-asignar.btn-primary {
             background-color: #003594; /* Tu azul fuerte */
@@ -202,6 +216,42 @@ function mi_navbar() {}
             color: #003594; /* Azul suave para el texto al hacer hover, o puedes mantener el gris oscuro si prefieres menos cambio */
             border-color: white; /* Borde un poco más visible al hacer hover */
         }
+
+        div.dataTables_wrapper div.dataTables_filter input {
+            width: 36% !important;
+        }
+
+        /* Estilo base para el botón Recibidos cuando es el activo */
+        #btn-recibidos.btn-primary {
+            background-color: #003594; /* Tu azul fuerte */
+            border-color: #003594;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Recibidos cuando es el activo */
+        #btn-recibidos.btn-primary:hover,
+        #btn-recibidos.btn-primary:focus {
+            background-color: #0045B4; /* Un tono un poco más oscuro o claro al hover */
+            border-color: #0045B4;
+            box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25); /* Sombra de enfoque/hover */
+        }
+
+        /* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
+        #btn-recibidos.btn-secondary {
+            background-color: #A0A0A0; /* Tu gris sutil */
+            border-color: #A0A0A0;
+            color: #ffffff; /* O un gris oscuro si el fondo es claro */
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Recibidos cuando NO es el activo */
+        #btn-recibidos.btn-secondary:hover,
+        #btn-recibidos.btn-secondary:focus {
+            background-color: #B0B0B0;
+            border-color: #B0B0B0;
+            box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+        }
     </style>
 </head>
 
@@ -239,10 +289,10 @@ function mi_navbar() {}
                                         <tr>
                                             <th style="width: 12%; height: 10px;">ID ticket</th>
                                             <th style="width: 12%;">RIF</th>
+                                            <th style="width: 12%;">Nro Ticket</th>
                                             <th style="width: 12%;">Raz&oacuten Social</th>
                                             <th style="width: 12%;">Fecha Creacion</th>
                                             <th style="width: 12%;">Accion del Ticket</th>
-                                            <th style="width: 12%;">Nro Ticket</th>
                                             <th>Acciones</th>
                                         </tr>
                                     </thead>
@@ -289,6 +339,8 @@ function mi_navbar() {}
         </div>
     </div>
     <!--MODAL PARA SELECCIONAR TECNICO-->
+
+    <input type="hidden" id="id_user" value="<?php echo $_SESSION['id_user'] ?? ''; ?>"/>
 
     <div class="fixed-plugin">
         <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">

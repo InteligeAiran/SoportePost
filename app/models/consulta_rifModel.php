@@ -479,11 +479,23 @@ class consulta_rifModel extends Model
     {
         try {
             $sql = "SELECT * FROM get_tickets_total_count('" . $fecha_para_db . "')";
-            $result = Model::getResult($sql, $this->db);
-            return $result;
+            $result = $this->db->pgquery($sql);
+            if ($result) {
+                $row = pg_fetch_assoc($result);
+                // Si hay un resultado, devuelve el conteo.
+                // Si no hay filas, COUNT(*) devolverá 0, lo cual es perfecto.
+                return $row;
+            } else {
+                // Si la consulta falla, es seguro devolver 0
+                error_log("Error en GetTotalTickets: " . pg_last_error($this->db->getConnection()));
+                return 0; 
+            }
         } catch (Throwable $e) {
-            // Manejar excepciones
+            // Captura cualquier excepción y devuelve 0
+            error_log("Excepción en GetTotalTickets: " . $e->getMessage());
+            return 0;
         }
+    
     }
 
     public function InstallDatePOS($serial)
@@ -1048,7 +1060,8 @@ class consulta_rifModel extends Model
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en Model::GetLastUserTicketInfo: " . $e->getMessage());
+            return null; // En caso de error, siempre null
         }
     }
 
