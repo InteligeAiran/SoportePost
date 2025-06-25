@@ -252,6 +252,16 @@ function mi_navbar() {}
             border-color: #B0B0B0;
             box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
         }
+
+        .falla-reportada-texto {
+            color: #DC3545; /* Rojo de Bootstrap 'danger' */
+            /* O un color naranja: */
+            /* color: #FD7E14; */ /* Naranja de Bootstrap 'warning' */
+            /* O un color personalizado: */
+            /* color: #C0392B; */ /* Un rojo ladrillo */
+            /* color: #E67E22; */ /* Un naranja más suave */
+            font-weight: bold; /* Opcional: para que resalte más */
+        }
     </style>
 </head>
 

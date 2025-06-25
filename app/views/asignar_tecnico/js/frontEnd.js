@@ -213,10 +213,11 @@ function getTicketDataCoordinator() {
                         });
 
                     // *** NUEVO EVENTO CLICK PARA EL BOTÓN "RECIBIDO" ***
-                    $("#tabla-ticket tbody").off("click", ".btn-received").on("click", ".btn-received", function (e) {
+                    $("#tabla-ticket tbody").off("click", ".btn-received-coord").on("click", ".btn-received-coord", function (e) {
                         e.stopPropagation(); // Evitar que se active el evento de clic de la fila
                         const ticketId = $(this).data("ticket-id");
-                        markTicketAsReceived(ticketId); // Llama a la nueva función
+                        const nroTicket = $(this).closest("tr").find("td:nth-child(3)").text().trim(); // Obtiene el número de ticket de la tercera columna
+                        markTicketAsReceived(ticketId, nroTicket); // Llama a la nueva función
                     });
 
                     // Evento click existente para el botón de Asignar Técnico
@@ -225,7 +226,9 @@ function getTicketDataCoordinator() {
                         .on("click", ".btn-assign-tech", function (e) {
                             e.stopPropagation();
                             const ticketId = $(this).data("ticket-id");
+                            const nroTicket = $(this).closest("tr").find("td:nth-child(3)").text().trim(); // Obtiene el número de ticket de la tercera columna
                             currentTicketId = ticketId;
+                            currentTicketNroForAssignment = nroTicket; // Guarda el número de ticket para usarlo en la asignación
                             const modalBootstrap = new bootstrap.Modal(modalElement, {
                                 backdrop: "static",
                             });
@@ -260,76 +263,6 @@ function getTicketDataCoordinator() {
 
 
 // *** NUEVA FUNCIÓN PARA MARCAR TICKET COMO RECIBIDO ***
-function markTicketAsReceived(ticketId) {
-    const id_user = document.getElementById("id_user").value;
-    Swal.fire({
-        title: "¿Marcar ticket como recibido?",
-        text: "Esta acción registrará la fecha de recepción y habilitará la asignación de técnico.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Sí, Recibir Ticket",
-        cancelButtonText: "Cancelar",
-        color: "black"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/historical/MarkTicketReceived`); // Necesitas una nueva ruta de API para esto
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-            xhr.onload = function () {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.success) {
-                           Swal.fire({
-                                title: "¡Recibido!",
-                                text: "El ticket ha sido marcado como recibido.",
-                                icon: "success",
-                                color: "black",
-                                confirmButtonColor: "#3085d6" // Ejemplo de un color azul Bootstrap por defecto
-                            });
-                            getTicketDataCoordinator(); // Volver a cargar la tabla para reflejar los cambios
-                        } else {
-                            Swal.fire(
-                                "Error",
-                                response.message || "Hubo un error al marcar el ticket como recibido.",
-                                "error"
-                            );
-                        }
-                    } catch (error) {
-                        Swal.fire(
-                            "Error",
-                            "Error al procesar la respuesta del servidor.",
-                            "error"
-                        );
-                        console.error("Error parsing JSON for markTicketAsReceived:", error);
-                    }
-                } else {
-                    Swal.fire(
-                        "Error",
-                        `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
-                        "error"
-                    );
-                    console.error("Error en markTicketAsReceived:", xhr.status, xhr.statusText);
-                }
-            };
-            xhr.onerror = function () {
-                Swal.fire(
-                    "Error",
-                    "Error de red al intentar marcar el ticket como recibido.",
-                    "error"
-                );
-                console.error("Network error for markTicketAsReceived");
-            };
-
-            const data = `action=MarkTicketReceived&ticket_id=${ticketId}&id_user=${encodeURIComponent(id_user)}`;
-            xhr.send(data);
-        }
-    });
-}
-
 function formatTicketDetailsPanel(d) {
     // d es el objeto `data` completo del ticket
 
@@ -381,12 +314,8 @@ function formatTicketDetailsPanel(d) {
                             ${d.name_accion_ticket}
                         </div>
                         <div class="col-sm-8 mb-2">
-                             <strong><div>Falla:</div></strong><br>
-                            ${d.name_failure}
-                        </div>
-                        <div class="col-sm-4 mb-2">
-                             <strong><div>Proceso:</div></strong><br>
-                            ${d.name_process_ticket}
+                          <strong><div>Falla Reportada:</div></strong><br>
+                          <span class="falla-reportada-texto">${d.name_failure}</span>
                         </div>
                         <div class="col-sm-8 mb-2">
                              <strong><div>Estatus Ticket:</div></strong><br>
@@ -724,10 +653,79 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 //console.log('FrontEnd.js loaded successfully!');
 
+function markTicketAsReceived(ticketId, nroTicket) { // Asegúrate de que nroTicket esté como parámetro
+    const id_user = document.getElementById("id_user").value;
+    Swal.fire({
+        title: `¿Marcar el ticket ${nroTicket} como recibido?`, // Usa template literals aquí
+        text: "Esta acción registrará la fecha de recepción y habilitará la asignación de técnico.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, Recibir Ticket",
+        cancelButtonText: "Cancelar",
+        color: "black"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/historical/MarkTicketReceived`); // Necesitas una nueva ruta de API para esto
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                           Swal.fire({
+                                title: "¡Recibido!",
+                                text: "El ticket N" + nroTicket + " ha sido marcado como recibido.",
+                                icon: "success",
+                                color: "black",
+                                confirmButtonColor: "#3085d6" // Ejemplo de un color azul Bootstrap por defecto
+                            });
+                            getTicketDataCoordinator(); // Volver a cargar la tabla para reflejar los cambios
+                        } else {
+                            Swal.fire(
+                                "Error",
+                                response.message || "Hubo un error al marcar el ticket como recibido.",
+                                "error"
+                            );
+                        }
+                    } catch (error) {
+                        Swal.fire(
+                            "Error",
+                            "Error al procesar la respuesta del servidor.",
+                            "error"
+                        );
+                        console.error("Error parsing JSON for markTicketAsReceived:", error);
+                    }
+                } else {
+                    Swal.fire(
+                        "Error",
+                        `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
+                        "error"
+                    );
+                    console.error("Error en markTicketAsReceived:", xhr.status, xhr.statusText);
+                }
+            };
+            xhr.onerror = function () {
+                Swal.fire(
+                    "Error",
+                    "Error de red al intentar marcar el ticket como recibido.",
+                    "error"
+                );
+                console.error("Network error for markTicketAsReceived");
+            };
+
+            const data = `action=MarkTicketReceived&ticket_id=${ticketId}&id_user=${encodeURIComponent(id_user)}`;
+            xhr.send(data);
+        }
+    });
+}
+
+
 function AssignTicket() {
   const id_tecnico_asignado = document.getElementById("idSelectionTec").value;
-  /*console.log('ID del ticket a asignar:', currentTicketId); // Agrega un log más descriptivo
-    console.log('ID del ticket a asignar:', currentTicketId); // Agrega un log más descriptivo*/
 
   if (!currentTicketId || !id_tecnico_asignado) {
     Swal.fire({
@@ -750,19 +748,21 @@ function AssignTicket() {
         if (response.success) {
           Swal.fire({
             icon: "success",
-            title: "Asignado",
+            title: "Asignado Correctamente el Ticket nro: " + currentTicketNroForAssignment,
             text: response.message,
             color: "black",
-            timer: 2500,
-            timerProgressBar: true,
-            didOpen: () => {
-              Swal.showLoading();
-            },
-            willClose: () => {
-              setTimeout(() => {
-                location.reload(); // Recarga la página después del temporizador
-              }, 2500);
-            },
+            showConfirmButton: true,
+            confirmButtonText: "Ok",
+            confirmButtonColor: "#3085d6",
+          }).then((result) => { // <-- ¡Aquí está el cambio clave! Manejar la Promise
+              if (result.isConfirmed) { // Si el usuario hizo clic en "Sí, Recibir Ticket"
+                getTicketDataCoordinator(); // Recargar la tabla de tickets
+
+                const modalBootstrap = bootstrap.Modal.getInstance(modalElement);
+                if (modalBootstrap) {
+                  modalBootstrap.hide(); // Cerrar el modal si está abierto
+                }
+              }
           });
           document.getElementById("idSelectionTec").value = "";
           currentTicketId = null;
