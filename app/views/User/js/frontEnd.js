@@ -624,6 +624,7 @@ function VerUsuario(idusuario) {
       $("#idusuario_edit").val(userData.id_usuario);
       $("#edit_nombreuser").val(userData.inombre);
       $("#edit_apellidouser").val(userData.iapellido);
+      $("#tipo_doc_edit").val(userData.iprefijo);
       $("#edit_documento").val(userData.documentoo);
       $("#edit_usuario").val(userData.usuario);
       $("#edit_email").val(userData.correo);
@@ -775,7 +776,7 @@ function EditarUsuarios() {
   const idusuario_edit = document.getElementById("idusuario_edit").value;
   const nombre_usuario = document.getElementById("edit_nombreuser").value;
   const apellido_usuario = document.getElementById("edit_apellidouser").value;
-  const tipo_doc = document.getElementById("tipodoc").value;
+  const tipo_doc_edit = document.getElementById("tipo_doc_edit").value;
   const documento = document.getElementById("edit_documento").value;
   const iusuario = document.getElementById("edit_usuario").value;
   const correo = document.getElementById("edit_email").value;
@@ -785,9 +786,10 @@ function EditarUsuarios() {
   const id_nivel = document.getElementById("edit_idnivel").value;
   const usuariocarga = document.getElementById("id_user").value;
 
-  const identificacion = tipo_doc + documento;
+    const identificacion = tipo_doc_edit+'-'+documento;
+  console.log(identificacion);
 
-  console.log(idusuario_edit);
+  //console.log(idusuario_edit);
   //alert(nombre_usuario +'/'+ apellido_usuario +'/'+ iusuario +'/'+ documento +'/'+ correo +'/'+ area_usuario +'/'+ tipo_usuario +'/'+ regionusers);
 
   // // Agregar datos al formData
@@ -827,15 +829,15 @@ function EditarUsuarios() {
             title: "El usuario ha sido modificado exitosamente",
             text: response.message,
             color: "black",
-            timer: 4000,
+            timer: 2500,
             timerProgressBar: true,
             didOpen: () => {
               Swal.showLoading();
             },
             willClose: () => {
-              setTimeout(() => {
-                location.reload();
-              }, 5000);
+              // setTimeout(() => {
+              location.reload();
+              //   }, 1000);
             },
           });
           $("#miModal").css("display", "none");
@@ -871,114 +873,368 @@ function EditarUsuarios() {
   xhr.send(formData);
 }
 
+// function VerModulos(idusuario) {
+//   const id_usuario  = idusuario;
+
+//   const id_usuario1 = document.getElementById('id_user').value; 
+//   const xhr = new XMLHttpRequest();
+//   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/ModuloUsers`);
+//   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+//   //xhr.open('POST', 'http://localhost/SoportePost/api/GetTipoUsers'); // Asi estaba antes de cambiarlo
+
+//   //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+//   const tbody = document.getElementById("tabla-modulo-body");
+
+//   // Limpia la tabla ANTES de la nueva búsqueda
+//   tbody.innerHTML = "";
+
+//   // Destruye DataTables si ya está inicializado
+//   if ($.fn.DataTable.isDataTable("#tabla-modulo")) {
+//     $("#tabla-modulo").DataTable().destroy();
+//   }
+
+//   // Limpia la tabla usando removeChild
+//   while (tbody.firstChild) {
+//     tbody.removeChild(tbody.firstChild);
+//   }
+
+//   xhr.onload = function () {
+//     if (xhr.status >= 200 && xhr.status < 300) {
+//       try {
+//         const response = JSON.parse(xhr.responseText);
+//         if (response.success) {
+//           const userData = response.users; // Cambia el nombre de la variable aquí
+
+//           userData.forEach((data) => {
+//             // Usa un nombre diferente para el elemento individual
+//             const row = tbody.insertRow();
+//             const id_secuencialCell = row.insertCell();
+//             const id_userCell = row.insertCell();
+//             const modulosCell = row.insertCell();
+
+//             id_secuencialCell.textContent = data.idmodulo; // Accede a las propiedades del 'item'
+//             id_userCell.textContent = data.desc_modulo; // Accede a las propiedades del 'item'
+//             //full_nameCell.textContent = data.full_name;
+
+//             const idCheck = document.createElement("input");
+//             idCheck.type = "checkbox";
+//             // Es CRÍTICO darle un ID, especialmente si vas a usar un <label> asociado
+//             idCheck.id = "checkModulo"; // Un ID único y descriptivo
+//             idCheck.name = "moduloAccion"; // Nombre para enviar en formularios
+
+//             if (data.estatus === "t") {
+//               idCheck.checked = true;
+//               idCheck.value = "0"; // Nombre para enviar en formularios
+//             } else {
+//               idCheck.checked = false; // Explícito para claridad, aunque es el valor por defecto
+//               idCheck.value = "1";
+//             }
+
+//             modulosCell.appendChild(idCheck);
+
+//             idCheck.onclick = function () {
+//               const iusuario = id_usuario1;
+//               const idmodulo = data.idmodulo;
+//               const idcheck = data.estatus;
+
+//               $("#ModalModulos").modal("show"); // abrir
+//               AsignacionModulo(idmodulo, iusuario, idcheck);
+//             };
+//           });
+
+//           //console.log('Datos de usuario insertados:', userData); // Agrega esta línea
+
+//           // Inicialización de DataTables
+//           if ($.fn.DataTable.isDataTable("#tabla-modulo")) {
+//             $("#tabla-modulo").DataTable().destroy();
+//           }
+//           $("#tabla-modulo").resizableColumns();
+//         } else {
+//           tbody.innerHTML = '<tr><td colspan="11">Error al cargar</td></tr>';
+//           console.error("Error:", response.message);
+//         }
+//       } catch (error) {
+//         tbody.innerHTML =
+//           '<tr><td colspan="11">Error al procesar la respuesta</td></tr>';
+//         console.error("Error parsing JSON:", error);
+//       }
+//     } else if (xhr.status === 404) {
+//       tbody.innerHTML =
+//         '<tr><td colspan="11">No se encontraron usuarios</td></tr>';
+//     } else {
+//       tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+//       console.error("Error:", xhr.status, xhr.statusText);
+//     }
+//   };
+//   xhr.onerror = function () {
+//     tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+//     console.error("Error de red");
+//   };
+//   const datos = `action=ModuloUsers&id_usuario=${encodeURIComponent(
+//     id_usuario
+//   )}`;
+//   xhr.send(datos);
+// }
+
+
+
+
 function VerModulos(idusuario) {
   const id_usuario  = idusuario;
-  const id_usuario1 = document.getElementById('id_user').value; 
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/ModuloUsers`);
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-  //xhr.open('POST', 'http://localhost/SoportePost/api/GetTipoUsers'); // Asi estaba antes de cambiarlo
+  const id_usuario1 = document.getElementById('id_user').value;
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/ModuloUsers`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-  //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-  const tbody = document.getElementById("tabla-modulo-body");
+    const tbody = document.getElementById("tabla-modulo-body");
+    // const submodulosContainer = document.getElementById("submodulosContainer"); // ELIMINAR ESTA LÍNEA
 
-  // Limpia la tabla ANTES de la nueva búsqueda
-  tbody.innerHTML = "";
-
-  // Destruye DataTables si ya está inicializado
-  if ($.fn.DataTable.isDataTable("#tabla-modulo")) {
-    $("#tabla-modulo").DataTable().destroy();
-  }
-
-  // Limpia la tabla usando removeChild
-  while (tbody.firstChild) {
-    tbody.removeChild(tbody.firstChild);
-  }
-
-  xhr.onload = function () {
-    if (xhr.status >= 200 && xhr.status < 300) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          const userData = response.users; // Cambia el nombre de la variable aquí
-
-          userData.forEach((data) => {
-            // Usa un nombre diferente para el elemento individual
-            const row = tbody.insertRow();
-            const id_secuencialCell = row.insertCell();
-            const id_userCell = row.insertCell();
-            const modulosCell = row.insertCell();
-
-            id_secuencialCell.textContent = data.idmodulo; // Accede a las propiedades del 'item'
-            id_userCell.textContent = data.desc_modulo; // Accede a las propiedades del 'item'
-            //full_nameCell.textContent = data.full_name;
-
-            const idCheck = document.createElement("input");
-            idCheck.type = "checkbox";
-            // Es CRÍTICO darle un ID, especialmente si vas a usar un <label> asociado
-            idCheck.id = "checkModulo"; // Un ID único y descriptivo
-            idCheck.name = "moduloAccion"; // Nombre para enviar en formularios
-
-            if (data.estatus === "t") {
-              idCheck.checked = true;
-              idCheck.value = "0"; // Nombre para enviar en formularios
-            } else {
-              idCheck.checked = false; // Explícito para claridad, aunque es el valor por defecto
-              idCheck.value = "1";
-            }
-
-            modulosCell.appendChild(idCheck);
-
-            idCheck.onclick = function () {
-              const iusuario = id_usuario1;
-              const idmodulo = data.idmodulo;
-              const idcheck = data.estatus;
-
-              $("#ModalModulos").modal("show"); // abrir
-              AsignacionModulo(idmodulo, iusuario, idcheck);
-            };
-          });
-
-          //console.log('Datos de usuario insertados:', userData); // Agrega esta línea
-
-          // Inicialización de DataTables
-          if ($.fn.DataTable.isDataTable("#tabla-modulo")) {
-            $("#tabla-modulo").DataTable().destroy();
-          }
-          $("#tabla-modulo").resizableColumns();
-        } else {
-          tbody.innerHTML = '<tr><td colspan="11">Error al cargar</td></tr>';
-          console.error("Error:", response.message);
-        }
-      } catch (error) {
-        tbody.innerHTML =
-          '<tr><td colspan="11">Error al procesar la respuesta</td></tr>';
-        console.error("Error parsing JSON:", error);
-      }
-    } else if (xhr.status === 404) {
-      tbody.innerHTML =
-        '<tr><td colspan="11">No se encontraron usuarios</td></tr>';
-    } else {
-      tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
-      console.error("Error:", xhr.status, xhr.statusText);
+    // Limpia y destruye DataTables antes de cargar nuevos datos
+    if ($.fn.DataTable.isDataTable("#tabla-modulo")) {
+        $("#tabla-modulo").DataTable().destroy();
     }
-  };
-  xhr.onerror = function () {
-    tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
-    console.error("Error de red");
-  };
-  const datos = `action=ModuloUsers&id_usuario=${encodeURIComponent(
-    id_usuario
-  )}`;
-  xhr.send(datos);
+    tbody.innerHTML = "";
+    // submodulosContainer.innerHTML = '<p>Selecciona un módulo para ver sus submódulos.</p>'; // ELIMINAR ESTA LÍNEA
+
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const flatUserData = response.users;
+
+                    // --- Reestructurar los datos a una jerarquía ---
+                    const hierarchicalModules = {};
+
+                    flatUserData.forEach(item => {
+                        const moduleId = item.idmodulo; // El ID del módulo
+                        const moduleName = item.desc_modulo; // El nombre del módulo
+                        const moduleStatus = item.estatus; // Estado del MÓDULO principal
+
+                        if (!hierarchicalModules[moduleId]) {
+                            hierarchicalModules[moduleId] = {
+                                idmodulo: moduleId,
+                                desc_modulo: moduleName,
+                                estatus: moduleStatus,
+                                submodulos: []
+                            };
+                        }
+
+                        if (item.desc_submod) { // Asegurarse de que haya un submódulo
+                            hierarchicalModules[moduleId].submodulos.push({
+                                // Usamos item.idsubmod como el ID único del submódulo
+                                id_submodulo: item.idsubmod || item.submodulos,
+                                desc_submodulo: item.desc_submod,
+                                estatus_sub: item.status_submod // Usamos status_submod para el submódulo
+                            });
+                        }
+                    });
+
+                    const modulesToRender = Object.values(hierarchicalModules);
+
+                    // --- Generar filas de módulos en la tabla ---
+                    modulesToRender.forEach((moduloData) => {
+                        const row = tbody.insertRow();
+                        row.dataset.moduleId = moduloData.idmodulo; // Almacenar el ID del módulo en la fila
+
+                        // La primera celda será para el control de expandir/contraer
+                        const expandCollapseCell = row.insertCell();
+                        expandCollapseCell.innerHTML = '<i class="fa fa-plus-square" aria-hidden="true" style="cursor: pointer;"></i>'; // Icono de más
+
+                        const id_secuencialCell = row.insertCell();
+                        const desc_moduloCell = row.insertCell();
+                        const assignCell = row.insertCell();
+
+                        id_secuencialCell.textContent = moduloData.idmodulo;
+                        desc_moduloCell.textContent = moduloData.desc_modulo;
+
+                        const moduleCheckbox = document.createElement("input");
+                        moduleCheckbox.type = "checkbox";
+                        moduleCheckbox.id = `module_check_${moduloData.idmodulo}`;
+                        moduleCheckbox.name = "moduloAccion";
+                        moduleCheckbox.dataset.moduleId = moduloData.idmodulo;
+
+                        if (moduloData.estatus === "t") {
+                             moduleCheckbox.checked = true;
+                             moduleCheckbox.value = "0";
+                        } else {
+                             moduleCheckbox.checked = false;
+                             moduleCheckbox.value = "1";
+                        }
+
+                        moduleCheckbox.onclick = function () {
+                        const iusuario = id_usuario;
+                        const idmodulo = moduloData.idmodulo;
+                        const id_check = moduloData.estatus;
+
+                        $("#ModalModulos").modal("show"); // abrir
+                        AsignacionModulo(idmodulo, iusuario, id_check);
+                      };
+
+                        assignCell.appendChild(moduleCheckbox);
+
+                        // --- Event Listener para el checkbox del módulo ---
+                        moduleCheckbox.addEventListener('change', (event) => {
+                            // Esta parte permanece similar para actualizar el estado del módulo principal
+                            const iusuario = id_usuario1;
+                            const idmodulo = moduloData.idmodulo;
+                            const idcheck = moduleCheckbox.checked ? "t" : "f";
+                            // AsignacionModulo(idmodulo, iusuario, idcheck);
+                            console.log(`Módulo ${idmodulo} para usuario ${iusuario} ${idcheck === 't' ? 'activado' : 'desactivado'}`);
+
+                            // Si deseas que marcar/desmarcar el módulo principal afecte a los submódulos,
+                            // necesitas alternar sus checkboxes aquí y actualizar su estado a través de la API.
+                            // Esta parte es más compleja ya que implica interactuar con las filas hijas.
+                            // Por simplicidad, asumamos la interacción directa del submódulo por ahora.
+                        });
+                    });
+
+                    // --- Inicializar DataTables DESPUÉS de poblar el tbody ---
+                    const dataTable = $("#tabla-modulo").DataTable({
+                       
+                        "info": true,
+                        "columns": [ // Definir columnas para manejar correctamente la primera columna de expandir/contraer
+                            {
+                                "className": 'details-control', // Clase para la columna de expandir/contraer
+                                "orderable": false, // No se puede ordenar
+                                "data": null,
+                                "defaultContent": '' // Contenido vacío, pondremos el icono aquí
+                            },
+                            null, // id_secuencialCell
+                            null, // desc_moduloCell
+                            null  // assignCell
+                        ],
+
+                        scrollX: "200px",
+                        responsive: true,
+                        paginate:false,
+                        info:false,
+                        pagingType: "simple_numbers",
+                        lengthMenu: [5],
+                        autoWidth: false,
+                        searching:false,
+                        language: {
+                          lengthMenu: "Mostrar _MENU_ registros", // Esta línea es la clave
+                          emptyTable: "No hay datos disponibles en la tabla",
+                          zeroRecords: "No se encontraron resultados para la búsqueda",
+                          info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ registro(s) )",
+                          infoEmpty: "No hay datos disponibles",
+                          infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
+                          search: "Buscar:",
+                          loadingRecords: "Buscando...",
+                          processing: "Procesando...",
+                        },
+                    });
+
+                    $("#tabla-modulo").resizableColumns();
+
+                    // --- Adjuntar Event Listener para el Control de Expandir/Contraer ---
+                    // Listener en el tbody usando delegación de eventos
+                    $('#tabla-modulo tbody').on('click', 'td.details-control', function () {
+                        const tr = $(this).closest('tr');
+                        const row = dataTable.row(tr);
+                        // Encontrar los datos del módulo correspondiente usando el 'moduleId' guardado en la fila
+                        const moduleRowData = modulesToRender.find(m => m.idmodulo == tr.data('moduleId'));
+
+                        if (row.child.isShown()) {
+                            // Esta fila ya está abierta - cerrarla
+                            row.child.hide();
+                            tr.removeClass('shown');
+                            $(this).find('i').removeClass('fa-minus-square').addClass('fa-plus-square');
+                        } else {
+                            // Abrir esta fila
+                            if (moduleRowData && moduleRowData.submodulos && moduleRowData.submodulos.length > 0) {
+                                // Pasar todos los datos necesarios a la función de formato
+                                row.child(formatSubmodules(moduleRowData.submodulos, id_usuario1, moduleRowData.idmodulo)).show();
+                                tr.addClass('shown');
+                                $(this).find('i').removeClass('fa-plus-square').addClass('fa-minus-square');
+                            } else {
+                                // No hay submódulos, tal vez mostrar un mensaje o simplemente no expandir
+                                row.child('<div class="no-submodules-message" style="padding-left:50px;">No hay submódulos disponibles para este módulo.</div>').show();
+                                tr.addClass('shown');
+                                $(this).find('i').removeClass('fa-plus-square').addClass('fa-minus-square');
+                            }
+                        }
+                    });
+
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4">Error al cargar módulos: ' + response.message + '</td></tr>';
+                    console.error("Error:", response.message);
+                }
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="4">Error al procesar la respuesta</td></tr>';
+                console.error("Error parsing JSON:", error);
+            }
+        } else if (xhr.status === 404) {
+            tbody.innerHTML = '<tr><td colspan="4">No se encontraron módulos para este usuario</td></tr>';
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4">Error de conexión: ' + xhr.status + ' ' + xhr.statusText + '</td></tr>';
+            console.error("Error:", xhr.status, xhr.statusText);
+        }
+    };
+
+    xhr.onerror = function () {
+        tbody.innerHTML = '<tr><td colspan="4">Error de red al cargar módulos</td></tr>';
+        console.error("Error de red");
+    };
+
+    const datos = `action=ModuloUsers&id_usuario=${encodeURIComponent(id_usuario)}`;
+    xhr.send(datos);
 }
+
+// Llama a la función para cargar los módulos al inicio
+VerModulos();
 
 document.addEventListener("DOMContentLoaded", VerModulos);
 
-function AsignacionModulo(idmodulo, iusuario, idcheck) {
+
+
+function formatSubmodules(submodules, userId, parentModuleId) {
+    let html = '<div class="submodules-child-row" style="padding: 10px 0 10px 50px;">'; // Añadir padding para indentación
+    if (submodules.length > 0) {
+        submodules.forEach(submodulo => {
+            const checkedAttr = submodulo.estatus_sub === "t" ? "checked" : "";
+            html += `
+                <div class="submodulo-item" style="margin-bottom: 5px;">
+                    <input type="checkbox" id="sub_check_${submodulo.id_submodulo}"
+                           name="submoduloAccion_${parentModuleId}"
+                           data-submodule-id="${submodulo.id_submodulo}"
+                           data-parent-module-id="${parentModuleId}"
+                           ${checkedAttr}>
+                    <label for="sub_check_${submodulo.id_submodulo}">${submodulo.desc_submodulo}</label>
+                </div>
+            `;
+        });
+    } else {
+        html += '<p>No hay submódulos disponibles para este módulo.</p>';
+    }
+    html += '</div>';
+
+    // IMPORTANTE: Adjuntar event listeners DESPUÉS de que el HTML se inyecte en el DOM
+    // DataTables añade este HTML, por lo que necesitamos usar delegación de eventos o un setTimeout.
+    setTimeout(() => {
+        // Usar delegación de eventos para los checkboxes creados dinámicamente
+        // Se desactiva y vuelve a activar el event listener para evitar duplicados si la función se llama varias veces
+        $(document).off('change', '.submodules-child-row input[type="checkbox"]').on('change', '.submodules-child-row input[type="checkbox"]', function() {
+            const subCheckbox = $(this);
+            const idsubmodulo = subCheckbox.data('submoduleId');
+            const idmodulo = subCheckbox.data('parentModuleId');
+            const isChecked = subCheckbox.prop('checked');
+            // Llamar a tu función para guardar la asignación del submódulo
+            // saveSubmoduloAssignment(userId, idmodulo, idsubmodulo, isChecked);
+            console.log(`Submódulo ${idsubmodulo} del módulo ${idmodulo} para usuario ${userId} ${isChecked ? 'activado' : 'desactivado'}`);
+        });
+    }, 0); // Pequeño timeout para asegurar la actualización del DOM
+
+    return html;
+}
+
+
+
+function AsignacionModulo(idmodulo, iusuario, id_check) {
   const id_modulo = idmodulo;
   const id_usuario = iusuario;
-  const idcheck_value = idcheck;
+  const idcheck_value = id_check;
 
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/AsignacionModulo`); // Asegúrate de que esta sea la ruta correcta en tu backend
@@ -1033,13 +1289,79 @@ function AsignacionModulo(idmodulo, iusuario, idcheck) {
       });
     }
   };
-  const datos = `action=AsignacionModulo&id_modulo=${encodeURIComponent(
-    id_modulo
-  )}&id_usuario=${encodeURIComponent(
-    id_usuario
-  )}&idcheck_value=${encodeURIComponent(idcheck_value)}`;
+  const datos = `action=AsignacionModulo&id_modulo=${encodeURIComponent(id_modulo)}&id_usuario=${encodeURIComponent(id_usuario)}&idcheck_value=${encodeURIComponent(idcheck_value)}`;
   xhr.send(datos);
 }
+
+
+
+function AsignacionSubModulo(idmodulo,idsub_modulo, iusuario, id_checksub) {
+
+  const id_modulo = idmodulo;
+  const id_submodulo = idsub_modulo;
+  const id_usuario = iusuario;
+  const idchecksub_value = id_checksub;
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/AsignacionSubModulo`); // Asegúrate de que esta sea la ruta correcta en tu backend
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          // Swal.fire({
+          //   icon: "success",
+          //   title: "Asignado",
+          //   text: response.message,
+          //   color: "black",
+          //   timer: 2500,
+          //   allowOutsideClick: false,
+          //   timerProgressBar: true,
+          //   didOpen: () => {
+          //     Swal.showLoading();
+          //   },
+            // willClose: () => {
+            //     setTimeout(() => {
+            //         location.reload(); // Recarga la página después del temporizador
+            //     }, 1000);
+            // }
+          //});
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Error al asignar el modulo",
+            text: response.message,
+            color: "black",
+          });
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error en el servidor",
+          text: "Ocurrió un error al procesar la respuesta.",
+          color: "black",
+        });
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+      Swal.fire({
+        icon: "error",
+        title: "Error de conexión",
+        text: "No se pudo conectar con el servidor.",
+        color: "black",
+      });
+    }
+  };
+  const datos = `action=AsignacionSubModulo&id_modulo=${encodeURIComponent(id_modulo)}&id_submodulo=${encodeURIComponent(id_submodulo)}&id_usuario=${encodeURIComponent(id_usuario)}&idchecksub_value=${encodeURIComponent(idchecksub_value)}`;
+  xhr.send(datos);
+}
+
+
+
 
 function closedModal() {
   $("#edit_areausers").empty();
@@ -1064,3 +1386,36 @@ function closedModalCreated() {
   $("#idnivel").val("");
   $("#idnivel").val("");
 }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Seleccionar todos los checkboxes de módulos
+    const moduleCheckboxes = document.querySelectorAll('.modulo-item input[type="checkbox"]');
+
+    moduleCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', (event) => {
+            const targetId = event.target.dataset.submodulesTarget; // Obtener el ID del grupo de submódulos a afectar
+            const submodulesGroup = document.getElementById(targetId);
+
+            if (submodulesGroup) {
+                if (event.target.checked) {
+                    // Si el módulo está activado, mostrar los submódulos
+                    submodulesGroup.style.display = 'block';
+                    // Opcional: Marcar todos los submódulos si el módulo principal se activa
+                    const submodules = submodulesGroup.querySelectorAll('input[type="checkbox"]');
+                    submodules.forEach(subCheckbox => {
+                        subCheckbox.checked = true;
+                    });
+                } else {
+                    // Si el módulo está desactivado, ocultar los submódulos
+                    submodulesGroup.style.display = 'none';
+                    // Opcional: Desmarcar todos los submódulos si el módulo principal se desactiva
+                    const submodules = submodulesGroup.querySelectorAll('input[type="checkbox"]');
+                    submodules.forEach(subCheckbox => {
+                        subCheckbox.checked = false;
+                    });
+                }
+            }
+        });
+    });
+});

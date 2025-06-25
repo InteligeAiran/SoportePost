@@ -323,7 +323,7 @@ class userModel extends Model{
         try{
             $escaped_id_usuario = pg_escape_literal($this->db->getConnection(), $id_usuario); 
 
-            $sql = "SELECT * FROM sp_vermoduloactivo(".$escaped_id_usuario.")";
+            $sql = "SELECT * FROM sp_vermodulos_activos(".$escaped_id_usuario.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -355,6 +355,24 @@ class userModel extends Model{
         // Handle exception
         }
     }  
+
+
+    public function AsignacionSubModulo($id_modulo,$id_submodulo, $id_usuario, $idchecksub_value){
+        try{
+
+            $escaped_id_modulo = pg_escape_literal($this->db->getConnection(), $id_modulo); 
+            $escaped_id_submodulo = pg_escape_literal($this->db->getConnection(), $id_submodulo); 
+            $escaped_id_usuario = pg_escape_literal($this->db->getConnection(), $id_usuario); 
+            $escaped_id_checksub = pg_escape_literal($this->db->getConnection(), $idchecksub_value); 
+
+            $sql = "SELECT * FROM sp_asignacionsubmodulos(".$escaped_id_modulo."," . $escaped_id_submodulo . ", " . $escaped_id_usuario . "," . $escaped_id_checksub . ")";
+            echo $sql;
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+        // Handle exception
+        }
+    }      
 
 
     //     public function VerificaUsuario($users){
