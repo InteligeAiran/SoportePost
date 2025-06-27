@@ -928,7 +928,7 @@ function loadTicketHistory(ticketId) {
           }
 
            // Esta lógica ANULA cualquier color establecido por el estado si la condición se cumple.
-            if (index === response.history.length - 1) {
+            if (index === 0) {
               // Es la última gestión (la "actual")
               headerStyle = "background-color: #ffc107;"; // Amarillo
               textColor = "color: #343a40;"; // Texto oscuro
