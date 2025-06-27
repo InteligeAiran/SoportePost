@@ -7,18 +7,11 @@
 
 document.addEventListener("DOMContentLoaded", function () {
   // --- Referencias a los elementos HTML de los Modales ---
-  const monthlyTicketsModalElement = document.getElementById(
-    "monthlyTicketsModal"
-  );
-  const regionTicketsModalElement =
-    document.getElementById("RegionTicketsModal");
+  const monthlyTicketsModalElement = document.getElementById("monthlyTicketsModal");
+  const regionTicketsModalElement = document.getElementById("RegionTicketsModal");
   const openTicketsModalElement = document.getElementById("OpenTicketModal");
-  const resolveTicketsModalElement = document.getElementById(
-    "ResolveTicketsModal"
-  );
-  const sendTallerTicketsModalElement = document.getElementById(
-    "SendTallerTicketsModal"
-  ); // ¡NUEVO MODAL!
+  const resolveTicketsModalElement = document.getElementById("ResolveTicketsModal");
+  const sendTallerTicketsModalElement = document.getElementById("SendTallerTicketsModal"); // ¡NUEVO MODAL!
 
   const ModalReparacion = document.getElementById("procesoReparacionModal"); // ��NUEVO ELEMENTO!
   const ModalReparado = document.getElementById("ReparadosModal"); // ��NUEVO ELEMENTO!
@@ -36,13 +29,13 @@ document.addEventListener("DOMContentLoaded", function () {
   let ModalReparados = null; // ��NUEVO ELEMENTO!
   let ModalPendiRepuesto = null; // ��NUEVO ELEMENTO!
   let ModalIrreparable = null; // ��NUEVO ELEMENTO!
+  
 
   // --- Inicializar las instancias de los modales (UNA SOLA VEZ al cargar la página) ---
-  if (monthlyTicketsModalElement) {
-    monthlyTicketsModalInstance = new bootstrap.Modal(
-      monthlyTicketsModalElement
-    );
+  if (monthlyTicketsModalElement) {  
+    monthlyTicketsModalInstance = new bootstrap.Modal(monthlyTicketsModalElement);
   }
+
 
   if (regionTicketsModalElement) {
     regionTicketsModalInstance = new bootstrap.Modal(regionTicketsModalElement);
@@ -192,6 +185,24 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+    function forceCleanupAfterModalClose() {
+
+        // Quitar la clase 'modal-open' del body si persiste
+        if (document.body.classList.contains('modal-open')) {
+            document.body.classList.remove('modal-open');
+            // Restablecer overflow y padding-right si fueron modificados por Bootstrap
+            document.body.style.overflow = ''; 
+            document.body.style.paddingRight = ''; 
+        }
+
+        // Eliminar cualquier backdrop residual que tenga la clase 'show' (visible)
+        const backdrops = document.querySelectorAll('.modal-backdrop.show');
+        if (backdrops.length > 0) {
+            backdrops.forEach(backdrop => {
+                backdrop.remove();
+            });
+        }
+    }
   // --- Event Listeners para CERRAR Modales (desde botones dentro del modal) ---
 
   // 1. Botones de cierre para monthlyTicketsModal
@@ -231,16 +242,20 @@ document.addEventListener("DOMContentLoaded", function () {
   const iconOpen = document.getElementById("ModalOpenIcon");
 
   if (cerrarOpen && openTicketsModalInstance) {
-    cerrarOpen.addEventListener("click", function () {
-      openTicketsModalInstance.hide();
-    });
-  }
+        cerrarOpen.addEventListener("click", function () {
+            openTicketsModalInstance.hide();
+            // AÑADE ESTE CÓDIGO AQUÍ PARA QUE SE EJECUTE AL CLIC DEL BOTÓN "Cerrar"
+            forceCleanupAfterModalClose();
+        });
+    }
 
-  if (iconOpen && openTicketsModalInstance) {
-    iconOpen.addEventListener("click", function () {
-      openTicketsModalInstance.hide();
-    });
-  }
+    if (iconOpen && openTicketsModalInstance) {
+        iconOpen.addEventListener("click", function () {
+            openTicketsModalInstance.hide();
+            // AÑADE ESTE CÓDIGO AQUÍ PARA QUE SE EJECUTE AL CLIC DEL ICONO "X"
+            forceCleanupAfterModalClose();
+        });
+    }
 
   // 4. Botones de cierre para ResolveTicketsModal
   const cerrarResolve = document.getElementById("ModalResolveRegion");
@@ -413,6 +428,45 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+
+function cerrarModalViewDocument(){
+  const ModalViewImageElement = document.getElementById("viewDocumentModal"); // Modal para ver documentos de tickets
+  let ModalView = null; // Modal para ver imagenes de tickets
+
+  if (ModalViewImageElement) {
+    ModalView = new bootstrap.Modal(ModalViewImageElement);
+  }
+
+  const CerrarModalView = document.getElementById("CerrarBotonImage");
+  const IconModalView = document.getElementById("IconModalviewClose");
+
+  if (CerrarModalView && ModalView) {
+        CerrarModalView.addEventListener("click", function () {
+          ModalViewImageElement.style.display = "none"; // Oculta el modal
+             const backdrops = document.querySelectorAll('.modal-backdrop.show');
+        if (backdrops.length > 0) {
+            backdrops.forEach(backdrop => {
+                backdrop.remove();
+            });
+        }
+        });
+    }
+
+    if (IconModalView && ModalView) {
+        IconModalView.addEventListener("click", function () {
+                    ModalViewImageElement.style.display = "none"; // Oculta el modal
+
+            const backdrops = document.querySelectorAll('.modal-backdrop.show');
+        if (backdrops.length > 0) {
+            backdrops.forEach(backdrop => {
+                backdrop.remove();
+            });
+        }
+        });
+    }
+
+}
 
 function loadIndividualIrreparable(){
   const contentDiv = document.getElementById("IrreparableTikModalTicketsContent");
@@ -2004,7 +2058,6 @@ function formatOpenDetails(details) {
       // Asegúrate de definir la variable currentUserRole en tu HTML antes de este script, por ejemplo:
       // 
       // O si el valor es numérico, sin comillas.
-      console.log("Rol del usuario:", currentUserRole);
       //1 = SuperAdmin 
       //4 = Coordinador 
       //3 = Tecnico

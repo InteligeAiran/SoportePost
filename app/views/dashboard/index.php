@@ -27,192 +27,9 @@ function mi_navbar() {}
             href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
         <style>
-            /* Estilos generales para asegurar que las celdas se vean bien */
-            #ticketCountSummaryTable th,
-            #ticketCountSummaryTable td {
-                /* Asegura que el padding sea respetado y el box-sizing sea consistente */
-                box-sizing: border-box;
-            }
 
-            /* Opcional: Un estilo más distintivo para las filas pares o impares si quieres un "zebra striping" */
-            #ticketCountsBody tr:nth-child(even) {
-                background-color: #f9fafb;
-                /* Un gris muy claro para las filas pares */
-            }
 
-            #ticketCountsBody tr:nth-child(odd) {
-                background-color: #ffffff;
-                /* Blanco para las filas impares */
-            }
 
-            /* Opcional: Un efecto de hover más pronunciado si el de Tailwind no es suficiente */
-            #ticketCountsBody tr:hover {
-                background-color: #eff6ff;
-                /* Un azul muy suave al pasar el ratón */
-                transition: background-color 0.2s ease-in-out;
-                /* Suaviza la transición del color */
-            }
-
-            /* Opcional: Ajustes para el table-responsive si necesitas un scroll más estético */
-            .table-responsive {
-                /* Asegura que el scrollbar sea más discreto en navegadores que lo soportan */
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                /* Mejora el scroll en iOS */
-            }
-
-            /* Estilos para navegadores Webkit (Chrome, Safari) */
-            .table-responsive::-webkit-scrollbar {
-                height: 8px;
-                /* Altura del scrollbar horizontal */
-            }
-
-            .table-responsive::-webkit-scrollbar-thumb {
-                background-color: #cbd5e1;
-                /* Color del "pulgar" del scrollbar */
-                border-radius: 10px;
-            }
-
-            .table-responsive::-webkit-scrollbar-track {
-                background-color: #f1f5f9;
-                /* Color de la "pista" del scrollbar */
-            }
-
-            /* Estilos para el contenedor de cada grupo de input (ej. para margin-bottom) */
-            .input-group-container {
-                margin-bottom: 1rem;
-                /* Espacio entre los grupos de input */
-            }
-
-            .input-with-icon-wrapper {
-                position: relative;
-                /* FUNDAMENTAL: El contexto para el posicionamiento absoluto del ojo */
-                display: flex;
-                /* Permite que el input ocupe el ancho y el ojo se alinee */
-                align-items: center;
-                /* Centra verticalmente el contenido (si no fuera absoluto) */
-                /* overflow: hidden;  <-- Descomenta esto solo si todo lo demás falla y el ojo se sigue saliendo de forma extraña.
-                                        Puede cortar elementos si no está bien usado. */
-            }
-
-            .password-input {
-                display: block;
-                width: 100%;
-                /* Mantén la altura, padding-vertical, font-size, etc. que te proporciona Bootstrap o tus estilos base */
-                height: calc(2.25rem + 2px);
-                /* Altura estándar de Bootstrap 4/5 para form-control */
-                padding: 0.375rem 1rem;
-                /* Padding vertical y horizontal base */
-                font-size: 1rem;
-                font-weight: 400;
-                line-height: 1.5;
-                color: #212529;
-                background-color: #fff;
-                background-clip: padding-box;
-                border: 1px solid #ced4da;
-                border-radius: 0.25rem;
-                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-
-                /* *** AJUSTE CRÍTICO: Padding para el espacio del ojo *** */
-                /* AUMENTA este valor. Prueba con 3.5rem o 4rem (56px o 64px) */
-                padding-right: 3.5rem;
-                /* ¡Cambia este valor! */
-
-                /* Importante para que el padding no afecte el ancho total */
-                box-sizing: border-box;
-                /* Asegúrate de que esto esté presente y sea efectivo */
-
-                /* Considera añadir esto si el texto sigue solapándose: */
-                text-overflow: ellipsis;
-                /* Esto truncará el texto con '...' si desborda, aunque no es lo ideal para contraseñas */
-                white-space: nowrap;
-                /* Evita que el texto se envuelva */
-                overflow: hidden;
-                /* Oculta el contenido que desborda */
-            }
-
-            .password-toggle-icon {
-                position: absolute;
-                /* Ajusta esta distancia al borde derecho. Puedes probar con 0.5rem (8px) o 0.75rem (12px) */
-                right: 1.75rem;
-                /* ¡Mantén o ajusta este valor! */
-                cursor: pointer;
-                z-index: 2;
-                /* Asegura que el ojo esté por encima del texto del input */
-                top: 39%;
-                transform: translateY(-50%);
-            }
-
-            /* Resto de tus estilos... */
-            .error-message {
-                color: red;
-                text-align: center;
-                font-size: 0.875rem;
-                margin-top: 0.25rem;
-                width: 100%;
-                display: block;
-            }
-
-            .password-input.error {
-                border-color: red !important;
-            }
-
-            .password-input.success {
-                border-color: green !important;
-            }
-
-            input[type="password"] {
-                width: calc(100% - 1rem);
-                padding: 0.5rem 0.75rem;
-                margin-bottom: 0.75rem;
-                border: 1px solid #ced4da;
-                border-radius: 0.25rem;
-                box-sizing: border-box;
-                font-size: 0.9rem;
-                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-                font-family: 'Arial', sans-serif;
-            }
-
-            /* Estilos para la leyenda de contraseña */
-            .password-legend {
-                font-size: 0.875rem;
-                /* Tamaño de fuente más pequeño */
-                color: #6c757d;
-                /* Color gris suave por defecto */
-                margin-top: 0.5rem;
-                /* Espacio superior */
-                padding-left: 0.5rem;
-                /* Indentación ligera para la lista */
-                display: none;
-                /* Inicia oculto, se mostrará al enfocar el input */
-            }
-
-            .password-legend ul {
-                list-style-type: none;
-                /* Quita los puntos de la lista */
-                padding-left: 0;
-                /* Quita el padding por defecto de la lista */
-                margin-bottom: 0;
-                /* Quita el margen inferior por defecto */
-            }
-
-            .password-legend li {
-                margin-bottom: 0.2rem;
-                /* Espacio entre los ítems de la lista */
-                color: #6c757d;
-                /* Color por defecto */
-                transition: color 0.2s ease;
-                /* Transición suave para el cambio de color */
-            }
-
-            /* Clases para indicar si el requisito se cumple o no (se manejarán con JS) */
-            .password-legend li.valid {
-                color: green;
-            }
-
-            .password-legend li.invalid {
-                color: red;
-            }
         </style>
     </head>
 
@@ -265,8 +82,7 @@ function mi_navbar() {}
                     </div>
 
                    <div class="modal fade" id="OpenTicketModal" tabindex="-1"
-                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true"
-                        style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header bg-gradient-info text-white">
@@ -274,7 +90,7 @@ function mi_navbar() {}
                                         de Tickets Abiertos
                                     </h5>
                                     <button type="button" class="btn-close" id="ModalOpenIcon" data-bs-dismiss="modal"
-                                        aria-label="Cerrar"></button>
+                                            aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
@@ -283,8 +99,7 @@ function mi_navbar() {}
                                     <div id="OpenTicketModalContent"></div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" id="ModalOpen" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Cerrar</button>
+                                    <button type="button" id="ModalOpen" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                                 </div>
                             </div>
                         </div>
@@ -345,8 +160,7 @@ function mi_navbar() {}
                     </div>
 
                     <div class="modal fade" id="ResolveTicketsModal" tabindex="-1"
-                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true"
-                        style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header bg-gradient-info text-white">
@@ -427,28 +241,22 @@ function mi_navbar() {}
                     </div>
 
                      <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
-                        <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel"
-                            aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-                            <div class="modal-dialog modal-dialog-centered modal-xl">
+                        <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-xl modal-dialog-centered"> 
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <strong>
-                                            <h5 style="color: grey;" class="modal-title text-lg font-semibold text-gray-800" id="viewDocumentModalLabel">
-                                                Documento Del Ticket: <span id="viewModalTicketId"></span></h5>
-                                        </strong>
-                                        <button type="button" class="btn-close" id="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <h5 class="modal-title" id="viewDocumentModalLabel" style="color: black;">Documento Del Ticket: <span id="viewModalTicketId"></span></h5>
+                                        <button type="button" class="btn-close" id="IconModalviewClose" onclick="cerrarModalViewDocument();" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <div class="mb-3 text-center">
-                                            <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen"
-                                                style="max-width: 100%; height: auto; display: none;">
-                                            <div id="pdfViewViewer"
-                                                style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
+                                        <div class="document-viewer-content">
+                                            <img id="imageViewPreview" class="img-fluid" style="display: none; width: 100%; height: auto;" alt="Previsualización de imagen">
+                                            <div id="pdfViewViewer" style="display: none; width: 100%; height: 80vh;"></div> 
+                                            <p id="viewDocumentMessage" class="alert alert-warning" style="display: none;"></p>
                                         </div>
-                                        <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" id="modalCerrarshow" data-bs-dismiss="modal">Cerrar</button>
+                                        <button type="button" class="btn btn-secondary" onclick="cerrarModalViewDocument();" id="CerrarBotonImage" data-bs-dismiss="modal">Cerrar</button>
                                     </div>
                                 </div>
                             </div>
@@ -456,8 +264,7 @@ function mi_navbar() {}
                     <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
 
                     <div class="modal fade" id="SendTallerTicketsModal" tabindex="-1"
-                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true"
-                        style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header bg-gradient-info text-white">
@@ -504,8 +311,6 @@ function mi_navbar() {}
                             </div>
                         </div>
                     </div>
-
-
                 </div>
 
                 <div class="row mt-4">
@@ -527,8 +332,7 @@ function mi_navbar() {}
                     </div>
 
                     <div class="modal fade" id="monthlyTicketsModal" tabindex="-1"
-                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true"
-                        style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header bg-gradient-info text-white">
@@ -550,8 +354,7 @@ function mi_navbar() {}
                     </div>
 
                     <div class="modal fade" id="RegionTicketsModal" tabindex="-1"
-                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true"
-                        style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header bg-gradient-info text-white">
@@ -773,7 +576,7 @@ function mi_navbar() {}
                     </div>
                 </div>
 
-                <div class="modal fade" id="procesoReparacionModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                <div class="modal fade" id="procesoReparacionModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                         <div class="modal-content">
                             <div class="modal-header bg-gradient-info text-white">
@@ -795,7 +598,7 @@ function mi_navbar() {}
                     </div>
                 </div>
 
-                <div class="modal fade" id="ReparadosModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                <div class="modal fade" id="ReparadosModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                         <div class="modal-content">
                             <div class="modal-header bg-gradient-info text-white">
@@ -818,7 +621,7 @@ function mi_navbar() {}
                 </div>
             </div>
 
-            <div class="modal fade" id="pendienterespuestoModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal fade" id="pendienterespuestoModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                     <div class="modal-content">
                         <div class="modal-header bg-gradient-info text-white">
@@ -863,7 +666,7 @@ function mi_navbar() {}
                 </div>
             </div>
 
-            <div class="modal fade" id="IrreparableModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true" style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal fade" id="IrreparableModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                     <div class="modal-content">
                         <div class="modal-header bg-gradient-info text-white">
@@ -879,7 +682,7 @@ function mi_navbar() {}
                         </div>
                         <div class="modal-footer">
                             <button type="button" id="ModalIrreparableTik" class="btn btn-secondary"
-                                data-bs-dismiss="modal">Cerrar</buttModalProcessReparacionon>
+                                data-bs-dismiss="modal">Cerrar</button>
                         </div>
                     </div>
                 </div>
@@ -916,7 +719,6 @@ function mi_navbar() {}
                                     <button type="button" id="generatePasswordBtn" class="btn btn-info btn-sm mt-2">Generar Contraseña</button>
                                     <div id="suggestedPasswordContainer" class="mt-2" style="display: none;">
                                         <span class="text-muted">Sugerencia: </span><span id="suggestedPassword" class="font-weight-bold text-success"></span>
-                                        <button type="button" id="copySuggestedPasswordBtn" class="btn btn-outline-secondary btn-sm ms-2">Copiar</button>
                                     </div>
                                     <div id="passwordError" class="error-message"></div>
                                 </div>
