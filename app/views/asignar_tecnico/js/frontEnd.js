@@ -42,7 +42,7 @@ function getTicketDataCoordinator() {
                                     data-bs-placement="top"
                                     title="Marcar como Recibido por Coordinador"
                                     data-ticket-id="${data.id_ticket}">
-                                    Recibido
+                                    POS Recibido
                                 </button>
                                  <button id="myUniqueAssingmentButton"
                                     class="btn btn-sm btn-assign-tech"
@@ -76,9 +76,7 @@ function getTicketDataCoordinator() {
                         dataForDataTable.push([
                             data.id_ticket,
                             data.rif,
-                            data.nro_ticket,
                             data.razonsocial_cliente,
-                            data.create_ticket,
                             data.name_accion_ticket,
                             actionButtonsHtml, // Usa la variable con los botones
                         ]);
@@ -95,9 +93,17 @@ function getTicketDataCoordinator() {
                         columns: [
                             { title: "ID ticket" },
                             { title: "Rif" },
-                            { title: "Nro Ticket" },
-                            { title: "Raz&oacuten Social" },
-                            { title: "Fecha Creacion" },
+                            {
+                                title: "Raz&oacuten Social",
+                                render: function (data, type, row) {
+                                    if (type === 'display') {
+                                        // Siempre devuelve el span, pero con la clase inicial de truncado
+                                        // La clase 'truncated-cell' aplicará los estilos de truncado
+                                        return `<span class="truncated-cell" data-full-text="${data}">${data}</span>`;
+                                    }
+                                    return data; // Para otros tipos (sort, filter), devuelve el dato original
+                                }
+                            },
                             { title: "Acción Ticket" },
                             { title: "Acciones", orderable: false },
                         ],
@@ -124,7 +130,7 @@ function getTicketDataCoordinator() {
                         const buttonsHtml = `
                             <button id="btn-asignados" class="btn btn-primary me-2">Asignados</button>
                             <button id="btn-por-asignar" class="btn btn-secondary me-2">Por Asignar</button>
-                            <button id="btn-recibidos" class="btn btn-info">Recibidos</button>
+                            <button id="btn-recibidos" class="btn btn-info">POS Recibidos</button>
                         `;
                         // Ensure the container itself is a flex container for its buttons
                         $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
@@ -143,7 +149,7 @@ function getTicketDataCoordinator() {
 
                         $("#btn-asignados").on("click", function () {
                             dataTableInstance
-                                .column(5) // Assuming "Acción Ticket" is the 6th column (index 5)
+                                .column(3) // Assuming "Acción Ticket" is the 6th column (index 5)
                                 .search("Asignado al Técnico")
                                 .draw();
                             setActiveButton("btn-asignados");
@@ -151,7 +157,7 @@ function getTicketDataCoordinator() {
 
                         $("#btn-por-asignar").on("click", function () {
                             dataTableInstance
-                                .column(5) // Assuming "Acción Ticket" is the 6th column (index 5)
+                                .column(3) // Assuming "Acción Ticket" is the 6th column (index 5)
                                 .search("Asignado al Coordinador")
                                 .draw();
                             setActiveButton("btn-por-asignar");
@@ -160,7 +166,7 @@ function getTicketDataCoordinator() {
                         // Add click event for "Recibidos" button
                         $("#btn-recibidos").on("click", function () {
                             dataTableInstance
-                                .column(5) // Assuming "Acción Ticket" is the 6th column (index 5)
+                                .column(3) // Assuming "Acción Ticket" is the 6th column (index 5)
                                 .search("Recibido por el Coordinador") // Adjust the search term as needed
                                 .draw();
                             setActiveButton("btn-recibidos");
@@ -171,9 +177,9 @@ function getTicketDataCoordinator() {
                     $("#tabla-ticket").resizableColumns();
 
                     $("#tabla-ticket tbody")
-                        .off("click", "tr")
-                        .on("click", "tr", function () {
-                            const tr = $(this);
+                      .off("click", "tr")
+                      .on("click", "tr", function () {
+                          const tr = $(this);
                             const rowData = dataTableInstance.row(tr).data();
 
                             if (!rowData) {
@@ -211,6 +217,31 @@ function getTicketDataCoordinator() {
                                     "<p>No se encontraron detalles para este ticket.</p>";
                             }
                         });
+
+                        $("#tabla-ticket tbody").off("click", ".truncated-cell").on("click", ".truncated-cell", function (e) {
+                        e.stopPropagation(); // Evitar que el clic en la celda active el evento de clic de la fila
+                        const $cellSpan = $(this);
+                        const fullText = $cellSpan.data('full-text');
+
+                        if ($cellSpan.hasClass('truncated-cell')) {
+                            // Si está truncado, expandir
+                            $cellSpan.removeClass('truncated-cell').addClass('expanded-cell');
+                            $cellSpan.text(fullText); // Muestra el texto completo
+                        } else {
+                            // Si está expandido, truncar de nuevo
+                            $cellSpan.removeClass('expanded-cell').addClass('truncated-cell');
+                            // Volvemos a truncar el texto para la visualización inicial si es necesario
+                            const displayLength = 25; // Debe coincidir con tu CSS max-width aproximado
+                            if (fullText.length > displayLength) {
+                                $cellSpan.text(fullText.substring(0, displayLength) + '...');
+                            } else {
+                                $cellSpan.text(fullText);
+                            }
+                        }
+                        // DataTables puede ajustar el ancho de la columna si el texto expandido lo necesita
+                        // Si no lo hace automáticamente, podrías forzar un redraw o un ajuste de columnas.
+                        // dataTableInstance.columns.adjust().draw(); // Esto podría causar un parpadeo
+                    });
 
                     // *** NUEVO EVENTO CLICK PARA EL BOTÓN "RECIBIDO" ***
                     $("#tabla-ticket tbody").off("click", ".btn-received-coord").on("click", ".btn-received-coord", function (e) {
@@ -283,42 +314,45 @@ function formatTicketDetailsPanel(d) {
                     <hr class="mt-2 mb-3">
                     <div class="row">
                         <div class="col-sm-6 mb-2">
-                            <strong><div>Serial POS:</div></strong><br>
+                            <strong><div>Id Ticket:</div></strong>
+                            ${d.id_ticket}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                            <strong><div>Serial POS:</div></strong>
                             ${d.serial_pos}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Estatus POS:</div></strong><br>
+                            <br><strong><div>Estatus POS:</div></strong>
                             ${d.estatus_inteliservices}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Fecha Instalación:</div></strong><br>
+                             <br><strong><div>Fecha Instalación:</div></strong>
                             ${d.fecha_instalacion}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Creación ticket:</div></strong><br>
+                             <br><strong><div>Creación ticket:</div></strong>
                             ${d.create_ticket}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Usuario Gestión:</div></strong><br>
+                             <br><strong><div>Usuario Gestión:</div></strong>
                             ${d.full_name_tecnico}
                         </div>
                     </div>
                 </div>
             </div>
-
             <div class="row mb-3">
                 <div class="col-12">
                     <div class="row">
                         <div class="col-sm-4 mb-2">
-                             <strong><div>Acción:</div></strong><br>
+                             <strong><div>Acción:</div></strong>
                             ${d.name_accion_ticket}
                         </div>
                         <div class="col-sm-8 mb-2">
-                          <strong><div>Falla Reportada:</div></strong><br>
+                          <strong><div class="falla-reportada">Falla Reportada:</div></strong>
                           <span class="falla-reportada-texto">${d.name_failure}</span>
                         </div>
                         <div class="col-sm-8 mb-2">
-                             <strong><div>Estatus Ticket:</div></strong><br>
+                            <br><strong><div>Estatus Ticket:</div></strong>
                             ${d.name_status_ticket}
                         </div>
                     </div>
@@ -683,6 +717,7 @@ function markTicketAsReceived(ticketId, nroTicket) { // Asegúrate de que nroTic
                                 color: "black",
                                 confirmButtonColor: "#3085d6" // Ejemplo de un color azul Bootstrap por defecto
                             });
+                            modalInstance.hide(); // Cierra el modal si está abierto
                             getTicketDataCoordinator(); // Volver a cargar la tabla para reflejar los cambios
                         } else {
                             Swal.fire(

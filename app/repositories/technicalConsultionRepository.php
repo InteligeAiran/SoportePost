@@ -498,5 +498,20 @@ class TechnicalConsultionRepository
             return null;
         }
     }
+
+    public function getTicketAttachmentsDetails($id_ticket){
+        $result = $this->model->GetAttachments($id_ticket);
+        
+        if ($result) {
+            $attachments = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $attachment = pg_fetch_assoc($result['query'], $i);
+                $attachments[] = $attachment;
+            }
+            return $attachments;
+        } else {
+            return null;
+        }
+    } 
 }
 ?>

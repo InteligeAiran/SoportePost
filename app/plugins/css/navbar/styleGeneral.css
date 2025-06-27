@@ -87,7 +87,7 @@
 
     .sidenav .navbar-nav .nav-item .nav-link {
         transition: background-color 0.3s ease, color 0.3s ease;
-        padding: 10px 15px;
+        padding: 0px 15px;
     }
 
     .sidenav .navbar-nav .nav-item .nav-link:hover {

@@ -1147,5 +1147,16 @@ class consulta_rifModel extends Model
             return []; // Retorna un array vacío en caso de error
         }
     }
+
+    public function GetAttachments($ticketId){
+        try {
+            $sql = "SELECT * FROM get_ticket_attachments_details(" . (int)$ticketId . ")";
+            $result = Model::getResult($sql, $this->db);    
+            return $result;
+        } catch (Throwable $e) {
+            // Log the error (e.g., error_log($e->getMessage());)
+            return false; // Return false on error
+        }
+    }
 }
 ?>
