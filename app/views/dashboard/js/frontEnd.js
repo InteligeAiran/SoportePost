@@ -2001,6 +2001,15 @@ if (viewDocumentModalElement) {
 
 // Asegúrate de que esta función exista y sea llamada después de cargar los tickets
 function formatOpenDetails(details) {
+      // Asegúrate de definir la variable currentUserRole en tu HTML antes de este script, por ejemplo:
+      // 
+      // O si el valor es numérico, sin comillas.
+      console.log("Rol del usuario:", currentUserRole);
+      //1 = SuperAdmin 
+      //4 = Coordinador 
+      //3 = Tecnico
+      const showDocumentButtons = (currentUserRole === 1 || currentUserRole === 4 || currentUserRole === 3); // Rol de administrador o superadministrador;
+
     if (!details || details.length === 0) {
         return "<p>No hay tickets abiertos disponibles.</p>";
     }
@@ -2009,33 +2018,47 @@ function formatOpenDetails(details) {
 
     details.forEach(ticket => {
         let documentButtonsHtml = '';
+        let markReceivedButtonHtml = ''; // Variable para el botón "Marcar como Recibido"
 
         const statusPaymentId = parseInt(ticket.id_status_payment, 10);
 
         // Los IDs de status_payment 10, 11, 1 y 3 se asocian con botones de "ver documento".
         // El `data-ticket-id` se usa para pasar el ID del ticket a `handleViewDocumentClick`.
-        if (statusPaymentId === 10) { 
-            documentButtonsHtml = `
-                <button class="btn btn-info btn-sm view-document-btn"
-                        data-ticket-id="${ticket.id_ticket}">
-                    Mostrar Documento de Envio ZOOM
-                </button>
-            `;
-        } else if (statusPaymentId === 11) { 
-            documentButtonsHtml = `
-                <button class="btn btn-info btn-sm view-document-btn"
-                        data-ticket-id="${ticket.id_ticket}">
-                    Mostrar Pago/Exoneración
-                </button>
-            `;
-        } else if (statusPaymentId === 1 || statusPaymentId === 3) {
-            documentButtonsHtml = `
-                <button class="btn btn-info btn-sm view-document-btn"
-                        data-ticket-id="${ticket.id_ticket}">
-                    Mostrar Documento Envío
-                </button>
-            `;
+      if (showDocumentButtons) {
+          if (statusPaymentId === 10) { 
+              documentButtonsHtml = `
+                  <button class="btn btn-info btn-sm view-document-btn"
+                          data-ticket-id="${ticket.id_ticket}">
+                      Mostrar Documento de Envio ZOOM
+                  </button>
+              `;
+          } else if (statusPaymentId === 11) { 
+              documentButtonsHtml = `
+                  <button class="btn btn-info btn-sm view-document-btn"
+                          data-ticket-id="${ticket.id_ticket}">
+                      Mostrar Pago/Exoneración
+                  </button>
+              `;
+          } else if (statusPaymentId === 1 || statusPaymentId === 3) {
+              documentButtonsHtml = `
+                  <button class="btn btn-info btn-sm view-document-btn"
+                          data-ticket-id="${ticket.id_ticket}">
+                      Mostrar Documento Envío
+                  </button>
+              `;
+          }
         }
+
+        ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
+          if (currentUserRole === 1 || currentUserRole === 4) { 
+            markReceivedButtonHtml = `
+              <button type="button" class="btn btn-success ms-2 mark-received-btn" id="mark-received-btn-${ticket.id_ticket}">
+                Marcar como Recibido
+              </button>
+            `;
+          }
+        ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
+
         
         htmlContent += `
             <div class="card mb-3">
@@ -2069,11 +2092,9 @@ function formatOpenDetails(details) {
                         <dd class="col-sm-8">${ticket.date_create_ticket || 'N/A'}</dd>
                     </dl>
                     
-                    <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
+                     <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
                         ${documentButtonsHtml}
-                        <button type="button" class="btn btn-success ms-2 mark-received-btn" id="mark-received-btn-${ticket.id_ticket}">
-                            Marcar como Recibido
-                        </button>
+                        ${markReceivedButtonHtml}
                     </div>
                 </div>
             </div>

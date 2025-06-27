@@ -265,7 +265,7 @@ class users extends Controller {
     $_SESSION["nombres"]      = $userData['nombres'];
     $_SESSION["apellidos"]    = $userData['apellidos'];
     $_SESSION["correo"]       = $userData['correo'];
-    $_SESSION['d_rol']        = (int) $userData['codtipousuario'];
+    $_SESSION['id_rol']        = (int) $userData['codtipousuario'];
     $_SESSION['name_rol']     = $userData['name_rol'];
     $_SESSION['status']       = (int) $userData['status'];
     
