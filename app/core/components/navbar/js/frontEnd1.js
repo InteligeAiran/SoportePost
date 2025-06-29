@@ -146,56 +146,38 @@
          * @param {string} type Tipo de elemento ('module', 'submodule', 'subsubmodule').
          * @returns {HTMLLIElement} El elemento LI construido.
          */
-        function buildMenuItem(itemData, type) {
-            const listItem = document.createElement('li');
-            const anchor = document.createElement('a');
+ function buildMenuItem(itemData, type) {
+    const listItem = document.createElement('li');
+    const anchor = document.createElement('a');
 
-            const itemName = itemData.name_module || itemData.name_sub_module || itemData.name_subsub_module || '';
-            const safeName = itemName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    let itemName = '';
+    let itemUrl = '#'; // Default URL, adjust as needed
+    let iconHtml = '';
 
-            let itemUrl = '#';
+    if (type === 'module') {
+        itemName = itemData.desc_modulo;
+        iconHtml = getIconSvgForName(itemName);
 
-            if (type === 'module') {
-                listItem.className = 'nav-item dropdown mt-3';
-                anchor.className = 'nav-link dropdown-toggle d-flex align-items-center';
-                anchor.id = `${safeName}Dropdown`;
-                itemUrl = itemData.url_module || '#';
+        listItem.className = 'nav-item';
+        // Remove dropdown related classes/attributes for now
+        anchor.className = 'nav-link d-flex align-items-center'; // No dropdown-toggle
+        anchor.id = `module-link-${itemData.idmodulo}`;
+        anchor.href = `#${itemName.toLowerCase().replace(/\s+/g, '-')}`; // Example: #gestion-de-tickets
 
-                const heading = document.createElement('h6');
-                heading.style.color = 'white';
-                heading.style.margin = '0';
-                /*heading.style.paddingLeft = '.5rem';*/
-                heading.className = 'flex-grow-1';
-                heading.textContent = itemName;
-                anchor.innerHTML = itemData.icon_svg || getIconSvgForName(itemName);
-                anchor.appendChild(heading);
+        const heading = document.createElement('h6');
+        heading.className = 'nav-link-text ms-3';
+        heading.style.color = 'white';
+        heading.style.margin = '0';
+        heading.textContent = itemName;
 
-                // Almacena el ID del módulo en el LI para futura referencia
-                listItem.setAttribute('data-module-id', itemData.id_module);
+        anchor.innerHTML = iconHtml;
+        anchor.appendChild(heading);
+    }
+    // No 'submodule' or 'subsubmodule' type handling for this simplified version
 
-            } else if (type === 'submodule') {
-                anchor.className = 'dropdown-item';
-                anchor.id = `${safeName}SubDropdown`;
-                itemUrl = itemData.url_sub_module || '#';
-                anchor.innerHTML = itemData.icon_svg || getIconSvgForName(itemName);
-                anchor.innerHTML += itemName;
-
-                if (itemData.subsub_modules && itemData.subsub_modules.length > 0) {
-                    listItem.classList.add('dropend');
-                    anchor.classList.add('dropdown-toggle'); // Necesario para que setupCustomDropdown lo identifique
-                }
-
-            } else if (type === 'subsubmodule') {
-                anchor.className = 'dropdown-item';
-                itemUrl = itemData.url_subsub_module || '#';
-                anchor.textContent = itemName;
-                anchor.setAttribute('data-value', itemName);
-            }
-
-            anchor.href = itemUrl;
-            listItem.appendChild(anchor);
-            return listItem;
-        }
+    listItem.appendChild(anchor);
+    return listItem;
+}
 
         /**
          * Construye un menú desplegable (UL) con los elementos de sub-nivel.
@@ -229,220 +211,230 @@
          * @param {string} moduleId El ID del módulo principal cuyos submódulos se cargarán.
          * @param {HTMLUListElement} targetUlElement El elemento <ul> donde se insertarán los submódulos.
          */
-        function loadSubmodulesForModule(moduleId, targetUlElement) {
-            // Verifica si los submódulos ya fueron cargados para evitar peticiones redundantes
-            if (targetUlElement.dataset.submodulesLoaded === 'true') {
-                console.log(`Submódulos para el módulo ${moduleId} ya cargados.`);
-                return;
-            }
+        // function loadSubmodulesForModule(moduleId, targetUlElement) {
+        //     // Verifica si los submódulos ya fueron cargados para evitar peticiones redundantes
+        //     if (targetUlElement.dataset.submodulesLoaded === 'true') {
+        //         console.log(`Submódulos para el módulo ${moduleId} ya cargados.`);
+        //         return;
+        //     }
 
-            targetUlElement.innerHTML = '<div class="p-2 text-white-50">Cargando submódulos...</div>';
+        //     targetUlElement.innerHTML = '<div class="p-2 text-white-50">Cargando submódulos...</div>';
 
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/getSubmodulesForModule`);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        //     const xhr = new XMLHttpRequest();
+        //     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/getSubmodulesForModule`);
+        //     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
+        //     xhr.onload = function () {
+        //         if (xhr.status === 200) {
+        //             try {
+        //                 const response = JSON.parse(xhr.responseText);
 
-                        // AQUÍ ESTÁ EL CAMBIO CLAVE: Usa 'response.submodules' en lugar de 'response.sub_modules'
-                        if (response.success && Array.isArray(response.submodules)) { // <-- CAMBIO AQUÍ
-                            targetUlElement.innerHTML = ''; // Limpia el mensaje de carga
-                            if (response.submodules.length === 0) { // <-- Y AQUÍ
-                                targetUlElement.innerHTML = '<div class="p-2 text-white-50">No hay submódulos disponibles.</div>';
-                            } else {
-                                // Construye los submódulos y sus posibles sub-submódulos
-                                response.submodules.forEach(sub_module => { // <-- Y AQUÍ
-                                    const li = buildMenuItem(sub_module, 'submodule');
-                                    targetUlElement.appendChild(li);
+        //                 // AQUÍ ESTÁ EL CAMBIO CLAVE: Usa 'response.submodules' en lugar de 'response.sub_modules'
+        //                 if (response.success && Array.isArray(response.submodules)) { // <-- CAMBIO AQUÍ
+        //                     targetUlElement.innerHTML = ''; // Limpia el mensaje de carga
+        //                     if (response.submodules.length === 0) { // <-- Y AQUÍ
+        //                         targetUlElement.innerHTML = '<div class="p-2 text-white-50">No hay submódulos disponibles.</div>';
+        //                     } else {
+        //                         // Construye los submódulos y sus posibles sub-submódulos
+        //                         response.submodules.forEach(sub_module => { // <-- Y AQUÍ
+        //                             const li = buildMenuItem(sub_module, 'submodule');
+        //                             targetUlElement.appendChild(li);
 
-                                    // Si este submódulo tiene sub-submódulos, inicializa su dropdown
-                                    if (sub_module.subsub_modules && sub_module.subsub_modules.length > 0) {
-                                        const subSubUl = buildDropdownMenu(sub_module.subsub_modules, li.querySelector('a').id, 'subsubmodule');
-                                        li.appendChild(subSubUl);
-                                        // Inicializar el dropdown para este submódulo con sub-submódulos
-                                        setupCustomDropdown(li.querySelector('a'), subSubUl);
-                                    }
-                                });
-                            }
-                            targetUlElement.dataset.submodulesLoaded = 'true'; // Marca como cargado
-                            console.log(`Submódulos para el módulo ${moduleId} cargados exitosamente.`);
+        //                             // Si este submódulo tiene sub-submódulos, inicializa su dropdown
+        //                             if (sub_module.subsub_modules && sub_module.subsub_modules.length > 0) {
+        //                                 const subSubUl = buildDropdownMenu(sub_module.subsub_modules, li.querySelector('a').id, 'subsubmodule');
+        //                                 li.appendChild(subSubUl);
+        //                                 // Inicializar el dropdown para este submódulo con sub-submódulos
+        //                                 setupCustomDropdown(li.querySelector('a'), subSubUl);
+        //                             }
+        //                         });
+        //                     }
+        //                     targetUlElement.dataset.submodulesLoaded = 'true'; // Marca como cargado
+        //                     console.log(`Submódulos para el módulo ${moduleId} cargados exitosamente.`);
 
-                        } else {
-                            console.error("Formato de respuesta inválido para submódulos: Se esperaba 'success: true' y un array 'submodules'.", response); // Actualiza el mensaje de error para reflejar el nombre correcto
-                            targetUlElement.innerHTML = '<div class="p-2 text-danger">Error al cargar submódulos.</div>';
-                            if (typeof Swal !== "undefined") {
-                                Swal.fire({ title: "Error", text: "Formato de respuesta de submódulos inesperado.", icon: "error", confirmButtonText: "OK", color: "black" });
-                            }
-                        }
-                    } catch (error) {
-                        console.error("Error al analizar la respuesta JSON de submódulos:", error);
-                        targetUlElement.innerHTML = '<div class="p-2 text-danger">Error al procesar datos.</div>';
-                        if (typeof Swal !== "undefined") {
-                            Swal.fire({ title: "Error", text: "Ocurrió un error al procesar los submódulos del servidor.", icon: "error", confirmButtonText: "OK", color: "black" });
-                        }
-                    }
-                } else {
-                    console.error(
-                        `Error al obtener submódulos para el módulo ${moduleId}: ${xhr.status} ${xhr.statusText}`
-                    );
-                    targetUlElement.innerHTML = `<div class="p-2 text-danger">Error ${xhr.status} al cargar.</div>`;
-                    if (typeof Swal !== "undefined") {
-                        Swal.fire({ title: "Error", text: `Error de conexión con el servidor al cargar submódulos: ${xhr.status}`, icon: "error", confirmButtonText: "OK", color: "black" });
-                    }
-                }
-            };
+        //                 } else {
+        //                     console.error("Formato de respuesta inválido para submódulos: Se esperaba 'success: true' y un array 'submodules'.", response); // Actualiza el mensaje de error para reflejar el nombre correcto
+        //                     targetUlElement.innerHTML = '<div class="p-2 text-danger">Error al cargar submódulos.</div>';
+        //                     if (typeof Swal !== "undefined") {
+        //                         Swal.fire({ title: "Error", text: "Formato de respuesta de submódulos inesperado.", icon: "error", confirmButtonText: "OK", color: "black" });
+        //                     }
+        //                 }
+        //             } catch (error) {
+        //                 console.error("Error al analizar la respuesta JSON de submódulos:", error);
+        //                 targetUlElement.innerHTML = '<div class="p-2 text-danger">Error al procesar datos.</div>';
+        //                 if (typeof Swal !== "undefined") {
+        //                     Swal.fire({ title: "Error", text: "Ocurrió un error al procesar los submódulos del servidor.", icon: "error", confirmButtonText: "OK", color: "black" });
+        //                 }
+        //             }
+        //         } else {
+        //             console.error(
+        //                 `Error al obtener submódulos para el módulo ${moduleId}: ${xhr.status} ${xhr.statusText}`
+        //             );
+        //             targetUlElement.innerHTML = `<div class="p-2 text-danger">Error ${xhr.status} al cargar.</div>`;
+        //             if (typeof Swal !== "undefined") {
+        //                 Swal.fire({ title: "Error", text: `Error de conexión con el servidor al cargar submódulos: ${xhr.status}`, icon: "error", confirmButtonText: "OK", color: "black" });
+        //             }
+        //         }
+        //     };
 
-            xhr.onerror = function () {
-                console.error("Network Error al cargar los submódulos.");
-                targetUlElement.innerHTML = '<div class="p-2 text-danger">Error de red.</div>';
-                if (typeof Swal !== "undefined") {
-                    Swal.fire({ title: "Error de red", text: "No se pudo conectar al servidor para cargar los submódulos.", icon: "error", confirmButtonText: "OK", color: "black" });
-                }
-            };
+        //     xhr.onerror = function () {
+        //         console.error("Network Error al cargar los submódulos.");
+        //         targetUlElement.innerHTML = '<div class="p-2 text-danger">Error de red.</div>';
+        //         if (typeof Swal !== "undefined") {
+        //             Swal.fire({ title: "Error de red", text: "No se pudo conectar al servidor para cargar los submódulos.", icon: "error", confirmButtonText: "OK", color: "black" });
+        //         }
+        //     };
 
-            const datos = `action=getSubmodulesForModule&id_module=${encodeURIComponent(moduleId)}`;
-            xhr.send(datos);
-        }
+        //     const datos = `action=getSubmodulesForModule&id_module=${encodeURIComponent(moduleId)}`;
+        //     xhr.send(datos);
+        // }
 
         /**
          * Fetches main modules and initializes their custom dropdowns.
          */
-        function loadFullNavbar(options = {}) {
-            const {
-                method = 'POST',
-                apiPath = 'api/consulta/getModules' // Este endpoint solo debe devolver los módulos principales
-            } = options;
+   function loadFullNavbar(options = {}) {
+    const {
+        method = 'POST',
+        apiPath = 'api/consulta/getModulesUsers' // This endpoint returns main modules
+    } = options;
 
-            const navbarNav = document.getElementById('main-navbar-nav');
-            if (!navbarNav) {
-                console.error("Elemento con ID 'main-navbar-nav' no encontrado. No se puede poblar la barra de navegación.");
-                return;
-            }
+    const navbarNav = document.getElementById('main-navbar-nav');
+    if (!navbarNav) {
+        console.error("Elemento con ID 'main-navbar-nav' no encontrado. No se puede poblar la barra de navegación.");
+        return;
+    }
 
-            // Limpia los módulos dinámicos existentes, manteniendo solo "Inicio" y la primera HR
-            const initialItems = Array.from(navbarNav.children).filter(child =>
-                child.id === 'inicio-link' || (child.tagName === 'LI' && child.querySelector('#inicio-link')) ||
-                (child.tagName === 'HR' && child.previousElementSibling && child.previousElementSibling.id === 'inicio-link')
-            );
-            navbarNav.innerHTML = ''; // Limpia todo
-            initialItems.forEach(item => navbarNav.appendChild(item)); // Re-agrega "Inicio" y su HR
+    const id_usuario_element = document.getElementById('id_user');
+    if (!id_usuario_element) {
+        console.error("Elemento con ID 'id_user' no encontrado. Asegúrate de que existe en tu HTML.");
+        return;
+    }
+    const id_usuario = id_usuario_element.value;
+    console.log("ID de Usuario obtenido:", id_usuario);
 
-            const xhr = new XMLHttpRequest();
-            xhr.open(method, `${ENDPOINT_BASE}${APP_PATH}${apiPath}`);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    // Clear existing dynamic modules. Keep only the static "Inicio" if it's there.
+    // If "Inicio" is dynamically added here, ensure it's cleared and re-added correctly.
+    // Let's assume you want to clear everything except a potential hardcoded "Inicio"
+    // or re-add it dynamically at the top like last time.
+    navbarNav.innerHTML = ''; // Clear all existing children to start fresh
 
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
+    // Dynamically add "Inicio" and its HR if not hardcoded in your HTML
+    // You can remove this section if 'Inicio' is always present in your static HTML
+    const inicioLi = document.createElement('li');
+    inicioLi.className = 'nav-item';
+    inicioLi.id = 'inicio-link';
+    const inicioAnchor = document.createElement('a');
+    inicioAnchor.className = 'nav-link';
+    inicioAnchor.href = 'index.php';
+    inicioAnchor.innerHTML = getIconSvgForName("Inicio") + '<h6 class="nav-link-text ms-3" style="color:white; margin:0; padding-left:.5rem;">Inicio</h6>';
+    inicioLi.appendChild(inicioAnchor);
+    navbarNav.appendChild(inicioLi);
 
-                        if (response.success && Array.isArray(response.modules)) {
-                            const modulesData = response.modules;
+    const hrAfterInicio = document.createElement('hr');
+    hrAfterInicio.className = 'horizontal dark my-3';
+    navbarNav.appendChild(hrAfterInicio);
 
-                            modulesData.forEach((module, index) => {
-                                const mainLi = buildMenuItem(module, 'module');
-                                const mainAnchor = mainLi.querySelector('a');
 
-                                // Crea el UL vacío para los submódulos
-                                const subUl = document.createElement('ul');
-                                subUl.className = 'dropdown-menu';
-                                subUl.setAttribute('aria-labelledby', mainAnchor.id);
-                                subUl.setAttribute('data-submodules-loaded', 'false'); // Marca como no cargado
-                                subUl.innerHTML = '<div class="p-2 text-white-50">Cargando...</div>'; // Mensaje inicial de carga
-                                mainLi.appendChild(subUl);
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, `${ENDPOINT_BASE}${APP_PATH}${apiPath}`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-                                // IMPORTANTE: Inicializa tu dropdown CUSTOM para este módulo principal
-                                // Pasa el ID del módulo para que setupCustomDropdown lo use al abrir
-                                setupCustomDropdown(mainAnchor, subUl, module.id_module);
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                console.log("Respuesta de la API (getModulesUsers):", response);
 
-                                navbarNav.appendChild(mainLi);
+                if (response.success && Array.isArray(response.modules)) {
+                    const modulesData = response.modules;
+                    console.log("Módulos obtenidos para procesar:", modulesData);
 
-                                if (index < modulesData.length - 1) {
+                    modulesData.forEach((module, index) => {
+                        if (module.activo === "t") { // Check if main module is active
+                            const mainLi = buildMenuItem(module, 'module');
+                            const mainAnchor = mainLi.querySelector('a');
+
+                            // Create an empty UL for submodules
+                            const subUl = document.createElement('ul');
+                            subUl.className = 'dropdown-menu';
+                            subUl.setAttribute('aria-labelledby', mainAnchor.id);
+                            subUl.setAttribute('data-submodules-loaded', 'false'); // Mark as not loaded
+                            subUl.innerHTML = '<div class="p-2 text-white-50">Cargando...</div>'; // Loading message
+                            mainLi.appendChild(subUl);
+
+                            // IMPORTANT: Set up the custom dropdown behavior
+                            setupCustomDropdown(mainAnchor, subUl, module.idmodulo);
+
+                            navbarNav.appendChild(mainLi);
+
+                            // Add HR between active modules, but not after the last one
+                            if (index < modulesData.length - 1) {
+                                const nextModule = modulesData[index + 1];
+                                if (nextModule && nextModule.activo === "t") {
                                     const hr = document.createElement('hr');
                                     hr.className = 'horizontal dark my-3';
                                     navbarNav.appendChild(hr);
                                 }
-                            });
-
-                             // Una vez que todos los módulos dinámicos se han cargado, añade "Cerrar Sesión" al final
-                            const logoutLi = document.createElement('li');
-                            logoutLi.className = 'nav-item';
-                            const logoutAnchor = document.createElement('a');
-                            logoutAnchor.className = 'nav-link';
-                            logoutAnchor.id = 'cerrar-session-link';
-                            logoutAnchor.href = 'cerrar_session';
-                            
-                            const logoutIcon = getIconSvgForName("Cerrar Sesión");
-                            const logoutText = document.createElement('h6');
-                            logoutText.className = 'nav-link-text ms-3';
-                            logoutText.textContent = 'Cerrar Sesión';
-                            logoutText.style.color = 'white'; // Asegurar el color blanco
-                            logoutText.style.margin = '0'; // Eliminar márgenes si los añade Argon Dashboard por defecto
-                            logoutText.style.paddingLeft = '.5rem'; // Añadir padding si es necesario
-
-                            logoutAnchor.innerHTML = logoutIcon; // Insertar el SVG
-                            logoutAnchor.appendChild(logoutText); // Añadir el texto después del SVG
-                            logoutLi.appendChild(logoutAnchor);
-                            navbarNav.appendChild(logoutLi);
-
-
-                            // ***************************************************************
-                            // Mueve la inicialización de los dropdowns estáticos de tu JS original
-                            // que manejan los sub-submódulos que NO se cargan dinámicamente
-                            // (ej. "Sustitución de POS", "Consulta de Rif", etc. si los mantienes estáticos).
-                            // Si TODOS los niveles ahora son dinámicos, esta sección de tu JS original
-                            // (const gestionTicketsAnchor, etc.) no sería necesaria o se reemplazaría
-                            // por la lógica dinámica recursiva.
-                            //
-                            // En tu caso, dado que 'Crear Ticket' tiene sub-submódulos estáticos,
-                            // o si 'Consultas General' tiene sub-submódulos estáticos,
-                            // aquí DEBES asegurarte que esos dropdowns se inicien una vez que sus padres dinámicos
-                            // hayan sido cargados.
-                            //
-                            // Sin embargo, con la nueva lógica, buildDropdownMenu() y loadSubmodulesForModule()
-                            // ya se encargan de inicializar los dropdowns de los submódulos (con sub-submódulos).
-                            // Así que las líneas de `setupCustomDropdown` para `crearTicketSubAnchor`,
-                            // `consultasGeneralAnchor` etc. que tenías, DEBERÍAN SER ELIMINADAS
-                            // si estás construyendo todo dinámicamente como en la función `buildDropdownMenu`.
-                            // Solo mantén los setupCustomDropdown para los elementos principales o los que
-                            // no sean generados por buildDropdownMenu/loadSubmodulesForModule.
-                            // ***************************************************************
-
-                        } else {
-                            console.error("Formato de respuesta inválido: Se esperaba 'success: true' y un array 'modules'.", response);
-                            if (typeof Swal !== "undefined") {
-                                Swal.fire({ title: "Error", text: "Formato de respuesta de módulos inesperado.", icon: "error", confirmButtonText: "OK", color: "black" });
                             }
+                        } else {
+                            console.log(`Módulo ${module.desc_modulo} (ID: ${module.idmodulo}) está inactivo y no se mostrará.`);
                         }
-                    } catch (error) {
-                        console.error("Error al analizar la respuesta JSON de los módulos:", error);
-                        if (typeof Swal !== "undefined") {
-                            Swal.fire({ title: "Error", text: "Ocurrió un error al procesar los módulos del servidor.", icon: "error", confirmButtonText: "OK", color: "black" });
-                        }
-                    }
+                    });
+
+                    // Add "Cerrar Sesión" at the very end
+                    const logoutLi = document.createElement('li');
+                    logoutLi.className = 'nav-item';
+                    const logoutAnchor = document.createElement('a');
+                    logoutAnchor.className = 'nav-link';
+                    logoutAnchor.id = 'cerrar-session-link';
+                    logoutAnchor.href = 'cerrar_session';
+
+                    const logoutIcon = getIconSvgForName("Cerrar Sesión");
+                    const logoutText = document.createElement('h6');
+                    logoutText.className = 'nav-link-text ms-3';
+                    logoutText.textContent = 'Cerrar Sesión';
+                    logoutText.style.color = 'white';
+                    logoutText.style.margin = '0';
+                    logoutText.style.paddingLeft = '.5rem';
+
+                    logoutAnchor.innerHTML = logoutIcon;
+                    logoutAnchor.appendChild(logoutText);
+                    logoutLi.appendChild(logoutAnchor);
+                    navbarNav.appendChild(logoutLi);
+
                 } else {
-                    console.error(
-                        `Error al obtener módulos: ${xhr.status} ${xhr.statusText}`
-                    );
+                    console.error("Formato de respuesta inválido: Se esperaba 'success: true' y un array 'modules'.", response);
                     if (typeof Swal !== "undefined") {
-                        Swal.fire({ title: "Error", text: `Error de conexión con el servidor al cargar módulos: ${xhr.status}`, icon: "error", confirmButtonText: "OK", color: "black" });
+                        Swal.fire({ title: "Error", text: "Formato de respuesta de módulos inesperado.", icon: "error", confirmButtonText: "OK", color: "black" });
                     }
                 }
-            };
-
-            xhr.onerror = function () {
-                console.error("Network Error al cargar los módulos.");
+            } catch (error) {
+                console.error("Error al analizar o procesar la respuesta JSON de los módulos:", error);
                 if (typeof Swal !== "undefined") {
-                    Swal.fire({ title: "Error de red", text: "No se pudo conectar al servidor para cargar los módulos.", icon: "error", confirmButtonText: "OK", color: "black" });
+                    Swal.fire({ title: "Error", text: "Ocurrió un error al procesar los módulos del servidor.", icon: "error", confirmButtonText: "OK", color: "black" });
                 }
-            };
-
-            const datos = `action=getModules`;
-            xhr.send(datos);
+            }
+        } else {
+            console.error(
+                `Error al obtener módulos: ${xhr.status} ${xhr.statusText}`
+            );
+            if (typeof Swal !== "undefined") {
+                Swal.fire({ title: "Error", text: `Error de conexión con el servidor al cargar módulos: ${xhr.status}`, icon: "error", confirmButtonText: "OK", color: "black" });
+            }
         }
+    };
+
+    xhr.onerror = function () {
+        console.error("Network Error al cargar los módulos.");
+        if (typeof Swal !== "undefined") {
+            Swal.fire({ title: "Error de red", text: "No se pudo conectar al servidor para cargar los módulos.", icon: "error", confirmButtonText: "OK", color: "black" });
+        }
+    };
+
+    const datos = `action=getModulesUsers&id_usuario=${encodeURIComponent(id_usuario)}`;
+    xhr.send(datos);
+}
+
 
         // --- Resto de tu código (sidebar, active links, y HideNavbar) ---
         // (Mantengo tu código original aquí abajo sin cambios para que lo integres tú)
@@ -620,3 +612,153 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadFullNavbar(); // Llama a la función para cargar los módulos principales
         }); 
+
+
+
+// Function to build menu items (main modules or submodules)
+function buildMenuItem(itemData, type) {
+    const listItem = document.createElement('li');
+    const anchor = document.createElement('a');
+
+    let itemName = '';
+    let itemUrl = '#';
+    let iconHtml = '';
+    let iconElement = null; // To hold the parsed icon HTML as an element
+
+    if (type === 'module') {
+        itemName = itemData.desc_modulo;
+        iconHtml = getIconSvgForName(itemName);
+
+        listItem.className = 'nav-item';
+        anchor.className = 'nav-link dropdown-toggle d-flex align-items-center';
+        anchor.id = `module-link-${itemData.idmodulo}`;
+        anchor.setAttribute('data-bs-toggle', 'dropdown');
+        anchor.setAttribute('aria-expanded', 'false');
+        anchor.setAttribute('role', 'button');
+        anchor.href = '#';
+
+        const heading = document.createElement('h6');
+        heading.className = 'nav-link-text ms-3';
+        heading.style.color = 'white';
+        heading.style.margin = '0';
+        heading.textContent = itemName;
+
+        // Create a temporary div to parse the iconHtml string into actual DOM elements
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = iconHtml;
+        if (tempDiv.firstElementChild) { // If there's an actual element parsed
+            anchor.appendChild(tempDiv.firstElementChild);
+        }
+        anchor.appendChild(heading);
+
+    } else if (type === 'submodule') {
+        itemName = itemData.desc_submodulo; // This is correct based on image_e2ed1d.png
+        iconHtml = getIconSvgForName(itemName);
+
+        listItem.className = '';
+        anchor.className = 'dropdown-item d-flex align-items-center';
+        anchor.id = `submodule-link-${itemData.id_submodulo}`; // This is correct based on image_e2ed1d.png
+        itemUrl = `/SoportePost/${itemData.url_archivo}`; // Ensure consistent URL naming
+        anchor.href = itemUrl;
+
+        const textSpan = document.createElement('span');
+        textSpan.textContent = itemName; // Set the text
+
+        // Append the icon first if it exists
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = iconHtml;
+        if (tempDiv.firstElementChild) {
+            anchor.appendChild(tempDiv.firstElementChild);
+        }
+
+        // Then append the text span
+        anchor.appendChild(textSpan);
+
+        // OPTIONAL: Add a little margin between icon and text for submodules if needed
+        // textSpan.style.marginLeft = '0.5rem';
+
+        // --- Debugging helper (remove after testing) ---
+        // console.log(`Submodule created: ${itemName}`, anchor);
+        // anchor.style.backgroundColor = 'yellow'; // To see where the element is
+        // textSpan.style.color = 'red'; // To force text color
+        // --- End Debugging helper ---
+    }
+
+    listItem.appendChild(anchor);
+    return listItem;
+}
+
+
+// Function to load submodules for a specific module ID
+function loadSubmodulesForModule(moduleId, menuElement) {
+    if (menuElement.dataset.submodulesLoaded === 'true') {
+        console.log(`Submódulos para el módulo ${moduleId} ya cargados.`);
+        return; // Already loaded, do nothing
+    }
+
+    console.log(`Cargando submódulos para el módulo ID: ${moduleId}`);
+    menuElement.innerHTML = '<div class="p-2 text-white-50">Cargando submódulos...</div>'; // Loading feedback
+
+    const id_usuario_element = document.getElementById('id_user');
+    const id_usuario = id_usuario_element ? id_usuario_element.value : null;
+
+    if (!id_usuario) {
+        console.error("ID de usuario no encontrado para cargar submódulos.");
+        menuElement.innerHTML = '<div class="p-2 text-danger">Error: Usuario no identificado.</div>';
+        return;
+    }
+
+    const xhrSubmodules = new XMLHttpRequest();
+    // Adjust this API path to your actual submodule endpoint
+    const submodulesApiPath = `api/consulta/getSubmodulesForModule`; // Your actual endpoint
+
+    xhrSubmodules.open('POST', `${ENDPOINT_BASE}${APP_PATH}${submodulesApiPath}`);
+    xhrSubmodules.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhrSubmodules.onload = function() {
+        if (xhrSubmodules.status === 200) {
+            try {
+                const response = JSON.parse(xhrSubmodules.responseText);
+                console.log(`Respuesta de submódulos para ${moduleId}:`, response);
+
+                if (response.success && Array.isArray(response.submodules)) {
+                    menuElement.innerHTML = ''; // Clear loading message
+
+                    if (response.submodules.length === 0) {
+                        menuElement.innerHTML = '<div class="p-2 text-white-50">No hay submódulos activos.</div>';
+                    } else {
+                        response.submodules.forEach(submodule => {
+                            // Only add if submodule is active (status_submod === 't')
+                            if (submodule.activo === "t") { // Ensure 't' matches your API
+                                const li = buildMenuItem(submodule, 'submodule');
+                                menuElement.appendChild(li);
+                            } else {
+                                console.log(`Submódulo ${submodule.desc_submodulo} (ID: ${submodule.id_submodulo}) está inactivo y no se mostrará.`);
+                            }
+                        });
+                    }
+                    menuElement.dataset.submodulesLoaded = 'true'; // Mark as loaded successfully
+                } else {
+                    console.error(`Formato de respuesta inválido para submódulos de ${moduleId}:`, response);
+                    menuElement.innerHTML = '<div class="p-2 text-danger">Error al cargar submódulos.</div>';
+                }
+            } catch (error) {
+                console.error(`Error al analizar la respuesta JSON de submódulos para ${moduleId}:`, error);
+                menuElement.innerHTML = '<div class="p-2 text-danger">Error de formato en datos de submódulos.</div>';
+            }
+        } else {
+            console.error(`Error al obtener submódulos para ${moduleId}: ${xhrSubmodules.status} ${xhrSubmodules.statusText}`);
+            menuElement.innerHTML = `<div class="p-2 text-danger">Error de conexión: ${xhrSubmodules.status}.</div>`;
+        }
+    };
+    xhrSubmodules.onerror = function() {
+        console.error(`Network Error al cargar submódulos para ${moduleId}.`);
+        menuElement.innerHTML = '<div class="p-2 text-danger">Error de red.</div>';
+    };
+
+    const datos = `action=getSubmodulesForModule&moduleId=${encodeURIComponent(moduleId)}`;
+    //console.log(moduleId);
+   // console.log(id_usuario);
+    xhrSubmodules.send(datos);
+}
+

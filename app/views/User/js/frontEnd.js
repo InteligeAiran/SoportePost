@@ -1297,6 +1297,7 @@ function AsignacionModulo(idmodulo, iusuario, id_check) {
 
 function AsignacionSubModulo(idmodulo,idsub_modulo, iusuario, id_checksub) {
 
+console.log('jasaj');
   const id_modulo = idmodulo;
   const id_submodulo = idsub_modulo;
   const id_usuario = iusuario;

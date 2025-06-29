@@ -436,44 +436,44 @@ class TechnicalConsultionRepository
         return $this->app_base_path . $url_segment; // Concatena la ruta base de la aplicación
     }
 
-     public function GetSubmodulesForModule($id_module) {
+     public function GetSubmodulesForModulee($moduleId,$id_usuario) {
         $final_submodules_data = []; // Array que contendrá la estructura final con URLs y anidamiento
 
         // 1. Obtener los submódulos principales del modelo
-        $submodules_result = $this->model->GetSubmodulesForModule($id_module);
+        $submodules_result = $this->model->GetSubmodulesForModule($moduleId,$id_usuario);
 
         if ($submodules_result && $submodules_result['numRows'] > 0) {
             for ($i = 0; $i < $submodules_result['numRows']; $i++) {
                 $submodule_row = pg_fetch_assoc($submodules_result['query'], $i);
 
                 // Genera la URL para el submódulo
-                $submodule_url = $this->getUrlForMenuItem($submodule_row['name_submodule']);
-
+                $submodule_url = $this->getUrlForMenuItem($submodule_row['desc_submodulo']);
+                var_dump($submodule_url);
                 $current_submodule = [
-                    'id_sub_module' => $submodule_row['id_submodule'],
-                    'name_sub_module' => $submodule_row['name_submodule'],
+                    'id_submodulo' => $submodule_row['id_submodulo'],
+                    'desc_submodulo' => $submodule_row['desc_submodulo'],
                     'url_sub_module' => $submodule_url, // URL generada
                     'subsub_modules' => [] // CRÍTICO: Inicializamos un array vacío para los sub-submódulos
                 ];
 
                 // 2. Obtener los sub-submódulos para este submódulo
                 // Asume que tu modelo tiene un método para esto
-                $subsubmodules_result = $this->model->GetSubSubmodulesForSubmodule($submodule_row['id_submodule']);
+                // $subsubmodules_result = $this->model->GetSubSubmodulesForSubmodule($submodule_row['id_submodule']);
 
-                if ($subsubmodules_result && $subsubmodules_result['numRows'] > 0) {
-                    for ($j = 0; $j < $subsubmodules_result['numRows']; $j++) {
-                        $subsubmodule_row = pg_fetch_assoc($subsubmodules_result['query'], $j);
+                // if ($subsubmodules_result && $subsubmodules_result['numRows'] > 0) {
+                //     for ($j = 0; $j < $subsubmodules_result['numRows']; $j++) {
+                //         $subsubmodule_row = pg_fetch_assoc($subsubmodules_result['query'], $j);
 
-                        // Genera la URL para el sub-submódulo
-                        $subsubmodule_url = $this->getUrlForMenuItem($subsubmodule_row['name_subsubmodule']);
+                //         // Genera la URL para el sub-submódulo
+                //         $subsubmodule_url = $this->getUrlForMenuItem($subsubmodule_row['name_subsubmodule']);
 
-                        $current_submodule['subsub_modules'][] = [
-                            'id_subsub_module' => $subsubmodule_row['id_subsubmodule'],
-                            'name_subsub_module' => $subsubmodule_row['name_subsubmodule'],
-                            'url_subsub_module' => $subsubmodule_url // URL generada
-                        ];
-                    }
-                }
+                //         $current_submodule['subsub_modules'][] = [
+                //             'id_subsub_module' => $subsubmodule_row['id_subsubmodule'],
+                //             'name_subsub_module' => $subsubmodule_row['name_subsubmodule'],
+                //             'url_subsub_module' => $subsubmodule_url // URL generada
+                //         ];
+                //     }
+                // }
 
                 $final_submodules_data[] = $current_submodule;
             }
@@ -483,10 +483,45 @@ class TechnicalConsultionRepository
         }
     }
 
+
+         public function GetSubmodulesForModule($moduleId) {
+                $result = $this->model->GetSubmodulesForModule($moduleId);
+                if ($result) {
+                    //var_dump($result);  
+                    $modules = [];
+                    for ($i = 0; $i < $result['numRows']; $i++) {
+                        $agente = pg_fetch_assoc($result['query'], $i);
+                        $modules[] = $agente;
+                    }
+                    //var_dump($agente);
+                    return $modules;
+                } else {
+                    return null;
+                }
+    }
+
+
     public function GetTicketCounts(){
         $result = $this->model->getTicketCountsGroupedByAction();
         if ($result) {
             return $result;
+        } else {
+            return null;
+        }
+    }
+
+
+    public function GetModulesUsers($id_usuario){
+        $result = $this->model->GetModulesUsers($id_usuario);
+        if ($result) {
+            //var_dump($result);  
+            $modules = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $modules[] = $agente;
+            }
+            //var_dump($agente);
+            return $modules;
         } else {
             return null;
         }

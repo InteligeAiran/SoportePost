@@ -1040,11 +1040,12 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function GetSubmodulesForModule($id_module)
+    public function GetSubmodulesForModule($moduleId)
     {
         try {
-            $escaped_id_module = pg_escape_literal($this->db->getConnection(), $id_module);
-            $sql = "SELECT id_submodule, name_submodule FROM sub_modules WHERE id_module = ".$id_module.";";
+            $escaped_moduleId = pg_escape_literal($this->db->getConnection(), $moduleId);
+            //$escaped_id_usuario = pg_escape_literal($this->db->getConnection(), $id_usuario);
+            $sql = "SELECT * from spversubmodulosnavbar (".$escaped_moduleId.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -1110,5 +1111,18 @@ class consulta_rifModel extends Model
             return []; // Retorna un array vacío en caso de error
         }
     }
+
+
+    public function GetModulesUsers($id_usuario)
+        {
+            try {
+                $escaped_id_usuario = pg_escape_literal($this->db->getConnection(), $id_usuario);
+                $sql = "SELECT * from sp_vermodulosnavbar(" . $escaped_id_usuario . ") ";
+                $result = Model::getResult($sql, $this->db);
+                return $result;
+            } catch (Throwable $e) {
+                // Manejar excepciones
+            }
+        }
 }
 ?>
