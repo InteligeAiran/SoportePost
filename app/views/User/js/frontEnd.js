@@ -1145,7 +1145,7 @@ function VerModulos(idusuario) {
                             // Abrir esta fila
                             if (moduleRowData && moduleRowData.submodulos && moduleRowData.submodulos.length > 0) {
                                 // Pasar todos los datos necesarios a la función de formato
-                                row.child(formatSubmodules(moduleRowData.submodulos, id_usuario1, moduleRowData.idmodulo)).show();
+                                row.child(formatSubmodules(moduleRowData.submodulos, id_usuario, moduleRowData.idmodulo)).show();
                                 tr.addClass('shown');
                                 $(this).find('i').removeClass('fa-plus-square').addClass('fa-minus-square');
                             } else {
@@ -1204,6 +1204,7 @@ function formatSubmodules(submodules, userId, parentModuleId) {
                     <label for="sub_check_${submodulo.id_submodulo}">${submodulo.desc_submodulo}</label>
                 </div>
             `;
+
         });
     } else {
         html += '<p>No hay submódulos disponibles para este módulo.</p>';
@@ -1223,6 +1224,10 @@ function formatSubmodules(submodules, userId, parentModuleId) {
             // Llamar a tu función para guardar la asignación del submódulo
             // saveSubmoduloAssignment(userId, idmodulo, idsubmodulo, isChecked);
             console.log(`Submódulo ${idsubmodulo} del módulo ${idmodulo} para usuario ${userId} ${isChecked ? 'activado' : 'desactivado'}`);
+             
+            AsignacionSubModulo(idmodulo, idsubmodulo, userId, isChecked);
+
+
         });
     }, 0); // Pequeño timeout para asegurar la actualización del DOM
 
@@ -1295,13 +1300,13 @@ function AsignacionModulo(idmodulo, iusuario, id_check) {
 
 
 
-function AsignacionSubModulo(idmodulo,idsub_modulo, iusuario, id_checksub) {
+function AsignacionSubModulo(idmodulo, idsubmodulo, iusuario, isChecked) {
 
 console.log('jasaj');
   const id_modulo = idmodulo;
-  const id_submodulo = idsub_modulo;
+  const id_submodulo = idsubmodulo;
   const id_usuario = iusuario;
-  const idchecksub_value = id_checksub;
+  const idchecksub_value = isChecked;
 
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/AsignacionSubModulo`); // Asegúrate de que esta sea la ruta correcta en tu backend

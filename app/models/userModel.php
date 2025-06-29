@@ -348,7 +348,7 @@ class userModel extends Model{
             $escaped_idcheck_value = pg_escape_literal($this->db->getConnection(), $idcheck_value); 
 
             $sql = "SELECT * FROM sp_asignacionmodulo(".$escaped_id_modulo.", " . $escaped_id_usuario . "," . $escaped_idcheck_value . ")";
-            //echo $sql;
+           // echo $sql;
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -366,7 +366,7 @@ class userModel extends Model{
             $escaped_id_checksub = pg_escape_literal($this->db->getConnection(), $idchecksub_value); 
 
             $sql = "SELECT * FROM sp_asignacionsubmodulos(".$escaped_id_modulo."," . $escaped_id_submodulo . ", " . $escaped_id_usuario . "," . $escaped_id_checksub . ")";
-            echo $sql;
+            //echo $sql;
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
