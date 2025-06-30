@@ -176,6 +176,14 @@ class reportes extends Controller {
                 case 'getTotalTicketsPercentageinprocess':
                     $this->handlegetTotalTicketsPercentageinprocess();
                 break;
+                
+                case 'GetTicketsInProcess':
+                    $this->handleGetTicketsInProcess();
+                break;
+
+                case 'GetTicketTimeline' :
+                    $this->handleGetTicketTimeline();
+                break;
 
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
@@ -717,6 +725,31 @@ class reportes extends Controller {
         $result = $repository->GetTotalTicketsPercentageInProcess();
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'porcent' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+    public function handleGetTicketsInProcess(){
+        $repository = new ReportRepository();
+        $result = $repository->GetTicketsInProcess();
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'details' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+    public function handleGetTicketTimeline(){
+        $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $repository = new ReportRepository();
+        $result = $repository->GetTicketTimeline($id_ticket);
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'details' => $result], 200);
         } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {

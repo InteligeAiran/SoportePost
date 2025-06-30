@@ -381,7 +381,8 @@
     background-color: red; /* Cambia el color de fondo al pasar el mouse */
 }
 
-#ModalStadisticMonth, #ModalStadisticRegion, #ModalOpen, #ModalResolveRegion, #ModalTallerRegion, #ModalProcessReparacion, #ModalReparado, #ModalPendiRespuu, #ModalIrreparableTik{
+#ModalStadisticMonth, #ModalStadisticRegion, #ModalOpen, #ModalResolveRegion, #ModalTallerRegion, #ModalProcessReparacion, #ModalReparado, #ModalPendiRespuu, 
+#ModalIrreparableTik, #ModalProcess{
     color: #fff; /* Color del texto */
     background-color: #8392ab; /* Color de fondo */
     border: none; /* Sin borde */
@@ -391,8 +392,13 @@
     cursor: pointer;
 }
 
+#ModalProcess:hover{
+    color: white;
+    background-color: red; /* Cambia el color de fondo al pasar el mouse */ 
+}
+
 #ModalStadisticMonthIcon, #ModalStadisticRegionIcon, #ModalOpenIcon, #ModalResolveIcon, #ModalTallerIcon, #ModalProcessReparacionIcon, #ModalReparadoIcon, #ModalpendiRespIcon, 
-#ModalIrreparabltikIcon{
+#ModalIrreparabltikIcon, #ModalProcessIcon{
     color: #fff; /* Color del texto */
     background-color: #8392ab; /* Color de fondo */
     transition: background-color 0.3s ease; /* Transición suave para el cambio de color */
@@ -402,6 +408,11 @@
 }
 
 #ModalIrreparabltikIcon:hover{
+    color: white;
+    background-color: red; /* Cambia el color de fondo al pasar el mouse */
+}
+
+#ModalProcessIcon:hover{
     color: white;
     background-color: red; /* Cambia el color de fondo al pasar el mouse */
 }

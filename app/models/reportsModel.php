@@ -381,6 +381,27 @@ class reportsModel extends Model
             // Handle exception
         }
     }
+
+    public function GetTicketsInProcess(){
+        try {
+            $sql = "SELECT * FROM get_individual_tickets_in_procesos()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetTicketTimeline($id_ticket){
+        try {
+            $escaped_id_ticket = pg_escape_literal($this->db->getConnection(), $id_ticket);
+            $sql = "SELECT * FROM get_ticket_timeline(".$escaped_id_ticket.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
 ?>
 

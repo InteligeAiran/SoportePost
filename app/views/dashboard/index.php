@@ -108,7 +108,7 @@ function mi_navbar() {}
 
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
-                            <div class="card">
+                            <div class="card"  id="Card-Ticket-process">
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
@@ -127,6 +127,42 @@ function mi_navbar() {}
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="ProcessTicketsModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-gradient-info text-white">
+                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle de Tickets En Proceso</h5>
+                                    <button type="button" class="btn-close" id="ModalProcessIcon" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="ProcessTicketsContent"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id="ModalProcess" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="TimelineModal" tabindex="-1" aria-labelledby="timelineModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                            <div class="modal-header bg-gradient-primary text-white">
+                                <h5 class="modal-title" style="color: white" id="timelineModalLabel">Flujo de Trabajo del Ticket #<span id="timelineTicketId"></span></h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="timelineContent">
+                                <p>Cargando flujo de trabajo...</p>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
                             </div>
                         </div>
                     </div>

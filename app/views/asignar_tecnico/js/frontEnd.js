@@ -1,5 +1,7 @@
 let modalInstance;
 let currentTicketId = null;
+let modalInstanceCoordinator; // Declara aquí para que sea accesible en todo el ámbito de DOMContentLoaded
+
 
 function getTicketDataCoordinator() {
     const xhr = new XMLHttpRequest();
@@ -22,6 +24,16 @@ function getTicketDataCoordinator() {
                 if (response.success) {
                     const TicketData = response.ticket;
                     const modalElement = document.getElementById("staticBackdrop");
+
+                    if (modalElement) {
+                        modalInstanceCoordinator = new bootstrap.Modal(modalElement, {
+                            backdrop: "static", // Para que no se cierre al hacer clic fuera
+                            keyboard: false     // Para que no se cierre con la tecla ESC
+                        });
+                        } else {
+                          console.error("El elemento 'staticBackdrop' (modal de asignación) no fue encontrado en el DOM.");
+                        }
+
                     const detailsPanel = document.getElementById("ticket-details-panel");
 
                     detailsPanel.innerHTML =
@@ -41,7 +53,8 @@ function getTicketDataCoordinator() {
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
                                     title="Marcar como Recibido por Coordinador"
-                                    data-ticket-id="${data.id_ticket}">
+                                    data-ticket-id="${data.id_ticket}"
+                                    data-nro-ticket="${data.nro_ticket}">
                                     POS Recibido
                                 </button>
                                  <button id="myUniqueAssingmentButton"
@@ -49,7 +62,9 @@ function getTicketDataCoordinator() {
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
                                     title="Asignar Técnico"
-                                    data-ticket-id="${data.id_ticket}"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>
+                                    data-ticket-id="${data.id_ticket}"
+                                    data-nro-ticket="${data.nro_ticket}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>
                                 </button>
                             `;
                         } else if (data.name_accion_ticket === 'Recibido por el Coordinador') { // Acción 3
@@ -60,6 +75,7 @@ function getTicketDataCoordinator() {
                                     data-bs-placement="top"
                                     title="Ticket ya Recibido por Coordinador"
                                     data-ticket-id="${data.id_ticket}"
+                                    data-nro-ticket="${data.nro_ticket}">
                                     Recibido
                                 </button>
                                 <button id="myUniqueAssingmentButton"
@@ -67,7 +83,8 @@ function getTicketDataCoordinator() {
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
                                     title="Asignar Técnico"
-                                    data-ticket-id="${data.id_ticket}"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>
+                                    data-ticket-id="${data.id_ticket}" 
+                                       data-nro-ticket="${data.nro_ticket}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>
                                 </button>
                             `;
                         }
@@ -247,7 +264,7 @@ function getTicketDataCoordinator() {
                     $("#tabla-ticket tbody").off("click", ".btn-received-coord").on("click", ".btn-received-coord", function (e) {
                         e.stopPropagation(); // Evitar que se active el evento de clic de la fila
                         const ticketId = $(this).data("ticket-id");
-                        const nroTicket = $(this).closest("tr").find("td:nth-child(3)").text().trim(); // Obtiene el número de ticket de la tercera columna
+                        const nroTicket = $(this).data("nro-ticket"); // <-- CORRECTO: Acceder al data-attribute del botón
                         markTicketAsReceived(ticketId, nroTicket); // Llama a la nueva función
                     });
 
@@ -257,15 +274,15 @@ function getTicketDataCoordinator() {
                         .on("click", ".btn-assign-tech", function (e) {
                             e.stopPropagation();
                             const ticketId = $(this).data("ticket-id");
-                            const nroTicket = $(this).closest("tr").find("td:nth-child(3)").text().trim(); // Obtiene el número de ticket de la tercera columna
+                            const nroTicket = $(this).data("nro-ticket"); // <-- CORRECTO: Acceder al data-attribute del botón
                             currentTicketId = ticketId;
                             currentTicketNroForAssignment = nroTicket; // Guarda el número de ticket para usarlo en la asignación
-                            const modalBootstrap = new bootstrap.Modal(modalElement, {
-                                backdrop: "static",
-                            });
-                            modalInstance = modalBootstrap;
-                            modalBootstrap.show();
-                        });
+                             if (modalInstanceCoordinator) {
+                                  modalInstanceCoordinator.show();
+                              } else {
+                                  console.error("Error: La instancia del modal de asignación no está disponible.");
+                              }
+                      });
 
                 } else {
                     tbody.innerHTML = '<tr><td colspan="9">Error al cargar</td></tr>';
@@ -717,8 +734,12 @@ function markTicketAsReceived(ticketId, nroTicket) { // Asegúrate de que nroTic
                                 color: "black",
                                 confirmButtonColor: "#3085d6" // Ejemplo de un color azul Bootstrap por defecto
                             });
-                            modalInstance.hide(); // Cierra el modal si está abierto
-                            getTicketDataCoordinator(); // Volver a cargar la tabla para reflejar los cambios
+                              getTicketDataCoordinator(); // Volver a cargar la tabla para reflejar los cambios
+                             if (modalInstanceCoordinator) { // Usa la variable de instancia que creaste una vez
+                              modalInstanceCoordinator.hide(); // Cierra el modal si está abierto
+                             }else{
+                                console.error("No se pudo cerrar el modal: la instancia no está disponible.");
+                             }
                         } else {
                             Swal.fire(
                                 "Error",
@@ -792,10 +813,8 @@ function AssignTicket() {
           }).then((result) => { // <-- ¡Aquí está el cambio clave! Manejar la Promise
               if (result.isConfirmed) { // Si el usuario hizo clic en "Sí, Recibir Ticket"
                 getTicketDataCoordinator(); // Recargar la tabla de tickets
-
-                const modalBootstrap = bootstrap.Modal.getInstance(modalElement);
-                if (modalBootstrap) {
-                  modalBootstrap.hide(); // Cerrar el modal si está abierto
+                if (modalInstanceCoordinator) {
+                  modalInstanceCoordinator.hide(); // Cerrar el modal si está abierto
                 }
               }
           });

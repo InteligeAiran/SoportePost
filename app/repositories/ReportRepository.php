@@ -2,6 +2,8 @@
 namespace App\Repositories; // Usar namespaces para organizar tus clases
 
 require_once __DIR__ . '/../models/reportsModel.php'; // Asegúrate de que el modelo de usuario esté incluido
+
+use PDO;
 use reportsModel; // Asegúrate de que tu modelo de usuario exista
 
 class ReportRepository
@@ -411,5 +413,33 @@ class ReportRepository
         return $result['row']['get_percentage_in_process_tickets'];
     }
     
-    
+    public function GetTicketsInProcess(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketsInProcess(); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
+    public function GetTicketTimeline($id_ticket){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketTimeline($id_ticket); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
 }

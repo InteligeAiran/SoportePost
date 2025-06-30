@@ -12,6 +12,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const openTicketsModalElement = document.getElementById("OpenTicketModal");
   const resolveTicketsModalElement = document.getElementById("ResolveTicketsModal");
   const sendTallerTicketsModalElement = document.getElementById("SendTallerTicketsModal"); // ¡NUEVO MODAL!
+  const processTicketModalElement = document.getElementById("ProcessTicketsModal"); // ��NUEVO MODAL!
+
 
   const ModalReparacion = document.getElementById("procesoReparacionModal"); // ��NUEVO ELEMENTO!
   const ModalReparado = document.getElementById("ReparadosModal"); // ��NUEVO ELEMENTO!
@@ -29,13 +31,14 @@ document.addEventListener("DOMContentLoaded", function () {
   let ModalReparados = null; // ��NUEVO ELEMENTO!
   let ModalPendiRepuesto = null; // ��NUEVO ELEMENTO!
   let ModalIrreparable = null; // ��NUEVO ELEMENTO!
+  let ModalprocessTicketsModalInstance = null; // ��NUEVO ELEMENTO!
+
   
 
   // --- Inicializar las instancias de los modales (UNA SOLA VEZ al cargar la página) ---
   if (monthlyTicketsModalElement) {  
     monthlyTicketsModalInstance = new bootstrap.Modal(monthlyTicketsModalElement);
   }
-
 
   if (regionTicketsModalElement) {
     regionTicketsModalInstance = new bootstrap.Modal(regionTicketsModalElement);
@@ -56,6 +59,10 @@ document.addEventListener("DOMContentLoaded", function () {
     sendTallerTicketsModalInstance = new bootstrap.Modal(
       sendTallerTicketsModalElement
     );
+  }
+
+  if(processTicketModalElement) {
+    ModalprocessTicketsModalInstance = new bootstrap.Modal(processTicketModalElement);
   }
 
   if (ModalReparacion) {
@@ -163,7 +170,12 @@ document.addEventListener("DOMContentLoaded", function () {
       loadIndividualReparado(); // Nueva función para cargar detalles del ticket de reparación
       // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
     });
+  } else {
+    console.error(
+      "OpenModalReparado o ModalReparados no encontrados."
+    );
   }
+
 
   const OpenModalPendienteRepuesto = document.getElementById("OpenModalPendienteRepuesto");
   if (OpenModalPendienteRepuesto && modalPendienteRepa) {
@@ -185,6 +197,20 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  const OpenModalProcess = document.getElementById("Card-Ticket-process");
+  if (OpenModalProcess && ModalprocessTicketsModalInstance) {
+    OpenModalProcess.addEventListener("click", function (event) {
+      event.preventDefault();
+      ModalprocessTicketsModalInstance.show();
+      loadIndividualProceess(); // Nueva función para cargar detalles del proceso de reparación
+      // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
+    }); 
+  } else {
+    console.error(
+      "OpenModalProcess o ModalProcesoReparacion no encontrados."
+    );
+  }
+  
     function forceCleanupAfterModalClose() {
 
         // Quitar la clase 'modal-open' del body si persiste
@@ -286,6 +312,22 @@ document.addEventListener("DOMContentLoaded", function () {
   if (iconTaller && sendTallerTicketsModalInstance) {
     iconTaller.addEventListener("click", function () {
       sendTallerTicketsModalInstance.hide();
+    });
+  }
+
+  // 6. Botones de cierre para processTicketModalElement (��NUEVO!)
+  const cerrarProcess = document.getElementById("ModalProcess"); // El ID de tu botón "Cerrar" en el footer
+  const iconProcess = document.getElementById("ModalProcessIcon"); // El ID de tu botón "x" en el header
+
+  if (cerrarProcess && ModalprocessTicketsModalInstance) {
+    cerrarProcess.addEventListener("click", function () {
+      ModalprocessTicketsModalInstance.hide();
+    });
+  }
+
+  if (iconProcess && ModalprocessTicketsModalInstance) {
+    iconProcess.addEventListener("click", function () {
+      ModalprocessTicketsModalInstance.hide();
     });
   }
 
@@ -466,6 +508,243 @@ function cerrarModalViewDocument(){
         });
     }
 
+}
+
+function loadIndividualProceess() {
+    const timelineModalElement = document.getElementById("TimelineModal");
+      let ModalTimelineInstance = null; // Variable para la instancia del modal de línea de tiempo
+
+        if (timelineModalElement) {
+    ModalTimelineInstance = new bootstrap.Modal(timelineModalElement);
+  }
+
+
+
+  const contentDiv = document.getElementById("ProcessTicketsContent");
+  contentDiv.innerHTML = "<p>Cargando información de los POS en Proceso..</p>";
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsInProcess`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        // Asigna el HTML directamente
+        contentDiv.innerHTML = formatProcessTicketsDetails(data.details);
+
+        // NUEVO: Delegación del evento para los botones "Ver Flujo de Trabajo"
+        // Escucha en el contenedor padre (contentDiv) y verifica si el clic fue en un botón con la clase 'view-timeline-btn'
+        contentDiv.addEventListener('click', function(event) {
+          if (event.target.classList.contains('view-timeline-btn')) {
+            const ticketId = event.target.dataset.idTicket;
+            document.getElementById('timelineTicketId').textContent = ticketId; // Establece el ID del ticket en el título del modal
+            loadTicketTimeline(ticketId);
+            ModalTimelineInstance.show();
+          }
+        });
+
+      } else {
+        contentDiv.innerHTML =
+          "<p>Error al cargar los detalles de Taller: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error(
+          "Error en los datos de la API para Taller:",
+          data.message
+        );
+      }
+    })
+    .catch((error) => {
+      contentDiv.innerHTML =
+        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
+      console.error("Error fetching taller details:", error);
+    });
+}
+
+
+function formatProcessTicketsDetails(details){
+  if (!Array.isArray(details)) {
+    console.error("Expected 'details' to be an array, but received:", details);
+    return "<p>Formato de datos inesperado.</p>";
+  }
+
+  let html = `
+        <h5>POS Irreparables</h5>
+        <div class="ticket-details-list mt-3">
+    `;
+
+  details.forEach((ticket) => {
+    // <-- ¡Corregido aquí! Ahora usa 'details'
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
+
+    html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Laboratorio:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
+                        
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.date_create_ticket
+                        }</dd> <!-- Usar la variable formateada -->
+                    </dl>
+                      <button class="btn btn-info btn-sm mt-3 view-timeline-btn" data-id-ticket="${ticket.id_ticket}">Ver Flujo del Ticket</button>
+                </div>
+            </div>
+        `;
+  });
+  return html;
+}
+
+function loadTicketTimeline(ticketId) {
+  // Usamos document.getElementById para mantener tu selección original
+  const timelineContentDiv = document.getElementById("timelineContent");
+  timelineContentDiv.innerHTML = "<p>Cargando flujo de trabajo...</p>"; // Mensaje de carga inicial
+
+  // Reemplazamos fetch con $.ajax como solicitaste
+  $.ajax({
+    // La URL es la base de tu API, sin los parámetros GET en la URL misma
+    url: `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketTimeline`,
+    type: "POST", // ¡El método es POST!
+    data: {
+      // Los datos se envían como un objeto, jQuery los formateará automáticamente
+      action: "GetTicketTimeline", // La acción que el backend esperará en $_POST['action']
+      id_ticket: ticketId, // El ID del ticket que el backend esperará en $_POST['id_ticket']
+    },
+    dataType: "json", // Esperamos una respuesta JSON
+    success: function (data) {
+      if (data.success && data.details && data.details.length > 0) {
+        // Mantiene la llamada a tu función original formatTimeline
+        timelineContentDiv.innerHTML = formatTimeline(data.details);
+      } else if (data.success && data.details && data.details.length === 0) {
+        timelineContentDiv.innerHTML = "<p>No hay historial de cambios para este ticket.</p>";
+      } else {
+        timelineContentDiv.innerHTML =
+          "<p>Error al cargar el flujo de trabajo: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error("Error en los datos de la API para el flujo de trabajo:", data.message);
+      }
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      let errorMessage = '<p>Error al cargar el flujo de trabajo.</p>';
+      if (jqXHR.status === 0) {
+        errorMessage = '<p>Error de red: No se pudo conectar al servidor.</p>';
+      } else if (jqXHR.status == 404) {
+        errorMessage = '<p>Recurso de API no encontrado. (Error 404)</p>';
+      } else if (jqXHR.status == 500) {
+        errorMessage = '<p>Error interno del servidor. (Error 500)</p>';
+      } else if (textStatus === "parsererror") {
+        errorMessage = '<p>Error al procesar la respuesta del servidor (JSON inválido).</p>';
+      } else if (textStatus === "timeout") {
+        errorMessage = '<p>Tiempo de espera agotado al cargar el flujo de trabajo.</p>';
+      } else if (textStatus === "abort") {
+        errorMessage = '<p>Solicitud de flujo de trabajo cancelada.</p>';
+      }
+      timelineContentDiv.innerHTML = errorMessage;
+      console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+    },
+  });
+}
+
+// 8. NUEVO: Función para formatear los datos de la línea de tiempo en HTML
+function formatTimeline(timelineData) {
+    let html = '<ul class="timeline">';
+    // Es buena práctica asegurarse de que los datos estén ordenados por fecha, si no lo están ya por la consulta SQL.
+    // timelineData.sort((a, b) => new Date(b.changedstatus_at) - new Date(a.changedstatus_at)); // Asegúrate de que los datos vengan en orden descendente
+
+    timelineData.forEach((item, index) => { // Importante: incluir 'index' para alternar clases
+        let changeDescription = '';
+        // Lógica para describir los cambios (status, action, lab, domiciliation, payment)
+        if (item.old_status_name && item.new_status_name && item.old_status_name !== item.new_status_name) {
+            changeDescription += `Cambio de estado: <strong>${item.old_status_name}</strong> a <strong>${item.new_status_name}</strong>. `;
+        }
+        if (item.old_action_name && item.new_action_name && item.old_action_name !== item.new_action_name) {
+            changeDescription += `Cambio de acción: <strong>${item.old_action_name}</strong> a <strong>${item.new_action_name}</strong>. `;
+        }
+        if (item.old_status_lab_name && item.new_status_lab_name && item.old_status_lab_name !== item.new_status_lab_name) {
+            changeDescription += `Cambio de estado de laboratorio: <strong>${item.old_status_lab_name}</strong> a <strong>${item.new_status_lab_name}</strong>. `;
+        }
+        if (item.old_status_domiciliation_name && item.new_status_domiciliation_name && item.old_status_domiciliation_name !== item.new_status_domiciliation_name) {
+            changeDescription += `Cambio de estado de domiciliación: <strong>${item.old_status_domiciliation_name}</strong> a <strong>${item.new_status_domiciliation_name}</strong>. `;
+        }
+        if (item.old_status_payment_name && item.new_status_payment_name && item.old_status_payment_name !== item.new_status_payment_name) {
+            changeDescription += `Cambio de estado de pago: <strong>${item.old_status_payment_name}</strong> a <strong>${item.new_status_payment_name}</strong>. `;
+        }
+        if (!changeDescription) {
+            changeDescription = 'Actualización general del ticket.'; // Si no hay un cambio específico detectado
+        }
+
+        // Formatear la fecha para la presentación en el frontend
+        const formattedDate = item.changedstatus_at ? new Date(item.changedstatus_at).toLocaleString('es-VE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }) : 'N/A';
+
+        // Determina si añadir la clase 'timeline-inverted' para alternar lados
+        // El primer elemento (index 0) será izquierdo, el segundo (index 1) derecho, etc.
+        const invertedClass = (index % 2 === 1) ? 'timeline-inverted' : '';
+
+        html += `
+            <li class="${invertedClass}">
+                <div class="timeline-badge"><i class="fa fa-check"></i></div>
+                <div class="timeline-panel">
+                    <div class="timeline-heading">
+                        <h4 class="timeline-title">Actualizado por: ${item.changedby_username || 'N/A'}</h4>
+                        <p><small class="text-muted"><i class="fa fa-clock-o"></i> ${formattedDate}</small></p>
+                    </div>
+                    <div class="timeline-body">
+                        <p>${changeDescription}</p>
+                        <p><strong>Coordinador:</strong> ${item.full_name_coordinador || 'No Asignado'}</p>
+                    </div>
+                </div>
+            </li>
+        `;
+    });
+    html += '</ul>';
+    return html;
 }
 
 function loadIndividualIrreparable(){
