@@ -756,9 +756,9 @@ function loadSubmodulesForModule(moduleId, menuElement) {
         menuElement.innerHTML = '<div class="p-2 text-danger">Error de red.</div>';
     };
 
-    const datos = `action=getSubmodulesForModule&moduleId=${encodeURIComponent(moduleId)}`;
+    const datos = `action=getSubmodulesForModule&moduleId=${encodeURIComponent(moduleId)}&id_usuario=${encodeURIComponent(id_usuario)}`;
     //console.log(moduleId);
-   // console.log(id_usuario);
+    console.log(id_usuario);
     xhrSubmodules.send(datos);
 }
 

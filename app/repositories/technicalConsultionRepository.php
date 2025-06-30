@@ -484,8 +484,8 @@ class TechnicalConsultionRepository
     }
 
 
-         public function GetSubmodulesForModule($moduleId) {
-                $result = $this->model->GetSubmodulesForModule($moduleId);
+         public function GetSubmodulesForModule($moduleId,$id_usuario) {
+                $result = $this->model->GetSubmodulesForModule($moduleId,$id_usuario);
                 if ($result) {
                     //var_dump($result);  
                     $modules = [];

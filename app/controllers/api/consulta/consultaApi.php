@@ -966,11 +966,12 @@ class Consulta extends Controller
     public function handleGetSubmodulesForModule(){
         //$moduleId = '4';
         $moduleId = isset($_POST['moduleId']) ? $_POST['moduleId'] : '';
+        $id_usuario = isset($_POST['id_usuario']) ? $_POST['id_usuario'] : '';
        // var_dump($moduleId);
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
 
         if ($moduleId != '') {
-            $result = $repository->GetSubmodulesForModule($moduleId); // Llama a la función del repositorio
+            $result = $repository->GetSubmodulesForModule($moduleId,$id_usuario); // Llama a la función del repositorio
             if ($result) {
                 $this->response(['success' => true, 'submodules' => $result], 200); // Devuelve el array de submódulos
             } else {
