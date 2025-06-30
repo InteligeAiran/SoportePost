@@ -1004,7 +1004,8 @@ class Consulta extends Controller
 
 
     public function handleGetModulesUsers(){
-        $id_usuario = '7';
+        //$id_usuario = '7';
+        $id_usuario = isset($_POST['id_usuario']) ? $_POST['id_usuario'] : '';
         //var_dump($id_usuario);
 
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio

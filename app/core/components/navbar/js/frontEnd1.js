@@ -432,6 +432,7 @@
     };
 
     const datos = `action=getModulesUsers&id_usuario=${encodeURIComponent(id_usuario)}`;
+    console.log(id_usuario);
     xhr.send(datos);
 }
 
