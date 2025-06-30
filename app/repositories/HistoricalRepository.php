@@ -24,4 +24,16 @@ class HistoricalRepository
             return [];
         }
     }
+
+    public function MarkTicketReceived($id_ticket, $id_user){
+        // Lógica para marcar un ticket como recibido
+        $result = $this->model->MarkTicketReceived($id_ticket, $id_user);
+        return $result;
+    }
+
+    public function MarkTicketReceivedTechnical($id_ticket, $id_user){
+        // Lógica para marcar un ticket como recibido por el técnico
+        $result = $this->model->MarkTicketReceivedTechnical($id_ticket, $id_user);
+        return $result;
+    }
 }

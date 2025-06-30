@@ -7,18 +7,11 @@
 
 document.addEventListener("DOMContentLoaded", function () {
   // --- Referencias a los elementos HTML de los Modales ---
-  const monthlyTicketsModalElement = document.getElementById(
-    "monthlyTicketsModal"
-  );
-  const regionTicketsModalElement =
-    document.getElementById("RegionTicketsModal");
+  const monthlyTicketsModalElement = document.getElementById("monthlyTicketsModal");
+  const regionTicketsModalElement = document.getElementById("RegionTicketsModal");
   const openTicketsModalElement = document.getElementById("OpenTicketModal");
-  const resolveTicketsModalElement = document.getElementById(
-    "ResolveTicketsModal"
-  );
-  const sendTallerTicketsModalElement = document.getElementById(
-    "SendTallerTicketsModal"
-  ); // ¡NUEVO MODAL!
+  const resolveTicketsModalElement = document.getElementById("ResolveTicketsModal");
+  const sendTallerTicketsModalElement = document.getElementById("SendTallerTicketsModal"); // ¡NUEVO MODAL!
 
   const ModalReparacion = document.getElementById("procesoReparacionModal"); // ��NUEVO ELEMENTO!
   const ModalReparado = document.getElementById("ReparadosModal"); // ��NUEVO ELEMENTO!
@@ -36,13 +29,13 @@ document.addEventListener("DOMContentLoaded", function () {
   let ModalReparados = null; // ��NUEVO ELEMENTO!
   let ModalPendiRepuesto = null; // ��NUEVO ELEMENTO!
   let ModalIrreparable = null; // ��NUEVO ELEMENTO!
+  
 
   // --- Inicializar las instancias de los modales (UNA SOLA VEZ al cargar la página) ---
-  if (monthlyTicketsModalElement) {
-    monthlyTicketsModalInstance = new bootstrap.Modal(
-      monthlyTicketsModalElement
-    );
+  if (monthlyTicketsModalElement) {  
+    monthlyTicketsModalInstance = new bootstrap.Modal(monthlyTicketsModalElement);
   }
+
 
   if (regionTicketsModalElement) {
     regionTicketsModalInstance = new bootstrap.Modal(regionTicketsModalElement);
@@ -192,6 +185,24 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+    function forceCleanupAfterModalClose() {
+
+        // Quitar la clase 'modal-open' del body si persiste
+        if (document.body.classList.contains('modal-open')) {
+            document.body.classList.remove('modal-open');
+            // Restablecer overflow y padding-right si fueron modificados por Bootstrap
+            document.body.style.overflow = ''; 
+            document.body.style.paddingRight = ''; 
+        }
+
+        // Eliminar cualquier backdrop residual que tenga la clase 'show' (visible)
+        const backdrops = document.querySelectorAll('.modal-backdrop.show');
+        if (backdrops.length > 0) {
+            backdrops.forEach(backdrop => {
+                backdrop.remove();
+            });
+        }
+    }
   // --- Event Listeners para CERRAR Modales (desde botones dentro del modal) ---
 
   // 1. Botones de cierre para monthlyTicketsModal
@@ -231,16 +242,20 @@ document.addEventListener("DOMContentLoaded", function () {
   const iconOpen = document.getElementById("ModalOpenIcon");
 
   if (cerrarOpen && openTicketsModalInstance) {
-    cerrarOpen.addEventListener("click", function () {
-      openTicketsModalInstance.hide();
-    });
-  }
+        cerrarOpen.addEventListener("click", function () {
+            openTicketsModalInstance.hide();
+            // AÑADE ESTE CÓDIGO AQUÍ PARA QUE SE EJECUTE AL CLIC DEL BOTÓN "Cerrar"
+            forceCleanupAfterModalClose();
+        });
+    }
 
-  if (iconOpen && openTicketsModalInstance) {
-    iconOpen.addEventListener("click", function () {
-      openTicketsModalInstance.hide();
-    });
-  }
+    if (iconOpen && openTicketsModalInstance) {
+        iconOpen.addEventListener("click", function () {
+            openTicketsModalInstance.hide();
+            // AÑADE ESTE CÓDIGO AQUÍ PARA QUE SE EJECUTE AL CLIC DEL ICONO "X"
+            forceCleanupAfterModalClose();
+        });
+    }
 
   // 4. Botones de cierre para ResolveTicketsModal
   const cerrarResolve = document.getElementById("ModalResolveRegion");
@@ -413,6 +428,45 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+
+function cerrarModalViewDocument(){
+  const ModalViewImageElement = document.getElementById("viewDocumentModal"); // Modal para ver documentos de tickets
+  let ModalView = null; // Modal para ver imagenes de tickets
+
+  if (ModalViewImageElement) {
+    ModalView = new bootstrap.Modal(ModalViewImageElement);
+  }
+
+  const CerrarModalView = document.getElementById("CerrarBotonImage");
+  const IconModalView = document.getElementById("IconModalviewClose");
+
+  if (CerrarModalView && ModalView) {
+        CerrarModalView.addEventListener("click", function () {
+          ModalViewImageElement.style.display = "none"; // Oculta el modal
+             const backdrops = document.querySelectorAll('.modal-backdrop.show');
+        if (backdrops.length > 0) {
+            backdrops.forEach(backdrop => {
+                backdrop.remove();
+            });
+        }
+        });
+    }
+
+    if (IconModalView && ModalView) {
+        IconModalView.addEventListener("click", function () {
+                    ModalViewImageElement.style.display = "none"; // Oculta el modal
+
+            const backdrops = document.querySelectorAll('.modal-backdrop.show');
+        if (backdrops.length > 0) {
+            backdrops.forEach(backdrop => {
+                backdrop.remove();
+            });
+        }
+        });
+    }
+
+}
 
 function loadIndividualIrreparable(){
   const contentDiv = document.getElementById("IrreparableTikModalTicketsContent");
@@ -1778,128 +1832,412 @@ document.addEventListener("DOMContentLoaded", function () {
       "No se encontraron los elementos TicketsOpenCard o OpenTicketsModalElement."
     );
   }
-
-  // --- Lógica para los botones de cierre ---
-  // Obtén la referencia a los botones de cierre
-  const cerrarBoton = document.getElementById("ModalOpen"); // El botón "Cerrar" en el footer
-  const iconoCerrar = document.getElementById("ModalOpenIcon"); // El botón "x" en el header
-
-  // Asegúrate de que la instancia del modal ya haya sido creada antes de intentar usarla
-  if (OpenTicketsModalInstance) {
-    if (cerrarBoton) {
-      cerrarBoton.addEventListener("click", function () {
-        OpenTicketsModalInstance.hide();
-      });
-    }
-
-    if (iconoCerrar) {
-      iconoCerrar.addEventListener("click", function () {
-        OpenTicketsModalInstance.hide();
-      });
-    }
-  } else {
-    console.error(
-      "La instancia de OpenTicketsModal no está disponible para los botones de cierre."
-    );
-  }
 });
 
-function loadOpenTicketDetails() {
-  const contentDiv = document.getElementById("OpenTicketModalContent");
-  contentDiv.innerHTML = "<p>Cargando información De tickets Abiertos...</p>"; // Mensaje de carga
+// Variable para almacenar todos los tickets cargados (sin filtrar)
+let allOpenTickets = [];
 
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketOpenDetails`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (data.success) {
-        contentDiv.innerHTML = formatOpenDetails(data.details); // Renderizar los datos
-      } else {
-        contentDiv.innerHTML =
-          "<p>Error al cargar los detalles regionales: " +
-          (data.message || "Error desconocido") +
-          "</p>";
-        console.error(
-          "Error en los datos de la API para regiones:",
-          data.message
-        );
-      }
-    })
-    .catch((error) => {
-      contentDiv.innerHTML =
-        "<p>Error de red al cargar los detalles regionales. Por favor, intente de nuevo más tarde.</p>";
-      console.error("Error fetching regional details:", error);
+// Función para cargar los detalles de los tickets abiertos
+function loadOpenTicketDetails() {
+    const contentDiv = document.getElementById("OpenTicketModalContent");
+    const searchInput = document.getElementById("ticketSearchInput");
+
+    contentDiv.innerHTML = "<p>Cargando información de tickets Abiertos...</p>"; // Mensaje de carga
+    searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketOpenDetails`)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (data.success) {
+                allOpenTickets = data.details; // Almacenar todos los tickets
+                displayFilteredTickets(allOpenTickets); // Mostrar todos al principio
+                attachMarkReceivedListeners(); // Adjuntar listeners a los botones "Marcar como Recibido"
+
+                // Añadir event listener para el input de búsqueda
+                searchInput.removeEventListener('input', handleTicketSearch); // Eliminar listener previo si existe
+                searchInput.addEventListener('input', handleTicketSearch); // Adjuntar nuevo listener
+            } else {
+                contentDiv.innerHTML =
+                    "<p>Error al cargar los detalles de tickets: " +
+                    (data.message || "Error desconocido") +
+                    "</p>";
+                console.error(
+                    "Error en los datos de la API para tickets abiertos:",
+                    data.message
+                );
+                allOpenTickets = []; // Limpiar por si hubo error
+                searchInput.removeEventListener('input', handleTicketSearch);
+            }
+        })
+        .catch((error) => {
+            contentDiv.innerHTML =
+                "<p>Error de red al cargar los detalles de tickets. Por favor, intente de nuevo más tarde.</p>";
+            console.error("Error fetching open ticket details:", error);
+            allOpenTickets = []; // Limpiar por si hubo error
+            searchInput.removeEventListener('input', handleTicketSearch);
+        });
+}
+
+// NUEVA función para manejar la búsqueda en tiempo real
+function handleTicketSearch() {
+    const searchTerm = this.value.toLowerCase().trim(); // Obtener el texto del input y normalizarlo
+    let filteredTickets = [];
+
+    if (searchTerm === '') {
+        filteredTickets = allOpenTickets; // Si está vacío, mostrar todos
+    } else {
+        filteredTickets = allOpenTickets.filter(ticket => {
+            // Convierte todos los campos relevantes a minúsculas para la comparación
+            return (
+                ticket.serial_pos_cliente.toLowerCase().includes(searchTerm) ||
+                ticket.razon_social_cliente.toLowerCase().includes(searchTerm) ||
+                ticket.rif_cliente.toLowerCase().includes(searchTerm) ||
+                ticket.name_modelopos_cliente.toLowerCase().includes(searchTerm) ||
+                ticket.status_name_ticket.toLowerCase().includes(searchTerm) ||
+                ticket.name_accion_ticket.toLowerCase().includes(searchTerm) ||
+                ticket.date_create_ticket.toLowerCase().includes(searchTerm)
+            );
+        });
+    }
+    displayFilteredTickets(filteredTickets); // Mostrar los tickets filtrados
+}
+
+// Función para mostrar los tickets (llamada por loadOpenTicketDetails y handleTicketSearch)
+function displayFilteredTickets(ticketsToDisplay) {
+    const contentDiv = document.getElementById("OpenTicketModalContent");
+    if (!ticketsToDisplay || ticketsToDisplay.length === 0) {
+        contentDiv.innerHTML = "<p>No se encontraron tickets con los criterios de búsqueda.</p>";
+        return;
+    }
+    contentDiv.innerHTML = formatOpenDetails(ticketsToDisplay);
+    attachMarkReceivedListeners(); // Volver a adjuntar listeners después de cada renderizado
+    attachViewDocumentListeners(); // Adjuntar listeners a los botones de ver documento
+}
+
+
+// Asegúrate de que esta función esté definida en el ámbito global (no dentro de otro bloque)
+// Asegúrate de que esta función esté definida globalmente
+function handleViewDocumentClick() {
+    const ticketId = this.dataset.ticketId;
+
+    // Obtener referencias a los elementos del modal de vista previa
+    const viewDocumentModal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
+    const viewModalTicketIdSpan = document.getElementById('viewModalTicketId');
+    const imageViewPreview = document.getElementById('imageViewPreview');
+    const pdfViewViewer = document.getElementById('pdfViewViewer');
+    const viewDocumentMessage = document.getElementById('viewDocumentMessage');
+
+    // Limpiar el contenido previo y ocultar elementos
+    viewModalTicketIdSpan.textContent = ticketId; // Actualiza el ID del ticket en el modal
+    imageViewPreview.style.display = 'none'; // Oculta la imagen
+    imageViewPreview.src = '#'; // Limpia la fuente de la imagen
+    pdfViewViewer.style.display = 'none'; // Oculta el visor de PDF
+    pdfViewViewer.innerHTML = ''; // Limpia el contenido del visor de PDF
+    viewDocumentMessage.style.display = 'none'; // Oculta mensajes
+    viewDocumentMessage.innerHTML = '';
+
+    // Muestra el modal de carga mientras se busca el documento
+    Swal.fire({
+        title: 'Cargando documento...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/getAttachments`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.responseType = 'blob'; // Esperamos una respuesta binaria (el archivo)
+
+    xhr.onload = function () {
+        Swal.close(); // Cerrar el mensaje de carga de Swal
+
+        if (xhr.status === 200) { // Si la solicitud fue exitosa (código 200)
+            const blob = xhr.response; // El archivo binario es el response del XHR
+            const mimeType = blob.type; // Obtiene el tipo MIME del Blob (ej. "image/png", "application/pdf")
+            const fileUrl = URL.createObjectURL(blob); // Crea una URL temporal en el navegador para el Blob
+
+            viewDocumentModal.show(); // Muestra el modal de visualización del documento
+
+            if (mimeType.startsWith('image/')) {
+                // Si es una imagen
+                imageViewPreview.src = fileUrl;
+                imageViewPreview.style.display = 'block';
+            } else if (mimeType === 'application/pdf') {
+                // Si es un PDF
+                const iframe = document.createElement('iframe');
+                iframe.src = fileUrl;
+                iframe.width = '100%';
+                iframe.height = '100%';
+                iframe.style.border = 'none';
+                pdfViewViewer.appendChild(iframe);
+                pdfViewViewer.style.display = 'block';
+            } else {
+                // Para otros tipos de archivos no directamente visualizables
+                viewDocumentMessage.innerHTML = `Tipo de archivo no compatible para vista previa: <strong>${mimeType}</strong>. <a href="${fileUrl}" target="_blank" download="documento">Haz clic aquí para descargar.</a>`;
+                viewDocumentMessage.style.display = 'block';
+            }
+        } else { // Si hubo un error (xhr.status no es 200, ej. 400, 404, 500)
+            // Intentar leer la respuesta como texto para ver si es un JSON de error
+            // Necesitamos un FileReader porque xhr.responseType fue 'blob'
+            const reader = new FileReader();
+            reader.onload = function() {
+                let errorMessage = `Error al obtener el documento: ${xhr.status} ${xhr.statusText}`;
+                try {
+                    const errorResponse = JSON.parse(reader.result);
+                    errorMessage = `<p>Error del servidor: ${errorResponse.message || 'Error desconocido'}</p>`;
+                } catch (e) {
+                    // No es JSON, o el JSON es inválido, usar el error HTTP genérico
+                    console.error("No es una respuesta JSON de error válida o error de parseo:", reader.result, e);
+                }
+                viewDocumentMessage.innerHTML = errorMessage;
+                viewDocumentMessage.style.display = 'block';
+                viewDocumentModal.show(); // Mostrar el modal con el mensaje de error
+                console.error("Respuesta de error:", xhr.status, xhr.statusText, reader.result);
+            };
+            // Si xhr.response es un Blob (aunque sea un Blob de error), léelo como texto
+            // Si el error de la API no devuelve un Blob (ej. se cuelga), xhr.response podría ser null
+            if (xhr.response) {
+                reader.readAsText(xhr.response);
+            } else {
+                // Si no hay respuesta blob, muestra un mensaje de error genérico
+                viewDocumentMessage.innerHTML = `<p>Error al obtener el documento: ${xhr.status} ${xhr.statusText}. No se recibió respuesta.</p>`;
+                viewDocumentMessage.style.display = 'block';
+                viewDocumentModal.show();
+                console.error("No se recibió respuesta del servidor para el error.");
+            }
+        }
+    };
+
+    xhr.onerror = function () {
+        Swal.close();
+        console.error("Network error for attachments request.");
+        viewDocumentMessage.innerHTML = '<p>Error de red al intentar obtener los documentos adjuntos.</p>';
+        viewDocumentMessage.style.display = 'block';
+        viewDocumentModal.show();
+    };
+
+    // Serializar los datos a una cadena URL-encoded
+    const dataToSend = `case=getAttachments&ticketId=${encodeURIComponent(ticketId)}`;
+    xhr.send(dataToSend); // Envía la cadena
+}
+
+// Evento para limpiar el modal cuando se oculta
+const viewDocumentModalElement = document.getElementById('viewDocumentModal');
+if (viewDocumentModalElement) {
+    viewDocumentModalElement.addEventListener('hidden.bs.modal', function () {
+        // Revocar la URL del objeto Blob para liberar memoria
+        const currentImageUrl = imageViewPreview.src;
+        const currentPdfUrl = pdfViewViewer.querySelector('iframe') ? pdfViewViewer.querySelector('iframe').src : null;
+
+        if (currentImageUrl && currentImageUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(currentImageUrl);
+        }
+        if (currentPdfUrl && currentPdfUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(currentPdfUrl);
+        }
+
+        // Limpiar elementos
+        imageViewPreview.style.display = 'none';
+        imageViewPreview.src = '#';
+        pdfViewViewer.style.display = 'none';
+        pdfViewViewer.innerHTML = '';
+        viewDocumentMessage.style.display = 'none';
+        viewDocumentMessage.innerHTML = '';
     });
 }
 
+// Asegúrate de que esta función exista y sea llamada después de cargar los tickets
 function formatOpenDetails(details) {
-  if (!Array.isArray(details)) {
-    console.error("Expected 'details' to be an array, but received:", details);
-    return "<p>Formato de datos inesperado.</p>";
-  }
+      // Asegúrate de definir la variable currentUserRole en tu HTML antes de este script, por ejemplo:
+      // 
+      // O si el valor es numérico, sin comillas.
+      //1 = SuperAdmin 
+      //4 = Coordinador 
+      //3 = Tecnico
+      const showDocumentButtons = (currentUserRole === 1 || currentUserRole === 4 || currentUserRole === 3); // Rol de administrador o superadministrador;
 
-  let html = `
-        <h5>Tickets Abiertos</h5>
-        <div class="ticket-details-list mt-3">
-    `;
+    if (!details || details.length === 0) {
+        return "<p>No hay tickets abiertos disponibles.</p>";
+    }
 
-  details.forEach((ticket) => {
-    // <-- ¡Corregido aquí! Ahora usa 'details'
-    // Formatear la fecha de creación del ticket para una mejor visualización
-    const creationDate = ticket.date_create_ticket
-      ? new Date(ticket.date_create_ticket).toLocaleString()
-      : "N/A";
+    let htmlContent = '';
 
-    html += `
+    details.forEach(ticket => {
+        let documentButtonsHtml = '';
+        let markReceivedButtonHtml = ''; // Variable para el botón "Marcar como Recibido"
+
+        const statusPaymentId = parseInt(ticket.id_status_payment, 10);
+
+        // Los IDs de status_payment 10, 11, 1 y 3 se asocian con botones de "ver documento".
+        // El `data-ticket-id` se usa para pasar el ID del ticket a `handleViewDocumentClick`.
+      if (showDocumentButtons) {
+          if (statusPaymentId === 10) { 
+              documentButtonsHtml = `
+                  <button class="btn btn-info btn-sm view-document-btn"
+                          data-ticket-id="${ticket.id_ticket}">
+                      Mostrar Documento de Envio ZOOM
+                  </button>
+              `;
+          } else if (statusPaymentId === 11) { 
+              documentButtonsHtml = `
+                  <button class="btn btn-info btn-sm view-document-btn"
+                          data-ticket-id="${ticket.id_ticket}">
+                      Mostrar Pago/Exoneración
+                  </button>
+              `;
+          } else if (statusPaymentId === 1 || statusPaymentId === 3) {
+              documentButtonsHtml = `
+                  <button class="btn btn-info btn-sm view-document-btn"
+                          data-ticket-id="${ticket.id_ticket}">
+                      Mostrar Documento Envío
+                  </button>
+              `;
+          }
+        }
+
+        ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
+          if (currentUserRole === 1 || currentUserRole === 4) { 
+            markReceivedButtonHtml = `
+              <button type="button" class="btn btn-success ms-2 mark-received-btn" id="mark-received-btn-${ticket.id_ticket}">
+                Marcar como Recibido
+              </button>
+            `;
+          }
+        ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
+
+        
+        htmlContent += `
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                    Ticket #<strong>${ticket.id_ticket || 'N/A'}</strong>
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
                         <dt class="col-sm-4">Serial POS:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.serial_pos_cliente || "N/A"
-                        }</dd>
+                        <dd class="col-sm-8">${ticket.serial_pos_cliente || 'N/A'}</dd>
 
                         <dt class="col-sm-4">Razón Social Cliente:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.razon_social_cliente || "N/A"
-                        }</dd>
+                        <dd class="col-sm-8">${ticket.razon_social_cliente || 'N/A'}</dd>
 
                         <dt class="col-sm-4">Rif Cliente:</dt>
-                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+                        <dd class="col-sm-8">${ticket.rif_cliente || 'N/A'}</dd>
 
                         <dt class="col-sm-4">Modelo POS:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_modelopos_cliente || "N/A"
-                        }</dd>
+                        <dd class="col-sm-8">${ticket.name_modelopos_cliente || 'N/A'}</dd>
+
+                        <dt class="col-sm-4">Documentos:</dt>
+                        <dd class="col-sm-8">${ticket.name_status_payment || 'N/A'}</dd>
 
                         <dt class="col-sm-4">Estado Ticket:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.status_name_ticket || "N/A"
-                        }</dd>
+                        <dd class="col-sm-8">${ticket.status_name_ticket || 'N/A'}</dd>
 
-                        <dt class="col-sm-4">Accion Ticket:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_accion_ticket || "N/A"
-                        }</dd>
+                        <dt class="col-sm-4">Acción Ticket:</dt>
+                        <dd class="col-sm-8">${ticket.name_accion_ticket || 'N/A'}</dd>
                         
                         <dt class="col-sm-4">Fecha Creación:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.date_create_ticket
-                        }</dd> <!-- Usar la variable formateada -->
+                        <dd class="col-sm-8">${ticket.date_create_ticket || 'N/A'}</dd>
                     </dl>
+                    
+                     <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
+                        ${documentButtonsHtml}
+                        ${markReceivedButtonHtml}
+                    </div>
                 </div>
             </div>
         `;
-  });
-  return html;
+    });
+
+    return htmlContent;
 }
+
+
+// Nueva función para adjuntar listeners a los botones de ver documento
+// Es CRUCIAL que esta función se llame CADA VEZ que el contenido de los tickets se recarga en el DOM.
+function attachViewDocumentListeners() {
+    // Selecciona todos los botones con la clase 'view-document-btn' dentro del contenedor de tickets abiertos
+    const viewDocumentButtons = document.querySelectorAll("#OpenTicketModalContent .view-document-btn");
+
+    viewDocumentButtons.forEach(button => {
+        // Es una buena práctica remover el listener antes de añadirlo para evitar duplicados,
+        // especialmente si esta función se llama varias veces (ej. al recargar la lista de tickets).
+        button.removeEventListener('click', handleViewDocumentClick); // Remover si ya existe
+        button.addEventListener('click', handleViewDocumentClick); // Adjuntar el nuevo
+    });
+}
+
+
+// NUEVA función para adjuntar los event listeners (reconfirmada)
+function attachMarkReceivedListeners() {
+    // Eliminar listeners previos para evitar duplicados si se llama varias veces
+    document.querySelectorAll('.mark-received-btn').forEach(button => {
+        button.removeEventListener('click', handleMarkTicketReceivedClick);
+    });
+    // Adjuntar nuevos listeners
+    document.querySelectorAll('.mark-received-btn').forEach(button => {
+        button.addEventListener('click', handleMarkTicketReceivedClick);
+    });
+}
+
+// Wrapper para pasar el ticketId directamente
+function handleMarkTicketReceivedClick() {
+    const ticketId = this.dataset.ticketId;
+    handleMarkTicketReceived(ticketId);
+}
+
+// Función para manejar la lógica de marcar como recibido (como antes)
+async function handleMarkTicketReceived(ticketId) {
+    if (!confirm(`¿Estás seguro de que quieres marcar el Ticket #${ticketId} como recibido?`)) {
+        return; // El usuario canceló
+    }
+
+    try {
+        const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/tickets/markReceived`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ticket_id: ticketId })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            alert(`Ticket #${ticketId} marcado como recibido exitosamente.`);
+            $('#OpenTicketModal').modal('hide'); // Cierra el modal
+            loadOpenTicketDetails(); // Recarga los tickets abiertos para reflejar el cambio
+            // También podrías necesitar recargar el conteo de tickets si tienes un dashboard
+        } else {
+            alert(`Error al marcar el Ticket #${ticketId} como recibido: ${data.message || 'Error desconocido'}`);
+            console.error('Error marking ticket received:', data.message);
+        }
+    } catch (error) {
+        alert('Error de red al intentar marcar el ticket como recibido.');
+        console.error('Network error marking ticket received:', error);
+    }
+}
+
+
+// Asegúrate de que loadOpenTicketDetails se llama cuando el modal se muestra.
+// Si ya tienes un trigger para abrir el modal, añade esto:
+$('#OpenTicketModal').on('show.bs.modal', function (e) {
+    loadOpenTicketDetails();
+});
+
+// O si el modal se abre con un clic en tu tarjeta de "Tickets Abiertos":
+document.getElementById('Card-Ticket-open').addEventListener('click', function() {
+    loadOpenTicketDetails();
+    // Asumiendo que ya tienes la lógica para abrir el modal,
+    // por ejemplo, con data-bs-toggle="modal" data-bs-target="#OpenTicketModal"
+    // en tu HTML, esta línea no sería necesaria aquí.
+    // Si lo abres con JS, asegúrate de llamar a $('#OpenTicketModal').modal('show');
+});
 
 function getTicketPercentage() {
   const xhr = new XMLHttpRequest();

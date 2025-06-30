@@ -172,12 +172,13 @@ class UserRepository
         return $result;
     }
 
-    public function GetSession($session_id){
-        // Lógica para obtener una sesión por su ID
-        $result = $this->model->GetSession($_SESSION['id_user'], $session_id); // Asumiendo que tienes este método en tu modelo
-        //var_dump($result);
-        return $result ? $result['numRows'] : null;;
-    }
+    public function GetSession($id_user_from_controller, $session_id){ // Renombro el parámetro para mayor claridad
+    // Lógica para obtener una sesión por su ID
+    // Ahora pasamos el $id_user_from_controller que ya recibimos
+    $result = $this->model->GetSession($id_user_from_controller, $session_id);
+    //var_dump($result); // Para depuración
+    return $result ? $result['numRows'] : 0; // Asegúrate de retornar 0 si no hay resultados, no null.
+}
 
     public function InsertSession($session_id, $start_date, $user_agent, $ip_address, $active, $expiry_time){
         // Lógica para insertar una sesión
@@ -244,4 +245,17 @@ public function AsignacionSubModulo($id_modulo, $id_submodulo, $id_usuario,$idch
         $result = $this->model->getEmailByUsername($username); // Asumiendo que tienes este método en tu modelo
         return $result['row']['email']; // Devuelve el correo electrónico o null si no se encuentra
     }
+
+    public function InvalidateAllSessionsForUser($userId) {
+    // Llama al método del modelo para invalidar sesiones
+        return $this->model->InvalidateAllSessionsForUser($userId);
+    }
+
+      public function IsSessionActuallyActive($sessionId, $userId) {
+        // Llama al método del modelo para verificar el estado de la sesión
+        return $this->model->IsSessionActuallyActive($sessionId, $userId);
+    }
+
+// Y InsertSession
+   
 }

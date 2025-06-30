@@ -169,6 +169,9 @@ class Consulta extends Controller
                 case 'getModulesUsers':
                     $this->handleGetModulesUsers();
                     break;    
+                case 'getAttachments':
+                    $this->handleGetAttachments();
+                    break;
 
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
@@ -542,6 +545,7 @@ class Consulta extends Controller
     if (isset($result['success']) && $result['success']) {
         $idTicketCreado = $result['id_ticket_creado'];
         $ticket_status_info = $result['status_info']; // Directamente del modelo/repositorio
+        $ticket_status_info_payment = $result['status_payment_info'] ?? null; // Información del estado de pago, si está disponible
 
         // Determinar el texto y ID del estado
         $status_text = 'Estado Desconocido';
@@ -549,6 +553,13 @@ class Consulta extends Controller
         if ($ticket_status_info) {
             $status_id = $ticket_status_info['id_status_ticket'] ?? null;
             $status_text = $ticket_status_info['name_status_ticket'] ?? 'Estado Desconocido';
+        }
+
+        if ($ticket_status_info_payment) {
+            $status_payment_text = 'Estado de Pago Desconocido';
+            if ($ticket_status_info_payment) {
+                $status_payment_text = $ticket_status_info_payment['name_status_payment']?? 'Estado de Pago Desconocido';
+            }
         }
 
         // 6. Configurar y Crear la Estructura de Carpetas de Archivos
@@ -647,7 +658,8 @@ class Consulta extends Controller
                 'coordinador' => $coordinador_nombre,
                 'id_ticket_creado' => $idTicketCreado, // Incluye el ID del ticket
                 'status_id' => $status_id,             // Incluye el ID del estado
-                'status_text' => $status_text          // **¡El nombre del estado aquí!**
+                'status_text' => $status_text,          // **¡El nombre del estado aquí!**
+                'status_payment' => $status_payment_text
             ]
         ], 200);
         return;
@@ -991,6 +1003,60 @@ class Consulta extends Controller
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+     public function handleGetAttachments(){
+        // Recupera el ticketId enviado por POST
+        $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
+
+        // Validación: Si no se proporciona el ticketId, devuelve un error 400 Bad Request.
+        if (!$ticketId) {
+            $this->response(['success' => false, 'message' => 'ID de ticket requerido.'], 400); 
+            return; // Termina la ejecución aquí
+        }
+
+        // Instancia de tu repositorio para obtener los detalles del adjunto
+        $repository = new technicalConsultionRepository();
+        $attachments = $repository->getTicketAttachmentsDetails($ticketId); // Esto debería devolver un array de adjuntos
+
+        // Si no se encontraron adjuntos o hubo un error en la base de datos
+        if ($attachments === false || empty($attachments)) {
+            $this->response(['success' => false, 'message' => 'No se encontraron adjuntos para este ticket o error en la base de datos.'], 404);
+            return; // Termina la ejecución aquí
+        }
+
+        // Asume que solo necesitas el primer adjunto (como en tu ejemplo de JSON)
+        $attachment = $attachments[0]; 
+        $filePath = $attachment['file_path']; // Ruta física del archivo en el servidor (ej. C:\uploads_tickets\...)
+        $mimeType = $attachment['mime_type']; // Tipo MIME del archivo (ej. application/pdf, image/jpeg)
+        $originalFilename = $attachment['original_filename']; // Nombre original del archivo
+
+        // Verifica si el archivo realmente existe en la ruta física
+        if (file_exists($filePath)) {
+            // Limpia cualquier buffer de salida existente para evitar problemas de encabezado
+            if (ob_get_level()) {
+                ob_end_clean();
+            }
+
+            // Establece los encabezados HTTP para servir el archivo
+            header('Content-Description: File Transfer');
+            header('Content-Type: ' . $mimeType); // Importante: indica al navegador el tipo de contenido
+            // 'inline' sugiere al navegador que intente mostrar el archivo en línea
+            // 'attachment' forzaría una descarga
+            header('Content-Disposition: inline; filename="' . basename($originalFilename) . '"');
+            header('Expires: 0'); // No almacenar en caché
+            header('Cache-Control: must-revalidate'); // Revalidar caché
+            header('Pragma: public'); // Para compatibilidad con versiones anteriores de HTTP 1.0
+            header('Content-Length: ' . filesize($filePath)); // Tamaño del archivo en bytes
+
+            // Lee el contenido del archivo y lo envía directamente al cliente
+            readfile($filePath);
+            exit(); // ¡CRÍTICO! Termina la ejecución del script PHP aquí para que no se envíe nada más (ej. HTML extra o JSON)
+        } else {
+            // Error: El archivo no se encontró en el disco, aunque la DB lo listaba
+            $this->response(['success' => false, 'message' => 'El archivo asociado no fue encontrado en el servidor. ' . $filePath], 404); // Puedes incluir $filePath para depurar
+            return; // Termina la ejecución aquí
         }
     }
     

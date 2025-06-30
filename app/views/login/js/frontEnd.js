@@ -77,20 +77,11 @@ function SendForm() {
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
-                    //userId = response.id_user; // Almacena el ID del usuario
-                    //localStorage.setItem('userId', userId); // Guarda el userId en localStorage
-                    //alert('userId: ' + userId); // Muestra el ID del usuario en una alerta
+                    // Si response.success es true y no es un 409, siempre redirige
+                    // El mensaje de 'ya existe una sesión activa.' debe ser manejado por el 409
                     window.location.href = response.redirect;
-                    if (response.message === 'ya existe una sesión activa.') {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Sesión activa detectada',
-                            text: response.message,
-                            color: 'black'
-                        });
-                    }
-                    // No necesitas otra alerta de "éxito" aquí si solo rediriges
                 } else {
+                    // Manejar otros casos donde success es false (ej. credenciales incorrectas, etc.)
                     Swal.fire({
                         icon: 'error',
                         title: 'No se puede iniciar sesión',
@@ -109,14 +100,94 @@ function SendForm() {
                 });
             }
         } else if (xhr.status === 409) { // Manejar el código de estado 409 (Conflicto - Sesión activa)
-            //console.log(xhr.responseText);
             try {
                 const response = JSON.parse(xhr.responseText);
+                // Aquí, y solo aquí, se muestra la alerta con la opción de forzar sesión
                 Swal.fire({
                     icon: 'warning',
                     title: 'Sesión activa detectada',
-                    text: response.message,
-                    color: 'black'
+                    text: response.message + ' ¿Deseas cerrar la sesión anterior y abrir una nueva?',
+                    color: 'black',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0000ff',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, Abrir Nueva Sesión',
+                    cancelButtonText: 'No, Mantener Anterior'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const forceLoginXHR = new XMLHttpRequest();
+                        forceLoginXHR.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/access`);
+                        forceLoginXHR.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                        
+                        forceLoginXHR.onload = function() {
+                            if (forceLoginXHR.status >= 200 && forceLoginXHR.status < 300) {
+                                try {
+                                    const forceResponse = JSON.parse(forceLoginXHR.responseText);
+                                  if (forceResponse.success) {
+                                        Swal.fire({
+                                            title: '¡Sesión Cerrada y Abierta!', // Título
+                                            text: 'La sesión anterior ha sido cerrada y se ha iniciado una nueva.', // Mensaje
+                                            icon: 'success', // Icono
+                                            // Para el color del texto, se recomienda usar customClass y CSS:
+                                            // customClass: {
+                                            //     popup: 'my-swal-popup-black-text' // Define esta clase en tu CSS
+                                            // },
+                                            // En tu CSS: .my-swal-popup-black-text { color: black; }
+
+                                            // Si el color 'black' era para el título, puedes usar:
+                                            color: 'black', // Esto cambia el color del texto del título.
+
+                                            confirmButtonText: 'Ok', // Texto del botón de confirmación
+                                            confirmButtonColor: '#0000ff' // Color del botón de confirmación
+                                        }).then(() => {
+                                            // Esta función se ejecuta después de que el usuario hace clic en "Ok"
+                                            window.location.href = forceResponse.redirect;
+                                        });
+                                    } else {
+                                        Swal.fire(
+                                            'Error al Forzar Sesión',
+                                            forceResponse.message || 'No se pudo iniciar una nueva sesión.',
+                                            'error'
+                                        );
+                                    }
+                                } catch (e) {
+                                    console.error('Error parsing JSON for force login (409):', e);
+                                    Swal.fire(
+                                        'Error',
+                                        'Problema al procesar la respuesta de forzar inicio de sesión (409).',
+                                        'error'
+                                    );
+                                }
+                            } else {
+                                Swal.fire(
+                                    'Error',
+                                    'No se pudo conectar con el servidor para forzar el inicio de sesión (409).',
+                                    'error'
+                                );
+                            }
+                        };
+
+                        forceLoginXHR.onerror = function() {
+                            Swal.fire(
+                                'Error de Red',
+                                'No se pudo completar la solicitud para forzar el inicio de sesión (409).',
+                                'error'
+                            );
+                        };
+
+                        const forceDatos = `action=access&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&force_new_session=true`;
+                        forceLoginXHR.send(forceDatos);
+
+                    } else {
+                         Swal.fire({ // <-- Inicia un objeto para las opciones
+                            icon: 'info', // El icono ya está bien
+                            title: 'Operación Cancelada', // El título ya está bien
+                            text: 'Se mantendrá la sesión anterior activa.', // El texto ya está bien
+                            color: 'black', // <-- Esto es una propiedad del objeto de configuración
+                            confirmButtonText: 'Ok', // <-- Esto es una propiedad del objeto de configuración
+                            confirmButtonColor: '#0000ff' // <-- Esto es una propiedad del objeto de configuración
+                        }); // <-- Cierra el objeto de configuración
+                    }
                 });
             } catch (error) {
                 console.error('Error parsing JSON (409):', error);
@@ -127,8 +198,7 @@ function SendForm() {
                     color: 'black'
                 });
             }
-        } else if (xhr.status === 400) { // Manejar el código de estado 400 (Solicitud incorrecta - Datos faltantes o inválidos)
-            //console.log(xhr.responseText);
+        } else if (xhr.status === 400) {
             try {
                 const response = JSON.parse(xhr.responseText);
                 Swal.fire({
@@ -138,7 +208,6 @@ function SendForm() {
                     color: 'black'
                 });
             } catch (error) {
-                //console.error('Error parsing JSON (400):', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error al procesar respuesta (Solicitud incorrecta)',
@@ -146,8 +215,7 @@ function SendForm() {
                     color: 'black'
                 });
             }
-        } else if (xhr.status === 401) { // Manejar el código de estado 401 (No autorizado - Credenciales inválidas)
-            //console.log(xhr.responseText);
+        } else if (xhr.status === 401) {
             try {
                 const response = JSON.parse(xhr.responseText);
                 Swal.fire({
@@ -157,7 +225,6 @@ function SendForm() {
                     color: 'black'
                 });
             } catch (error) {
-                //console.error('Error parsing JSON (401):', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error al procesar respuesta (Credenciales inválidas)',
@@ -165,8 +232,7 @@ function SendForm() {
                     color: 'black'
                 });
             }
-        } else if (xhr.status === 403) { // Manejar el código de estado 403 (Prohibido - Usuario bloqueado)
-            //console.log(xhr.responseText);
+        } else if (xhr.status === 403) {
             try {
                 const response = JSON.parse(xhr.responseText);
                 Swal.fire({
@@ -176,7 +242,6 @@ function SendForm() {
                     color: 'black'
                 });
             } catch (error) {
-                //console.error('Error parsing JSON (403):', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error al procesar respuesta (Cuenta bloqueada)',
@@ -184,8 +249,7 @@ function SendForm() {
                     color: 'black'
                 });
             }
-        } else { // Manejar otros errores de conexión
-            //console.error('Error:', xhr.status, xhr.statusText);
+        } else {
             Swal.fire({
                 icon: 'error',
                 title: 'Error de conexión',

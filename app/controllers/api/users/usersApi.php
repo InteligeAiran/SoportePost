@@ -184,99 +184,143 @@ class users extends Controller {
     }
 
     private function handleLogin() {
-        $username = isset($_POST['username']) ? trim($_POST['username']) : '';
-        $password = isset($_POST['password']) ? trim($_POST['password']) : '';
-        $password = sha1(md5($password)); // Asegúrate de que el hash sea el correcto
-        $repository = new UserRepository(); // Inicializa el LoginRepository aquí
-        //var_dump($username, $password); // Para depuración
+    // 1. Recolección y saneamiento de datos de entrada
+    $username = isset($_POST['username']) ? trim($_POST['username']) : '';
+    $password = isset($_POST['password']) ? trim($_POST['password']) : '';
+    $password = sha1(md5($password)); // Asegúrate de que el hash sea el correcto
 
-        if ($username != "" && $password != "") {
-            $userExists = $repository->GetUsernameUser($username);
-            if ($userExists > 0) {
-                $passwordMatch = $repository->GetPasswordUser($username, $password);
-                if ($passwordMatch > 0) {
-                    $userData = $repository->GetUserData($username, $password);
-                    //var_dump($userData); // Para depuración
-                    if ($userData['status'] != 3 && $userData['status'] != 4) {
-                        $_SESSION["cedula"]     = $userData['cedula'];
-                        $_SESSION['id_user']    = (int) $userData['id_user'];
-                        $_SESSION["usuario"]    = $userData['usuario'];
-                        $_SESSION["nombres"]    = $userData['nombres'];
-                        $_SESSION["apellidos"]  = $userData['apellidos'];
-                        $_SESSION["correo"]     = $userData['correo'];
-                        $_SESSION['d_rol']      = (int) $userData['codtipousuario'];
-                        $_SESSION['name_rol']   = $userData['name_rol'];
-                        $_SESSION['status']     = (int) $userData['status'];
-                        //var_dump($userData);
-                        $session_lifetime = 1200; 
-                        // Ejemplo: 1200 SEGUNDO = 20 minutos en segundos
-                        // Ejemplo: 1800 SEGUNDO = 30 minutos en segundos
-                        // Ejemplo: 3600 SEGUNDO = 1 hora en segundos
-                        // Ejemplo: 300 SEGUNDO  = 5 minutos en segundos               
-                        $_SESSION['session_lifetime'] = $session_lifetime;
+    // Nuevo: Detectar si se solicita forzar una nueva sesión
+    $force_new_session = isset($_POST['force_new_session']) && $_POST['force_new_session'] === 'true';
 
-                        // Regenerar el ID de sesión antes de usar session_id()
-                        session_regenerate_id(true);
-                        // Configurar la zona horaria a Venezuela (Caracas)
-                        date_default_timezone_set('America/Caracas');
-                        // Generar id_session
-                        $session_id = session_id();
-                        $_SESSION["session_id"] = $session_id;
-                        // Obtener datos adicionales
-                        $start_date = date('Y-m-d H:i:s');
-                        $user_agent = $_SERVER['HTTP_USER_AGENT'];
-                        $ip_address = $_SERVER['REMOTE_ADDR'];
-                        $active = 1;
-                        $expiry_time_unix = time() + $session_lifetime;
-                        $expiry_time = date('Y-m-d H:i:s', $expiry_time_unix); // Convertir a formato DATETIME
+    $repository = new UserRepository(); // Inicializa el UserRepository aquí
 
-                        // Asegúrate de que GetSession en tu modelo LoginRepository tome el id_user correctamente
-                        $result9 = $repository->GetSession($session_id);
-                        
-                        if($result9 > 0){
-                            $this->response([
-                                'success' => false,
-                                'message' => 'Ya existe una sesión activa para este usuario.',
-                                'redirect' => 'login'
-                            ], 409); // Código de estado 409 Conflict
-                        } else {
-                            $insertResult = $repository->InsertSession($session_id, $start_date,  $user_agent, $ip_address, $active, $expiry_time);
-                            if ($insertResult) {
-                                $redirectURL = '';
-                                $redirectURL = 'dashboard';
-                                $repository->UpdateTryPassTo0($username);
-                                $this->response([
-                                    'success' => true,
-                                    'message' => 'Inicio de sesión exitoso',
-                                    'redirect' => $redirectURL,
-                                    'session_lifetime' => $_SESSION['session_lifetime'],
-                                    'session_id' => $_SESSION["session_id"],
-                                    'id_user' => $_SESSION['id_user']
-                                ], 200);
-                            } else {
-                                $this->response(['error' => 'Error al guardar la información de la sesión'], 500);
-                            }
-                        }
-                    } else {
-                        $this->response(['success' => false, 'message' => 'Usuario inactivo o bloqueado'], 401);
-                    }
-                } else {
-                    $repository->UpdateTryPass($username);
-                    $attempts = $repository->GetTryPass($username);
-                    if ($attempts <= 3) {
-                        $this->response(['success' => false, 'message' => 'Contraseña incorrecta. Intentos restantes: ' . (3 - $attempts)], 401);
-                    } else {
-                        $repository->UpdateStatusTo4($username);
-                        $this->response(['success' => false, 'message' => 'Usuario bloqueado por intentos fallidos'], 403);
-                    }
-                }
-            } else {
-                $this->response(['success' => false, 'message' => 'Usuario no existe'], 401);
-            }
-        } else {
-            $this->response(['success' => false, 'message' => 'Usuario o contraseña están vacíos'], 400);
-        }
+    // 2. Validaciones iniciales
+    if ($username === "" || $password === "") { // Usar === para una comparación estricta y clara
+        $this->response(['success' => false, 'message' => 'Usuario o contraseña están vacíos'], 400);
+        return; // Detener la ejecución
     }
+
+    // 3. Verificación de existencia del usuario
+    $userExists = $repository->GetUsernameUser($username);
+    if ($userExists === 0) { // Usar === para una comparación estricta
+        $this->response(['success' => false, 'message' => 'Usuario no existe'], 401);
+        return; // Detener la ejecución
+    }
+
+    // 4. Verificación de la contraseña
+    $passwordMatch = $repository->GetPasswordUser($username, $password);
+    if ($passwordMatch === 0) { // Contraseña incorrecta
+        $repository->UpdateTryPass($username);
+        $attempts = $repository->GetTryPass($username);
+        if ($attempts <= 3) {
+            $this->response(['success' => false, 'message' => 'Contraseña incorrecta. Intentos restantes: ' . (3 - $attempts)], 401);
+        } else {
+            $repository->UpdateStatusTo4($username);
+            $this->response(['success' => false, 'message' => 'Usuario bloqueado por intentos fallidos'], 403);
+        }
+        return; // Detener la ejecución
+    }
+
+    // A partir de aquí, el usuario y la contraseña son correctos.
+
+    // 5. Obtener datos del usuario
+    $userData = $repository->GetUserData($username, $password);
+
+    // 6. Verificar el estado del usuario
+    if ($userData['status'] == 3 || $userData['status'] == 4) { // Usuario inactivo o bloqueado
+        $this->response(['success' => false, 'message' => 'Usuario inactivo o bloqueado'], 401);
+        return; // Detener la ejecución
+    }
+
+    // --- Punto crucial para la lógica de forzar login ---
+    // Regenerar el ID de sesión *ahora* para obtener el nuevo ID que el usuario tendrá si se loguea.
+    // Este nuevo ID se usará para verificar si *otras* sesiones del mismo usuario están activas.
+    session_regenerate_id(true);
+    $new_session_id_for_this_login_attempt = session_id();
+
+    // 7. Detección de sesión activa para el usuario (usando tu GetSession)
+    // Pasamos el id_user del usuario que se está logueando y el nuevo session_id
+    $session_already_active_for_user = $repository->GetSession(
+        (int) $userData['id_user'], // Pasa el id_user directamente
+        $new_session_id_for_this_login_attempt // Pasa el ID de sesión recién generado
+    );
+
+    if ($session_already_active_for_user > 0 && !$force_new_session) {
+        // Ya existe una sesión activa para este usuario (diferente a la que se está intentando crear)
+        // y NO se solicitó forzar.
+        $this->response([
+            'success' => false,
+            'message' => 'Ya existe una sesión activa para este usuario.',
+            'redirect' => 'login' 
+        ], 409); // Código de estado 409 Conflict
+        return; // Detener la ejecución
+    }
+
+    // Si no hay sesión activa O si se está forzando una nueva sesión
+    // (es decir, $session_already_active_for_user es 0 O $force_new_session es true)
+
+    // 8. Invalidar sesiones anteriores si se solicitó forzar
+    if ($force_new_session) {
+        // Llama al método del repositorio para invalidar sesiones antiguas
+        $repository->InvalidateAllSessionsForUser($userData['id_user']); 
+    }
+
+    // 9. Configuración y creación de la nueva sesión
+    // Configurar la zona horaria a Venezuela (Caracas)
+    date_default_timezone_set('America/Caracas');
+
+    // Asignar datos del usuario a la sesión (usando el new_session_id_for_this_login_attempt)
+    $_SESSION["cedula"]       = $userData['cedula'];
+    $_SESSION['id_user']      = (int) $userData['id_user'];
+    $_SESSION["usuario"]      = $userData['usuario'];
+    $_SESSION["nombres"]      = $userData['nombres'];
+    $_SESSION["apellidos"]    = $userData['apellidos'];
+    $_SESSION["correo"]       = $userData['correo'];
+    $_SESSION['id_rol']        = (int) $userData['codtipousuario'];
+    $_SESSION['name_rol']     = $userData['name_rol'];
+    $_SESSION['status']       = (int) $userData['status'];
+    
+    $session_lifetime = 1200; // Ejemplo: 20 minutos
+    $_SESSION['session_lifetime'] = $session_lifetime;
+
+    $_SESSION["session_id"] = $new_session_id_for_this_login_attempt; // Asigna el ID ya generado
+
+    // Obtener datos adicionales para la sesión
+    $start_date = date('Y-m-d H:i:s');
+    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+    $ip_address = $_SERVER['REMOTE_ADDR'];
+    $active = 1;
+    $expiry_time_unix = time() + $session_lifetime;
+    $expiry_time = date('Y-m-d H:i:s', $expiry_time_unix); // Convertir a formato DATETIME
+
+    // 10. Insertar la nueva sesión en la base de datos
+    // Asegúrate de que InsertSession en tu modelo UserRepository tome el id_user
+    $insertResult = $repository->InsertSession(
+        $new_session_id_for_this_login_attempt, // Pasa el session_id
+        $start_date, 
+        $user_agent, 
+        $ip_address, 
+        $active, 
+        $expiry_time
+    );
+
+    if ($insertResult) {
+        $repository->UpdateTryPassTo0($username); // Resetear intentos fallidos
+        $redirectURL = 'dashboard'; // Redirigir al dashboard
+
+        $this->response([
+            'success' => true,
+            'message' => 'Inicio de sesión exitoso',
+            'redirect' => $redirectURL,
+            'session_lifetime' => $_SESSION['session_lifetime'],
+            'session_id' => $_SESSION["session_id"],
+            'id_user' => $_SESSION['id_user']
+        ], 200);
+    } else {
+        $this->response(['error' => 'Error al guardar la información de la sesión'], 500);
+    }
+    }
+
 
     function handleUsers($method, $urlSegments) {
         // var_dump($repository); // Para depuración     
@@ -620,6 +664,5 @@ public function handleCheckUsernameAvailability() {
             $this->response(['success' => false, 'message' => 'No se encontró el correo electrónico para el usuario'], 404);
         }
     }
-    // ... otras funciones handleSearchSerialData, etc.
 }
 ?>

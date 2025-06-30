@@ -9988,8 +9988,14 @@ fieldset:disabled .btn {
 }
 
 .ms-auto {
+  margin-left: 30% !important;
+}
+
+/* asi estaba y yo lo cambie el 20/06/2025
+.ms-auto {
   margin-left: auto !important;
 }
+*/
 
 .m-n1 {
   margin: -0.25rem !important;

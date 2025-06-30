@@ -172,16 +172,6 @@ function mi_navbar()
             border-color: #B0B0B0;
             box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
         }
-
-        .falla-reportada-texto {
-            color: #DC3545; /* Rojo de Bootstrap 'danger' */
-            /* O un color naranja: */
-            /* color: #FD7E14; */ /* Naranja de Bootstrap 'warning' */
-            /* O un color personalizado: */
-            /* color: #C0392B; */ /* Un rojo ladrillo */
-            /* color: #E67E22; */ /* Un naranja más suave */
-            font-weight: bold; /* Opcional: para que resalte más */
-        }
     </style>
     </head>
 
@@ -202,6 +192,8 @@ function mi_navbar()
         </div>
         <?php require_once 'app/core/components/navbar/index.php';
         mi_navbar(); ?>
+
+
         <main class="main-content position-relative border-radius-lg ">
             <div class="container-fluid py-4" style="height: calc(100vh - 80px);">
                 <div class="row h-100">
@@ -225,10 +217,10 @@ function mi_navbar()
                                             <tr>
                                                 <th scope="col">ID Ticket</th>
                                                 <th scope="col">RIF</th>
-                                                <th scope="col">Nro Ticket</th>
                                                 <th scope="col">Razón Social</th>
                                                 <th scope="col">Fecha Creación</th>
                                                 <th scope="col">Técnico Asignado</th>
+                                                <th scope="col">Nro Ticket</th>
                                                 <th scope="col">Acción Ticket</th> <th scope="col">Acciones</th>
                                             </tr>
                                         </thead>

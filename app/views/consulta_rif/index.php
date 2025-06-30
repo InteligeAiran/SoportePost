@@ -371,7 +371,7 @@ function mi_navbar() {}
                         </div>
                         <div id="RightSelects">
                             </div>
-                        <input type="hidden" id="id_user" name="userId" value=<?php echo $_SESSION['id_user'] ?>>
+                        <input type="hidden" id="id_user" name="userId" value=<?php echo $_SESSION['id_user']?>>
                     </div>
                 </form>
             </div>

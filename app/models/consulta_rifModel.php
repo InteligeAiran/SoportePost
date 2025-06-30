@@ -171,6 +171,7 @@ class consulta_rifModel extends Model
 
             // Obtener el estado del ticket recién creado
             $SearchStatus = $this->getStatusTicket($idTicketCreado); // Pasa el ID entero
+            $SearchStatusPayment = $this->getStatusTicketPayment($idTicketCreado); // Pasa el ID entero
             if (!$SearchStatus) {
                 error_log("Error: No se pudo obtener el estado del ticket para ID: " . $idTicketCreado);
                 $this->db->closeConnection();
@@ -257,6 +258,26 @@ class consulta_rifModel extends Model
         }
     }
 
+    public function getStatusTicketPayment(int $id_ticket): ?array
+    {
+        try {
+            $escaped_id_ticket = pg_escape_literal($this->db->getConnection(), $id_ticket);
+            $sql = "SELECT stpay.name_status_payment FROM tickets tik INNER JOIN status_payments stpay ON stpay.id_status_payment = tik.id_status_payment WHERE tik.id_ticket =(".$escaped_id_ticket .");";
+            $result = pg_query($this->db->getConnection(), $sql);
+
+            if ($result) {
+                $row = pg_fetch_assoc($result); // Obtiene una fila como array asociativo
+                pg_free_result($result);
+                return $row; // Devuelve el array directamente (ej: ['id_status_payment' => 2, 'name_status_payment' => 'Pagado'])
+            } else {
+                error_log("Error PGSQL en Model::getStatusTicketPayment: " . pg_last_error($this->db->getConnection()));
+                return null;
+            }
+        } catch (Throwable $e) {
+            error_log("Excepción en Model::getStatusTicketPayment: " . $e->getMessage());
+            return null;
+        }
+    }
     // Tus otros métodos como getLastUserTicketInfo, GetTotalTickets, etc.
     // También asegúrate de que Model::getResult esté correctamente definido si lo usas.
 
@@ -351,6 +372,7 @@ class consulta_rifModel extends Model
 
             // **¡AQUÍ ESTÁ LA NUEVA PARTE!** Obtener el estado actual del ticket
             $currentTicketStatus = $this->getStatusTicket($idTicketCreado);
+            $SearchStatusPayment = $this->getStatusTicketPayment($idTicketCreado);
             if (!$currentTicketStatus) {
                 error_log("Advertencia: No se pudo obtener el estado del ticket después de la creación para ID: " . $idTicketCreado);
                 // No se considera un error crítico que detenga todo, pero se registra.
@@ -361,7 +383,9 @@ class consulta_rifModel extends Model
             return [
                 'success' => true,
                 'id_ticket_creado' => $idTicketCreado,
-                'status_info' => $currentTicketStatus // Incluye el estado del ticket
+                'status_info' => $currentTicketStatus,
+                'status_payment_info' => $SearchStatusPayment // Incluye la información del estado de pago directamente
+ // Incluye el estado del ticket
             ];
 
         } catch (Throwable $e) {
@@ -455,11 +479,23 @@ class consulta_rifModel extends Model
     {
         try {
             $sql = "SELECT * FROM get_tickets_total_count('" . $fecha_para_db . "')";
-            $result = Model::getResult($sql, $this->db);
-            return $result;
+            $result = $this->db->pgquery($sql);
+            if ($result) {
+                $row = pg_fetch_assoc($result);
+                // Si hay un resultado, devuelve el conteo.
+                // Si no hay filas, COUNT(*) devolverá 0, lo cual es perfecto.
+                return $row;
+            } else {
+                // Si la consulta falla, es seguro devolver 0
+                error_log("Error en GetTotalTickets: " . pg_last_error($this->db->getConnection()));
+                return 0; 
+            }
         } catch (Throwable $e) {
-            // Manejar excepciones
+            // Captura cualquier excepción y devuelve 0
+            error_log("Excepción en GetTotalTickets: " . $e->getMessage());
+            return 0;
         }
+    
     }
 
     public function InstallDatePOS($serial)
@@ -1024,7 +1060,8 @@ class consulta_rifModel extends Model
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en Model::GetLastUserTicketInfo: " . $e->getMessage());
+            return null; // En caso de error, siempre null
         }
     }
 
@@ -1124,5 +1161,15 @@ class consulta_rifModel extends Model
                 // Manejar excepciones
             }
         }
+    public function GetAttachments($ticketId){
+        try {
+            $sql = "SELECT * FROM get_ticket_attachments_details(" . (int)$ticketId . ")";
+            $result = Model::getResult($sql, $this->db);    
+            return $result;
+        } catch (Throwable $e) {
+            // Log the error (e.g., error_log($e->getMessage());)
+            return false; // Return false on error
+        }
+    }
 }
 ?>

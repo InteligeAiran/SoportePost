@@ -410,4 +410,6 @@ class ReportRepository
         $result = $this->model->GetTotalTicketsPercentageInProcess(); // Asumiendo que tienes este método en tu modelo
         return $result['row']['get_percentage_in_process_tickets'];
     }
+    
+    
 }

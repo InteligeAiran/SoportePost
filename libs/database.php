@@ -1,5 +1,12 @@
 <?php
-//Conexion a la Base de Datos 
+// Ruta corregida: subir un nivel a SoportePost/, luego bajar a app/views/login/PHPMailer/
+require_once __DIR__ . '/../app/views/login/PHPMailer/Exception.php';
+require_once __DIR__ . '/../app/views/login/PHPMailer/PHPMailer.php';
+require_once __DIR__ . '/../app/views/login/PHPMailer/SMTP.php';
+
+Use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+
 define("bd_hostname", '127.0.0.1');
 define("mvc_port", '5433');
 define("bd_usuario", 'postgres');
@@ -31,4 +38,6 @@ define('SMTP_USERNAME', 'soporte.sistemas@inteligensa.com');
 define('SMTP_PASSWORD', 'igld qnmb afzw ywgv');
 define('SMTP_SECURE', 'PHPMailer::ENCRYPTION_STARTTLS');
 define('SMTP_PORT', 587);
+// ¡¡¡ ACTIVA LA DEPURACIÓN AL MÁXIMO !!!
+define('DEBUG_EMAIL', SMTP::DEBUG_SERVER); // ESTO TE DIRÁ POR QUÉ FALLA
 ?>

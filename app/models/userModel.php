@@ -252,7 +252,6 @@ class userModel extends Model{
             $escaped_ip_address = pg_escape_literal($this->db->getConnection(), $ip_address);
             $sql = "CALL insert_session_user(".$escaped_session_id.", ".$escaped_id_user.", '".$start_date."', ".$escaped_user_agent.", 
             ".$escaped_ip_address.", ".$active.", '".$expiry_time."');";
-            //var_dump($sql);
             $result = $this->db->pgquery($sql);
             return $result;
         } catch (Throwable $e) {
@@ -486,6 +485,56 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
             return $result;
         } catch (Throwable $e) {
             // Handle exception
+        }
+    }
+
+    public function InvalidateAllSessionsForUser($userId) {
+        try {
+            $sql = "UPDATE sessions_users 
+                    SET active = 0, end_date = NOW() 
+                    WHERE id_user = " . (int)$userId . " AND active = 1";
+            
+            //var_dump($sql); // Para depuración
+            $result = $this->db->pgquery($sql);
+            return $result; // Devuelve true en éxito, false en fallo
+        } catch (Throwable $e) {
+            error_log("Error en Model::InvalidateAllSessionsForUser: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // En tu Model (ej. UserModel.php o SessionModel.php)
+
+    public function IsSessionActuallyActive($sessionId, $userId) {
+        try {
+            // Asegúrate de que los valores se escapen correctamente si no usas prepared statements
+            // Para strings como el session_id, es CRÍTICO escaparlos para prevenir inyección SQL.
+            // Asumo que tu $this->db->pgquery() hace esto internamente o tienes una función de escape.
+            // Si no, DEBES agregar un escape_string o similar aquí.
+            $escapedSessionId = pg_escape_string($this->db->getConnection(), $sessionId); // Asumiendo que getConnection() devuelve la conexión PG
+            $escapedUserId = (int)$userId; // Castear a int es una buena forma de sanitizar IDs numéricos
+
+            $sql = "SELECT active FROM sessions_users 
+                    WHERE id_session = '" . $escapedSessionId . "' 
+                    AND id_user = " . $escapedUserId . " 
+                    AND active = 1";
+            
+            // var_dump($sql); // Para depuración, puedes descomentar temporalmente
+
+            $result = $this->db->pgquery($sql);
+            
+            // pgquery devuelve un recurso de resultado, no un array directamente.
+            // Necesitas verificar si hay filas y luego obtener los datos.
+            if ($result && pg_num_rows($result) > 0) {
+                $row = pg_fetch_assoc($result);
+                return $row['active'] == 1; // Debería ser 1 si se encontró la fila
+            }
+            
+            return false; // Si no hay resultado, o no hay filas, no está activa
+        } catch (Throwable $e) {
+            // Registra cualquier error que ocurra durante la ejecución de la consulta
+            error_log("Error en Model::IsSessionActuallyActive: " . $e->getMessage());
+            return false;
         }
     }
 }   

@@ -1502,31 +1502,41 @@ function SendDataFailure2(idStatusPayment) {
 
           xhrEmail.onload = function () {
             if (xhrEmail.status === 200) {
-              const responseEmail = JSON.parse(xhrEmail.responseText);
+              try {
+                const responseEmail = JSON.parse(xhrEmail.responseText);
+                if (responseEmail.success) {
+                  console.log(
+                    "Correo enviado con éxito:",
+                    responseEmail.message
+                  );
+                  // Muestra un mensaje de éxito al usuario
+                } else {
+                  console.error(
+                    "Error al enviar el correo:",
+                    responseEmail.message
+                  );
+                  // Muestra un mensaje de error al usuario
+                }
+              } catch (error) {
+                console.error(
+                  "Error al parsear la respuesta del correo:",
+                  error
+                );
+                // Muestra un mensaje de error genérico al usuario
+              }
             } else {
               console.error(
-                "Error al solicitar el envío de correo:",
+                "Error en la solicitud de envío de correo:",
                 xhrEmail.status,
                 xhrEmail.responseText
               );
-              Swal.fire({
-                icon: "error",
-                title: "Error al enviar correo",
-                text: "Hubo un problema al intentar enviar el correo al coordinador.",
-                color: "black",
-              });
+              // Muestra un mensaje de error al usuario
             }
           };
-          xhrEmail.onerror = function () {
-            console.error("Error de red al solicitar el envío de correo.");
-            Swal.fire({
-              icon: "error",
-              title: "Error de conexión",
-              text: "No se pudo conectar con el servidor para enviar el correo.",
-              color: "black",
-            });
-          };
-          const params = `id_coordinador=${encodeURIComponent(coordinador)}`;
+          const params = `id_coordinador=${encodeURIComponent(
+            coordinador
+          )}&id_user=${encodeURIComponent(id_user)}`;
+          console.log("Parámetros del correo:", params); // Para depuración
           xhrEmail.send(params);
 
           // Mostrar el primer modal (Guardado exitoso)
@@ -1554,12 +1564,10 @@ function SendDataFailure2(idStatusPayment) {
         <strong>⚙️ Serial del Equipo:</strong> ${ticketData.serial}
     </p>
     <p style="margin-bottom: 8px;">
-        <strong>📝 Falla Reportada (Texto):</strong> ${ticketData.falla_text}
+        <strong>📝 Falla Reportada:</strong> ${ticketData.falla_text}
     </p>
     <p style="margin-bottom: 8px;">
-        <strong>📊 Nivel de Falla (Texto):</strong> ${
-          ticketData.nivelFalla_text
-        }
+        <strong>📊 Nivel de Falla:</strong> ${ticketData.nivelFalla_text}
     </p>
     <p style="margin-bottom: 8px;">
         <strong>🏢 RIF Cliente:</strong> ${ticketData.rif || "N/A"}
@@ -1574,11 +1582,16 @@ function SendDataFailure2(idStatusPayment) {
           ticketData.coordinador || "N/A"
         }
     </p>
+    <p style="margin-bottom: 8px;">
+            <strong>💳 Estado de Documentos:</strong> <span style="color: darkblue; font-weight: bold;">${
+              ticketData.status_payment || "N/A" // Asume que tienes una variable ticketData.payment_status
+            }</span>
+        </p>
      <strong><p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
                                         Se ha enviado una notificación por correo electrónico.<br>
-                                        <h7>El Estatus del Ticket es: ${
+                                        <h7>El Estatus del Ticket es: <span style = "color: #28a745"; font-weight: bold;">${
                                           ticketData.status_text
-                                        }</h7>
+                                        }</span></h7>
                                     </p></strong>
 </div>
 `;
@@ -1599,11 +1612,17 @@ function SendDataFailure2(idStatusPayment) {
                 allowOutsideClick: false,
                 allowEscapeKey: false,
               }).then(() => {
-                location.reload(); // Recarga la página después de cerrar el modal de detalles
-              });
+                // Este bloque de código se ejecuta DESPUÉS de que el usuario interactúa y el modal de SweetAlert2 se cierra.
 
-              // Considera no usar jQuery si ya estás usando Vanilla JS para todo.
-              $("#miModal").css("display", "none"); // Oculta el modal principal si está usando jQuery
+                // Oculta tu modal personalizado (si lo tienes y estás usando jQuery)
+                // Es crucial que esto se haga ANTES de la recarga.
+                $("#miModal").css("display", "none");
+
+                // Establece un temporizador para recargar la página después de 2 segundos.
+                setTimeout(() => {
+                  location.reload(); // Recarga la página
+                }, 1000); // 2000 milisegundos = 2 segundos
+              }); // Este cierra el .then()
             },
           });
         } else {
@@ -1893,8 +1912,8 @@ function SendDataFailure1() {
           xhrEmail.onerror = function () {
             console.error("Error de red al solicitar el envío de correo.");
           };
-
-          xhrEmail.send(); // No necesitas enviar datos adicionales si tu backend ya tiene la información
+          const paramsEmail = `id_user=${encodeURIComponent(id_user)}`; // Asegúrate de enviar el ID del usuario para el correo
+          xhrEmail.send(paramsEmail); // No necesitas enviar datos adicionales si tu backend ya tiene la información
           // **FIN DE LA LÓGICA DEL CORREO**
           Swal.fire({
             icon: "success",
@@ -1947,9 +1966,7 @@ function SendDataFailure1() {
                                     </p>
                                     <strong><p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
                                         Se ha enviado una notificación por correo electrónico.<br>
-                                        <h7>El Estatus del Ticket es: ${
-                                          ticketData.status_text
-                                        }</h7>
+                                        <h7>El Estatus del Ticket es: <span style = "color: red";>${ticketData.status_text}</h7></span>
                                     </p></strong>
                                 </div>`;
               Swal.fire({
@@ -1967,10 +1984,17 @@ function SendDataFailure1() {
                 allowOutsideClick: false,
                 allowEscapeKey: false,
               }).then(() => {
-                location.reload(); // Recarga la página después de cerrar este modal
-              });
+                // Este bloque de código se ejecuta DESPUÉS de que el usuario interactúa y el modal de SweetAlert2 se cierra.
 
-              $("#miModal1").css("display", "none"); // Cerrar el modal de entrada
+                // Oculta tu modal personalizado (si lo tienes y estás usando jQuery)
+                // Es crucial que esto se haga ANTES de la recarga.
+                $("#miModal1").css("display", "none");
+
+                // Establece un temporizador para recargar la página después de 2 segundos.
+                setTimeout(() => {
+                  location.reload(); // Recarga la página
+                }, 1000); // 2000 milisegundos = 2 segundos
+              }); // Este cierra el .then()
             },
           });
         } else {
@@ -2851,7 +2875,7 @@ function SendRazon() {
               lengthMenu: "Mostrar _MENU_ Registros", // Esta línea es la clave
               emptyTable: "No hay Registros disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ Registro(s) )",
+              info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
               infoEmpty: "No hay Registros disponibles",
               infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
               search: "Buscar:",
@@ -3012,7 +3036,7 @@ function fetchSerialData(serial, rif) {
               language: {
                 emptyTable: "No hay Registros disponibles en la tabla",
                 zeroRecords: "No se encontraron resultados para la búsqueda",
-                info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ Registro(s) )",
+                info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
                 infoEmpty: "No hay datos disponibles",
                 infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
                 search: "Buscar:",

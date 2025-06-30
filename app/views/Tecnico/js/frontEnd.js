@@ -42,17 +42,46 @@ function getTicketData() {
                 const dataForDataTable = TicketData.map(ticket => {
                     let actionButtonsHTML = '';
 
-                    // 1. Botón de la llave inglesa (Enviar a Taller)
-                    actionButtonsHTML += `
-                        <button class="btn btn-sm btn-wrench-custom"
-                            data-bs-toggle="tooltip" data-bs-placement="top"
-                            title="Enviar a Taller"
-                            data-ticket-id="${ticket.id_ticket}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
-                        </button>
-                    `;
+                     // El botón "Recibido" debe aparecer si confirmcoord es false Y confirmtecn es false
+                    // Variable para verificar si AL MENOS UNO de los dos ha confirmado
+                    const hasBeenConfirmedByAnyone = (ticket.confirmcoord === 't' || ticket.confirmcoord === true) || (ticket.confirmtecn === 't' || ticket.confirmtecn === true);
 
-                    // 2. Lógica para añadir los botones adicionales basada en id_status_payment
+                    if (hasBeenConfirmedByAnyone) {
+                        // Si AL MENOS UNO ha confirmado (coordinador O técnico)
+                        actionButtonsHTML += `
+                            <button class="btn btn-sm btn-dark btn-received-ticket ml-2" style="display: none;"
+                                data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="Ya ha sido marcado como recibido">
+                                Recibido
+                            </button>
+
+                            <button class="btn btn-sm btn-wrench-custom"
+                                data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="Enviar a Taller"
+                                data-ticket-id="${ticket.id_ticket}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
+                            </button>
+                        `;
+                    } else {
+                        // Si NINGUNO ha confirmado (ambos son null/false/etc.)
+                        actionButtonsHTML += `
+                            <button class="btn btn-sm btn-dark btn-received-ticket ml-2"
+                                data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="Marcar como Recibido"
+                                data-ticket-id="${ticket.id_ticket}">
+                                Recibido
+                            </button>
+
+                            <button class="btn btn-sm btn-wrench-custom" style="display: none;"
+                                data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="Enviar a Taller"
+                                data-ticket-id="${ticket.id_ticket}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
+                            </button>
+                        `;
+                    }
+
+                    // Lógica para añadir los botones adicionales basada en id_status_payment
                     if (ticket.id_status_payment == 11) {
                         actionButtonsHTML += `
                             <button class="btn btn-sm btn-info btn-zoom-pdf ml-2"
@@ -134,6 +163,17 @@ function getTicketData() {
                                 Ver Documento
                             </button>
                         `;
+                    }else if (ticket.id_status_payment == 6 || ticket.id_status_payment == 4) {
+                        actionButtonsHTML += `
+                            <button class="btn btn-sm btn-secondary btn-view-document ml-2"
+                                data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="Ver Documento"
+                                data-ticket-id="${ticket.id_ticket}"
+                                data-document-type="all"
+                                data-file-url="${ticket.img_exoneracion_url || ticket.pdf_pago_url || ticket.pdf_zoom_url || ''}">
+                                Ver Documento
+                            </button>
+                        `;
                     }
 
                     const finalActionColumnHTML = `<div class="acciones-container">${actionButtonsHTML}</div>`;
@@ -141,11 +181,11 @@ function getTicketData() {
                     return [
                         ticket.id_ticket,
                         ticket.rif,
+                        ticket.nro_ticket,
                         ticket.razonsocial_cliente,
                         ticket.create_ticket,
                         ticket.full_name_tecnico,
                         ticket.name_accion_ticket,
-                        ticket.nro_ticket,
                         finalActionColumnHTML
                     ];
                 });
@@ -159,12 +199,12 @@ function getTicketData() {
                     data: dataForDataTable,
                     columns: [
                         { title: "ID ticket" },
-                        { title: "RIF" },
+                        { title: "Rif" },
+                        { title: "Nro Ticket" },
                         { title: "Razón Social" },
                         { title: "Fecha Creación" },
                         { title: "Técnico Asignado" },
                         { title: "Acción Ticket" },
-                        { title: "Nro Ticket" },
                         { title: "Acciones", orderable: false }
                     ],
                     language: {
@@ -181,53 +221,51 @@ function getTicketData() {
                             "first": "Primero", "last": "Último", "next": "Siguiente", "previous": "Anterior"
                         }
                     },
-
                     dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-            initComplete: function (settings, json) {
-                const buttonsHtml = `
-                    <button id="btn-asignados" class="btn btn-primary me-2">Asignados</button>
-                    <button id="btn-por-asignar" class="btn btn-secondary">Enviados Taller</button>
-                `;
-                $(".dt-buttons-container").html(buttonsHtml);
+                    initComplete: function (settings, json) {
+                        const buttonsHtml = `
+                            <button id="btn-asignados" class="btn btn-primary me-2">Asignados</button>
+                            <button id="btn-por-asignar" class="btn btn-secondary">Enviados Taller</button>
+                        `;
+                        $(".dt-buttons-container").html(buttonsHtml);
 
-                // ************* INICIO CAMBIOS PARA LOS BOTONES *************
+                        // ************* INICIO CAMBIOS PARA LOS BOTONES *************
 
-                // Función para manejar la selección de botones
-                function setActiveButton(activeButtonId) {
-                    // Remover clases de los botones y añadir las clases correctas
-                    $("#btn-asignados").removeClass("btn-primary btn-secondary");
-                    $("#btn-por-asignar").removeClass("btn-primary btn-secondary");
+                        // Función para manejar la selección de botones
+                        function setActiveButton(activeButtonId) {
+                            // Remover clases de los botones y añadir las clases correctas
+                            $("#btn-asignados").removeClass("btn-primary btn-secondary");
+                            $("#btn-por-asignar").removeClass("btn-primary btn-secondary");
 
-                    if (activeButtonId === "btn-asignados") {
-                        $("#btn-asignados").addClass("btn-primary");
-                        $("#btn-por-asignar").addClass("btn-secondary");
-                    } else {
-                        $("#btn-asignados").addClass("btn-secondary");
-                        $("#btn-por-asignar").addClass("btn-primary");
-                    }
-                }
+                            if (activeButtonId === "btn-asignados") {
+                                $("#btn-asignados").addClass("btn-primary");
+                                $("#btn-por-asignar").addClass("btn-secondary");
+                            } else {
+                                $("#btn-asignados").addClass("btn-secondary");
+                                $("#btn-por-asignar").addClass("btn-primary");
+                            }
+                        }
 
-                // Inicialmente, establecer "Asignados" como activo (porque el filtro por defecto lo será)
-                setActiveButton("btn-asignados");
+                        // Inicialmente, establecer "Asignados" como activo (porque el filtro por defecto lo será)
+                        setActiveButton("btn-asignados");
 
-                $("#btn-asignados").on("click", function () {
-                    dataTableInstance
-                        .column(5)
-                        .search("Asignado al Técnico")
-                        .draw();
-                    setActiveButton("btn-asignados"); // Llamar a la función para actualizar el estilo
-                });
+                        $("#btn-asignados").on("click", function () {
+                            dataTableInstance
+                                .column(6)
+                                .search("Asignado al Técnico")
+                                .draw();
+                            setActiveButton("btn-asignados"); // Llamar a la función para actualizar el estilo
+                        });
 
-                $("#btn-por-asignar").on("click", function () {
-                    dataTableInstance
-                        .column(5)
-                        .search("Enviado a taller")
-                        .draw();
-                    setActiveButton("btn-por-asignar"); // Llamar a la función para actualizar el estilo
-                });
-                // ************* FIN CAMBIOS PARA LOS BOTONES *************
-            },
-                
+                        $("#btn-por-asignar").on("click", function () {
+                            dataTableInstance
+                                .column(6)
+                                .search("Enviado a taller")
+                                .draw();
+                            setActiveButton("btn-por-asignar"); // Llamar a la función para actualizar el estilo
+                        });
+                        // ************* FIN CAMBIOS PARA LOS BOTONES *************
+                    },
                 });
 
                 if ($.fn.tooltip) {
@@ -288,7 +326,6 @@ function getTicketData() {
                         const ticketId = $(this).data('ticket-id');
                         // const statusPayment = $(this).data('status-payment'); // No lo necesitas aquí, ya lo tienes en la lógica del modal
                         const documentType = $(this).data('document-type'); // 'exoneracion'
-                        console.log(`Clic en Cargar Img Exoneracion para Ticket ID: ${ticketId}, Tipo: ${documentType}`);
                         openUploadModal(ticketId, documentType); // Llama a la función para abrir el modal de subida
                     });
 
@@ -300,7 +337,6 @@ function getTicketData() {
                         const ticketId = $(this).data('ticket-id');
                         // const statusPayment = $(this).data('status-payment');
                         const documentType = $(this).data('document-type'); // 'pago'
-                        console.log(`Clic en Cargar PDF de pago para Ticket ID: ${ticketId}, Tipo: ${documentType}`);
                         openUploadModal(ticketId, documentType); // Llama a la función para abrir el modal de subida
                     });
 
@@ -312,7 +348,6 @@ function getTicketData() {
                         const ticketId = $(this).data('ticket-id');
                         // const statusPayment = $(this).data('status-payment');
                         const documentType = $(this).data('document-type'); // 'zoom'
-                        console.log(`Clic en Cargar PDF ZOOM para Ticket ID: ${ticketId}, Tipo: ${documentType}`);
                         openUploadModal(ticketId, documentType); // Llama a la función para abrir el modal de subida
                     });
 
@@ -324,10 +359,8 @@ function getTicketData() {
                         const ticketId = $(this).data('ticket-id');
                         const documentType = $(this).data('document-type');
                         const fileUrl = $(this).data('file-url'); // URL del archivo a visualizar
-                        console.log(`Clic en Ver Documento para Ticket ID: ${ticketId}, Tipo: ${documentType}, URL: ${fileUrl}`);
                         openViewModal(ticketId, fileUrl, documentType); // Llama a la función para abrir el modal de visualización
                     });
-
 
                 // Listener para el botón de la llave inglesa (Enviar a Taller)
                 $('#tabla-ticket tbody')
@@ -346,6 +379,16 @@ function getTicketData() {
                         }
                     });
 
+                // --- NUEVO LISTENER PARA EL BOTÓN "RECIBIDO" ---
+                $('#tabla-ticket tbody')
+                    .off('click', '.btn-received-ticket') // Usa una nueva clase para este botón
+                    .on('click', '.btn-received-ticket', function(e) {
+                        e.stopPropagation();
+                        const ticketId = $(this).data('ticket-id');                        
+                        const nroTicket = $(this).closest('tr').find('td:nth-child(3)').text().trim(); // Obtiene el número de ticket desde la fila
+                        showConfirmationModalForReceived(ticketId, nroTicket); // Llama a una función para mostrar un modal de confirmación
+                    });
+
             } else {
                 console.error('Error en la respuesta del servidor: No hay datos de ticket o respuesta no exitosa.');
                 tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">Error de conexión o al procesar la respuesta</td></tr>';
@@ -356,6 +399,86 @@ function getTicketData() {
             tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">Error de conexión o al procesar la respuesta</td></tr>';
         });
 }
+
+
+// --- NUEVA FUNCIÓN PARA MOSTRAR UN MODAL DE CONFIRMACIÓN (OPCIONAL PERO RECOMENDADO) ---
+// Puedes usar un modal de Bootstrap existente o crear uno nuevo.
+// Este es un ejemplo conceptual.
+function showConfirmationModalForReceived(ticketId, nroTicket) {
+    Swal.fire({
+        title: `¿Marcar el ticket ${nroTicket} como recibido?`, // Usa template literals aquí
+        text: "Esta acción registrará la fecha de recepción y habilitará Envio a Taller.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, Recibir Ticket",
+        cancelButtonText: "Cancelar",
+        color: "black" // Asegúrate de que SweetAlert2 soporta esta opción para el color de texto
+    }).then((result) => { // <-- ¡Aquí está el cambio clave! Manejar la Promise
+        if (result.isConfirmed) { // Si el usuario hizo clic en "Sí, Recibir Ticket"
+            handleMarkTicketReceived(ticketId, nroTicket);
+        }
+    });
+}
+
+// --- FUNCIÓN PARA MANEJAR LA LÓGICA DE MARCAR COMO RECIBIDO ---
+function handleMarkTicketReceived(ticketId, nroTicket) {
+    const id_user = document.getElementById("id_user").value;
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/historical/markReceivedTechnical`); // Necesitas una nueva ruta de API para esto
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                           Swal.fire({
+                                title: "¡Recibido!",
+                                text: "El ticket N" + nroTicket + " ha sido marcado como recibido.",
+                                icon: "success",
+                                color: "black",
+                                confirmButtonColor: "#3085d6" // Ejemplo de un color azul Bootstrap por defecto
+                            });
+                            getTicketData(); // Volver a cargar la tabla para reflejar los cambios
+                        } else {
+                            Swal.fire(
+                                "Error",
+                                response.message || "Hubo un error al marcar el ticket como recibido.",
+                                "error"
+                            );
+                        }
+                    } catch (error) {
+                        Swal.fire(
+                            "Error",
+                            "Error al procesar la respuesta del servidor.",
+                            "error"
+                        );
+                        console.error("Error parsing JSON for markTicketAsReceived:", error);
+                    }
+                } else {
+                    Swal.fire(
+                        "Error",
+                        `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
+                        "error"
+                    );
+                    console.error("Error en markTicketAsReceived:", xhr.status, xhr.statusText);
+                }
+            };
+            xhr.onerror = function () {
+                Swal.fire(
+                    "Error",
+                    "Error de red al intentar marcar el ticket como recibido.",
+                    "error"
+                );
+                console.error("Network error for markTicketAsReceived");
+            };
+
+            const data = `action=markReceivedTechnical&id_ticket=${ticketId}&id_user=${encodeURIComponent(id_user)}`;
+            xhr.send(data);
+        
+    };
 
 // ===============================================
 // Lógica para el Modal de Carga de Documentos (uploadDocumentModal)
@@ -587,27 +710,27 @@ function formatTicketDetailsPanel(d) {
                     </div>
                 </div>
                 <div class="col-md-9">
-                    <h4 style = "color: black;">Ticket #${d.id_ticket}</h4>
+                    <h4 style = "color: black;">Ticket #${d.nro_ticket}</h4>
                     <hr class="mt-2 mb-3">
                     <div class="row">
                         <div class="col-sm-6 mb-2">
-                            <strong><div>Serial POS:</div></strong><br>
+                            <strong><div>Serial POS:</div></strong>
                             ${d.serial_pos}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Estatus POS:</div></strong><br>
+                            <strong><div>Estatus POS:</div></strong>
                             ${d.estatus_inteliservices}
-                        </div>
+                        </div><br>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Fecha Instalación POS:</div></strong><br>
+                             <br><strong><div>Fecha Instalación:</div></strong>
                             ${d.fecha_instalacion}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Fecha Creación ticket:</div></strong><br>
+                             <br><strong><div>Creación ticket:</div></strong>
                             ${d.create_ticket}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Usuario Gestión:</div></strong><br>
+                             <br><strong><div>Usuario Gestión:</div></strong>
                             ${d.full_name_tecnico}
                         </div>
                     </div>
@@ -618,19 +741,15 @@ function formatTicketDetailsPanel(d) {
                 <div class="col-12">
                     <div class="row">
                         <div class="col-sm-4 mb-2">
-                             <strong><div>Acción:</div></strong><br>
+                            <strong><div>Acción:</div></strong>
                             ${d.name_accion_ticket}
                         </div>
-                        <div class="col-sm-8 mb-2">
-                             <strong><div>Falla:</div></strong><br>
-                            ${d.name_failure}
-                        </div>
-                        <div class="col-sm-4 mb-2">
-                             <strong><div>Proceso:</div></strong><br>
-                            ${d.name_process_ticket}
+                         <div class="col-sm-8 mb-2" style = "margin-left: -7%;">
+                          <strong><div>Falla Reportada:</div></strong>
+                          <span class="falla-reportada-texto">${d.name_failure}</span>
                         </div>
                         <div class="col-sm-8 mb-2">
-                             <strong><div>Estatus Ticket:</div></strong><br>
+                             <br><strong><div>Estatus Ticket:</div></strong>
                             ${d.name_status_ticket}
                         </div>
                     </div>
@@ -807,6 +926,19 @@ function loadTicketHistory(ticketId) {
               statusHeaderText = " (En Espera)";
             }
           }
+
+           // Esta lógica ANULA cualquier color establecido por el estado si la condición se cumple.
+            if (index === 0) {
+              // Es la última gestión (la "actual")
+              headerStyle = "background-color: #ffc107;"; // Amarillo
+              textColor = "color: #343a40;"; // Texto oscuro
+              statusHeaderText = ` (${item.name_status_ticket || 'Desconocido'})`; // Agrega el estatus actual o 'Desconocido' si no existe. // Sobrescribe el texto del estado si ya estaba.
+            } else {
+              // Son gestiones pasadas
+              headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
+              textColor = "color: #ffffff;"; // Texto blanco
+              // No sobrescribimos statusHeaderText aquí a menos que quieras algo como "(Pasada)"
+            }
 
           historyHtml += `
                         <div class="card mb-3 custom-history-card"> <div class="card-header p-0" id="${headingId}" style="${headerStyle}">

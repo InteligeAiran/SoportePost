@@ -40,7 +40,10 @@
                     iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cash-stack me-2" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/><path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2z"/></svg>';
                     break;
                 case "Gestión Usuario":
-                    iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-gear me-2" viewBox="0 0 16 16"><path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m.256 7a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1zm3.63-4.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382zM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0"/></svg>';
+                    iconSvg =  '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-gear me-2" viewBox="0 0 16 16"><path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m.256 7a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1zm3.63-4.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382zM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0"/></svg>';
+                    break;
+                case "Gestión Comercial":
+                    iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-coin  me-2" viewBox="0 0 16 16"><path d="M5.5 9.511c.076.954.83 1.697 2.182 1.785V12h.6v-.709c1.4-.098 2.218-.846 2.218-1.932 0-.987-.626-1.496-1.745-1.76l-.473-.112V5.57c.6.068.982.396 1.074.85h1.052c-.076-.919-.864-1.638-2.126-1.716V4h-.6v.719c-1.195.117-2.01.836-2.01 1.853 0 .9.606 1.472 1.613 1.707l.397.098v2.034c-.615-.093-1.022-.43-1.114-.9zm2.177-2.166c-.59-.137-.91-.416-.91-.836 0-.47.345-.822.915-.925v1.76h-.005zm.692 1.193c.717.166 1.048.435 1.048.91 0 .542-.412.914-1.135.982V8.518z"/><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="M8 13.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11m0 .5A6 6 0 1 0 8 2a6 6 0 0 0 0 12"/></svg>';
                     break;
                 case "Cerrar Sesión":
                     iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z"/><path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z"/></svg>';
@@ -51,7 +54,7 @@
                 case "Migración de Bancos":
                 case "Cambio de Razón Social":
                 case "Consulta de Rif":
-                case "Reportes Tickets":
+                case "Consulta Tickets":
                 default:
                     iconSvg = '';
             }
@@ -105,7 +108,6 @@
                 // Si el menú se acaba de abrir Y tiene un moduleId asociado
                 // Y sus submódulos no han sido cargados aún (controlado por data-submodules-loaded)
                 if (menuElement.classList.contains("show") && moduleId && menuElement.dataset.submodulesLoaded !== 'true') {
-                    console.log(`Dropdown abierto para el módulo ${moduleId}. Cargando submódulos...`);
                     loadSubmodulesForModule(moduleId, menuElement);
                 }
 
@@ -178,6 +180,63 @@
     listItem.appendChild(anchor);
     return listItem;
 }
+        function buildMenuItem(itemData, type) {
+            const listItem = document.createElement('li');
+            const anchor = document.createElement('a');
+
+            const itemName = itemData.name_module || itemData.name_sub_module || itemData.name_subsub_module || '';
+            const safeName = itemName.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+            let itemUrl = '#';
+
+            if (type === 'module') {
+                listItem.className = 'nav-item dropdown mt-3';
+                anchor.className = 'nav-link dropdown-toggle d-flex align-items-center';
+                anchor.id = `${safeName}Dropdown`;
+                itemUrl = itemData.url_module || '#';
+
+                const heading = document.createElement('h6');
+                heading.style.color = 'white';
+                heading.style.margin = '0';
+                /*heading.style.paddingLeft = '.5rem';*/
+                heading.className = 'flex-grow-1';
+                heading.textContent = itemName;
+                anchor.innerHTML = itemData.icon_svg || getIconSvgForName(itemName);
+                anchor.appendChild(heading);
+
+                // Almacena el ID del módulo en el LI para futura referencia
+                listItem.setAttribute('data-module-id', itemData.id_module);
+
+            } else if (type === 'submodule') {
+                anchor.className = 'dropdown-item';
+                anchor.id = `${safeName}SubDropdown`;
+                itemUrl = itemData.url_sub_module || '#';
+                anchor.innerHTML = itemData.icon_svg || getIconSvgForName(itemName);
+                anchor.innerHTML += itemName;
+
+                if (itemData.subsub_modules && itemData.subsub_modules.length > 0) {
+                    listItem.classList.add('dropend');
+                    anchor.classList.add('dropdown-toggle'); 
+
+                    const dropdownIndicator = document.createElement('span');
+                    dropdownIndicator.className = 'dropdown-indicator ms-auto'; 
+                    // Asegúrate de que la clase 'dropdown-arrow' esté aquí
+                    dropdownIndicator.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right dropdown-arrow m-2" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>';
+                    
+                    anchor.appendChild(dropdownIndicator);
+                }
+
+            } else if (type === 'subsubmodule') {
+                anchor.className = 'dropdown-item';
+                itemUrl = itemData.url_subsub_module || '#';
+                anchor.textContent = itemName;
+                anchor.setAttribute('data-value', itemName);
+            }
+
+            anchor.href = itemUrl;
+            listItem.appendChild(anchor);
+            return listItem;
+        }
 
         /**
          * Construye un menú desplegable (UL) con los elementos de sub-nivel.
@@ -288,6 +347,81 @@
         //     const datos = `action=getSubmodulesForModule&id_module=${encodeURIComponent(moduleId)}`;
         //     xhr.send(datos);
         // }
+        function loadSubmodulesForModule(moduleId, targetUlElement) {
+            // Verifica si los submódulos ya fueron cargados para evitar peticiones redundantes
+            if (targetUlElement.dataset.submodulesLoaded === 'true') {
+                console.log(`Submódulos para el módulo ${moduleId} ya cargados.`);
+                return;
+            }
+
+            targetUlElement.innerHTML = '<div class="p-2 text-white-50">Cargando submódulos...</div>';
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/getSubmodulesForModule`);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+
+                        // AQUÍ ESTÁ EL CAMBIO CLAVE: Usa 'response.submodules' en lugar de 'response.sub_modules'
+                        if (response.success && Array.isArray(response.submodules)) { // <-- CAMBIO AQUÍ
+                            targetUlElement.innerHTML = ''; // Limpia el mensaje de carga
+                            if (response.submodules.length === 0) { // <-- Y AQUÍ
+                                targetUlElement.innerHTML = '<div class="p-2 text-white-50">No hay submódulos disponibles.</div>';
+                            } else {
+                                // Construye los submódulos y sus posibles sub-submódulos
+                                response.submodules.forEach(sub_module => { // <-- Y AQUÍ
+                                    const li = buildMenuItem(sub_module, 'submodule');
+                                    targetUlElement.appendChild(li);
+
+                                    // Si este submódulo tiene sub-submódulos, inicializa su dropdown
+                                    if (sub_module.subsub_modules && sub_module.subsub_modules.length > 0) {
+                                        const subSubUl = buildDropdownMenu(sub_module.subsub_modules, li.querySelector('a').id, 'subsubmodule');
+                                        li.appendChild(subSubUl);
+                                        // Inicializar el dropdown para este submódulo con sub-submódulos
+                                        setupCustomDropdown(li.querySelector('a'), subSubUl);
+                                    }
+                                });
+                            }
+                            targetUlElement.dataset.submodulesLoaded = 'true'; // Marca como cargado
+                        } else {
+                            console.error("Formato de respuesta inválido para submódulos: Se esperaba 'success: true' y un array 'submodules'.", response); // Actualiza el mensaje de error para reflejar el nombre correcto
+                            targetUlElement.innerHTML = '<div class="p-2 text-danger">Error al cargar submódulos.</div>';
+                            if (typeof Swal !== "undefined") {
+                                Swal.fire({ title: "Error", text: "Formato de respuesta de submódulos inesperado.", icon: "error", confirmButtonText: "OK", color: "black" });
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Error al analizar la respuesta JSON de submódulos:", error);
+                        targetUlElement.innerHTML = '<div class="p-2 text-danger">Error al procesar datos.</div>';
+                        if (typeof Swal !== "undefined") {
+                            Swal.fire({ title: "Error", text: "Ocurrió un error al procesar los submódulos del servidor.", icon: "error", confirmButtonText: "OK", color: "black" });
+                        }
+                    }
+                } else {
+                    console.error(
+                        `Error al obtener submódulos para el módulo ${moduleId}: ${xhr.status} ${xhr.statusText}`
+                    );
+                    targetUlElement.innerHTML = `<div class="p-2 text-danger">Error ${xhr.status} al cargar.</div>`;
+                    if (typeof Swal !== "undefined") {
+                        Swal.fire({ title: "Error", text: `Error de conexión con el servidor al cargar submódulos: ${xhr.status}`, icon: "error", confirmButtonText: "OK", color: "black" });
+                    }
+                }
+            };
+
+            xhr.onerror = function () {
+                console.error("Network Error al cargar los submódulos.");
+                targetUlElement.innerHTML = '<div class="p-2 text-danger">Error de red.</div>';
+                if (typeof Swal !== "undefined") {
+                    Swal.fire({ title: "Error de red", text: "No se pudo conectar al servidor para cargar los submódulos.", icon: "error", confirmButtonText: "OK", color: "black" });
+                }
+            };
+
+            const datos = `action=getSubmodulesForModule&id_module=${encodeURIComponent(moduleId)}`;
+            xhr.send(datos);
+        }
 
         /**
          * Fetches main modules and initializes their custom dropdowns.
@@ -763,3 +897,188 @@ function loadSubmodulesForModule(moduleId, menuElement) {
     xhrSubmodules.send(datos);
 }
 
+   
+
+
+
+
+  // --- // --- // --- // --- // --- // --- // --- // --- // --- // --- // --- // --- // --- // --- // ---       
+
+
+// --- Funciones para manipular la UI y guardar en LocalStorage ---
+
+function sidebarColor(element) {
+    const newColor = element.getAttribute('data-color');
+    const sidebar = document.getElementById('sidenav-main'); // Tu sidebar tiene este ID
+    // Si tu navbar principal también necesita cambiar de color, identifica su ID o clase y manipúlalo aquí.
+    // Por ahora, nos enfocamos en el sidenav ya que es donde las clases de color se aplican en tu HTML.
+
+    if (sidebar) {
+        // Elimina clases de color previas del sidenav
+        sidebar.classList.remove('bg-gradient-primary', 'bg-gradient-dark', 'bg-gradient-info', 'bg-gradient-success', 'bg-gradient-warning', 'bg-gradient-danger', 'bg-white', 'bg-default'); // Asegúrate de quitar bg-white y bg-default también si aplican
+        // Agrega la nueva clase de color
+        sidebar.classList.add(`bg-gradient-${newColor}`);
+        // Para Argon Dashboard, el color del sidebar se aplica directamente con bg-gradient-{color}
+    }
+
+    // Guarda el color seleccionado en LocalStorage
+    localStorage.setItem('sidebarColor', newColor);
+
+    // Actualiza el estado visual de los badges (activo/inactivo) en el panel de configuración
+    document.querySelectorAll('.badge-colors .badge').forEach(badge => {
+        badge.classList.remove('active');
+    });
+    element.classList.add('active');
+}
+
+function sidebarType(element) {
+    const newTypeClass = element.getAttribute('data-class'); // Esto será 'bg-white' o 'bg-default'
+    const sidebar = document.getElementById('sidenav-main'); // Tu sidebar tiene este ID
+
+    if (sidebar) {
+        // Elimina las clases de tipo previas
+        sidebar.classList.remove('bg-white', 'bg-default');
+        // Agrega la nueva clase de tipo
+        sidebar.classList.add(newTypeClass);
+    }
+
+    // Guarda el tipo seleccionado en LocalStorage
+    localStorage.setItem('sidebarType', newTypeClass);
+
+    // Actualiza el estado visual de los botones de tipo
+    document.querySelectorAll('[onclick="sidebarType(this)"]').forEach(button => {
+        button.classList.remove('active');
+    });
+    element.classList.add('active');
+}
+
+function navbarFixed(element) {
+    const isChecked = element.checked;
+    // Debes identificar el elemento de tu navbar principal (el de arriba)
+    // En Argon Dashboard, a menudo es un <nav class="navbar navbar-main"> o similar
+    // Si no tienes un ID, puedes usar una clase general como .navbar-main
+    const navbar = document.querySelector('.navbar-main'); // Ajusta este selector si es diferente
+
+    if (navbar) {
+        if (isChecked) {
+            // Asegúrate de que esta sea la clase correcta para fijar el navbar en Argon
+            navbar.classList.add('position-sticky', 'top-1', 'z-index-sticky');
+            navbar.classList.remove('position-absolute'); // Si se usa position-absolute por defecto
+        } else {
+            navbar.classList.remove('position-sticky', 'top-1', 'z-index-sticky');
+            navbar.classList.add('position-absolute'); // Si se usa position-absolute por defecto
+        }
+    }
+    localStorage.setItem('navbarFixed', isChecked);
+}
+
+function darkMode(element) {
+    const isChecked = element.checked;
+    if (isChecked) {
+        document.body.classList.add('dark-version'); // Esta clase generalmente se aplica al body
+    } else {
+        document.body.classList.remove('dark-version');
+    }
+    localStorage.setItem('darkMode', isChecked);
+}
+
+// --- Cargar las preferencias al inicio de la página (DEBE EJECUTARSE EN CADA MÓDULO) ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Cargar color del sidebar
+    const savedColor = localStorage.getItem('sidebarColor');
+    if (savedColor) {
+        const sidebar = document.getElementById('sidenav-main'); // Tu sidebar
+        if (sidebar) {
+            // Limpia todas las posibles clases de color y tipo antes de aplicar la guardada
+            sidebar.classList.remove('bg-gradient-primary', 'bg-gradient-dark', 'bg-gradient-info', 'bg-gradient-success', 'bg-gradient-warning', 'bg-gradient-danger', 'bg-white', 'bg-default');
+            sidebar.classList.add(`bg-gradient-${savedColor}`);
+            // También activa el badge correspondiente en el panel de configuración
+            const activeBadge = document.querySelector(`.badge-colors .badge[data-color="${savedColor}"]`);
+            if (activeBadge) {
+                // Desactiva cualquier otro badge activo y activa el correcto
+                document.querySelectorAll('.badge-colors .badge').forEach(badge => {
+                    badge.classList.remove('active');
+                });
+                activeBadge.classList.add('active');
+            }
+        }
+    } else {
+        // Si no hay color guardado, asegúrate de que el "primary" esté activo por defecto si es tu estilo inicial
+        const defaultBadge = document.querySelector('.badge-colors .badge.bg-gradient-primary');
+        if (defaultBadge) {
+            defaultBadge.classList.add('active');
+        }
+    }
+
+
+    // Cargar tipo de sidebar (Claro/Oscuro - bg-white/bg-default)
+    const savedType = localStorage.getItem('sidebarType');
+    if (savedType) {
+        const sidebar = document.getElementById('sidenav-main'); // Tu sidebar
+        if (sidebar) {
+            sidebar.classList.remove('bg-white', 'bg-default'); // Quita las clases de tipo
+            sidebar.classList.add(savedType);
+            const activeButton = document.querySelector(`[onclick="sidebarType(this)"][data-class="${savedType}"]`);
+            if (activeButton) {
+                // Desactiva cualquier otro botón activo y activa el correcto
+                document.querySelectorAll('[onclick="sidebarType(this)"]').forEach(button => {
+                    button.classList.remove('active');
+                });
+                activeButton.classList.add('active');
+            }
+        }
+    } else {
+        // Si no hay tipo guardado, activa el botón "Azul" (bg-white) por defecto
+        const defaultTypeButton = document.querySelector('[onclick="sidebarType(this)"][data-class="bg-white"]');
+        if (defaultTypeButton) {
+            defaultTypeButton.classList.add('active');
+        }
+    }
+
+    // Cargar estado de Navbar Fija
+    const savedNavbarFixed = localStorage.getItem('navbarFixed');
+    const navbarFixedCheckbox = document.getElementById('navbarFixed');
+    const navbar = document.querySelector('.navbar-main'); // Tu navbar superior
+
+    if (navbarFixedCheckbox && navbar) {
+        if (savedNavbarFixed !== null) {
+            const isFixed = savedNavbarFixed === 'true';
+            navbarFixedCheckbox.checked = isFixed;
+            if (isFixed) {
+                navbar.classList.add('position-sticky', 'top-1', 'z-index-sticky');
+                navbar.classList.remove('position-absolute');
+            } else {
+                navbar.classList.remove('position-sticky', 'top-1', 'z-index-sticky');
+                navbar.classList.add('position-absolute');
+            }
+        } else {
+            // Si no hay nada guardado, asegura que el checkbox refleje el estado inicial del navbar.
+            // Por ejemplo, si tu navbar es fija por defecto, marca el checkbox.
+            // Esto es más complejo ya que necesitarías saber el estado CSS inicial.
+            // Una opción simple es que, si no hay preferencia, el checkbox esté desmarcado por defecto.
+            navbarFixedCheckbox.checked = false; // Asume que no es fijo si no hay preferencia guardada.
+            navbar.classList.remove('position-sticky', 'top-1', 'z-index-sticky');
+            navbar.classList.add('position-absolute');
+        }
+    }
+
+
+    // Cargar estado de Dark Mode
+    const savedDarkMode = localStorage.getItem('darkMode');
+    const darkModeCheckbox = document.getElementById('dark-version');
+    if (darkModeCheckbox) {
+        if (savedDarkMode !== null) {
+            const isDarkMode = savedDarkMode === 'true';
+            darkModeCheckbox.checked = isDarkMode;
+            if (isDarkMode) {
+                document.body.classList.add('dark-version');
+            } else {
+                document.body.classList.remove('dark-version');
+            }
+        } else {
+            // Si no hay preferencia, el checkbox se desmarca por defecto (modo claro)
+            darkModeCheckbox.checked = false;
+            document.body.classList.remove('dark-version');
+        }
+    }
+});

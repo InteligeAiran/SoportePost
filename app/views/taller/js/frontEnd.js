@@ -311,11 +311,11 @@ function getTicketData() {
                                 ${d.estatus_inteliservices}
                             </div>
                             <div class="col-sm-6 mb-2">
-                                <strong><div>Fecha Instalación POS:</div></strong><br>
+                                <strong><div>Fecha Instalación:</div></strong><br>
                                 ${d.fecha_instalacion}
                             </div>
                             <div class="col-sm-6 mb-2">
-                                <strong><div>Fecha Creación ticket:</div></strong><br>
+                                <strong><div>Creación ticket:</div></strong><br>
                                 ${d.create_ticket}
                             </div>
                             <div class="col-sm-6 mb-2">
@@ -336,10 +336,6 @@ function getTicketData() {
                             <div class="col-sm-8 mb-2">
                                 <strong><div>Falla:</div></strong><br>
                                 ${d.name_failure}
-                            </div>
-                            <div class="col-sm-4 mb-2">
-                                <strong><div>Proceso:</div></strong><br>
-                                ${d.name_process_ticket}
                             </div>
                             <div class="col-sm-8 mb-2">
                                 <strong><div>Estatus Ticket:</div></strong><br>

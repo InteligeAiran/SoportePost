@@ -47,6 +47,7 @@ class EmailService
             $mail->SMTPSecure = $this->mailerConfig['secure'];
             $mail->Port = $this->mailerConfig['port'];
             $mail->CharSet = 'UTF-8';
+            
 
             // Remitente
             $mail->setFrom($this->mailerConfig['from_email'], $this->mailerConfig['from_name']);

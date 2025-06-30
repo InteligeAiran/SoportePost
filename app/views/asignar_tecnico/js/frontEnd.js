@@ -1,221 +1,299 @@
 let modalInstance;
 let currentTicketId = null;
 
-function getTicketData() {
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketData`);
+function getTicketDataCoordinator() {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketData`);
 
-  const tbody = document
-    .getElementById("tabla-ticket")
-    .getElementsByTagName("tbody")[0];
+    const tbody = document
+        .getElementById("tabla-ticket")
+        .getElementsByTagName("tbody")[0];
 
-  // Destruye DataTables si ya está inicializado
-  if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
-    $("#tabla-ticket").DataTable().destroy();
-    tbody.innerHTML = ""; // Limpia el tbody después de destruir DataTables
-  }
-
-  xhr.onload = function () {
-    if (xhr.status >= 200 && xhr.status < 300) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          const TicketData = response.ticket;
-          const modalElement = document.getElementById("staticBackdrop");
-          const detailsPanel = document.getElementById("ticket-details-panel"); // Referencia al panel de detalles
-
-          // Limpiar el panel de detalles al cargar nuevos datos de la tabla
-          detailsPanel.innerHTML =
-            "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
-
-          const dataForDataTable = [];
-
-          TicketData.forEach((data) => {
-            dataForDataTable.push([
-              data.id_ticket,
-              data.rif,
-              data.razonsocial_cliente,
-              data.create_ticket,
-              data.name_accion_ticket,
-              data.nro_ticket,
-              // Acciones
-              `
-                            <button id="myUniqueAssingmentButton"
-                                class="btn btn-sm btn-assign-tech"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                title="Asignar Técnico"
-                                data-ticket-id="${data.id_ticket}"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>
-                            </button>`,
-            ]);
-          });
-
-          // Inicialización de DataTables
-          const dataTableInstance = $("#tabla-ticket").DataTable({
-            data: dataForDataTable,
-            scrollX: "200px",
-            responsive: false,
-            pagingType: "simple_numbers",
-            lengthMenu: [[5, 10], ['5', '10']],      
-            autoWidth: false,
-            columns: [
-              { title: "ID ticket" },
-              { title: "RIF" },
-              { title: "Raz&oacuten Social" },
-              { title: "Fecha Creacion" },
-              { title: "Acción Ticket" },
-              { title: "Nro Ticket" },
-              { title: "Acciones", orderable: false },
-            ],
-            language: {
-              lengthMenu: "Mostrar _MENU_ Registros",
-              emptyTable: "No hay Resultados disponibles en la tabla",
-              zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
-              infoEmpty: "No hay datos disponibles",
-              infoFiltered: " de _MAX_ Disponibles",
-              search: "Buscar:",
-              loadingRecords: "Buscando...",
-              processing: "Procesando...",
-              paginate: {
-                first: "Primero",
-                last: "Último",
-                next: "Siguiente",
-                previous: "Anterior",
-              },
-            },
-            // ************ CAMBIOS CLAVE AQUI ************
-            // ... tu configuración de DataTables ...
-            dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-            initComplete: function (settings, json) {
-                const buttonsHtml = `
-                    <button id="btn-asignados" class="btn btn-primary me-2">Asignados</button>
-                    <button id="btn-por-asignar" class="btn btn-secondary">Por Asignar</button>
-                `;
-                $(".dt-buttons-container").html(buttonsHtml);
-
-                // ************* INICIO CAMBIOS PARA LOS BOTONES *************
-
-                // Función para manejar la selección de botones
-                function setActiveButton(activeButtonId) {
-                    // Remover clases de los botones y añadir las clases correctas
-                    $("#btn-asignados").removeClass("btn-primary btn-secondary");
-                    $("#btn-por-asignar").removeClass("btn-primary btn-secondary");
-
-                    if (activeButtonId === "btn-asignados") {
-                        $("#btn-asignados").addClass("btn-primary");
-                        $("#btn-por-asignar").addClass("btn-secondary");
-                    } else {
-                        $("#btn-asignados").addClass("btn-secondary");
-                        $("#btn-por-asignar").addClass("btn-primary");
-                    }
-                }
-
-                // Inicialmente, establecer "Asignados" como activo (porque el filtro por defecto lo será)
-                setActiveButton("btn-asignados");
-
-                $("#btn-asignados").on("click", function () {
-                    dataTableInstance
-                        .column(4)
-                        .search("Asignado al Técnico")
-                        .draw();
-                    setActiveButton("btn-asignados"); // Llamar a la función para actualizar el estilo
-                });
-
-                $("#btn-por-asignar").on("click", function () {
-                    dataTableInstance
-                        .column(4)
-                        .search("Asignado al Coordinador")
-                        .draw();
-                    setActiveButton("btn-por-asignar"); // Llamar a la función para actualizar el estilo
-                });
-                // ************* FIN CAMBIOS PARA LOS BOTONES *************
-            },
-            // ... el resto de tu configuración de DataTables ...
-            // ************ FIN CAMBIOS CLAVE ************
-          });
-
-          $("#tabla-ticket").resizableColumns();
-
-          $("#tabla-ticket tbody")
-            .off("click", "tr")
-            .on("click", "tr", function () {
-              const tr = $(this);
-              const rowData = dataTableInstance.row(tr).data();
-
-              if (!rowData) {
-                return;
-              }
-
-              $("#tabla-ticket tbody tr").removeClass("table-active");
-              tr.addClass("table-active");
-
-              const ticketId = rowData[0];
-
-              const selectedTicketDetails = TicketData.find(
-                (t) => t.id_ticket == ticketId
-              );
-
-              if (selectedTicketDetails) {
-                detailsPanel.innerHTML = formatTicketDetailsPanel(
-                  selectedTicketDetails
-                );
-                loadTicketHistory(ticketId);
-                if (selectedTicketDetails.serial_pos) {
-                  downloadImageModal(selectedTicketDetails.serial_pos);
-                } else {
-                  const imgElement = document.getElementById(
-                    "device-ticket-image"
-                  );
-                  if (imgElement) {
-                    imgElement.src =
-                      '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png';
-                    imgElement.alt = "Serial no disponible";
-                  }
-                }
-              } else {
-                detailsPanel.innerHTML =
-                  "<p>No se encontraron detalles para este ticket.</p>";
-              }
-            });
-
-          $("#tabla-ticket tbody")
-            .off("click", ".btn-assign-tech")
-            .on("click", ".btn-assign-tech", function (e) {
-              e.stopPropagation();
-              const ticketId = $(this).data("ticket-id");
-              currentTicketId = ticketId;
-              const modalBootstrap = new bootstrap.Modal(modalElement, {
-                backdrop: "static",
-              });
-              modalInstance = modalBootstrap;
-              modalBootstrap.show();
-            });
-        } else {
-          tbody.innerHTML = '<tr><td colspan="9">Error al cargar</td></tr>';
-          console.error("Error:", response.message);
-        }
-      } catch (error) {
-        tbody.innerHTML =
-          '<tr><td colspan="9">Error al procesar la respuesta</td></tr>';
-        console.error("Error parsing JSON:", error);
-      }
-    } else if (xhr.status === 404) {
-      tbody.innerHTML =
-        '<tr><td colspan="9">No se encontraron usuarios</td></tr>';
-    } else {
-      tbody.innerHTML = '<tr><td colspan="9">Error de conexión</td></tr>';
-      console.error("Error:", xhr.status, xhr.statusText);
+    // Destruye DataTables si ya está inicializado
+    if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
+        $("#tabla-ticket").DataTable().destroy();
+        tbody.innerHTML = ""; // Limpia el tbody después de destruir DataTables
     }
-  };
-  xhr.onerror = function () {
-    tbody.innerHTML = '<tr><td colspan="9">Error de conexión</td></tr>';
-    console.error("Error de red");
-  };
-  const datos = `action=GetTicketData`;
-  xhr.send(datos);
+
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const TicketData = response.ticket;
+                    const modalElement = document.getElementById("staticBackdrop");
+                    const detailsPanel = document.getElementById("ticket-details-panel");
+
+                    detailsPanel.innerHTML =
+                        "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
+
+                    const dataForDataTable = [];
+
+                    TicketData.forEach((data) => {
+                        let actionButtonsHtml = ''; // Variable para construir los botones de acción
+
+                        // Lógica para el botón "Recibido" y el botón de Asignación
+                       // Lógica para el botón "Recibido" y "Asignar Técnico" para el COORDINADOR
+                        if (data.name_accion_ticket === 'Asignado al Coordinador') { // Acción 4
+                            // Si está asignado al coordinador, ambos botones están activos
+                            actionButtonsHtml += `
+                                <button class="btn btn-sm btn-info btn-received-coord mr-2"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Marcar como Recibido por Coordinador"
+                                    data-ticket-id="${data.id_ticket}">
+                                    POS Recibido
+                                </button>
+                                 <button id="myUniqueAssingmentButton"
+                                    class="btn btn-sm btn-assign-tech"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Asignar Técnico"
+                                    data-ticket-id="${data.id_ticket}"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>
+                                </button>
+                            `;
+                        } else if (data.name_accion_ticket === 'Recibido por el Coordinador') { // Acción 3
+                            // Si ya está recibido por el coordinador, el botón "Recibido" se deshabilita
+                            actionButtonsHtml += `
+                                <button style = "display: none;" class="btn btn-sm btn-info btn-received-coord mr-2"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Ticket ya Recibido por Coordinador"
+                                    data-ticket-id="${data.id_ticket}"
+                                    Recibido
+                                </button>
+                                <button id="myUniqueAssingmentButton"
+                                    class="btn btn-sm btn-assign-tech"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Asignar Técnico"
+                                    data-ticket-id="${data.id_ticket}"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>
+                                </button>
+                            `;
+                        }
+                        // Puedes añadir más condiciones para otros estados si es necesario
+
+                        dataForDataTable.push([
+                            data.id_ticket,
+                            data.rif,
+                            data.razonsocial_cliente,
+                            data.name_accion_ticket,
+                            actionButtonsHtml, // Usa la variable con los botones
+                        ]);
+                    });
+
+                    // Inicialización de DataTables
+                    const dataTableInstance = $("#tabla-ticket").DataTable({
+                        data: dataForDataTable,
+                        scrollX: "200px",
+                        responsive: false,
+                        pagingType: "simple_numbers",
+                        lengthMenu: [[5, 10], ['5', '10']],
+                        autoWidth: false,
+                        columns: [
+                            { title: "ID ticket" },
+                            { title: "Rif" },
+                            {
+                                title: "Raz&oacuten Social",
+                                render: function (data, type, row) {
+                                    if (type === 'display') {
+                                        // Siempre devuelve el span, pero con la clase inicial de truncado
+                                        // La clase 'truncated-cell' aplicará los estilos de truncado
+                                        return `<span class="truncated-cell" data-full-text="${data}">${data}</span>`;
+                                    }
+                                    return data; // Para otros tipos (sort, filter), devuelve el dato original
+                                }
+                            },
+                            { title: "Acción Ticket" },
+                            { title: "Acciones", orderable: false },
+                        ],
+                        language: 
+                        { 
+                          lengthMenu: "Mostrar _MENU_ Registros", // Esta línea es la clave
+                          emptyTable: "No hay Registros disponibles en la tabla",
+                          zeroRecords: "No se encontraron resultados para la búsqueda",
+                          info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
+                          infoEmpty: "No hay Registros disponibles",
+                          infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
+                          search: "Buscar:",
+                          loadingRecords: "Buscando...",
+                          processing: "Procesando...",
+                          paginate: {
+                            first: "Primero",
+                            last: "Último",
+                            next: "Siguiente",
+                            previous: "Anterior",
+                          },
+                        },
+                        dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+                        initComplete: function (settings, json) {
+                        const buttonsHtml = `
+                            <button id="btn-asignados" class="btn btn-primary me-2">Asignados</button>
+                            <button id="btn-por-asignar" class="btn btn-secondary me-2">Por Asignar</button>
+                            <button id="btn-recibidos" class="btn btn-info">POS Recibidos</button>
+                        `;
+                        // Ensure the container itself is a flex container for its buttons
+                        $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+
+                        function setActiveButton(activeButtonId) {
+                            // Remove active classes from all buttons
+                            $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
+                            $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
+                            $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary"); // Add for "Recibidos"
+
+                            // Add active class to the clicked button
+                            $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
+                        }
+
+                        setActiveButton("btn-asignados"); // Filtro inicial
+
+                        $("#btn-asignados").on("click", function () {
+                            dataTableInstance
+                                .column(3) // Assuming "Acción Ticket" is the 6th column (index 5)
+                                .search("Asignado al Técnico")
+                                .draw();
+                            setActiveButton("btn-asignados");
+                        });
+
+                        $("#btn-por-asignar").on("click", function () {
+                            dataTableInstance
+                                .column(3) // Assuming "Acción Ticket" is the 6th column (index 5)
+                                .search("Asignado al Coordinador")
+                                .draw();
+                            setActiveButton("btn-por-asignar");
+                        });
+
+                        // Add click event for "Recibidos" button
+                        $("#btn-recibidos").on("click", function () {
+                            dataTableInstance
+                                .column(3) // Assuming "Acción Ticket" is the 6th column (index 5)
+                                .search("Recibido por el Coordinador") // Adjust the search term as needed
+                                .draw();
+                            setActiveButton("btn-recibidos");
+                        });
+                    },
+                    });
+
+                    $("#tabla-ticket").resizableColumns();
+
+                    $("#tabla-ticket tbody")
+                      .off("click", "tr")
+                      .on("click", "tr", function () {
+                          const tr = $(this);
+                            const rowData = dataTableInstance.row(tr).data();
+
+                            if (!rowData) {
+                                return;
+                            }
+
+                            $("#tabla-ticket tbody tr").removeClass("table-active");
+                            tr.addClass("table-active");
+
+                            const ticketId = rowData[0];
+
+                            const selectedTicketDetails = TicketData.find(
+                                (t) => t.id_ticket == ticketId
+                            );
+
+                            if (selectedTicketDetails) {
+                                detailsPanel.innerHTML = formatTicketDetailsPanel(
+                                    selectedTicketDetails
+                                );
+                                loadTicketHistory(ticketId);
+                                if (selectedTicketDetails.serial_pos) {
+                                    downloadImageModal(selectedTicketDetails.serial_pos);
+                                } else {
+                                    const imgElement = document.getElementById(
+                                        "device-ticket-image"
+                                    );
+                                    if (imgElement) {
+                                        imgElement.src =
+                                            '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png';
+                                        imgElement.alt = "Serial no disponible";
+                                    }
+                                }
+                            } else {
+                                detailsPanel.innerHTML =
+                                    "<p>No se encontraron detalles para este ticket.</p>";
+                            }
+                        });
+
+                        $("#tabla-ticket tbody").off("click", ".truncated-cell").on("click", ".truncated-cell", function (e) {
+                        e.stopPropagation(); // Evitar que el clic en la celda active el evento de clic de la fila
+                        const $cellSpan = $(this);
+                        const fullText = $cellSpan.data('full-text');
+
+                        if ($cellSpan.hasClass('truncated-cell')) {
+                            // Si está truncado, expandir
+                            $cellSpan.removeClass('truncated-cell').addClass('expanded-cell');
+                            $cellSpan.text(fullText); // Muestra el texto completo
+                        } else {
+                            // Si está expandido, truncar de nuevo
+                            $cellSpan.removeClass('expanded-cell').addClass('truncated-cell');
+                            // Volvemos a truncar el texto para la visualización inicial si es necesario
+                            const displayLength = 25; // Debe coincidir con tu CSS max-width aproximado
+                            if (fullText.length > displayLength) {
+                                $cellSpan.text(fullText.substring(0, displayLength) + '...');
+                            } else {
+                                $cellSpan.text(fullText);
+                            }
+                        }
+                        // DataTables puede ajustar el ancho de la columna si el texto expandido lo necesita
+                        // Si no lo hace automáticamente, podrías forzar un redraw o un ajuste de columnas.
+                        // dataTableInstance.columns.adjust().draw(); // Esto podría causar un parpadeo
+                    });
+
+                    // *** NUEVO EVENTO CLICK PARA EL BOTÓN "RECIBIDO" ***
+                    $("#tabla-ticket tbody").off("click", ".btn-received-coord").on("click", ".btn-received-coord", function (e) {
+                        e.stopPropagation(); // Evitar que se active el evento de clic de la fila
+                        const ticketId = $(this).data("ticket-id");
+                        const nroTicket = $(this).closest("tr").find("td:nth-child(3)").text().trim(); // Obtiene el número de ticket de la tercera columna
+                        markTicketAsReceived(ticketId, nroTicket); // Llama a la nueva función
+                    });
+
+                    // Evento click existente para el botón de Asignar Técnico
+                    $("#tabla-ticket tbody")
+                        .off("click", ".btn-assign-tech")
+                        .on("click", ".btn-assign-tech", function (e) {
+                            e.stopPropagation();
+                            const ticketId = $(this).data("ticket-id");
+                            const nroTicket = $(this).closest("tr").find("td:nth-child(3)").text().trim(); // Obtiene el número de ticket de la tercera columna
+                            currentTicketId = ticketId;
+                            currentTicketNroForAssignment = nroTicket; // Guarda el número de ticket para usarlo en la asignación
+                            const modalBootstrap = new bootstrap.Modal(modalElement, {
+                                backdrop: "static",
+                            });
+                            modalInstance = modalBootstrap;
+                            modalBootstrap.show();
+                        });
+
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="9">Error al cargar</td></tr>';
+                    console.error("Error:", response.message);
+                }
+            } catch (error) {
+                tbody.innerHTML =
+                    '<tr><td colspan="9">Error al procesar la respuesta</td></tr>';
+                console.error("Error parsing JSON:", error);
+            }
+        } else if (xhr.status === 404) {
+            tbody.innerHTML =
+                '<tr><td colspan="9">No se encontraron usuarios</td></tr>';
+        } else {
+            tbody.innerHTML = '<tr><td colspan="9">Error de conexión</td></tr>';
+            console.error("Error:", xhr.status, xhr.statusText);
+        }
+    };
+    xhr.onerror = function () {
+        tbody.innerHTML = '<tr><td colspan="9">Error de conexión</td></tr>';
+        console.error("Error de red");
+    };
+    const datos = `action=GetTicketData`;
+    xhr.send(datos);
 }
 
+
+// *** NUEVA FUNCIÓN PARA MARCAR TICKET COMO RECIBIDO ***
 function formatTicketDetailsPanel(d) {
     // d es el objeto `data` completo del ticket
 
@@ -232,50 +310,49 @@ function formatTicketDetailsPanel(d) {
                     </div>
                 </div>
                 <div class="col-md-9">
-                    <h4 style = "color: black;">Ticket #${d.id_ticket}</h4>
+                    <h4 style = "color: black;">Ticket #${d.nro_ticket}</h4>
                     <hr class="mt-2 mb-3">
                     <div class="row">
                         <div class="col-sm-6 mb-2">
-                            <strong><div>Serial POS:</div></strong><br>
+                            <strong><div>Id Ticket:</div></strong>
+                            ${d.id_ticket}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                            <strong><div>Serial POS:</div></strong>
                             ${d.serial_pos}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Estatus POS:</div></strong><br>
+                            <br><strong><div>Estatus POS:</div></strong>
                             ${d.estatus_inteliservices}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Fecha Instalación POS:</div></strong><br>
+                             <br><strong><div>Fecha Instalación:</div></strong>
                             ${d.fecha_instalacion}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Fecha Creación ticket:</div></strong><br>
+                             <br><strong><div>Creación ticket:</div></strong>
                             ${d.create_ticket}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <strong><div>Usuario Gestión:</div></strong><br>
+                             <br><strong><div>Usuario Gestión:</div></strong>
                             ${d.full_name_tecnico}
                         </div>
                     </div>
                 </div>
             </div>
-
             <div class="row mb-3">
                 <div class="col-12">
                     <div class="row">
                         <div class="col-sm-4 mb-2">
-                             <strong><div>Acción:</div></strong><br>
+                             <strong><div>Acción:</div></strong>
                             ${d.name_accion_ticket}
                         </div>
-                        <div class="col-sm-8 mb-2">
-                             <strong><div>Falla:</div></strong><br>
-                            ${d.name_failure}
-                        </div>
-                        <div class="col-sm-4 mb-2">
-                             <strong><div>Proceso:</div></strong><br>
-                            ${d.name_process_ticket}
+                        <div class="col-sm-8 mb-2"  style = "margin-left: -7%;">
+                          <strong><div class="falla-reportada">Falla Reportada:</div></strong>
+                          <span class="falla-reportada-texto">${d.name_failure}</span>
                         </div>
                         <div class="col-sm-8 mb-2">
-                             <strong><div>Estatus Ticket:</div></strong><br>
+                            <br><strong><div>Estatus Ticket:</div></strong>
                             ${d.name_status_ticket}
                         </div>
                     </div>
@@ -416,47 +493,56 @@ function loadTicketHistory(ticketId) {
           const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
           const headingId = `headingHistoryItem_${ticketId}_${index}`;
 
-          let statusHeaderClass = "";
-          let statusHeaderText = "";
+           let headerStyle = "";
+            let textColor = "";
+            let statusHeaderText = ""; // Inicializa para asegurar que siempre haya un valor
 
-          // **Colores por defecto si no hay coincidencia o si el estado es nulo/vacío**
-          headerStyle = "background-color: #212529;"; // Gris claro de Bootstrap 'light'
-          textColor = "color: #212529;"; // Texto oscuro de Bootstrap 'dark'
-          statusHeaderText = ""; // Sin texto extra por defecto
+            // --- Lógica de colores basada en el 'name_status_ticket' (prioridad baja/media) ---
+            if (item.name_status_ticket) {
+                const statusLower = item.name_status_ticket.toLowerCase();
+                if (statusLower.includes("abierto")) {
+                    headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
+                    textColor = "color: #ffffff;"; // Texto blanco
+                    statusHeaderText = " (Abierto)";
+                } else if (
+                    statusLower.includes("cerrado") ||
+                    statusLower.includes("resuelto")
+                ) {
+                    headerStyle = "background-color: #28a745;"; // Verde
+                    textColor = "color: #ffffff;"; // Texto blanco
+                    statusHeaderText = " (Cerrado)";
+                } else if (
+                    statusLower.includes("pendiente") ||
+                    statusLower.includes("en proceso")
+                ) {
+                    headerStyle = "background-color: #ffc107;"; // Amarillo (Nota: este es el mismo amarillo que quieres para "Gestión Actual")
+                    textColor = "color: #343a40;"; // Texto oscuro
+                    statusHeaderText = " (En Proceso)";
+                } else if (
+                    statusLower.includes("cancelado") ||
+                    statusLower.includes("rechazado")
+                ) {
+                    headerStyle = "background-color: #dc3545;"; // Rojo
+                    textColor = "color: #ffffff;"; // Texto blanco
+                    statusHeaderText = " (Cancelado)";
+                } else if (statusLower.includes("espera")) {
+                    headerStyle = "background-color: #6c757d;"; // Gris
+                    textColor = "color: #ffffff;"; // Texto blanco
+                    statusHeaderText = " (En Espera)";
+                }
+            }
 
-          if (item.name_status_ticket) {
-            const statusLower = item.name_status_ticket.toLowerCase();
-            if (statusLower.includes("abierto")) {
-              headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (Abierto)";
-            } else if (
-              statusLower.includes("cerrado") ||
-              statusLower.includes("resuelto")
-            ) {
-              headerStyle = "background-color: #28a745;"; // Verde
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (Cerrado)";
-            } else if (
-              statusLower.includes("pendiente") ||
-              statusLower.includes("en proceso")
-            ) {
+           if (index === 0) {
+              // Es la última gestión (la "actual")
               headerStyle = "background-color: #ffc107;"; // Amarillo
               textColor = "color: #343a40;"; // Texto oscuro
-              statusHeaderText = " (En Proceso)";
-            } else if (
-              statusLower.includes("cancelado") ||
-              statusLower.includes("rechazado")
-            ) {
-              headerStyle = "background-color: #dc3545;"; // Rojo
+              statusHeaderText = ` (${item.name_status_ticket || 'Desconocido'})`; // Agrega el estatus actual o 'Desconocido' si no existe. // Sobrescribe el texto del estado si ya estaba.
+            } else {
+              // Son gestiones pasadas
+              headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
               textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (Cancelado)";
-            } else if (statusLower.includes("espera")) {
-              headerStyle = "background-color: #6c757d;"; // Gris
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (En Espera)";
+              // No sobrescribimos statusHeaderText aquí a menos que quieras algo como "(Pasada)"
             }
-          }
 
           historyHtml += `
                         <div class="card mb-3 custom-history-card"> <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
@@ -570,7 +656,7 @@ function loadTicketHistory(ticketId) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  getTicketData(); // Llama a la función para cargar los datos
+  getTicketDataCoordinator(); // Llama a la función para cargar los datos
 
   // Obtén la referencia al botón cerrar FUERA de la función getTicketData y del bucle
   const cerrar = document.getElementById("close-button");
@@ -601,10 +687,80 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 //console.log('FrontEnd.js loaded successfully!');
 
+function markTicketAsReceived(ticketId, nroTicket) { // Asegúrate de que nroTicket esté como parámetro
+    const id_user = document.getElementById("id_user").value;
+    Swal.fire({
+        title: `¿Marcar el ticket ${nroTicket} como recibido?`, // Usa template literals aquí
+        text: "Esta acción registrará la fecha de recepción y habilitará la asignación de técnico.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, Recibir Ticket",
+        cancelButtonText: "Cancelar",
+        color: "black"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/historical/MarkTicketReceived`); // Necesitas una nueva ruta de API para esto
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                           Swal.fire({
+                                title: "¡Recibido!",
+                                text: "El ticket N" + nroTicket + " ha sido marcado como recibido.",
+                                icon: "success",
+                                color: "black",
+                                confirmButtonColor: "#3085d6" // Ejemplo de un color azul Bootstrap por defecto
+                            });
+                            modalInstance.hide(); // Cierra el modal si está abierto
+                            getTicketDataCoordinator(); // Volver a cargar la tabla para reflejar los cambios
+                        } else {
+                            Swal.fire(
+                                "Error",
+                                response.message || "Hubo un error al marcar el ticket como recibido.",
+                                "error"
+                            );
+                        }
+                    } catch (error) {
+                        Swal.fire(
+                            "Error",
+                            "Error al procesar la respuesta del servidor.",
+                            "error"
+                        );
+                        console.error("Error parsing JSON for markTicketAsReceived:", error);
+                    }
+                } else {
+                    Swal.fire(
+                        "Error",
+                        `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
+                        "error"
+                    );
+                    console.error("Error en markTicketAsReceived:", xhr.status, xhr.statusText);
+                }
+            };
+            xhr.onerror = function () {
+                Swal.fire(
+                    "Error",
+                    "Error de red al intentar marcar el ticket como recibido.",
+                    "error"
+                );
+                console.error("Network error for markTicketAsReceived");
+            };
+
+            const data = `action=MarkTicketReceived&ticket_id=${ticketId}&id_user=${encodeURIComponent(id_user)}`;
+            xhr.send(data);
+        }
+    });
+}
+
+
 function AssignTicket() {
   const id_tecnico_asignado = document.getElementById("idSelectionTec").value;
-  /*console.log('ID del ticket a asignar:', currentTicketId); // Agrega un log más descriptivo
-    console.log('ID del ticket a asignar:', currentTicketId); // Agrega un log más descriptivo*/
 
   if (!currentTicketId || !id_tecnico_asignado) {
     Swal.fire({
@@ -627,19 +783,21 @@ function AssignTicket() {
         if (response.success) {
           Swal.fire({
             icon: "success",
-            title: "Asignado",
+            title: "Asignado Correctamente el Ticket nro: " + currentTicketNroForAssignment,
             text: response.message,
             color: "black",
-            timer: 2500,
-            timerProgressBar: true,
-            didOpen: () => {
-              Swal.showLoading();
-            },
-            willClose: () => {
-              setTimeout(() => {
-                location.reload(); // Recarga la página después del temporizador
-              }, 3000);
-            },
+            showConfirmButton: true,
+            confirmButtonText: "Ok",
+            confirmButtonColor: "#3085d6",
+          }).then((result) => { // <-- ¡Aquí está el cambio clave! Manejar la Promise
+              if (result.isConfirmed) { // Si el usuario hizo clic en "Sí, Recibir Ticket"
+                getTicketDataCoordinator(); // Recargar la tabla de tickets
+
+                const modalBootstrap = bootstrap.Modal.getInstance(modalElement);
+                if (modalBootstrap) {
+                  modalBootstrap.hide(); // Cerrar el modal si está abierto
+                }
+              }
           });
           document.getElementById("idSelectionTec").value = "";
           currentTicketId = null;

@@ -98,7 +98,7 @@ class TechnicalConsultionRepository
     public function GetTotalTickets($fecha_para_db){
         // Lógica para obtener todos los usuarios
         $result = $this->model->GetTotalTickets($fecha_para_db);
-        return $result['row']['get_tickets_total_count'];
+        return $result['get_tickets_total_count'];
     }
 
     public function VerifingClient($rif){
@@ -350,13 +350,17 @@ class TechnicalConsultionRepository
 
     public function getLastUserTicketInfo($id_user){
         $result = $this->model->GetLastUserTicketInfo($id_user);
-        if ($result) {
-            return [
-                'date_create_ticket' => new DateTime($result['row']['date_create_ticket']), // Convertir a objeto DateTime
-                'rif_last_ticket' => $result['row']['rif']
-            ];
+        // Si Model::getResult devuelve un array con 'num_rows' => 0 o simplemente null/false
+        if ($result && isset($result['num_rows']) && $result['num_rows'] > 0 && isset($result['row'])) {
+            // Asegúrate de que las claves existan
+            if (isset($result['row']['date_create_ticket']) && isset($result['row']['rif'])) {
+                return [
+                    'date_create_ticket' => new DateTime($result['row']['date_create_ticket']),
+                    'rif_last_ticket' => $result['row']['rif']
+                ];
+            }
         }
-        return null;
+        return null; // Si no hay resultados válidos, devuelve null
     }
 
     public function GetModules(){
@@ -405,6 +409,9 @@ class TechnicalConsultionRepository
             case "gestión usuario":
                 $url_segment = 'gestionusers'; // Usé el de tu HTML inicial
                 break;
+            case "gestión comercial":
+                $url_segment = 'gestion_comercial'; // Usé el de tu HTML inicial
+                break;
             case "cerrar sesión":
                 $url_segment = 'cerrar_session'; // Usé el de tu HTML inicial
                 break;
@@ -428,7 +435,7 @@ class TechnicalConsultionRepository
             case "consulta de rif":
                 $url_segment = 'consulta_rif'; // Usé el de tu HTML inicial
                 break;
-            case "reportes tickets":
+            case "consulta tickets":
                 $url_segment = 'consulta_ticket'; // Usé el de tu HTML inicial
                 break;
             // Añade más casos aquí si tienes otros nombres que se mapeen a URLs específicas
@@ -526,5 +533,19 @@ class TechnicalConsultionRepository
             return null;
         }
     }
+    public function getTicketAttachmentsDetails($id_ticket){
+        $result = $this->model->GetAttachments($id_ticket);
+        
+        if ($result) {
+            $attachments = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $attachment = pg_fetch_assoc($result['query'], $i);
+                $attachments[] = $attachment;
+            }
+            return $attachments;
+        } else {
+            return null;
+        }
+    } 
 }
 ?>
