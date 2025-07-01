@@ -6,6 +6,9 @@
         function getIconSvgForName(name) {
             let iconSvg = '';
             switch (name) {
+                case "Inicio":
+                    iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16"><path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.505a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/></svg>`;
+                    break;
                 case "Gestión de Tickets":
                     iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-ticket-fill me-2" viewBox="0 0 16 16"><path d="M1.5 3A1.5 1.5 0 0 0 0 4.5V6a.5.5 0 0 0 .5.5 1.5 1.5 0 1 1 0 3 .5.5 0 0 0-.5.5v1.5A1.5 1.5 0 0 0 1.5 13h13a1.5 1.5 0 0 0 1.5-1.5V10a.5.5 0 0 0-.5-.5 1.5 1.5 0 0 1 0-3A.5.5 0 0 0 16 6V4.5A1.5 1.5 0 0 0 14.5 3z"/></svg>';
                     break;
@@ -446,14 +449,8 @@
     const id_usuario = id_usuario_element.value;
     console.log("ID de Usuario obtenido:", id_usuario);
 
-    // Clear existing dynamic modules. Keep only the static "Inicio" if it's there.
-    // If "Inicio" is dynamically added here, ensure it's cleared and re-added correctly.
-    // Let's assume you want to clear everything except a potential hardcoded "Inicio"
-    // or re-add it dynamically at the top like last time.
-    navbarNav.innerHTML = ''; // Clear all existing children to start fresh
-
-    // Dynamically add "Inicio" and its HR if not hardcoded in your HTML
-    // You can remove this section if 'Inicio' is always present in your static HTML
+   
+    navbarNav.innerHTML = '';
     const inicioLi = document.createElement('li');
     inicioLi.className = 'nav-item';
     inicioLi.id = 'inicio-link';
