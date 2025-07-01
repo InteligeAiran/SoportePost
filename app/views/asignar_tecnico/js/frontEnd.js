@@ -1,6 +1,51 @@
+// Instancias de los modales de Bootstrap (las inicializaremos cuando el DOM esté listo)
 let modalInstance;
 let currentTicketId = null;
-let modalInstanceCoordinator; // Declara aquí para que sea accesible en todo el ámbito de DOMContentLoaded
+let modalInstanceCoordinator;
+let confirmReassignModalInstance = null;
+let selectTechnicianModalInstance = null;
+
+// --- Función para obtener el técnico actual y la lista de técnicos ---
+function getTechnicianData(ticketId) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const API_URL_GET_TECHNICIANS = `${ENDPOINT_BASE}${APP_PATH}api/users/GetTechniciansAndCurrentTicketTechnician`;
+
+        xhr.open("POST", API_URL_GET_TECHNICIANS);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        resolve({
+                            currentTechnicianName: response.current_technician_name,
+                            availableTechnicians: response.available_technicians
+                        });
+                    } else {
+                        console.error("Error al obtener datos de técnicos:", response.message);
+                        resolve({ currentTechnicianName: "N/A", availableTechnicians: [] }); // Resolve con datos vacíos en caso de error de lógica
+                    }
+                } catch (error) {
+                    console.error("Error parsing JSON para obtener técnicos:", error);
+                    reject(error); // Rechaza la promesa si hay un error de parseo
+                }
+            } else {
+                console.error("Error en la solicitud para obtener técnicos:", xhr.status, xhr.statusText);
+                reject(new Error(`HTTP error! status: ${xhr.status}`)); // Rechaza la promesa si hay un error HTTP
+            }
+        };
+
+        xhr.onerror = function () {
+            console.error("Error de red al intentar obtener técnicos.");
+            reject(new Error("Error de red"));
+        };
+
+        const dataToSend = `action=getTechnicians&ticket_id=${ticketId}`; // Envía el ticket_id
+        xhr.send(dataToSend);
+    });
+}
 
 
 function getTicketDataCoordinator() {
@@ -26,13 +71,18 @@ function getTicketDataCoordinator() {
                     const modalElement = document.getElementById("staticBackdrop");
 
                     if (modalElement) {
+                        // Asegúrate de que modalInstanceCoordinator es accesible globalmente o en este ámbito
+                        // Si ya lo declaraste con 'let modalInstanceCoordinator = null;' al inicio del script,
+                        // entonces solo necesitas asignarle la instancia aquí.
+                        // Si no, declárala aquí:
+                        // let modalInstanceCoordinator; // <-- Si no está declarada fuera de esta función
                         modalInstanceCoordinator = new bootstrap.Modal(modalElement, {
                             backdrop: "static", // Para que no se cierre al hacer clic fuera
                             keyboard: false     // Para que no se cierre con la tecla ESC
                         });
-                        } else {
-                          console.error("El elemento 'staticBackdrop' (modal de asignación) no fue encontrado en el DOM.");
-                        }
+                    } else {
+                        console.error("El elemento 'staticBackdrop' (modal de asignación) no fue encontrado en el DOM.");
+                    }
 
                     const detailsPanel = document.getElementById("ticket-details-panel");
 
@@ -44,10 +94,8 @@ function getTicketDataCoordinator() {
                     TicketData.forEach((data) => {
                         let actionButtonsHtml = ''; // Variable para construir los botones de acción
 
-                        // Lógica para el botón "Recibido" y el botón de Asignación
-                       // Lógica para el botón "Recibido" y "Asignar Técnico" para el COORDINADOR
+                        // Lógica para los botones de acción
                         if (data.name_accion_ticket === 'Asignado al Coordinador') { // Acción 4
-                            // Si está asignado al coordinador, ambos botones están activos
                             actionButtonsHtml += `
                                 <button class="btn btn-sm btn-info btn-received-coord mr-2"
                                     data-bs-toggle="tooltip"
@@ -57,7 +105,7 @@ function getTicketDataCoordinator() {
                                     data-nro-ticket="${data.nro_ticket}">
                                     POS Recibido
                                 </button>
-                                 <button id="myUniqueAssingmentButton"
+                                <button id="myUniqueAssingmentButton"
                                     class="btn btn-sm btn-assign-tech"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
@@ -68,9 +116,8 @@ function getTicketDataCoordinator() {
                                 </button>
                             `;
                         } else if (data.name_accion_ticket === 'Recibido por el Coordinador') { // Acción 3
-                            // Si ya está recibido por el coordinador, el botón "Recibido" se deshabilita
                             actionButtonsHtml += `
-                                <button style = "display: none;" class="btn btn-sm btn-info btn-received-coord mr-2"
+                                <button style="display: none;" class="btn btn-sm btn-info btn-received-coord mr-2"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
                                     title="Ticket ya Recibido por Coordinador"
@@ -83,8 +130,20 @@ function getTicketDataCoordinator() {
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
                                     title="Asignar Técnico"
-                                    data-ticket-id="${data.id_ticket}" 
-                                       data-nro-ticket="${data.nro_ticket}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>
+                                    data-ticket-id="${data.id_ticket}"
+                                    data-nro-ticket="${data.nro_ticket}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>
+                                </button>
+                            `;
+                        } else if (data.name_accion_ticket === 'Asignado al Técnico') {
+                            actionButtonsHtml += `
+                                <button id="reasingButton" class="btn btn-sm btn-primary btn-reassign-tech"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Reasignar Técnico"
+                                    data-ticket-id="${data.id_ticket}"
+                                    data-nro-ticket="${data.nro_ticket}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16"><path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/></svg>
                                 </button>
                             `;
                         }
@@ -100,7 +159,7 @@ function getTicketDataCoordinator() {
                     });
 
                     // Inicialización de DataTables
-                    const dataTableInstance = $("#tabla-ticket").DataTable({
+                    const dataTableInstance = $("#tabla-ticket").DataTable({ // <--- 'dataTableInstance' se declara aquí
                         data: dataForDataTable,
                         scrollX: "200px",
                         responsive: false,
@@ -114,19 +173,17 @@ function getTicketDataCoordinator() {
                                 title: "Raz&oacuten Social",
                                 render: function (data, type, row) {
                                     if (type === 'display') {
-                                        // Siempre devuelve el span, pero con la clase inicial de truncado
-                                        // La clase 'truncated-cell' aplicará los estilos de truncado
                                         return `<span class="truncated-cell" data-full-text="${data}">${data}</span>`;
                                     }
-                                    return data; // Para otros tipos (sort, filter), devuelve el dato original
+                                    return data;
                                 }
                             },
                             { title: "Acción Ticket" },
                             { title: "Acciones", orderable: false },
                         ],
-                        language: 
-                        { 
-                          lengthMenu: "Mostrar _MENU_ Registros", // Esta línea es la clave
+                        language:
+                        {
+                          lengthMenu: "Mostrar _MENU_ Registros",
                           emptyTable: "No hay Registros disponibles en la tabla",
                           zeroRecords: "No se encontraron resultados para la búsqueda",
                           info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
@@ -144,60 +201,66 @@ function getTicketDataCoordinator() {
                         },
                         dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
                         initComplete: function (settings, json) {
-                        const buttonsHtml = `
-                            <button id="btn-asignados" class="btn btn-primary me-2">Asignados</button>
-                            <button id="btn-por-asignar" class="btn btn-secondary me-2">Por Asignar</button>
-                            <button id="btn-recibidos" class="btn btn-info">POS Recibidos</button>
-                        `;
-                        // Ensure the container itself is a flex container for its buttons
-                        $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+                            // Dentro de initComplete, 'this' se refiere a la tabla jQuery
+                            // y 'this.api()' devuelve la instancia de la API de DataTables.
+                            const api = this.api(); // <--- Correcto: Obtener la instancia de la API aquí
 
-                        function setActiveButton(activeButtonId) {
-                            // Remove active classes from all buttons
-                            $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
-                            $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
-                            $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary"); // Add for "Recibidos"
+                            const buttonsHtml = `
+                                <button id="btn-asignados" class="btn btn-primary me-2">Asignados</button>
+                                <button id="btn-por-asignar" class="btn btn-secondary me-2">Por Asignar</button>
+                                <button id="btn-recibidos" class="btn btn-info">POS Recibidos</button>
+                            `;
+                            $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
-                            // Add active class to the clicked button
-                            $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
-                        }
+                            function setActiveButton(activeButtonId) {
+                                $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
+                                $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
+                                $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
 
-                        setActiveButton("btn-asignados"); // Filtro inicial
+                                $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
+                            }
 
-                        $("#btn-asignados").on("click", function () {
-                            dataTableInstance
-                                .column(3) // Assuming "Acción Ticket" is the 6th column (index 5)
+                            // Filtro inicial por "Asignados al Técnico"
+                            api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                                .column(3)
                                 .search("Asignado al Técnico")
                                 .draw();
-                            setActiveButton("btn-asignados");
-                        });
+                            setActiveButton("btn-asignados"); // Activa el botón "Asignados" al inicio
 
-                        $("#btn-por-asignar").on("click", function () {
-                            dataTableInstance
-                                .column(3) // Assuming "Acción Ticket" is the 6th column (index 5)
-                                .search("Asignado al Coordinador")
-                                .draw();
-                            setActiveButton("btn-por-asignar");
-                        });
 
-                        // Add click event for "Recibidos" button
-                        $("#btn-recibidos").on("click", function () {
-                            dataTableInstance
-                                .column(3) // Assuming "Acción Ticket" is the 6th column (index 5)
-                                .search("Recibido por el Coordinador") // Adjust the search term as needed
-                                .draw();
-                            setActiveButton("btn-recibidos");
-                        });
-                    },
+                            $("#btn-asignados").on("click", function () {
+                                api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                                    .column(3)
+                                    .search("Asignado al Técnico")
+                                    .draw();
+                                setActiveButton("btn-asignados");
+                            });
+
+                            $("#btn-por-asignar").on("click", function () {
+                                api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                                    .column(3)
+                                    .search("Asignado al Coordinador")
+                                    .draw();
+                                setActiveButton("btn-por-asignar");
+                            });
+
+                            $("#btn-recibidos").on("click", function () {
+                                api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                                    .column(3)
+                                    .search("Recibido por el Coordinador")
+                                    .draw();
+                                setActiveButton("btn-recibidos");
+                            });
+                        },
                     });
 
                     $("#tabla-ticket").resizableColumns();
 
                     $("#tabla-ticket tbody")
-                      .off("click", "tr")
-                      .on("click", "tr", function () {
-                          const tr = $(this);
-                            const rowData = dataTableInstance.row(tr).data();
+                        .off("click", "tr")
+                        .on("click", "tr", function () {
+                            const tr = $(this);
+                            const rowData = dataTableInstance.row(tr).data(); // Aquí 'dataTableInstance' sí está disponible
 
                             if (!rowData) {
                                 return;
@@ -235,37 +298,31 @@ function getTicketDataCoordinator() {
                             }
                         });
 
-                        $("#tabla-ticket tbody").off("click", ".truncated-cell").on("click", ".truncated-cell", function (e) {
-                        e.stopPropagation(); // Evitar que el clic en la celda active el evento de clic de la fila
+                    $("#tabla-ticket tbody").off("click", ".truncated-cell").on("click", ".truncated-cell", function (e) {
+                        e.stopPropagation();
                         const $cellSpan = $(this);
                         const fullText = $cellSpan.data('full-text');
 
                         if ($cellSpan.hasClass('truncated-cell')) {
-                            // Si está truncado, expandir
                             $cellSpan.removeClass('truncated-cell').addClass('expanded-cell');
-                            $cellSpan.text(fullText); // Muestra el texto completo
+                            $cellSpan.text(fullText);
                         } else {
-                            // Si está expandido, truncar de nuevo
                             $cellSpan.removeClass('expanded-cell').addClass('truncated-cell');
-                            // Volvemos a truncar el texto para la visualización inicial si es necesario
-                            const displayLength = 25; // Debe coincidir con tu CSS max-width aproximado
+                            const displayLength = 25;
                             if (fullText.length > displayLength) {
                                 $cellSpan.text(fullText.substring(0, displayLength) + '...');
                             } else {
                                 $cellSpan.text(fullText);
                             }
                         }
-                        // DataTables puede ajustar el ancho de la columna si el texto expandido lo necesita
-                        // Si no lo hace automáticamente, podrías forzar un redraw o un ajuste de columnas.
-                        // dataTableInstance.columns.adjust().draw(); // Esto podría causar un parpadeo
                     });
 
-                    // *** NUEVO EVENTO CLICK PARA EL BOTÓN "RECIBIDO" ***
+                    // Evento click para el botón "POS Recibido"
                     $("#tabla-ticket tbody").off("click", ".btn-received-coord").on("click", ".btn-received-coord", function (e) {
-                        e.stopPropagation(); // Evitar que se active el evento de clic de la fila
+                        e.stopPropagation();
                         const ticketId = $(this).data("ticket-id");
-                        const nroTicket = $(this).data("nro-ticket"); // <-- CORRECTO: Acceder al data-attribute del botón
-                        markTicketAsReceived(ticketId, nroTicket); // Llama a la nueva función
+                        const nroTicket = $(this).data("nro-ticket");
+                        markTicketAsReceived(ticketId, nroTicket);
                     });
 
                     // Evento click existente para el botón de Asignar Técnico
@@ -274,15 +331,33 @@ function getTicketDataCoordinator() {
                         .on("click", ".btn-assign-tech", function (e) {
                             e.stopPropagation();
                             const ticketId = $(this).data("ticket-id");
-                            const nroTicket = $(this).data("nro-ticket"); // <-- CORRECTO: Acceder al data-attribute del botón
+                            const nroTicket = $(this).data("nro-ticket");
                             currentTicketId = ticketId;
-                            currentTicketNroForAssignment = nroTicket; // Guarda el número de ticket para usarlo en la asignación
-                             if (modalInstanceCoordinator) {
-                                  modalInstanceCoordinator.show();
-                              } else {
-                                  console.error("Error: La instancia del modal de asignación no está disponible.");
-                              }
-                      });
+                            currentTicketNroForAssignment = nroTicket;
+                            if (modalInstanceCoordinator) {
+                                modalInstanceCoordinator.show();
+                            } else {
+                                console.error("Error: La instancia del modal de asignación no está disponible.");
+                            }
+                        });
+
+                    // *** NUEVO EVENTO CLICK PARA EL BOTÓN "REASIGNAR" ***
+                    $("#tabla-ticket tbody")
+                        .off("click", ".btn-reassign-tech")
+                        .on("click", ".btn-reassign-tech", function (e) {
+                            e.stopPropagation();
+                            const ticketId = $(this).data("ticket-id");
+                            const nroTicket = $(this).data("nro-ticket");
+                            currentTicketId = ticketId;
+                            currentTicketNroForAssignment = nroTicket;
+
+                            if (modalInstanceCoordinator) {
+                                modalInstanceCoordinator.show();
+                            } else {
+                                console.error("Error: La instancia del modal de reasignación no está disponible.");
+                            }
+                        });
+
 
                 } else {
                     tbody.innerHTML = '<tr><td colspan="9">Error al cargar</td></tr>';
@@ -308,7 +383,6 @@ function getTicketDataCoordinator() {
     const datos = `action=GetTicketData`;
     xhr.send(datos);
 }
-
 
 // *** NUEVA FUNCIÓN PARA MARCAR TICKET COMO RECIBIDO ***
 function formatTicketDetailsPanel(d) {

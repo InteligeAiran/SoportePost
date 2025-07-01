@@ -116,6 +116,58 @@ function mi_navbar() {}
     </div>
     <!--MODAL PARA SELECCIONAR TECNICO-->
 
+    <!---- CONFIRMACION DE REASIGNACION DE TICKET -->
+        <div class="modal fade" id="confirmReassignModal" tabindex="-1" aria-labelledby="confirmReassignModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmReassignModalLabel">Confirmar Reasignación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Está seguro que desea reasignar el ticket Nro. <span id="ticketNumberSpan"></span>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary" id="confirmReassignYesBtn">Sí</button>
+                </div>
+                </div>
+            </div>
+        </div>
+    <!---- END CONFIRMACION DE REASIGNACION DE TICKET -->
+
+    <!-- MODAL PARA SELECCIONAR TECNICO EN REACCIGNACION DE TECNICO -->
+        <div class="modal fade" id="selectTechnicianModal" tabindex="-1" aria-labelledby="selectTechnicianModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="selectTechnicianModalLabel">Seleccione Técnico</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                    <label for="currentTechnician" class="form-label">Técnico actual:</label>
+                    <p id="currentTechnicianName" class="form-control-plaintext"></p>
+                    </div>
+                    <div class="mb-3">
+                    <label for="technicianSelect" class="form-label">Seleccione nuevo técnico:</label>
+                    <select class="form-select" id="technicianSelect">
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="assignTechnicianBtn">Asignar</button>
+                </div>
+                </div>
+            </div>
+        </div>
+    <!------ END MODAL PARA SELECCIONAR TECNICO EN REACCIGNACION DE TECNICO -->
+
+    <button type="button" class="btn btn-primary" id="reassignTicketBtn" data-ticket-id="2">
+        <i class="bi bi-person-gear"></i> Reasignar Ticket
+    </button>
+
     <input type="hidden" id="id_user" value="<?php echo $_SESSION['id_user'] ?? ''; ?>"/>
 
     <div class="fixed-plugin">

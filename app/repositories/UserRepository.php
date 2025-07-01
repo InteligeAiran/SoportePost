@@ -1,6 +1,8 @@
 <?php
 namespace App\Repositories; // Usar namespaces para organizar tus clases
 require_once __DIR__. '/../models/userModel.php'; // Asegúrate de que el modelo de usuario esté incluido
+
+use PDO;
 use userModel; // Asegúrate de que tu modelo de usuario exista
 class UserRepository
 {
@@ -224,19 +226,19 @@ class UserRepository
     
     public function checkUserStatus($id_user){
         // Lógica para verificar el estado del usuario
-        $result = $this->model->checkUserStatus($id_user); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->checkUserStatus($id_user); 
         return $result['row'];
     }
 
     public function updatePassword($id_user, $contrase){
         // Lógica para actualizar el estado del usuario
-        $result = $this->model->UpdateUserStatus($id_user, $contrase); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->UpdateUserStatus($id_user, $contrase); 
         return $result;
     }
 
     public function getEmailByUsername($username){
         // Lógica para obtener el correo electrónico de un usuario por su nombre de usuario
-        $result = $this->model->getEmailByUsername($username); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->getEmailByUsername($username);
         return $result['row']['email']; // Devuelve el correo electrónico o null si no se encuentra
     }
 
@@ -250,6 +252,9 @@ class UserRepository
         return $this->model->IsSessionActuallyActive($sessionId, $userId);
     }
 
-// Y InsertSession
-   
+    public function GetTechniciansAndCurrentTicketTechnician($id_ticket){
+        // Lógica para obtener los técnicos y el técnico actualmente relacionado con el ticket
+        $result = $this->model->GetTechniciansAndCurrentTicketTechnician($id_ticket); 
+        return $result? $result['row'] : null;
+    }
 }

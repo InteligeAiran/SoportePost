@@ -519,5 +519,21 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
             return false;
         }
     }
+
+    public function GetTechniciansAndCurrentTicketTechnician($id_user){
+        try {
+            $sql = "SELECT u.id_user, u.username, u.email, u.name, u.last_name, t.id_ticket, t.id_user_technician, t.date_technician_start
+                    FROM users u
+                    LEFT JOIN tickets t ON u.id_user = t.id_user_technician
+                    WHERE u.technician = TRUE
+                    ORDER BY u.name ASC, u.last_name ASC;";
+            
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
 }   
 ?>

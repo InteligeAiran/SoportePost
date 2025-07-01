@@ -152,6 +152,10 @@ class users extends Controller {
                     $this->handleGetEmailByUsername();
                 break;
 
+                case 'GetTechniciansAndCurrentTicketTechnician':
+                    $this->handleGetTechniciansAndCurrentTicketTechnician();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -629,6 +633,18 @@ public function handleCheckUsernameAvailability() {
             $this->response(['success' => true, 'email' => $result], 200);
         } else {
             $this->response(['success' => false, 'message' => 'No se encontró el correo electrónico para el usuario'], 404);
+        }
+    }
+
+    public function handleGetTechniciansAndCurrentTicketTechnician(){
+        $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $repository = new UserRepository();
+        $result = $repository->GetTechniciansAndCurrentTicketTechnician($id_ticket);
+        
+        if ($result) {
+            $this->response(['success' => true, 'technicians' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se encontraron técnicos'], 404);
         }
     }
 }
