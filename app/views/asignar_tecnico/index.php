@@ -26,11 +26,6 @@ function mi_navbar() {}
     <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
-    <style>
-     
-
-
-    </style>
 </head>
 
 <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -93,72 +88,87 @@ function mi_navbar() {}
     </main>
 
     <!-- MODAL PARA SELECCIONAR TECNICO -->
-    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div id="ModalSelecttecnico" class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel" style="color: grey;">Seleccione un Técnico</h1>
-                    <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <select id="idSelectionTec" class="form-select" onchange="GetRegionUser()" aria-label="Default select example"></select>
-                    <div class="row mt-4">
-                        <label class="col-sm-2 col-form-label">Región</label>
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div id="ModalSelecttecnico" class="modal-content">
+                    <div class="modal-header bg-gradient-primary">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel" style="color: white;">Seleccione un Técnico</h1>
+                        <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
                     </div>
-                    <input id="InputRegion" class="form-control" type="text" value="" aria-label="readonly input example" style="width: 100%;" readonly>
-                </div>
-                <div class="modal-footer">
-                    <button id="close-button" type="button" class="btn btn-secondary">Cerrar</button>
-                    <button id="assingment-button" type="button" class="btn btn-primary">Asignar</button>
+                    <div class="modal-body">
+                        <select id="idSelectionTec" class="form-select" onchange="GetRegionUser()" aria-label="Default select example"></select>
+                        <div class="row mt-4">
+                            <label class="col-sm-2 col-form-label">Región</label>
+                        </div>
+                        <input id="InputRegion" class="form-control" type="text" value="" aria-label="readonly input example" style="width: 100%;" readonly>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="close-button" type="button" class="btn btn-secondary">Cerrar</button>
+                        <button id="assingment-button" type="button" class="btn btn-primary">Asignar</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     <!--MODAL PARA SELECCIONAR TECNICO-->
 
     <!---- CONFIRMACION DE REASIGNACION DE TICKET -->
-        <div class="modal fade" id="confirmReassignModal" tabindex="-1" aria-labelledby="confirmReassignModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmReassignModalLabel">Confirmar Reasignación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    ¿Está seguro que desea reasignar el ticket Nro. <span id="ticketNumberSpan"></span>?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                    <button type="button" class="btn btn-primary" id="confirmReassignYesBtn">Sí</button>
-                </div>
+       <div class="modal fade" id="confirmReassignModal" tabindex="-1" aria-labelledby="confirmReassignModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow-lg">
+                    <div class="modal-header bg-gradient-primary text-white">
+                        <h5 class="modal-title" id="confirmReassignModalLabel" style="color: white;">Confirmar Reasignación</h5>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#ffc107" class="bi bi-exclamation-triangle-fill mx-auto mb-3" viewBox="0 0 16 16">
+                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.5a.5.5 0 0 1-1.002.04l-.35-3.5C7.046 5.462 7.465 5 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                        </svg>
+                        <p class="fs-5"><strong>¿Está seguro que desea reasignar el ticket Nro. <span id="ticketNumberSpan"></span>?</strong></p>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" id="noConfirm" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                        <button type="button" class="btn btn-primary" id="confirmReassignYesBtn">Sí</button>
+                    </div>
                 </div>
             </div>
         </div>
     <!---- END CONFIRMACION DE REASIGNACION DE TICKET -->
 
     <!-- MODAL PARA SELECCIONAR TECNICO EN REACCIGNACION DE TECNICO -->
-        <div class="modal fade" id="selectTechnicianModal" tabindex="-1" aria-labelledby="selectTechnicianModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="selectTechnicianModalLabel">Seleccione Técnico</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                    <label for="currentTechnician" class="form-label">Técnico actual:</label>
-                    <p id="currentTechnicianName" class="form-control-plaintext"></p>
+      <div class="modal fade" id="selectTechnicianModal" tabindex="-1" aria-labelledby="selectTechnicianModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow-lg rounded">
+                    <div class="modal-header bg-gradient-primary text-white p-3"> <h5 class="modal-title" id="selectTechnicianModalLabel">
+                            <i class="bi bi-person-plus-fill me-2"></i> Seleccione Técnico </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="mb-3">
-                    <label for="technicianSelect" class="form-label">Seleccione nuevo técnico:</label>
-                    <select class="form-select" id="technicianSelect">
-                        </select>
+                    <div class="modal-body p-4"> <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Técnico actual:</strong>
+                                <p id="currentTechnicianDisplay" class="form-control-plaintext text-muted"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Fecha de asignación:</strong>
+                                <span id="currentAssignmentDateDisplay" class="form-control-plaintext text-muted">N/A</span>
+                            </div>
+                        </div>
+                        <div class="row mb-4"> 
+                            <div class="col-12">
+                                <strong>Región:</strong>
+                                <span id="currentRegion" class="form-control-plaintext text-muted">N/A</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="technicianSelect" class="form-label fw-bold">Seleccione nuevo técnico:</label> 
+                            <select class="form-select" id="technicianSelect"></select>
+                        </div>
+                         <div class="row mb-4">
+                            <label for="technicianSelect" class="form-label fw-bold">Region:</label>
+                            <input class="form-control" id="InputRegionUser2" disabled></input>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="assignTechnicianBtn">Asignar</button>
-                </div>
+                    <div class="modal-footer justify-content-center border-top-0 pt-0 pb-4"> <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="assignTechnicianBtn">Asignar</button>
+                    </div>
                 </div>
             </div>
         </div>

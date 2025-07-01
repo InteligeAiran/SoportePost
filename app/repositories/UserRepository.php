@@ -259,8 +259,7 @@ public function AsignacionSubModulo($id_modulo, $id_submodulo, $id_usuario,$idch
     }
 
     public function GetTechniciansAndCurrentTicketTechnician($id_ticket){
-        // Lógica para obtener los técnicos y el técnico actualmente relacionado con el ticket
         $result = $this->model->GetTechniciansAndCurrentTicketTechnician($id_ticket); 
-        return $result? $result['row'] : null;
+        return $result['row'];
     }
 }

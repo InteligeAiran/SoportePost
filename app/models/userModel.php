@@ -538,14 +538,10 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
         }
     }
 
-    public function GetTechniciansAndCurrentTicketTechnician($id_user){
+    public function GetTechniciansAndCurrentTicketTechnician($id_ticket){
         try {
-            $sql = "SELECT u.id_user, u.username, u.email, u.name, u.last_name, t.id_ticket, t.id_user_technician, t.date_technician_start
-                    FROM users u
-                    LEFT JOIN tickets t ON u.id_user = t.id_user_technician
-                    WHERE u.technician = TRUE
-                    ORDER BY u.name ASC, u.last_name ASC;";
-            
+            $sql = "SELECT * FROM  get_tecnico_asignacion(".$id_ticket.");";
+            var_dump($sql); // Para depuración
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

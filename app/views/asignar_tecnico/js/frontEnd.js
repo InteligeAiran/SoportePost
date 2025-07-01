@@ -6,47 +6,78 @@ let confirmReassignModalInstance = null;
 let selectTechnicianModalInstance = null;
 
 // --- Función para obtener el técnico actual y la lista de técnicos ---
-function getTechnicianData(ticketId) {
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        const API_URL_GET_TECHNICIANS = `${ENDPOINT_BASE}${APP_PATH}api/users/GetTechniciansAndCurrentTicketTechnician`;
-
-        xhr.open("POST", API_URL_GET_TECHNICIANS);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-        xhr.onload = function () {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    if (response.success) {
-                        resolve({
-                            currentTechnicianName: response.current_technician_name,
-                            availableTechnicians: response.available_technicians
-                        });
-                    } else {
-                        console.error("Error al obtener datos de técnicos:", response.message);
-                        resolve({ currentTechnicianName: "N/A", availableTechnicians: [] }); // Resolve con datos vacíos en caso de error de lógica
-                    }
-                } catch (error) {
-                    console.error("Error parsing JSON para obtener técnicos:", error);
-                    reject(error); // Rechaza la promesa si hay un error de parseo
-                }
-            } else {
-                console.error("Error en la solicitud para obtener técnicos:", xhr.status, xhr.statusText);
-                reject(new Error(`HTTP error! status: ${xhr.status}`)); // Rechaza la promesa si hay un error HTTP
-            }
-        };
-
-        xhr.onerror = function () {
-            console.error("Error de red al intentar obtener técnicos.");
-            reject(new Error("Error de red"));
-        };
-
-        const dataToSend = `action=getTechnicians&ticket_id=${ticketId}`; // Envía el ticket_id
-        xhr.send(dataToSend);
+// --- DOMContentLoaded para inicializar los modales y eventos ---
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar instancias de los modales de Bootstrap
+    confirmReassignModalInstance = new bootstrap.Modal(document.getElementById('confirmReassignModal'), {
+        backdrop: 'static',
+        keyboard: false
     });
-}
+    selectTechnicianModalInstance = new bootstrap.Modal(document.getElementById('selectTechnicianModal'), {
+        backdrop: 'static',
+        keyboard: false
+    });
 
+    const buttoncerrar = document.getElementById('noConfirm');
+
+    if (buttoncerrar && confirmReassignModalInstance) {
+        buttoncerrar.addEventListener('click', function() {
+            confirmReassignModalInstance.hide(); // Oculta el modal de confirmación
+        });
+    }
+
+    const bottonOpenModal = document.getElementById('confirmReassignYesBtn');
+
+    if (bottonOpenModal && confirmReassignModalInstance) {
+        bottonOpenModal.addEventListener('click', function() {
+            selectTechnicianModalInstance.show(); // Muestra el modal de confirmación
+        });
+    }
+
+// Referencias a elementos dentro de los modales
+    const ticketNumberSpan = document.getElementById('ticketNumberSpan');
+    const currentTechnicianName = document.getElementById('currentTechnicianName');
+    const confirmReassignYesBtn = document.getElementById('confirmReassignYesBtn');
+    const assignTechnicianBtn = document.getElementById('assignTechnicianBtn');
+
+    // Evento para el botón "Sí" del modal de confirmación
+    confirmReassignYesBtn.addEventListener('click', async function() {
+        confirmReassignModalInstance.hide(); // Oculta el modal de confirmación
+      
+    });
+
+    // Evento para el botón "Asignar" del modal de selección de técnico
+    assignTechnicianBtn.addEventListener('click', async function() {
+        const newTechnicianId = technicianSelect.value;
+        const newTechnicianName = technicianSelect.options[technicianSelect.selectedIndex].textContent; // Para el alert
+
+        if (newTechnicianId) {
+            // Deshabilitar botón para evitar múltiples clics
+            assignTechnicianBtn.disabled = true;
+            assignTechnicianBtn.textContent = 'Asignando...';
+
+            try {
+                const success = await reassignTicket(currentTicketId, newTechnicianId);
+
+                if (success) {
+                    alert(`Ticket ${currentTicketNro} reasignado con éxito a ${newTechnicianName}.`);
+                    getTicketDataCoordinator(); // Llama a tu función para refrescar la tabla
+                } else {
+                    alert(`Error al reasignar el ticket ${currentTicketNro}. Por favor, intente de nuevo.`);
+                }
+            } catch (error) {
+                console.error("Error al reasignar el ticket:", error);
+                alert(`Ocurrió un error al reasignar el ticket ${currentTicketNro}.`);
+            } finally {
+                selectTechnicianModalInstance.hide(); // Oculta el modal de selección
+                assignTechnicianBtn.disabled = false;
+                assignTechnicianBtn.textContent = 'Asignar';
+            }
+        } else {
+            alert('Por favor, seleccione un técnico para reasignar.');
+        }
+    });
+});
 
 function getTicketDataCoordinator() {
     const xhr = new XMLHttpRequest();
@@ -80,6 +111,25 @@ function getTicketDataCoordinator() {
                             backdrop: "static", // Para que no se cierre al hacer clic fuera
                             keyboard: false     // Para que no se cierre con la tecla ESC
                         });
+
+                        const closebutton = document.getElementById('close-button');
+                        const closeIcon = document.getElementById('Close-icon');
+                        const SelectReg = document.getElementById('idSelectionTec');
+                        const InputReg = document.getElementById('InputRegion');
+
+                        if (closebutton && SelectReg && modalInstanceCoordinator) {
+                          closebutton.addEventListener('click', function() {
+                            modalInstanceCoordinator.hide(); // Oculta el modal de cambio de estatus
+                            InputReg.value = '';
+                          });
+                        }
+
+                        if (closeIcon && SelectReg && modalInstanceCoordinator) {
+                          closeIcon.addEventListener('click', function() {
+                            modalInstanceCoordinator.hide(); // Oculta el modal de cambio de estatus
+                            InputReg.value = '';
+                          });
+                        }
                     } else {
                         console.error("El elemento 'staticBackdrop' (modal de asignación) no fue encontrado en el DOM.");
                     }
@@ -97,14 +147,13 @@ function getTicketDataCoordinator() {
                         // Lógica para los botones de acción
                         if (data.name_accion_ticket === 'Asignado al Coordinador') { // Acción 4
                             actionButtonsHtml += `
-                                <button class="btn btn-sm btn-info btn-received-coord mr-2"
+                                <button id = "confirmreceived" class="btn btn-sm btn-info btn-received-coord mr-2"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
                                     title="Marcar como Recibido por Coordinador"
                                     data-ticket-id="${data.id_ticket}"
                                     data-nro-ticket="${data.nro_ticket}">
-                                    POS Recibido
-                                </button>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16"><path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/></svg>                                </button>
                                 <button id="myUniqueAssingmentButton"
                                     class="btn btn-sm btn-assign-tech"
                                     data-bs-toggle="tooltip"
@@ -112,8 +161,8 @@ function getTicketDataCoordinator() {
                                     title="Asignar Técnico"
                                     data-ticket-id="${data.id_ticket}"
                                     data-nro-ticket="${data.nro_ticket}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>
-                                </button>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/></svg>                                
+                                  </button>
                             `;
                         } else if (data.name_accion_ticket === 'Recibido por el Coordinador') { // Acción 3
                             actionButtonsHtml += `
@@ -132,8 +181,8 @@ function getTicketDataCoordinator() {
                                     title="Asignar Técnico"
                                     data-ticket-id="${data.id_ticket}"
                                     data-nro-ticket="${data.nro_ticket}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-check-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/></svg>
-                                </button>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/></svg>                               
+                                  </button>
                             `;
                         } else if (data.name_accion_ticket === 'Asignado al Técnico') {
                             actionButtonsHtml += `
@@ -143,7 +192,7 @@ function getTicketDataCoordinator() {
                                     title="Reasignar Técnico"
                                     data-ticket-id="${data.id_ticket}"
                                     data-nro-ticket="${data.nro_ticket}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16"><path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/></svg>
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16"><path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/></svg>
                                 </button>
                             `;
                         }
@@ -341,21 +390,14 @@ function getTicketDataCoordinator() {
                             }
                         });
 
-                    // *** NUEVO EVENTO CLICK PARA EL BOTÓN "REASIGNAR" ***
-                    $("#tabla-ticket tbody")
+                         $("#tabla-ticket tbody")
                         .off("click", ".btn-reassign-tech")
                         .on("click", ".btn-reassign-tech", function (e) {
                             e.stopPropagation();
-                            const ticketId = $(this).data("ticket-id");
-                            const nroTicket = $(this).data("nro-ticket");
-                            currentTicketId = ticketId;
-                            currentTicketNroForAssignment = nroTicket;
-
-                            if (modalInstanceCoordinator) {
-                                modalInstanceCoordinator.show();
-                            } else {
-                                console.error("Error: La instancia del modal de reasignación no está disponible.");
-                            }
+                            currentTicketId = $(this).data("ticket-id");
+                            currentTicketNro = $(this).data("nro-ticket"); // Asegúrate de obtener el nro_ticket
+                            ticketNumberSpan.textContent = currentTicketNro; // Muestra el número en el modal de confirmación
+                            confirmReassignModalInstance.show(); // Muestra el modal de confirmación
                         });
 
 
@@ -382,6 +424,90 @@ function getTicketDataCoordinator() {
     };
     const datos = `action=GetTicketData`;
     xhr.send(datos);
+}
+
+function getTechnicianData() {
+  const id_ticket = document.getElementById("id_ticket").value;
+  console.log(id_ticket);
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const API_URL_GET_TECHNICIANS = `${ENDPOINT_BASE}${APP_PATH}api/users/GetTechniciansAndCurrentTicketTechnician`;
+
+        xhr.open("POST", API_URL_GET_TECHNICIANS);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                  const inputNtecnico = document.getElementById("currentTechnicianDisplay");
+                  const inputFecha = document.getElementById("currentAssignmentDateDisplay");
+                  const inputRegion = document.getElementById("currentRegion");
+
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success && response.technicians) {
+                        // Resuelve con los nombres de propiedades correctos que necesitas
+                        inputNtecnico.innerHTML = response.technicians.full_tecnicoassig1 || "No Asignado";
+                        inputFecha.innerHTML = response.technicians.fecha_asignacion || "N/A";
+                        inputRegion.innerHTML = response.technicians.name_region || "N/A";
+                    } else {
+                        console.error("Error al obtener datos de técnicos:", response.message);
+                        resolve({ currentTechnicianName: "N/A", currentAssignmentDate: "N/A"});
+                    }
+                } catch (error) {
+                    console.error("Error parsing JSON para obtener técnicos:", error);
+                    reject(error);
+                }
+            } else {
+                console.error("Error en la solicitud para obtener técnicos:", xhr.status, xhr.statusText);
+                reject(new Error(`HTTP error! status: ${xhr.status}`));
+            }
+        };
+
+        xhr.onerror = function () {
+            console.error("Error de red al intentar obtener técnicos.");
+            reject(new Error("Error de red"));
+        };
+
+        const dataToSend = `action=getTechnicians&ticket_id=${currentTicketId}`;
+        xhr.send(dataToSend);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  getTechnicianData(currentTicketId);
+});
+
+function reassignTicket(ticketId, newTechnicianId) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const API_URL_REASSIGN = `${ENDPOINT_BASE}${APP_PATH}api/acciones/ReassignTicket`;
+
+        xhr.open("POST", API_URL_REASSIGN);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    resolve(response.success);
+                } catch (error) {
+                    console.error("Error parsing JSON para reasignar ticket:", error);
+                    reject(error);
+                }
+            } else {
+                console.error("Error en la solicitud para reasignar ticket:", xhr.status, xhr.statusText);
+                reject(new Error(`HTTP error! status: ${xhr.status}`));
+            }
+        };
+
+        xhr.onerror = function () {
+            console.error("Error de red al intentar reasignar ticket.");
+            reject(new Error("Error de red"));
+        };
+
+        const dataToSend = `action=reassignTicket&ticket_id=${ticketId}&new_technician_id=${newTechnicianId}`;
+        xhr.send(dataToSend);
+    });
 }
 
 // *** NUEVA FUNCIÓN PARA MARCAR TICKET COMO RECIBIDO ***
@@ -780,16 +906,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function markTicketAsReceived(ticketId, nroTicket) { // Asegúrate de que nroTicket esté como parámetro
     const id_user = document.getElementById("id_user").value;
-    Swal.fire({
-        title: `¿Marcar el ticket ${nroTicket} como recibido?`, // Usa template literals aquí
-        text: "Esta acción registrará la fecha de recepción y habilitará la asignación de técnico.",
-        icon: "warning",
+    // SVG que quieres usar
+    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#ffc107" class="swal2-icon-custom-svg" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.5a.5.5 0 0 1-1.002.04l-.35-3.5C7.046 5.462 7.465 5 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/></svg>`;
+      Swal.fire({
+        // El nuevo texto del header va aquí
+        title: `Confirmación de recibido`, // Texto fijo para el encabezado
+        // El contenido del cuerpo (SVG y texto explicativo) va en 'html'
+        html: `
+            ${customWarningSvg}
+            <p class="mt-3">¿Marcar el ticket ${nroTicket} como recibido?</p>
+            <p>Esta acción registrará la fecha de recepción y habilitará la asignación de técnico.</p>
+        `,
         showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
+        confirmButtonColor: "#007bff",
+        cancelButtonColor: "#6c757d",
         confirmButtonText: "Sí, Recibir Ticket",
         cancelButtonText: "Cancelar",
-        color: "black"
+        color: "black",
+        customClass: {
+            popup: 'swal2-custom-header-popup', // Clase principal para el popup
+            title: 'swal2-custom-title',       // Clase para el título (para estilizarlo en CSS)
+            content: 'custom-content', // Puedes mantener esta si la usas para el contenido del cuerpo
+            actions: 'custom-actions',
+            confirmButton: 'swal2-confirm-receive-ticket-class',
+            cancelButton: 'swal2-cancel-receive-ticket-class',
+        },
+        didOpen: (popup) => {
+            const confirmBtn = popup.querySelector('.swal2-confirm-receive-ticket-class');
+            const cancelBtn = popup.querySelector('.swal2-cancel-receive-ticket-class');
+
+            if (confirmBtn) {
+                confirmBtn.id = 'swal2-confirm-receive-ticket-id';
+            }
+            if (cancelBtn) {
+                cancelBtn.id = 'swal2-cancel-receive-ticket-id';
+            }
+        },
     }).then((result) => {
         if (result.isConfirmed) {
             const xhr = new XMLHttpRequest();
@@ -806,11 +958,11 @@ function markTicketAsReceived(ticketId, nroTicket) { // Asegúrate de que nroTic
                                 text: "El ticket N" + nroTicket + " ha sido marcado como recibido.",
                                 icon: "success",
                                 color: "black",
-                                confirmButtonColor: "#3085d6" // Ejemplo de un color azul Bootstrap por defecto
+                                confirmButtonColor: "#3085d6" 
                             });
-                              getTicketDataCoordinator(); // Volver a cargar la tabla para reflejar los cambios
-                             if (modalInstanceCoordinator) { // Usa la variable de instancia que creaste una vez
-                              modalInstanceCoordinator.hide(); // Cierra el modal si está abierto
+                              getTicketDataCoordinator(); 
+                             if (modalInstanceCoordinator) { 
+                              modalInstanceCoordinator.hide(); 
                              }else{
                                 console.error("No se pudo cerrar el modal: la instancia no está disponible.");
                              }
@@ -868,7 +1020,7 @@ function AssignTicket() {
   }
 
   const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/AssignTicket`); // Asegúrate de que esta sea la ruta correcta en tu backend
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/AssignTicket`); 
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
@@ -884,11 +1036,11 @@ function AssignTicket() {
             showConfirmButton: true,
             confirmButtonText: "Ok",
             confirmButtonColor: "#3085d6",
-          }).then((result) => { // <-- ¡Aquí está el cambio clave! Manejar la Promise
-              if (result.isConfirmed) { // Si el usuario hizo clic en "Sí, Recibir Ticket"
-                getTicketDataCoordinator(); // Recargar la tabla de tickets
+          }).then((result) => { 
+              if (result.isConfirmed) { 
+                getTicketDataCoordinator(); 
                 if (modalInstanceCoordinator) {
-                  modalInstanceCoordinator.hide(); // Cerrar el modal si está abierto
+                  modalInstanceCoordinator.hide();
                 }
               }
           });
@@ -938,26 +1090,39 @@ function getTecnico2() {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
           const select = document.getElementById("idSelectionTec");
-
+          const select2 = document.getElementById("technicianSelect");
+          
           select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
-          if (
-            Array.isArray(response.tecnicos) &&
-            response.tecnicos.length > 0
-          ) {
+          select2.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+
+          if (Array.isArray(response.tecnicos) && response.tecnicos.length > 0) {
             response.tecnicos.forEach((tecnico) => {
               const option = document.createElement("option");
               option.value = tecnico.id_user;
               option.textContent = tecnico.full_name;
               select.appendChild(option);
+
+              const option2 = document.createElement("option");
+              option2.value = tecnico.id_user;
+              option2.textContent = tecnico.full_name;
+              select2.appendChild(option2);
             });
 
-            // Agregar un event listener para cuando se cambia la selección del técnico
             select.addEventListener("change", function () {
               const selectedTecnicoId = this.value;
               if (selectedTecnicoId) {
                 GetRegionUser(selectedTecnicoId);
               } else {
-                document.getElementById("InputRegion").value = ""; // Limpiar el campo de región si no se selecciona nada
+                document.getElementById("InputRegion").value = ""; 
+              }
+            });
+
+            select2.addEventListener("change", function () {
+              const selectedTecnicoId = this.value;
+              if (selectedTecnicoId) {
+                GetRegionUser(selectedTecnicoId);
+              } else {
+                document.getElementById("InputRegionUser2").value = ""; 
               }
             });
           } else {
@@ -983,11 +1148,9 @@ function getTecnico2() {
     }
   };
 
-  const datos = `action=GetTecnico2`; // Asegúrate de que esta acción en el backend devuelva los técnicos filtrados
+  const datos = `action=GetTecnico2`; 
   xhr.send(datos);
 }
-
-// Llama a la función para cargar las fallas cuando la página se cargue
 
 function GetRegionUser(id_user) {
   const xhr = new XMLHttpRequest();
@@ -999,12 +1162,15 @@ function GetRegionUser(id_user) {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
           const inputRegion = document.getElementById("InputRegion");
-          const region = response.regionusers || ""; // Asegúrate de que la respuesta contenga la regió
+          const inputRegionUser2 = document.getElementById("InputRegionUser2");
+          const region = response.regionusers || ""; 
 
           if (region) {
             inputRegion.value = region;
+            inputRegionUser2.value = region; // Asignar la región al campo según el técnico seleccionado
           } else {
             inputRegion.value = ""; // Limpiar el campo si no hay región
+            inputRegionUser2.value = ""; // Limpiar el campo si no hay región
           }
         } else {
           Swal.fire({

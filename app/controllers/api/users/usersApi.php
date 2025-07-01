@@ -670,7 +670,8 @@ public function handleCheckUsernameAvailability() {
     }
 
     public function handleGetTechniciansAndCurrentTicketTechnician(){
-        $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_ticket = isset($_POST['ticket_id'])? $_POST['ticket_id'] : '';
+        var_dump($_POST);
         $repository = new UserRepository();
         $result = $repository->GetTechniciansAndCurrentTicketTechnician($id_ticket);
         
