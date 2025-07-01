@@ -130,6 +130,17 @@ class users extends Controller {
                     }
 
                 break; 
+
+
+                case 'AsignacionSubModulo':
+                    if($method === 'POST'){
+                        $this->handleAsignacionSubModulo();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/AsignacionSubModulo'], 405);
+                    }
+
+                break; 
+
                 
                 case 'checkUsernameAvailability':
                     if($method === 'POST'){
@@ -556,6 +567,28 @@ class users extends Controller {
             $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
         }
     }
+
+
+    public function handleAsignacionSubModulo(){
+        $id_modulo     = isset($_POST['id_modulo']) ? $_POST['id_modulo'] : '';
+        $id_submodulo     = isset($_POST['id_submodulo']) ? $_POST['id_submodulo'] : '';
+        $id_usuario      = isset($_POST['id_usuario']) ? $_POST['id_usuario'] : '';
+        $idchecksub_value      = isset($_POST['idchecksub_value']) ? $_POST['idchecksub_value'] : '';
+
+        //var_dump($id_modulo,$id_usuario,$idcheck_value);
+      
+        $repository = new UserRepository(); // Inicializa el repositorio
+        $result = $repository->AsignacionSubModulo($id_modulo,$id_submodulo, $id_usuario,$idchecksub_value);
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
+        }
+    }
+
+
+
 
 
 public function handleCheckUsernameAvailability() {

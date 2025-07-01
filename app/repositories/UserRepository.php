@@ -214,6 +214,12 @@ class UserRepository
         return $result;
     }
 
+
+public function AsignacionSubModulo($id_modulo, $id_submodulo, $id_usuario,$idchecksub_value){
+        $result = $this->model->AsignacionSubModulo($id_modulo, $id_submodulo,$id_usuario,$idchecksub_value);
+        return $result;
+    }
+
     // public function VerificaUsuario($username){
     //     $result = $this->model->VerificaUsuario($username);
     //     return $result;

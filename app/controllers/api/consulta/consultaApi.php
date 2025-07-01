@@ -166,6 +166,9 @@ class Consulta extends Controller
                     $this->handleGetTicketCounts();
                     break;
 
+                case 'getModulesUsers':
+                    $this->handleGetModulesUsers();
+                    break;    
                 case 'getAttachments':
                     $this->handleGetAttachments();
                     break;
@@ -973,11 +976,14 @@ class Consulta extends Controller
     }
 
     public function handleGetSubmodulesForModule(){
-        $id_module = isset($_POST['id_module']) ? $_POST['id_module'] : '';
+        //$moduleId = '4';
+        $moduleId = isset($_POST['moduleId']) ? $_POST['moduleId'] : '';
+        $id_usuario = isset($_POST['id_usuario']) ? $_POST['id_usuario'] : '';
+       // var_dump($moduleId);
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
 
-        if ($id_module != '') {
-            $result = $repository->GetSubmodulesForModule($id_module); // Llama a la función del repositorio
+        if ($moduleId != '') {
+            $result = $repository->GetSubmodulesForModule($moduleId,$id_usuario); // Llama a la función del repositorio
             if ($result) {
                 $this->response(['success' => true, 'submodules' => $result], 200); // Devuelve el array de submódulos
             } else {
@@ -1060,6 +1066,24 @@ class Consulta extends Controller
         http_response_code($status);
         echo json_encode($data);
         exit();
+    }
+
+
+    public function handleGetModulesUsers(){
+        //$id_usuario = '7';
+        $id_usuario = isset($_POST['id_usuario']) ? $_POST['id_usuario'] : '';
+        //var_dump($id_usuario);
+
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetModulesUsers($id_usuario);
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'modules' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron módulos
+            $this->response(['success' => false, 'message' => 'No hay módulos disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los módulos'], 500); // Código 500 Internal Server Error
+        }
     }
 
 }

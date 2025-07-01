@@ -57,6 +57,7 @@ function mi_navbar() {
             #icon-close:hover {
                 background-color: red;
             }
+
         </style>
     </head>
     <body class="g-sidenav-show bg-gray-100">
@@ -257,9 +258,13 @@ function mi_navbar() {
                 <br>
                 <div class="row">
                     <div class="col-md-6">
-                        <label for="">Documentacion</label>
-                        <div class="input-group" style="width: 92%;">
-                          <input name="tipodoc" id="tipodoc" type="text" value="V-" class="form-control" disabled>
+                        <label for="">Cédula</label>
+                        <div class="input-group" style="width: 94%;">
+                        <select class="form-control" id="tipo_doc_edit" name="tipo_doc_edit">
+                            <option value="V">V</option>
+                            <option value="E">E</option>
+                            <option value="J">J</option>
+                        </select>
                           <span class="input-group-addon"></span>
                           <input style="width: 70%;" class="form-control" type="text" name="edit_documento" id="edit_documento"  maxlength="9" onkeypress="return soloNumeros(event)" >
                         </div>
@@ -344,10 +349,12 @@ function mi_navbar() {
                 <input type="hidden" id="idusuario_edit" class="form-control" name="idusuario_edit"> 
                 
                 <input name="id_user" id="id_user" type="hidden" value="<?php echo $_SESSION['id_user']?>">
-                    <table id="tabla-modulo" class="table table-bordered">
+
+                    <table id="tabla-modulo" class="table table-striped table-bordered table-hover table-sm" style="width:100%">
                         <thead>
                             <tr>
-                                <th>Nº</th>
+                                <th>Check</th> 
+                                <th>ID Módulo</th>
                                 <th>Módulo</th>
                                 <th>Acción</th>
                             </tr>
@@ -355,11 +362,22 @@ function mi_navbar() {
                             <tbody  id="tabla-modulo-body">
                             </tbody>
                     </table>
+                    <!-- <hr>
+
+                        <div class="submodulo-detail-panel">
+                            <h4 style="color: grey;">Detalle de Submódulos Asignados</h4>
+                            <div id="submodulosContainer">
+                                <p>Selecciona un módulo para ver sus submódulos.</p>
+                            </div>
+                        </div> -->
             </div> 
           </div>   
         </div>
     </div>
    </div>
+
+
+
 
         <!-- <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">

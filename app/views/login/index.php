@@ -32,7 +32,7 @@
       <label for="user">
         <b>Usuario</b>
       </label>
-      <input type="text" placeholder="Ingresar Usuario" name="username" onblur = "checkUser()" id="username" class="username form-input" required>
+      <input type="text" placeholder="Ingresar Usuario" name="username" onblur = "checkUser()" id="username" class="username form-input" onkeyup="javascript:this.value=this.value.toUpperCase();" required>
       <div id="usernameError" class="error"></div><div id="usernameVerification" class="success"></div><br>
 
       <label class="form-label" for="pass">
