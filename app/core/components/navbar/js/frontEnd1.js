@@ -459,7 +459,7 @@
     inicioLi.id = 'inicio-link';
     const inicioAnchor = document.createElement('a');
     inicioAnchor.className = 'nav-link';
-    inicioAnchor.href = 'index.php';
+    inicioAnchor.href = 'dashboard';
     inicioAnchor.innerHTML = getIconSvgForName("Inicio") + '<h6 class="nav-link-text ms-3" style="color:white; margin:0; padding-left:.5rem;">Inicio</h6>';
     inicioLi.appendChild(inicioAnchor);
     navbarNav.appendChild(inicioLi);
