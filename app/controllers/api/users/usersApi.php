@@ -167,6 +167,10 @@ class users extends Controller {
                     $this->handleGetTechniciansAndCurrentTicketTechnician();
                 break;
 
+                case 'ReassignTicket':
+                    $this->handleGetReassignTicket();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -671,7 +675,6 @@ public function handleCheckUsernameAvailability() {
 
     public function handleGetTechniciansAndCurrentTicketTechnician(){
         $id_ticket = isset($_POST['ticket_id'])? $_POST['ticket_id'] : '';
-        var_dump($_POST);
         $repository = new UserRepository();
         $result = $repository->GetTechniciansAndCurrentTicketTechnician($id_ticket);
         
@@ -679,6 +682,19 @@ public function handleCheckUsernameAvailability() {
             $this->response(['success' => true, 'technicians' => $result], 200);
         } else {
             $this->response(['success' => false, 'message' => 'No se encontraron técnicos'], 404);
+        }
+    }
+
+    public function handleGetReassignTicket(){
+        $id_ticket = isset($_POST['ticket_id'])? $_POST['ticket_id'] : '';
+        $id_technician = isset($_POST['new_technician_id'])? $_POST['new_technician_id'] : '';
+        $repository = new UserRepository();
+        $result = $repository->ReassignTicket($id_ticket, $id_technician);
+        
+        if ($result) {
+            $this->response(['success' => true,'message' => 'Ticket reasignado'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al reasignar el ticket'], 500);
         }
     }
 }

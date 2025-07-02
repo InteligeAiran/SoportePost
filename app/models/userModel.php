@@ -541,8 +541,18 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
     public function GetTechniciansAndCurrentTicketTechnician($id_ticket){
         try {
             $sql = "SELECT * FROM  get_tecnico_asignacion(".$id_ticket.");";
-            var_dump($sql); // Para depuración
+            //var_dump($sql); // Para depuración
             $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function ReassignTicket($id_ticket, $id_technician){
+        try {
+            $sql = "UPDATE users_tickets set id_tecnico_n2 = ".$id_technician." , date_assign_tec2 = NOW() WHERE id_ticket = ".$id_ticket.";";
+            $result = $this->db->pgquery($sql);
             return $result;
         } catch (Throwable $e) {
             // Handle exception

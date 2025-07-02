@@ -262,4 +262,9 @@ public function AsignacionSubModulo($id_modulo, $id_submodulo, $id_usuario,$idch
         $result = $this->model->GetTechniciansAndCurrentTicketTechnician($id_ticket); 
         return $result['row'];
     }
+
+    public function ReassignTicket($id_ticket, $id_technician){
+        $result = $this->model->ReassignTicket($id_ticket, $id_technician);  
+        return $result;
+    }
 }

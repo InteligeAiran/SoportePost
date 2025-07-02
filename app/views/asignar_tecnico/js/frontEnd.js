@@ -7,146 +7,218 @@ let selectTechnicianModalInstance = null;
 
 // --- Función para obtener el técnico actual y la lista de técnicos ---
 // --- DOMContentLoaded para inicializar los modales y eventos ---
-document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar instancias de los modales de Bootstrap
-    confirmReassignModalInstance = new bootstrap.Modal(document.getElementById('confirmReassignModal'), {
-        backdrop: 'static',
-        keyboard: false
-    });
-    selectTechnicianModalInstance = new bootstrap.Modal(document.getElementById('selectTechnicianModal'), {
-        backdrop: 'static',
-        keyboard: false
-    });
-
-    const buttoncerrar = document.getElementById('noConfirm');
-
-    if (buttoncerrar && confirmReassignModalInstance) {
-        buttoncerrar.addEventListener('click', function() {
-            confirmReassignModalInstance.hide(); // Oculta el modal de confirmación
-        });
+document.addEventListener("DOMContentLoaded", function () {
+  // Inicializar instancias de los modales de Bootstrap
+  confirmReassignModalInstance = new bootstrap.Modal(
+    document.getElementById("confirmReassignModal"),
+    {
+      backdrop: "static",
+      keyboard: false,
     }
-
-    const bottonOpenModal = document.getElementById('confirmReassignYesBtn');
-
-    if (bottonOpenModal && confirmReassignModalInstance) {
-        bottonOpenModal.addEventListener('click', function() {
-            selectTechnicianModalInstance.show(); // Muestra el modal de confirmación
-        });
+  );
+  selectTechnicianModalInstance = new bootstrap.Modal(
+    document.getElementById("selectTechnicianModal"),
+    {
+      backdrop: "static",
+      keyboard: false,
     }
+  );
 
-// Referencias a elementos dentro de los modales
-    const ticketNumberSpan = document.getElementById('ticketNumberSpan');
-    const currentTechnicianName = document.getElementById('currentTechnicianName');
-    const confirmReassignYesBtn = document.getElementById('confirmReassignYesBtn');
-    const assignTechnicianBtn = document.getElementById('assignTechnicianBtn');
+  const buttoncerrar = document.getElementById("noConfirm");
 
-    // Evento para el botón "Sí" del modal de confirmación
-    confirmReassignYesBtn.addEventListener('click', async function() {
-        confirmReassignModalInstance.hide(); // Oculta el modal de confirmación
-      
+  if (buttoncerrar && confirmReassignModalInstance) {
+    buttoncerrar.addEventListener("click", function () {
+      confirmReassignModalInstance.hide(); // Oculta el modal de confirmación
     });
+  }
 
-    // Evento para el botón "Asignar" del modal de selección de técnico
-    assignTechnicianBtn.addEventListener('click', async function() {
-        const newTechnicianId = technicianSelect.value;
-        const newTechnicianName = technicianSelect.options[technicianSelect.selectedIndex].textContent; // Para el alert
+  const bottonOpenModal = document.getElementById("confirmReassignYesBtn");
+  const bottonCerrar = document.getElementById("ButtonCancel");
 
-        if (newTechnicianId) {
-            // Deshabilitar botón para evitar múltiples clics
-            assignTechnicianBtn.disabled = true;
-            assignTechnicianBtn.textContent = 'Asignando...';
+  // !!! AQUI ES DONDE ESTÁ EL CAMBIO CRÍTICO !!!
+  if (bottonOpenModal && confirmReassignModalInstance) {
+    bottonOpenModal.addEventListener("click", async function () {
+      // Agrega 'async' aquí
+      confirmReassignModalInstance.hide(); // Oculta el modal de confirmación
 
-            try {
-                const success = await reassignTicket(currentTicketId, newTechnicianId);
-
-                if (success) {
-                    alert(`Ticket ${currentTicketNro} reasignado con éxito a ${newTechnicianName}.`);
-                    getTicketDataCoordinator(); // Llama a tu función para refrescar la tabla
-                } else {
-                    alert(`Error al reasignar el ticket ${currentTicketNro}. Por favor, intente de nuevo.`);
-                }
-            } catch (error) {
-                console.error("Error al reasignar el ticket:", error);
-                alert(`Ocurrió un error al reasignar el ticket ${currentTicketNro}.`);
-            } finally {
-                selectTechnicianModalInstance.hide(); // Oculta el modal de selección
-                assignTechnicianBtn.disabled = false;
-                assignTechnicianBtn.textContent = 'Asignar';
-            }
-        } else {
-            alert('Por favor, seleccione un técnico para reasignar.');
+      // Solo si tenemos un currentTicketId, intentamos cargar los datos del técnico
+      if (currentTicketId) {
+        try {
+          // Carga los datos del técnico ANTES de mostrar el modal de selección
+          // AWAIT es crucial aquí para esperar que la promesa se resuelva
+          await getTechnicianData(currentTicketId);
+          selectTechnicianModalInstance.show(); // Muestra el modal de selección de técnico
+        } catch (error) {
+          console.error(
+            "Error al cargar datos de técnicos para reasignación:",
+            error
+          );
+          alert(
+            "No se pudieron cargar los técnicos para reasignar. Por favor, intente de nuevo."
+          );
         }
+      } else {
+        console.error("Error: No se ha seleccionado un ticket para reasignar.");
+        alert("No se pudo reasignar el ticket. Seleccione uno de la tabla.");
+      }
     });
+  }
+
+  if (bottonCerrar && selectTechnicianModalInstance) {
+    bottonCerrar.addEventListener("click", function () {
+      selectTechnicianModalInstance.hide(); // Oculta el modal de selección de técnico
+      // Limpia los valores de los elementos en el modal de selección de técnico
+      const technicianSelect = document.getElementById("technicianSelect");
+      const currentTechnicianName = document.getElementById("currentTechnicianDisplay")
+      const dateoldtec = document.getElementById("currentAssignmentDateDisplay");
+      const currentRegionTec = document.getElementById("currentRegion");
+      const inputRegnew = document.getElementById("InputRegionUser2");
+      technicianSelect.value = "";
+      currentTechnicianName.textContent = "";
+      dateoldtec.textContent = "";
+      currentRegionTec.textContent = "";
+      inputRegnew.value = "";
+
+    });
+  }
+
+  // Referencias a elementos dentro de los modales
+  const ticketNumberSpan = document.getElementById("ticketNumberSpan");
+  const currentTechnicianName = document.getElementById(
+    "currentTechnicianName"
+  );
+  const confirmReassignYesBtn = document.getElementById(
+    "confirmReassignYesBtn"
+  );
+  const assignTechnicianBtn = document.getElementById("assignTechnicianBtn");
+
+  // Evento para el botón "Sí" del modal de confirmación
+  confirmReassignYesBtn.addEventListener("click", async function () {
+    confirmReassignModalInstance.hide(); // Oculta el modal de confirmación
+  });
+
+  // Evento para el botón "Asignar" del modal de selección de técnico
+  assignTechnicianBtn.addEventListener("click", async function () {
+    const newTechnicianId = technicianSelect.value;
+    const newTechnicianName =
+      technicianSelect.options[technicianSelect.selectedIndex].textContent; // Para el alert
+
+    if (newTechnicianId) {
+      // Deshabilitar botón para evitar múltiples clics
+      assignTechnicianBtn.disabled = true;
+      assignTechnicianBtn.textContent = "Asignando...";
+
+      try {
+        const success = await reassignTicket(currentTicketId, newTechnicianId);
+
+       if (success) {
+          Swal.fire({
+            icon: 'success',
+            title: '¡Reasignación Exitosa!',
+            text: `El Ticket ${currentTicketNro} ha sido reasignado con éxito a ${newTechnicianName}.`,
+            confirmButtonText: 'Entendido',
+            color: 'black',
+            confirmButtonColor: '#003594'
+          }).then(() => { // El .then() se ejecuta cuando el usuario hace clic en el botón
+              location.reload(); // Recarga la página inmediatamente
+          });
+        } else {
+          alert(
+            `Error al reasignar el ticket ${currentTicketNro}. Por favor, intente de nuevo.`
+          );
+        }
+      } catch (error) {
+        console.error("Error al reasignar el ticket:", error);
+        alert(`Ocurrió un error al reasignar el ticket ${currentTicketNro}.`);
+      } finally {
+        selectTechnicianModalInstance.hide(); // Oculta el modal de selección
+        assignTechnicianBtn.disabled = false;
+        assignTechnicianBtn.textContent = "Asignar";
+      }
+    } else {
+      Swal.fire({
+        title: "Notificación!",
+        text: "Debe seleccionar un técnico para reasignar el ticket.",
+        icon: "warning",
+        confirmButtonText: "Aceptar",
+        color: "black",
+        confirmButtonColor: "#003594",
+      });
+    }
+  });
 });
 
 function getTicketDataCoordinator() {
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketData`);
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketData`);
 
-    const tbody = document
-        .getElementById("tabla-ticket")
-        .getElementsByTagName("tbody")[0];
+  const tbody = document
+    .getElementById("tabla-ticket")
+    .getElementsByTagName("tbody")[0];
 
-    // Destruye DataTables si ya está inicializado
-    if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
-        $("#tabla-ticket").DataTable().destroy();
-        tbody.innerHTML = ""; // Limpia el tbody después de destruir DataTables
-    }
+  // Destruye DataTables si ya está inicializado
+  if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
+    $("#tabla-ticket").DataTable().destroy();
+    tbody.innerHTML = ""; // Limpia el tbody después de destruir DataTables
+  }
 
-    xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                    const TicketData = response.ticket;
-                    const modalElement = document.getElementById("staticBackdrop");
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          const TicketData = response.ticket;
+          const modalElement = document.getElementById("staticBackdrop");
 
-                    if (modalElement) {
-                        // Asegúrate de que modalInstanceCoordinator es accesible globalmente o en este ámbito
-                        // Si ya lo declaraste con 'let modalInstanceCoordinator = null;' al inicio del script,
-                        // entonces solo necesitas asignarle la instancia aquí.
-                        // Si no, declárala aquí:
-                        // let modalInstanceCoordinator; // <-- Si no está declarada fuera de esta función
-                        modalInstanceCoordinator = new bootstrap.Modal(modalElement, {
-                            backdrop: "static", // Para que no se cierre al hacer clic fuera
-                            keyboard: false     // Para que no se cierre con la tecla ESC
-                        });
+          if (modalElement) {
+            // Asegúrate de que modalInstanceCoordinator es accesible globalmente o en este ámbito
+            // Si ya lo declaraste con 'let modalInstanceCoordinator = null;' al inicio del script,
+            // entonces solo necesitas asignarle la instancia aquí.
+            // Si no, declárala aquí:
+            // let modalInstanceCoordinator; // <-- Si no está declarada fuera de esta función
+            modalInstanceCoordinator = new bootstrap.Modal(modalElement, {
+              backdrop: "static", // Para que no se cierre al hacer clic fuera
+              keyboard: false, // Para que no se cierre con la tecla ESC
+            });
 
-                        const closebutton = document.getElementById('close-button');
-                        const closeIcon = document.getElementById('Close-icon');
-                        const SelectReg = document.getElementById('idSelectionTec');
-                        const InputReg = document.getElementById('InputRegion');
+            const closebutton = document.getElementById("close-button");
+            const closeIcon = document.getElementById("Close-icon");
+            const SelectReg = document.getElementById("idSelectionTec");
+            const InputReg = document.getElementById("InputRegion");
 
-                        if (closebutton && SelectReg && modalInstanceCoordinator) {
-                          closebutton.addEventListener('click', function() {
-                            modalInstanceCoordinator.hide(); // Oculta el modal de cambio de estatus
-                            InputReg.value = '';
-                          });
-                        }
+            if (closebutton && SelectReg && modalInstanceCoordinator) {
+              closebutton.addEventListener("click", function () {
+                modalInstanceCoordinator.hide(); // Oculta el modal de cambio de estatus
+                InputReg.value = "";
+              });
+            }
 
-                        if (closeIcon && SelectReg && modalInstanceCoordinator) {
-                          closeIcon.addEventListener('click', function() {
-                            modalInstanceCoordinator.hide(); // Oculta el modal de cambio de estatus
-                            InputReg.value = '';
-                          });
-                        }
-                    } else {
-                        console.error("El elemento 'staticBackdrop' (modal de asignación) no fue encontrado en el DOM.");
-                    }
+            if (closeIcon && SelectReg && modalInstanceCoordinator) {
+              closeIcon.addEventListener("click", function () {
+                modalInstanceCoordinator.hide(); // Oculta el modal de cambio de estatus
+                InputReg.value = "";
+              });
+            }
+          } else {
+            console.error(
+              "El elemento 'staticBackdrop' (modal de asignación) no fue encontrado en el DOM."
+            );
+          }
 
-                    const detailsPanel = document.getElementById("ticket-details-panel");
+          const detailsPanel = document.getElementById("ticket-details-panel");
 
-                    detailsPanel.innerHTML =
-                        "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
+          detailsPanel.innerHTML =
+            "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
 
-                    const dataForDataTable = [];
+          const dataForDataTable = [];
 
-                    TicketData.forEach((data) => {
-                        let actionButtonsHtml = ''; // Variable para construir los botones de acción
+          TicketData.forEach((data) => {
+            let actionButtonsHtml = ""; // Variable para construir los botones de acción
 
-                        // Lógica para los botones de acción
-                        if (data.name_accion_ticket === 'Asignado al Coordinador') { // Acción 4
-                            actionButtonsHtml += `
+            // Lógica para los botones de acción
+            if (data.name_accion_ticket === "Asignado al Coordinador") {
+              // Acción 4
+              actionButtonsHtml += `
                                 <button id = "confirmreceived" class="btn btn-sm btn-info btn-received-coord mr-2"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
@@ -164,8 +236,11 @@ function getTicketDataCoordinator() {
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/></svg>                                
                                   </button>
                             `;
-                        } else if (data.name_accion_ticket === 'Recibido por el Coordinador') { // Acción 3
-                            actionButtonsHtml += `
+            } else if (
+              data.name_accion_ticket === "Recibido por el Coordinador"
+            ) {
+              // Acción 3
+              actionButtonsHtml += `
                                 <button style="display: none;" class="btn btn-sm btn-info btn-received-coord mr-2"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
@@ -184,8 +259,8 @@ function getTicketDataCoordinator() {
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/></svg>                               
                                   </button>
                             `;
-                        } else if (data.name_accion_ticket === 'Asignado al Técnico') {
-                            actionButtonsHtml += `
+            } else if (data.name_accion_ticket === "Asignado al Técnico") {
+              actionButtonsHtml += `
                                 <button id="reasingButton" class="btn btn-sm btn-primary btn-reassign-tech"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
@@ -195,330 +270,377 @@ function getTicketDataCoordinator() {
                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16"><path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/></svg>
                                 </button>
                             `;
-                        }
-                        // Puedes añadir más condiciones para otros estados si es necesario
+            }
+            // Puedes añadir más condiciones para otros estados si es necesario
 
-                        dataForDataTable.push([
-                            data.id_ticket,
-                            data.rif,
-                            data.razonsocial_cliente,
-                            data.name_accion_ticket,
-                            actionButtonsHtml, // Usa la variable con los botones
-                        ]);
-                    });
+            dataForDataTable.push([
+              data.id_ticket,
+              data.rif,
+              data.razonsocial_cliente,
+              data.name_accion_ticket,
+              actionButtonsHtml, // Usa la variable con los botones
+            ]);
+          });
 
-                    // Inicialización de DataTables
-                    const dataTableInstance = $("#tabla-ticket").DataTable({ // <--- 'dataTableInstance' se declara aquí
-                        data: dataForDataTable,
-                        scrollX: "200px",
-                        responsive: false,
-                        pagingType: "simple_numbers",
-                        lengthMenu: [[5, 10], ['5', '10']],
-                        autoWidth: false,
-                        columns: [
-                            { title: "ID ticket" },
-                            { title: "Rif" },
-                            {
-                                title: "Raz&oacuten Social",
-                                render: function (data, type, row) {
-                                    if (type === 'display') {
-                                        return `<span class="truncated-cell" data-full-text="${data}">${data}</span>`;
-                                    }
-                                    return data;
-                                }
-                            },
-                            { title: "Acción Ticket" },
-                            { title: "Acciones", orderable: false },
-                        ],
-                        language:
-                        {
-                          lengthMenu: "Mostrar _MENU_ Registros",
-                          emptyTable: "No hay Registros disponibles en la tabla",
-                          zeroRecords: "No se encontraron resultados para la búsqueda",
-                          info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
-                          infoEmpty: "No hay Registros disponibles",
-                          infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
-                          search: "Buscar:",
-                          loadingRecords: "Buscando...",
-                          processing: "Procesando...",
-                          paginate: {
-                            first: "Primero",
-                            last: "Último",
-                            next: "Siguiente",
-                            previous: "Anterior",
-                          },
-                        },
-                        dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-                        initComplete: function (settings, json) {
-                            // Dentro de initComplete, 'this' se refiere a la tabla jQuery
-                            // y 'this.api()' devuelve la instancia de la API de DataTables.
-                            const api = this.api(); // <--- Correcto: Obtener la instancia de la API aquí
+          // Inicialización de DataTables
+          const dataTableInstance = $("#tabla-ticket").DataTable({
+            // <--- 'dataTableInstance' se declara aquí
+            data: dataForDataTable,
+            scrollX: "200px",
+            responsive: false,
+            pagingType: "simple_numbers",
+            lengthMenu: [
+              [5, 10],
+              ["5", "10"],
+            ],
+            autoWidth: false,
+            columns: [
+              { title: "ID ticket" },
+              { title: "Rif" },
+              {
+                title: "Raz&oacuten Social",
+                render: function (data, type, row) {
+                  if (type === "display") {
+                    return `<span class="truncated-cell" data-full-text="${data}">${data}</span>`;
+                  }
+                  return data;
+                },
+              },
+              { title: "Acción Ticket" },
+              { title: "Acciones", orderable: false },
+            ],
+            language: {
+              lengthMenu: "Mostrar _MENU_ Registros",
+              emptyTable: "No hay Registros disponibles en la tabla",
+              zeroRecords: "No se encontraron resultados para la búsqueda",
+              info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
+              infoEmpty: "No hay Registros disponibles",
+              infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
+              search: "Buscar:",
+              loadingRecords: "Buscando...",
+              processing: "Procesando...",
+              paginate: {
+                first: "Primero",
+                last: "Último",
+                next: "Siguiente",
+                previous: "Anterior",
+              },
+            },
+            dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+            initComplete: function (settings, json) {
+              // Dentro de initComplete, 'this' se refiere a la tabla jQuery
+              // y 'this.api()' devuelve la instancia de la API de DataTables.
+              const api = this.api(); // <--- Correcto: Obtener la instancia de la API aquí
 
-                            const buttonsHtml = `
+              const buttonsHtml = `
                                 <button id="btn-asignados" class="btn btn-primary me-2">Asignados</button>
                                 <button id="btn-por-asignar" class="btn btn-secondary me-2">Por Asignar</button>
                                 <button id="btn-recibidos" class="btn btn-info">POS Recibidos</button>
                             `;
-                            $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+              $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
-                            function setActiveButton(activeButtonId) {
-                                $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
-                                $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
-                                $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
+              function setActiveButton(activeButtonId) {
+                $("#btn-asignados")
+                  .removeClass("btn-primary")
+                  .addClass("btn-secondary");
+                $("#btn-por-asignar")
+                  .removeClass("btn-primary")
+                  .addClass("btn-secondary");
+                $("#btn-recibidos")
+                  .removeClass("btn-primary")
+                  .addClass("btn-secondary");
 
-                                $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
-                            }
+                $(`#${activeButtonId}`)
+                  .removeClass("btn-secondary")
+                  .addClass("btn-primary");
+              }
 
-                            // Filtro inicial por "Asignados al Técnico"
-                            api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                                .column(3)
-                                .search("Asignado al Técnico")
-                                .draw();
-                            setActiveButton("btn-asignados"); // Activa el botón "Asignados" al inicio
+              // Filtro inicial por "Asignados al Técnico"
+              api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                .column(3)
+                .search("Asignado al Técnico")
+                .draw();
+              setActiveButton("btn-asignados"); // Activa el botón "Asignados" al inicio
 
+              $("#btn-asignados").on("click", function () {
+                api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                  .column(3)
+                  .search("Asignado al Técnico")
+                  .draw();
+                setActiveButton("btn-asignados");
+              });
 
-                            $("#btn-asignados").on("click", function () {
-                                api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                                    .column(3)
-                                    .search("Asignado al Técnico")
-                                    .draw();
-                                setActiveButton("btn-asignados");
-                            });
+              $("#btn-por-asignar").on("click", function () {
+                api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                  .column(3)
+                  .search("Asignado al Coordinador")
+                  .draw();
+                setActiveButton("btn-por-asignar");
+              });
 
-                            $("#btn-por-asignar").on("click", function () {
-                                api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                                    .column(3)
-                                    .search("Asignado al Coordinador")
-                                    .draw();
-                                setActiveButton("btn-por-asignar");
-                            });
+              $("#btn-recibidos").on("click", function () {
+                api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                  .column(3)
+                  .search("Recibido por el Coordinador")
+                  .draw();
+                setActiveButton("btn-recibidos");
+              });
+            },
+          });
 
-                            $("#btn-recibidos").on("click", function () {
-                                api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                                    .column(3)
-                                    .search("Recibido por el Coordinador")
-                                    .draw();
-                                setActiveButton("btn-recibidos");
-                            });
-                        },
-                    });
+          $("#tabla-ticket").resizableColumns();
 
-                    $("#tabla-ticket").resizableColumns();
+          $("#tabla-ticket tbody")
+            .off("click", "tr")
+            .on("click", "tr", function () {
+              const tr = $(this);
+              const rowData = dataTableInstance.row(tr).data(); // Aquí 'dataTableInstance' sí está disponible
 
-                    $("#tabla-ticket tbody")
-                        .off("click", "tr")
-                        .on("click", "tr", function () {
-                            const tr = $(this);
-                            const rowData = dataTableInstance.row(tr).data(); // Aquí 'dataTableInstance' sí está disponible
+              if (!rowData) {
+                return;
+              }
 
-                            if (!rowData) {
-                                return;
-                            }
+              $("#tabla-ticket tbody tr").removeClass("table-active");
+              tr.addClass("table-active");
 
-                            $("#tabla-ticket tbody tr").removeClass("table-active");
-                            tr.addClass("table-active");
+              const ticketId = rowData[0];
 
-                            const ticketId = rowData[0];
+              const selectedTicketDetails = TicketData.find(
+                (t) => t.id_ticket == ticketId
+              );
 
-                            const selectedTicketDetails = TicketData.find(
-                                (t) => t.id_ticket == ticketId
-                            );
-
-                            if (selectedTicketDetails) {
-                                detailsPanel.innerHTML = formatTicketDetailsPanel(
-                                    selectedTicketDetails
-                                );
-                                loadTicketHistory(ticketId);
-                                if (selectedTicketDetails.serial_pos) {
-                                    downloadImageModal(selectedTicketDetails.serial_pos);
-                                } else {
-                                    const imgElement = document.getElementById(
-                                        "device-ticket-image"
-                                    );
-                                    if (imgElement) {
-                                        imgElement.src =
-                                            '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png';
-                                        imgElement.alt = "Serial no disponible";
-                                    }
-                                }
-                            } else {
-                                detailsPanel.innerHTML =
-                                    "<p>No se encontraron detalles para este ticket.</p>";
-                            }
-                        });
-
-                    $("#tabla-ticket tbody").off("click", ".truncated-cell").on("click", ".truncated-cell", function (e) {
-                        e.stopPropagation();
-                        const $cellSpan = $(this);
-                        const fullText = $cellSpan.data('full-text');
-
-                        if ($cellSpan.hasClass('truncated-cell')) {
-                            $cellSpan.removeClass('truncated-cell').addClass('expanded-cell');
-                            $cellSpan.text(fullText);
-                        } else {
-                            $cellSpan.removeClass('expanded-cell').addClass('truncated-cell');
-                            const displayLength = 25;
-                            if (fullText.length > displayLength) {
-                                $cellSpan.text(fullText.substring(0, displayLength) + '...');
-                            } else {
-                                $cellSpan.text(fullText);
-                            }
-                        }
-                    });
-
-                    // Evento click para el botón "POS Recibido"
-                    $("#tabla-ticket tbody").off("click", ".btn-received-coord").on("click", ".btn-received-coord", function (e) {
-                        e.stopPropagation();
-                        const ticketId = $(this).data("ticket-id");
-                        const nroTicket = $(this).data("nro-ticket");
-                        markTicketAsReceived(ticketId, nroTicket);
-                    });
-
-                    // Evento click existente para el botón de Asignar Técnico
-                    $("#tabla-ticket tbody")
-                        .off("click", ".btn-assign-tech")
-                        .on("click", ".btn-assign-tech", function (e) {
-                            e.stopPropagation();
-                            const ticketId = $(this).data("ticket-id");
-                            const nroTicket = $(this).data("nro-ticket");
-                            currentTicketId = ticketId;
-                            currentTicketNroForAssignment = nroTicket;
-                            if (modalInstanceCoordinator) {
-                                modalInstanceCoordinator.show();
-                            } else {
-                                console.error("Error: La instancia del modal de asignación no está disponible.");
-                            }
-                        });
-
-                         $("#tabla-ticket tbody")
-                        .off("click", ".btn-reassign-tech")
-                        .on("click", ".btn-reassign-tech", function (e) {
-                            e.stopPropagation();
-                            currentTicketId = $(this).data("ticket-id");
-                            currentTicketNro = $(this).data("nro-ticket"); // Asegúrate de obtener el nro_ticket
-                            ticketNumberSpan.textContent = currentTicketNro; // Muestra el número en el modal de confirmación
-                            confirmReassignModalInstance.show(); // Muestra el modal de confirmación
-                        });
-
-
+              if (selectedTicketDetails) {
+                detailsPanel.innerHTML = formatTicketDetailsPanel(
+                  selectedTicketDetails
+                );
+                loadTicketHistory(ticketId);
+                if (selectedTicketDetails.serial_pos) {
+                  downloadImageModal(selectedTicketDetails.serial_pos);
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="9">Error al cargar</td></tr>';
-                    console.error("Error:", response.message);
+                  const imgElement = document.getElementById(
+                    "device-ticket-image"
+                  );
+                  if (imgElement) {
+                    imgElement.src =
+                      '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png';
+                    imgElement.alt = "Serial no disponible";
+                  }
                 }
-            } catch (error) {
-                tbody.innerHTML =
-                    '<tr><td colspan="9">Error al procesar la respuesta</td></tr>';
-                console.error("Error parsing JSON:", error);
-            }
-        } else if (xhr.status === 404) {
-            tbody.innerHTML =
-                '<tr><td colspan="9">No se encontraron usuarios</td></tr>';
+              } else {
+                detailsPanel.innerHTML =
+                  "<p>No se encontraron detalles para este ticket.</p>";
+              }
+            });
+
+          $("#tabla-ticket tbody")
+            .off("click", ".truncated-cell")
+            .on("click", ".truncated-cell", function (e) {
+              e.stopPropagation();
+              const $cellSpan = $(this);
+              const fullText = $cellSpan.data("full-text");
+
+              if ($cellSpan.hasClass("truncated-cell")) {
+                $cellSpan
+                  .removeClass("truncated-cell")
+                  .addClass("expanded-cell");
+                $cellSpan.text(fullText);
+              } else {
+                $cellSpan
+                  .removeClass("expanded-cell")
+                  .addClass("truncated-cell");
+                const displayLength = 25;
+                if (fullText.length > displayLength) {
+                  $cellSpan.text(fullText.substring(0, displayLength) + "...");
+                } else {
+                  $cellSpan.text(fullText);
+                }
+              }
+            });
+
+          // Evento click para el botón "POS Recibido"
+          $("#tabla-ticket tbody")
+            .off("click", ".btn-received-coord")
+            .on("click", ".btn-received-coord", function (e) {
+              e.stopPropagation();
+              const ticketId = $(this).data("ticket-id");
+              const nroTicket = $(this).data("nro-ticket");
+              markTicketAsReceived(ticketId, nroTicket);
+            });
+
+          // Evento click existente para el botón de Asignar Técnico
+          $("#tabla-ticket tbody")
+            .off("click", ".btn-assign-tech")
+            .on("click", ".btn-assign-tech", function (e) {
+              e.stopPropagation();
+              const ticketId = $(this).data("ticket-id");
+              const nroTicket = $(this).data("nro-ticket");
+              currentTicketId = ticketId;
+              currentTicketNroForAssignment = nroTicket;
+              if (modalInstanceCoordinator) {
+                modalInstanceCoordinator.show();
+              } else {
+                console.error(
+                  "Error: La instancia del modal de asignación no está disponible."
+                );
+              }
+            });
+
+          $("#tabla-ticket tbody")
+            .off("click", ".btn-reassign-tech")
+            .on("click", ".btn-reassign-tech", function (e) {
+              e.stopPropagation();
+              currentTicketId = $(this).data("ticket-id");
+              currentTicketNro = $(this).data("nro-ticket"); // Asegúrate de obtener el nro_ticket
+              ticketNumberSpan.textContent = currentTicketNro; // Muestra el número en el modal de confirmación
+              confirmReassignModalInstance.show(); // Muestra el modal de confirmación
+            });
         } else {
-            tbody.innerHTML = '<tr><td colspan="9">Error de conexión</td></tr>';
-            console.error("Error:", xhr.status, xhr.statusText);
+          tbody.innerHTML = '<tr><td colspan="9">Error al cargar</td></tr>';
+          console.error("Error:", response.message);
         }
+      } catch (error) {
+        tbody.innerHTML =
+          '<tr><td colspan="9">Error al procesar la respuesta</td></tr>';
+        console.error("Error parsing JSON:", error);
+      }
+    } else if (xhr.status === 404) {
+      tbody.innerHTML =
+        '<tr><td colspan="9">No se encontraron usuarios</td></tr>';
+    } else {
+      tbody.innerHTML = '<tr><td colspan="9">Error de conexión</td></tr>';
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+  xhr.onerror = function () {
+    tbody.innerHTML = '<tr><td colspan="9">Error de conexión</td></tr>';
+    console.error("Error de red");
+  };
+  const datos = `action=GetTicketData`;
+  xhr.send(datos);
+}
+
+function getTechnicianData(ticketIdToFetch) {
+  // Cambié el nombre del parámetro para evitar cualquier posible confusión
+
+  // Validar que ticketIdToFetch no es un objeto Event
+  if (typeof ticketIdToFetch === "object" && ticketIdToFetch !== null) {
+    if (ticketIdToFetch.type && ticketIdToFetch.target) {
+      // Podría ser un objeto Event
+      console.error(
+        "ERROR CRÍTICO: Se intentó pasar un objeto Event a getTechnicianData. Esto no debería ocurrir."
+      );
+      alert(
+        "Error interno: No se pudo procesar el ID del ticket. Contacte a soporte."
+      );
+      return Promise.reject(
+        new Error("Invalid ticket ID: received an event object.")
+      );
+    }
+  }
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const API_URL_GET_TECHNICIANS = `${ENDPOINT_BASE}${APP_PATH}api/users/GetTechniciansAndCurrentTicketTechnician`;
+
+    xhr.open("POST", API_URL_GET_TECHNICIANS);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          const inputNtecnico = document.getElementById(
+            "currentTechnicianDisplay"
+          );
+          const inputFecha = document.getElementById(
+            "currentAssignmentDateDisplay"
+          );
+          const inputRegion = document.getElementById("currentRegion");
+          const technicianSelect = document.getElementById("technicianSelect");
+          if (response.success) {
+            inputNtecnico.innerHTML =
+              response.technicians.full_tecnicoassig1 || "No Asignado";
+            inputFecha.innerHTML =
+              response.technicians.fecha_asignacion || "N/A";
+            inputRegion.innerHTML = response.technicians.name_region || "N/A";
+          } else {
+            inputNtecnico.innerHTML = "No Asignado";
+            inputFecha.innerHTML = "N/A";
+            inputRegion.innerHTML = "N/A";
+            technicianSelect.value = "";
+          }
+          resolve(response);
+        } catch (error) {
+          console.error("Error parsing JSON para obtener técnicos:", error);
+          reject(error);
+        }
+      } else {
+        console.error(
+          "Error en la solicitud para obtener técnicos:",
+          xhr.status,
+          xhr.statusText
+        );
+        reject(new Error(`HTTP error! status: ${xhr.status}`));
+      }
     };
+
     xhr.onerror = function () {
-        tbody.innerHTML = '<tr><td colspan="9">Error de conexión</td></tr>';
-        console.error("Error de red");
+      console.error("Error de red al intentar obtener técnicos.");
+      reject(new Error("Error de red"));
     };
-    const datos = `action=GetTicketData`;
-    xhr.send(datos);
+
+    // Construye el dataToSend usando el parámetro 'ticketIdToFetch'
+    const dataToSend = `action=GetTechniciansAndCurrentTicketTechnician&ticket_id=${ticketIdToFetch}`;
+    xhr.send(dataToSend);
+  });
 }
-
-function getTechnicianData() {
-  const id_ticket = document.getElementById("id_ticket").value;
-  console.log(id_ticket);
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        const API_URL_GET_TECHNICIANS = `${ENDPOINT_BASE}${APP_PATH}api/users/GetTechniciansAndCurrentTicketTechnician`;
-
-        xhr.open("POST", API_URL_GET_TECHNICIANS);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-        xhr.onload = function () {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                  const inputNtecnico = document.getElementById("currentTechnicianDisplay");
-                  const inputFecha = document.getElementById("currentAssignmentDateDisplay");
-                  const inputRegion = document.getElementById("currentRegion");
-
-                    const response = JSON.parse(xhr.responseText);
-                    if (response.success && response.technicians) {
-                        // Resuelve con los nombres de propiedades correctos que necesitas
-                        inputNtecnico.innerHTML = response.technicians.full_tecnicoassig1 || "No Asignado";
-                        inputFecha.innerHTML = response.technicians.fecha_asignacion || "N/A";
-                        inputRegion.innerHTML = response.technicians.name_region || "N/A";
-                    } else {
-                        console.error("Error al obtener datos de técnicos:", response.message);
-                        resolve({ currentTechnicianName: "N/A", currentAssignmentDate: "N/A"});
-                    }
-                } catch (error) {
-                    console.error("Error parsing JSON para obtener técnicos:", error);
-                    reject(error);
-                }
-            } else {
-                console.error("Error en la solicitud para obtener técnicos:", xhr.status, xhr.statusText);
-                reject(new Error(`HTTP error! status: ${xhr.status}`));
-            }
-        };
-
-        xhr.onerror = function () {
-            console.error("Error de red al intentar obtener técnicos.");
-            reject(new Error("Error de red"));
-        };
-
-        const dataToSend = `action=getTechnicians&ticket_id=${currentTicketId}`;
-        xhr.send(dataToSend);
-    });
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-  getTechnicianData(currentTicketId);
-});
 
 function reassignTicket(ticketId, newTechnicianId) {
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        const API_URL_REASSIGN = `${ENDPOINT_BASE}${APP_PATH}api/acciones/ReassignTicket`;
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const API_URL_REASSIGN = `${ENDPOINT_BASE}${APP_PATH}api/users/ReassignTicket`;
 
-        xhr.open("POST", API_URL_REASSIGN);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.open("POST", API_URL_REASSIGN);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-        xhr.onload = function () {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    resolve(response.success);
-                } catch (error) {
-                    console.error("Error parsing JSON para reasignar ticket:", error);
-                    reject(error);
-                }
-            } else {
-                console.error("Error en la solicitud para reasignar ticket:", xhr.status, xhr.statusText);
-                reject(new Error(`HTTP error! status: ${xhr.status}`));
-            }
-        };
+    xhr.onload = function () {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          resolve(response.success);
+        } catch (error) {
+          console.error("Error parsing JSON para reasignar ticket:", error);
+          reject(error);
+        }
+      } else {
+        console.error(
+          "Error en la solicitud para reasignar ticket:",
+          xhr.status,
+          xhr.statusText
+        );
+        reject(new Error(`HTTP error! status: ${xhr.status}`));
+      }
+    };
 
-        xhr.onerror = function () {
-            console.error("Error de red al intentar reasignar ticket.");
-            reject(new Error("Error de red"));
-        };
+    xhr.onerror = function () {
+      console.error("Error de red al intentar reasignar ticket.");
+      reject(new Error("Error de red"));
+    };
 
-        const dataToSend = `action=reassignTicket&ticket_id=${ticketId}&new_technician_id=${newTechnicianId}`;
-        xhr.send(dataToSend);
-    });
+    const dataToSend = `action=ReassignTicket&ticket_id=${ticketId}&new_technician_id=${newTechnicianId}`;
+    xhr.send(dataToSend);
+  });
 }
 
 // *** NUEVA FUNCIÓN PARA MARCAR TICKET COMO RECIBIDO ***
 function formatTicketDetailsPanel(d) {
-    // d es el objeto `data` completo del ticket
+  // d es el objeto `data` completo del ticket
 
-    // La imageUrl inicial puede ser una imagen de "cargando" o un placeholder.
-    const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
-    const initialImageAlt = "Cargando imagen del dispositivo...";
+  // La imageUrl inicial puede ser una imagen de "cargando" o un placeholder.
+  const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
+  const initialImageAlt = "Cargando imagen del dispositivo...";
 
-    return `
+  return `
         <div class="container-fluid">
             <div class="row mb-3 align-items-center">
                 <div class="col-md-3 text-center">
@@ -700,7 +822,6 @@ function loadTicketHistory(ticketId) {
     },
     dataType: "json", // Le decimos a jQuery que esperamos una respuesta JSON
     success: function (response) {
-
       // Verificar si la respuesta es exitosa y contiene historial
       if (response.success && response.history && response.history.length > 0) {
         let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">'; // Contenedor del acordeón
@@ -710,69 +831,75 @@ function loadTicketHistory(ticketId) {
           const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
           const headingId = `headingHistoryItem_${ticketId}_${index}`;
 
-           let headerStyle = "";
-            let textColor = "";
-            let statusHeaderText = ""; // Inicializa para asegurar que siempre haya un valor
+          let headerStyle = "";
+          let textColor = "";
+          let statusHeaderText = ""; // Inicializa para asegurar que siempre haya un valor
 
-            // --- Lógica de colores basada en el 'name_status_ticket' (prioridad baja/media) ---
-            if (item.name_status_ticket) {
-                const statusLower = item.name_status_ticket.toLowerCase();
-                if (statusLower.includes("abierto")) {
-                    headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-                    textColor = "color: #ffffff;"; // Texto blanco
-                    statusHeaderText = " (Abierto)";
-                } else if (
-                    statusLower.includes("cerrado") ||
-                    statusLower.includes("resuelto")
-                ) {
-                    headerStyle = "background-color: #28a745;"; // Verde
-                    textColor = "color: #ffffff;"; // Texto blanco
-                    statusHeaderText = " (Cerrado)";
-                } else if (
-                    statusLower.includes("pendiente") ||
-                    statusLower.includes("en proceso")
-                ) {
-                    headerStyle = "background-color: #ffc107;"; // Amarillo (Nota: este es el mismo amarillo que quieres para "Gestión Actual")
-                    textColor = "color: #343a40;"; // Texto oscuro
-                    statusHeaderText = " (En Proceso)";
-                } else if (
-                    statusLower.includes("cancelado") ||
-                    statusLower.includes("rechazado")
-                ) {
-                    headerStyle = "background-color: #dc3545;"; // Rojo
-                    textColor = "color: #ffffff;"; // Texto blanco
-                    statusHeaderText = " (Cancelado)";
-                } else if (statusLower.includes("espera")) {
-                    headerStyle = "background-color: #6c757d;"; // Gris
-                    textColor = "color: #ffffff;"; // Texto blanco
-                    statusHeaderText = " (En Espera)";
-                }
-            }
-
-           if (index === 0) {
-              // Es la última gestión (la "actual")
-              headerStyle = "background-color: #ffc107;"; // Amarillo
-              textColor = "color: #343a40;"; // Texto oscuro
-              statusHeaderText = ` (${item.name_status_ticket || 'Desconocido'})`; // Agrega el estatus actual o 'Desconocido' si no existe. // Sobrescribe el texto del estado si ya estaba.
-            } else {
-              // Son gestiones pasadas
+          // --- Lógica de colores basada en el 'name_status_ticket' (prioridad baja/media) ---
+          if (item.name_status_ticket) {
+            const statusLower = item.name_status_ticket.toLowerCase();
+            if (statusLower.includes("abierto")) {
               headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
               textColor = "color: #ffffff;"; // Texto blanco
-              // No sobrescribimos statusHeaderText aquí a menos que quieras algo como "(Pasada)"
+              statusHeaderText = " (Abierto)";
+            } else if (
+              statusLower.includes("cerrado") ||
+              statusLower.includes("resuelto")
+            ) {
+              headerStyle = "background-color: #28a745;"; // Verde
+              textColor = "color: #ffffff;"; // Texto blanco
+              statusHeaderText = " (Cerrado)";
+            } else if (
+              statusLower.includes("pendiente") ||
+              statusLower.includes("en proceso")
+            ) {
+              headerStyle = "background-color: #ffc107;"; // Amarillo (Nota: este es el mismo amarillo que quieres para "Gestión Actual")
+              textColor = "color: #343a40;"; // Texto oscuro
+              statusHeaderText = " (En Proceso)";
+            } else if (
+              statusLower.includes("cancelado") ||
+              statusLower.includes("rechazado")
+            ) {
+              headerStyle = "background-color: #dc3545;"; // Rojo
+              textColor = "color: #ffffff;"; // Texto blanco
+              statusHeaderText = " (Cancelado)";
+            } else if (statusLower.includes("espera")) {
+              headerStyle = "background-color: #6c757d;"; // Gris
+              textColor = "color: #ffffff;"; // Texto blanco
+              statusHeaderText = " (En Espera)";
             }
+          }
+
+          if (index === 0) {
+            // Es la última gestión (la "actual")
+            headerStyle = "background-color: #ffc107;"; // Amarillo
+            textColor = "color: #343a40;"; // Texto oscuro
+            statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`; // Agrega el estatus actual o 'Desconocido' si no existe. // Sobrescribe el texto del estado si ya estaba.
+          } else {
+            // Son gestiones pasadas
+            headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
+            textColor = "color: #ffffff;"; // Texto blanco
+            // No sobrescribimos statusHeaderText aquí a menos que quieras algo como "(Pasada)"
+          }
 
           historyHtml += `
                         <div class="card mb-3 custom-history-card"> <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
                                             data-toggle="collapse" data-target="#${collapseId}"
-                                            aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="${collapseId}"
+                                            aria-expanded="${
+                                              index === 0 ? "true" : "false"
+                                            }" aria-controls="${collapseId}"
                                             style="${textColor}">
-                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
+                                        ${item.fecha_de_cambio} - ${
+            item.name_accion_ticket
+          }${statusHeaderText}
                                     </button>
                                 </h2>
                             </div>
-                            <div id="${collapseId}" class="collapse ${index === 0 ? 'show' : ''}"
+                            <div id="${collapseId}" class="collapse ${
+            index === 0 ? "show" : ""
+          }"
                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
@@ -780,35 +907,59 @@ function loadTicketHistory(ticketId) {
                                             <tbody>
                                                 <tr>
                                                     <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
-                                                    <td>${item.fecha_de_cambio || 'N/A'}</td>
+                                                    <td>${
+                                                      item.fecha_de_cambio ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Acción:</th>
-                                                    <td>${item.name_accion_ticket || 'N/A'}</td>
+                                                    <td>${
+                                                      item.name_accion_ticket ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Operador de Gestión:</th>
-                                                    <td>${item.full_name_tecnico_gestion || 'N/A'}</td>
+                                                    <td>${
+                                                      item.full_name_tecnico_gestion ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Coordinador:</th>
-                                                    <td>${item.full_name_coordinador || 'N/A'}</td>
+                                                    <td>${
+                                                      item.full_name_coordinador ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Ticket:</th>
-                                                    <td>${item.name_status_ticket || 'N/A'}</td>
+                                                    <td>${
+                                                      item.name_status_ticket ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Laboratorio:</th>
-                                                    <td>${item.name_status_lab || 'N/A'}</td>
+                                                    <td>${
+                                                      item.name_status_lab ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
-                                                    <td>${item.name_status_domiciliacion || 'N/A'}</td>
+                                                    <td>${
+                                                      item.name_status_domiciliacion ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                                  <tr>
                                                     <th class="text-start">Estatus Pago:</th>
-                                                    <td>${item.name_status_payment || 'N/A'}</td>
+                                                    <td>${
+                                                      item.name_status_payment ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -904,107 +1055,127 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 //console.log('FrontEnd.js loaded successfully!');
 
-function markTicketAsReceived(ticketId, nroTicket) { // Asegúrate de que nroTicket esté como parámetro
-    const id_user = document.getElementById("id_user").value;
-    // SVG que quieres usar
-    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#ffc107" class="swal2-icon-custom-svg" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.5a.5.5 0 0 1-1.002.04l-.35-3.5C7.046 5.462 7.465 5 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/></svg>`;
-      Swal.fire({
-        // El nuevo texto del header va aquí
-        title: `Confirmación de recibido`, // Texto fijo para el encabezado
-        // El contenido del cuerpo (SVG y texto explicativo) va en 'html'
-        html: `
+function markTicketAsReceived(ticketId, nroTicket) {
+  // Asegúrate de que nroTicket esté como parámetro
+  const id_user = document.getElementById("id_user").value;
+  // SVG que quieres usar
+  const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#ffc107" class="swal2-icon-custom-svg" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.5a.5.5 0 0 1-1.002.04l-.35-3.5C7.046 5.462 7.465 5 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/></svg>`;
+  Swal.fire({
+    // El nuevo texto del header va aquí
+    title: `Confirmación de recibido`, // Texto fijo para el encabezado
+    // El contenido del cuerpo (SVG y texto explicativo) va en 'html'
+    html: `
             ${customWarningSvg}
             <p class="mt-3">¿Marcar el ticket ${nroTicket} como recibido?</p>
             <p>Esta acción registrará la fecha de recepción y habilitará la asignación de técnico.</p>
         `,
-        showCancelButton: true,
-        confirmButtonColor: "#007bff",
-        cancelButtonColor: "#6c757d",
-        confirmButtonText: "Sí, Recibir Ticket",
-        cancelButtonText: "Cancelar",
-        color: "black",
-        customClass: {
-            popup: 'swal2-custom-header-popup', // Clase principal para el popup
-            title: 'swal2-custom-title',       // Clase para el título (para estilizarlo en CSS)
-            content: 'custom-content', // Puedes mantener esta si la usas para el contenido del cuerpo
-            actions: 'custom-actions',
-            confirmButton: 'swal2-confirm-receive-ticket-class',
-            cancelButton: 'swal2-cancel-receive-ticket-class',
-        },
-        didOpen: (popup) => {
-            const confirmBtn = popup.querySelector('.swal2-confirm-receive-ticket-class');
-            const cancelBtn = popup.querySelector('.swal2-cancel-receive-ticket-class');
+    showCancelButton: true,
+    confirmButtonColor: "#007bff",
+    cancelButtonColor: "#6c757d",
+    confirmButtonText: "Sí, Recibir Ticket",
+    cancelButtonText: "Cancelar",
+    color: "black",
+    customClass: {
+      popup: "swal2-custom-header-popup", // Clase principal para el popup
+      title: "swal2-custom-title", // Clase para el título (para estilizarlo en CSS)
+      content: "custom-content", // Puedes mantener esta si la usas para el contenido del cuerpo
+      actions: "custom-actions",
+      confirmButton: "swal2-confirm-receive-ticket-class",
+      cancelButton: "swal2-cancel-receive-ticket-class",
+    },
+    didOpen: (popup) => {
+      const confirmBtn = popup.querySelector(
+        ".swal2-confirm-receive-ticket-class"
+      );
+      const cancelBtn = popup.querySelector(
+        ".swal2-cancel-receive-ticket-class"
+      );
 
-            if (confirmBtn) {
-                confirmBtn.id = 'swal2-confirm-receive-ticket-id';
-            }
-            if (cancelBtn) {
-                cancelBtn.id = 'swal2-cancel-receive-ticket-id';
-            }
-        },
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/historical/MarkTicketReceived`); // Necesitas una nueva ruta de API para esto
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      if (confirmBtn) {
+        confirmBtn.id = "swal2-confirm-receive-ticket-id";
+      }
+      if (cancelBtn) {
+        cancelBtn.id = "swal2-cancel-receive-ticket-id";
+      }
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const xhr = new XMLHttpRequest();
+      xhr.open(
+        "POST",
+        `${ENDPOINT_BASE}${APP_PATH}api/historical/MarkTicketReceived`
+      ); // Necesitas una nueva ruta de API para esto
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-            xhr.onload = function () {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.success) {
-                           Swal.fire({
-                                title: "¡Recibido!",
-                                text: "El ticket N" + nroTicket + " ha sido marcado como recibido.",
-                                icon: "success",
-                                color: "black",
-                                confirmButtonColor: "#3085d6" 
-                            });
-                              getTicketDataCoordinator(); 
-                             if (modalInstanceCoordinator) { 
-                              modalInstanceCoordinator.hide(); 
-                             }else{
-                                console.error("No se pudo cerrar el modal: la instancia no está disponible.");
-                             }
-                        } else {
-                            Swal.fire(
-                                "Error",
-                                response.message || "Hubo un error al marcar el ticket como recibido.",
-                                "error"
-                            );
-                        }
-                    } catch (error) {
-                        Swal.fire(
-                            "Error",
-                            "Error al procesar la respuesta del servidor.",
-                            "error"
-                        );
-                        console.error("Error parsing JSON for markTicketAsReceived:", error);
-                    }
-                } else {
-                    Swal.fire(
-                        "Error",
-                        `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
-                        "error"
-                    );
-                    console.error("Error en markTicketAsReceived:", xhr.status, xhr.statusText);
-                }
-            };
-            xhr.onerror = function () {
-                Swal.fire(
-                    "Error",
-                    "Error de red al intentar marcar el ticket como recibido.",
-                    "error"
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            if (response.success) {
+              Swal.fire({
+                title: "¡Recibido!",
+                text:
+                  "El ticket N" + nroTicket + " ha sido marcado como recibido.",
+                icon: "success",
+                color: "black",
+                confirmButtonColor: "#3085d6",
+              });
+              getTicketDataCoordinator();
+              if (modalInstanceCoordinator) {
+                modalInstanceCoordinator.hide();
+              } else {
+                console.error(
+                  "No se pudo cerrar el modal: la instancia no está disponible."
                 );
-                console.error("Network error for markTicketAsReceived");
-            };
-
-            const data = `action=MarkTicketReceived&ticket_id=${ticketId}&id_user=${encodeURIComponent(id_user)}`;
-            xhr.send(data);
+              }
+            } else {
+              Swal.fire(
+                "Error",
+                response.message ||
+                  "Hubo un error al marcar el ticket como recibido.",
+                "error"
+              );
+            }
+          } catch (error) {
+            Swal.fire(
+              "Error",
+              "Error al procesar la respuesta del servidor.",
+              "error"
+            );
+            console.error(
+              "Error parsing JSON for markTicketAsReceived:",
+              error
+            );
+          }
+        } else {
+          Swal.fire(
+            "Error",
+            `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
+            "error"
+          );
+          console.error(
+            "Error en markTicketAsReceived:",
+            xhr.status,
+            xhr.statusText
+          );
         }
-    });
-}
+      };
+      xhr.onerror = function () {
+        Swal.fire(
+          "Error",
+          "Error de red al intentar marcar el ticket como recibido.",
+          "error"
+        );
+        console.error("Network error for markTicketAsReceived");
+      };
 
+      const data = `action=MarkTicketReceived&ticket_id=${ticketId}&id_user=${encodeURIComponent(
+        id_user
+      )}`;
+      xhr.send(data);
+    }
+  });
+}
 
 function AssignTicket() {
   const id_tecnico_asignado = document.getElementById("idSelectionTec").value;
@@ -1020,7 +1191,7 @@ function AssignTicket() {
   }
 
   const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/AssignTicket`); 
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/AssignTicket`);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
@@ -1030,19 +1201,21 @@ function AssignTicket() {
         if (response.success) {
           Swal.fire({
             icon: "success",
-            title: "Asignado Correctamente el Ticket nro: " + currentTicketNroForAssignment,
+            title:
+              "Asignado Correctamente el Ticket nro: " +
+              currentTicketNroForAssignment,
             text: response.message,
             color: "black",
             showConfirmButton: true,
             confirmButtonText: "Ok",
             confirmButtonColor: "#3085d6",
-          }).then((result) => { 
-              if (result.isConfirmed) { 
-                getTicketDataCoordinator(); 
-                if (modalInstanceCoordinator) {
-                  modalInstanceCoordinator.hide();
-                }
+          }).then((result) => {
+            if (result.isConfirmed) {
+              getTicketDataCoordinator();
+              if (modalInstanceCoordinator) {
+                modalInstanceCoordinator.hide();
               }
+            }
           });
           document.getElementById("idSelectionTec").value = "";
           currentTicketId = null;
@@ -1091,11 +1264,14 @@ function getTecnico2() {
         if (response.success) {
           const select = document.getElementById("idSelectionTec");
           const select2 = document.getElementById("technicianSelect");
-          
+
           select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
           select2.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
 
-          if (Array.isArray(response.tecnicos) && response.tecnicos.length > 0) {
+          if (
+            Array.isArray(response.tecnicos) &&
+            response.tecnicos.length > 0
+          ) {
             response.tecnicos.forEach((tecnico) => {
               const option = document.createElement("option");
               option.value = tecnico.id_user;
@@ -1113,7 +1289,7 @@ function getTecnico2() {
               if (selectedTecnicoId) {
                 GetRegionUser(selectedTecnicoId);
               } else {
-                document.getElementById("InputRegion").value = ""; 
+                document.getElementById("InputRegion").value = "";
               }
             });
 
@@ -1122,7 +1298,7 @@ function getTecnico2() {
               if (selectedTecnicoId) {
                 GetRegionUser(selectedTecnicoId);
               } else {
-                document.getElementById("InputRegionUser2").value = ""; 
+                document.getElementById("InputRegionUser2").value = "";
               }
             });
           } else {
@@ -1148,7 +1324,7 @@ function getTecnico2() {
     }
   };
 
-  const datos = `action=GetTecnico2`; 
+  const datos = `action=GetTecnico2`;
   xhr.send(datos);
 }
 
@@ -1163,7 +1339,7 @@ function GetRegionUser(id_user) {
         if (response.success) {
           const inputRegion = document.getElementById("InputRegion");
           const inputRegionUser2 = document.getElementById("InputRegionUser2");
-          const region = response.regionusers || ""; 
+          const region = response.regionusers || "";
 
           if (region) {
             inputRegion.value = region;

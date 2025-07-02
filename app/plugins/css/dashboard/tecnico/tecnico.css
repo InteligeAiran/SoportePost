@@ -571,7 +571,7 @@ div.dataTables_wrapper div.dataTables_filter input {
     transition: all 0.3s ease; /* Transición suave para los estados hover/active */
 }
 
-#confirmReassignModal .modal-footer #noConfirm{
+#confirmReassignModal .modal-footer #noConfirm, #ButtonCancel{
     border-color: #6c757d;
     color: white;
 }
@@ -642,8 +642,8 @@ div.dataTables_wrapper div.dataTables_filter input {
 
 
 /* Asegúrate de que esta clase exista en tu CSS */
-.bg-gradient-primary {
-    background: linear-gradient(90deg, #0d6efd, #0dcaf0) !important; /* Ejemplo de degradado azul */
+.bg-gradient-primary{
+    background-image: linear-gradient(310deg, #003594 0%, #000 100%);
 }
 
 /* Ajustes generales para el modal si es necesario, aunque las clases de Bootstrap ya ayudan mucho */
@@ -662,7 +662,28 @@ div.dataTables_wrapper div.dataTables_filter input {
     border-color: #ced4da;
     box-shadow: none;
 }
+
 #selectTechnicianModal #technicianSelect:focus {
     border-color: #86b7fe;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
+
+#assignTechnicianBtn{
+  background-color: #003594; /* Tu azul fuerte */
+  border-color: #003594;
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+#assignTechnicianBtn:hover{
+    background-color: green; /* Un tono un poco más oscuro o claro al hover */
+    border-color: green;
+}
+
+#ButtonCancel:hover{
+    background-color: red;
+    border-color: red;
+    color: white;
+}
+
