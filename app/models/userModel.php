@@ -549,13 +549,135 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
         }
     }
 
-    public function ReassignTicket($id_ticket, $id_technician){
+
+    public function ReassignTicket($id_ticket, $id_technician, $id_user) {
         try {
-            $sql = "UPDATE users_tickets set id_tecnico_n2 = ".$id_technician." , date_assign_tec2 = NOW() WHERE id_ticket = ".$id_ticket.";";
-            $result = $this->db->pgquery($sql);
-            return $result;
+            // --- PASO 0: Sanitizar/Escapar todas las entradas del usuario ---
+            // ¡MUY IMPORTANTE PARA PREVENIR INYECCIÓN SQL!
+            // Reemplaza pg_escape_literal($this->db->getConnection(), ...) con tu método de sanitización real.
+            // Si usas PDO, deberías usar prepared statements, lo cual es más seguro.
+            $safe_id_ticket = pg_escape_literal($this->db->getConnection(), $id_ticket);
+            $safe_id_technician = pg_escape_literal($this->db->getConnection(), $id_technician);
+            $safe_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+
+            // --- PASO 1: Obtener datos del ticket existente para mantenerlos ---
+            // Usamos el ID del ticket sanitizado
+            $data_sql = "SELECT id_ticket, date_sendcoordinator, id_coordinator, date_create_ticket, date_end_ticket, id_tecnico_n1 FROM users_tickets WHERE id_ticket = " . $safe_id_ticket;
+            $result_select_initial = Model::getResult($data_sql, $this->db); // Usando tu método Model::getResult
+
+            $existing_data = null;
+            if ($result_select_initial && $result_select_initial['numRows'] > 0) {
+                $existing_data = pg_fetch_assoc($result_select_initial['query'], 0);
+            }
+
+            if (!$existing_data) {
+                return ['success' => false, 'message' => 'Ticket no encontrado para reasignación.'];
+            }
+            
+            // --- NUEVO PASO: Actualizar id_accion_ticket en la tabla 'tickets' ---
+            // El id_accion_ticket para "Reasignado al Técnico" es 11
+            $new_accion_ticket_id = 11; 
+            $new_status_ticket_id = 2; // Asumiendo que "En Proceso" es el id_status_ticket 2
+
+            // Construimos la consulta UPDATE usando el ID del ticket sanitizado
+            $sql_update_ticket = "UPDATE public.tickets SET id_accion_ticket = " . (int)$new_accion_ticket_id . " WHERE id_ticket = " . $safe_id_ticket . ";";
+            
+            // Ejecutamos la consulta UPDATE
+            $result_update_ticket = $this->db->pgquery($sql_update_ticket);
+
+            if (!$result_update_ticket) {
+                // Si el UPDATE falla, registramos el error y retornamos un mensaje de fallo.
+                error_log("Error al ejecutar UPDATE en public.tickets: " . pg_last_error($this->db->getConnection()));
+                return ['success' => false, 'message' => 'Error al actualizar el estado y acción del ticket principal.'];
+            }
+
+            // Preparar valores para el INSERT en users_tickets, manejando NULLs y comillas
+            // Los valores se asumen seguros si provienen de $existing_data que fue de la DB
+            // y se vuelven a escapar si son strings para el INSERT.
+            $date_sendcoordinator = $existing_data['date_sendcoordinator'] ? "'" . pg_escape_literal($this->db->getConnection(), $existing_data['date_sendcoordinator']) . "'" : 'NULL';
+            $id_coordinator = $existing_data['id_coordinator'] ?? 'NULL'; // Numérico, no necesita comillas
+            $date_create_ticket = $existing_data['date_create_ticket'] ? "'" . pg_escape_literal($this->db->getConnection(), $existing_data['date_create_ticket']) . "'" : 'NULL';
+            $date_end_ticket = $existing_data['date_end_ticket'] ? "'" . pg_escape_literal($this->db->getConnection(), $existing_data['date_end_ticket']) . "'" : 'NULL';
+            $id_tecnico_n1 = $existing_data['id_tecnico_n1'] ?? 'NULL'; // Numérico, no necesita comillas
+
+            // --- PASO 2: Realizar el INSERT en users_tickets ---
+            // Usamos los IDs sanitizados
+            $sql_insert_ticket = " INSERT INTO public.users_tickets
+            (id_ticket, date_sendcoordinator, id_coordinator, date_assign_tec2, id_tecnico_n2, date_create_ticket, date_end_ticket, id_tecnico_n1)
+            VALUES (
+                " . $safe_id_ticket . ", 
+                " . $date_sendcoordinator . ", 
+                " . $id_coordinator . ", 
+                NOW(), 
+                " . $safe_id_technician . ", 
+                " . $date_create_ticket . ", 
+                " . $date_end_ticket . ", 
+                " . $id_tecnico_n1 . ");";
+            
+            $result_insert_ticket = $this->db->pgquery($sql_insert_ticket);
+
+            if (!$result_insert_ticket) {
+                error_log("Error al ejecutar INSERT en users_tickets: " . pg_last_error($this->db->getConnection()));
+                return ['success' => false, 'message' => 'Error al insertar el registro de reasignación en la tabla principal (users_tickets).'];
+            }
+
+            // --- PASO 3: Obtener y preparar datos para el Historial ---
+            // Los valores de id_status_ticket e id_accion_ticket para el historial son los que acabamos de establecer
+            $id_status_ticket_history = $new_status_ticket_id; // 2: En Proceso
+            $id_accion_ticket_history = $new_accion_ticket_id; // 11: Reasignado al Tecnico
+
+            // Obtener el estado actual de lab, payment, domiciliacion del ticket
+            // Usamos el ID del ticket sanitizado en estas consultas.
+            $id_new_status_lab = 'NULL'; 
+            $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . $safe_id_ticket . ";";
+            $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+            if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                $status_lab_data = pg_fetch_assoc($status_lab_result, 0);
+                $id_new_status_lab = $status_lab_data['id_status_lab'] !== null ? (int)$status_lab_data['id_status_lab'] : 'NULL';
+            }
+
+            $id_new_status_payment = 'NULL'; 
+            $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . $safe_id_ticket . ";";
+            $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
+            if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
+                $status_payment_data = pg_fetch_assoc($status_payment_status_result, 0);
+                $id_new_status_payment = $status_payment_data['id_status_payment'] !== null ? (int)$status_payment_data['id_status_payment'] : 'NULL';
+            }
+
+            $new_status_domiciliacion = 'NULL'; 
+            $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . $safe_id_ticket . ";";
+            $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+            if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                $domiciliacion_data = pg_fetch_assoc($status_domiciliacion_result, 0);
+                $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
+            }
+
+            // --- PASO 4: Llamar a la función de historial con sprintf ---
+            // Usamos los IDs sanitizados y los valores de status/accion para el historial
+            $sqlInsertHistory = sprintf(
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
+                (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
+                (int)$id_status_ticket_history, // Usamos la acción específica para el historial
+                (int)$id_accion_ticket_history, // Usamos la acción específica para el historial
+                $id_new_status_lab,
+                $id_new_status_payment,
+                $new_status_domiciliacion
+            );
+            
+            $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
+
+            if (!$resultsqlInsertHistory) {
+                error_log("Advertencia: Error al registrar en el historial del ticket: " . pg_last_error($this->db->getConnection()));
+                return ['success' => false, 'message' => 'Error al registrar el cambio en el historial del ticket.'];
+            }
+
+            // Si todo fue exitoso
+            return ['success' => true, 'message' => 'Ticket reasignado exitosamente.'];
+
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Excepción en ReassignTicket: " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
+            return ['success' => false, 'message' => 'Error interno del servidor al procesar la reasignación: ' . $e->getMessage()];
         }
     }
 

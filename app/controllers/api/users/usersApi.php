@@ -686,10 +686,11 @@ public function handleCheckUsernameAvailability() {
     }
 
     public function handleGetReassignTicket(){
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
         $id_ticket = isset($_POST['ticket_id'])? $_POST['ticket_id'] : '';
         $id_technician = isset($_POST['new_technician_id'])? $_POST['new_technician_id'] : '';
         $repository = new UserRepository();
-        $result = $repository->ReassignTicket($id_ticket, $id_technician);
+        $result = $repository->ReassignTicket($id_ticket, $id_technician, $id_user);
         
         if ($result) {
             $this->response(['success' => true,'message' => 'Ticket reasignado'], 200);

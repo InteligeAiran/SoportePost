@@ -689,32 +689,10 @@ function loadTicketTimeline(ticketId) {
 // 8. NUEVO: Función para formatear los datos de la línea de tiempo en HTML
 function formatTimeline(timelineData) {
     let html = '<ul class="timeline">';
-    // Es buena práctica asegurarse de que los datos estén ordenados por fecha, si no lo están ya por la consulta SQL.
-    // timelineData.sort((a, b) => new Date(b.changedstatus_at) - new Date(a.changedstatus_at)); // Asegúrate de que los datos vengan en orden descendente
 
-    timelineData.forEach((item, index) => { // Importante: incluir 'index' para alternar clases
-        let changeDescription = '';
-        // Lógica para describir los cambios (status, action, lab, domiciliation, payment)
-        if (item.old_status_name && item.new_status_name && item.old_status_name !== item.new_status_name) {
-            changeDescription += `Cambio de estado: <strong>${item.old_status_name}</strong> a <strong>${item.new_status_name}</strong>. `;
-        }
-        if (item.old_action_name && item.new_action_name && item.old_action_name !== item.new_action_name) {
-            changeDescription += `Cambio de acción: <strong>${item.old_action_name}</strong> a <strong>${item.new_action_name}</strong>. `;
-        }
-        if (item.old_status_lab_name && item.new_status_lab_name && item.old_status_lab_name !== item.new_status_lab_name) {
-            changeDescription += `Cambio de estado de laboratorio: <strong>${item.old_status_lab_name}</strong> a <strong>${item.new_status_lab_name}</strong>. `;
-        }
-        if (item.old_status_domiciliation_name && item.new_status_domiciliation_name && item.old_status_domiciliation_name !== item.new_status_domiciliation_name) {
-            changeDescription += `Cambio de estado de domiciliación: <strong>${item.old_status_domiciliation_name}</strong> a <strong>${item.new_status_domiciliation_name}</strong>. `;
-        }
-        if (item.old_status_payment_name && item.new_status_payment_name && item.old_status_payment_name !== item.new_status_payment_name) {
-            changeDescription += `Cambio de estado de pago: <strong>${item.old_status_payment_name}</strong> a <strong>${item.new_status_payment_name}</strong>. `;
-        }
-        if (!changeDescription) {
-            changeDescription = 'Actualización general del ticket.'; // Si no hay un cambio específico detectado
-        }
-
-        // Formatear la fecha para la presentación en el frontend
+    timelineData.forEach((item, index) => {
+        const isInitialEntryBool = String(item.is_initial_entry).toLowerCase() === 't' || item.is_initial_entry === true;
+        const changedByUsername = item.changedby_username || 'N/A';
         const formattedDate = item.changedstatus_at ? new Date(item.changedstatus_at).toLocaleString('es-VE', {
             day: '2-digit',
             month: '2-digit',
@@ -723,21 +701,97 @@ function formatTimeline(timelineData) {
             minute: '2-digit'
         }) : 'N/A';
 
-        // Determina si añadir la clase 'timeline-inverted' para alternar lados
-        // El primer elemento (index 0) será izquierdo, el segundo (index 1) derecho, etc.
         const invertedClass = (index % 2 === 1) ? 'timeline-inverted' : '';
+
+        let changeDescription = '';
+        let changesDetectedInDescription = false; // Bandera para saber si se añadió algo significativo a la descripción
+
+        const currentTecnicoN2 = item.full_name_tecnico_n2_actual || 'No Asignado';
+        const previousTecnicoN2 = item.full_name_tecnico_n2_anterior || 'No Asignado';
+
+        if (isInitialEntryBool) {
+            let initiatorName = item.full_name_tecnico_n1_ticket !== 'No Asignado' ? item.full_name_tecnico_n1_ticket : changedByUsername;
+            changeDescription = `Ticket iniciado o abierto por el técnico <strong>${initiatorName}</strong>. `;
+            if (item.new_status_name && item.new_status_name !== 'Desconocido') {
+                 changeDescription += `Estado inicial: <strong>${item.new_status_name}</strong>. `;
+            }
+            if (item.new_action_name && item.new_action_name !== 'Desconocida') {
+                 changeDescription += `Acción inicial: <strong>${item.new_action_name}</strong>. `;
+            }
+            changesDetectedInDescription = true; // La entrada inicial siempre tiene descripción
+        } else {
+            // Cambios de Estado Principal
+            if (item.old_status_name && item.new_status_name && item.old_status_name !== item.new_status_name) {
+                changeDescription += `Cambio de estado: <strong>${item.old_status_name}</strong> a <strong>${item.new_status_name}</strong>. `;
+                changesDetectedInDescription = true;
+            }
+            // Cambios de Acción Principal
+            if (item.old_action_name && item.new_action_name && item.old_action_name !== item.new_action_name) {
+                changeDescription += `Cambio de acción: <strong>${item.old_action_name}</strong> a <strong>${item.new_action_name}</strong>. `;
+                changesDetectedInDescription = true;
+            }
+
+            // Lógica para mostrar cambio de Técnico N2 en la descripción
+            if (item.new_action_name === 'Reasignado al Técnico') {
+                if (currentTecnicoN2 !== 'No Asignado' && previousTecnicoN2 !== 'No Asignado' && currentTecnicoN2 !== previousTecnicoN2) {
+                    changeDescription += `Técnico reasignado de <strong>${previousTecnicoN2}</strong> a <strong>${currentTecnicoN2}</strong>. `;
+                    changesDetectedInDescription = true;
+                } else if (currentTecnicoN2 !== 'No Asignado' && previousTecnicoN2 === 'No Asignado') {
+                    // Si es Reasignado pero no había un técnico N2 anterior registrado
+                    changeDescription += `<strong>Asignado al Técnico: ${currentTecnicoN2}</strong>. `;
+                    changesDetectedInDescription = true;
+                }
+            } else if (item.new_action_name === 'Asignado al Técnico') {
+                // Solo si la acción es "Asignado al Técnico" y hay un técnico actual válido
+                if (currentTecnicoN2 !== 'No Asignado') {
+                    changeDescription += `<strong>Asignado al Técnico: ${currentTecnicoN2}</strong>. `;
+                    changesDetectedInDescription = true;
+                }
+            }
+
+            // Resto de los cambios de estado (laboratorio, domiciliación, pago)
+            if (item.old_status_lab_name && item.new_status_lab_name && item.old_status_lab_name !== item.new_status_lab_name) {
+                changeDescription += `Cambio de estado de laboratorio: <strong>${item.old_status_lab_name}</strong> a <strong>${item.new_status_lab_name}</strong>. `;
+                changesDetectedInDescription = true;
+            }
+            if (item.old_status_domiciliacion_name && item.new_status_domiciliacion_name && item.old_status_domiciliacion_name !== item.new_status_domiciliacion_name) {
+                changeDescription += `Cambio de estado de domiciliación: <strong>${item.old_status_domiciliacion_name}</strong> a <strong>${item.new_status_domiciliacion_name}</strong>. `;
+                changesDetectedInDescription = true;
+            }
+            if (item.old_status_payment_name && item.new_status_payment_name && item.old_status_payment_name !== item.new_status_payment_name) {
+                changeDescription += `Cambio de estado de pago: <strong>${item.old_status_payment_name}</strong> a <strong>${item.new_status_payment_name}</strong>. `;
+                changesDetectedInDescription = true;
+            }
+
+            // Si no se detectaron cambios específicos para la descripción (y no es la primera entrada)
+            if (!changesDetectedInDescription) {
+                changeDescription = 'Actualización general del ticket.';
+            }
+        }
 
         html += `
             <li class="${invertedClass}">
                 <div class="timeline-badge"><i class="fa fa-check"></i></div>
                 <div class="timeline-panel">
                     <div class="timeline-heading">
-                        <h4 class="timeline-title">Actualizado por: ${item.changedby_username || 'N/A'}</h4>
+                        <h4 class="timeline-title">Actualizado por: ${changedByUsername}</h4>
                         <p><small class="text-muted"><i class="fa fa-clock-o"></i> ${formattedDate}</small></p>
                     </div>
                     <div class="timeline-body">
                         <p>${changeDescription}</p>
-                        <p><strong>Coordinador:</strong> ${item.full_name_coordinador || 'No Asignado'}</p>
+                        <p><strong>Coordinador:</strong> ${item.full_name_coordinador_ticket || 'No Asignado'}</p>
+                        
+                        ${isInitialEntryBool && item.full_name_tecnico_n1_ticket !== 'No Asignado' // Mostrar Técnico N1 solo en la primera gestión si está asignado
+                            ? `<p><strong>Técnico N1:</strong> ${item.full_name_tecnico_n1_ticket}</p>`
+                            : ''
+                        }
+                        
+                        ${!isInitialEntryBool && // NO mostrar el Técnico N2 Actual en la primera gestión como un párrafo separado (ya se maneja en la descripción inicial si aplica)
+                          currentTecnicoN2 !== 'No Asignado' && // Asegurarse de que haya un Técnico N2 asignado
+                          (item.new_action_name === 'Asignado al Técnico' || item.new_action_name === 'Reasignado al Técnico') // Mostrar solo si la acción es 'Asignado al Técnico' o 'Reasignado al Técnico'
+                            ? `<p><strong>Técnico N2 Actual:</strong> ${currentTecnicoN2}</p>`
+                            : ''
+                        }
                     </div>
                 </div>
             </li>
