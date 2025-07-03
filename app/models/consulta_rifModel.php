@@ -18,7 +18,7 @@ class consulta_rifModel extends Model
     {
         try {
             $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif); // Assuming '$this->db' is now a valid PgSql\Connection
-            $sql = "SELECT * FROM public.getdataclientbyrif('%" . substr($escaped_rif, 1, -1) . "%');";
+            $sql = "SELECT * FROM getdataclientbyrif('%" . substr($escaped_rif, 1, -1) . "%');";
             $result = $this->getResult($sql, $this->db);
             $this->db->closeConnection(); // Close the connection if needed
             return $result;
