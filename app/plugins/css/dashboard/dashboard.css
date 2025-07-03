@@ -5,29 +5,33 @@
     }
 }
 
+
+
+@media (max-width: 1550px) {
+    .modal-fullscreen {
+      width: 93vw;
+    max-width: none;
+    height: 100%;
+    margin: 0;
+    padding-left: 20%;
+    }
+}
+
+
 /* Contenedor principal de la línea de tiempo */
 .timeline {
     list-style: none;
     padding: 0;
-    /* margin: 13px 0; /* Aumentado el margen vertical para dar más espacio */
     margin: 0; /* Eliminar margin-top y margin-bottom excesivos */
-    
     display: flex;
-    /*justify-content: space-between; /* Distribuye el espacio entre los elementos */
-    /* align-items: flex-start; /* Alinea los elementos al inicio (arriba) del flex container */
     align-items: center; /* <<< CAMBIO CLAVE: Centra verticalmente los LI en el contenedor */
-
     overflow-x: auto; /* Permite el scroll horizontal */
     position: relative;
-    /* height: auto; */
     height: 450%;    /* padding-bottom: 40px; /* Aumentado el padding inferior para evitar que los elementos se corten */
     width: 100%;
     box-sizing: border-box;
-
-    /* Padding en los extremos de la línea de tiempo para que no empiece/termine justo en el borde */
     padding-left: 60px; /* Ajusta este valor */
     padding-right: 60px; /* Ajusta este valor */
-    /* margin-top: 9%; */ /* Eliminar este, ya que min-height y align-items lo manejan */
     padding-top: 80px; /* <<< CAMBIO CLAVE: Añade padding superior para espacio de paneles */
     padding-bottom: 80px; /* <<< CAMBIO CLAVE: Añade padding inferior para espacio de paneles */
 }
@@ -35,8 +39,8 @@
 .timeline-title{
     font-size: 113%;
     color: black;
-} 
-/* La línea horizontal en sí */
+}
+
 .timeline::before {
     content: '';
     position: absolute;
@@ -48,11 +52,8 @@
     transform: translateY(-50%);
     z-index: 1;
     margin-left: -1px;
-
-    /* La línea ahora se extiende por todo el ancho del .timeline, incluyendo su padding */
 }
 
-/* Contenedores de los elementos de la línea de tiempo */
 .timeline > li {
     flex-shrink: 0; /* Evita que los elementos se encojan */
     width: 300px; /* Ancho fijo para cada tarjeta. AJUSTA ESTE VALOR. */
@@ -63,13 +64,10 @@
     display: flex;
     flex-direction: column; /* Coloca el badge y el panel en columna */
     align-items: center; /* Centra el badge y el panel horizontalmente dentro del li */
-    
-    /* Márgenes para crear espacio entre las tarjetas. Ajusta este valor. */
-    margin: 0 40px; /* <<< CAMBIO CLAVE: Aumentado el margen horizontal entre elementos */
+     margin: 0 -12px; /* <<< CAMBIO CLAVE: Aumentado el margen horizontal entre elementos */
+    margin-left: auto;
 }
 
-/* Ajustes específicos para el primer y último elemento */
-/* Estos son importantes para que el padding del .timeline sea el que define el espacio en los extremos */
 .timeline > li:first-child {
     margin-bottom: 0%; 
 }
@@ -78,8 +76,6 @@
     margin-bottom: 0%;
 }
 
-
-/* Estilos para los "badges" (los círculos en la línea) */
 .timeline-badge {
     color: #fff;
     width: 39px;
@@ -100,8 +96,6 @@
     transform: translate(-50%, -50%); /* Ajuste fino para centrado perfecto */
 }
 
-
-/* Ajustes para el panel de contenido (la "tarjeta") */
 .timeline-panel {
     background: #fff;
     border: 1px solid #d4d4d4;
@@ -120,7 +114,6 @@
     transform: translateX(-50%); /* Ajuste fino para centrado horizontal */
 }
 
-/* Paneles impares (1ro, 3ro, etc.) - IRÁN ARRIBA de la línea */
 .timeline > li:nth-child(odd) .timeline-panel {
     bottom: calc(50% + 50px); /* Posiciona el panel arriba de la línea (50% + mitad altura badge + espacio) */
 }
@@ -187,39 +180,7 @@
     border-color: transparent transparent #fff transparent; /* Color del fondo del panel */
 }
 
-/* Las siguientes reglas de .timeline-panel::before y ::after son redundantes y deben eliminarse, 
-   ya que las tienes definidas para odd/even. */
-/* Triángulos de "puntero" para conectar el panel con la línea */
-/* Para que el triángulo apunte hacia arriba desde el panel hacia el círculo */
-/*
-.timeline-panel::before {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1;
-    top: -10px; 
-    border-width: 0 10px 10px 10px; 
-    border-color: transparent transparent #d4d4d4 transparent; 
-}
 
-.timeline-panel::after { 
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    top: -9px; 
-    border-width: 0 9px 9px 9px;
-    border-color: transparent transparent #fff transparent; 
-}
-*/
 
 /* Media Query para pantallas más pequeñas (vertical) */
 @media (max-width: 768px) {
@@ -314,8 +275,7 @@
 .modal{
     backdrop-filter: blur(8px);
     background-color: rgba(0, 0, 0, 0.4);
-    /* Asegurarte de que el modal tiene una altura definida y puede usar flexbox */
-    display: flex; /* Si el modal es flex container */
+    display: flex; 
     flex-direction: column; /* Si el contenido principal es una columna */
     height: 100vh; /* O la altura que desees que ocupe el modal */
     justify-content: center; /* Centrar el contenido del modal verticalmente si no hay suficiente para llenarlo */

@@ -527,24 +527,24 @@ function getTicketDataCoordinator() {
               confirmReassignModalInstance.show(); // Muestra el modal de confirmación
             });
         } else {
-          tbody.innerHTML = '<tr><td colspan="9">Error al cargar</td></tr>';
+          tbody.innerHTML = '<tr><td>Error al cargar</td></tr>';
           console.error("Error:", response.message);
         }
       } catch (error) {
         tbody.innerHTML =
-          '<tr><td colspan="9">Error al procesar la respuesta</td></tr>';
+          '<tr><td>Error al procesar la respuesta</td></tr>';
         console.error("Error parsing JSON:", error);
       }
     } else if (xhr.status === 404) {
       tbody.innerHTML =
-        '<tr><td colspan="9">No se encontraron usuarios</td></tr>';
+        '<tr><td>No se encontraron usuarios</td></tr>';
     } else {
-      tbody.innerHTML = '<tr><td colspan="9">Error de conexión</td></tr>';
+      tbody.innerHTML = '<tr><td>Error de conexión</td></tr>';
       console.error("Error:", xhr.status, xhr.statusText);
     }
   };
   xhr.onerror = function () {
-    tbody.innerHTML = '<tr><td colspan="9">Error de conexión</td></tr>';
+    tbody.innerHTML = '<tr><td>Error de conexión</td></tr>';
     console.error("Error de red");
   };
   const datos = `action=GetTicketData`;
