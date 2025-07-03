@@ -26,6 +26,15 @@ function mi_navbar() {}
     <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+    
+    <style>
+        /* Estilo base para el botón de Asignar Técnico */
+       .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody {
+            position: relative;
+            overflow: hidden;
+            width: none;
+       }
+    </style>
 </head>
 
 <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -134,15 +143,16 @@ function mi_navbar() {}
     <!---- END CONFIRMACION DE REASIGNACION DE TICKET -->
 
     <!-- MODAL PARA SELECCIONAR TECNICO EN REACCIGNACION DE TECNICO -->
-      <div class="modal fade" id="selectTechnicianModal" tabindex="-1" aria-labelledby="selectTechnicianModalLabel" aria-hidden="true">
+        <div class="modal fade" id="selectTechnicianModal" tabindex="-1" aria-labelledby="selectTechnicianModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content shadow-lg rounded">
-                    <div class="modal-header bg-gradient-primary text-white p-3"> 
+                    <div class="modal-header bg-gradient-primary text-white p-3">
                         <h5 class="modal-title" id="selectTechnicianModalLabel">
-                            <i class="bi bi-person-plus-fill me-2"></i> Seleccione Técnico 
+                            <i class="bi bi-person-plus-fill me-2"></i> Seleccione Técnico
                         </h5>
                     </div>
-                    <div class="modal-body p-4"> <div class="row mb-3">
+                    <div class="modal-body p-4">
+                        <div class="row mb-3">
                             <div class="col-md-6">
                                 <strong>Técnico actual:</strong>
                                 <p id="currentTechnicianDisplay" class="form-control-plaintext text-muted"></p>
@@ -152,22 +162,27 @@ function mi_navbar() {}
                                 <span id="currentAssignmentDateDisplay" class="form-control-plaintext text-muted">N/A</span>
                             </div>
                         </div>
-                        <div class="row mb-4"> 
+                        <div class="row mb-4">
                             <div class="col-12">
                                 <strong>Región:</strong>
                                 <span id="currentRegion" class="form-control-plaintext text-muted">N/A</span>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="technicianSelect" class="form-label fw-bold">Seleccione nuevo técnico:</label> 
+                            <label for="technicianSelect" class="form-label fw-bold">Seleccione nuevo técnico:</label>
                             <select class="form-select" id="technicianSelect"></select>
                         </div>
-                         <div class="row mb-4">
-                            <label for="technicianSelect" class="form-label fw-bold">Region:</label>
+                        <div class="row mb-4">
+                            <label for="InputRegionUser2" class="form-label fw-bold">Región del Técnico Seleccionado:</label>
                             <input class="form-control" id="InputRegionUser2" disabled></input>
                         </div>
+                        <div class="mb-3">
+                            <label for="reassignObservation" class="form-label fw-bold">Observación (Opcional):</label>
+                            <textarea class="form-control" id="reassignObservation" rows="3" placeholder="Añada cualquier observación relevante para la reasignación..."></textarea>
+                        </div>
+
                     </div>
-                    <div class="modal-footer justify-content-center border-top-0 pt-0 pb-4"> 
+                    <div class="modal-footer justify-content-center border-top-0 pt-0 pb-4">
                         <button type="button" id="ButtonCancel" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
                         <button type="button" class="btn btn-primary" id="assignTechnicianBtn">Asignar</button>
                     </div>
@@ -295,7 +310,6 @@ function mi_navbar() {}
 
         <!-- Datatable otro sistema-->
 
-        <script src="<?php echo APP; ?>DataTable/jquery.dataTables.min.js"></script>
         <script src="<?php echo APP; ?>DataTable/dataTables.buttons.min.js"></script>
         <script src="<?php echo APP; ?>DataTable/buttons.print.min.js"></script>
         <script src="<?php echo APP; ?>DataTable/buttons.flash.min.js"></script>

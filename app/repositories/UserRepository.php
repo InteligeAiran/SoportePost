@@ -263,8 +263,8 @@ public function AsignacionSubModulo($id_modulo, $id_submodulo, $id_usuario,$idch
         return $result['row'];
     }
 
-    public function ReassignTicket($id_ticket, $id_technician, $id_user){
-        $result = $this->model->ReassignTicket($id_ticket, $id_technician, $id_user);  
+    public function ReassignTicket($id_ticket, $id_technician, $id_user, $comment){
+        $result = $this->model->ReassignTicket($id_ticket, $id_technician, $id_user, $comment);  
         return $result;
     }
 }

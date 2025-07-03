@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       } catch (error) {
         console.error("Error al reasignar el ticket:", error);
-        alert(`Ocurrió un error al reasignar el ticket ${currentTicketNro}.`);
+        console.error(`Ocurrió un error al reasignar el ticket ${currentTicketNro}.`);
       } finally {
         selectTechnicianModalInstance.hide(); // Oculta el modal de selección
         assignTechnicianBtn.disabled = false;
@@ -311,7 +311,7 @@ function getTicketDataCoordinator() {
             ],
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
-              emptyTable: "No hay Registros disponibles en la tabla",
+              emptyTable:"No hay Registros disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
               info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
               infoEmpty: "No hay Registros disponibles",
@@ -332,90 +332,91 @@ function getTicketDataCoordinator() {
               // y 'this.api()' devuelve la instancia de la API de DataTables.
               const api = this.api(); // <--- Correcto: Obtener la instancia de la API aquí
 
-              const buttonsHtml = `
-                                <button id="btn-asignados" class="btn btn-primary me-2"  title="Tickets ya Asignados">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                                    <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                                  </svg>
+            // Esto es parte de tu inicialización de DataTables, probablemente dentro de 'initComplete'
+            // o en un script que se ejecuta después de que la tabla está lista.
+            const buttonsHtml = `
+                                <button id="btn-por-asignar" class="btn btn-primary me-2" title="Tickets por Asignar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/>
+                                    </svg>
                                 </button>
 
-                                <button id="btn-por-asignar" class="btn btn-secondary me-2" title="Tickets por Asignar">   
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/>
-                                  </svg>                               
+                                <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets ya Asignados">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                    </svg>
                                 </button>
 
-
-                                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Coordinador">                                    
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                                  </svg>                        
+                                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Coordinador">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                                        <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                                    </svg>
                                 </button>
 
-                                <button id="btn-reasignado" class="btn btn-secondary me-2" title="Tickets Reasignados">                                    
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16">
-                                    <path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/>
-                                  </svg>
+                                <button id="btn-reasignado" class="btn btn-secondary me-2" title="Tickets Reasignados">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16">
+                                        <path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/>
+                                    </svg>
                                 </button>`;
-              $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+            $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
-              function setActiveButton(activeButtonId) {
-                $("#btn-asignados")
-                  .removeClass("btn-primary")
-                  .addClass("btn-secondary");
+            function setActiveButton(activeButtonId) {
                 $("#btn-por-asignar")
-                  .removeClass("btn-primary")
-                  .addClass("btn-secondary");
+                    .removeClass("btn-primary")
+                    .addClass("btn-secondary");
+                $("#btn-asignados")
+                    .removeClass("btn-primary")
+                    .addClass("btn-secondary");
                 $("#btn-recibidos")
-                  .removeClass("btn-primary")
-                  .addClass("btn-secondary");
+                    .removeClass("btn-primary")
+                    .addClass("btn-secondary");
                 $("#btn-reasignado")
-                .removeClass("btn-primary")
-                .addClass("btn-secondary");
+                    .removeClass("btn-primary")
+                    .addClass("btn-secondary");
                 $(`#${activeButtonId}`)
-                  .removeClass("btn-secondary")
-                  .addClass("btn-primary");
-              }
+                    .removeClass("btn-secondary")
+                    .addClass("btn-primary");
+            }
 
-              // Filtro inicial por "Asignados al Técnico"
-              api // <--- Usar 'api' en lugar de 'dataTableInstance'
+            // Cambiar el filtro inicial a "Asignado al Coordinador" (Tickets por Asignar)
+            api // <--- Usar 'api' en lugar de 'dataTableInstance'
                 .column(3)
-                .search("Asignado al Técnico")
+                .search("Asignado al Coordinador") // CAMBIO AQUÍ
                 .draw();
-              setActiveButton("btn-asignados"); // Activa el botón "Asignados" al inicio
+            setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
 
-              $("#btn-asignados").on("click", function () {
+            $("#btn-asignados").on("click", function () {
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                  .column(3)
-                  .search("Asignado al Técnico")
-                  .draw();
+                    .column(3)
+                    .search("Asignado al Técnico")
+                    .draw();
                 setActiveButton("btn-asignados");
-              });
+            });
 
-              $("#btn-por-asignar").on("click", function () {
+            $("#btn-por-asignar").on("click", function () {
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                  .column(3)
-                  .search("Asignado al Coordinador")
-                  .draw();
+                    .column(3)
+                    .search("Asignado al Coordinador")
+                    .draw();
                 setActiveButton("btn-por-asignar");
-              });
+            });
 
-              $("#btn-recibidos").on("click", function () {
+            $("#btn-recibidos").on("click", function () {
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                  .column(3)
-                  .search("Recibido por el Coordinador")
-                  .draw();
+                    .column(3)
+                    .search("Recibido por el Coordinador")
+                    .draw();
                 setActiveButton("btn-recibidos");
-              });
+            });
 
-              $("#btn-reasignado").on("click", function () {
+            $("#btn-reasignado").on("click", function () {
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                  .column(3)
-                  .search("Reasignado al Técnico")
-                  .draw();
+                    .column(3)
+                    .search("Reasignado al Técnico")
+                    .draw();
                 setActiveButton("btn-reasignado");
-              });
+            });
             },
           });
 
@@ -630,6 +631,8 @@ function reassignTicket(ticketId, newTechnicianId) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const id_user = document.getElementById("id_user").value; // Asumiendo que tienes el ID del usuario logueado
+    const comment = document.getElementById("reassignObservation").value; // Asumiendo que tienes el comentario del usuario
+    console.log("comentario: " + comment);
     const API_URL_REASSIGN = `${ENDPOINT_BASE}${APP_PATH}api/users/ReassignTicket`;
 
     xhr.open("POST", API_URL_REASSIGN);
@@ -659,7 +662,7 @@ function reassignTicket(ticketId, newTechnicianId) {
       reject(new Error("Error de red"));
     };
 
-    const dataToSend = `action=ReassignTicket&ticket_id=${ticketId}&new_technician_id=${newTechnicianId}&id_user=${id_user}`;
+    const dataToSend = `action=ReassignTicket&ticket_id=${ticketId}&new_technician_id=${newTechnicianId}&id_user=${id_user}&comment=${comment}`;
     xhr.send(dataToSend);
   });
 }

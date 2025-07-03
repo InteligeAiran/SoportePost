@@ -550,7 +550,7 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
     }
 
 
-    public function ReassignTicket($id_ticket, $id_technician, $id_user) {
+    public function ReassignTicket($id_ticket, $id_technician, $id_user, $comment) {
         try {
             // --- PASO 0: Sanitizar/Escapar todas las entradas del usuario ---
             // ¡MUY IMPORTANTE PARA PREVENIR INYECCIÓN SQL!
@@ -594,25 +594,27 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
             // Preparar valores para el INSERT en users_tickets, manejando NULLs y comillas
             // Los valores se asumen seguros si provienen de $existing_data que fue de la DB
             // y se vuelven a escapar si son strings para el INSERT.
-            $date_sendcoordinator = $existing_data['date_sendcoordinator'] ? "'" . pg_escape_literal($this->db->getConnection(), $existing_data['date_sendcoordinator']) . "'" : 'NULL';
+            $date_sendcoordinator = $existing_data['date_sendcoordinator'] ?? 'NULL';
             $id_coordinator = $existing_data['id_coordinator'] ?? 'NULL'; // Numérico, no necesita comillas
-            $date_create_ticket = $existing_data['date_create_ticket'] ? "'" . pg_escape_literal($this->db->getConnection(), $existing_data['date_create_ticket']) . "'" : 'NULL';
+            $date_create_ticket = $existing_data['date_create_ticket'] ?? 'NULL';
             $date_end_ticket = $existing_data['date_end_ticket'] ? "'" . pg_escape_literal($this->db->getConnection(), $existing_data['date_end_ticket']) . "'" : 'NULL';
             $id_tecnico_n1 = $existing_data['id_tecnico_n1'] ?? 'NULL'; // Numérico, no necesita comillas
 
             // --- PASO 2: Realizar el INSERT en users_tickets ---
             // Usamos los IDs sanitizados
-            $sql_insert_ticket = " INSERT INTO public.users_tickets
-            (id_ticket, date_sendcoordinator, id_coordinator, date_assign_tec2, id_tecnico_n2, date_create_ticket, date_end_ticket, id_tecnico_n1)
+            $sql_insert_ticket = "INSERT INTO public.users_tickets
+            (id_ticket, date_sendcoordinator, id_coordinator, date_assign_tec2, id_tecnico_n2, date_create_ticket, date_end_ticket, id_tecnico_n1, commentchangetec)
             VALUES (
                 " . $safe_id_ticket . ", 
-                " . $date_sendcoordinator . ", 
+                '" . $date_sendcoordinator . "', 
                 " . $id_coordinator . ", 
                 NOW(), 
                 " . $safe_id_technician . ", 
-                " . $date_create_ticket . ", 
+                '" . $date_create_ticket . "', 
                 " . $date_end_ticket . ", 
-                " . $id_tecnico_n1 . ");";
+                " . $id_tecnico_n1 . ",
+                '".$comment."');";
+            var_dump($sql_insert_ticket);
             
             $result_insert_ticket = $this->db->pgquery($sql_insert_ticket);
 

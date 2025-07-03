@@ -742,7 +742,7 @@ function formatTicketDetailsPanel(d) {
                     <div class="row">
                         <div class="col-sm-4 mb-2">
                             <strong><div>Acción:</div></strong>
-                            ${d.name_accion_ticket}
+                            <span class = "Accion-ticket">${d.name_accion_ticket}</span>
                         </div>
                          <div class="col-sm-8 mb-2" style = "margin-left: -7%;">
                           <strong><div>Falla Reportada:</div></strong>

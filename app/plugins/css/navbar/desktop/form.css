@@ -751,7 +751,7 @@
     }
 
     .row {
-        --bs-gutter-x: 2.5rem;
+        --bs-gutter-x: 2rem;
         /* Puedes reducir el espacio entre columnas si lo deseas */
     }
 

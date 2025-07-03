@@ -1,178 +1,379 @@
-/* Estilos para la línea de tiempo */
+@media (min-width: 992px) {
+    .timeline:before {
+        left: 50%;
+        margin-left: -1px;
+    }
+}
+
+/* Contenedor principal de la línea de tiempo */
 .timeline {
     list-style: none;
-    padding: 20px 0 20px;
+    padding: 0;
+    /* margin: 13px 0; /* Aumentado el margen vertical para dar más espacio */
+    margin: 0; /* Eliminar margin-top y margin-bottom excesivos */
+    
+    display: flex;
+    /*justify-content: space-between; /* Distribuye el espacio entre los elementos */
+    /* align-items: flex-start; /* Alinea los elementos al inicio (arriba) del flex container */
+    align-items: center; /* <<< CAMBIO CLAVE: Centra verticalmente los LI en el contenedor */
+
+    overflow-x: auto; /* Permite el scroll horizontal */
     position: relative;
+    /* height: auto; */
+    height: 450%;    /* padding-bottom: 40px; /* Aumentado el padding inferior para evitar que los elementos se corten */
+    width: 100%;
+    box-sizing: border-box;
+
+    /* Padding en los extremos de la línea de tiempo para que no empiece/termine justo en el borde */
+    padding-left: 60px; /* Ajusta este valor */
+    padding-right: 60px; /* Ajusta este valor */
+    /* margin-top: 9%; */ /* Eliminar este, ya que min-height y align-items lo manejan */
+    padding-top: 80px; /* <<< CAMBIO CLAVE: Añade padding superior para espacio de paneles */
+    padding-bottom: 80px; /* <<< CAMBIO CLAVE: Añade padding inferior para espacio de paneles */
 }
 
-/* Línea vertical central */
-.timeline:before {
-    top: 0;
-    bottom: 0;
+.timeline-title{
+    font-size: 113%;
+    color: black;
+} 
+/* La línea horizontal en sí */
+.timeline::before {
+    content: '';
     position: absolute;
-    content: " ";
-    width: 3px;
-    background-color: #eeeeee; /* Color de la línea */
-    left: 50%;
-    margin-left: -1.5px;
+    top: 50%; /* Centra la línea verticalmente */
+    left: 0;
+    right: 0;
+    height: 3%; /* Considera cambiar a un valor fijo como 4px para consistencia */
+    background-color: #007bff; /* Color de la línea */
+    transform: translateY(-50%);
+    z-index: 1;
+    margin-left: -1px;
+
+    /* La línea ahora se extiende por todo el ancho del .timeline, incluyendo su padding */
 }
 
-/* Cada item de la línea de tiempo */
+/* Contenedores de los elementos de la línea de tiempo */
 .timeline > li {
-    margin-bottom: 20px;
+    flex-shrink: 0; /* Evita que los elementos se encojan */
+    width: 300px; /* Ancho fijo para cada tarjeta. AJUSTA ESTE VALOR. */
+    padding: 0; /* No debe haber padding aquí */
     position: relative;
-    clear: both; /* Asegura que cada li comience en una nueva línea */
-    overflow: hidden; /* Contiene los floats dentro del li */
+    z-index: 2;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column; /* Coloca el badge y el panel en columna */
+    align-items: center; /* Centra el badge y el panel horizontalmente dentro del li */
+    
+    /* Márgenes para crear espacio entre las tarjetas. Ajusta este valor. */
+    margin: 0 40px; /* <<< CAMBIO CLAVE: Aumentado el margen horizontal entre elementos */
 }
 
-/* Contenido de cada panel (lo que tiene el texto) */
-.timeline > li > .timeline-panel {
-    width: 46%; /* 50% - margen */
-    float: left;
-    border: 1px solid #d4d4d4;
-    border-radius: 4px;
-    padding: 20px;
-    position: relative;
-    -webkit-box-shadow: 0 1px 6px rgba(0, 0, 0, 0.175);
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.175);
-    background-color: #fff; /* Fondo blanco para los paneles */
+/* Ajustes específicos para el primer y último elemento */
+/* Estos son importantes para que el padding del .timeline sea el que define el espacio en los extremos */
+.timeline > li:first-child {
+    margin-bottom: 0%; 
 }
 
-/* Flecha del panel izquierdo */
-.timeline > li > .timeline-panel:before {
-    position: absolute;
-    top: 26px;
-    right: -15px; /* Ajusta a la derecha para apuntar a la línea */
-    display: inline-block;
-    border-top: 15px solid transparent;
-    border-left: 15px solid #d4d4d4; /* Color del borde del panel */
-    border-right: 0 solid #d4d4d4;
-    border-bottom: 15px solid transparent;
-    content: " ";
-    z-index: 1; /* Asegura que la flecha esté por encima del panel si se superpone */
+.timeline > li:last-child {
+    margin-bottom: 0%;
 }
 
-.timeline > li > .timeline-panel:after {
-    position: absolute;
-    top: 27px;
-    right: -14px; /* Un pixel menos para el color de fondo */
-    display: inline-block;
-    border-top: 14px solid transparent;
-    border-left: 14px solid #fff; /* Color de fondo del panel */
-    border-right: 0 solid #fff;
-    border-bottom: 14px solid transparent;
-    content: " ";
-    z-index: 2; /* Asegura que esta capa de la flecha esté por encima del borde */
-}
 
-/* Badge (la "bolita" con el ícono) */
-.timeline > li > .timeline-badge {
+/* Estilos para los "badges" (los círculos en la línea) */
+.timeline-badge {
     color: #fff;
-    width: 50px;
-    height: 50px;
-    line-height: 50px;
-    font-size: 1.4em;
+    width: 39px;
+    height: 39px;
+    /* line-height: 82px; */ /* <<< CAMBIO CLAVE: Ajustar line-height para centrar el icono */
+    line-height: 39px; /* Igual que width/height para centrado vertical */
+    font-size: 1.2em;
     text-align: center;
+    position: absolute; /* <<< CAMBIO CLAVE: Cambiado a absolute para centrar en la línea */
+    background-color: #007bff;
+    border-radius: 50%;
+    z-index: 80;
+    flex-shrink: 0;
+    /* margin-top: 15px; */ /* Eliminar estos márgenes si el badge es absoluto */
+    /* margin-bottom: 42px; */ /* Eliminar estos márgenes si el badge es absoluto */
+    top: 50%; /* <<< CAMBIO CLAVE: Centra verticalmente el badge */
+    left: 50%; /* Centra horizontalmente el badge en el LI */
+    transform: translate(-50%, -50%); /* Ajuste fino para centrado perfecto */
+}
+
+
+/* Ajustes para el panel de contenido (la "tarjeta") */
+.timeline-panel {
+    background: #fff;
+    border: 1px solid #d4d4d4;
+    border-radius: 34px;
+    padding: 15px;
+    text-align: left;
+    min-height: 150px; /* Aumentado min-height para dar más espacio al contenido y evitar cortes */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+    width: 100%; /* El panel ocupa todo el ancho de su li padre */
+    /* margin-top: 0; /* No necesita margen superior extra, ya el badge lo maneja */
+    position: absolute; /* Ya lo tienes en absoluto, lo cual es correcto para la alternancia */
+    left: 50%; /* Centrar horizontalmente en el LI */
+    transform: translateX(-50%); /* Ajuste fino para centrado horizontal */
+}
+
+/* Paneles impares (1ro, 3ro, etc.) - IRÁN ARRIBA de la línea */
+.timeline > li:nth-child(odd) .timeline-panel {
+    bottom: calc(50% + 50px); /* Posiciona el panel arriba de la línea (50% + mitad altura badge + espacio) */
+}
+
+.timeline > li:nth-child(odd) .timeline-panel::before { /* Triángulo para panel arriba */
+    content: '';
     position: absolute;
-    top: 16px; /* Ajusta verticalmente el badge */
+    width: 0;
+    height: 0;
+    border-style: solid;
     left: 50%;
-    margin-left: -25px; /* Centrar el badge */
-    background-color: #007bff; /* Color azul para el badge */
-    z-index: 100;
-    border-radius: 50%; /* Asegura que sea un círculo perfecto */
+    transform: translateX(-50%);
+    z-index: 1;
+    top: 100%; /* El triángulo sale de la parte inferior del panel */
+    margin-top: -1px; /* Para que se superponga ligeramente con el borde del panel */
+    border-width: 10px 10px 0 10px; /* Apunta hacia abajo */
+    border-color: #d4d4d4 transparent transparent transparent; /* Color del borde del panel */
 }
 
-/* Estilos para los elementos a la derecha de la línea (con timeline-inverted) */
-.timeline > li.timeline-inverted > .timeline-panel {
-    float: right; /* Mueve el panel a la derecha */
+.timeline > li:nth-child(odd) .timeline-panel::after { /* Triángulo interior para panel arriba */
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    top: 100%; /* El triángulo sale de la parte inferior del panel */
+    border-width: 9px 9px 0 9px;
+    border-color: #fff transparent transparent transparent; /* Color del fondo del panel */
 }
 
-.timeline > li.timeline-inverted > .timeline-panel:before {
-    border-left-width: 0;
-    border-right-width: 15px; /* Invierte la dirección de la flecha */
-    left: -15px; /* Mueve la flecha a la izquierda del panel */
-    right: auto; /* Desactiva la propiedad right */
+/* Paneles pares (2do, 4to, etc.) - IRÁN ABAJO de la línea */
+.timeline > li:nth-child(even) .timeline-panel {
+    top: calc(50% + 50px); /* Posiciona el panel abajo de la línea (50% + mitad altura badge + espacio) */
 }
 
-.timeline > li.timeline-inverted > .timeline-panel:after {
-    border-left-width: 0;
-    border-right-width: 14px; /* Invierte la dirección de la flecha interna */
-    left: -14px; /* Mueve la flecha interna a la izquierda del panel */
-    right: auto; /* Desactiva la propiedad right */
+.timeline > li:nth-child(even) .timeline-panel::before { /* Triángulo para panel abajo */
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    top: -10px; /* El triángulo sale de la parte superior del panel */
+    border-width: 0 10px 10px 10px; /* Apunta hacia arriba */
+    border-color: transparent transparent #d4d4d4 transparent; /* Color del borde del panel */
 }
 
-/* Espaciado para el título y la fecha */
-.timeline-title {
-    margin-top: 0;
-    color: #333; /* Color oscuro para el título */
-    font-size: 1.1em; /* Un poco más grande que el texto normal */
-    margin-bottom: 5px;
+.timeline > li:nth-child(even) .timeline-panel::after { /* Triángulo interior para panel abajo */
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    top: -9px; /* Un px menos que el borde */
+    border-width: 0 9px 9px 9px;
+    border-color: transparent transparent #fff transparent; /* Color del fondo del panel */
 }
 
-.timeline-body > p {
-    margin-bottom: 5px; /* Pequeño margen entre párrafos */
-    line-height: 1.5;
+/* Las siguientes reglas de .timeline-panel::before y ::after son redundantes y deben eliminarse, 
+   ya que las tienes definidas para odd/even. */
+/* Triángulos de "puntero" para conectar el panel con la línea */
+/* Para que el triángulo apunte hacia arriba desde el panel hacia el círculo */
+/*
+.timeline-panel::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    top: -10px; 
+    border-width: 0 10px 10px 10px; 
+    border-color: transparent transparent #d4d4d4 transparent; 
 }
 
-.modal{
-  backdrop-filter: blur(8px);
-  background-color: rgba(0, 0, 0, 0.4); /* Si quieres asegurar un color de fondo específico además del blur */
+.timeline-panel::after { 
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    top: -9px; 
+    border-width: 0 9px 9px 9px;
+    border-color: transparent transparent #fff transparent; 
 }
+*/
 
-/* Responsive: Ajustes para pantallas pequeñas */
-@media (max-width: 767px) {
+/* Media Query para pantallas más pequeñas (vertical) */
+@media (max-width: 768px) {
     .timeline {
-        padding-top: 50px;
+        flex-direction: column; 
+        align-items: flex-start; 
+        white-space: normal;
+        overflow-x: hidden; 
+        overflow-y: auto; /* <<< CAMBIO CLAVE: Permite scroll vertical en móvil */
+        padding-left: 20px; 
+        padding-right: 0;
+        margin-top: 0; 
+        margin-bottom: 0; 
+        padding-top: 0; 
+        padding-bottom: 0; 
+        min-height: auto; 
+        flex-grow: 0; /* No debe crecer en móvil, el scroll vertical lo maneja */
     }
 
-    .timeline:before {
-        left: 18px; /* Mueve la línea al lado izquierdo */
+    .timeline::before {
+        left: 20px; 
+        right: auto;
+        height: 100%;
+        width: 4px;
+        top: 0;
+        transform: none;
     }
 
     .timeline > li {
-        margin-bottom: 30px; /* Más espacio entre elementos en móvil */
+        width: 100%; 
+        display: block;
+        padding: 0;
+        padding-left: 50px; 
+        margin-bottom: 20px;
+        flex-direction: row; 
+        align-items: flex-start;
+        margin-left: 0; 
+        margin-right: 0; 
     }
 
-    .timeline > li > .timeline-panel {
-        width: calc(100% - 70px); /* Ocupa casi todo el ancho disponible, dejando espacio para el badge */
-        float: right; /* Todo a la derecha de la línea */
+    .timeline-badge {
+        position: absolute; 
+        left: 20px; 
+        top: 20px; 
+        transform: translateX(-50%); 
+        margin: 0; 
     }
 
-    .timeline > li > .timeline-badge {
-        left: 18px; /* Mueve el badge al lado izquierdo */
-        margin-left: 0;
+    .timeline-panel {
+        width: auto; 
+        margin-top: 0; 
+        margin-bottom: 0; 
+        margin-left: 15px; 
+        order: 0; 
+        position: relative; 
+        top: auto; 
+        bottom: auto; 
+        transform: none; 
     }
 
-    .timeline > li > .timeline-panel:before {
-        border-left-width: 0;
-        border-right-width: 15px;
-        left: -15px;
-        right: auto;
+    /* Triángulos para la versión móvil (vertical) */
+    .timeline-panel::before,
+    .timeline-panel::after {
+        top: 20px;
+        left: -10px;
+        transform: translateY(-50%);
+        border-width: 10px 10px 10px 0;
+        border-color: transparent #d4d4d4 transparent transparent;
     }
 
-    .timeline > li > .timeline-panel:after {
-        border-left-width: 0;
-        border-right-width: 14px;
-        left: -14px;
-        right: auto;
+    .timeline-panel::after {
+        top: 20px;
+        left: -9px;
+        border-width: 9px 9px 9px 0;
+        border-color: transparent #fff transparent transparent;
     }
 
-    /* Asegurar que todos los paneles estén a la derecha en móvil */
-    .timeline > li.timeline-inverted > .timeline-panel {
-        float: right;
+    .timeline > li:nth-child(odd) .timeline-panel,
+    .timeline > li:nth-child(even) .timeline-panel {
+        margin-top: 0;
+        margin-bottom: 0;
     }
 
-    .timeline > li.timeline-inverted > .timeline-panel:before {
-        border-left-width: 0;
-        border-right-width: 15px;
-        left: -15px;
-        right: auto;
-    }
-
-    .timeline > li.timeline-inverted > .timeline-panel:after {
-        border-left-width: 0;
-        border-right-width: 14px;
-        left: -14px;
-        right: auto;
+    .timeline > li:nth-child(odd) .timeline-panel::before,
+    .timeline > li:nth-child(odd) .timeline-panel::after,
+    .timeline > li:nth-child(even) .timeline-panel::before,
+    .timeline > li:nth-child(even) .timeline-panel::after {
+        border-color: transparent transparent transparent transparent; 
     }
 }
+
+.modal{
+    backdrop-filter: blur(8px);
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Asegurarte de que el modal tiene una altura definida y puede usar flexbox */
+    display: flex; /* Si el modal es flex container */
+    flex-direction: column; /* Si el contenido principal es una columna */
+    height: 100vh; /* O la altura que desees que ocupe el modal */
+    justify-content: center; /* Centrar el contenido del modal verticalmente si no hay suficiente para llenarlo */
+    align-items: center; /* Centrar horizontalmente */
+}
+
+/* Probablemente necesites apuntar al contenido real dentro del modal */
+/* Por ejemplo, si tienes un .modal-body o similar */
+.modal-content { /* Asumiendo que existe un .modal-content */
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Permite que el contenido del modal crezca para llenar el espacio */
+    width: 100%; /* O el ancho deseado */
+    max-height: 90vh; /* Para que el modal no sea más alto que la ventana visible */
+    overflow: hidden; /* Para evitar scroll en el modal-content si el timeline es el único scrollable */
+}
+
+.modal-body { /* Si el timeline está dentro de un modal-body */
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden; /* Ocultar su propio scroll */
+    padding: 0; /* Quitar padding si el timeline ya tiene sus propios paddings */
+}
+
+.modal{
+    backdrop-filter: blur(8px);
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+
+
+/* Estilos para el panel cuando está colapsado (estado inicial) */
+.timeline-panel.timeline-collapsible {
+    cursor: pointer; /* Indica que es clickeable */
+    transition: all 0.3s ease; /* Transición suave para cambios de tamaño/sombra */
+    height: auto; /* Permite que el panel ajuste su altura */
+    min-height: unset; /* Reinicia el min-height si lo tenía */
+}
+
+/* Estilos para el panel cuando está expandido */
+.timeline-panel.timeline-collapsible.expanded {
+    /* Aquí puedes añadir estilos que quieras que tenga cuando esté expandido, por ejemplo: */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+    /* No uses altura fija si el contenido varía mucho */
+}
+
+/* Asegura que el contenido detallado se muestra correctamente */
+.timeline-panel .timeline-body {
+    padding-top: 10px; /* Espacio entre el heading y el body si está visible */
+}
+
+#ContentModallineTime{
+    margin-top: 3%;
+}
+
+/* Opcional: Ajustar los triángulos si el panel cambia mucho de tamaño al expandirse */
+/* Si el panel se hace muy alto, los triángulos podrían parecer muy abajo/arriba. */
+/* Podrías querer que los triángulos apunten al centro del badge, no al 50% del panel. */
+/* Esto puede requerir más CSS complejo o JavaScript para ajustar la posición. */
+/* Por ahora, si el contenido no es excesivamente largo, debería verse bien. */

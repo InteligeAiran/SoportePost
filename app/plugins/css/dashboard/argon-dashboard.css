@@ -6782,10 +6782,11 @@ fieldset:disabled .btn {
 }
 
 .modal-fullscreen {
-  width: 100vw;
+  width: 96vw;
   max-width: none;
   height: 100%;
   margin: 0;
+  padding-left: 16%;
 }
 
 .modal-fullscreen .modal-content {
@@ -25973,14 +25974,6 @@ hr.horizontal.gray-light {
   position: relative;
 }
 
-.timeline:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 1rem;
-  height: 100%;
-  border-right: 2px solid #dee2e6;
-}
 
 .timeline-block {
   position: relative;
@@ -26037,11 +26030,6 @@ hr.horizontal.gray-light {
 }
 
 @media (min-width: 992px) {
-  .timeline:before {
-    left: 50%;
-    margin-left: -1px;
-  }
-
   .timeline-step {
     left: 50%;
   }

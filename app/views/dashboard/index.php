@@ -148,20 +148,40 @@ function mi_navbar() {}
                         </div>
                     </div>
 
-                    <div class="modal fade" id="TimelineModal" tabindex="-1" aria-labelledby="timelineModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                            <div class="modal-content">
-                            <div class="modal-header bg-gradient-primary text-white">
-                                <h5 class="modal-title" style="color: white" id="timelineModalLabel">Flujo de Trabajo del Ticket #<span id="timelineTicketId"></span></h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="timelineContent">
-                                <p>Cargando flujo de trabajo...</p>
+                   <div class="modal fade" id="TimelineModal" tabindex="-1" aria-labelledby="timelineModalLabel" aria-hidden="true">
+                        <div class="modal-fullscreen"> 
+                            <div class="modal-content" id="ContentModallineTime">
+                                <div class="modal-header bg-gradient-primary text-white">
+                                    <h5 class="modal-title" style="color: white" id="timelineModalLabel">Flujo de Trabajo del Ticket #<span id="timelineTicketId"></span></h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body" id="ModalBodyGestiones"> 
+                                    <div id="timelineContent">
+                                        <p>Cargando flujo de trabajo...</p>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="flowTicketModal" tabindex="-1" role="dialog" aria-labelledby="flowTicketModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="flowTicketModalLabel">Historial del Ticket</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="timeline-display-area">
+                                    </div>
+                            </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                             </div>
                             </div>
                         </div>

@@ -655,6 +655,8 @@ function loadTicketTimeline(ticketId) {
       if (data.success && data.details && data.details.length > 0) {
         // Mantiene la llamada a tu función original formatTimeline
         timelineContentDiv.innerHTML = formatTimeline(data.details);
+                initializeTimelineClickHandlers();
+
       } else if (data.success && data.details && data.details.length === 0) {
         timelineContentDiv.innerHTML = "<p>No hay historial de cambios para este ticket.</p>";
       } else {
@@ -687,119 +689,6 @@ function loadTicketTimeline(ticketId) {
 }
 
 // 8. NUEVO: Función para formatear los datos de la línea de tiempo en HTML
-function formatTimeline(timelineData) {
-    let html = '<ul class="timeline">';
-
-    timelineData.forEach((item, index) => {
-        const isInitialEntryBool = String(item.is_initial_entry).toLowerCase() === 't' || item.is_initial_entry === true;
-        const changedByUsername = item.changedby_username || 'N/A';
-        const formattedDate = item.changedstatus_at ? new Date(item.changedstatus_at).toLocaleString('es-VE', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }) : 'N/A';
-
-        const invertedClass = (index % 2 === 1) ? 'timeline-inverted' : '';
-
-        let changeDescription = '';
-        let changesDetectedInDescription = false; // Bandera para saber si se añadió algo significativo a la descripción
-
-        const currentTecnicoN2 = item.full_name_tecnico_n2_actual || 'No Asignado';
-        const previousTecnicoN2 = item.full_name_tecnico_n2_anterior || 'No Asignado';
-
-        if (isInitialEntryBool) {
-            let initiatorName = item.full_name_tecnico_n1_ticket !== 'No Asignado' ? item.full_name_tecnico_n1_ticket : changedByUsername;
-            changeDescription = `Ticket iniciado o abierto por el técnico <strong>${initiatorName}</strong>. `;
-            if (item.new_status_name && item.new_status_name !== 'Desconocido') {
-                 changeDescription += `Estado inicial: <strong>${item.new_status_name}</strong>. `;
-            }
-            if (item.new_action_name && item.new_action_name !== 'Desconocida') {
-                 changeDescription += `Acción inicial: <strong>${item.new_action_name}</strong>. `;
-            }
-            changesDetectedInDescription = true; // La entrada inicial siempre tiene descripción
-        } else {
-            // Cambios de Estado Principal
-            if (item.old_status_name && item.new_status_name && item.old_status_name !== item.new_status_name) {
-                changeDescription += `Cambio de estado: <strong>${item.old_status_name}</strong> a <strong>${item.new_status_name}</strong>. `;
-                changesDetectedInDescription = true;
-            }
-            // Cambios de Acción Principal
-            if (item.old_action_name && item.new_action_name && item.old_action_name !== item.new_action_name) {
-                changeDescription += `Cambio de acción: <strong>${item.old_action_name}</strong> a <strong>${item.new_action_name}</strong>. `;
-                changesDetectedInDescription = true;
-            }
-
-            // Lógica para mostrar cambio de Técnico N2 en la descripción
-            if (item.new_action_name === 'Reasignado al Técnico') {
-                if (currentTecnicoN2 !== 'No Asignado' && previousTecnicoN2 !== 'No Asignado' && currentTecnicoN2 !== previousTecnicoN2) {
-                    changeDescription += `Técnico reasignado de <strong>${previousTecnicoN2}</strong> a <strong>${currentTecnicoN2}</strong>. `;
-                    changesDetectedInDescription = true;
-                } else if (currentTecnicoN2 !== 'No Asignado' && previousTecnicoN2 === 'No Asignado') {
-                    // Si es Reasignado pero no había un técnico N2 anterior registrado
-                    changeDescription += `<strong>Asignado al Técnico: ${currentTecnicoN2}</strong>. `;
-                    changesDetectedInDescription = true;
-                }
-            } else if (item.new_action_name === 'Asignado al Técnico') {
-                // Solo si la acción es "Asignado al Técnico" y hay un técnico actual válido
-                if (currentTecnicoN2 !== 'No Asignado') {
-                    changeDescription += `<strong>Asignado al Técnico: ${currentTecnicoN2}</strong>. `;
-                    changesDetectedInDescription = true;
-                }
-            }
-
-            // Resto de los cambios de estado (laboratorio, domiciliación, pago)
-            if (item.old_status_lab_name && item.new_status_lab_name && item.old_status_lab_name !== item.new_status_lab_name) {
-                changeDescription += `Cambio de estado de laboratorio: <strong>${item.old_status_lab_name}</strong> a <strong>${item.new_status_lab_name}</strong>. `;
-                changesDetectedInDescription = true;
-            }
-            if (item.old_status_domiciliacion_name && item.new_status_domiciliacion_name && item.old_status_domiciliacion_name !== item.new_status_domiciliacion_name) {
-                changeDescription += `Cambio de estado de domiciliación: <strong>${item.old_status_domiciliacion_name}</strong> a <strong>${item.new_status_domiciliacion_name}</strong>. `;
-                changesDetectedInDescription = true;
-            }
-            if (item.old_status_payment_name && item.new_status_payment_name && item.old_status_payment_name !== item.new_status_payment_name) {
-                changeDescription += `Cambio de estado de pago: <strong>${item.old_status_payment_name}</strong> a <strong>${item.new_status_payment_name}</strong>. `;
-                changesDetectedInDescription = true;
-            }
-
-            // Si no se detectaron cambios específicos para la descripción (y no es la primera entrada)
-            if (!changesDetectedInDescription) {
-                changeDescription = 'Actualización general del ticket.';
-            }
-        }
-
-        html += `
-            <li class="${invertedClass}">
-                <div class="timeline-badge"><i class="fa fa-check"></i></div>
-                <div class="timeline-panel">
-                    <div class="timeline-heading">
-                        <h4 class="timeline-title">Actualizado por: ${changedByUsername}</h4>
-                        <p><small class="text-muted"><i class="fa fa-clock-o"></i> ${formattedDate}</small></p>
-                    </div>
-                    <div class="timeline-body">
-                        <p>${changeDescription}</p>
-                        <p><strong>Coordinador:</strong> ${item.full_name_coordinador_ticket || 'No Asignado'}</p>
-                        
-                        ${isInitialEntryBool && item.full_name_tecnico_n1_ticket !== 'No Asignado' // Mostrar Técnico N1 solo en la primera gestión si está asignado
-                            ? `<p><strong>Técnico N1:</strong> ${item.full_name_tecnico_n1_ticket}</p>`
-                            : ''
-                        }
-                        
-                        ${!isInitialEntryBool && // NO mostrar el Técnico N2 Actual en la primera gestión como un párrafo separado (ya se maneja en la descripción inicial si aplica)
-                          currentTecnicoN2 !== 'No Asignado' && // Asegurarse de que haya un Técnico N2 asignado
-                          (item.new_action_name === 'Asignado al Técnico' || item.new_action_name === 'Reasignado al Técnico') // Mostrar solo si la acción es 'Asignado al Técnico' o 'Reasignado al Técnico'
-                            ? `<p><strong>Técnico N2 Actual:</strong> ${currentTecnicoN2}</p>`
-                            : ''
-                        }
-                    </div>
-                </div>
-            </li>
-        `;
-    });
-    html += '</ul>';
-    return html;
-}
 
 function loadIndividualIrreparable(){
   const contentDiv = document.getElementById("IrreparableTikModalTicketsContent");
@@ -833,75 +722,179 @@ function loadIndividualIrreparable(){
     }); 
 }
 
-function formatIrreparableTicketsDetails(details){
-  if (!Array.isArray(details)) {
-    console.error("Expected 'details' to be an array, but received:", details);
-    return "<p>Formato de datos inesperado.</p>";
-  }
+function formatTimeline(timelineData) {
+    let html = '<ul class="timeline">';
 
-  let html = `
-        <h5>POS Irreparables</h5>
-        <div class="ticket-details-list mt-3">
-    `;
+    timelineData.forEach((item) => { // Simplificado 'index' si no se usa
+        const isInitialEntryBool = String(item.is_initial_entry).toLowerCase() === 't' || item.is_initial_entry === true;
+        const changedByUsername = item.changedby_username || 'N/A';
+        const formattedDate = item.changedstatus_at ? new Date(item.changedstatus_at).toLocaleString('es-VE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }) : 'N/A';
 
-  details.forEach((ticket) => {
-    // <-- ¡Corregido aquí! Ahora usa 'details'
-    // Formatear la fecha de creación del ticket para una mejor visualización
-    const creationDate = ticket.date_create_ticket
-      ? new Date(ticket.date_create_ticket).toLocaleString()
-      : "N/A";
+        let changeDescription = '';
+        // La lógica para building changeDescription sigue siendo la misma que la tuya
+        // ... (Tu lógica para changeDescription aquí) ...
+        const currentTecnicoN2 = item.full_name_tecnico_n2_actual || 'No Asignado';
+        const previousTecnicoN2 = item.full_name_tecnico_n2_anterior || 'No Asignado';
 
-    html += `
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
-                </div>
-                <div class="card-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Serial POS:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.serial_pos_cliente || "N/A"
-                        }</dd>
+        if (isInitialEntryBool) {
+            let initiatorName = item.full_name_tecnico_n1_ticket !== 'No Asignado' ? item.full_name_tecnico_n1_ticket : changedByUsername;
+            changeDescription = `Ticket iniciado o abierto por el técnico <strong>${initiatorName}</strong>. `;
+            if (item.new_status_name && item.new_status_name !== 'Desconocido') {
+                changeDescription += `Estado inicial: <strong>${item.new_status_name}</strong>. `;
+            }
+            if (item.new_action_name && item.new_action_name !== 'Desconocida') {
+                changeDescription += `Acción inicial: <strong>${item.new_action_name}</strong>. `;
+            }
+        } else {
+            // Cambios de Estado Principal
+            if (item.old_status_name && item.new_status_name && item.old_status_name !== item.new_status_name) {
+                changeDescription += `Cambio de estado: <strong>${item.old_status_name}</strong> a <strong>${item.new_status_name}</strong>. `;
+            }
+            // Cambios de Acción Principal
+            if (item.old_action_name && item.new_action_name && item.old_action_name !== item.new_action_name) {
+                changeDescription += `Cambio de acción: <strong>${item.old_action_name}</strong> a <strong>${item.new_action_name}</strong>. `;
+            }
 
-                        <dt class="col-sm-4">Razón Social Cliente:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.razon_social_cliente || "N/A"
-                        }</dd>
+            // Lógica para mostrar cambio de Técnico N2 en la descripción
+            if (item.new_action_name === 'Reasignado al Técnico') {
+                if (currentTecnicoN2 !== 'No Asignado' && previousTecnicoN2 !== 'No Asignado' && currentTecnicoN2 !== previousTecnicoN2) {
+                    changeDescription += `Técnico reasignado de <strong>${previousTecnicoN2}</strong> a <strong>${currentTecnicoN2}</strong>. `;
+                } else if (currentTecnicoN2 !== 'No Asignado' && previousTecnicoN2 === 'No Asignado') {
+                    changeDescription += `<strong>Asignado al Técnico: ${currentTecnicoN2}</strong>. `;
+                }
+            } else if (item.new_action_name === 'Asignado al Técnico') {
+                if (currentTecnicoN2 !== 'No Asignado') {
+                    changeDescription += `<strong>Asignado al Técnico: ${currentTecnicoN2}</strong>. `;
+                }
+            }
 
-                        <dt class="col-sm-4">Rif Cliente:</dt>
-                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+            // Resto de los cambios de estado (laboratorio, domiciliación, pago)
+            if (item.old_status_lab_name && item.new_status_lab_name && item.old_status_lab_name !== item.new_status_lab_name) {
+                changeDescription += `Cambio de estado de laboratorio: <strong>${item.old_status_lab_name}</strong> a <strong>${item.new_status_lab_name}</strong>. `;
+            }
+            if (item.old_status_domiciliacion_name && item.new_status_domiciliacion_name && item.old_status_domiciliacion_name !== item.new_status_domiciliacion_name) {
+                changeDescription += `Cambio de estado de domiciliación: <strong>${item.old_status_domiciliacion_name}</strong> a <strong>${item.new_status_domiciliacion_name}</strong>. `;
+            }
+            if (item.old_status_payment_name && item.new_status_payment_name && item.old_status_payment_name !== item.new_status_payment_name) {
+                changeDescription += `Cambio de estado de pago: <strong>${item.old_status_payment_name}</strong> a <strong>${item.new_status_payment_name}</strong>. `;
+            }
+            // Tu lógica de changesDetectedInDescription no está siendo usada para determinar changeDescription al final de la lógica del else.
+            // Asegúrate de que `changeDescription` tenga un valor por defecto si no se detectan cambios.
+            if (!changeDescription && !isInitialEntryBool) {
+                 changeDescription = 'Actualización general del ticket.';
+            }
+        }
+        // Fin de la lógica para building changeDescription
 
-                        <dt class="col-sm-4">Modelo POS:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_modelopos_cliente || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Estado Ticket:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.status_name_ticket || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Accion Ticket:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_accion_ticket || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Estatus Laboratorio:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_status_lab || "N/A"
-                        }</dd>
-                        
-                        <dt class="col-sm-4">Fecha Creación:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.date_create_ticket
-                        }</dd> <!-- Usar la variable formateada -->
-                    </dl>
-                </div>
-            </div>
+        let fullContentDetails = `
+            <p>${changeDescription}</p>
+            <p><strong>Coordinador:</strong> ${item.full_name_coordinador_ticket || 'No Asignado'}</p>
+            ${isInitialEntryBool && item.full_name_tecnico_n1_ticket !== 'No Asignado'
+                ? `<p><strong>Técnico N1:</strong> ${item.full_name_tecnico_n1_ticket}</p>`
+                : ''
+            }
+            ${!isInitialEntryBool && 
+              currentTecnicoN2 !== 'No Asignado' && 
+              (item.new_action_name === 'Asignado al Técnico' || item.new_action_name === 'Reasignado al Técnico')
+                ? `<p><strong>Técnico N2 Actual:</strong> ${currentTecnicoN2}</p>`
+                : ''
+            }
         `;
-  });
-  return html;
+
+        // Es mejor codificar el HTML para un atributo data.
+        // Utiliza DOMParser para una sanitización más robusta si el contenido pudiera provenir de una fuente no confiable.
+        // Para este caso simple de HTML generado por JS, una simple sustitución de comillas es suficiente.
+        const escapedFullContentDetails = fullContentDetails.replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+
+        html += `
+            <li>
+                <div class="timeline-badge"><i class="fa fa-check"></i></div>
+                <div class="timeline-panel timeline-collapsible" data-full-content="${escapedFullContentDetails}">
+                    <div class="timeline-heading">
+                        <h4 class="timeline-title">Actualizado por: ${changedByUsername}</h4>
+                        <p><small class="text-muted"><i class="fa fa-clock-o"></i> ${formattedDate}</small></p>
+                    </div>
+                    <div class="timeline-body" style="display: none;">
+                        </div>
+                </div>
+            </li>
+        `;
+    });
+    html += '</ul>';
+    return html;
 }
+
+
+// ---- NUEVA FUNCIÓN PARA INICIALIZAR LISTENERS ----
+function initializeTimelineClickHandlers() {
+    const timelineContainer = document.querySelector('.timeline');
+    console.log(timelineContainer);
+    if (timelineContainer) {
+        
+        timelineContainer.addEventListener('click', (event) => {
+            const panel = event.target.closest('.timeline-panel.timeline-collapsible');
+            if (panel) { // Asegúrate de que hemos hecho clic en un panel colapsable
+                const body = panel.querySelector('.timeline-body');
+                const heading = panel.querySelector('.timeline-heading');
+                const fullContent = panel.getAttribute('data-full-content');
+
+                if (body.style.display === 'none') {
+                    body.innerHTML = fullContent;
+                    body.style.display = 'block';
+                    panel.classList.add('expanded');
+                    heading.style.display = 'none'; // Oculta el encabezado
+                } else {
+                    body.style.display = 'none';
+                    body.innerHTML = '';
+                    panel.classList.remove('expanded');
+                    heading.style.display = 'block'; // Muestra el encabezado
+                }
+            }
+        });
+    }
+}
+
+
+
+// ---- CÓMO LLAMAR A initializeTimelineClickHandlers() ----
+
+// Opción 1: Si tu línea de tiempo se carga con el DOM inicial de la página
+// document.addEventListener('DOMContentLoaded', initializeTimelineClickHandlers);
+
+// Opción 2: Si tu línea de tiempo se carga dentro de un modal de Bootstrap (ejemplo)
+// Suponiendo que tienes un modal con ID 'flowTicketModal'
+$('#flowTicketModal').on('shown.bs.modal', function () {
+    // Aquí es donde obtienes tus datos y llamas a formatTimeline
+    // Ejemplo (adapta esto a tu lógica actual de carga):
+    // const timelineData = obtenerDatosDelTicket(); // Llama a tu función para obtener los datos
+    // document.getElementById('timeline-container').innerHTML = formatTimeline(timelineData); // Asigna el HTML generado
+    
+    // Una vez que el HTML está en el DOM, inicializa los manejadores
+    initializeTimelineClickHandlers();
+});
+
+// Opción 3: Después de que insertas dinámicamente el HTML en el DOM
+// Supongamos que tienes un div en tu HTML con id="timeline-display"
+// function loadTimelineForTicket(ticketId) {
+//     fetch(`/api/tickets/${ticketId}/timeline`) // Tu endpoint API para obtener los datos
+//         .then(response => response.json())
+//         .then(data => {
+//             const timelineHtml = formatTimeline(data);
+//             document.getElementById('timeline-display').innerHTML = timelineHtml;
+//             initializeTimelineClickHandlers(); // Llama después de insertar el HTML
+//         })
+//         .catch(error => console.error('Error cargando la línea de tiempo:', error));
+// }
+
+// Asegúrate de que este código se ejecuta DESPUÉS de que el HTML de la línea de tiempo ha sido insertado en el DOM.
+// Por ejemplo, si lo insertas en un modal, puedes ponerlo dentro de un evento 'shown.bs.modal' de Bootstrap, o después de que se haya actualizado el innerHTML de tu contenedor.
+
 
 function loadIndividualPendienteRepuesto(){
   const contentDiv = document.getElementById("PendienteRespuesModalTicketsContent");
