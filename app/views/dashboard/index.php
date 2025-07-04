@@ -60,7 +60,7 @@ function mi_navbar() {}
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
                                             <p class="card-category" style="color: black">Tickets Abiertos</p>
-                                            <h5 class="card-title font-weight-bolder" id="TicketsAbiertos"></h5>
+                                            <h5 class="card-title font-weight-bolder" id="TicketsAbiertos">0</h5>
                                             <p class="card-text mb-0">
                                                 <span class="text-danger font-weight-bolder"
                                                     id="TicketPorcentOpen"></span>Del total de tickets
@@ -112,8 +112,8 @@ function mi_navbar() {}
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
-                                            <p class="card-category" style="color: black">TICKETS EN PROCESO</p>
-                                            <h5 class="card-title" id="ProcessTicketNumber"></h5>
+                                            <p class="card-category" style="color: black">TICKETS PROCESO</p>
+                                            <h5 class="card-title" id="ProcessTicketNumber">0</h5>
                                             <p class="card-text">
                                                 <span class="text font-weight-bolder" id="Process_Tickets"></span>Del total de tickets
                                             </p>
@@ -194,7 +194,7 @@ function mi_navbar() {}
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
                                             <p class="card-category" style="color: black">Tickets Cerrados</p>
-                                            <h5 id="TicketsResuelto" class="card-title"></h5>
+                                            <h5 id="TicketsResuelto" class="card-title">0</h5>
                                             <p class="card-text mb-0">
                                                 <span id="ticketResueltoPercentage"
                                                     class="text font-weight-bolder"></span>Del total de tickets
@@ -244,7 +244,7 @@ function mi_navbar() {}
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
                                             <p class="card-category" style="color: black">Total Tickets</p>
-                                            <h5 id="TotalTicket" class="card-title"></h5>
+                                            <h5 id="TotalTicket" class="card-title">0</h5>
                                             <p class="card-text mb-0"><br><br><br>
                                                 <!--span class="text font-weight-bolder"
                                                     id="totalTicketPercentage"></span>De 100 Mensual-->
@@ -272,7 +272,7 @@ function mi_navbar() {}
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
                                             <p class="card-category" style="color: black">POS EN TALLER</p>
-                                            <h5 class="card-title" id="TotalEnviadoTaller"></h5>
+                                            <h5 class="card-title" id="TotalEnviadoTaller">0</h5>
                                             <p class="card-text mb-0">
                                                 <span class="text-percentage" id="PorcentSendToTaller"></span>Del total
                                                 de tickets

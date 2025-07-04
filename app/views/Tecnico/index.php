@@ -229,7 +229,8 @@ function mi_navbar()
                                                 <th scope="col">Razón Social</th>
                                                 <th scope="col">Fecha Creación</th>
                                                 <th scope="col">Técnico Asignado</th>
-                                                <th scope="col">Acción Ticket</th> <th scope="col">Acciones</th>
+                                                <th scope="col">Acción Ticket</th> 
+                                                <th scope="col">Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody class="table-group-divider" id="table-ticket-body">
@@ -250,6 +251,50 @@ function mi_navbar()
                 </div>
             </div>
         </main>
+
+        <!--MODAL PARA SELECCIONAR LAS ACCIONES-->
+            <div id="actionSelectionModal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button id="BtnCerrarSelecionAccion" type="button" class="btn-close" aria-label="Close"></button>
+                            <h2 style="color: black;">Seleccionar Acción</h2>
+                        </div>
+                        <div class="modal-body">
+                            <p style="font-size: 115%;">¿Qué acción deseas realizar con el ticket?</p>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn-primary" id="ButtonSendToTaller">Enviar a Taller</button>
+                            <button class="btn-secondary" id="devolver">Devolver al Cliente</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <!-- END MODAL PARA SELECCIONAR LAS ACCIONES-->
+
+        <!-- MODAL DE DEVOLUCION AL CLIENTE-->
+            <div id="devolverClienteModal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-gradient-primary">
+                            <h2  style="color: white;">Devolver al Cliente</h2>
+                        </div>
+                        <div class="modal-body">
+                            <p style="font-size: 115%;">¿Estás seguro de que deseas devolver este ticket al cliente?</p>
+                            <div class="form-group">
+                                <label for="observacionesDevolver">Observaciones:</label>
+                                <textarea class="form-control" id="observacionesDevolver" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" id = "BttonCloseModalDevolucion" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary" id="confirmDevolverCliente">Confirmar Devolución</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <!-- MODAL DE DEVOLUCION AL CLIENTE-->
+
 
         <!-- MODAL PARA SELECCIONAR TECNICO -->
         <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"

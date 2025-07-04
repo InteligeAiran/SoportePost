@@ -614,7 +614,6 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
                 " . $date_end_ticket . ", 
                 " . $id_tecnico_n1 . ",
                 '".$comment."');";
-            var_dump($sql_insert_ticket);
             
             $result_insert_ticket = $this->db->pgquery($sql_insert_ticket);
 

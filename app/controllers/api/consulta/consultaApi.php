@@ -168,9 +168,14 @@ class Consulta extends Controller
 
                 case 'getModulesUsers':
                     $this->handleGetModulesUsers();
-                    break;    
+                    break;
+
                 case 'getAttachments':
                     $this->handleGetAttachments();
+                    break;
+                
+                case 'DevolverCliente':
+                    $this->handleTicketAction();
                     break;
 
                 default:
@@ -1085,6 +1090,25 @@ class Consulta extends Controller
             $this->response(['success' => false, 'message' => 'Error al obtener los módulos'], 500); // Código 500 Internal Server Error
         }
     }
+
+    public function handleTicketAction(){
+        $ticketId = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+        $comment = isset($_POST['observaciones'])? $_POST['observaciones'] : '';
+
+        if (!$ticketId || !$id_user || !$comment) {
+            $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->UpdateTicketAction($ticketId, $id_user, $comment);
+        if ($result) {
+            $this->response(['success' => true,'message' => 'El ticket ha sido devuelto al cliente exitosamente.'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    } 
 
 }
 ?>

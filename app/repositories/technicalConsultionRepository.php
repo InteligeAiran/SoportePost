@@ -546,6 +546,11 @@ class TechnicalConsultionRepository
         } else {
             return null;
         }
-    } 
+    }
+
+    public function UpdateTicketAction($ticketId, $id_user, $comment){
+        $result = $this->model->UpdateTicketAction($ticketId, $id_user, $comment);
+        return $result;
+    }
 }
 ?>
