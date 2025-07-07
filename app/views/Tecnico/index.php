@@ -219,19 +219,8 @@ function mi_navbar()
                                             </div>
                                         </div>
                                     </div>
-                                   <table id="tabla-ticket"
-                                        class="table table-striped table-bordered table-hover table-sm">
-                                       <thead>
-                                            <tr>
-                                                <th scope="col">ID Ticket</th>
-                                                <th scope="col">RIF</th>
-                                                <th scope="col">Nro Ticket</th>
-                                                <th scope="col">Razón Social</th>
-                                                <th scope="col">Fecha Creación</th>
-                                                <th scope="col">Técnico Asignado</th>
-                                                <th scope="col">Acción Ticket</th> 
-                                                <th scope="col">Acciones</th>
-                                            </tr>
+                                   <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
+                                        <thead>
                                         </thead>
                                         <tbody class="table-group-divider" id="table-ticket-body">
                                             <tr>
@@ -306,7 +295,7 @@ function mi_navbar()
                         <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p style="font-size: 200%; font-family: ui-monospace;">Deseas Enviar al Taller?</p>
+                        <p style="font-size: 200%; font-family: ui-monospace;">Deseas Enviar al Taller el Ticket <span id="modalTicketNr"></span>?</p>
                     </div>
                     <div class="modal-footer">
                         <button id="close-button" type="button" class="btn btn-secondary">Cerrar</button>

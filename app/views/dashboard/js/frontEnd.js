@@ -724,7 +724,7 @@ function loadIndividualIrreparable(){
 
 function formatTimeline(timelineData) {
     let html = '<ul class="timeline">';
-
+drawTimelineLine()
     timelineData.forEach((item) => {
         const isInitialEntryBool = String(item.is_initial_entry).toLowerCase() === 't' || item.is_initial_entry === true;
         const changedByUsername = item.changedby_username || 'N/A';
@@ -740,7 +740,6 @@ function formatTimeline(timelineData) {
         const currentTecnicoN2 = item.full_name_tecnico_n2_actual || 'No Asignado';
         const previousTecnicoN2 = item.full_name_tecnico_n2_anterior || 'No Asignado'; // Ya tienes esta variable disponible
         const coordinatorName = item.full_name_coordinador_ticket || 'No Asignado';
-                    console.log(item);
 
         if (isInitialEntryBool) {
             let initiatorName = item.full_name_tecnico_n1_ticket !== 'No Asignado' ? changedByUsername : changedByUsername;
@@ -873,8 +872,9 @@ $('#flowTicketModal').on('shown.bs.modal', function () {
 });
 
 function drawTimelineLine() {
-    const timelineContainer = document.querySelector('.timeline'); // Tu contenedor principal
-    const nodes = document.querySelectorAll('.timeline-node'); // Los círculos/puntos
+    const timelineContainer = document.querySelector('.timeline'); // El <ul> con la clase 'timeline'
+    // Asume que tus "círculos" o puntos de la línea de tiempo tienen la clase 'timeline-badge'
+    const nodes = document.querySelectorAll('.timeline-badge'); 
 
     if (!timelineContainer || nodes.length < 2) {
         // No hay contenedor o no hay suficientes nodos para dibujar una línea
@@ -882,6 +882,7 @@ function drawTimelineLine() {
     }
 
     // Elimina cualquier línea existente para redibujar
+    // ¡CORRECCIÓN AQUÍ! Busca '.timeline-horizontal-line' dentro de timelineContainer
     let existingLine = timelineContainer.querySelector('.timeline-horizontal-line');
     if (existingLine) {
         existingLine.remove();
@@ -891,22 +892,31 @@ function drawTimelineLine() {
     const line = document.createElement('div');
     line.classList.add('timeline-horizontal-line');
 
-    // Asume que la línea va de la mitad del primer nodo a la mitad del último
+    // Calcula la posición de la línea
+    // Necesitamos que el contenedor de la línea tenga position: relative
+    // Y los nodos también pueden serlo o estar posicionados de alguna manera.
+
+    // Obtén las posiciones de los nodos relativos al contenedor padre (timelineContainer)
     const firstNodeRect = nodes[0].getBoundingClientRect();
     const lastNodeRect = nodes[nodes.length - 1].getBoundingClientRect();
     const containerRect = timelineContainer.getBoundingClientRect();
 
-    const startX = firstNodeRect.left + (firstNodeRect.width / 2) - containerRect.left;
-    const endX = lastNodeRect.left + (lastNodeRect.width / 2) - containerRect.left;
+    // Calcula el punto de inicio y fin de la línea
+    // Asegúrate de que los nodos estén visualmente alineados a una altura común
+    // Si tus nodos tienen un alto y el badge está en el centro, ajusta 'top' o 'bottom'
+    // Suponiendo que el centro vertical de tus nodos es donde quieres la línea
+    const startX = (firstNodeRect.left + firstNodeRect.width / 2) - containerRect.left;
+    const endX = (lastNodeRect.left + lastNodeRect.width / 2) - containerRect.left;
 
     // Posiciona la línea
+    line.style.position = `absolute`; // Fundamental para posicionarla dentro del contenedor
     line.style.left = `${startX}px`;
     line.style.width = `${endX - startX}px`;
-    line.style.bottom = `13px`; // Misma altura que el centro de tus nodos
     line.style.height = `4px`; // Grosor de la línea
     line.style.backgroundColor = `#007bff`; // Color azul
-    line.style.position = `absolute`;
-    line.style.zIndex = `1`; // Debajo de los nodos
+    line.style.zIndex = `0`; // Debajo de los nodos (si los nodos tienen z-index > 0)
+    line.style.top = `50%`; // Intenta centrar verticalmente, ajusta si es necesario
+    line.style.transform = `translateY(-50%)`; // Ajuste para centrado vertical preciso
 
     timelineContainer.appendChild(line);
 }

@@ -108,7 +108,6 @@ class historical extends Controller {
         if (empty($id_ticket)) {
             $this->response(['success' => false, 'message' => 'ID de ticket o usuario no proporcionado'], 400);
         }
-
         $result = $repository->MarkTicketReceivedTechnical($id_ticket, $id_user);
         if ($result) {
             $this->response(['success' => true, 'message' => 'Ticket marcado como recibido'], 200);

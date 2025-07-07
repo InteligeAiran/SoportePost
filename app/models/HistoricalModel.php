@@ -132,7 +132,6 @@ class HistoricalModel extends Model
                 tsh.changedstatus_at DESC, tsh.id_history DESC -- Ordenar por fecha y luego por ID para el último registro
             LIMIT 1;
             ";
-            
             $result_last_history = pg_query($db, $sql_get_last_history);
 
             if ($result_last_history && pg_num_rows($result_last_history) > 0) {

@@ -127,20 +127,13 @@ function getTicketData() {
 
           if (hasBeenConfirmedByAnyone) {
             actionButtonsHTML += `
-                            <button class="btn btn-sm btn-dark btn-received-ticket ml-2" style="display: none;"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Ya ha sido marcado como recibido">
-                                Recibido
-                            </button>
-
                             <button class="btn btn-sm btn-wrench-custom"
                                 data-bs-toggle="tooltip" data-bs-placement="top"
                                 title="Enviar a Taller"
                                 data-ticket-id="${ticket.id_ticket}"
                                 data-nro_ticket="${ticket.nro_ticket}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
-                            </button>
-                        `;
+                            </button>`;
           } else {
             actionButtonsHTML += `
                             <button class="btn btn-sm btn-dark btn-received-ticket ml-2"
@@ -148,16 +141,7 @@ function getTicketData() {
                                 title="Marcar como Recibido"
                                 data-ticket-id="${ticket.id_ticket}">
                                 Recibido
-                            </button>
-
-                            <button class="btn btn-sm btn-wrench-custom" style="display: none;"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Enviar a Taller"
-                                data-ticket-id="${ticket.id_ticket}"
-                                data-nro_ticket="${ticket.nro_ticket}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
-                            </button>
-                        `;
+                            </button>`;
           }
 
           // Lógica para añadir los botones adicionales basada en id_status_payment
@@ -314,7 +298,7 @@ function getTicketData() {
             { title: "Nro Ticket" },
             { title: "Razón Social" }, // Esta columna ahora contendrá el HTML del span
             { title: "Fecha Creación" },
-            { title: "Técnico Asignado" },
+            { title: "Técnico Gestor" },
             { title: "Acción Ticket" },
             { title: "Acciones", orderable: false },
           ],
@@ -336,86 +320,107 @@ function getTicketData() {
             },
           },
           dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-          initComplete: function (settings, json) {
+         // Dentro de tu initComplete de DataTables
+            initComplete: function (settings, json) {
             const buttonsHtml = `
-                            <button id="btn-asignados" class="btn btn-primary me-2" title="Tickets ya Asignados">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                                    <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                                </svg>
-                            </button>
+                <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets ya Asignados">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                    </svg>
+                </button>
 
-                            <button id="btn-por-asignar" class="btn btn-primary me-2" title = "Enviados Taller">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
-                                <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
-                                </svg>
-                            </button>
+                <button id="btn-por-asignar" class="btn btn-secondary me-2" title = "Enviados Taller">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                    <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+                    </svg>
+                </button>
 
-                            <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Técnico">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                                </svg>
-                            </button>
+                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Técnico">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                        <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                    </svg>
+                </button>
 
-                            <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos devuelto a cliente">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
-                                    <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
-                                </svg>
-                            </button>
-                        `;
+                <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos devuelto a cliente">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
+                        <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
+                    </svg>
+                </button>
+            `;
             $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
-            // ************* INICIO CAMBIOS PARA LOS BOTONES *************
-
-            // Función para manejar la selección de botones
+            // Tu función setActiveButton es correcta.
             function setActiveButton(activeButtonId) {
-              $("#btn-por-asignar")
-                .removeClass("btn-primary")
-                .addClass("btn-secondary");
-              $("#btn-asignados")
-                .removeClass("btn-primary")
-                .addClass("btn-secondary");
-              $("#btn-recibidos")
-                .removeClass("btn-primary")
-                .addClass("btn-secondary");
-              $("#btn-devuelto")
-                .removeClass("btn-primary")
-                .addClass("btn-secondary");
-              $(`#${activeButtonId}`)
-                .removeClass("btn-secondary")
-                .addClass("btn-primary");
+                $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
+                $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
+                $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
+                $("#btn-devuelto").removeClass("btn-primary").addClass("btn-secondary");
+                $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
             }
 
-            // Inicialmente, establecer "Asignados" como activo (porque el filtro por defecto lo será)
+            // Inicialmente, establecer "Asignados" como activo (esto es correcto)
             setActiveButton("btn-asignados");
 
+            // Tus event listeners de clic están correctos
             $("#btn-asignados").on("click", function () {
-              dataTableInstance.column(6).search("Asignado al Técnico").draw();
-              setActiveButton("btn-asignados"); // Llamar a la función para actualizar el estilo
+                dataTableInstance.column(6).search("Asignado al Técnico").draw();
+                setActiveButton("btn-asignados");
             });
 
             $("#btn-por-asignar").on("click", function () {
-              dataTableInstance.column(6).search("Enviado a taller").draw();
-              setActiveButton("btn-por-asignar"); // Llamar a la función para actualizar el estilo
+                dataTableInstance.column(6).search("Enviado a taller").draw();
+                setActiveButton("btn-por-asignar");
             });
 
             $("#btn-recibidos").on("click", function () {
-              dataTableInstance
-                .column(6)
-                .search("Recibido por el Técnico")
-                .draw();
-              setActiveButton("btn-recibidos"); // Llamar a la función para actualizar el estilo
+                dataTableInstance.column(6).search("Recibido por el Técnico").draw();
+                setActiveButton("btn-recibidos");
             });
 
             $("#btn-devuelto").on("click", function () {
-              dataTableInstance
-                .column(6)
-                .search("Pos devuelto a cliente")
-                .draw();
-              setActiveButton("btn-devuelto"); // Llamar a la función para actualizar el estilo
+                dataTableInstance.column(6).search("Pos devuelto a cliente").draw();
+                setActiveButton("btn-devuelto");
             });
+
             // ************* FIN CAMBIOS PARA LOS BOTONES *************
+
+            $("#tabla-ticket tbody")
+            .off("click", ".btn-received-ticket") // Remueve cualquier manejador anterior para .btn-received-ticket
+            .on("click", ".btn-received-ticket", function (e) {
+                e.stopPropagation(); // Evita que el evento se propague a otros elementos (como una fila de la tabla)
+
+                const button = $(this); // Referencia al botón que fue clickeado
+                const ticketId = button.data("ticket-id"); // Obtiene el id_ticket del atributo data-ticket-id
+
+                if (ticketId) {
+                    // Asumiendo que 'TicketData' es un array global o accesible aquí
+                    // que contiene todos los detalles de los tickets cargados.
+                    const selectedTicketDetails = TicketData.find(
+                        (t) => t.id_ticket == ticketId
+                    );
+
+                    if (selectedTicketDetails) {
+                        // Obtener el nro_ticket de los detalles del ticket
+                        const currentnroTicket = selectedTicketDetails.nro_ticket;
+
+                        // Llama a la función showConfirmationModalForReceived
+                        showConfirmationModalForReceived(ticketId, currentnroTicket);
+                    } else {
+                        console.error(`Error: No se encontraron detalles para el ticket ID: ${ticketId}`);
+                        // Opcional: Mostrar un SweetAlert2 de error al usuario
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'No se pudieron cargar los detalles del ticket. Intente de nuevo.',
+                            color: 'black'
+                        });
+                    }
+                } else {
+                    console.error("Error: ticketId no encontrado en el botón .btn-received-ticket");
+                }
+            });
 
             // ************* INICIO: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO *************
             $("#tabla-ticket tbody")
@@ -588,13 +593,21 @@ function getTicketData() {
         $("#ButtonSendToTaller")
           .off("click")
           .on("click", function () {
-            // 1. Ocultar el primer modal (actionSelectionModal)
+
+            const modalTicketNrSpan = document.getElementById("modalTicketNr");
+             if (modalTicketNrSpan && currentnroTicket) {
+                modalTicketNrSpan.textContent = currentnroTicket;
+            } else {
+                modalTicketNrSpan.textContent = " seleccionado"; // Texto por defecto si no se encontró el número
+                console.warn("No se pudo inyectar el número de ticket en el modal de taller.");
+            }
+
             if (actionSelectionModalInstance) {
               actionSelectionModalInstance.hide();
             }
 
-            // 2. Mostrar el segundo modal (staticBackdrop - el modal de "Deseas Enviar al Taller?")
             if (staticBackdropModalInstance) {
+
               staticBackdropModalInstance.show();
             }
           });
@@ -872,12 +885,12 @@ function handleMarkTicketReceived(ticketId, currentnroTicket) {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
           Swal.fire({
-            title: "¡Recibido!",
-            text: "El ticket N" + nroTicket + " ha sido marcado como recibido.",
-            icon: "success",
-            color: "black",
-            confirmButtonColor: "#3085d6", // Ejemplo de un color azul Bootstrap por defecto
-          });
+                title: "¡Recibido!",
+                text: "El ticket N" + currentnroTicket + " ha sido marcado como recibido.", // <-- CAMBIO AQUÍ
+                icon: "success",
+                color: "black",
+                confirmButtonColor: "#3085d6",
+            });
           getTicketData(); // Volver a cargar la tabla para reflejar los cambios
         } else {
           Swal.fire(
@@ -1358,8 +1371,8 @@ function loadTicketHistory(ticketId) {
           let statusHeaderText = "";
 
           // **Colores por defecto si no hay coincidencia o si el estado es nulo/vacío**
-          headerStyle = "background-color: #212529;"; // Gris claro de Bootstrap 'light'
-          textColor = "color: #212529;"; // Texto oscuro de Bootstrap 'dark'
+          let headerStyle = "background-color: #212529;"; // Gris claro de Bootstrap 'light'
+          let textColor = "color: #212529;"; // Texto oscuro de Bootstrap 'dark'
           statusHeaderText = ""; // Sin texto extra por defecto
 
           if (item.name_status_ticket) {
@@ -1606,25 +1619,28 @@ function handleSendToTallerClick() {
     xhr.onload = function () {
       if (xhr.status >= 200 && xhr.status < 300) {
         const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          Swal.fire({
+        Swal.fire({
             icon: "success",
-            title: "El ticket del Dispostitivo POS fue enviado a Taller",
+            title: "El ticket del Dispositivo POS fue enviado a Taller",
             text: response.message,
             color: "black",
-            timer: 3500,
-            timerProgressBar: true,
+            // Eliminamos 'timer' y 'timerProgressBar' si quieres un botón explícito
+            showConfirmButton: true, // Muestra el botón de confirmación
+            confirmButtonText: "Aceptar", // Texto del botón
+            confirmButtonColor: "#3085d6", // Color del botón (puedes ajustar)
+            allowOutsideClick: false, // Opcional: para que el usuario DEBA hacer clic en el botón
+            allowEscapeKey: false,   // Opcional: para que no se pueda cerrar con la tecla Escape
             didOpen: () => {
-              Swal.showLoading();
-            },
-            willClose: () => {
-              setTimeout(() => {
-                location.reload();
-              }, 3500);
-            },
-          });
-          modalInstance.hide(); // Cierra el modal
-          getTicketData(); // Recarga los datos de la tabla
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                location.reload(); // Recarga la página
+            }
+        });
+            if (staticBackdropModalInstance) {
+            staticBackdropModalInstance.hide(); // Cierra el modal "Deseas Enviar al Taller"
+        
+            getTicketData(); 
         } else {
           alert("Error al enviar el ticket: " + response.message);
         }
