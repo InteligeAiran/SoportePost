@@ -740,9 +740,10 @@ function formatTimeline(timelineData) {
         const currentTecnicoN2 = item.full_name_tecnico_n2_actual || 'No Asignado';
         const previousTecnicoN2 = item.full_name_tecnico_n2_anterior || 'No Asignado'; // Ya tienes esta variable disponible
         const coordinatorName = item.full_name_coordinador_ticket || 'No Asignado';
+                    console.log(item);
 
         if (isInitialEntryBool) {
-            let initiatorName = item.full_name_tecnico_n1_ticket !== 'No Asignado' ? item.full_name_tecnico_n1_ticket : changedByUsername;
+            let initiatorName = item.full_name_tecnico_n1_ticket !== 'No Asignado' ? changedByUsername : changedByUsername;
             changeDescriptionHtml += `<strong>Técnico Gestor:</strong> ${initiatorName}<br>`;
             
             if (item.new_status_name && item.new_status_name !== 'Desconocido') {
@@ -768,8 +769,8 @@ function formatTimeline(timelineData) {
             if (item.new_action_name === 'Reasignado al Técnico') {
                 // Si hay un técnico anterior y uno actual, y son diferentes, muestra ambos
                 if (previousTecnicoN2 !== 'No Asignado' && currentTecnicoN2 !== 'No Asignado' && previousTecnicoN2 !== currentTecnicoN2) {
-                    changeDescriptionHtml += `<br><strong>Técnico Reasignado:</strong> De <strong>${previousTecnicoN2}</strong> a <strong>${currentTecnicoN2}</strong><br>`;
-                    changeDescriptionHtml += `<br><strong>Comentario: </strong>El Ticket fue reasignado del Técnico N2: <strong>${previousTecnicoN2}</strong> al Técnico N2: <strong>${currentTecnicoN2}</strong> por el coordinador: <strong>${coordinatorName}</strong><br>`;
+                    changeDescriptionHtml += `<br><strong>Técnico Reasignado:</strong> Del Técnico: <strong>${previousTecnicoN2}</strong> al Técnico: <strong>${currentTecnicoN2}</strong><br>`;
+                    changeDescriptionHtml += `<br><strong>Comentario: </strong>El Ticket fue reasignado del Técnico: <strong>${previousTecnicoN2}</strong> al Técnico: <strong>${currentTecnicoN2}</strong> por el coordinador: <strong>${coordinatorName}</strong><br>`;
                      // --- AÑADIDO AQUÍ: Mostrar el comentario de cambio de técnico si existe ---
                     if (item.comment_change_tec && item.comment_change_tec.trim() !== '') {
                         changeDescriptionHtml += `<br><strong>Motivo de la Reasignación:</strong> ${item.comment_change_tec}<br>`;
@@ -778,8 +779,10 @@ function formatTimeline(timelineData) {
             } else if (item.new_action_name === 'Asignado al Técnico') {
                 if (currentTecnicoN2 !== 'No Asignado') {
                     changeDescriptionHtml += `<br><strong>Asignado al Técnico:</strong> <strong>${currentTecnicoN2}</strong><br>`;
-                    changeDescriptionHtml += `<br><strong>Comentario: </strong>El Ticket fue Asignado al Técnico nivel 2: <strong>${currentTecnicoN2}</strong> por el coordinador: <strong>${coordinatorName}</strong><br>`;
+                    changeDescriptionHtml += `<br><strong>Comentario: </strong>El Ticket fue Asignado al Técnico: <strong>${currentTecnicoN2}</strong> por el coordinador: <strong>${coordinatorName}</strong><br>`;
                 }
+            }else if (item.new_action_name === 'En espera de Confirmar Devolución') {
+                changeDescriptionHtml += `<br><strong>Motivo de Devolución:</strong> ${item.comment_devolution}<br>`;
             }
 
             // Resto de los cambios de estado (laboratorio, domiciliación, pago)
@@ -803,7 +806,7 @@ function formatTimeline(timelineData) {
             if (item.new_action_name !== 'Reasignado al Técnico' && item.new_action_name !== 'Asignado al Técnico') {
                 changeDescriptionHtml += `<br><strong>Coordinador:</strong> ${coordinatorName}<br>`;
                 if (currentTecnicoN2 !== 'No Asignado') {
-                     changeDescriptionHtml += `<strong>Técnico N2 Actual:</strong> ${currentTecnicoN2}<br>`;
+                     changeDescriptionHtml += `<strong>Técnico Actual:</strong> ${currentTecnicoN2}<br>`;
                 }
             }
         }
