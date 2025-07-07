@@ -341,3 +341,24 @@
 /* Podrías querer que los triángulos apunten al centro del badge, no al 50% del panel. */
 /* Esto puede requerir más CSS complejo o JavaScript para ajustar la posición. */
 /* Por ahora, si el contenido no es excesivamente largo, debería verse bien. */
+
+#IconCloseTimeline{
+  background-color: #8392ab;
+  color: white;
+}
+
+#IconCloseTimeline:hover{
+    color: white;
+    background-color: red;
+}
+
+#CloseCerrarTimeline:hover{
+    color: white;
+    background-color: red;
+}
+
+#CloseCerrarTimeline{
+    background-color: #8392ab;
+    cursor: pointer;
+    color: white;
+}

@@ -4,6 +4,8 @@
   console.log(`Ancho de la pantalla: ${anchoPantalla}px`);
   console.log(`Alto de la pantalla: ${altoPantalla}px`);
 });*/
+  let ModalTimelineInstance = null; // Variable para la instancia del modal de línea de tiempo
+
 
 document.addEventListener("DOMContentLoaded", function () {
   // --- Referencias a los elementos HTML de los Modales ---
@@ -19,6 +21,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const ModalReparado = document.getElementById("ReparadosModal"); // ��NUEVO ELEMENTO!
   const ModalPendienteRepuesto = document.getElementById("pendienterespuestoModal"); // ��NUEVO ELEMENTO!
   const ModalTikIrreparable = document.getElementById("IrreparableModal"); // ��NUEVO ELEMENTO!
+    const timelineModalElement = document.getElementById("TimelineModal");
+
+    
+
 
 
   // --- Instancias de Bootstrap Modals (declaradas para ser accesibles globalmente dentro de este scope) ---
@@ -33,7 +39,10 @@ document.addEventListener("DOMContentLoaded", function () {
   let ModalIrreparable = null; // ��NUEVO ELEMENTO!
   let ModalprocessTicketsModalInstance = null; // ��NUEVO ELEMENTO!
 
-  
+
+  if (timelineModalElement) {
+      ModalTimelineInstance = new bootstrap.Modal(timelineModalElement);
+    }
 
   // --- Inicializar las instancias de los modales (UNA SOLA VEZ al cargar la página) ---
   if (monthlyTicketsModalElement) {  
@@ -83,6 +92,24 @@ document.addEventListener("DOMContentLoaded", function () {
     ModalIrreparable = new bootstrap.Modal(ModalTikIrreparable);
   }
   // --- Event Listeners para ABRIR Modales (desde tarjetas/botones) ---
+
+  document.body.addEventListener('click', function (event) {
+        if (event.target.classList.contains('view-timeline-btn')) {
+            event.preventDefault(); // Evita el comportamiento predeterminado del enlace/botón
+
+            const ticketId = event.target.dataset.idTicket;
+            document.getElementById('timelineTicketId').textContent = ticketId;
+            loadTicketTimeline(ticketId); // Carga los datos específicos del ticket en el modal
+
+            const timelineModalElement = document.getElementById("TimelineModal");
+            if (timelineModalElement) {
+                ModalTimelineInstance = new bootstrap.Modal(timelineModalElement); // ¡Aquí se recrea la instancia!
+                ModalTimelineInstance.show();
+            } else {
+                console.error("Error: Elemento TimelineModal no encontrado para crear instancia. No se puede mostrar el modal de línea de tiempo.");
+            }
+        }
+    });
 
   // 1. Abrir monthlyTicketsModal
   const monthlyTicketsCard = document.getElementById("monthlyTicketsCard");
@@ -174,6 +201,50 @@ document.addEventListener("DOMContentLoaded", function () {
     console.error(
       "OpenModalReparado o ModalReparados no encontrados."
     );
+  }
+
+  function forceCloseTimelineModal() {
+    const modalElement = document.getElementById("TimelineModal");
+    if (modalElement) {
+        modalElement.classList.remove('show');
+        modalElement.setAttribute('aria-hidden', 'true');
+        modalElement.style.display = 'none';
+
+        const backdrop = document.querySelector('.modal-backdrop.show');
+        if (backdrop) {
+            backdrop.remove();
+        }
+
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+
+        // Importante: Eliminar la instancia de Bootstrap para que se recree.
+        if (ModalTimelineInstance) {
+            ModalTimelineInstance.dispose(); // Libera los eventos y recursos de Bootstrap
+            ModalTimelineInstance = null; // Establece a null para que se pueda recrear
+        }
+
+        console.log("Cierre forzado del modal de línea de tiempo.");
+    } else {
+        console.error("No se encontró el elemento #TimelineModal para cierre forzado.");
+    }
+  }
+
+  const cerraTimeLineModal = document.getElementById("CloseCerrarTimeline");
+  const iconCerrarTimeLine = document.getElementById("IconCloseTimeline");
+  // Cómo usarla en tus listeners (reemplazando ModalTimelineInstance.hide()):
+  if (cerraTimeLineModal && ModalTimelineInstance) { // Mantén la condición ModalTimelineInstance para asegurar que ya se inicializó
+    cerraTimeLineModal.addEventListener('click', function() {
+      forceCloseTimelineModal(); // Llama a la función de cierre forzado
+      // No necesitas el console.log de la instancia aquí, ya que el control es manual.
+    });
+  }
+
+  if (iconCerrarTimeLine && ModalTimelineInstance) {
+    iconCerrarTimeLine.addEventListener('click', function() {
+      forceCloseTimelineModal(); // Llama a la función de cierre forzado
+    });
   }
 
 
@@ -322,12 +393,14 @@ document.addEventListener("DOMContentLoaded", function () {
   if (cerrarProcess && ModalprocessTicketsModalInstance) {
     cerrarProcess.addEventListener("click", function () {
       ModalprocessTicketsModalInstance.hide();
+      forceCleanupAfterModalClose(); // <-- Se llama aquí
     });
   }
 
   if (iconProcess && ModalprocessTicketsModalInstance) {
     iconProcess.addEventListener("click", function () {
       ModalprocessTicketsModalInstance.hide();
+      forceCleanupAfterModalClose(); // <-- Se llama aquí
     });
   }
 
@@ -472,6 +545,41 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+
+
+function loadIndividualProceess() {
+  const contentDiv = document.getElementById("ProcessTicketsContent");
+  contentDiv.innerHTML = "<p>Cargando información de los POS en Proceso..</p>";
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsInProcess`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        // Asigna el HTML directamente
+        contentDiv.innerHTML = formatProcessTicketsDetails(data.details);
+      } else {
+        contentDiv.innerHTML =
+          "<p>Error al cargar los detalles de Taller: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error(
+          "Error en los datos de la API para Taller:",
+          data.message
+        );
+      }
+    })
+    .catch((error) => {
+      contentDiv.innerHTML =
+        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
+      console.error("Error fetching taller details:", error);
+    });
+}
+
+
 function cerrarModalViewDocument(){
   const ModalViewImageElement = document.getElementById("viewDocumentModal"); // Modal para ver documentos de tickets
   let ModalView = null; // Modal para ver imagenes de tickets
@@ -510,58 +618,6 @@ function cerrarModalViewDocument(){
 
 }
 
-function loadIndividualProceess() {
-    const timelineModalElement = document.getElementById("TimelineModal");
-      let ModalTimelineInstance = null; // Variable para la instancia del modal de línea de tiempo
-
-        if (timelineModalElement) {
-    ModalTimelineInstance = new bootstrap.Modal(timelineModalElement);
-  }
-
-
-
-  const contentDiv = document.getElementById("ProcessTicketsContent");
-  contentDiv.innerHTML = "<p>Cargando información de los POS en Proceso..</p>";
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsInProcess`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (data.success) {
-        // Asigna el HTML directamente
-        contentDiv.innerHTML = formatProcessTicketsDetails(data.details);
-
-        // NUEVO: Delegación del evento para los botones "Ver Flujo de Trabajo"
-        // Escucha en el contenedor padre (contentDiv) y verifica si el clic fue en un botón con la clase 'view-timeline-btn'
-        contentDiv.addEventListener('click', function(event) {
-          if (event.target.classList.contains('view-timeline-btn')) {
-            const ticketId = event.target.dataset.idTicket;
-            document.getElementById('timelineTicketId').textContent = ticketId; // Establece el ID del ticket en el título del modal
-            loadTicketTimeline(ticketId);
-            ModalTimelineInstance.show();
-          }
-        });
-
-      } else {
-        contentDiv.innerHTML =
-          "<p>Error al cargar los detalles de Taller: " +
-          (data.message || "Error desconocido") +
-          "</p>";
-        console.error(
-          "Error en los datos de la API para Taller:",
-          data.message
-        );
-      }
-    })
-    .catch((error) => {
-      contentDiv.innerHTML =
-        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
-      console.error("Error fetching taller details:", error);
-    });
-}
 
 
 function formatProcessTicketsDetails(details){
@@ -753,7 +809,7 @@ drawTimelineLine()
             }
             // Agregamos el Coordinador y Técnico N1 aquí si es la entrada inicial
             changeDescriptionHtml += `<br><strong>Coordinador:</strong> ${coordinatorName}<br>`;
-            changeDescriptionHtml += `<br><strong>Comentario: </strong>El Ticket fue abierto y gestionado por el Técnico: <strong>${initiatorName}</strong> la cual se lo asigno al coordinador: <strong>${coordinatorName}</strong><br>`; 
+            changeDescriptionHtml += `<br><strong>Comentario: </strong>El Ticket fue abierto y gestionado por el Técnico: <strong>${initiatorName}</strong> la cual se lo asignó al coordinador: <strong>${coordinatorName}</strong><br>`; 
         } else {
             // Cambios de Estado Principal
             if (item.old_status_name && item.new_status_name && item.old_status_name !== item.new_status_name) {
