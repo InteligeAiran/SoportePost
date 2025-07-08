@@ -209,12 +209,27 @@
             cursor: default;
         } */       
 
+        #table-ticket-body table td, table th {
+            white-space: normal !important;
+        }
+
+
 
         /* Estilo al pasar el puntero (hover) sobre los elementos de paginación NO activos y NO deshabilitados */
         .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button:hover:not(.active):not(.disabled) {
             background-color: #fff; /* Un gris ligeramente más oscuro al pasar el puntero (sutil) */
             color: #003594; /* Azul suave para el texto al hacer hover, o puedes mantener el gris oscuro si prefieres menos cambio */
             border-color: white; /* Borde un poco más visible al hacer hover */
+        }
+
+         .falla-reportada-texto {
+            color: #DC3545; /* Rojo de Bootstrap 'danger' */
+            /* O un color naranja: */
+            /* color: #FD7E14; */ /* Naranja de Bootstrap 'warning' */
+            /* O un color personalizado: */
+            /* color: #C0392B; */ /* Un rojo ladrillo */
+            /* color: #E67E22; */ /* Un naranja más suave */
+            font-weight: bold; /* Opcional: para que resalte más */
         }
         </style>
     </head>

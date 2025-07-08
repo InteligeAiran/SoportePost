@@ -14,14 +14,14 @@ function getTicketData() {
     // Define column titles strictly based on your SQL function's output
     const columnTitles = {
         id_ticket: "ID Ticket",
-        nro_ticket: "Nro Ticket", 
+        nro_ticket: "Nro Ticket",
         rif: "Rif",
-        razonsocial_cliente: "Razón Social",
+        razonsocial_cliente: "Razón Social", // Columna donde aplicaremos el truncado
         full_name_tecnicoassignado: "Técnico Asignado",
         fecha_envio_a_taller: "Fecha Envío a Taller",
         name_status_payment: "Estatus Pago",
-        name_status_lab: "Estatus Taller",
         name_accion_ticket: "Acción Ticket",
+        name_status_lab: "Estatus Taller",
         date_send_torosal_fromlab: "Fecha Envío a Rosal",
         date_sendkey: "Fecha Envío Llave",
         date_receivekey: "Fecha Recibo Llave",
@@ -35,9 +35,9 @@ function getTicketData() {
 
                 if (response.success) {
                     const TicketData = response.ticket;
-                     const detailsPanel = document.getElementById("ticket-details-panel"); // Referencia al panel de detalles
+                    const detailsPanel = document.getElementById("ticket-details-panel"); // Referencia al panel de detalles
 
-                     // Limpiar el panel de detalles al cargar nuevos datos de la tabla
+                    // Limpiar el panel de detalles al cargar nuevos datos de la tabla
                     detailsPanel.innerHTML =
                         "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
 
@@ -51,6 +51,7 @@ function getTicketData() {
 
                         const allDataKeys = Object.keys(TicketData[0] || {});
                         const columnsConfig = [];
+                        const displayLengthForTruncate = 25; // Define la longitud a la que truncar el texto
 
                         for (const key in columnTitles) {
                             if (allDataKeys.includes(key)) {
@@ -70,29 +71,35 @@ function getTicketData() {
                                     visible: isVisible,
                                 };
 
-                                // Lógica para aplicar estilo al estado del ticket
-                                /*if (key === "name_status_ticket") {
+                                // Lógica para aplicar truncado/expansión a 'razonsocial_cliente'
+                                if (key === "razonsocial_cliente") {
                                     columnDef.render = function (data, type, row) {
-                                        let statusText = String(data || "").trim();
-                                        let statusColor = "gray";
-
-                                        switch (statusText) {
-                                            case "Abierto":
-                                                statusColor = "#4CAF50"; // Verde
-                                                break;
-                                            case "En proceso":
-                                                statusColor = "#2196F3"; // Azul
-                                                break;
-                                            default:
-                                                if (statusText === "") {
-                                                    return "";
-                                                }
-                                                statusColor = "#9E9E9E"; // Gris si no hay match
-                                                break;
+                                        if (type === 'display' || type === 'filter') {
+                                            const fullText = String(data || "").trim();
+                                            if (fullText.length > displayLengthForTruncate) {
+                                                return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(0, displayLengthForTruncate)}...</span>`;
+                                            }
+                                            return fullText;
                                         }
-                                        return `<span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
+                                        return data;
                                     };
-                                }*/
+                                }
+                                // Puedes añadir más 'if' para otras columnas que quieras truncar
+                                /*
+                                else if (key === "otra_columna_larga") {
+                                    columnDef.render = function (data, type, row) {
+                                        if (type === 'display' || type === 'filter') {
+                                            const fullText = String(data || "").trim();
+                                            if (fullText.length > displayLengthForTruncate) {
+                                                return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(0, displayLengthForTruncate)}...</span>`;
+                                            }
+                                            return fullText;
+                                        }
+                                        return data;
+                                    };
+                                }
+                                */
+
                                 columnsConfig.push(columnDef);
                             }
                         }
@@ -109,10 +116,10 @@ function getTicketData() {
                                 const currentStatus = row.name_status_lab;
 
                                 if (currentStatus !== "Reparado" && currentStatus !== "Irreparable") {
-                                    return `<button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-btn" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#changeStatusModal" 
-                                                data-id="${idTicket}" 
+                                    return `<button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-btn"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#changeStatusModal"
+                                                data-id="${idTicket}"
                                                 data-current-status="${currentStatus}">
                                                 Cambiar Estatus
                                             </button>`;
@@ -123,7 +130,6 @@ function getTicketData() {
                         });
 
                         // === ADD "CARGA DE LLAVE" COLUMN ===
-                        // It's a calculated column, so its data source is `null`
                         columnsConfig.push({
                             data: null,
                             title: "Carga de Llave",
@@ -132,11 +138,9 @@ function getTicketData() {
                             visible: true,
                             className: "dt-body-center",
                             render: function (data, type, row) {
-                                // Verifica si el ticket ya tiene una fecha de recepción de llave
                                 const hasReceiveKeyDate = row.date_receivekey !== null && row.date_receivekey !== undefined && String(row.date_receivekey).trim() !== '';
 
                                 if (row.name_status_lab === "Reparado") {
-                                    // Si ya tiene fecha de recepción, lo marca y deshabilita
                                     return `<input type="checkbox" class="receive-key-checkbox" data-id-ticket="${row.id_ticket}" ${hasReceiveKeyDate ? 'checked disabled' : ''}>`;
                                 } else {
                                     return "";
@@ -145,7 +149,7 @@ function getTicketData() {
                         });
 
                         // Initialize DataTables
-                        const dataTableInstance = $(tableElement).DataTable({ // <--- Changed var to const and made it accessible
+                        const dataTableInstance = $(tableElement).DataTable({
                             scrollX: '200px',
                             responsive: false,
                             data: TicketData,
@@ -182,6 +186,37 @@ function getTicketData() {
                             },
                         });
 
+                        // ************* INICIO: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO (Aplicada DESPUÉS de la inicialización de DataTables) *************
+                        $("#tabla-ticket tbody")
+                            .off("click", ".truncated-cell, .expanded-cell") // Usa .off() para evitar múltiples listeners
+                            .on("click", ".truncated-cell, .expanded-cell", function (e) {
+                                e.stopPropagation(); // Evita que el clic en la celda active el clic de la fila completa
+                                const $cellSpan = $(this);
+                                const fullText = $cellSpan.data("full-text"); // Obtiene el texto completo del atributo data-
+
+                                if ($cellSpan.hasClass("truncated-cell")) {
+                                    $cellSpan
+                                        .removeClass("truncated-cell")
+                                        .addClass("expanded-cell");
+                                    $cellSpan.text(fullText);
+                                } else {
+                                    $cellSpan
+                                        .removeClass("expanded-cell")
+                                        .addClass("truncated-cell");
+                                    // Asegúrate de que displayLengthForTruncate sea accesible o defínela aquí de nuevo
+                                    const displayLength = 25; // La misma longitud de truncado usada en el render
+                                    if (fullText.length > displayLength) {
+                                        $cellSpan.text(
+                                            fullText.substring(0, displayLength) + "..."
+                                        );
+                                    } else {
+                                        $cellSpan.text(fullText); // Si el texto es corto, no debería tener "...", solo el texto completo
+                                    }
+                                }
+                            });
+                        // ************* FIN: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO *************
+
+
                         // === ADD THE CLICK EVENT LISTENER FOR TABLE ROWS HERE ===
                         $("#tabla-ticket tbody")
                             .off("click", "tr") // .off() to prevent multiple bindings if called multiple times
@@ -196,8 +231,6 @@ function getTicketData() {
                                 $("#tabla-ticket tbody tr").removeClass("table-active");
                                 tr.addClass("table-active");
 
-                                // The ticketId here needs to match the actual data property (id_ticket)
-                                // since rowData is now an object, not an array by index.
                                 const ticketId = rowData.id_ticket; // <--- IMPORTANT CHANGE HERE
 
                                 const selectedTicketDetails = TicketData.find(
@@ -221,7 +254,7 @@ function getTicketData() {
                                         );
                                         if (imgElement) {
                                             imgElement.src =
-                                                '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png';
+                                                '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png'; // Corrige esta ruta si es JS puro y no PHP
                                             imgElement.alt = "Serial no disponible";
                                         }
                                     }
@@ -284,79 +317,80 @@ function getTicketData() {
     xhr.send();
 }
 
-    function formatTicketDetailsPanel(d) {
-    // d es el objeto `data` completo del ticket
+  function formatTicketDetailsPanel(d) {
+  // d es el objeto `data` completo del ticket
 
-    // La imageUrl inicial puede ser una imagen de "cargando" o un placeholder.
-    const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
-    const initialImageAlt = "Cargando imagen del dispositivo...";
+  const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
+  const initialImageAlt = "Cargando imagen del dispositivo...";
 
-    return `<div class="container-fluid">
-                <div class="row mb-3 align-items-center">
-                    <div class="col-md-3 text-center">
-                        <div id="device-image-container" class="p-2">
-                        <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" class="img-fluid rounded" style="max-width: 120px; height: auto; object-fit: contain;">
-                        </div>
-                    </div>
-                    <div class="col-md-9">
-                        <h4 style = "color: black;">Ticket #${d.id_ticket}</h4>
-                        <hr class="mt-2 mb-3">
-                        <div class="row">
-                            <div class="col-sm-6 mb-2">
-                                <strong><div>Serial POS:</div></strong><br>
-                                ${d.serial_pos}
-                            </div>
-                            <div class="col-sm-6 mb-2">
-                                <strong><div>Estatus POS:</div></strong><br>
-                                ${d.estatus_inteliservices}
-                            </div>
-                            <div class="col-sm-6 mb-2">
-                                <strong><div>Fecha Instalación:</div></strong><br>
-                                ${d.fecha_instalacion}
-                            </div>
-                            <div class="col-sm-6 mb-2">
-                                <strong><div>Creación ticket:</div></strong><br>
-                                ${d.create_ticket}
-                            </div>
-                            <div class="col-sm-6 mb-2">
-                                <strong><div>Usuario Gestión:</div></strong><br>
-                                ${d.full_name_tecnico}
-                            </div>
-                        </div>
+  return `
+        <div class="container-fluid">
+            <div class="row mb-3 align-items-center">
+                <div class="col-md-3 text-center">
+                    <div id="device-image-container" class="p-2">
+                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" class="img-fluid rounded" style="max-width: 120px; height: auto; object-fit: contain;">
                     </div>
                 </div>
-
-                <div class="row mb-3">
-                    <div class="col-12">
-                        <div class="row">
-                            <div class="col-sm-4 mb-2">
-                                <strong><div>Acción:</div></strong><br>
-                                ${d.name_accion_ticket}
-                            </div>
-                            <div class="col-sm-8 mb-2">
-                                <strong><div>Falla:</div></strong><br>
-                                ${d.name_failure}
-                            </div>
-                            <div class="col-sm-8 mb-2">
-                                <strong><div>Estatus Ticket:</div></strong><br>
-                                ${d.name_status_ticket}
-                            </div>
+                <div class="col-md-9">
+                    <h4 style = "color: black;">Ticket #${d.nro_ticket}</h4>
+                    <hr class="mt-2 mb-3">
+                    <div class="row">
+                        <div class="col-sm-6 mb-2">
+                            <strong><div>Serial POS:</div></strong>
+                            ${d.serial_pos}
                         </div>
-                    </div>
-                </div>
-
-                <hr class="mt-2 mb-3">
-
-                <div class="row">
-                    <div class="col-12">
-                        <h5 style = "color: black;">Gestión / Historial:</h5>
-                        <div id="ticket-history-content">
-                            <p>Selecciona un ticket para cargar su historial.</p>
+                        <div class="col-sm-6 mb-2">
+                            <strong><div>Estatus POS:</div></strong>
+                            ${d.estatus_inteliservices}
+                        </div><br>
+                        <div class="col-sm-6 mb-2">
+                             <br><strong><div>Fecha Instalación:</div></strong>
+                            ${d.fecha_instalacion}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                             <br><strong><div>Creación ticket:</div></strong>
+                            ${d.create_ticket}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                             <br><strong><div>Usuario Gestión:</div></strong>
+                            ${d.full_name_tecnico}
                         </div>
                     </div>
                 </div>
             </div>
-        `};
+
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="row">
+                        <div class="col-sm-4 mb-2">
+                            <strong><div>Acción:</div></strong>
+                            <span class = "Accion-ticket">${d.name_accion_ticket}</span>
+                        </div>
+                         <div class="col-sm-8 mb-2" style = "margin-left: -7%;">
+                          <strong><div>Falla Reportada:</div></strong>
+                          <span class="falla-reportada-texto">${d.name_failure}</span>
+                        </div>
+                        <div class="col-sm-8 mb-2">
+                             <br><strong><div>Estatus Ticket:</div></strong>
+                            ${d.name_status_ticket}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="mt-2 mb-3">
+
+            <div class="row">
+                <div class="col-12">
+                    <h5 style = "color: black;" >Gestión / Historial:</h5>
+                    <div id="ticket-history-content">
+                        <p>Selecciona un ticket para cargar su historial.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
 
 
         function downloadImageModal(serial) {
@@ -464,7 +498,6 @@ function loadTicketHistory(ticketId) {
     },
     dataType: "json", // Le decimos a jQuery que esperamos una respuesta JSON
     success: function (response) {
-
       // Verificar si la respuesta es exitosa y contiene historial
       if (response.success && response.history && response.history.length > 0) {
         let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">'; // Contenedor del acordeón
@@ -478,8 +511,8 @@ function loadTicketHistory(ticketId) {
           let statusHeaderText = "";
 
           // **Colores por defecto si no hay coincidencia o si el estado es nulo/vacío**
-          headerStyle = "background-color: #212529;"; // Gris claro de Bootstrap 'light'
-          textColor = "color: #212529;"; // Texto oscuro de Bootstrap 'dark'
+          let headerStyle = "background-color: #212529;"; // Gris claro de Bootstrap 'light'
+          let textColor = "color: #212529;"; // Texto oscuro de Bootstrap 'dark'
           statusHeaderText = ""; // Sin texto extra por defecto
 
           if (item.name_status_ticket) {
@@ -516,18 +549,37 @@ function loadTicketHistory(ticketId) {
             }
           }
 
+          // Esta lógica ANULA cualquier color establecido por el estado si la condición se cumple.
+          if (index === 0) {
+            // Es la última gestión (la "actual")
+            headerStyle = "background-color: #ffc107;"; // Amarillo
+            textColor = "color: #343a40;"; // Texto oscuro
+            statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`; // Agrega el estatus actual o 'Desconocido' si no existe. // Sobrescribe el texto del estado si ya estaba.
+          } else {
+            // Son gestiones pasadas
+            headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
+            textColor = "color: #ffffff;"; // Texto blanco
+            // No sobrescribimos statusHeaderText aquí a menos que quieras algo como "(Pasada)"
+          }
+
           historyHtml += `
-                       <div class="card mb-3 custom-history-card"> <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
+                        <div class="card mb-3 custom-history-card"> <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
                                             data-toggle="collapse" data-target="#${collapseId}"
-                                            aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="${collapseId}"
+                                            aria-expanded="${
+                                              index === 0 ? "true" : "false"
+                                            }" aria-controls="${collapseId}"
                                             style="${textColor}">
-                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
+                                        ${item.fecha_de_cambio} - ${
+            item.name_accion_ticket
+          }${statusHeaderText}
                                     </button>
                                 </h2>
                             </div>
-                            <div id="${collapseId}" class="collapse ${index === 0 ? 'show' : ''}"
+                            <div id="${collapseId}" class="collapse ${
+            index === 0 ? "show" : ""
+          }"
                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
@@ -535,35 +587,59 @@ function loadTicketHistory(ticketId) {
                                             <tbody>
                                                 <tr>
                                                     <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
-                                                    <td>${item.fecha_de_cambio || 'N/A'}</td>
+                                                    <td>${
+                                                      item.fecha_de_cambio ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Acción:</th>
-                                                    <td>${item.name_accion_ticket || 'N/A'}</td>
+                                                    <td>${
+                                                      item.name_accion_ticket ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Operador de Gestión:</th>
-                                                    <td>${item.full_name_tecnico_gestion || 'N/A'}</td>
+                                                    <td>${
+                                                      item.full_name_tecnico_gestion ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Coordinador:</th>
-                                                    <td>${item.full_name_coordinador || 'N/A'}</td>
+                                                    <td>${
+                                                      item.full_name_coordinador ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Ticket:</th>
-                                                    <td>${item.name_status_ticket || 'N/A'}</td>
+                                                    <td>${
+                                                      item.name_status_ticket ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Laboratorio:</th>
-                                                    <td>${item.name_status_lab || 'N/A'}</td>
+                                                    <td>${
+                                                      item.name_status_lab ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
-                                                    <td>${item.name_status_domiciliacion || 'N/A'}</td>
+                                                    <td>${
+                                                      item.name_status_domiciliacion ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
-                                                 <tr>
-                                                    <th class="text-start">Estatus Pago:</th>
-                                                    <td>${item.name_status_payment || 'N/A'}</td>
+                                                <tr>
+                                                    <th class="text-start" style = " word-wrap: break-word; overflow-wrap: break-word;"">Estatus Pago:</th>
+                                                    <td>${
+                                                      item.name_status_payment ||
+                                                      "N/A"
+                                                    }</td>
                                                 </tr>
                                             </tbody>
                                         </table>

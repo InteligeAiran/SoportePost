@@ -756,7 +756,7 @@ class consulta_rifModel extends Model
                 $id_accion_ticket = 7;
                 $id_user = $_SESSION['id_user'];
                 $id_status_ticket = 2; // Asignar un valor predeterminado o dinámico según tu lógica
-                $id_status_lab = 1; // Asignar un valor predeterminado o dinámico según tu lógica
+                $id_status_lab = 6; // Asignar un valor predeterminado o dinámico según tu lógica
 
                 // Llamar a insertintouser_ticket AQUI
                 $sqlInsertHistory = sprintf(
