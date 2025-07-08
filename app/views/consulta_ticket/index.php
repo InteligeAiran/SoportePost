@@ -256,12 +256,12 @@ function mi_navbar() {}
 
                             <div id="inputsDate" class="date-input-container">
                                     <div class="date-input-wrapper">
-                                        <input type="date" id="date-ini" style="display: block;" max="<?php  echo date("Y-m-d");?>">
+                                        <input type="date" id="date-ini" max="<?php  echo date("Y-m-d");?>">
                                         <div id="errorDateIni" class="error-message"></div>
                                     </div>
 
                                     <div class="date-input-wrapper">
-                                        <input type="date" id="date-end" style="display: block;" max="<?php  echo date("Y-m-d");?>">
+                                        <input type="date" id="date-end"  max="<?php  echo date("Y-m-d");?>">
                                         <div id="errorDateEnd" class="error-message"></div>
                                     </div>
 
