@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+/*document.addEventListener("DOMContentLoaded", function () {
   const flatpickrInputs = document.querySelectorAll(".flatpickr-input");
 
   flatpickrInputs.forEach((input) => {
@@ -33,14 +33,15 @@ document.addEventListener("DOMContentLoaded", function () {
       return true; // O false, dependiendo si el campo puede estar vacío
     }
 
-    // Expresión regular para validar el formato DD/MM/YYYY
-    const datePattern = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+        // Expresión regular para validar el formato DD/MM/YYYY
+        const datePattern = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+        
 
-    if (!datePattern.test(dateString)) {
-      errorMessageElement.textContent = "Formato DD/MM/AAAA inválido.";
-      inputElement.classList.add("border-red-500");
-      return false;
-    }
+        if (!datePattern.test(dateString)) {
+          errorMessageElement.textContent = "Formato DD/MM/AAAA inválido.";
+          inputElement.classList.add("border-red-500");
+          return false;
+        }
 
     const parts = dateString.split("/");
     const inputDay = parseInt(parts[0], 10); // Día
@@ -101,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("date-end").addEventListener("input", function () {
     document.getElementById("errorDateEnd").textContent = ""; // Corregido: 'errorFechaFin' -> 'errorDateEnd'
     this.classList.remove("border-red-500");
-  });
+  });*/
 
   const buscarPorRifBtn = document.getElementById("buscarPorRifBtn");
   const rifInput = document.getElementById("rifInput");
@@ -307,7 +308,7 @@ document.addEventListener("DOMContentLoaded", function () {
   } else {
     console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
   }
-});
+/*});*/
 
 function getRegionUsuarios() {
   const xhr = new XMLHttpRequest();
@@ -1300,5 +1301,6 @@ function SendRango() {
   const datos = `action=SearchRangeDate&initial=${encodeURIComponent(
     initialDate
   )}&second=${encodeURIComponent(endDate)}`;
+  console
   xhr.send(datos);
 }
