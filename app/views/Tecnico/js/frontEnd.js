@@ -303,7 +303,7 @@ function getTicketData() {
             { title: "Acciones", orderable: false },
           ],
           language: {
-            lengthMenu: "Mostrar _MENU_ Registros",
+            lengthMenu: "Mostrar _MENU_",
             emptyTable: "No hay datos disponibles en la tabla",
             zeroRecords: "No se encontraron resultados para la búsqueda",
             info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",

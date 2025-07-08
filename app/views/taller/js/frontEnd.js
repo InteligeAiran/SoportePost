@@ -161,7 +161,7 @@ function getTicketData() {
                                 },
                             ],
                             language: {
-                                lengthMenu: "Mostrar _MENU_ registros",
+                                lengthMenu: "Mostrar _MENU_",
                                 emptyTable: "No hay datos disponibles en la tabla",
                                 zeroRecords: "No se encontraron resultados para la búsqueda",
                                 info: "Mostrando página _PAGE_ de _PAGES_ ( _TOTAL_ registro(s) )",

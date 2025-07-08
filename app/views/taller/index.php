@@ -23,7 +23,7 @@
     <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
     <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tenico.css" />
 
 
         <style>
@@ -57,7 +57,11 @@
                 /* Ejemplo: Color del texto */
                 margin-right: 0.5em;
                 /* Ejemplo: Espacio a la derecha del label */
-                margin-left: -100%;
+               /* margin-left: -100%;*/
+            }
+
+            .input-sm{
+                width: 67%;
             }
 
             /* Estilizar el input de búsqueda */
