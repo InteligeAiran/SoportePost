@@ -1,3 +1,48 @@
+let currentTicketIdForConfirmTaller = null; 
+let currentNroTicketForConfirmTaller = null; // <--- NUEVA VARIABLE PARA EL NÚMERO DE TICKET
+let confirmInTallerModalInstance = null;
+
+
+$(document).ready(function() {
+    // 1. Obtener el elemento del modal por su ID
+    const confirmInTallerModalElement = document.getElementById('confirmInTallerModal');
+    const CerramodalBtn = document.getElementById('CerrarButtonTallerRecib');
+
+    // 2. Instanciar el modal de Bootstrap una sola vez
+    if (confirmInTallerModalElement) {
+        confirmInTallerModalInstance = new bootstrap.Modal(confirmInTallerModalElement, {
+            backdrop: "static" // Para que no se cierre al hacer clic fuera
+        });
+    }
+
+    if (CerramodalBtn && confirmInTallerModalInstance) {
+        CerramodalBtn.addEventListener("click", function() {
+            if (confirmInTallerModalInstance) {
+                confirmInTallerModalInstance.hide();
+            }
+        });
+    }
+
+    // Evento para manejar el clic en el botón "Confirmar" dentro del modal
+    $("#confirmTallerBtn").on("click", function() {
+        const ticketIdToConfirm = currentTicketIdForConfirmTaller; 
+        // const nroTicketToConfirm = currentNroTicketForConfirmTaller; // Si necesitas el nro_ticket aquí
+
+        if (ticketIdToConfirm) {
+            updateTicketStatusInTaller(ticketIdToConfirm); 
+            // Cierra el modal usando la instancia
+            if (confirmInTallerModalInstance) {
+                confirmInTallerModalInstance.hide(); 
+            }
+        } else {
+            console.error("ID de ticket no encontrado para confirmar en taller.");
+        }
+    });
+
+    // Llama a getTicketData() para cargar la tabla inicialmente
+    getTicketData(); 
+});
+
 function getTicketData() {
     const xhr = new XMLHttpRequest();
     xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketDataLab`);
@@ -110,22 +155,39 @@ function getTicketData() {
                             title: "Acciones",
                             orderable: false,
                             searchable: false,
-                            width: "8%",
+                            width: "12%", // Aumentamos el ancho para que quepan ambos botones
                             render: function (data, type, row) {
                                 const idTicket = row.id_ticket;
                                 const currentStatus = row.name_status_lab;
+                                const nroTicket = row.nro_ticket; // <--- OBTENEMOS EL NÚMERO DE TICKET AQUÍ
+                                let buttonsHtml = '';
+
+                                if (currentStatus === "Recibido en Taller") {
+                                    buttonsHtml += `
+                                        <button type="button" id = "CheckConfirmTaller"  class="btn btn-warning btn-sm confirm-waiting-btn"
+                                            title="En espera de confirmar en el taller"  data-id-ticket="${idTicket}"
+                                              data-nro-ticket="${nroTicket}">
+                                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-all" viewBox="0 0 16 16">
+                                                <path d="M8.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L2.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093L8.95 4.992zm-.92 5.14.92.92a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 1 0-1.091-1.028L9.477 9.417l-.485-.486z"/>
+                                            </svg>
+                                        </button>
+                                    `;
+                                }
 
                                 if (currentStatus !== "Reparado" && currentStatus !== "Irreparable") {
-                                    return `<button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-btn"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#changeStatusModal"
-                                                data-id="${idTicket}"
-                                                data-current-status="${currentStatus}">
-                                                Cambiar Estatus
-                                            </button>`;
+                                    buttonsHtml += `
+                                        <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-btn ms-2"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#changeStatusModal"
+                                            data-id="${idTicket}"
+                                            data-current-status="${currentStatus}">
+                                            Cambiar Estatus
+                                        </button>
+                                    `;
                                 } else {
-                                    return `<button class="btn btn-secondary btn-sm" disabled>Cerrado</button>`;
+                                    buttonsHtml += `<button class="btn btn-secondary btn-sm" disabled>Cerrado</button>`;
                                 }
+                                return buttonsHtml;
                             },
                         });
 
@@ -265,6 +327,31 @@ function getTicketData() {
                             });
                         // === END CLICK EVENT LISTENER ===
 
+                        $("#tabla-ticket tbody")
+                        .off("click", ".confirm-waiting-btn") 
+                        .on("click", ".confirm-waiting-btn", function (e) {
+                            e.stopPropagation(); 
+                            const ticketId = $(this).data("id-ticket");
+                            const nroTicket = $(this).data("nro-ticket"); 
+
+                            // Almacenar en las variables globales
+                            currentTicketIdForConfirmTaller = ticketId; 
+                            currentNroTicketForConfirmTaller = nroTicket;
+
+                            // Opcional: poner el ID y Nro de ticket en los inputs hidden del modal como respaldo
+                            $('#modalTicketIdConfirmTaller').val(ticketId); 
+                            $('#modalHiddenNroTicketConfirmTaller').val(nroTicket); 
+
+                            // Actualiza el texto del modal con el número de ticket
+                            $('#modalTicketIdConfirmTaller').text(nroTicket); 
+
+                            // ¡CAMBIO CLAVE AQUÍ! Usa la instancia del modal para mostrarlo
+                            if (confirmInTallerModalInstance) {
+                                confirmInTallerModalInstance.show(); 
+                            } else {
+                                console.error("La instancia del modal 'confirmInTallerModal' no está disponible.");
+                            }
+                        });
 
                         if (tableContainer) {
                             tableContainer.style.display = ""; // Show the table container
@@ -315,6 +402,42 @@ function getTicketData() {
     };
 
     xhr.send();
+}
+
+function updateTicketStatusInTaller(ticketId) {
+    console.log("Actualizando el estado del ticket a 'En Taller'...");
+    const dataToSend = {
+        id_ticket: ticketId,
+        new_status: "En Taller", // El nuevo estado que quieres asignar
+        // Otros datos que necesites enviar al backend (ej. id_usuario_actual)
+    };
+
+    // Usando jQuery.ajax (ya que estás usando jQuery en tu código)
+    $.ajax({
+        url: `${ENDPOINT_BASE}${APP_PATH}api/ticket/UpdateStatusToInTaller`, // ¡AJUSTA ESTA URL A TU ENDPOINT REAL!
+        type: 'POST', // O 'PUT', dependiendo de cómo esté configurada tu API
+        contentType: 'application/json',
+        data: JSON.stringify(dataToSend),
+        success: function(response) {
+            if (response.success) {
+                console.log("Ticket actualizado a 'En Taller' correctamente.");
+                // Opcional: Mostrar una alerta de éxito (ej. con SweetAlert o Bootstrap toast)
+                // swal("¡Éxito!", "El ticket ha sido marcado como 'En Taller'.", "success");
+
+                // Recargar la tabla para reflejar el cambio en la interfaz
+                getTicketData();
+            } else {
+                console.error("Error al actualizar el ticket:", response.message);
+                // Opcional: Mostrar una alerta de error
+                // swal("Error", response.message || "Ocurrió un error al actualizar el ticket.", "error");
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("Error en la petición AJAX:", textStatus, errorThrown);
+            // Opcional: Mostrar una alerta de error de conexión
+            // swal("Error de Conexión", "No se pudo comunicar con el servidor. Inténtalo de nuevo.", "error");
+        }
+    });
 }
 
   function formatTicketDetailsPanel(d) {

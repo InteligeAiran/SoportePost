@@ -24,8 +24,6 @@
     <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tenico.css" />
-
-
         <style>
             div.dataTables_wrapper div.dataTables_length label {
                 font-weight: bold;
@@ -111,7 +109,7 @@
             }
 
             #BtnChange:hover {
-                background-color: green;
+                background-color: #002869; /* A visually darker blue */
             }
 
             #saveStatusChangeBtn {
@@ -222,7 +220,7 @@
             border-color: white; /* Borde un poco más visible al hacer hover */
         }
 
-         .falla-reportada-texto {
+        .falla-reportada-texto {
             color: #DC3545; /* Rojo de Bootstrap 'danger' */
             /* O un color naranja: */
             /* color: #FD7E14; */ /* Naranja de Bootstrap 'warning' */
@@ -230,6 +228,66 @@
             /* color: #C0392B; */ /* Un rojo ladrillo */
             /* color: #E67E22; */ /* Un naranja más suave */
             font-weight: bold; /* Opcional: para que resalte más */
+        }
+
+        #CheckConfirmTaller{
+            background-color: green;
+            color: white;
+        }
+
+        #CheckConfirmTaller:hover {
+            background-color: darkgreen; /* Un verde más oscuro al pasar el ratón */
+            /* Si también quieres que el texto cambie de color, podrías añadir: */
+            /* color: lightgray; */
+        }
+
+        #confirmInTallerModal{
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+        }
+
+        #CerrarButtonTallerRecib{
+            background-color: #b0b0b0;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #CerrarButtonTallerRecib:hover{
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #confirmTallerBtn{
+            background-color: #0045b4;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #confirmTallerBtn:hover{
+            background-color: #002884;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
         }
         </style>
     </head>
@@ -312,6 +370,65 @@
                     </div>
                 </div>
             </div>
+
+            <div class="modal fade" id="confirmInTallerModal" tabindex="-1" aria-labelledby="confirmInTallerModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content custom-modal-content">
+                            <div class="modal-header bg-gradient-primary text-white">
+                                <h5 class="modal-title " id="confirmInTallerModalLabel">Confirmación de recibido</h5>
+                            </div>
+                        <div class="modal-body custom-modal-body text-center">
+                            <div class="swal2-icon-wrapper mb-3"> 
+                                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#ffc107" class="swal2-icon-custom-svg" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.5a.5.5 0 0 1-1.002.04l-.35-3.5C7.046 5.462 7.465 5 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/></svg>
+                            </div>
+                            <p>¿Marcar el ticket <span id="modalTicketIdConfirmTaller"></span> como recibido?</p>
+                            <p class="small-text">Esta acción registrará la fecha de recepción y habilitará los Estatus Corresopndiente al Taller.</p>
+                        </div>
+                        <div class="modal-footer custom-modal-footer d-flex justify-content-center">
+                            <button type="button" class="btn custom-btn-primary" id="confirmTallerBtn">Sí, Recibir Ticket</button>
+                            <button type="button" class="btn custom-btn-secondary" id="CerrarButtonTallerRecib" data-bs-dismiss="modal">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="confirmInTallerModal" tabindex="-1" aria-labelledby="confirmInTallerModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="confirmInTallerModalLabel">Confirmar Estado del Ticket</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            ¿Seguro que este ticket está en taller?
+                            <input type="hidden" id="modalTicketIdConfirmTaller">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary" id="confirmTallerBtn">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="confirmInTallerModal" tabindex="-1" aria-labelledby="confirmInTallerModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="confirmInTallerModalLabel">Confirmar Estado del Ticket</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            ¿Seguro que este ticket está en taller?
+                            <input type="hidden" id="modalTicketIdConfirmTaller">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary" id="confirmTallerBtn">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!--END MODAL PARA SELECCIONAR EL STATUS DEL TALLER DEL TICKET-->
             <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 
