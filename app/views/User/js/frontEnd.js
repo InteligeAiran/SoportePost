@@ -265,6 +265,7 @@ function getUserData() {
           }
           $("#tabla-ticket").DataTable({
             scrollX: "200px",
+            scrollY: "200px",
             responsive: true,
             pagingType: "simple_numbers",
             lengthMenu: [5],
