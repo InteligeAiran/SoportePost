@@ -552,5 +552,30 @@ class TechnicalConsultionRepository
         $result = $this->model->UpdateTicketAction($ticketId, $id_user, $comment);
         return $result;
     }
+
+    public function UpdateStatusToReceiveInTaller($ticketId, $id_user){
+        $result = $this->model->UpdateStatusToReceiveInTaller($ticketId, $id_user);
+        return $result;
+    }
+
+    public function UpdateRepuestoDate($id_ticket, $repuestoDate){
+        $result = $this->model->UpdateRepuestoDate($id_ticket, $repuestoDate);
+        return $result;
+    }
+
+    public function GetOverdueRepuestoTickets(){
+        $result = $this->model->GetOverdueRepuestoTickets();
+
+        if($result){
+            $tickets = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $ticket = pg_fetch_assoc($result['query'], $i);
+                $tickets[] = $ticket;
+            }
+            return $tickets;
+        }else{
+            return null;
+        }
+    }
 }
 ?>

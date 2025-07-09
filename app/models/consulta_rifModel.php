@@ -1225,5 +1225,87 @@ class consulta_rifModel extends Model
             return false; // Return false on error
         }
     }
+
+    public function UpdateStatusToReceiveInTaller($ticketId, $id_user){
+        try {
+                $id_status_lab = 1;
+                $id_accion_ticket = 7;
+
+                $sql = "UPDATE tickets_status_lab SET id_status_lab = ".(int)$id_status_lab.", confirmreceive = TRUE WHERE id_ticket = ".$ticketId.";";
+                $result = Model::getResult($sql, $this->db);
+                if ($result) {
+
+                $id_new_status_payment = 'NULL'; 
+                $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . $ticketId . ";";
+                $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
+                if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
+                    $status_payment_data = pg_fetch_assoc($status_payment_status_result, 0);
+                    $id_new_status_payment = $status_payment_data['id_status_payment'] !== null ? (int)$status_payment_data['id_status_payment'] : 'NULL';
+                }
+
+                $new_status_domiciliacion = 'NULL'; 
+                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . $ticketId . ";";
+                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                    $domiciliacion_data = pg_fetch_assoc($status_domiciliacion_result, 0);
+                    $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
+                }
+
+                    $sqlInsertHistory = sprintf(
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                    (int)$ticketId, // Se asume que $id_ticket ya es un entero válido o se castea
+                    (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
+                    (int)2, // Usamos la acción específica para el historial
+                    (int)$id_accion_ticket, // Usamos la acción específica para el historial
+                    $id_status_lab,
+                    $id_new_status_payment,
+                    $new_status_domiciliacion
+                );
+                $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
+
+                return array('save_result' => $result, 'history_result' => $sqlInsertHistory);
+            }
+            } catch (Throwable $e) {
+                // Log the error (e.g., error_log($e->getMessage());)
+                return false; // Return false on error
+            }
+    }
+
+    public function UpdateRepuestoDate($ticketId, $repuesto_date){
+        try {
+                $sql = "UPDATE tickets_status_lab SET repuesto_date = '".$repuesto_date."' WHERE id_ticket = ".$ticketId.";";
+                $result = Model::getResult($sql, $this->db);
+                return $result;
+        } catch (Throwable $e) {
+            // Log the error (e.g., error_log($e->getMessage());)
+            return false; // Return false on error
+        }
+    }
+
+    public function GetOverdueRepuestoTickets(){
+        try {
+            $sql = "SELECT
+    tsl.id_ticket AS id_ticket,
+    t.nro_ticket, -- Asegúrate que el nombre de la columna en tu tabla 'tickets' sea 'nro_ticket'
+    tsl.repuesto_date,
+    tsl.id_status_lab,
+    sl.name_status_lab AS current_status_lab_name
+FROM
+    tickets_status_lab tsl
+JOIN
+    tickets t ON tsl.id_ticket = t.id_ticket
+JOIN
+    status_lab sl ON tsl.id_status_lab = sl.id_status_lab
+WHERE
+    tsl.repuesto_date < CURRENT_DATE - INTERVAL '14 days' -- ¡CORRECCIÓN AQUÍ!
+    AND tsl.confirmreceive = TRUE
+    AND tsl.id_status_lab = 5;";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Log the error (e.g., error_log($e->getMessage());)
+            return null; // Return null on error
+        }
+    }
 }
 ?>

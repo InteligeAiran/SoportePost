@@ -178,6 +178,18 @@ class Consulta extends Controller
                     $this->handleTicketAction();
                     break;
 
+                case 'UpdateStatusToReceiveInTaller':
+                    $this->handleUpdateStatusToReceiveInTaller();
+                    break;
+                
+                case 'updateRepuestoDate':
+                    $this->handleupdateRepuestoDate();
+                    break;
+
+                case 'getOverdueRepuestoTickets':
+                    $this->handleGetOverdueRepuestoTickets();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -1108,7 +1120,51 @@ class Consulta extends Controller
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }
-    } 
+    }
 
+    public function handleUpdateStatusToReceiveInTaller(){
+        $ticketId = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+
+        if (!$ticketId ||!$id_user) {
+            $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+        $repository = new technicalConsultionRepository();
+        $result = $repository->UpdateStatusToReceiveInTaller($ticketId, $id_user);
+        if ($result) {
+            $this->response(['success' => true,'message' => 'El ticket ha sido movido a la cola de tickets para recepción en taller exitosamente.'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar el cambio de estado.'], 500);
+        }
+    }
+
+    public function handleupdateRepuestoDate(){
+        $ticketId = isset($_POST['ticket_id'])? $_POST['ticket_id'] : '';
+        $repuesto_date = isset($_POST['repuesto_date'])? $_POST['repuesto_date'] : '';
+        if (!$ticketId || !$repuesto_date) {
+            $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+        $repository = new technicalConsultionRepository();
+        $result = $repository->UpdateRepuestoDate($ticketId, $repuesto_date);
+        if ($result) {
+            $this->response(['success' => true,'message' => 'El ticket ha sido actualizado exitosamente.'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleGetOverdueRepuestoTickets(){
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetOverdueRepuestoTickets();
+        if ($result!== false &&!empty($result)) {
+            $this->response(['success' => true, 'tickets' => $result], 200);
+        } elseif ($result!== false && empty($result)) {
+            $this->response(['success' => false, 'message' => 'No hay tickets vencidos'], 404);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al obtener los tickets vencidos.'], 500);
+        }
+    }
 }
 ?>
