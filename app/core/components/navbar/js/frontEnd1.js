@@ -61,7 +61,11 @@ function getIconSvgForName(name) {
       iconSvg =
         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-coin  me-2" viewBox="0 0 16 16"><path d="M5.5 9.511c.076.954.83 1.697 2.182 1.785V12h.6v-.709c1.4-.098 2.218-.846 2.218-1.932 0-.987-.626-1.496-1.745-1.76l-.473-.112V5.57c.6.068.982.396 1.074.85h1.052c-.076-.919-.864-1.638-2.126-1.716V4h-.6v.719c-1.195.117-2.01.836-2.01 1.853 0 .9.606 1.472 1.613 1.707l.397.098v2.034c-.615-.093-1.022-.43-1.114-.9zm2.177-2.166c-.59-.137-.91-.416-.91-.836 0-.47.345-.822.915-.925v1.76h-.005zm.692 1.193c.717.166 1.048.435 1.048.91 0 .542-.412.914-1.135.982V8.518z"/><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="M8 13.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11m0 .5A6 6 0 1 0 8 2a6 6 0 0 0 0 12"/></svg>';
       break;
-    case "Cerrar Sesión":
+    case "Centro de Solicitudes":
+      iconSvg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-briefcase-fill" viewBox="0 0 16 16"><path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v1.384l7.614 2.03a1.5 1.5 0 0 0 .772 0L16 5.884V4.5A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5"/><path d="M0 12.5A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5V6.85L8.129 8.947a.5.5 0 0 1-.258 0L0 6.85z"/></svg>'
+      break;
+      case "Cerrar Sesión":
       iconSvg =
         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z"/><path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z"/></svg>';
       break;
@@ -313,83 +317,7 @@ function buildDropdownMenu(items, parentAnchorId, itemType) {
  * @param {string} moduleId El ID del módulo principal cuyos submódulos se cargarán.
  * @param {HTMLUListElement} targetUlElement El elemento <ul> donde se insertarán los submódulos.
  */
-// function loadSubmodulesForModule(moduleId, targetUlElement) {
-//     // Verifica si los submódulos ya fueron cargados para evitar peticiones redundantes
-//     if (targetUlElement.dataset.submodulesLoaded === 'true') {
-//         console.log(`Submódulos para el módulo ${moduleId} ya cargados.`);
-//         return;
-//     }
 
-//     targetUlElement.innerHTML = '<div class="p-2 text-white-50">Cargando submódulos...</div>';
-
-//     const xhr = new XMLHttpRequest();
-//     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/getSubmodulesForModule`);
-//     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-//     xhr.onload = function () {
-//         if (xhr.status === 200) {
-//             try {
-//                 const response = JSON.parse(xhr.responseText);
-
-//                 // AQUÍ ESTÁ EL CAMBIO CLAVE: Usa 'response.submodules' en lugar de 'response.sub_modules'
-//                 if (response.success && Array.isArray(response.submodules)) { // <-- CAMBIO AQUÍ
-//                     targetUlElement.innerHTML = ''; // Limpia el mensaje de carga
-//                     if (response.submodules.length === 0) { // <-- Y AQUÍ
-//                         targetUlElement.innerHTML = '<div class="p-2 text-white-50">No hay submódulos disponibles.</div>';
-//                     } else {
-//                         // Construye los submódulos y sus posibles sub-submódulos
-//                         response.submodules.forEach(sub_module => { // <-- Y AQUÍ
-//                             const li = buildMenuItem(sub_module, 'submodule');
-//                             targetUlElement.appendChild(li);
-
-//                             // Si este submódulo tiene sub-submódulos, inicializa su dropdown
-//                             if (sub_module.subsub_modules && sub_module.subsub_modules.length > 0) {
-//                                 const subSubUl = buildDropdownMenu(sub_module.subsub_modules, li.querySelector('a').id, 'subsubmodule');
-//                                 li.appendChild(subSubUl);
-//                                 // Inicializar el dropdown para este submódulo con sub-submódulos
-//                                 setupCustomDropdown(li.querySelector('a'), subSubUl);
-//                             }
-//                         });
-//                     }
-//                     targetUlElement.dataset.submodulesLoaded = 'true'; // Marca como cargado
-//                     console.log(`Submódulos para el módulo ${moduleId} cargados exitosamente.`);
-
-//                 } else {
-//                     console.error("Formato de respuesta inválido para submódulos: Se esperaba 'success: true' y un array 'submodules'.", response); // Actualiza el mensaje de error para reflejar el nombre correcto
-//                     targetUlElement.innerHTML = '<div class="p-2 text-danger">Error al cargar submódulos.</div>';
-//                     if (typeof Swal !== "undefined") {
-//                         Swal.fire({ title: "Error", text: "Formato de respuesta de submódulos inesperado.", icon: "error", confirmButtonText: "OK", color: "black" });
-//                     }
-//                 }
-//             } catch (error) {
-//                 console.error("Error al analizar la respuesta JSON de submódulos:", error);
-//                 targetUlElement.innerHTML = '<div class="p-2 text-danger">Error al procesar datos.</div>';
-//                 if (typeof Swal !== "undefined") {
-//                     Swal.fire({ title: "Error", text: "Ocurrió un error al procesar los submódulos del servidor.", icon: "error", confirmButtonText: "OK", color: "black" });
-//                 }
-//             }
-//         } else {
-//             console.error(
-//                 `Error al obtener submódulos para el módulo ${moduleId}: ${xhr.status} ${xhr.statusText}`
-//             );
-//             targetUlElement.innerHTML = `<div class="p-2 text-danger">Error ${xhr.status} al cargar.</div>`;
-//             if (typeof Swal !== "undefined") {
-//                 Swal.fire({ title: "Error", text: `Error de conexión con el servidor al cargar submódulos: ${xhr.status}`, icon: "error", confirmButtonText: "OK", color: "black" });
-//             }
-//         }
-//     };
-
-//     xhr.onerror = function () {
-//         console.error("Network Error al cargar los submódulos.");
-//         targetUlElement.innerHTML = '<div class="p-2 text-danger">Error de red.</div>';
-//         if (typeof Swal !== "undefined") {
-//             Swal.fire({ title: "Error de red", text: "No se pudo conectar al servidor para cargar los submódulos.", icon: "error", confirmButtonText: "OK", color: "black" });
-//         }
-//     };
-
-//     const datos = `action=getSubmodulesForModule&id_module=${encodeURIComponent(moduleId)}`;
-//     xhr.send(datos);
-// }
 function loadSubmodulesForModule(moduleId, targetUlElement) {
   // Verifica si los submódulos ya fueron cargados para evitar peticiones redundantes
   if (targetUlElement.dataset.submodulesLoaded === "true") {
@@ -622,7 +550,7 @@ function loadFullNavbar(options = {}) {
           logoutText.className = "nav-link-text ms-3";
           logoutText.textContent = "Cerrar Sesión";
           logoutText.style.color = "white";
-          logoutText.style.margin = "0";
+          logoutText.style.margin = "11%";
           logoutText.style.paddingLeft = ".5rem";
 
           logoutAnchor.innerHTML = logoutIcon;

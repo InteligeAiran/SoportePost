@@ -26,11 +26,6 @@ function mi_navbar() {}
         <link id="pagestyle" rel="stylesheet"
             href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
-        <style>
-
-
-
-        </style>
     </head>
 
     <body class="g-sidenav-show bg-gray-100">
@@ -104,7 +99,6 @@ function mi_navbar() {}
                             </div>
                         </div>
                     </div>
-
 
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">

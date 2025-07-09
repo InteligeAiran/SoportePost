@@ -41,6 +41,8 @@
             color: #f8f9fa; /* Color de texto claro para los ítems del menú */
             padding: 0.75rem 1.5rem; /* Ajusta el padding para alinear con otros elementos del nav */
             transition: background-color 0.2s ease, color 0.2s ease;
+              padding-top: 5px; /* Reduce el padding superior del enlace */
+
         }
 
         #sidenav-main .dropdown-menu .dropdown-item:hover,
@@ -61,7 +63,7 @@
 
         /* Reduce el margen superior para los elementos del menú principal */
         .sidenav .nav-item {
-            margin-top: 1.5rem !important; /* Originalmente podría ser 1rem o más con mt-3, ajusta a tu gusto */
+            margin-top: -1.5rem !important; /* Originalmente podría ser 1rem o más con mt-3, ajusta a tu gusto */
             margin-bottom: 1.5rem !important; /* Añade un pequeño margen inferior si lo deseas */
         }
 
@@ -99,6 +101,10 @@
         .dropdown-item.dropdown-toggle[aria-expanded="false"] .dropdown-arrow {
             transform: rotate(0deg); /* Vuelve a la posición original (apuntando a la derecha) */
         }
+
+        .ms-3{
+            font-size: 18px;
+        }
     </style>
 </head>
 <body class="g-sidenav-show bg-gray-100">
@@ -112,7 +118,7 @@
                 <span style="color:#fff;" class="ms-1 font-weight-bold"><?php echo $_SESSION['nombres']?> <?php echo $_SESSION['apellidos']?></span><br>
                 <span style="color:#fff;" class="ms-5 font-weight-bold"><?php echo $_SESSION['name_rol']?><br>
             </a>
-        </div>
+        </div><br>
         <hr class="horizontal dark mt-0">
         <div class="collapse navbar-collapse w-auto " id="sidenav-collapse-main">
             <ul class="navbar-nav" id="main-navbar-nav">

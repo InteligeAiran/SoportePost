@@ -103,7 +103,7 @@
     document.getElementById("errorDateEnd").textContent = ""; // Corregido: 'errorFechaFin' -> 'errorDateEnd'
     this.classList.remove("border-red-500");
   });*/
-
+document.addEventListener("DOMContentLoaded", function () {
   const buscarPorRifBtn = document.getElementById("buscarPorRifBtn");
   const rifInput = document.getElementById("rifInput");
   const buscarRif = document.getElementById("buscarRif");
@@ -134,6 +134,8 @@
   const SelectRgions = document.getElementById("SelectRgions");
   const regionCountTableCard = document.querySelector(".card");
 
+  const inputsDate = document.getElementById("inputsDate");
+
   if (buscarPorRegionsBtn && regionCountTableCard) {
     buscarPorRegionsBtn.addEventListener("click", function () {
       regionCountTableCard.style.display = "block"; // Muestra la tabla
@@ -154,6 +156,7 @@
       buscarRazon.style.display = "none"; // Oculta el botón
       messageErrorDate.style.display = "none"; // Oculta el mensaje de error
       messageErrorDateIni.style.display = "none"; // Oculta el mensaje de error
+      inputsDate.style.display = "none"; // Oculta los inputs de fecha
 
       if (regionCountTableCard) {
         razonCountTableCard.innerHTML = ""; // Limpia el contenido del contenedor de resultados de la razón social
@@ -182,6 +185,7 @@
 
       razonInput.style.display = "none"; // Muestra el input
       buscarRazon.style.display = "none"; // Oculta el botón
+      inputsDate.style.display = "block"; // Oculta los inputs de fecha
 
       selectInputRif.style.display = "none"; // Muestra el select
       buscarRif.style.display = "none"; // Oculta el botón
@@ -201,10 +205,12 @@
       razonCountTableCard.style.display = "block"; // Muestra la tabla
       razonInput.style.display = "block"; // Muestra el input
       buscarRazon.style.display = "block"; // Oculta el botón
+      
 
       selectInputRif.style.display = "none"; // Muestra el select
       buscarRif.style.display = "none"; // Oculta el botón
       rifInput.style.display = "none"; // Muestra el input*/
+      inputsDate.style.display = "block"; // Oculta los inputs de fecha
 
       serialInput.style.display = "none"; // Oculta el botón
       buscarSerial.style.display = "none"; // Oculta el botón
@@ -246,6 +252,7 @@
       serialInput.style.display = "none";
       buscarRazon.style.display = "none"; // Oculta el botón
       razonInput.style.display = "none"; // Oculta el botón
+      inputsDate.style.display = "none"; // Oculta los inputs de fecha
 
       Rangoinput.style.display = "none"; // Muestra el input
       BuscarRango.style.display = "none"; // Oculta el botón
@@ -308,7 +315,7 @@
   } else {
     console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
   }
-/*});*/
+});
 
 function getRegionUsuarios() {
   const xhr = new XMLHttpRequest();
