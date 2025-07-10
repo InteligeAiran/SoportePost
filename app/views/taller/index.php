@@ -359,6 +359,49 @@
                 box-sizing: border-box; /* Para incluir padding y border en el ancho */
                 /* Otros estilos que quieras */
             }
+
+            #ButtonSendDate{
+                border: 2px solid  #002869; 
+                cursor: pointer;
+                padding: 10px 20px;
+                font-size: 16px;
+                border-radius: 5px;
+                transition: background-color 0.3s ease;
+            }
+
+            #ButtonGuardarFecha{
+                 background-color: #002869;
+                color: white;
+                border: none;
+                cursor: pointer;
+                padding: 10px 20px;
+                font-size: 16px;
+                border-radius: 5px;
+                transition: background-color 0.3s ease;
+                color: white;
+            }
+
+            #ButtonGuardarFecha:hover{
+                background-color: #0045b4;
+                color: white;
+            }
+
+            #ButtonCancelarFecha{
+                background-color: #b0b0b0;
+                color: white;
+                border: none;
+                cursor: pointer;
+                padding: 10px 20px;
+                font-size: 16px;
+                border-radius: 5px;
+                transition: background-color 0.3s ease;
+                color: white;
+            }
+
+            #ButtonCancelarFecha:hover{
+                background-color: red;
+                color: white;
+            }
         </style>
     </head>
 
@@ -424,34 +467,34 @@
         </div>
         
         <!--MODAL PARA SELECCIONAR EL STATUS DEL TALLER DEL TICKET-->
-        <div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="changeStatusModalLabel">Cambiar Estatus del Ticket</h5>
-                        <button type="button" id="icon-close" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="changeStatusForm">
-                            <input type="hidden" id="modalTicketId">
-                            <div class="mb-3">
-                                <label for="modalCurrentStatus" class="form-label">Estatus Actual:</label>
-                                <input type="text" class="form-control" id="modalCurrentStatus" readonly>
-                            </div><br>
-                            <div class="mb-3">
-                                <label for="modalNewStatus" class="form-label">Nuevo Estatus:</label>
-                                <select class="form-select" id="modalNewStatus" aria-label="Default select example" required>
-                                </select>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" id="CerrarBoton" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
-                        <button type="button" class="btn btn-primary" id="saveStatusChangeBtn">Guardar Cambios</button>
+            <div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="changeStatusModalLabel">Cambiar Estatus del Ticket</h5>
+                            <button type="button" id="icon-close" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="changeStatusForm">
+                                <input type="hidden" id="modalTicketId">
+                                <div class="mb-3">
+                                    <label for="modalCurrentStatus" class="form-label">Estatus Actual:</label>
+                                    <input type="text" class="form-control" id="modalCurrentStatus" readonly>
+                                </div><br>
+                                <div class="mb-3">
+                                    <label for="modalNewStatus" class="form-label">Nuevo Estatus:</label>
+                                    <select class="form-select" id="modalNewStatus" aria-label="Default select example" required>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="CerrarBoton" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cerrar</button>
+                            <button type="button" class="btn btn-primary" id="saveStatusChangeBtn">Guardar Cambios</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         <!--END MODAL PARA SELECCIONAR EL STATUS DEL TALLER DEL TICKET-->
 
         <div class="modal fade" id="rescheduleModal" tabindex="-1" aria-labelledby="rescheduleModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">

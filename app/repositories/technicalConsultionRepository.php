@@ -558,8 +558,8 @@ class TechnicalConsultionRepository
         return $result;
     }
 
-    public function UpdateRepuestoDate($id_ticket, $repuestoDate){
-        $result = $this->model->UpdateRepuestoDate($id_ticket, $repuestoDate);
+    public function UpdateRepuestoDate($id_ticket, $repuestoDate, $id_user, $id_status_lab){
+        $result = $this->model->UpdateRepuestoDate($id_ticket, $repuestoDate, $id_user, $id_status_lab);
         return $result;
     }
 
@@ -576,6 +576,11 @@ class TechnicalConsultionRepository
         }else{
             return null;
         }
+    }
+
+    public function UpdateRepuestoDate2($ticketId, $repuesto_date, $id_user){
+        $result = $this->model->UpdateRepuestoDate2($ticketId, $repuesto_date, $id_user);
+        return $result;
     }
 }
 ?>
