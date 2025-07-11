@@ -867,6 +867,69 @@ function loadTicketHistory(ticketId) {
     });
 }
 
+ const changeStatusModal = document.getElementById("changeStatusModal");
+  // Estas variables son cruciales porque son accesibles para changeStatusTicket
+  const estatusActualInput = changeStatusModal
+    ? changeStatusModal.querySelector("#modalCurrentStatus")
+    : null;
+  const modalTicketIdInput = changeStatusModal
+    ? changeStatusModal.querySelector("#modalTicketId")
+    : null;
+  const modalNewStatusSelect = changeStatusModal
+    ? changeStatusModal.querySelector("#modalNewStatus")
+    : null;
+  const modalSubmitBtn = changeStatusModal
+    ? changeStatusModal.querySelector("#saveStatusChangeBtn")
+    : null; // CORREGIDO AQUÍ
+
+  const updateTicketStatusForm = changeStatusModal
+    ? changeStatusModal.querySelector("#changeStatusForm")
+    : null; // CORREGIDO AQUÍ
+
+ function showCustomModal(currentStatus, idTicket) {
+      if (estatusActualInput) {
+        estatusActualInput.value = currentStatus;
+      }
+
+      if (modalTicketIdInput) {
+        // Aquí usamos directamente idTicket, que es un parámetro de la función
+        modalTicketIdInput.value = idTicket;
+      }
+
+      if (modalNewStatusSelect) {
+        modalNewStatusSelect.setAttribute(
+          "data-current-status-name",
+          currentStatus
+        );
+        // Llamamos a getStatusLab SOLO CUANDO se abre el modal para filtrar.
+        getStatusLab(currentStatus); // Pasamos el estatus actual para filtrar
+      }
+
+      changeStatusModal.classList.add("show");
+      changeStatusModal.style.display = "block";
+      changeStatusModal.setAttribute("aria-modal", "true");
+      changeStatusModal.setAttribute("role", "dialog");
+
+      document.body.classList.add("modal-open");
+      const backdrop = document.createElement("div");
+      backdrop.classList.add("modal-backdrop", "fade", "show");
+      backdrop.id = "custom-modal-backdrop";
+      document.body.appendChild(backdrop);
+    }
+
+    function hideCustomModal() {
+      changeStatusModal.classList.remove("show");
+      changeStatusModal.style.display = "none";
+      changeStatusModal.removeAttribute("aria-modal");
+      changeStatusModal.removeAttribute("role");
+
+      document.body.classList.remove("modal-open");
+      const backdrop = document.getElementById("custom-modal-backdrop");
+      if (backdrop) {
+        backdrop.remove();
+      }
+    }
+
 // Call getTicketData when the document is ready using jQuery
 $(document).ready(function () {
 
@@ -1386,7 +1449,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // --- Primer Modal: Notificación y Opciones ---
         Swal.fire({
             title: "Notificación",
-            html: `Al ticket con el Nro. <b>${ticket.nro_ticket}</b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Deseas poner otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br>
+            html: `Al ticket con el Nro. <b>${ticket.nro_ticket}</b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Desea colocar otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br>
             <br><div class="swal-custom-button-container">
               <button id="changeStatusButton" class="custom-status-button">Cambiar Estatus del Ticket</button>
             </div>`,
@@ -1406,7 +1469,18 @@ document.addEventListener("DOMContentLoaded", () => {
               // Aseguramos que el modal principal también tenga una clase si lo necesitas
               popup: 'notification-modal-custom'
             },
-            
+            didOpen: () => {
+                // Obtenemos el botón personalizado dentro del modal
+                const changeStatusBtn = document.getElementById('changeStatusButton');
+
+                if (changeStatusBtn) {
+                    changeStatusBtn.addEventListener('click', () => {
+                      Swal.close();
+                      const current_status_lab_name = ticket.current_status_lab_name || ticket.estatus_actual || "Desconocido";
+                      showCustomModal(current_status_lab_name, ticket.id_ticket);
+                    });
+                }
+            },
         }).then((result) => {
             
             if (result.isConfirmed) {
@@ -1987,13 +2061,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Lógica para el botón "Guardar Fecha" en el modal de reagendamiento (rescheduleModal)
   saveRescheduleDateBtn.addEventListener("click", function () {
-
-  const changeStatusModal = new bootstrap.Modal(document.getElementById("changeStatusModal"));
-
-
-
-
-
     if (
       rescheduleDateInput.checkValidity() &&
       !saveRescheduleDateBtn.disabled

@@ -443,7 +443,6 @@
 
             /* Estilo para "Enviar a Gestión Comercial" (denyButton) */
            .btn-gestion-comercial {
-                /* Color de fondo rojo similar al de la imagen */
                 background-color: #E63946 !important;
                 color: white !important; /* Texto blanco */
                 border: none;
