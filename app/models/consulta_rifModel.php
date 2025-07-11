@@ -1405,7 +1405,7 @@ class consulta_rifModel extends Model
             JOIN
                 status_lab sl ON tsl.id_status_lab = sl.id_status_lab
             WHERE
-                tsl.repuesto_date < CURRENT_DATE - INTERVAL '14 days' -- ¡CORRECCIÓN AQUÍ!
+                tsl.repuesto_date < CURRENT_DATE --- INTERVAL '15 days' -- ¡CORRECCIÓN AQUÍ!
                 AND tsl.confirmreceive = TRUE
                 AND tsl.id_status_lab = 5;";
                         $result = Model::getResult($sql, $this->db);
@@ -1419,6 +1419,7 @@ class consulta_rifModel extends Model
     public function UpdateRepuestoDate2($ticketId, $repuesto_date, $id_user){
         try {
                 $sql = "UPDATE tickets_status_lab SET repuesto_date = '".$repuesto_date."'  WHERE id_ticket = ".$ticketId.";";
+                var_dump($sql);
                 $result = Model::getResult($sql, $this->db);
                 if ($result) {
                     // Obtener los estados actuales para el historial (importante: los estados antes de esta actualización)
@@ -1462,7 +1463,7 @@ class consulta_rifModel extends Model
                         $id_new_status_payment = null;
                     }
 
-                       $new_status_domiciliacion = 'NULL'; 
+                    $new_status_domiciliacion = 'NULL'; 
                     $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . $ticketId . ";";
                     $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
                     if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {

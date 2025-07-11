@@ -1177,9 +1177,9 @@ class Consulta extends Controller
 
     public function handleUpdateRepuestoDate2(){
         $ticketId = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
-        $repuesto_date = isset($_POST['new_repuesto_date'])? $_POST['new_repuesto_date'] : '';
+        $repuesto_date = isset($_POST['newDate'])? $_POST['newDate'] : '';
         $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
-        if (!$ticketId ||!$repuesto_date) {
+        if (!$ticketId || !$repuesto_date) {
             $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
             return;
         }

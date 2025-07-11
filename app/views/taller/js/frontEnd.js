@@ -1298,7 +1298,6 @@ function getStatusLab(currentStatusNameToExclude = null) {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
           const select = document.getElementById("modalNewStatus");
-          console.log("Select:", select);
 
           select.innerHTML =
             '<option value="" disabled selected hidden>Seleccione</option>'; // Limpiar y agregar la opción por defecto
@@ -1387,15 +1386,26 @@ document.addEventListener("DOMContentLoaded", () => {
         // --- Primer Modal: Notificación y Opciones ---
         Swal.fire({
             title: "Notificación",
-            html: `Al ticket con el Nro. <b>${ticket.nro_ticket}</b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Deseas poner otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?`,
-            
-            showCancelButton: true,
-            cancelButtonText: "Cerrar",
+            html: `Al ticket con el Nro. <b>${ticket.nro_ticket}</b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Deseas poner otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br>
+            <br><div class="swal-custom-button-container">
+              <button id="changeStatusButton" class="custom-status-button">Cambiar Estatus del Ticket</button>
+            </div>`,
             showDenyButton: true, // Para "Enviar a Gestión Comercial"
             denyButtonText: "Enviar a Gestión Comercial",
             showConfirmButton: true, // Para "Renovar Fecha"
             confirmButtonText: "Renovar Fecha",
             focusConfirm: false,
+            allowOutsideClick: false, 
+            allowEscapeKey: false,
+            showCloseButton: true,
+            keydownListenerCapture: true,
+            color: "black",
+            customClass: {
+              confirmButton: 'btn-renovar', // Clase para "Renovar Fecha"
+              denyButton: 'btn-gestion-comercial', // Clase para "Enviar a Gestión Comercial"
+              // Aseguramos que el modal principal también tenga una clase si lo necesitas
+              popup: 'notification-modal-custom'
+            },
             
         }).then((result) => {
             
@@ -1405,7 +1415,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 Swal.fire({
                     title: "Renovar Fecha de la llegada de Repuestos",
                     html: `
-                        <b>Selecciona Nueva Fecha de Repuesto:</b><br>
+                        <b>Coloque Nueva Fecha:</b><br>
                         <input type="date" id="swal-input-date-renew" class="swal2-input">
                     `,
                     showCancelButton: true,
@@ -1413,25 +1423,35 @@ document.addEventListener("DOMContentLoaded", () => {
                     confirmButtonText: "Guardar Fecha",
                     focusConfirm: false,
                     color: "black",
-                    allowOutsideClick : false,
+                    allowOutsideClick: false, 
+                    allowEscapeKey: false,
+                    showCloseButton: true,
+                    keydownListenerCapture: true,
+
+                    customClass: {
+                      // Asigna una clase a la ventana modal (swal2-popup)
+                      popup: 'modal-with-backdrop-filter', 
+                      // Asigna una clase al telón de fondo (swal2-container)
+                      container: 'swal2-container-custom' 
+                    },
                     
                     // Asignar IDs a los botones usando didOpen
                     didOpen: (modalElement) => {
-                        const confirmButton = modalElement.querySelector('.swal2-confirm');
-                        const cancelButton = modalElement.querySelector('.swal2-cancel');
+                      const confirmButton = modalElement.querySelector('.swal2-confirm');
+                      const cancelButton = modalElement.querySelector('.swal2-cancel');
 
-                        if (confirmButton) {
-                            confirmButton.id = 'ButtonGuardarFecha';
-                        }
-                        if (cancelButton) {
-                            cancelButton.id = 'ButtonCancelarFecha';
-                        }
+                      if (confirmButton) {
+                        confirmButton.id = 'ButtonGuardarFecha';
+                      }
+
+                      if (cancelButton) {
+                        cancelButton.id = 'ButtonCancelarFecha';
+                      }
                     },
 
                     // Validamos la fecha con las restricciones
                     preConfirm: () => {
                         const newDateStr = document.getElementById("swal-input-date-renew").value;
-                        
                         // 1. Validar que se haya seleccionado una fecha
                         if (!newDateStr) {
                             Swal.showValidationMessage("Por favor, selecciona una fecha.");
@@ -1466,18 +1486,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         // Si todas las validaciones pasan, retornamos los datos
                         return {
-                            action: "renew",
                             ticketId: ticket.id_ticket,
                             newDate: newDateStr, // Usamos la cadena de fecha original para el envío
                         };
                     }
                 }).then((renewResult) => {
-                    // Manejamos el resultado del segundo modal (Renovar Fecha)
+                    const ticketId = renewResult.value.ticketId;
+                    const newRepuestoDate = renewResult.value.newDate;
                     const id_user = document.getElementById("userId");
+
                     if (renewResult.isConfirmed) {
                         // El usuario hizo clic en "Guardar Fecha" y la validación pasó.
                         
-                        const datos = `action=UpdateRepuestoDate2&id_ticket=${idTicket}&new_repuesto_date=${newRepuestoDate}&id_user=${id_user.value}`;
+                        const datos = `action=UpdateRepuestoDate2&id_ticket=${ticketId}&newDate=${newRepuestoDate}&id_user=${id_user.value}`;
                         
                         // --- Enviar datos al backend usando XMLHttpRequest ---
                         const xhr = new XMLHttpRequest();
@@ -1485,7 +1506,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         const endpoint = `${ENDPOINT_BASE}${APP_PATH}api/consulta/UpdateRepuestoDate2`; 
 
                         xhr.open("POST", endpoint, true);
-                        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
                         xhr.onload = function() {
                             if (xhr.status >= 200 && xhr.status < 300) {
@@ -1493,8 +1514,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Éxito',
-                                    text: 'Fecha de repuesto actualizada correctamente.',
-                                    confirmButtonText: 'Aceptar'
+                                    text: 'Fecha de la llegada de repuesto fue renovada correctamente.',
+                                    confirmButtonText: 'Aceptar', 
+                                    color: 'black',
+                                    confirmButtonColor: '#003594'
                                 });
                             } else {
                                 // Error en la solicitud HTTP

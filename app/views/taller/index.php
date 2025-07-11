@@ -402,6 +402,64 @@
                 background-color: red;
                 color: white;
             }
+
+            .swal2-container.swal2-center {
+                background-color: rgba(0, 0, 0, 0.4);
+                backdrop-filter: blur(8px);
+            }
+
+            .custom-status-button {
+                /* Un azul claro similar al de la imagen */
+                background-color: #B5EAD7; 
+                color: #333333; /* Texto oscuro */
+                border: 1px solid #99D98C; /* Borde más claro */
+                padding: 10px 20px;
+                font-size: 16px;
+                font-weight: 500;
+                cursor: pointer;
+                border-radius: 4px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+                display: inline-block;
+                transition: background-color 0.2s, box-shadow 0.2s;
+            }
+
+           .custom-status-button:hover {
+                background-color: #A3D8C8;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+                color: black;
+            }     
+
+            .btn-renovar {
+                /* Color de fondo azul/púrpura similar al de la imagen */
+                background-color: #7B68EE; /* Puedes ajustar este color */
+                color: white;
+                border: none; 
+            }
+
+            .btn-renovar:hover {
+                background-color: #6A5ACD !important; /* Un tono un poco más oscuro */
+            }
+
+
+            /* Estilo para "Enviar a Gestión Comercial" (denyButton) */
+           .btn-gestion-comercial {
+                /* Color de fondo rojo similar al de la imagen */
+                background-color: #E63946 !important;
+                color: white !important; /* Texto blanco */
+                border: none;
+            }
+
+            .btn-gestion-comercial:hover {
+                background-color: #CC2936 !important; 
+            }
+
+            .swal2-styled.swal2-confirm, 
+            .swal2-styled.swal2-deny {
+                /* Aseguramos que los botones de SweetAlert2 mantengan un padding y margen consistente */
+                padding: 0.6em 1.2em; 
+                margin: 0.3125em;
+                /* !important se usa para asegurar que estos estilos anulen los estilos por defecto de SweetAlert2 si es necesario */
+            }
         </style>
     </head>
 
