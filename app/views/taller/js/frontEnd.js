@@ -1495,16 +1495,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     const newRepuestoDate = renewResult.value.newDate;
                     const id_user = document.getElementById("userId");
 
-                    if (renewResult.isConfirmed) {
-                        // El usuario hizo clic en "Guardar Fecha" y la validación pasó.
-                        
+                    if (renewResult.isConfirmed) {                        
                         const datos = `action=UpdateRepuestoDate2&id_ticket=${ticketId}&newDate=${newRepuestoDate}&id_user=${id_user.value}`;
-                        
-                        // --- Enviar datos al backend usando XMLHttpRequest ---
                         const xhr = new XMLHttpRequest();
-                        // Asumimos que tienes un endpoint para actualizar la fecha de repuesto
-                        const endpoint = `${ENDPOINT_BASE}${APP_PATH}api/consulta/UpdateRepuestoDate2`; 
-
+                        const endpoint = `${ENDPOINT_BASE}${APP_PATH}api/consulta/UpdateRepuestoDate2`;
                         xhr.open("POST", endpoint, true);
                         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
@@ -1514,10 +1508,14 @@ document.addEventListener("DOMContentLoaded", () => {
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Éxito',
-                                    text: 'Fecha de la llegada de repuesto fue renovada correctamente.',
+                                    text: `la Fecha de la llegada de repuesto para el Ticket Nro: ${ticket.nro_ticket} fue renovada correctamente.`,
                                     confirmButtonText: 'Aceptar', 
                                     color: 'black',
-                                    confirmButtonColor: '#003594'
+                                    confirmButtonColor: '#003594',
+                                    allowOutsideClick: false, 
+                                    allowEscapeKey: false,
+                                    showCloseButton: true,
+                                    keydownListenerCapture: true,
                                 });
                             } else {
                                 // Error en la solicitud HTTP
@@ -1528,58 +1526,115 @@ document.addEventListener("DOMContentLoaded", () => {
                                     footer: `Status: ${xhr.status}`
                                 });
                             }
-                            
-                            // Después de la acción, removemos el ticket de la cola y procesamos el siguiente
                             overdueTicketsQueue.shift();
                             processNextOverdueTicket();
                         };
 
                         xhr.onerror = function() {
-                            // Error de red (por ejemplo, el servidor no responde)
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error de conexión',
-                                text: 'No se pudo conectar con el servidor. Verifica tu conexión.',
-                            });
-                            
-                            // Después de la acción, removemos el ticket de la cola y procesamos el siguiente
-                            overdueTicketsQueue.shift();
-                            processNextOverdueTicket();
+                          Swal.fire({
+                            icon: 'error',
+                            title: 'Error de conexión',
+                            text: 'No se pudo conectar con el servidor. Verifica tu conexión.',
+                          });
+                          overdueTicketsQueue.shift();
+                          processNextOverdueTicket();
                         };
-
-                        // Enviamos los datos en formato JSON
                         xhr.send(datos);
-
-                        // Opcional: Mostrar un loader mientras se procesa la solicitud
                         Swal.showLoading();
-
                     } else {
-                        // El usuario canceló la selección de fecha en el segundo modal
-                        console.log("Renovación de fecha cancelada.");
-                        
-                        // Si se cancela el segundo modal, procesamos el siguiente ticket
+                        console.log("Renovación de fecha cancelada.");      
                         overdueTicketsQueue.shift();
                         processNextOverdueTicket();
                     }
                 });
             } else if (result.isDenied) {
-                // --- Lógica para "Enviar a Gestión Comercial" ---
-                console.log("Enviar a Gestión Comercial ticket:", ticket.id_ticket);
-                // Aquí puedes añadir la lógica para enviar el ticket a gestión comercial
-                
-                // Después de la acción, procesamos el siguiente ticket
-                overdueTicketsQueue.shift();
-                processNextOverdueTicket();
-                
-            } else if (result.dismiss === Swal.DismissReason.cancel || result.dismiss === Swal.DismissReason.backdrop) {
-                // --- Lógica para "Cerrar" (cancelar o clic fuera) ---
-                console.log("Modal cerrado.");
-                
-                // Después de cerrar, procesamos el siguiente ticket
-                overdueTicketsQueue.shift();
-                processNextOverdueTicket();
-            }
-        });
+               Swal.fire({
+                        title: 'Confirmación',
+                        text: `¿Seguro que desea enviar el ticket Nro: ${ticket.nro_ticket} a Gestión Comercial?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, enviar',
+                        cancelButtonText: 'Cancelar',
+                        color: 'black',
+                        allowOutsideClick: false, 
+                        allowEscapeKey: false,
+                        showCloseButton: true,
+                        keydownListenerCapture: true,
+                        customClass: {
+                            confirmButton: 'btn-gestion-comercial', // O un estilo de confirmación
+                            cancelButton: 'btn-cancelar' // O un estilo de cancelación
+                        }
+                    }).then((confirmResult) => {
+                        const ticketId = ticket.id_ticket;
+                        const id_user = document.getElementById("userId");
+
+                        if (confirmResult.isConfirmed) {
+                          const datos = `action=SendToComercial&id_ticket=${ticketId}&id_user=${id_user.value}`;
+                          const xhr = new XMLHttpRequest();
+                          const endpoint = `${ENDPOINT_BASE}${APP_PATH}api/consulta/SendToComercial`;
+                          xhr.open("POST", endpoint, true);
+                          xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                          xhr.onload = function() {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                              Swal.fire({
+                                  icon: 'success',
+                                  title: 'Éxito',
+                                  text: `El ticket Nro: ${ticket.nro_ticket} ha sido enviado a Gestión Comercial`,
+                                  confirmButtonText: 'Aceptar', 
+                                  color: 'black',
+                                  confirmButtonColor: '#003594',
+                                  allowOutsideClick: false, 
+                                  allowEscapeKey: false,
+                                  showCloseButton: true,
+                                  keydownListenerCapture: true,
+                              }).then((result) => {
+                                  if (result.isConfirmed) {
+                                      // Recarga la página
+                                      window.location.reload(); 
+                                  }
+                              });
+                                                          
+                              } else {
+                                  // Error en la solicitud HTTP
+                                  Swal.fire({
+                                      icon: 'error',
+                                      title: 'Error',
+                                      text: 'Hubo un problema al actualizar la fecha de repuesto. Inténtalo de nuevo.',
+                                      footer: `Status: ${xhr.status}`
+                                  });
+                              }
+                              overdueTicketsQueue.shift();
+                              processNextOverdueTicket();
+                          };
+
+                          xhr.onerror = function() {
+                            Swal.fire({
+                              icon: 'error',
+                              title: 'Error de conexión',
+                              text: 'No se pudo conectar con el servidor. Verifica tu conexión.',
+                            });
+                            overdueTicketsQueue.shift();
+                            processNextOverdueTicket();
+                          };
+                          xhr.send(datos);
+                          Swal.showLoading();
+                        } else {
+                            console.log("Envío a Gestión Comercial cancelado.");
+                            overdueTicketsQueue.shift();
+                            processNextOverdueTicket();
+                        }
+                    });
+
+                } else if (result.dismiss === Swal.DismissReason.cancel || result.dismiss === Swal.DismissReason.backdrop) {
+                    // --- Lógica para "Cerrar" (si se usa la X o se hace clic fuera si allowOutsideClick está habilitado) ---
+                    console.log("Modal cerrado.");
+                    
+                    // Después de cerrar, procesamos el siguiente ticket
+                    overdueTicketsQueue.shift();
+                    processNextOverdueTicket();
+                }
+            });
       } else {
         // Logic for multiple tickets: Use a select dropdown
         const inputOptions = {};

@@ -190,9 +190,12 @@ class Consulta extends Controller
                     $this->handleGetOverdueRepuestoTickets();
                     break;
                 
-                // Cuando hay un solo ticket que se le vencio la fecha de llegada de los repustos 
                 case 'UpdateRepuestoDate2':
                     $this->handleUpdateRepuestoDate2();
+                    break;
+
+                case 'SendToComercial':
+                    $this->handleSendToComercial();
                     break;
 
                 default:
@@ -1187,6 +1190,23 @@ class Consulta extends Controller
         $result = $repository->UpdateRepuestoDate2($ticketId, $repuesto_date, $id_user);
         if ($result) {
             $this->response(['success' => true,'message' => 'El ticket ha sido actualizado exitosamente.'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleSendToComercial(){
+        $ticketId = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+        if (!$ticketId ||!$id_user) {
+            $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+        $repository = new technicalConsultionRepository();
+        $result = $repository->SendToComercial($ticketId, $id_user);
+
+        if ($result) {
+            $this->response(['success' => true,'message' => 'El ticket ha sido enviado a comercial exitosamente.'], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }

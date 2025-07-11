@@ -582,5 +582,10 @@ class TechnicalConsultionRepository
         $result = $this->model->UpdateRepuestoDate2($ticketId, $repuesto_date, $id_user);
         return $result;
     }
+
+    public function SendToComercial($id_ticket, $id_user){
+        $result = $this->model->SendToComercial($id_ticket, $id_user);
+        return $result;
+    }
 }
 ?>
