@@ -36,4 +36,19 @@ class HistoricalRepository
         $result = $this->model->MarkTicketReceivedTechnical($id_ticket, $id_user);
         return $result;
     }
+
+    public function GetTicketHistory1($id_ticket){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketHistory1($id_ticket); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
 }

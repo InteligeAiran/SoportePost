@@ -104,217 +104,158 @@
     this.classList.remove("border-red-500");
   });*/
 document.addEventListener("DOMContentLoaded", function () {
-  const buscarPorRifBtn = document.getElementById("buscarPorRifBtn");
-  const rifInput = document.getElementById("rifInput");
-  const buscarRif = document.getElementById("buscarRif");
-  const rifCountTableCard = document.querySelector(".card");
-  const selectInputRif = document.getElementById("rifTipo");
-  const inputRif = document.getElementById("rifInput");
-  const messageErrorDate = document.getElementById("errorDateEnd");
-  const messageErrorDateIni = document.getElementById("errorDateIni");
+    // Referencias a los elementos
+    const buscarPorRangoBtn = document.getElementById("buscarPorRangoBtn");
+    const buscarPorSerialBtn = document.getElementById("buscarPorSerialBtn");
+    const buscarPorRifBtn = document.getElementById("buscarPorRifBtn");
+    const buscarPorRegionsBtn = document.getElementById("buscarPorRegionsBtn");
+    // Asumo que buscarPorRazonBtn apunta a buscarPorNombreBtn, lo corregimos
+    const buscarPorRazonBtn = document.getElementById("buscarPorNombreBtn"); 
 
-  const buscarPorSerialBtn = document.getElementById("buscarPorSerialBtn");
-  const serialInput = document.getElementById("serialInput");
-  const buscarSerial = document.getElementById("buscarSerial");
-  const serialCountTableCard = document.querySelector(".card");
 
-  const buscarPorRazonBtn = document.getElementById("buscarPorNombreBtn");
-  const razonInput = document.getElementById("RazonInput");
-  const buscarRazon = document.getElementById("buscarRazon");
-  const razonCountTableCard = document.querySelector(".card");
+    const searchRifDiv = document.getElementById("SearchRif"); // Contenedor principal de los inputs de búsqueda
+    const rifTipoSelect = document.getElementById("rifTipo");
+    const rifInput = document.getElementById("rifInput");
+    const buscarRifBtn = document.getElementById("buscarRif");
 
-  const buscarPorRangoBtn = document.getElementById("buscarPorRangoBtn");
-  const Rangoinput = document.getElementById("date-ini");
-  const Rangoinput1 = document.getElementById("date-end");
-  const BuscarRango = document.getElementById("buscarRango");
-  const rangoCountTableCard = document.querySelector(".card");
+    const serialInput = document.getElementById("serialInput");
+    const buscarSerialBtn = document.getElementById("buscarSerial");
 
-  const buscarPorRegionsBtn = document.getElementById("buscarPorRegionsBtn");
-  const buscarRegions = document.getElementById("buscarRegions");
-  const SelectRgions = document.getElementById("SelectRgions");
-  const regionCountTableCard = document.querySelector(".card");
+    const razonInput = document.getElementById("RazonInput");
+    const buscarRazonBtn = document.getElementById("buscarRazon");
 
-  const inputsDate = document.getElementById("inputsDate");
+    const inputsDateDiv = document.getElementById("inputsDate"); // El div que contiene los inputs de fecha
+    const dateIniInput = document.getElementById("date-ini");
+    const dateEndInput = document.getElementById("date-end");
+    const buscarRangoBtn = document.getElementById("buscarRango");
+    const errorDateIni = document.getElementById("errorDateIni");
+    const errorDateEnd = document.getElementById("errorDateEnd");
 
-  if (buscarPorRegionsBtn && regionCountTableCard) {
-    buscarPorRegionsBtn.addEventListener("click", function () {
-      regionCountTableCard.style.display = "block"; // Muestra la tabla
-      buscarRegions.style.display = "block"; // Muestra el input
-      SelectRgions.style.display = "block"; // Oculta el botón
+    const selectRegions = document.getElementById("SelectRgions");
+    const buscarRegionsBtn = document.getElementById("buscarRegions");
 
-      selectInputRif.style.display = "none"; // Muestra el select
-      buscarRif.style.display = "none"; // Oculta el botón
-      rifInput.style.display = "none"; // Muestra el input
-      serialInput.style.display = "none"; // Oculta el botón
-      buscarSerial.style.display = "none"; // Oculta el botón
+    const resultsCard = document.querySelector(".card"); // El contenedor principal para los resultados (la tabla)
 
-      Rangoinput.style.display = "none"; // Muestra el input
-      BuscarRango.style.display = "none"; // Oculta el botón
-      Rangoinput1.style.display = "none"; // Muestra el input
 
-      razonInput.style.display = "none"; // Muestra el input
-      buscarRazon.style.display = "none"; // Oculta el botón
-      messageErrorDate.style.display = "none"; // Oculta el mensaje de error
-      messageErrorDateIni.style.display = "none"; // Oculta el mensaje de error
-      inputsDate.style.display = "none"; // Oculta los inputs de fecha
+    // Función para ocultar todos los campos de búsqueda y limpiar mensajes de error
+    function hideAllSearchInputs() {
+        // Ocultar todos los inputs y botones específicos de cada tipo de búsqueda
+        rifTipoSelect.style.display = "none";
+        rifInput.style.display = "none";
+        buscarRifBtn.style.display = "none";
 
-      if (regionCountTableCard) {
-        razonCountTableCard.innerHTML = ""; // Limpia el contenido del contenedor de resultados de la razón social
-        serialCountTableCard.innerHTML = ""; // Limpia el contenido del contenedor de resultados de la serial
-        rangoCountTableCard.innerHTML = ""; // Limpia el contenido del contenedor de resultados del rango
-        // Si es una tabla, podrías necesitar limpiar el tbody:
-        // const tableBody = regionResultsContainer.querySelector('tbody');
-        // if (tableBody) {
-        //     tableBody.innerHTML = '';
-        // }
-      }
-      // =======================================================
-    });
-  } else {
-    console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
-  }
+        serialInput.style.display = "none";
+        buscarSerialBtn.style.display = "none";
 
-  if (buscarPorRangoBtn && rangoCountTableCard) {
-    buscarPorRangoBtn.addEventListener("click", function () {
-      rangoCountTableCard.style.display = "block"; // Muestra la tabla
-      Rangoinput.style.display = "block"; // Muestra el input
-      BuscarRango.style.display = "block"; // Oculta el botón
-      Rangoinput1.style.display = "block"; // Muestra el input
-      messageErrorDate.style.display = "block"; // Oculta el mensaje de error
-      messageErrorDateIni.style.display = "block"; // Oculta el mensaje de error
+        razonInput.style.display = "none";
+        buscarRazonBtn.style.display = "none";
 
-      razonInput.style.display = "none"; // Muestra el input
-      buscarRazon.style.display = "none"; // Oculta el botón
-      inputsDate.style.display = "block"; // Oculta los inputs de fecha
+        inputsDateDiv.style.display = "none"; // Oculta el contenedor completo de fecha
+        dateIniInput.style.display = "none"; // Asegura que los inputs individuales también se oculten si no están dentro de inputsDateDiv
+        dateEndInput.style.display = "none";
+        buscarRangoBtn.style.display = "none";
+        errorDateIni.style.display = "none";
+        errorDateEnd.style.display = "none";
 
-      selectInputRif.style.display = "none"; // Muestra el select
-      buscarRif.style.display = "none"; // Oculta el botón
-      rifInput.style.display = "none"; // Muestra el input*/
+        selectRegions.style.display = "none";
+        buscarRegionsBtn.style.display = "none";
 
-      serialInput.style.display = "none"; // Oculta el botón
-      buscarSerial.style.display = "none"; // Oculta el botón
-      buscarRegions.style.display = "none"; // Muestra el input
-      SelectRgions.style.display = "none"; // Oculta el botón
-    });
-  } else {
-    console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
-  }
+        // Limpiar el contenido del card de resultados
+        if (resultsCard) {
+            resultsCard.style.display = "none"; // Oculta el card de resultados
+            // Si la tabla DataTables está inicializada aquí, deberías destruirla antes de limpiar el HTML
+            // Por ejemplo: if ($.fn.DataTable.isDataTable('#rifCountTable')) { $('#rifCountTable').DataTable().destroy(); }
+            resultsCard.innerHTML = `
+                <div class="table-responsive">
+                    <table id="rifCountTable" style="display: none;">
+                        <thead></thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="15">No hay datos</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            // Vuelve a ocultar la tabla rifCountTable dentro del card
+            const rifCountTable = resultsCard.querySelector("#rifCountTable");
+            if (rifCountTable) {
+                rifCountTable.style.display = "none";
+            }
+        }
+    }
 
-  if (buscarPorRazonBtn && razonCountTableCard) {
-    buscarPorRazonBtn.addEventListener("click", function () {
-      razonCountTableCard.style.display = "block"; // Muestra la tabla
-      razonInput.style.display = "block"; // Muestra el input
-      buscarRazon.style.display = "block"; // Oculta el botón
-      
-
-      selectInputRif.style.display = "none"; // Muestra el select
-      buscarRif.style.display = "none"; // Oculta el botón
-      rifInput.style.display = "none"; // Muestra el input*/
-      inputsDate.style.display = "block"; // Oculta los inputs de fecha
-
-      serialInput.style.display = "none"; // Oculta el botón
-      buscarSerial.style.display = "none"; // Oculta el botón
-
-      Rangoinput.style.display = "none"; // Muestra el input
-      BuscarRango.style.display = "none"; // Oculta el botón
-      Rangoinput1.style.display = "none"; // Muestra el input
-      buscarRegions.style.display = "none"; // Muestra el input
-      SelectRgions.style.display = "none"; // Oculta el botón
-      messageErrorDate.style.display = "none"; // Oculta el mensaje de error
-      messageErrorDateIni.style.display = "none"; // Oculta el mensaje de error
-    });
-  } else {
-    console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
-  }
-
-  if (buscarPorRifBtn && rifCountTableCard) {
-    buscarPorRifBtn.addEventListener("click", function () {
-      rifCountTableCard.style.display = "block"; // Muestra la tabla
-      rifInput.style.display = "block"; // Muestra el input
-
-      $("#rifInput").keyup(function () {
-        let string = $("#rifInput").val();
-        $("#rifInput").val(string.replace(/ /g, ""));
-      });
-
-      if (rifInput) {
-        rifInput.addEventListener("input", function () {
-          // Cambiado de keyup a input
-          // Asegura que solo sean dígitos. Elimina cualquier cosa que no sea un número.
-          this.value = this.value.replace(/\D/g, "");
+    // Event Listeners para los botones de "Buscar por..."
+    if (buscarPorRegionsBtn) {
+        buscarPorRegionsBtn.addEventListener("click", function () {
+            hideAllSearchInputs(); // Oculta todos los demás
+            selectRegions.style.display = "block";
+            buscarRegionsBtn.style.display = "block";
+            resultsCard.style.display = "block"; // Muestra el card de resultados
+            // Lógica para cargar regiones
         });
-      }
+    }
 
-      selectInputRif.style.display = "block"; // Muestra el select
-      buscarRif.style.display = "block"; // Oculta el botón
-      buscarSerial.style.display = "none"; // Oculta el botón
+    if (buscarPorRangoBtn) {
+        buscarPorRangoBtn.addEventListener("click", function () {
+            hideAllSearchInputs(); // Oculta todos los demás
+            inputsDateDiv.style.display = "flex"; // ¡IMPORTANTE! Vuelve a poner display: flex;
+            dateIniInput.style.display = "block";
+            dateEndInput.style.display = "block";
+            buscarRangoBtn.style.display = "block";
+            // No mostrar los mensajes de error inicialmente
+            errorDateIni.style.display = "none"; 
+            errorDateEnd.style.display = "none";
+            resultsCard.style.display = "block"; // Muestra el card de resultados
+        });
+    }
 
-      serialInput.style.display = "none";
-      buscarRazon.style.display = "none"; // Oculta el botón
-      razonInput.style.display = "none"; // Oculta el botón
-      inputsDate.style.display = "none"; // Oculta los inputs de fecha
+    if (buscarPorRazonBtn) { // Asumiendo que este es el botón correcto para buscar por Razon Social
+        buscarPorRazonBtn.addEventListener("click", function () {
+            hideAllSearchInputs(); // Oculta todos los demás
+            razonInput.style.display = "block";
+            buscarRazonBtn.style.display = "block";
+            resultsCard.style.display = "block"; // Muestra el card de resultados
+        });
+    }
 
-      Rangoinput.style.display = "none"; // Muestra el input
-      BuscarRango.style.display = "none"; // Oculta el botón
-      Rangoinput1.style.display = "none"; // Muestra el input
-      buscarRegions.style.display = "none"; // Muestra el input
-      SelectRgions.style.display = "none"; // Oculta el botón
-      messageErrorDate.style.display = "none"; // Oculta el mensaje de error
-      messageErrorDateIni.style.display = "none"; // Oculta el mensaje de error
+    if (buscarPorRifBtn) {
+        buscarPorRifBtn.addEventListener("click", function () {
+            hideAllSearchInputs(); // Oculta todos los demás
+            rifTipoSelect.style.display = "block";
+            rifInput.style.display = "block";
+            buscarRifBtn.style.display = "block";
+            resultsCard.style.display = "block"; // Muestra el card de resultados
 
-      // Lógica para limpiar los datos anteriores de la búsqueda por región
-      // =======================================================
-      if (rifCountTableCard) {
-        razonCountTableCard.innerHTML = ""; // Limpia el contenido del contenedor de resultados de la razón social
-        serialCountTableCard.innerHTML = ""; // Limpia el contenido del contenedor de resultados de la serial
-        rangoCountTableCard.innerHTML = ""; // Limpia el contenido del contenedor de resultados del rango
+            // Lógica para validación de input de RIF
+            $("#rifInput").keyup(function () {
+                let string = $("#rifInput").val();
+                $("#rifInput").val(string.replace(/ /g, ""));
+            });
 
-        // Si es una tabla, podrías necesitar limpiar el tbody:
-        // const tableBody = regionResultsContainer.querySelector('tbody');
-        // if (tableBody) {
-        //     tableBody.innerHTML = '';
-        // }
-      }
-      // =======================================================
-    });
-  } else {
-    console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
-  }
+            if (rifInput) {
+                rifInput.addEventListener("input", function () {
+                    this.value = this.value.replace(/\D/g, "");
+                });
+            }
+        });
+    }
 
-  if (buscarPorSerialBtn) {
-    buscarPorSerialBtn.addEventListener("click", function () {
-      serialCountTableCard.style.display = "block"; // Muestra la tabla
-      serialInput.style.display = "block"; // Muestra el input
-      buscarSerial.style.display = "block"; // Oculta el botón
-      selectInputRif.style.display = "none"; // Muestra el select
-      rifInput.style.display = "none"; // Muestra el input
-      buscarRif.style.display = "none"; // Oculta el botón
-      buscarRazon.style.display = "none"; // Oculta el botón
-      razonInput.style.display = "none"; // Oculta el botón
+    if (buscarPorSerialBtn) {
+        buscarPorSerialBtn.addEventListener("click", function () {
+            hideAllSearchInputs(); // Oculta todos los demás
+            serialInput.style.display = "block";
+            buscarSerialBtn.style.display = "block";
+            resultsCard.style.display = "block"; // Muestra el card de resultados
+        });
+    }
 
-      Rangoinput.style.display = "none"; // Muestra el input
-      BuscarRango.style.display = "none"; // Oculta el botón
-      Rangoinput1.style.display = "none"; // Muestra el input
-      buscarRegions.style.display = "none"; // Muestra el input
-      SelectRgions.style.display = "none"; // Oculta el botón
-      messageErrorDate.style.display = "none"; // Oculta el mensaje de error
-      messageErrorDateIni.style.display = "none"; // Oculta el mensaje de error
+    // Inicializar ocultando todo al cargar la página
+    hideAllSearchInputs();
 
-      if (serialCountTableCard) {
-        razonCountTableCard.innerHTML = ""; // Limpia el contenido del contenedor de resultados de la razón social
-        rifCountTableCard.innerHTML = ""; // Limpia el contenido del contenedor de resultados de la serial
-        rangoCountTableCard.innerHTML = ""; // Limpia el contenido del contenedor de resultados del rango
-        // Si es una tabla, podrías necesitar limpiar el tbody:
-        // const tableBody = regionResultsContainer.querySelector('tbody');
-        // if (tableBody) {
-        //     tableBody.innerHTML = '';
-        // }
-      }
-      // =======================================================
-    });
-  } else {
-    console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
-  }
+    // Puedes agregar aquí la lógica para cargar la tabla de "Notificación de Repuestos Vencidos"
+    // cuando la página carga, o cuando se dispare el modal de SweetAlert.
+    // La notificación de repuestos vencidos es una ventana emergente separada del panel de búsqueda.
 });
 
 function getRegionUsuarios() {
@@ -1308,9 +1249,7 @@ function SendRango() {
   const initialDate = document.getElementById("date-ini").value;
   const endDate = document.getElementById("date-end").value;
   // Preparar los datos a enviar al backend
-  const datos = `action=SearchRangeDate&initial=${encodeURIComponent(
-    initialDate
-  )}&second=${encodeURIComponent(endDate)}`;
-  console
+  const datos = `action=SearchRangeDate&initial=${encodeURIComponent(initialDate)}&second=${encodeURIComponent(endDate)}`;
+  console.log("Datos a enviar:", datos);
   xhr.send(datos);
 }

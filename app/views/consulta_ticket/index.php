@@ -255,18 +255,17 @@ function mi_navbar() {}
                             <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
 
                             <div id="inputsDate" class="date-input-container">
-                                    <div class="date-input-wrapper">
-                                        <input type="date" id="date-ini" max="<?php  echo date("Y-m-d");?>">
-                                        <div id="errorDateIni" class="error-message"></div>
-                                    </div>
-
-                                    <div class="date-input-wrapper">
-                                        <input type="date" id="date-end"  max="<?php  echo date("Y-m-d");?>">
-                                        <div id="errorDateEnd" class="error-message"></div>
-                                    </div>
-
-                                    <button type="button" class="btn btn-primary" onclick="SendRango()" id="buscarRango" style="display: block; height: 10%; margin-top: 1%;">Buscar</button>
+                                <div class="date-input-wrapper">
+                                    <input type="date" id="date-ini" max="<?php  echo date("Y-m-d");?>">
+                                    <div id="errorDateIni" class="error-message"></div>
                                 </div>
+
+                                <div class="date-input-wrapper">
+                                    <input type="date" id="date-end"  max="<?php  echo date("Y-m-d");?>">
+                                    <div id="errorDateEnd" class="error-message"></div>
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="SendRango()" id="buscarRango" style="height: 10%; margin-top: 1%;">Buscar</button>
+                            </div>
 
                             <div class="d-flex align-items-center">
                                 <select id="SelectRgions" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
