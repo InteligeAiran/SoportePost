@@ -48,150 +48,148 @@ $(document).ready(function () {
 });
 
 function getTicketData() {
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketDataLab`);
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketDataLab`);
 
-  const tableElement = document.getElementById("tabla-ticket");
-  const theadElement = tableElement
-    ? tableElement.getElementsByTagName("thead")[0]
-    : null;
-  const tbodyElement = tableElement
-    ? tableElement.getElementsByTagName("tbody")[0]
-    : null;
-  const tableContainer = document.querySelector(".table-responsive");
+    const tableElement = document.getElementById("tabla-ticket");
+    const theadElement = tableElement
+        ? tableElement.getElementsByTagName("thead")[0]
+        : null;
+    const tbodyElement = tableElement
+        ? tableElement.getElementsByTagName("tbody")[0]
+        : null;
+    const tableContainer = document.querySelector(".table-responsive");
 
-  // Define column titles strictly based on your SQL function's output
-  const columnTitles = {
-    id_ticket: "ID Ticket",
-    nro_ticket: "Nro Ticket",
-    rif: "Rif",
-    razonsocial_cliente: "Razón Social", // Columna donde aplicaremos el truncado
-    full_name_tecnicoassignado: "Técnico Asignado",
-    fecha_envio_a_taller: "Fecha Envío a Taller",
-    name_status_payment: "Estatus Pago",
-    name_accion_ticket: "Acción Ticket",
-    name_status_lab: "Estatus Taller",
-    date_send_torosal_fromlab: "Fecha Envío a Rosal",
-    date_sendkey: "Fecha Envío Llave",
-    date_receivekey: "Fecha Recibo Llave",
-    date_receivefrom_desti: "Fecha Recibo Destino",
-  };
+    // Define column titles strictly based on your SQL function's output
+    const columnTitles = {
+        id_ticket: "ID Ticket",
+        nro_ticket: "Nro Ticket",
+        rif: "Rif",
+        razonsocial_cliente: "Razón Social", // Columna donde aplicaremos el truncado
+        full_name_tecnicoassignado: "Técnico Asignado",
+        fecha_envio_a_taller: "Fecha Envío a Taller",
+        name_status_payment: "Estatus Pago",
+        name_accion_ticket: "Acción Ticket",
+        name_status_lab: "Estatus Taller",
+        date_send_torosal_fromlab: "Fecha Envío a Rosal",
+        date_sendkey: "Fecha Envío Llave",
+    };
 
-  xhr.onload = function () {
-    if (xhr.status >= 200 && xhr.status < 300) {
-      try {
-        const response = JSON.parse(xhr.responseText);
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
 
-        if (response.success) {
-          const TicketData = response.ticket;
-          const detailsPanel = document.getElementById("ticket-details-panel"); // Referencia al panel de detalles
+                if (response.success) {
+                    const TicketData = response.ticket;
+                    const detailsPanel = document.getElementById("ticket-details-panel");
 
-          // Limpiar el panel de detalles al cargar nuevos datos de la tabla
-          detailsPanel.innerHTML =
-            "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
+                    // Limpiar el panel de detalles al cargar nuevos datos de la tabla
+                    detailsPanel.innerHTML =
+                        "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
 
-          if (TicketData && TicketData.length > 0) {
-            // Destroy DataTables if it's already initialized on this table
-            if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
-              $("#tabla-ticket").DataTable().destroy();
-              if (theadElement) theadElement.innerHTML = ""; // Clear old headers
-              if (tbodyElement) tbodyElement.innerHTML = ""; // Clear old body
-            }
+                    if (TicketData && TicketData.length > 0) {
+                        // Destroy DataTables if it's already initialized on this table
+                        if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
+                            $("#tabla-ticket").DataTable().destroy();
+                            if (theadElement) theadElement.innerHTML = ""; // Clear old headers
+                            if (tbodyElement) tbodyElement.innerHTML = ""; // Clear old body
+                        }
 
-            const allDataKeys = Object.keys(TicketData[0] || {});
-            const columnsConfig = [];
-            const displayLengthForTruncate = 25; // Define la longitud a la que truncar el texto
+                        const allDataKeys = Object.keys(TicketData[0] || {});
+                        const columnsConfig = [];
+                        const displayLengthForTruncate = 25; // Define la longitud a la que truncar el texto
 
-            for (const key in columnTitles) {
-              if (allDataKeys.includes(key)) {
-                const isVisible = TicketData.some((item) => {
-                  const value = item[key];
-                  return (
-                    value !== null &&
-                    value !== undefined &&
-                    String(value).trim() !== ""
-                  );
-                });
+                        // === LÓGICA PARA DETERMINAR SI LA COLUMNA "CARGA DE LLAVE" DEBE SER VISIBLE ===
+                        // Por defecto, asumimos que no debe ser visible a menos que encontremos un ticket que la necesite
+                        let shouldShowCargaLlaveColumn = false;
+                        for (const ticket of TicketData) {
+                            const hasSendKeyDate =
+                                ticket.date_sendkey !== null &&
+                                ticket.date_sendkey !== undefined &&
+                                String(ticket.date_sendkey).trim() !== "";
 
-                const columnDef = {
-                  data: key,
-                  title: columnTitles[key],
-                  defaultContent: "",
-                  visible: isVisible,
-                };
+                            // Si encontramos al menos un ticket que está "Reparado"
+                            // Y NO tiene `date_sendkey` (es decir, necesita el checkbox)
+                            if (ticket.name_status_lab === "Reparado" && !hasSendKeyDate) {
+                                shouldShowCargaLlaveColumn = true;
+                                break; // No necesitamos buscar más, la columna debe ser visible
+                            }
+                        }
+                        // === FIN LÓGICA PARA DETERMINAR VISIBILIDAD DE COLUMNA ===
 
-                // Lógica para aplicar truncado/expansión a 'razonsocial_cliente'
-                if (key === "razonsocial_cliente") {
-                  columnDef.render = function (data, type, row) {
-                    if (type === "display" || type === "filter") {
-                      const fullText = String(data || "").trim();
-                      if (fullText.length > displayLengthForTruncate) {
-                        return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(
-                          0,
-                          displayLengthForTruncate
-                        )}...</span>`;
-                      }
-                      return fullText;
-                    }
-                    return data;
-                  };
-                }
-                // Puedes añadir más 'if' para otras columnas que quieras truncar
-                /*
-                                else if (key === "otra_columna_larga") {
+                        for (const key in columnTitles) {
+                            if (allDataKeys.includes(key)) {
+                                const isVisible = TicketData.some((item) => {
+                                    const value = item[key];
+                                    return (
+                                        value !== null &&
+                                        value !== undefined &&
+                                        String(value).trim() !== ""
+                                    );
+                                });
+
+                                const columnDef = {
+                                    data: key,
+                                    title: columnTitles[key],
+                                    defaultContent: "",
+                                    visible: isVisible,
+                                };
+
+                                // Lógica para aplicar truncado/expansión a 'razonsocial_cliente'
+                                if (key === "razonsocial_cliente") {
                                     columnDef.render = function (data, type, row) {
-                                        if (type === 'display' || type === 'filter') {
+                                        if (type === "display" || type === "filter") {
                                             const fullText = String(data || "").trim();
                                             if (fullText.length > displayLengthForTruncate) {
-                                                return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(0, displayLengthForTruncate)}...</span>`;
+                                                return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(
+                                                    0,
+                                                    displayLengthForTruncate
+                                                )}...</span>`;
                                             }
                                             return fullText;
                                         }
                                         return data;
                                     };
                                 }
-                                */
+                                columnsConfig.push(columnDef);
+                            }
+                        }
 
-                columnsConfig.push(columnDef);
-              }
-            }
+                        // Añadir la columna de "Acciones" al final
+                        columnsConfig.push({
+                            data: null,
+                            title: "Acciones",
+                            orderable: false,
+                            searchable: false,
+                            width: "12%",
+                            render: function (data, type, row) {
+                                const idTicket = row.id_ticket;
+                                const currentStatus = row.name_status_lab;
+                                const nroTicket = row.nro_ticket;
+                                const confirmTaller = row.confirmreceive;
 
-            // Añadir la columna de "Acciones" al final
-            columnsConfig.push({
-              data: null,
-              title: "Acciones",
-              orderable: false,
-              searchable: false,
-              width: "12%", // Aumentamos el ancho para que quepan ambos botones
-              render: function (data, type, row) {
-                const idTicket = row.id_ticket;
-                const currentStatus = row.name_status_lab;
-                const nroTicket = row.nro_ticket; // <--- OBTENEMOS EL NÚMERO DE TICKET AQUÍ
-                const confirmTaller = row.confirmreceive;
+                                let buttonsHtml = "";
 
-                let buttonsHtml = "";
-
-                // Prioritize final states or pending confirmations
-                if (currentStatus === "Reparado") {
-                  buttonsHtml += `<button class="btn btn-warning btn-sm" disabled>Reparado</button>`;
-                } else if (currentStatus === "Irreparable") {
-                  buttonsHtml += `<button class="btn btn-danger btn-sm" disabled>Irreparable</button>`;
-                } else if (
-                  currentStatus === "Recibido en Taller" ||
-                  confirmTaller === "f"
-                ) {
-                  // This is the state where the ticket is in the workshop but hasn't been confirmed yet
-                  buttonsHtml += `
-                                         <button type="button" id = "CheckConfirmTaller"  class="btn btn-warning btn-sm confirm-waiting-btn"
+                                if (currentStatus === "Reparado") {
+                                    buttonsHtml += `<button class="btn btn-warning btn-sm" disabled>Reparado</button>`;
+                                } else if (currentStatus === "Irreparable") {
+                                    buttonsHtml += `<button class="btn btn-danger btn-sm" disabled>Irreparable</button>`;
+                                } else if (
+                                    currentStatus === "Recibido en Taller" ||
+                                    confirmTaller === "f"
+                                ) {
+                                    buttonsHtml += `
+                                        <button type="button" id = "CheckConfirmTaller"  class="btn btn-warning btn-sm confirm-waiting-btn"
                                             title="En espera de confirmar en el taller"  data-id-ticket="${idTicket}" data-nro-ticket="${nroTicket}">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-all" viewBox="0 0 16 16">
                                                 <path d="M8.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L2.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093L8.95 4.992zm-.92 5.14.92.92a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 1 0-1.091-1.028L9.477 9.417l-.485-.486z"/>
                                             </svg>
                                         </button>
                                     `;
-                } else {
-                  buttonsHtml += `
-                                         <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-btn ms-2"
+                                } else {
+                                    buttonsHtml += `
+                                        <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-btn ms-2"
                                             data-bs-toggle="modal"
                                             data-bs-target="#changeStatusModal"
                                             data-id="${idTicket}"
@@ -199,229 +197,413 @@ function getTicketData() {
                                             Cambiar Estatus
                                         </button>
                                     `;
-                }
+                                }
+                                return buttonsHtml;
+                            },
+                        });
 
-                return buttonsHtml;
-              },
-            });
+                        // === ADD "CARGA DE LLAVE" COLUMN (CHECKBOX) ===
+                        columnsConfig.push({
+                            data: null,
+                            title: "Carga de Llave",
+                            orderable: false,
+                            searchable: false,
+                            visible: shouldShowCargaLlaveColumn, // <--- APLICA LA VISIBILIDAD AQUI
+                            className: "dt-body-center",
+                            render: function (data, type, row) {
+                                const hasSendKeyDate =
+                                    row.date_sendkey !== null &&
+                                    row.date_sendkey !== undefined &&
+                                    String(row.date_sendkey).trim() !== "";
 
-            // === ADD "CARGA DE LLAVE" COLUMN ===
-            columnsConfig.push({
-              data: null,
-              title: "Carga de Llave",
-              orderable: false,
-              searchable: false,
-              visible: true,
-              className: "dt-body-center",
-              render: function (data, type, row) {
-                const hasReceiveKeyDate =
-                  row.date_receivekey !== null &&
-                  row.date_receivekey !== undefined &&
-                  String(row.date_receivekey).trim() !== "";
+                                if (row.name_status_lab === "Reparado" && !hasSendKeyDate) {
+                                    return `<input type="checkbox" class="receive-key-checkbox" data-id-ticket="${row.id_ticket}" data-nro-ticket="${row.nro_ticket}">`;
+                                } else if (hasSendKeyDate) {
+                                    // Si la columna es visible y tiene fecha, puedes mostrar el ícono de check
+                                    return '<i class="bi bi-check-circle-fill text-success" title="Llave Recibida"></i>';
+                                }
+                                return "";
+                            },
+                        });
 
-                if (row.name_status_lab === "Reparado") {
-                  return `<input type="checkbox" class="receive-key-checkbox" data-id-ticket="${
-                    row.id_ticket
-                  }" ${hasReceiveKeyDate ? "checked disabled" : ""}>`;
-                } else {
-                  return "";
-                }
-              },
-            });
+                        // === ADD "CARGA DE LLAVE (BOTÓN)" COLUMN ===
+                        columnsConfig.push({
+                            data: null,
+                            title: "Acción", // Nuevo título para la columna del botón
+                            orderable: false,
+                            searchable: false,
+                            visible: true, // El botón SIEMPRE es visible si la columna es visible
+                            className: "dt-body-center",
+                            render: function (data, type, row) {
+                                // El botón solo se muestra si el estado es 'Reparado'.
+                                // La lógica de si la llave ya fue enviada se maneja en el event listener del botón.
+                                if (row.name_status_lab === "Reparado") {
+                                    // Añadimos un data-attribute para la fecha de envío para verificarla en el click
+                                    const hasSendKeyDate =
+                                        row.date_sendkey !== null &&
+                                        row.date_sendkey !== undefined &&
+                                        String(row.date_sendkey).trim() !== "";
 
-            // Initialize DataTables
-            const dataTableInstance = $(tableElement).DataTable({
-              scrollX: "200px",
-              responsive: false,
-              data: TicketData,
-              columns: columnsConfig,
-              pagingType: "simple_numbers",
-              lengthMenu: [5, 10, 25, 50, 100],
-              autoWidth: false,
-              buttons: [
-                {
-                  extend: "colvis", // Column visibility button
-                  text: "Mostrar/Ocultar Columnas",
-                  className: "btn btn-secondary",
-                },
-              ],
-              language: {
-                lengthMenu: "Mostrar _MENU_",
-                emptyTable: "No hay datos disponibles en la tabla",
-                zeroRecords: "No se encontraron resultados para la búsqueda",
-                info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
-                infoEmpty: "No hay datos disponibles",
-                infoFiltered: " de _MAX_ Disponibles",
-                search: "Buscar:",
-                loadingRecords: "Cargando...",
-                processing: "Procesando...",
-                paginate: {
-                  first: "Primero",
-                  last: "Último",
-                  next: "Siguiente",
-                  previous: "Anterior",
-                },
-                buttons: {
-                  colvis: "Visibilidad de Columna",
-                },
-              },
-            });
+                                    // Pasamos la información de si ya fue enviada al botón
+                                    const dataSent = hasSendKeyDate ? 'true' : 'false';
 
-            // ************* INICIO: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO (Aplicada DESPUÉS de la inicialización de DataTables) *************
-            $("#tabla-ticket tbody")
-              .off("click", ".truncated-cell, .expanded-cell") // Usa .off() para evitar múltiples listeners
-              .on("click", ".truncated-cell, .expanded-cell", function (e) {
-                e.stopPropagation(); // Evita que el clic en la celda active el clic de la fila completa
-                const $cellSpan = $(this);
-                const fullText = $cellSpan.data("full-text"); // Obtiene el texto completo del atributo data-
+                                    return `<button class="btn btn-info btn-sm load-key-button" 
+                                                    title="Enviar Al Rosal" 
+                                                    data-id-ticket="${row.id_ticket}" 
+                                                    data-nro-ticket="${row.nro_ticket}" 
+                                                    data-has-send-key-date="${dataSent}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-headset" viewBox="0 0 16 16">
+                                                  <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5"/>
+                                                </svg>
+                                            </button>`;
+                                } else {
+                                    return ""; // No mostrar nada si no es "Reparado"
+                                }
+                            },
+                        });
 
-                if ($cellSpan.hasClass("truncated-cell")) {
-                  $cellSpan
-                    .removeClass("truncated-cell")
-                    .addClass("expanded-cell");
-                  $cellSpan.text(fullText);
-                } else {
-                  $cellSpan
-                    .removeClass("expanded-cell")
-                    .addClass("truncated-cell");
-                  // Asegúrate de que displayLengthForTruncate sea accesible o defínela aquí de nuevo
-                  const displayLength = 25; // La misma longitud de truncado usada en el render
-                  if (fullText.length > displayLength) {
-                    $cellSpan.text(
-                      fullText.substring(0, displayLength) + "..."
-                    );
-                  } else {
-                    $cellSpan.text(fullText); // Si el texto es corto, no debería tener "...", solo el texto completo
-                  }
-                }
-              });
-            // ************* FIN: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO *************
+                        // Initialize DataTables
+                        const dataTableInstance = $(tableElement).DataTable({
+                            scrollX: "200px",
+                            responsive: false,
+                            data: TicketData,
+                            columns: columnsConfig,
+                            pagingType: "simple_numbers",
+                            lengthMenu: [5, 10, 25, 50, 100],
+                            autoWidth: false,
+                            buttons: [
+                                {
+                                    extend: "colvis",
+                                    text: "Mostrar/Ocultar Columnas",
+                                    className: "btn btn-secondary",
+                                },
+                            ],
+                            language: {
+                                lengthMenu: "Mostrar _MENU_",
+                                emptyTable: "No hay datos disponibles en la tabla",
+                                zeroRecords: "No se encontraron resultados para la búsqueda",
+                                info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+                                infoEmpty: "No hay datos disponibles",
+                                infoFiltered: " de _MAX_ Disponibles",
+                                search: "Buscar:",
+                                loadingRecords: "Cargando...",
+                                processing: "Procesando...",
+                                paginate: {
+                                    first: "Primero",
+                                    last: "Último",
+                                    next: "Siguiente",
+                                    previous: "Anterior",
+                                },
+                                buttons: {
+                                    colvis: "Visibilidad de Columna",
+                                },
+                            },
+                        });
 
-            // === ADD THE CLICK EVENT LISTENER FOR TABLE ROWS HERE ===
-            $("#tabla-ticket tbody")
-              .off("click", "tr") // .off() to prevent multiple bindings if called multiple times
-              .on("click", "tr", function () {
-                const tr = $(this);
-                const rowData = dataTableInstance.row(tr).data();
+                        // ... (El resto de tus event listeners: .truncated-cell, .load-key-button, tr click, .confirm-waiting-btn) ...
+                        // ************* INICIO: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO (Aplicada DESPUÉS de la inicialización de DataTables) *************
+                        $("#tabla-ticket tbody")
+                            .off("click", ".truncated-cell, .expanded-cell") // Usa .off() para evitar múltiples listeners
+                            .on("click", ".truncated-cell, .expanded-cell", function (e) {
+                                e.stopPropagation(); // Evita que el clic en la celda active el clic de la fila completa
+                                const $cellSpan = $(this);
+                                const fullText = $cellSpan.data("full-text"); // Obtiene el texto completo del atributo data-
 
-                if (!rowData) {
-                  return;
-                }
+                                if ($cellSpan.hasClass("truncated-cell")) {
+                                    $cellSpan
+                                        .removeClass("truncated-cell")
+                                        .addClass("expanded-cell");
+                                    $cellSpan.text(fullText);
+                                } else {
+                                    $cellSpan
+                                        .removeClass("expanded-cell")
+                                        .addClass("truncated-cell");
+                                    const displayLength = 25; // La misma longitud de truncado usada en el render
+                                    if (fullText.length > displayLength) {
+                                        $cellSpan.text(
+                                            fullText.substring(0, displayLength) + "..."
+                                        );
+                                    } else {
+                                        $cellSpan.text(fullText);
+                                    }
+                                }
+                            });
+                        // ************* FIN: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO *************
 
-                $("#tabla-ticket tbody tr").removeClass("table-active");
-                tr.addClass("table-active");
+                       // ************* INICIO: LÓGICA PARA EL BOTÓN "ENVIAR AL ROSAL" *************
+                        $("#tabla-ticket tbody")
+                            .off("click", ".load-key-button") // Evita múltiples listeners
+                            .on("click", ".load-key-button", function (e) {
+                                e.stopPropagation(); // Evita que el clic en el botón active el clic de la fila.
 
-                const ticketId = rowData.id_ticket; // <--- IMPORTANT CHANGE HERE
+                                const ticketId = $(this).data("id-ticket");
+                                const nroTicket = $(this).data("nro-ticket");
+                                const hasSendKeyDate = $(this).data("has-send-key-date"); // Leer el atributo del botón
 
-                const selectedTicketDetails = TicketData.find(
-                  (t) => t.id_ticket == ticketId
-                );
+                                if (hasSendKeyDate != true) { // Ojo: Los data attributes devuelven booleanos si son 'true'/'false'
+                                  // Si la llave ya fue enviada, muestra un aviso diferente (o no hagas nada)
+                                  Swal.fire({
+                                    icon: "info",
+                                    title: "Información",
+                                    text: `¿Desea enviar al Rosal el POS asociado al Nro de ticket: ${nroTicket} Sin cargar las llaves?.`,
+                                    confirmButtonText: "Si",
+                                    color: "black",
+                                    confirmButtonColor: "#003594",
+                                    cancelButtonText: "No",
+                                    showCancelButton: true,
+                                    showConfirmButton: true,
+                                    focusConfirm: false,
+                                    allowOutsideClick: false, 
+                                    allowEscapeKey: false,
+                                    showCloseButton: true,
+                                    keydownListenerCapture: true,
+                                  }).then((result) => { // Aquí capturamos la respuesta del usuario
+                                    if (result.isConfirmed) {
+                                      sendTicketToRosal(ticketId, nroTicket, true); // `true` podría indicar "sin llaves"
+                                    }
+                                  });
+                                  return; // Detiene la ejecución aquí, no abre el modal de confirmación
+                                }
 
-                if (selectedTicketDetails) {
-                  // Make sure detailsPanel, formatTicketDetailsPanel, loadTicketHistory,
-                  // and downloadImageModal are defined and accessible in this scope.
-                  // For example: const detailsPanel = document.getElementById("yourDetailsPanelId");
-                  // You might need to pass them as arguments to getTicketData or declare them globally.
-                  detailsPanel.innerHTML = formatTicketDetailsPanel(
-                    selectedTicketDetails
-                  );
-                  loadTicketHistory(ticketId);
-                  if (selectedTicketDetails.serial_pos) {
-                    downloadImageModal(selectedTicketDetails.serial_pos);
-                  } else {
-                    const imgElement = document.getElementById(
-                      "device-ticket-image"
-                    );
-                    if (imgElement) {
-                      imgElement.src =
-                        '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png'; // Corrige esta ruta si es JS puro y no PHP
-                      imgElement.alt = "Serial no disponible";
+                                // Si la llave NO ha sido enviada, procede a mostrar el modal de confirmación
+                                currentTicketIdForSendKey = ticketId;
+                                currentNroTicketForSendKey = nroTicket;
+
+                                // Establecer el Nro de Ticket en el modal
+                                $("#modalTicketNroSendKey").text(nroTicket);
+                                $("#modalHiddenTicketIdSendKey").val(ticketId); // Guardar el ID en un hidden input
+
+                                if (confirmSendKeyModalInstance) {
+                                    confirmSendKeyModalInstance.show(); // Mostrar el modal de confirmación
+                                } else {
+                                    console.error("La instancia del modal 'confirmSendKeyModal' no está disponible.");
+                                }
+                            });
+                        // ************* FIN: LÓGICA PARA EL BOTÓN "ENVIAR AL ROSAL" *************
+
+
+                        // === ADD THE CLICK EVENT LISTENER FOR TABLE ROWS HERE ===
+                        $("#tabla-ticket tbody")
+                            .off("click", "tr") // .off() to prevent multiple bindings if called multiple times
+                            .on("click", "tr", function (e) {
+                                // Asegúrate de que el clic no proviene de una celda truncable/expandible o de un botón.
+                                if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('expanded-cell') || $(e.target).is('button') || $(e.target).is('input[type="checkbox"]')) {
+                                    return; // Si el clic fue en la celda del checkbox o el botón, no activar el evento de la fila.
+                                }
+
+                                const tr = $(this);
+                                const rowData = dataTableInstance.row(tr).data();
+
+                                if (!rowData) {
+                                    return;
+                                }
+
+                                $("#tabla-ticket tbody tr").removeClass("table-active");
+                                tr.addClass("table-active");
+
+                                const ticketId = rowData.id_ticket;
+
+                                const selectedTicketDetails = TicketData.find(
+                                    (t) => t.id_ticket == ticketId
+                                );
+
+                                if (selectedTicketDetails) {
+                                    detailsPanel.innerHTML = formatTicketDetailsPanel(
+                                        selectedTicketDetails
+                                    );
+                                    loadTicketHistory(ticketId);
+                                    if (selectedTicketDetails.serial_pos) {
+                                        downloadImageModal(selectedTicketDetails.serial_pos);
+                                    } else {
+                                        const imgElement = document.getElementById(
+                                            "device-ticket-image"
+                                        );
+                                        if (imgElement) {
+                                            imgElement.src =
+                                                '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png'; // Corrige esta ruta si es JS puro y no PHP
+                                            imgElement.alt = "Serial no disponible";
+                                        }
+                                    }
+                                } else {
+                                    detailsPanel.innerHTML =
+                                        "<p>No se encontraron detalles para este ticket.</p>";
+                                }
+                            });
+                        // === END CLICK EVENT LISTENER ===
+
+                        $("#tabla-ticket tbody")
+                            .off("click", ".confirm-waiting-btn")
+                            .on("click", ".confirm-waiting-btn", function (e) {
+                                e.stopPropagation();
+                                const ticketId = $(this).data("id-ticket");
+                                const nroTicket = $(this).data("nro-ticket");
+
+                                currentTicketIdForConfirmTaller = ticketId;
+                                currentNroTicketForConfirmTaller = nroTicket;
+
+                                $("#modalTicketIdConfirmTaller").val(ticketId);
+                                $("#modalHiddenNroTicketConfirmTaller").val(nroTicket);
+
+                                $("#modalTicketIdConfirmTaller").text(nroTicket);
+
+                                if (confirmInTallerModalInstance) {
+                                    confirmInTallerModalInstance.show();
+                                } else {
+                                    console.error(
+                                        "La instancia del modal 'confirmInTallerModal' no está disponible."
+                                    );
+                                }
+                            });
+
+
+                        if (tableContainer) {
+                            tableContainer.style.display = ""; // Show the table container
+                        }
+                    } else {
+                        if (tableContainer) {
+                            tableContainer.innerHTML = "<p>No hay datos disponibles.</p>";
+                            tableContainer.style.display = "";
+                        }
                     }
-                  }
                 } else {
-                  detailsPanel.innerHTML =
-                    "<p>No se encontraron detalles para este ticket.</p>";
+                    if (tableContainer) {
+                        tableContainer.innerHTML =
+                            "<p>Error al cargar los datos: " +
+                            (response.message || "Mensaje desconocido") +
+                            "</p>";
+                        tableContainer.style.display = "";
+                    }
+                    console.error("Error from API:", response.message);
                 }
-              });
-            // === END CLICK EVENT LISTENER ===
-
-            $("#tabla-ticket tbody")
-              .off("click", ".confirm-waiting-btn")
-              .on("click", ".confirm-waiting-btn", function (e) {
-                e.stopPropagation();
-                const ticketId = $(this).data("id-ticket");
-                const nroTicket = $(this).data("nro-ticket");
-
-                // Almacenar en las variables globales
-                currentTicketIdForConfirmTaller = ticketId;
-                currentNroTicketForConfirmTaller = nroTicket;
-
-                // Opcional: poner el ID y Nro de ticket en los inputs hidden del modal como respaldo
-                $("#modalTicketIdConfirmTaller").val(ticketId);
-                $("#modalHiddenNroTicketConfirmTaller").val(nroTicket);
-
-                // Actualiza el texto del modal con el número de ticket
-                $("#modalTicketIdConfirmTaller").text(nroTicket);
-
-                // ¡CAMBIO CLAVE AQUÍ! Usa la instancia del modal para mostrarlo
-                if (confirmInTallerModalInstance) {
-                  confirmInTallerModalInstance.show();
-                } else {
-                  console.error(
-                    "La instancia del modal 'confirmInTallerModal' no está disponible."
-                  );
+            } catch (error) {
+                if (tableContainer) {
+                    tableContainer.innerHTML = "<p>Error al procesar la respuesta.</p>";
+                    tableContainer.style.display = "";
                 }
-              });
-
-            if (tableContainer) {
-              tableContainer.style.display = ""; // Show the table container
+                console.error("Error parsing JSON:", error);
             }
-          } else {
+        } else if (xhr.status === 404) {
             if (tableContainer) {
-              tableContainer.innerHTML = "<p>No hay datos disponibles.</p>";
-              tableContainer.style.display = "";
+                tableContainer.innerHTML = "<p>No se encontraron datos.</p>";
+                tableContainer.style.display = "";
             }
-          }
         } else {
-          if (tableContainer) {
-            tableContainer.innerHTML =
-              "<p>Error al cargar los datos: " +
-              (response.message || "Mensaje desconocido") +
-              "</p>";
-            tableContainer.style.display = "";
-          }
-          console.error("Error from API:", response.message);
+            if (tableContainer) {
+                tableContainer.innerHTML = `<p>Error de conexión: ${xhr.status} ${xhr.statusText}</p>`;
+                tableContainer.style.display = "";
+            }
+            console.error("Error:", xhr.status, xhr.statusText);
         }
-      } catch (error) {
+    };
+
+    xhr.onerror = function () {
         if (tableContainer) {
-          tableContainer.innerHTML = "<p>Error al procesar la respuesta.</p>";
-          tableContainer.style.display = "";
+            tableContainer.innerHTML = "<p>Error de red.</p>";
+            tableContainer.style.display = "";
         }
-        console.error("Error parsing JSON:", error);
-      }
-    } else if (xhr.status === 404) {
-      if (tableContainer) {
-        tableContainer.innerHTML = "<p>No se encontraron datos.</p>";
-        tableContainer.style.display = "";
-      }
-    } else {
-      if (tableContainer) {
-        tableContainer.innerHTML = `<p>Error de conexión: ${xhr.status} ${xhr.statusText}</p>`;
-        tableContainer.style.display = "";
-      }
-      console.error("Error:", xhr.status, xhr.statusText);
-    }
-  };
+        console.error("Error de red");
+    };
 
-  xhr.onerror = function () {
-    if (tableContainer) {
-      tableContainer.innerHTML = "<p>Error de red.</p>";
-      tableContainer.style.display = "";
-    }
-    console.error("Error de red");
-  };
+    xhr.send();
+}
 
-  xhr.send();
+/**
+ * Función para manejar el envío del ticket a Gestión Rosal usando XMLHttpRequest.
+ * @param {string} id - El ID del ticket.
+ * @param {string} nro - El número de ticket.
+ * @param {boolean} withoutKeys - Indica si el envío es "sin llaves" (opcional).
+ */
+function sendTicketToRosal(id, nro, withoutKeys = false) {
+    /*console.log(`Preparando para enviar ticket Nro: ${nro} (ID: ${id}) a Gestión Rosal.`);
+    if (withoutKeys) {
+        console.log("Este envío se realiza sin cargar las llaves.");
+    }*/
+
+    const id_user = document.getElementById("userId").value; // Obtener el ID del usuario desde el formulario   
+
+    const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/SendToGestionRosal`; // **IMPORTANTE: Define la URL correcta para tu backend**
+
+    // Prepara los datos a enviar en formato application/x-www-form-urlencoded
+    const dataToSendString = `action=SendToGestionRosal&ticketId=${encodeURIComponent(id)}}&sendWithoutKeys=${encodeURIComponent(withoutKeys)}&id_user=${encodeURIComponent(id_user)}`;
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+
+                // Asume que tu backend devuelve { success: true, message: "..." }
+                if (response.success === true) {
+                    Swal.fire({
+                        title: "¡Enviado!",
+                        text: "El ticket se ha enviado a Gestión Rosal correctamente.",
+                        icon: "success",
+                        confirmButtonText: "Ok",
+                        confirmButtonColor: "#003594",
+                        color: "black",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Opcional: Recargar la tabla o actualizar el estado del botón/fila si es necesario
+                            // location.reload(); // Solo si necesitas recargar toda la página
+                            // O una función para recargar solo la tabla si aplica
+                            // recargarTablaDeTickets();
+                        }
+                    });
+                } else {
+                    // Si la API retorna success: false o un error en el cuerpo
+                    console.warn("La API retornó éxito: falso o un valor inesperado:", response);
+                    Swal.fire({
+                        title: "Error al enviar",
+                        text: response.message || "No se pudo enviar el ticket a Gestión Rosal. (Mensaje inesperado)",
+                        icon: "error",
+                        confirmButtonText: "Ok",
+                        confirmButtonColor: "#d33",
+                        color: "black",
+                    });
+                }
+            } catch (error) {
+                console.error("Error al analizar la respuesta JSON para el envío al Rosal:", error, xhr.responseText);
+                Swal.fire({
+                    title: "Error de Procesamiento",
+                    text: "Hubo un problema al procesar la respuesta del servidor.",
+                    icon: "error",
+                    confirmButtonText: "Ok",
+                    confirmButtonColor: "#d33",
+                    color: "black",
+                });
+            }
+        } else {
+            // Errores HTTP como 404, 500, etc.
+            console.error("Error al enviar el ticket (HTTP):", xhr.status, xhr.statusText, xhr.responseText);
+            Swal.fire({
+                title: "Error del Servidor",
+                text: `No se pudo comunicar con el servidor. Código: ${xhr.status} - ${xhr.statusText}`,
+                icon: "error",
+                confirmButtonText: "Ok",
+                confirmButtonColor: "#d33",
+                color: "black",
+            });
+        }
+    };
+
+    xhr.onerror = function () {
+        // Errores de red como conexión perdida
+        console.error("Error de red al intentar enviar el ticket al Rosal.");
+        Swal.fire({
+            title: "Error de Conexión",
+            text: "Hubo un problema de red. Por favor, inténtalo de nuevo.",
+            icon: "error",
+            confirmButtonText: "Ok",
+            confirmButtonColor: "#d33",
+            color: "black",
+        });
+    };
+
+    xhr.send(dataToSendString);
 }
 
 function updateTicketStatusInTaller(ticketId) {
@@ -937,11 +1119,12 @@ $(document).ready(function () {
   $("#tabla-ticket").on("change", ".receive-key-checkbox", function () {
     const checkbox = $(this);
     const idTicket = checkbox.data("id-ticket");
+    const nro_ticket = checkbox.data("nro-ticket");
 
     if (checkbox.is(":checked")) {
       Swal.fire({
-        title: "¿Seguro que ya cargaste las llaves?",
-        text: "Esta acción registrará la fecha de recepción de la llave.",
+        title: `¿Deseas Cargar las llaves al ticket Nro: ${nro_ticket}?`, // <-- CAMBIO AQUÍ
+        html: "Esta acción registrará la fecha de recepción de la llave. <span style = 'color:red;'>Confirmar carga de llaves en 'Gestión Rosal'.</span>",
         icon: "warning",
         showCancelButton: true,
         showCloseButton: true, // Agrega esta línea para mostrar el botón de cerrar (X)
@@ -952,6 +1135,11 @@ $(document).ready(function () {
         confirmButtonText: "Sí, cargar fecha",
         cancelButtonText: "Cancelar",
         color: "#000000", // Color del texto general del modal
+        focusConfirm: false,
+        allowOutsideClick: false, 
+        allowEscapeKey: false,
+        showCloseButton: true,
+        keydownListenerCapture: true,
       }).then((result) => {
         if (result.isConfirmed) {
           // Si el usuario confirma, llamar a la función para guardar la fecha
@@ -987,6 +1175,7 @@ $(document).ready(function () {
               icon: "success",
               confirmButtonText: "Entendido",
               color: "black",
+              confirmButtonColor: "#003594",
             }).then(() => {
               // Opcional: Recargar los datos de la tabla para ver el cambio
               getTicketData();

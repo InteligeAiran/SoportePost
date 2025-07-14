@@ -3020,8 +3020,6 @@ function fetchSerialData(serial, rif) {
               tbody.appendChild(tr);
             }
           }
-
-          // Actualiza la imagen del modal
           downloadImageModal(serial);
 
           // --- MODIFICACIÓN CLAVE AQUÍ ---

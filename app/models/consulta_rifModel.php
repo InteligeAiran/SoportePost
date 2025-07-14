@@ -838,14 +838,14 @@ class consulta_rifModel extends Model
             $id_accion_ticket1 = 7; // Define esto una sola vez
 
             if ($id_new_status == 2) {
-                $sqlInserttickets = "UPDATE tickets SET date_sendkey = NOW(), id_status_key = TRUE, id_accion_ticket = " . $id_accion_ticket1 . " WHERE id_ticket = " . $id_ticket . ";";
+                /*$sqlInserttickets = "UPDATE tickets SET date_sendkey = NOW(), id_status_key = TRUE, id_accion_ticket = " . $id_accion_ticket1 . " WHERE id_ticket = " . $id_ticket . ";";
                 $resultsqlInserttickets = $this->db->pgquery($sqlInserttickets);
 
                 if (!$resultsqlInserttickets) {
                     error_log("Error al actualizar tickets (status 2): " . pg_last_error($this->db->getConnection()));
                     $this->db->closeConnection();
                     return array('error' => 'Error al actualizar tickets (status 2): ' . pg_last_error($this->db->getConnection()));
-                }
+                }*/
 
                  $id_new_status_payment = 'NULL'; 
                 $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . $id_ticket . ";";
@@ -1009,21 +1009,49 @@ class consulta_rifModel extends Model
     public function UpdateKeyReceiveDate($id_ticket, $id_user)
     {
         try {
-            $id_accion_ticket = 9;
-            $sql = "UPDATE tickets SET date_receivekey = NOW(), id_accion_ticket = " . $id_accion_ticket . "
-                    WHERE id_ticket = " . $id_ticket . ";";
+            $id_accion_ticket = 8;
+            $sql = "UPDATE tickets SET date_sendkey = NOW(), id_status_key =  TRUE, id_accion_ticket = ".$id_accion_ticket." WHERE id_ticket = ".$id_ticket.";";
             $result = Model::getResult($sql, $this->db);
 
             if ($result) {
-                $new_status_domiciliacion = 1; // Asignar un valor predeterminado o dinámico según tu lógica
-                $sqlInsertHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
-                    (int) $id_ticket,    // Corresponds to p_id_ticket
-                    (int) $id_user,      // Corresponds to p_changedstatus_by
-                    (int) 1,     // Corresponds to p_new_action (assuming it's always 4 based on your function's internal logic)
-                    (int) $id_accion_ticket,        // Corresponds to p_id_action_ticket
-                    (int) 2,
-                    (int) $new_status_domiciliacion
+                   $id_new_status_payment = 'NULL'; 
+                $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . $id_ticket . ";";
+                $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
+                if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
+                    $status_payment_data = pg_fetch_assoc($status_payment_status_result, 0);
+                    $id_new_status_payment = $status_payment_data['id_status_payment'] !== null ? (int)$status_payment_data['id_status_payment'] : 'NULL';
+                }
+
+                $new_status_domiciliacion = 'NULL'; 
+                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . $id_ticket . ";";
+                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                    $domiciliacion_data = pg_fetch_assoc($status_domiciliacion_result, 0);
+                    $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
+                }
+                    
+                    $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $id_ticket. ";";
+                    $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+
+                    if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                        $row = [];
+                        for ($i = 0; $i < pg_num_rows($status_lab_result); $i++) {
+                            $row[] = pg_fetch_assoc($status_lab_result, $i);
+                        }
+                        $id_new_status_lab = $row[0]['id_status_lab'] ?? null;
+                    } else {
+                        $id_new_status_lab = 0;
+                    }
+
+                  $sqlInsertHistory = sprintf(
+                     "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                    (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
+                    (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
+                    2, // Usamos la acción específica para el historial
+                    (int)$id_accion_ticket, // Usamos la acción específica para el historial
+                    (int)$id_new_status_lab,
+                    $id_new_status_payment,
+                    $new_status_domiciliacion
                 );
 
                 $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
@@ -1600,6 +1628,23 @@ class consulta_rifModel extends Model
             // Log the error (e.g., error_log($e->getMessage());)
             return false; // Return false on error
         }
+    }
+
+    public function SendToGestionRosal($id_ticket, $id_user, $keyCharged){
+        try {
+                $sql = "UPDATE tickets SET id_accion_ticket = 14 WHERE id_ticket = ". $id_ticket. ";";
+                $result = Model::getResult($sql, $this->db);
+                if ($result) {
+                    $sql_status_lab = "UPDATE tickets_status_lab SET id_status_lab = 8 WHERE id_ticket = ". $id_ticket. ";";
+                    $result_status_lab = Model::getResult($sql_status_lab, $this->db);
+                } else {
+                    return false;
+                }
+        } catch (Throwable $e) {
+            // Log the error (e.g., error_log($e->getMessage());)
+            return false; // Return false on error
+        }
+
     }
 }
 ?>

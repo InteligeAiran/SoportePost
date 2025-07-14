@@ -198,6 +198,10 @@ class Consulta extends Controller
                     $this->handleSendToComercial();
                     break;
 
+                case 'SendToGestionRosal': 
+                    $this->handleSendToGestionRosal();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -1207,6 +1211,25 @@ class Consulta extends Controller
 
         if ($result) {
             $this->response(['success' => true,'message' => 'El ticket ha sido enviado a comercial exitosamente.'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleSendToGestionRosal(){
+        $ticketId = isset($_POST['ticketId'])? $_POST['ticketId'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+        $keyCharged = isset($_POST['sendWithoutKeys'])? $_POST['sendWithoutKeys'] : '';
+
+        if (!$ticketId ||!$id_user) {
+            $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->SendToGestionRosal($ticketId, $id_user, $keyCharged);
+        if ($result) {
+            $this->response(['success' => true,'message' => 'El ticket ha sido enviado a gestión Rosal exitosamente.'], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }

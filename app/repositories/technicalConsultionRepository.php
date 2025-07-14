@@ -587,5 +587,10 @@ class TechnicalConsultionRepository
         $result = $this->model->SendToComercial($id_ticket, $id_user);
         return $result;
     }
+
+    public function SendToGestionRosal($id_ticket, $id_user, $keyCharged){
+        $result = $this->model->SendToGestionRosal($id_ticket, $id_user, $keyCharged);
+        return $result;
+    }
 }
 ?>

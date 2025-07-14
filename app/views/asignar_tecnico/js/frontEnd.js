@@ -1099,11 +1099,7 @@ function markTicketAsReceived(ticketId, nroTicket) {
     // El nuevo texto del header va aquí
     title: `Confirmación de recibido`, // Texto fijo para el encabezado
     // El contenido del cuerpo (SVG y texto explicativo) va en 'html'
-    html: `
-            ${customWarningSvg}
-            <p class="mt-3">¿Marcar el ticket ${nroTicket} como recibido?</p>
-            <p>Esta acción registrará la fecha de recepción y habilitará la asignación de técnico.</p>
-        `,
+    html: `${customWarningSvg}<p class="mt-3">¿Marcar el ticket ${nroTicket} como recibido?</p><p>Esta acción registrará la fecha de recepción y habilitará la asignación de técnico.</p>`,
     showCancelButton: true,
     confirmButtonColor: "#007bff",
     cancelButtonColor: "#6c757d",
