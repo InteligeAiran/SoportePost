@@ -44,7 +44,7 @@
                 /* Ejemplo: Espaciado interno */
                 font-size: 0.9em;
                 /* Ejemplo: Tamaño de la fuente */
-                width: 18%;
+                width: 27%;
             }
 
             /* Estilizar el label "Buscar:" */
