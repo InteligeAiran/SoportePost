@@ -413,11 +413,8 @@ function getTicketDataFinaljs() {
                       case "Abierto":
                         statusColor = "#4CAF50"; // Verde
                         break;
-                      case "Enviado a taller":
+                      case "En proceso":
                         statusColor = "#2196F3"; // Azul
-                        break;
-                      case "actualizacion de cifrado":
-                        statusColor = "#FF9800"; // Naranja
                         break;
                       default:
                         if (statusText === "") {
@@ -459,8 +456,6 @@ function getTicketDataFinaljs() {
                         Subir Documento
                     </button>`;
                 } else {
-                  // Si el estatus del laboratorio es "Reparado" o "Irreparable"
-                  // y no es "Llaves Cargadas", muestra el botón "Cerrado"
                   return `<button type="button" class="btn btn-secondary btn-sm disabled">Falta Requisitos</button>`;
                 }
               },
@@ -495,7 +490,8 @@ function getTicketDataFinaljs() {
 
             // Initialize DataTables
             const dataTable = $(tableElement).DataTable({
-              responsive: true,
+              responsive: false,
+              scrollX: "200px",
               data: TicketData,
               columns: columnsConfig,
               pagingType: "simple_numbers",
@@ -509,12 +505,12 @@ function getTicketDataFinaljs() {
                 },
               ],
               language: {
-                lengthMenu: "Mostrar _MENU_ registros",
+                lengthMenu: "Mostrar _MENU_",
                 emptyTable: "No hay datos disponibles en la tabla",
                 zeroRecords: "No se encontraron resultados para la búsqueda",
-                info: "Mostrando página _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
+                info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
                 infoEmpty: "No hay datos disponibles",
-                infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
+                infoFiltered: " de _MAX_ Disponibles",
                 search: "Buscar:",
                 loadingRecords: "Cargando...",
                 processing: "Procesando...",

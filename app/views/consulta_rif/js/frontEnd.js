@@ -1826,6 +1826,8 @@ document.addEventListener("DOMContentLoaded", function () {
     SendDataFailure2(idStatusPayment); // Envía los datos de la falla con ese estado
   });
 
+  console.log(sendForm2Button)
+
   // --- Inicialización al Cargar la Página ---
   updateDocumentUploadVisibility(); // Establecer la visibilidad correcta de los elementos al cargar.
 

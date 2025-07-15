@@ -356,7 +356,6 @@ function getTicketData() {
                                     allowOutsideClick: false, 
                                     allowEscapeKey: false,
                                     showCloseButton: true,
-                                    keydownListenerCapture: true,
                                   }).then((result) => { // Aquí capturamos la respuesta del usuario
                                     if (result.isConfirmed) {
                                       sendTicketToRosal(ticketId, nroTicket, true); // `true` podría indicar "sin llaves"
@@ -519,12 +518,13 @@ function sendTicketToRosal(id, nro, withoutKeys = false) {
         console.log("Este envío se realiza sin cargar las llaves.");
     }*/
 
+
     const id_user = document.getElementById("userId").value; // Obtener el ID del usuario desde el formulario   
 
     const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/SendToGestionRosal`; // **IMPORTANTE: Define la URL correcta para tu backend**
 
     // Prepara los datos a enviar en formato application/x-www-form-urlencoded
-    const dataToSendString = `action=SendToGestionRosal&ticketId=${encodeURIComponent(id)}}&sendWithoutKeys=${encodeURIComponent(withoutKeys)}&id_user=${encodeURIComponent(id_user)}`;
+    const dataToSendString = `action=SendToGestionRosal&ticketId=${encodeURIComponent(id)}&sendWithoutKeys=${encodeURIComponent(withoutKeys)}&id_user=${encodeURIComponent(id_user)}`;
 
     const xhr = new XMLHttpRequest();
 
@@ -538,19 +538,17 @@ function sendTicketToRosal(id, nro, withoutKeys = false) {
 
                 // Asume que tu backend devuelve { success: true, message: "..." }
                 if (response.success === true) {
+                      const nroticket = nro;
                     Swal.fire({
                         title: "¡Enviado!",
-                        text: "El ticket se ha enviado a Gestión Rosal correctamente.",
+                        text: `El Pos asociado al ticket Nro: ${nroticket} se ha enviado a Gestión Rosal correctamente.`,
                         icon: "success",
                         confirmButtonText: "Ok",
                         confirmButtonColor: "#003594",
                         color: "black",
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Opcional: Recargar la tabla o actualizar el estado del botón/fila si es necesario
-                            // location.reload(); // Solo si necesitas recargar toda la página
-                            // O una función para recargar solo la tabla si aplica
-                            // recargarTablaDeTickets();
+                             location.reload();
                         }
                     });
                 } else {

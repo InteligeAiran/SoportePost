@@ -23,7 +23,6 @@
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
         <!-- Font Awesome Icons -->
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tenico.css" />
         <style>
             div.dataTables_wrapper div.dataTables_length label {
                 font-weight: bold;
@@ -50,12 +49,8 @@
             /* Estilizar el label "Buscar:" */
             div.dataTables_wrapper div.dataTables_filter label {
                 font-weight: bold;
-                /* Ejemplo: Texto en negrita */
                 color: #333;
-                /* Ejemplo: Color del texto */
                 margin-right: 0.5em;
-                /* Ejemplo: Espacio a la derecha del label */
-                /* margin-left: -100%;*/
             }
 
             .input-sm {
@@ -77,7 +72,7 @@
                 background-color: #fff;
                 /* Ejemplo: Color de fondo del input */
                 transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-                /* Ejemplo: Transiciones suaves */
+                width: 40%;
             }
 
             /* Estilizar el input de búsqueda al enfocarlo */

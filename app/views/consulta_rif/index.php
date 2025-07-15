@@ -377,8 +377,7 @@ function mi_navbar() {}
             </div>
             <div class="modal-footer">
                 <button id="SendForm2" class="btn btn-primary">Guardar</button>
-                <button id="buttonCerrar2" type="button" class="btn btn-secondary"
-                    data-bs-dismiss="modal">Cerrar</button>
+                <button id="buttonCerrar2" type="button" class="btn btn-secondary"data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -416,13 +415,14 @@ function mi_navbar() {}
                                 </select>
                             </div>
                             <input type="hidden" id="id_user" name="userId">
-                            <button id="SendForm1" onclick="SendDataFailure1();" class="btn btn-primary">Guardar</button>
                             <table id="serialCountTableDetalle1" class="table">
                                 <tbody></tbody>
                             </table>
                         </div>
                     </div>
                     <div class="modal-footer">
+                        <button id="SendForm1" onclick="SendDataFailure1();" style="display: block;" class="btn btn-primary">Guardar</button>
+
                         <button id="buttonCerrar" type="button" class="btn btn-secondary"
                             data-bs-dismiss="modal">Cerrar</button>
                     </div>
