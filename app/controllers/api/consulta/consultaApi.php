@@ -202,6 +202,10 @@ class Consulta extends Controller
                     $this->handleSendToGestionRosal();
                     break;
 
+                case 'MarkKeyAsReceived':
+                    $this->handleMarkKeyAsReceived();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -1230,6 +1234,24 @@ class Consulta extends Controller
         $result = $repository->SendToGestionRosal($ticketId, $id_user, $keyCharged);
         if ($result) {
             $this->response(['success' => true,'message' => 'El ticket ha sido enviado a gestión Rosal exitosamente.'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleMarkKeyAsReceived(){
+        $ticketId = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+        
+        if (!$ticketId || !$id_user) {
+            $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->MarkKeyAsReceived($ticketId, $id_user);
+        if ($result) {
+            $this->response(['success' => true,'message' => 'La clave ha sido marcada como recibida exitosamente.'], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }

@@ -342,16 +342,17 @@ function getTicketDataFinaljs() {
   // Define column titles strictly based on your SQL function's output
   const columnTitles = {
     id_ticket: "ID Ticket",
-    full_name_tecnico1: "Nombre Técnico 1",
+    nro_ticket: "Nro Ticket",
+    full_name_tecnico1: "Técnico Gestión",
     create_ticket: "Fecha Creación",
     serial_pos: "Serial POS",
-    rif: "RIF",
+    rif: "Rif",
     name_failure: "Falla",
     id_level_failure: "Nivel Falla",
-    full_name_coord: "Nombre Coordinador",
+    full_name_coord: "Coordinador",
     fecha_envio_coordinador: "Fecha Envío Coordinador",
     name_status_payment: "Estatus Pago",
-    full_name_tecnico2: "Nombre Técnico 2",
+    full_name_tecnico2: "Técnico 2",
     fecha_assignado_al_tecnico2: "Fecha Asignado al Técnico 2",
     envio_a_taller: "Envío a Taller",
     fecha_envio_a_taller: "Fecha Envío a Taller",
@@ -359,7 +360,7 @@ function getTicketDataFinaljs() {
     status_taller: "Estatus Taller",
     name_accion_ticket: "Acción Ticket",
     fecha_carga_llaves: "Fecha Carga Llaves",
-    verificacion_de_solvencia: "Verificación de Solvencia",
+    verificacion_de_solvencia: "Carga de LLaves",
     name_status_domiciliacion: "Estatus Domiciliación",
     name_status_ticket: "Estatus Ticket",
     fecha_carga_llaves: "Fecha Carga Llaves",
@@ -426,39 +427,84 @@ function getTicketDataFinaljs() {
                     return `<span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
                   };
                 }
+                 // ************* APLICAR LÓGICA DE TRUNCADO A FALLA *************
+                if (key === "name_failure") { // <--- Identifica la columna "nro_ticket"
+                    const displayLength = 25; // Define la longitud máxima para mostrar
+                    columnDef.render = function (data, type, row) {
+                        const fullText = String(data || "").trim();
+                        if (fullText.length > displayLength) {
+                            return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(0, displayLength)}...</span>`;
+                        } else {
+                            return `<span class="full-text-cell" data-full-text="${fullText}">${fullText}</span>`;
+                        }
+                    };
+                }
+                // ************* FIN: APLICAR LÓGICA DE TRUNCADO A FALLA *************
+
+                // ************* APLICAR LÓGICA DE TRUNCADO A STATUS_PAYMENTS *************
+                if (key === "name_status_payment") { // <--- Identifica la columna "nro_ticket"
+                    const displayLength = 25; // Define la longitud máxima para mostrar
+                    columnDef.render = function (data, type, row) {
+                        const fullText = String(data || "").trim();
+                        if (fullText.length > displayLength) {
+                            return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(0, displayLength)}...</span>`;
+                        } else {
+                            return `<span class="full-text-cell" data-full-text="${fullText}">${fullText}</span>`;
+                        }
+                    };
+                }
+                // ************* FIN: APLICAR LÓGICA DE TRUNCADO A STATUS_PAYMENTS *************
                 columnsConfig.push(columnDef);
               }
             }
 
-            // Añadir la columna "Acciones" al final
+          // Añadir la columna "Acciones" al final
             columnsConfig.push({
-              data: null, // Esta columna no mapea directamente a un campo de datos
-              title: "Acciones",
-              orderable: false,
-              searchable: false,
-              width: "8%",
-              render: function (data, type, row) {
-                const idTicket = row.id_ticket;
-                const currentStatusLab = row.name_status_lab; // Estatus del taller (e.g., 'Reparado', 'Irreparable')
-                const currentAccionTicket = row.name_accion_ticket; // Estatus de la acción del ticket (e.g., 'Llaves Cargadas')
-                const verificaSolvencia = row.verificacion_de_solvencia; // Estatus de la verificación de solvencia (e.g., 'Si', 'No')
+                data: null, // Or the actual data field for this column
+                title: "Acción", // Or whatever title this column currently has
+                orderable: false,
+                searchable: false,
+                // visible: true, // Adjust visibility as per your global column logic
+                className: "dt-body-center",
+                render: function (data, type, row) {
+                    const idTicket = row.id_ticket; // Ensure idTicket is available from the row data
+                    const name_status_payment = row.name_status_payment;
+                    const currentStatusLab = row.status_taller; // Assuming name_status_lab is your lab status
+                    const verificacionDeLlaves = row.id_status_key; // <-- CORRECCIÓN: Nombre de la columna SQL
+                    const accionllaves = row.name_accion_ticket;
 
-                // "cuando el status de name_accion_ticket sea: Llaves Cargadas me tiene que aparecer un boton para subir una imagen"
-                if (
-                  (currentAccionTicket === "Llaves Cargadas",
-                  currentStatusLab === "Reparado",
-                  verificaSolvencia === "Verificado")
-                ) {
-                  return `<button type="button" id= "openModalButton" class="btn btn-info btn-sm upload-document-btn"
-                        data-id-ticket="${idTicket}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#uploadDocumentModal">
-                        Subir Documento
-                    </button>`;
-                } else {
-                  return `<button type="button" class="btn btn-secondary btn-sm disabled">Falta Requisitos</button>`;
-                }
-              },
+                    // Check if the key needs to be loaded based on verificaSolvencia and lab status
+                    const shouldShowLoadKeyCheckbox = verificacionDeLlaves === true || verificacionDeLlaves === 't';
+
+                    if (shouldShowLoadKeyCheckbox){
+                      if(accionllaves != "Llaves Cargadas"){
+                        return `<input type="checkbox" class="receive-key-checkbox" 
+                                     data-id-ticket="${idTicket}" 
+                                     data-nro-ticket="${row.nro_ticket}" 
+                                     title="Confirmar Carga De llaves">`;
+                      }else{
+                        return `<button type="button" class="btn btn-success btn-sm" disabled>Llaves Cargadas</button>`;
+                     }
+                    // Original logic for "Subir Documento" button
+                    }else if (
+                        (name_status_payment === "Pendiente Por Cargar Documentos" ||
+                            name_status_payment === "Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)" ||
+                            name_status_payment === "Pendiente Por Cargar Documento(PDF Envio ZOOM)") &&
+                        currentStatusLab === "Reparado" // Assuming this condition is correct for your "Subir Documento" button
+                        // ¡¡¡FALTA AQUÍ LA CONDICIÓN verificaSolvencia === "Verificado" Y EL "&&"!!!
+                    ) {
+                        return `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
+                                     data-id-ticket="${idTicket}"
+                                     data-bs-toggle="modal"
+                                     data-bs-target="#uploadDocumentModal">
+                                     Subir Documento
+                                 </button>`;
+                    }
+                    // Default case if none of the above conditions are met
+                    else {
+                        return `<button type="button" class="btn btn-secondary btn-sm disabled">Falta Requisitos</button>`;
+                    }
+                },
             });
 
             columnsConfig.push({
@@ -526,6 +572,45 @@ function getTicketDataFinaljs() {
               },
             });
 
+           // ************* INICIO: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
+          $("#tabla-ticket tbody")
+              .off("change", ".receive-key-checkbox") // <--- Usamos 'change' para checkboxes
+              .on("change", ".receive-key-checkbox", function (e) {
+                  e.stopPropagation(); // Evita propagación del evento
+
+                  const ticketId = $(this).data("id-ticket");
+                  const nroTicket = $(this).data("nro-ticket");
+                  const isChecked = $(this).is(":checked"); // Verifica si el checkbox está marcado
+
+                  // Solo actuamos si el checkbox ha sido marcado
+                  if (isChecked) {
+                      Swal.fire({
+                          icon: "question",
+                          title: "¿Confirmar Carga de Llaves?",
+                          text: `¿Desea marcar el Ticket Nro: ${nroTicket} como "Llaves Cargadas". Esta acción registrará la fecha de la carga de llaves?`,
+                          confirmButtonText: "Sí, Confirmar",
+                          color: "black",
+                          confirmButtonColor: "#003594",
+                          cancelButtonText: "No, cancelar",
+                          showCancelButton: true,
+                          focusConfirm: false,
+                          allowOutsideClick: false,
+                          allowEscapeKey: false,
+                          showCloseButton: true,
+                          keydownListenerCapture: true,
+                      }).then((result) => {
+                          if (result.isConfirmed) {
+                              MarkDateKey(ticketId, nroTicket); // `false` indica que se cargaron las llaves
+                              $(this).prop('checked', true);
+                          } else {
+                              $(this).prop('checked', false);
+                          }
+                      });
+                  } else {
+                  }
+              });
+          // ************* FIN: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
+
             if (tableContainer) {
               tableContainer.style.display = ""; // Show the table container
             }
@@ -576,7 +661,87 @@ function getTicketDataFinaljs() {
   const datos = `action=GetTicketDataFinal`;
   xhr.send(datos);
 }
+
 document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
+
+
+function MarkDateKey(ticketId, nroTicket) {
+  const id_user = document.getElementById("userId").value;
+  const nro_ticket = nroTicket;
+    if (!ticketId) {
+        console.error("El ID del ticket no puede ser nulo o indefinido.");
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No se pudo marcar la fecha de la llave. ID de ticket no proporcionado.",
+        });
+        return; // Detener la ejecución si no hay ID de ticket
+    }
+    const dataToSendString = `action=MarkKeyAsReceived&id_ticket=${encodeURIComponent(ticketId)}&id_user=${encodeURIComponent(id_user)}`;
+
+    const xhr = new XMLHttpRequest();
+    // Ajusta esta URL a la ruta de tu endpoint de API en el backend
+    const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/MarkKeyAsReceived`; // O el nombre de tu endpoint
+
+    xhr.open("POST", apiUrl, true); // true para asíncrono
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        console.log(response);
+        if (response.success === true) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "¡Éxito!",
+                        text: `La fecha de la carga de llaves al POS asociado al Nro de ticket: ${nro_ticket} fue registrada correctamente.`,
+                        confirmButtonText: "Aceptar", // <-- OPCIONAL: Puedes personalizar el texto del botón
+                        allowOutsideClick: false, // <-- ELIMINAR O COMENTAR esta línea
+                        color: "black", // <-- ELIMINAR O COMENTAR esta línea
+                       confirmButtonColor: "#003594", // <-- ELIMINAR O COMENTAR esta línea
+                    }).then((result) => {
+                        // Verifica si el botón de confirmación fue presionado
+                        if (result.isConfirmed) {
+                            location.reload(); // Recarga la página después de que el usuario haga clic en Aceptar
+                        }
+                    });
+                  } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: response.message || "No se pudo marcar la fecha de la llave.",
+                    });
+                }
+            } catch (error) {
+                console.error("Error al parsear la respuesta JSON:",error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Hubo un problema al procesar la respuesta del servidor.",
+                });
+            }
+        } else {
+            console.error("Error en la solicitud:", xhr.status, xhr.statusText);
+            Swal.fire({
+                icon: "error",
+                title: "Error de Servidor",
+                text: `El servidor respondió con el estado: ${xhr.status} ${xhr.statusText}`,
+            });
+        }
+    };
+
+    xhr.onerror = function () {
+        console.error("Error de red al intentar marcar la fecha de la llave.");
+        Swal.fire({
+            icon: "error",
+            title: "Error de Red",
+            text: "No se pudo conectar con el servidor. Verifica tu conexión.",
+        });
+    };
+
+    // Envía el id_ticket como JSON en el cuerpo de la solicitud
+    xhr.send(dataToSendString);
+}
 
 document.addEventListener("DOMContentLoaded", function () {
   // Obtén las referencias a los elementos del DOM que SÍ ESTÁN PRESENTES AL CARGAR LA PÁGINA

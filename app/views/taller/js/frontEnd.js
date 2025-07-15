@@ -343,9 +343,9 @@ function getTicketData() {
                                 if (hasSendKeyDate != true) { // Ojo: Los data attributes devuelven booleanos si son 'true'/'false'
                                   // Si la llave ya fue enviada, muestra un aviso diferente (o no hagas nada)
                                   Swal.fire({
-                                    icon: "info",
-                                    title: "Información",
-                                    text: `¿Desea enviar al Rosal el POS asociado al Nro de ticket: ${nroTicket} Sin cargar las llaves?.`,
+                                    icon: "question",
+                                    title: "Confirmar envio al rosal",
+                                    text: `¿Desea enviar al rosal el POS asociado al Nro de ticket: ${nroTicket} Sin cargar las llaves?.`,
                                     confirmButtonText: "Si",
                                     color: "black",
                                     confirmButtonColor: "#003594",
@@ -358,25 +358,15 @@ function getTicketData() {
                                     showCloseButton: true,
                                   }).then((result) => { // Aquí capturamos la respuesta del usuario
                                     if (result.isConfirmed) {
-                                      sendTicketToRosal(ticketId, nroTicket, true); // `true` podría indicar "sin llaves"
+                                      sendTicketToRosal(ticketId, nroTicket, false); // `true` podría indicar "sin llaves"
                                     }
                                   });
                                   return; // Detiene la ejecución aquí, no abre el modal de confirmación
-                                }
-
-                                // Si la llave NO ha sido enviada, procede a mostrar el modal de confirmación
-                                currentTicketIdForSendKey = ticketId;
-                                currentNroTicketForSendKey = nroTicket;
-
-                                // Establecer el Nro de Ticket en el modal
+                                }else{
                                 $("#modalTicketNroSendKey").text(nroTicket);
                                 $("#modalHiddenTicketIdSendKey").val(ticketId); // Guardar el ID en un hidden input
-
-                                if (confirmSendKeyModalInstance) {
-                                    confirmSendKeyModalInstance.show(); // Mostrar el modal de confirmación
-                                } else {
-                                    console.error("La instancia del modal 'confirmSendKeyModal' no está disponible.");
-                                }
+                                sendTicketToRosal(ticketId, nroTicket, true); // `true` podría indicar "sin llaves"
+                              }
                             });
                         // ************* FIN: LÓGICA PARA EL BOTÓN "ENVIAR AL ROSAL" *************
 
@@ -512,7 +502,7 @@ function getTicketData() {
  * @param {string} nro - El número de ticket.
  * @param {boolean} withoutKeys - Indica si el envío es "sin llaves" (opcional).
  */
-function sendTicketToRosal(id, nro, withoutKeys = false) {
+function sendTicketToRosal(id, nro, withoutKeys) {
     /*console.log(`Preparando para enviar ticket Nro: ${nro} (ID: ${id}) a Gestión Rosal.`);
     if (withoutKeys) {
         console.log("Este envío se realiza sin cargar las llaves.");
@@ -520,12 +510,9 @@ function sendTicketToRosal(id, nro, withoutKeys = false) {
 
 
     const id_user = document.getElementById("userId").value; // Obtener el ID del usuario desde el formulario   
-
     const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/SendToGestionRosal`; // **IMPORTANTE: Define la URL correcta para tu backend**
 
-    // Prepara los datos a enviar en formato application/x-www-form-urlencoded
     const dataToSendString = `action=SendToGestionRosal&ticketId=${encodeURIComponent(id)}&sendWithoutKeys=${encodeURIComponent(withoutKeys)}&id_user=${encodeURIComponent(id_user)}`;
-
     const xhr = new XMLHttpRequest();
 
     xhr.open("POST", url);
@@ -629,7 +616,7 @@ function updateTicketStatusInTaller(ticketId) {
           Swal.fire({
             // Changed from swal(...) to Swal.fire(...)
             title: "¡Éxito!",
-            text: "El ticket ha sido marcado como 'En Proceso de reparación'.",
+            text: "El POS se encontrará en el taller como 'En Proceso de reparación'.",
             icon: "success",
             confirmButtonText: "¡Entendido!", // SweetAlert2 uses confirmButtonText
             customClass: {
@@ -1154,6 +1141,7 @@ $(document).ready(function () {
   // --- NUEVA FUNCIÓN PARA ENVIAR LA FECHA AL SERVIDOR ---
   function saveKeyReceiveDate(idTicket) {
     const id_user = document.getElementById("userId").value; // Asumiendo que tienes el ID del usuario logueado
+    const nro_ticket = checkbox.data("nro-ticket");
 
     const xhr = new XMLHttpRequest();
     xhr.open(
@@ -1169,7 +1157,7 @@ $(document).ready(function () {
           if (response.success) {
             Swal.fire({
               title: "¡Registrado!",
-              text: "La fecha de recepción de llave ha sido guardada.",
+              text: `La fecha de recepción de llave del Pos asociado el Nro de ticket: ${nro_ticket}  ha sido guardada.`,
               icon: "success",
               confirmButtonText: "Entendido",
               color: "black",

@@ -592,5 +592,10 @@ class TechnicalConsultionRepository
         $result = $this->model->SendToGestionRosal($id_ticket, $id_user, $keyCharged);
         return $result;
     }
+
+    public function MarkKeyAsReceived($id_ticket, $id_user){
+        $result = $this->model->MarkKeyAsReceived($id_ticket, $id_user);
+        return $result;
+    }
 }
 ?>

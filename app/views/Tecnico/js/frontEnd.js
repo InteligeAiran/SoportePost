@@ -126,23 +126,27 @@ function getTicketData() {
             ticket.confirmtecn === true;
 
           if (hasBeenConfirmedByAnyone) {
+            if (ticket.name_accion_ticket === "Enviado a taller") {
+                
+            } else { // Si ya fue confirmado, pero NO ha sido enviado a taller
+                actionButtonsHTML += `
+                    <button class="btn btn-sm btn-wrench-custom"
+                        data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Enviar a Taller"
+                        data-ticket-id="${ticket.id_ticket}"
+                        data-nro_ticket="${ticket.nro_ticket}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
+                    </button>`;
+            }
+        } else { // Si aún NO ha sido confirmado por nadie
             actionButtonsHTML += `
-                            <button class="btn btn-sm btn-wrench-custom"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Enviar a Taller"
-                                data-ticket-id="${ticket.id_ticket}"
-                                data-nro_ticket="${ticket.nro_ticket}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
-                            </button>`;
-          } else {
-            actionButtonsHTML += `
-                            <button class="btn btn-sm btn-dark btn-received-ticket ml-2"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Marcar como Recibido"
-                                data-ticket-id="${ticket.id_ticket}">
-                                Recibido
-                            </button>`;
-          }
+                <button class="btn btn-sm btn-dark btn-received-ticket ml-2"
+                    data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="Marcar como Recibido"
+                    data-ticket-id="${ticket.id_ticket}">
+                    Recibido
+                </button>`;
+        }
 
           // Lógica para añadir los botones adicionales basada en id_status_payment
           if (ticket.id_status_payment == 11) {
@@ -1598,7 +1602,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Agrega el event listener al botón "Enviar a Taller"
   if (sendToTallerButton) {
-    // Verifica si el botón existe antes de añadir el listener
     sendToTallerButton.addEventListener("click", handleSendToTallerClick); // Llama a una función con otro nombre
   } else {
     console.error(
@@ -1610,6 +1613,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // CAMBIO AQUI: Renombra la función para que no haya conflicto con el nombre de la variable del botón
 function handleSendToTallerClick() {
   const idTicket = currentTicketId; // Usa la variable global para obtener el ID del ticket
+  const nroticket = currentnroTicket;
 
   if (idTicket) {
     const xhr = new XMLHttpRequest();
@@ -1621,13 +1625,13 @@ function handleSendToTallerClick() {
         const response = JSON.parse(xhr.responseText);
         Swal.fire({
             icon: "success",
-            title: "El ticket del Dispositivo POS fue enviado a Taller",
-            text: response.message,
+            title: "Notificación", // <-- FIX IS HERE
+            text:`El POS asociado al ticket Nro: ${nroticket} fue enviado a Taller`,
             color: "black",
             // Eliminamos 'timer' y 'timerProgressBar' si quieres un botón explícito
             showConfirmButton: true, // Muestra el botón de confirmación
             confirmButtonText: "Aceptar", // Texto del botón
-            confirmButtonColor: "#3085d6", // Color del botón (puedes ajustar)
+            confirmButtonColor: "#003594", // Color del botón (puedes ajustar)
             allowOutsideClick: false, // Opcional: para que el usuario DEBA hacer clic en el botón
             allowEscapeKey: false,   // Opcional: para que no se pueda cerrar con la tecla Escape
             didOpen: () => {

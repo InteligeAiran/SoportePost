@@ -95,7 +95,7 @@ function mi_navbar()
                 /* Asegura que no sea clickeable incluso si hay un 'a' dentro */
             }
 
-            
+
         /* Estilizar el input de búsqueda al enfocarlo */
         div.dataTables_wrapper div.dataTables_filter input[type="search"]:focus {
             color: #495057;
@@ -381,8 +381,7 @@ function mi_navbar()
                                         <div
                                             class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
                                             <strong>
-                                                <h5 class="text-black text-capitalize ps-3">Equipo Pendientes por Entregar
-                                                </h5>
+                                                <h5 class="text-black text-capitalize ps-3" style="color: black;">Gestión Rosal</h5>
                                             </strong>
                                         </div>
                                     </div>
