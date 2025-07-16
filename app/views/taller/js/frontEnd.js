@@ -522,8 +522,6 @@ function sendTicketToRosal(id, nro, withoutKeys) {
         if (xhr.status >= 200 && xhr.status < 300) {
             try {
                 const response = JSON.parse(xhr.responseText);
-
-                // Asume que tu backend devuelve { success: true, message: "..." }
                 if (response.success === true) {
                       const nroticket = nro;
                     Swal.fire({
@@ -1613,6 +1611,283 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Cola de tickets vencidos para mostrar modales secuencialmente
   let overdueTicketsQueue = [];
+  
+  function showActionModalForTicket(ticket) {
+    // Asegúrate de que 'ticket' contenga los datos necesarios.
+    // Por ejemplo, si 'selectedTicket' es lo que pasas, se convierte en 'ticket' dentro de esta función.
+    if (!ticket || !ticket.nro_ticket || !ticket.repuesto_date) {
+        console.error("showActionModalForTicket: El objeto ticket no es válido o le faltan propiedades.");
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No se pudo mostrar el modal. Faltan datos del ticket.",
+        });
+        return;
+    }
+
+    // --- Primer Modal: Notificación y Opciones ---
+    // --- Primer Modal: Notificación y Opciones ---
+        Swal.fire({
+            title: "Notificación",
+            html: `Al ticket con el Nro. <b>${ticket.nro_ticket}</b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Desea colocar otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br>
+            <br><div class="swal-custom-button-container">
+              <button id="changeStatusButton" class="custom-status-button">Cambiar Estatus del Ticket</button>
+            </div>`,
+            showDenyButton: true, // Para "Enviar a Gestión Comercial"
+            denyButtonText: "Enviar a Gestión Comercial",
+            showConfirmButton: true, // Para "Renovar Fecha"
+            confirmButtonText: "Renovar Fecha",
+            focusConfirm: false,
+            allowOutsideClick: false, 
+            allowEscapeKey: false,
+            showCloseButton: true,
+            keydownListenerCapture: true,
+            color: "black",
+            customClass: {
+              confirmButton: 'btn-renovar', // Clase para "Renovar Fecha"
+              denyButton: 'btn-gestion-comercial', // Clase para "Enviar a Gestión Comercial"
+              // Aseguramos que el modal principal también tenga una clase si lo necesitas
+              popup: 'notification-modal-custom'
+            },
+            didOpen: () => {
+                // Obtenemos el botón personalizado dentro del modal
+                const changeStatusBtn = document.getElementById('changeStatusButton');
+
+                if (changeStatusBtn) {
+                    changeStatusBtn.addEventListener('click', () => {
+                      Swal.close();
+                      const current_status_lab_name = ticket.current_status_lab_name || ticket.estatus_actual || "Desconocido";
+                      showCustomModal(current_status_lab_name, ticket.id_ticket);
+                    });
+                }
+            },
+        }).then((result) => {
+            
+            if (result.isConfirmed) {
+                // --- Lógica para "Renovar Fecha" (Abre un segundo modal) ---
+                
+                Swal.fire({
+                    title: "Renovar Fecha de la llegada de Repuestos",
+                    html: `
+                        <b>Coloque Nueva Fecha:</b><br>
+                        <input type="date" id="swal-input-date-renew" class="swal2-input">
+                    `,
+                    showCancelButton: true,
+                    cancelButtonText: "Cancelar",
+                    confirmButtonText: "Guardar Fecha",
+                    focusConfirm: false,
+                    color: "black",
+                    allowOutsideClick: false, 
+                    allowEscapeKey: false,
+                    showCloseButton: true,
+                    keydownListenerCapture: true,
+
+                    customClass: {
+                      // Asigna una clase a la ventana modal (swal2-popup)
+                      popup: 'modal-with-backdrop-filter', 
+                      // Asigna una clase al telón de fondo (swal2-container)
+                      container: 'swal2-container-custom' 
+                    },
+                    
+                    // Asignar IDs a los botones usando didOpen
+                    didOpen: (modalElement) => {
+                      const confirmButton = modalElement.querySelector('.swal2-confirm');
+                      const cancelButton = modalElement.querySelector('.swal2-cancel');
+
+                      if (confirmButton) {
+                        confirmButton.id = 'ButtonGuardarFecha';
+                      }
+
+                      if (cancelButton) {
+                        cancelButton.id = 'ButtonCancelarFecha';
+                      }
+                    },
+
+                    // Validamos la fecha con las restricciones
+                    preConfirm: () => {
+                        const newDateStr = document.getElementById("swal-input-date-renew").value;
+                        // 1. Validar que se haya seleccionado una fecha
+                        if (!newDateStr) {
+                            Swal.showValidationMessage("Por favor, selecciona una fecha.");
+                            return false;
+                        }
+
+                        // Convertir la fecha seleccionada y la fecha actual a objetos Date
+                        const selectedDate = new Date(newDateStr + 'T00:00:00'); 
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+
+                        // 2. Restricción de año: Solo permite el año actual.
+                        const currentYear = today.getFullYear();
+                        const selectedYear = selectedDate.getFullYear();
+
+                        if (selectedYear !== currentYear) {
+                            Swal.showValidationMessage("Solo puedes seleccionar fechas dentro del año actual.");
+                            return false;
+                        }
+
+                        // 3. Restricción de rango de 3 meses (del pasado y del futuro)
+                        const threeMonthsAgo = new Date(today);
+                        threeMonthsAgo.setMonth(today.getMonth() - 3);
+
+                        const threeMonthsLater = new Date(today);
+                        threeMonthsLater.setMonth(today.getMonth() + 3);
+
+                        if (selectedDate < threeMonthsAgo || selectedDate > threeMonthsLater) {
+                            Swal.showValidationMessage("Por favor, selecciona una fecha dentro de un rango de 3 meses de la fecha actual.");
+                            return false;
+                        }
+
+                        // Si todas las validaciones pasan, retornamos los datos
+                        return {
+                            ticketId: ticket.id_ticket,
+                            newDate: newDateStr, // Usamos la cadena de fecha original para el envío
+                        };
+                    }
+                }).then((renewResult) => {
+                    const ticketId = renewResult.value.ticketId;
+                    const newRepuestoDate = renewResult.value.newDate;
+                    const id_user = document.getElementById("userId");
+
+                    if (renewResult.isConfirmed) {                        
+                        const datos = `action=UpdateRepuestoDate2&id_ticket=${ticketId}&newDate=${newRepuestoDate}&id_user=${id_user.value}`;
+                        const xhr = new XMLHttpRequest();
+                        const endpoint = `${ENDPOINT_BASE}${APP_PATH}api/consulta/UpdateRepuestoDate2`;
+                        xhr.open("POST", endpoint, true);
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                        xhr.onload = function() {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Éxito',
+                                    text: `la Fecha de la llegada de repuesto para el Ticket Nro: ${ticket.nro_ticket} fue renovada correctamente.`,
+                                    confirmButtonText: 'Aceptar', 
+                                    color: 'black',
+                                    confirmButtonColor: '#003594',
+                                    allowOutsideClick: false, 
+                                    allowEscapeKey: false,
+                                    showCloseButton: true,
+                                    keydownListenerCapture: true,
+                                }).then((confirmResult) => {
+                                  if (confirmResult.isConfirmed) {
+                                    window.location.reload();
+                                  }
+                                });
+                            } else {
+                                // Error en la solicitud HTTP
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Hubo un problema al actualizar la fecha de repuesto. Inténtalo de nuevo.',
+                                    footer: `Status: ${xhr.status}`
+                                });
+                            }
+                        };
+
+                        xhr.onerror = function() {
+                          Swal.fire({
+                            icon: 'error',
+                            title: 'Error de conexión',
+                            text: 'No se pudo conectar con el servidor. Verifica tu conexión.',
+                          });
+                          overdueTicketsQueue.shift();
+                          processNextOverdueTicket();
+                        };
+                        xhr.send(datos);
+                        Swal.showLoading();
+                    } else {
+                        console.log("Renovación de fecha cancelada.");      
+                        overdueTicketsQueue.shift();
+                        processNextOverdueTicket();
+                    }
+                });
+            } else if (result.isDenied) {
+               Swal.fire({
+                        title: 'Confirmación',
+                        text: `¿Seguro que desea enviar el ticket Nro: ${ticket.nro_ticket} a Gestión Comercial?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, enviar',
+                        cancelButtonText: 'Cancelar',
+                        color: 'black',
+                        allowOutsideClick: false, 
+                        allowEscapeKey: false,
+                        showCloseButton: true,
+                        keydownListenerCapture: true,
+                        customClass: {
+                            confirmButton: 'btn-gestion-comercial', // O un estilo de confirmación
+                            cancelButton: 'btn-cancelar' // O un estilo de cancelación
+                        }
+                    }).then((confirmResult) => {
+                        const ticketId = ticket.id_ticket;
+                        const id_user = document.getElementById("userId");
+
+                        if (confirmResult.isConfirmed) {
+                          const datos = `action=SendToComercial&id_ticket=${ticketId}&id_user=${id_user.value}`;
+                          const xhr = new XMLHttpRequest();
+                          const endpoint = `${ENDPOINT_BASE}${APP_PATH}api/consulta/SendToComercial`;
+                          xhr.open("POST", endpoint, true);
+                          xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                          xhr.onload = function() {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                              Swal.fire({
+                                  icon: 'success',
+                                  title: 'Éxito',
+                                  text: `El ticket Nro: ${ticket.nro_ticket} ha sido enviado a Gestión Comercial`,
+                                  confirmButtonText: 'Aceptar', 
+                                  color: 'black',
+                                  confirmButtonColor: '#003594',
+                                  allowOutsideClick: false, 
+                                  allowEscapeKey: false,
+                                  showCloseButton: true,
+                                  keydownListenerCapture: true,
+                              }).then((result) => {
+                                if (result.isConfirmed) {
+                                  window.location.reload(); 
+                                }
+                              });
+                                                          
+                              } else {
+                                  // Error en la solicitud HTTP
+                                  Swal.fire({
+                                      icon: 'error',
+                                      title: 'Error',
+                                      text: 'Hubo un problema al actualizar la fecha de repuesto. Inténtalo de nuevo.',
+                                      footer: `Status: ${xhr.status}`
+                                  });
+                              }
+                          };
+
+                          xhr.onerror = function() {
+                            Swal.fire({
+                              icon: 'error',
+                              title: 'Error de conexión',
+                              text: 'No se pudo conectar con el servidor. Verifica tu conexión.',
+                            });
+                            overdueTicketsQueue.shift();
+                            processNextOverdueTicket();
+                          };
+                          xhr.send(datos);
+                          Swal.showLoading();
+                        } else {
+                            console.log("Envío a Gestión Comercial cancelado.");
+                            overdueTicketsQueue.shift();
+                            processNextOverdueTicket();
+                        }
+                    });
+
+                } else if (result.dismiss === Swal.DismissReason.cancel || result.dismiss === Swal.DismissReason.backdrop) {
+                    // --- Lógica para "Cerrar" (si se usa la X o se hace clic fuera si allowOutsideClick está habilitado) ---
+                    console.log("Modal cerrado.");
+                    
+                    // Después de cerrar, procesamos el siguiente ticket
+                    overdueTicketsQueue.shift();
+                    processNextOverdueTicket();
+                }
+            });
+}
 
   // Función para procesar el siguiente ticket en la cola
   function processNextOverdueTicket() {
@@ -1902,6 +2177,11 @@ document.addEventListener("DOMContentLoaded", () => {
           inputPlaceholder: "Selecciona un ticket",
           showCancelButton: true,
           cancelButtonText: "Cerrar",
+          cancelAnimationFrame: true,
+          confirmButtonColor: "#003594",
+          cancelButtonColor: "#6c757d",
+          allowEscapeKey: false,
+          keydownListenerCapture: true,
           allowOutsideClick: false,
           color: "black",
           inputValidator: (value) => {
@@ -1928,8 +2208,7 @@ document.addEventListener("DOMContentLoaded", () => {
               // Show the specific action modal for the selected ticket
               showActionModalForTicket(selectedTicket);
             } else {
-              // This shouldn't happen if inputOptions are correctly built
-              console.error("Ticket seleccionado no encontrado en la cola.");
+             
             }
           } else if (result.dismiss === Swal.DismissReason.cancel) {
             console.log("Modal de selección cerrado.");
@@ -2021,147 +2300,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to show the action modal for a specific ticket
   // ... (resto de tu código, incluyendo overdueTicketsQueue y processNextOverdueTicket) ...
-
-  function showActionModalForTicket(ticket) {
-    Swal.fire({
-      title: "Notificacion",
-      html: `El ticket con el Nro. <b>${ticket.nro_ticket}</b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Deseas poner otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br><br>
-               <div id="dateInputContainer" style="display: none;">
-                   <b>Selecciona Nueva Fecha de Repuesto:</b><br>
-                   <input type="date" id="swal-input-date" class="swal2-input">
-               </div>`,
-      showCancelButton: true,
-      cancelButtonText: "Cancelar",
-      showDenyButton: true,
-      denyButtonText: "Enviar a Gestión Comercial",
-      showConfirmButton: true,
-      confirmButtonText: "Renovar Fecha",
-      color: "black",
-      footer:
-        '<button id="btn-change-status" class="swal2-styled">Cambiar Estatus del Ticket</button>',
-      focusConfirm: false,
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-
-      preConfirm: () => {
-        const dateInputContainer =
-          document.getElementById("dateInputContainer");
-        const newDateInput = document.getElementById("swal-input-date");
-        const confirmBtn = Swal.getConfirmButton();
-
-        // Fase 1: Mostrar el input de fecha
-        if (dateInputContainer.style.display === "none") {
-          dateInputContainer.style.display = "block"; // Mostrar el contenedor de la fecha
-          newDateInput.focus(); // Opcional: enfocar el input de fecha
-          if (confirmBtn) {
-            confirmBtn.textContent = "Confirmar Renovación"; // Cambiar texto del botón
-          }
-
-          // Establecer el min y max del input type="date"
-          const today = new Date();
-          const minDate = today.toISOString().split("T")[0];
-
-          const threeMonthsLater = new Date();
-          threeMonthsLater.setMonth(today.getMonth() + 3);
-          const maxDate = threeMonthsLater.toISOString().split("T")[0];
-
-          newDateInput.setAttribute("min", minDate);
-          newDateInput.setAttribute("max", maxDate);
-
-          return false; // Mantiene el modal abierto
-        } else {
-          // Fase 2: Validar y procesar la fecha
-          const newDate = newDateInput.value;
-
-          if (!newDate) {
-            return false;
-          }
-
-          const selectedDate = new Date(newDate + "T00:00:00");
-          const today = new Date();
-          const todayNormalized = new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            today.getDate()
-          );
-
-          const maxAllowedDate = new Date(
-            today.getFullYear(),
-            today.getMonth() + 3,
-            today.getDate()
-          );
-
-          // --- VALIDACIONES ---
-          // 1. No permitir fechas anteriores al día actual.
-          if (selectedDate < todayNormalized) {
-            return false;
-          }
-
-          // 2. No permitir fechas que excedan 3 meses a partir del día actual.
-          if (selectedDate > maxAllowedDate) {
-            return false;
-          }
-
-          // Si todas las validaciones pasan
-          return {
-            action: "renew",
-            ticketId: ticket.id_ticket,
-            newDate: newDate,
-          };
-        }
-      },
-
-      didOpen: (modalElement) => {
-        const changeStatusButton =
-          modalElement.querySelector("#btn-change-status");
-        if (changeStatusButton) {
-          changeStatusButton.addEventListener("click", () => {
-            Swal.close();
-            console.log("Cambiar estatus del ticket:", ticket.id_ticket);
-            Swal.fire(
-              "Estatus Cambiado",
-              `El estatus del ticket ${ticket.nro_ticket} ha sido cambiado.`,
-              "success"
-            );
-            overdueTicketsQueue = overdueTicketsQueue.filter(
-              (t) => t.id_ticket !== ticket.id_ticket
-            );
-            processNextOverdueTicket();
-          });
-        }
-        // Asegurar que el texto del botón de confirmar sea el inicial al abrir el modal
-        const confirmBtn = Swal.getConfirmButton();
-        if (confirmBtn) {
-          confirmBtn.textContent = "Renovar Fecha";
-        }
-        // Asegurarse de que el contenedor de fecha esté oculto al abrir el modal
-        const dateInputContainer =
-          document.getElementById("dateInputContainer");
-        if (dateInputContainer) {
-          dateInputContainer.style.display = "none";
-        }
-        // Asegurarse de limpiar el input y los mensajes de error de SweetAlert
-        const newDateInput = document.getElementById("swal-input-date");
-        if (newDateInput) {
-          newDateInput.value = "";
-        }
-        // ************ ESTA LÍNEA ES LA CLAVE PARA ELIMINAR EL SIGNO DE EXCLAMACIÓN INICIAL ************
-      },
-    }).then((result) => {
-      // ... (resto de tu then callback) ...
-      if (result.isConfirmed || result.isDenied) {
-        overdueTicketsQueue = overdueTicketsQueue.filter(
-          (t) => t.id_ticket !== ticket.id_ticket
-        );
-        processNextOverdueTicket();
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        overdueTicketsQueue = overdueTicketsQueue.filter(
-          (t) => t.id_ticket !== ticket.id_ticket
-        );
-        processNextOverdueTicket();
-      }
-    });
-  }
 
   // Llama a esta función al cargar la página para buscar tickets vencidos
   checkAllOverdueRepuestoTickets();
@@ -2270,7 +2408,7 @@ document.addEventListener("DOMContentLoaded", () => {
               Swal.fire({
                 icon: "success",
                 title: "¡Éxito!",
-                html: `Fecha de repuesto guardada con éxito: ${selectedDate}. <span style="color: red; font-weight: bold;">Debe guardar el estatus apenas cierre este modal.</span>`,
+                html: `Fecha de repuesto guardada con éxito: ${selectedDate}.`,
                 showConfirmButton: true, // Asegura que el botón de confirmación sea visible
                 confirmButtonText: 'Cerrar', // Opcional: Personaliza el texto del botón
                 confirmButtonColor: '#3085d6', // Opcional: Personaliza el color del botón

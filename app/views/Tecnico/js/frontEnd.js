@@ -144,7 +144,7 @@ function getTicketData() {
                     data-bs-toggle="tooltip" data-bs-placement="top"
                     title="Marcar como Recibido"
                     data-ticket-id="${ticket.id_ticket}">
-                    Recibido
+                    ¿Recibido?
                 </button>`;
         }
 
@@ -890,7 +890,7 @@ function handleMarkTicketReceived(ticketId, currentnroTicket) {
         if (response.success) {
           Swal.fire({
                 title: "¡Recibido!",
-                text: "El ticket N" + currentnroTicket + " ha sido marcado como recibido.", // <-- CAMBIO AQUÍ
+                text: "El Pos asociado al ticket N" + currentnroTicket + " ha sido marcado como recibido.", // <-- CAMBIO AQUÍ
                 icon: "success",
                 color: "black",
                 confirmButtonColor: "#3085d6",
