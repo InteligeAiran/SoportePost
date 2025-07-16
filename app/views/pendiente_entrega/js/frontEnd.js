@@ -329,6 +329,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function getTicketDataFinaljs() {
   const xhr = new XMLHttpRequest();
   xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketDataFinal`);
+  const detailsPanel = document.getElementById("ticket-details-panel");
 
   const tableElement = document.getElementById("tabla-ticket");
   const theadElement = tableElement
@@ -359,10 +360,9 @@ function getTicketDataFinaljs() {
     name_process_ticket: "Proceso Ticket",
     status_taller: "Estatus Taller",
     name_accion_ticket: "Acción Ticket",
-    fecha_carga_llaves: "Fecha Carga Llaves",
-    verificacion_de_solvencia: "Carga de LLaves",
     name_status_domiciliacion: "Estatus Domiciliación",
     name_status_ticket: "Estatus Ticket",
+    fecha_llaves_enviada: "Fecha de Llaves Enviadas",
     fecha_carga_llaves: "Fecha Carga Llaves",
     fecha_envio_destino: "Fecha Envío a Destino",
   };
@@ -486,13 +486,7 @@ function getTicketDataFinaljs() {
                         return `<button type="button" class="btn btn-success btn-sm" disabled>Llaves Cargadas</button>`;
                      }
                     // Original logic for "Subir Documento" button
-                    }else if (
-                        (name_status_payment === "Pendiente Por Cargar Documentos" ||
-                            name_status_payment === "Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)" ||
-                            name_status_payment === "Pendiente Por Cargar Documento(PDF Envio ZOOM)") &&
-                        currentStatusLab === "Reparado" // Assuming this condition is correct for your "Subir Documento" button
-                        // ¡¡¡FALTA AQUÍ LA CONDICIÓN verificaSolvencia === "Verificado" Y EL "&&"!!!
-                    ) {
+                    }else if ((name_status_payment === "Pendiente Por Cargar Documentos" || name_status_payment === "Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)" || name_status_payment === "Pendiente Por Cargar Documento(PDF Envio ZOOM)") && currentStatusLab === "Reparado") {
                         return `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
                                      data-id-ticket="${idTicket}"
                                      data-bs-toggle="modal"
@@ -504,6 +498,45 @@ function getTicketDataFinaljs() {
                     else {
                         return `<button type="button" class="btn btn-secondary btn-sm disabled">Falta Requisitos</button>`;
                     }
+                },
+            });
+
+            columnsConfig.push({
+                data: null, // Or the actual data field for this column
+                title: "Llaves", // Or whatever title this column currently has
+                orderable: false,
+                searchable: false,
+                // visible: true, // Adjust visibility as per your global column logic
+                className: "dt-body-center",
+                render: function (data, type, row) {
+                    const idTicket = row.id_ticket; // Ensure idTicket is available from the row data
+                    const verificacionDeLlaves = row.id_status_key; // <-- CORRECCIÓN: Nombre de la columna SQL
+                    const accionllaves = row.name_accion_ticket;
+                    const accionllaves2 = row.fecha_llaves_enviada;
+                    const accionllaves3 = row.fecha_carga_llaves;
+
+                    const shouldShowLoadKeyCheckbox = verificacionDeLlaves === false || verificacionDeLlaves === 'f' || verificacionDeLlaves === null;
+                    const shouldShowReceiveKeyCheckbox = accionllaves2 === null;
+                    const shouldShowReceiveKeyCheckbox2 = accionllaves3 === null;
+                    
+                    if (shouldShowLoadKeyCheckbox){
+                      if(accionllaves != "Llaves Cargadas"){
+                        return `<input type="checkbox" class="receive-key-checkbox" 
+                                     data-id-ticket="${idTicket}" 
+                                     data-nro-ticket="${row.nro_ticket}" 
+                                     title="Confirmar Carga De llaves">`;
+                      }else if(!shouldShowReceiveKeyCheckbox && shouldShowReceiveKeyCheckbox2){
+                        return `<button type="button" class="btn btn-success btn-sm" disabled>En espera de Confirmar Carga de llaves</button>`;
+                     }
+
+                    }else {
+                        return `<input type="checkbox" class="receive-key-checkbox" 
+                            data-id-ticket="${idTicket}" 
+                            data-nro-ticket="${row.nro_ticket}" 
+                            title="Llaves Cargadas" 
+                            checked disabled>`; // Marcado y deshabilitado
+                    }
+                  
                 },
             });
 
@@ -531,11 +564,8 @@ function getTicketDataFinaljs() {
               },
             });
 
-            // === ADD "CARGA DE LLAVE" COLUMN FIRST ===
-            // It's a calculated column, so its data source is `null`
-
             // Initialize DataTables
-            const dataTable = $(tableElement).DataTable({
+            const dataTableInstance = $(tableElement).DataTable({
               responsive: false,
               scrollX: "200px",
               data: TicketData,
@@ -610,6 +640,55 @@ function getTicketDataFinaljs() {
                   }
               });
           // ************* FIN: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
+
+          // === ADD THE CLICK EVENT LISTENER FOR TABLE ROWS HERE ===
+                        $("#tabla-ticket tbody")
+                            .off("click", "tr") // .off() to prevent multiple bindings if called multiple times
+                            .on("click", "tr", function (e) {
+                                // Asegúrate de que el clic no proviene de una celda truncable/expandible o de un botón.
+                                if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('expanded-cell') || $(e.target).is('button') || $(e.target).is('input[type="checkbox"]')) {
+                                    return; // Si el clic fue en la celda del checkbox o el botón, no activar el evento de la fila.
+                                }
+
+                                const tr = $(this);
+                                const rowData = dataTableInstance.row(tr).data();
+
+                                if (!rowData) {
+                                    return;
+                                }
+
+                                $("#tabla-ticket tbody tr").removeClass("table-active");
+                                tr.addClass("table-active");
+
+                                const ticketId = rowData.id_ticket;
+
+                                const selectedTicketDetails = TicketData.find(
+                                    (t) => t.id_ticket == ticketId
+                                );
+
+                                if (selectedTicketDetails) {
+                                    detailsPanel.innerHTML = formatTicketDetailsPanel(
+                                        selectedTicketDetails
+                                    );
+                                    loadTicketHistory(ticketId);
+                                    if (selectedTicketDetails.serial_pos) {
+                                        downloadImageModal(selectedTicketDetails.serial_pos);
+                                    } else {
+                                        const imgElement = document.getElementById(
+                                            "device-ticket-image"
+                                        );
+                                        if (imgElement) {
+                                            imgElement.src =
+                                                '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png'; // Corrige esta ruta si es JS puro y no PHP
+                                            imgElement.alt = "Serial no disponible";
+                                        }
+                                    }
+                                } else {
+                                    detailsPanel.innerHTML =
+                                        "<p>No se encontraron detalles para este ticket.</p>";
+                                }
+                            });
+                        // === END CLICK EVENT LISTENER ===
 
             if (tableContainer) {
               tableContainer.style.display = ""; // Show the table container
@@ -1112,3 +1191,355 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+function formatTicketDetailsPanel(d) {
+  // d es el objeto `data` completo del ticket
+
+  const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
+  const initialImageAlt = "Cargando imagen del dispositivo...";
+
+  return `
+        <div class="container-fluid">
+            <div class="row mb-3 align-items-center">
+                <div class="col-md-3 text-center">
+                    <div id="device-image-container" class="p-2">
+                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" class="img-fluid rounded" style="max-width: 120px; height: auto; object-fit: contain;">
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <h4 style = "color: black;">Ticket #${d.nro_ticket}</h4>
+                    <hr class="mt-2 mb-3">
+                    <div class="row">
+                        <div class="col-sm-6 mb-2">
+                            <strong><div>Serial POS:</div></strong>
+                            ${d.serial_pos}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                            <strong><div>Estatus POS:</div></strong>
+                            ${d.estatus_inteliservices}
+                        </div><br>
+                        <div class="col-sm-6 mb-2">
+                             <br><strong><div>Fecha Instalación:</div></strong>
+                            ${d.fecha_instalacion}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                             <br><strong><div>Creación ticket:</div></strong>
+                            ${d.create_ticket}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                             <br><strong><div>Usuario Gestión:</div></strong>
+                            ${d.full_name_tecnico}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="row">
+                        <div class="col-sm-4 mb-2">
+                            <strong><div>Acción:</div></strong>
+                            <span class = "Accion-ticket">${d.name_accion_ticket}</span>
+                        </div>
+                         <div class="col-sm-8 mb-2" style = "margin-left: -7%;">
+                          <strong><div>Falla Reportada:</div></strong>
+                          <span class="falla-reportada-texto">${d.name_failure}</span>
+                        </div>
+                        <div class="col-sm-8 mb-2">
+                             <br><strong><div>Estatus Ticket:</div></strong>
+                            ${d.name_status_ticket}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="mt-2 mb-3">
+
+            <div class="row">
+                <div class="col-12">
+                    <h5 style = "color: black;" >Gestión / Historial:</h5>
+                    <div id="ticket-history-content">
+                        <p>Selecciona un ticket para cargar su historial.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function downloadImageModal(serial) {
+  // Considera renombrar a loadDeviceImage(serial) para mayor claridad
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhoto`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        //console.log("Respuesta de GetPhoto:", response); // Descomenta para depuración
+
+        // ***** CAMBIO CLAVE AQUÍ *****
+        // Selecciona el elemento de imagen en el panel de detalles, NO en un modal
+        const imgElement = document.getElementById("device-ticket-image");
+
+        if (imgElement) {
+          if (response.success && response.rutaImagen) {
+            const srcImagen = response.rutaImagen;
+            const claseImagen = response.claseImagen || ""; // Obtener la clase CSS, si no hay, usar cadena vacía
+
+            imgElement.src = srcImagen;
+            imgElement.alt = `Imagen del dispositivo ${serial}`; // Actualiza el alt text
+
+            // Opcional: Si 'claseImagen' trae clases CSS específicas que quieres añadir
+            // y no colisionan con img-fluid o rounded, puedes hacer:
+            // if (claseImagen) {
+            //     imgElement.classList.add(claseImagen);
+            // }
+            // Si 'claseImagen' es una clase para reemplazar el estilo (lo cual no es común aquí),
+            // entonces tendrías que asegurarte de que la clase de tu backend incluya
+            // las propiedades de img-fluid y rounded, o volver a añadirlas.
+            // Para este caso, con Bootstrap, probablemente no necesites asignar `className` aquí
+            // ya que `max-height` y `width: auto` en el style ya controlan el tamaño.
+          } else {
+            // Si no hay éxito o rutaImagen, carga una imagen de "no disponible"
+            imgElement.src = "assets/img/image-not-found.png"; // Crea esta imagen
+            imgElement.alt = `Imagen no disponible para serial ${serial}`;
+            console.warn(
+              "No se obtuvo ruta de imagen o éxito de la API para el serial:",
+              serial,
+              response.message
+            );
+          }
+        } else {
+          console.error(
+            'Error: No se encontró el elemento <img> con ID "device-ticket-image" en el DOM.'
+          );
+        }
+      } catch (error) {
+        console.error("Error parsing JSON response for image:", error);
+        const imgElement = document.getElementById("device-ticket-image");
+        if (imgElement) {
+          imgElement.src = "assets/img/error-loading-image.png"; // Crea esta imagen
+          imgElement.alt = "Error al cargar imagen";
+        }
+      }
+    } else {
+      console.error(
+        "Error al obtener la imagen (HTTP):",
+        xhr.status,
+        xhr.statusText
+      );
+      const imgElement = document.getElementById("device-ticket-image");
+      if (imgElement) {
+        imgElement.src = "assets/img/error-loading-image.png";
+        imgElement.alt = "Error de servidor al cargar imagen";
+      }
+    }
+  };
+
+  xhr.onerror = function () {
+    console.error(
+      "Error de red al intentar obtener la imagen para el serial:",
+      serial
+    );
+    const imgElement = document.getElementById("device-ticket-image");
+    if (imgElement) {
+      imgElement.src = "assets/img/network-error-image.png"; // Crea esta imagen
+      imgElement.alt = "Error de red";
+    }
+  };
+
+  const datos = `action=GetPhoto&serial=${encodeURIComponent(serial)}`;
+  xhr.send(datos);
+}
+
+function loadTicketHistory(ticketId) {
+    // 1. Obtener el contenedor del historial y mostrar mensaje de carga (usando jQuery)
+    const historyPanel = $("#ticket-history-content");
+    historyPanel.html(
+        '<p class="text-center text-muted">Cargando historial...</p>'
+    ); // Usar .html() de jQuery
+
+    // 2. Crear y configurar la solicitud AJAX (usando jQuery.ajax)
+    $.ajax({
+        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory1`,
+        type: "POST",
+        data: {
+            // jQuery formatea esto automáticamente a 'application/x-www-form-urlencoded'
+            action: "GetTicketHistory",
+            id_ticket: ticketId,
+        },
+        dataType: "json", // Le decimos a jQuery que esperamos una respuesta JSON
+        success: function (response) {
+            // Verificar si la respuesta es exitosa y contiene historial
+            if (response.success && response.history && response.history.length > 0) {
+                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">'; // Contenedor del acordeón
+
+                // Iterar sobre cada item del historial para construir el HTML
+                response.history.forEach((item, index) => {
+                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
+
+                    let statusHeaderClass = "";
+                    let statusHeaderText = "";
+
+                    // **Colores por defecto si no hay coincidencia o si el estado es nulo/vacío**
+                    let headerStyle = "background-color: #212529;"; // Gris oscuro (cambiado de "Gris claro" a #212529 para contrastar)
+                    let textColor = "color: #212529;"; // Texto oscuro 
+                    statusHeaderText = ""; // Sin texto extra por defecto
+
+                    if (item.name_status_ticket) {
+                        const statusLower = item.name_status_ticket.toLowerCase();
+                        if (statusLower.includes("abierto")) {
+                            headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
+                            textColor = "color: #ffffff;"; // Texto blanco
+                            statusHeaderText = " (Abierto)";
+                        } else if (
+                            statusLower.includes("cerrado") ||
+                            statusLower.includes("resuelto")
+                        ) {
+                            headerStyle = "background-color: #28a745;"; // Verde
+                            textColor = "color: #ffffff;"; // Texto blanco
+                            statusHeaderText = " (Cerrado)";
+                        } else if (
+                            statusLower.includes("pendiente") ||
+                            statusLower.includes("en proceso")
+                        ) {
+                            headerStyle = "background-color: #ffc107;"; // Amarillo
+                            textColor = "color: #343a40;"; // Texto oscuro
+                            statusHeaderText = " (En Proceso)";
+                        } else if (
+                            statusLower.includes("cancelado") ||
+                            statusLower.includes("rechazado")
+                        ) {
+                            headerStyle = "background-color: #dc3545;"; // Rojo
+                            textColor = "color: #ffffff;"; // Texto blanco
+                            statusHeaderText = " (Cancelado)";
+                        } else if (statusLower.includes("espera")) {
+                            headerStyle = "background-color: #6c757d;"; // Gris
+                            textColor = "color: #ffffff;"; // Texto blanco
+                            statusHeaderText = " (En Espera)";
+                        }
+                    }
+
+                    // Esta lógica sobrescribe el color y texto de la última gestión (index === 0)
+                    if (index === 0) {
+                        // Es la última gestión (la "actual")
+                        headerStyle = "background-color: #ffc107;"; // Amarillo
+                        textColor = "color: #343a40;"; // Texto oscuro
+                        statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`; // Agrega el estatus actual o 'Desconocido' si no existe. 
+                    } else {
+                        // Son gestiones pasadas
+                        headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
+                        textColor = "color: #ffffff;"; // Texto blanco
+                        // Se mantiene el statusHeaderText determinado anteriormente, o se deja vacío.
+                    }
+
+                    historyHtml += `
+                        <div class="card mb-3 custom-history-card"> 
+                            <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
+                                        data-toggle="collapse" data-target="#${collapseId}"
+                                        aria-expanded="${index === 0 ? "true" : "false"}" 
+                                        aria-controls="${collapseId}"
+                                        style="${textColor}">
+                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="${collapseId}" class="collapse ${index === 0 ? "show" : ""}"
+                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-borderless mb-0">
+                                            <tbody>
+                                                <tr>
+                                                    <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
+                                                    <td>${item.fecha_de_cambio || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Acción:</th>
+                                                    <td>${item.name_accion_ticket || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Operador de Gestión:</th>
+                                                    <td>${item.full_name_tecnico_gestion || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Coordinador:</th>
+                                                    <td>${item.full_name_coordinador || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Ticket:</th>
+                                                    <td>${item.name_status_ticket || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Laboratorio:</th>
+                                                    <td>${item.name_status_lab || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Domiciliación:</th>
+                                                    <td>${item.name_status_domiciliacion || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start" style="word-wrap: break-word; overflow-wrap: break-word;">Estatus Pago:</th>
+                                                    <td>${item.name_status_payment || "N/A"}</td>
+                                                </tr>
+                                                
+                                                ${item.name_status_lab === "Pendiente por repuesto" ? `
+                                                    <tr>
+                                                        <th class="text-start" style="word-wrap: break-word; overflow-wrap: break-word; font-size: 80%">Fecha Estimada de la Llegada de repuesto:</th>
+                                                        <td>${item.new_repuesto_date || "N/A"}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+
+                historyHtml += "</div>"; // Cierre del acordeón principal
+                historyPanel.html(historyHtml); // Insertar el HTML generado (con jQuery)
+
+                // Reiniciar tooltips (si usas Bootstrap 4)
+                if ($.fn && $.fn.tooltip) {
+                    $('[data-toggle="tooltip"]').tooltip("dispose"); 
+                    $('[data-toggle="tooltip"]').tooltip(); 
+                }
+            } else {
+                historyPanel.html(
+                    '<p class="text-center text-muted">No hay historial disponible para este ticket.</p>'
+                );
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            let errorMessage =
+                '<p class="text-center text-danger">Error al cargar el historial.</p>';
+            if (jqXHR.status === 0) {
+                errorMessage =
+                    '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+            } else if (jqXHR.status == 404) {
+                errorMessage =
+                    '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
+            } else if (jqXHR.status == 500) {
+                errorMessage =
+                    '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+            } else if (textStatus === "parsererror") {
+                errorMessage =
+                    '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+            } else if (textStatus === "timeout") {
+                errorMessage =
+                    '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+            } else if (textStatus === "abort") {
+                errorMessage =
+                    '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+            }
+            historyPanel.html(errorMessage);
+            console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+        },
+    });
+}

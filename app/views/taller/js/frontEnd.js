@@ -1099,7 +1099,10 @@ function loadTicketHistory(ticketId) {
 $(document).ready(function () {
 
   // --- NUEVA LÓGICA PARA EL CHECKBOX DE "CARGA DE LLAVE" ---
-  $("#tabla-ticket").on("change", ".receive-key-checkbox", function () {
+ $("#tabla-ticket tbody")
+    .off("change", ".receive-key-checkbox") // Evita múltiples listeners
+    .on("change", ".receive-key-checkbox", function (e) {
+        e.stopPropagation(); // Evita que el clic en el checkbox active el clic de la fila.
     const checkbox = $(this);
     const idTicket = checkbox.data("id-ticket");
     const nro_ticket = checkbox.data("nro-ticket");
@@ -1126,7 +1129,7 @@ $(document).ready(function () {
       }).then((result) => {
         if (result.isConfirmed) {
           // Si el usuario confirma, llamar a la función para guardar la fecha
-          saveKeyReceiveDate(idTicket);
+          saveKeyReceiveDate(idTicket, nro_ticket);
         } else {
           // Si el usuario cancela, desmarcar el checkbox
           checkbox.prop("checked", false);
@@ -1137,9 +1140,9 @@ $(document).ready(function () {
   });
 
   // --- NUEVA FUNCIÓN PARA ENVIAR LA FECHA AL SERVIDOR ---
-  function saveKeyReceiveDate(idTicket) {
+  function saveKeyReceiveDate(idTicket, nro_ticket) {
     const id_user = document.getElementById("userId").value; // Asumiendo que tienes el ID del usuario logueado
-    const nro_ticket = checkbox.data("nro-ticket");
+    const nroticket = nro_ticket;
 
     const xhr = new XMLHttpRequest();
     xhr.open(
@@ -1155,7 +1158,7 @@ $(document).ready(function () {
           if (response.success) {
             Swal.fire({
               title: "¡Registrado!",
-              text: `La fecha de recepción de llave del Pos asociado el Nro de ticket: ${nro_ticket}  ha sido guardada.`,
+              text: `La fecha de recepción de llave del Pos asociado el Nro de ticket: ${nroticket}  ha sido guardada.`,
               icon: "success",
               confirmButtonText: "Entendido",
               color: "black",
@@ -1625,8 +1628,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // --- Primer Modal: Notificación y Opciones ---
-    // --- Primer Modal: Notificación y Opciones ---
         Swal.fire({
             title: "Notificación",
             html: `Al ticket con el Nro. <b>${ticket.nro_ticket}</b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Desea colocar otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br>
