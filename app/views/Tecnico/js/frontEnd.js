@@ -326,6 +326,7 @@ function getTicketData() {
           dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
          // Dentro de tu initComplete de DataTables
             initComplete: function (settings, json) {
+            const dataTableInstance = this.api(); // Obtén la instancia de la API de DataTables 
             const buttonsHtml = `
                 <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets ya Asignados">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
@@ -366,6 +367,8 @@ function getTicketData() {
 
             // Inicialmente, establecer "Asignados" como activo (esto es correcto)
             setActiveButton("btn-asignados");
+            dataTableInstance.column(6).search("Asignado al Técnico").draw();
+
 
             // Tus event listeners de clic están correctos
             $("#btn-asignados").on("click", function () {
@@ -854,23 +857,46 @@ function getTicketData() {
 // Puedes usar un modal de Bootstrap existente o crear uno nuevo.
 // Este es un ejemplo conceptual.
 function showConfirmationModalForReceived(ticketId, currentnroTicket) {
-  Swal.fire({
-    title: `¿Marcar el ticket ${currentnroTicket} como recibido?`, // Usa template literals aquí
-    text: "Esta acción registrará la fecha de recepción y habilitará Envio a Taller.",
-    icon: "warning",
+   const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+ Swal.fire({
+    title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+              <div class="custom-modal-header-content">Confirmación de recibido</div>
+            </div>`,
+    html: `
+        <div class="custom-modal-body-content">
+            <div class="mb-4">
+                ${customWarningSvg}
+            </div>
+            <p class="h4 mb-3">¿Marcar el Pos asociado al ticket Nro: <span class="fw-bold text-primary">${currentnroTicket}</span> como recibido?</p>
+            <p class="h5 text-muted">Esta acción registrará la fecha de recepción y habilitará la opción Envío a Taller.</p>
+        </div>
+    `,
     showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
     confirmButtonText: "Sí, Recibir Ticket",
     cancelButtonText: "Cancelar",
-    color: "black", // Asegúrate de que SweetAlert2 soporta esta opción para el color de texto
-  }).then((result) => {
-    // <-- ¡Aquí está el cambio clave! Manejar la Promise
+    confirmButtonColor: "#003594",
+    customClass: {
+        container: 'custom-swal-container',
+        popup: 'custom-swal-popup',
+        // header: 'custom-swal-header', // This is usually not needed unless you want to style the _container_ of the title
+        title: 'custom-swal-title', // Apply your desired styling directly to the title's content via this class
+        content: 'custom-swal-content',
+        actions: 'custom-swal-actions',
+        confirmButton: 'btn btn-primary btn-lg custom-confirm-button',
+        cancelButton: 'btn btn-secondary btn-lg custom-cancel-button',
+    },
+    showConfirmButton: true,
+    showLoaderOnConfirm: true,
+    showCloseButton: false,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    focusConfirm: false,
+
+}).then((result) => {
     if (result.isConfirmed) {
-      // Si el usuario hizo clic en "Sí, Recibir Ticket"
-      handleMarkTicketReceived(ticketId, currentnroTicket);
+        handleMarkTicketReceived(ticketId, currentnroTicket);
     }
-  });
+});
 }
 
 // --- FUNCIÓN PARA MANEJAR LA LÓGICA DE MARCAR COMO RECIBIDO ---
@@ -893,7 +919,7 @@ function handleMarkTicketReceived(ticketId, currentnroTicket) {
                 text: "El Pos asociado al ticket N" + currentnroTicket + " ha sido marcado como recibido.", // <-- CAMBIO AQUÍ
                 icon: "success",
                 color: "black",
-                confirmButtonColor: "#3085d6",
+                confirmButtonColor: "#003594",
             });
           getTicketData(); // Volver a cargar la tabla para reflejar los cambios
         } else {
