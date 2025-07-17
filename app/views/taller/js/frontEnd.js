@@ -298,6 +298,77 @@ function getTicketData() {
                                     colvis: "Visibilidad de Columna",
                                 },
                             },
+                            // === APLICACIÓN DE CAMBIOS PARA LOS BOTONES DE FILTRO ===
+    dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+    initComplete: function (settings, json) {
+        const dataTableInstance = this.api(); // Obtén la instancia de la API de DataTables
+        const buttonsHtml = `
+            <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets en Taller">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                  <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+                </svg>
+            </button>
+
+            <button id="btn-por-asignar" class="btn btn-secondary me-2" title="Tickets en espera de confirmar recibido en el Taller">
+               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                  <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                </svg>
+            </button>
+
+            <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets Por confirmar carga de llaves">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                </svg>
+            </button>
+
+            <button id="btn-devuelto" class="btn btn-secondary me-2" title="Tickets Enviados al Rosal">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house-door" viewBox="0 0 16 16">
+                <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z"/>
+              </svg>
+            </button>
+        `;
+        $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+
+        // Tu función setActiveButton es correcta.
+        function setActiveButton(activeButtonId) {
+            $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
+            $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
+            $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
+            $("#btn-devuelto").removeClass("btn-primary").addClass("btn-secondary");
+            $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
+        }
+
+        // Inicialmente, establecer "Asignados" como activo y aplicar el filtro
+        setActiveButton("btn-asignados");
+        dataTableInstance.column(8).search("En proceso de Reparación|Reparado|Pendiente por repuesto", true, false, false).draw();
+
+        // Tus event listeners de clic están correctos
+        $("#btn-asignados").on("click", function () {
+            dataTableInstance.columns().search('').draw(false);
+            dataTableInstance.column(8).search("En proceso de Reparación|Reparado|Pendiente por repuesto",  true, false, false).draw();
+            setActiveButton("btn-asignados");
+        });
+
+        $("#btn-por-asignar").on("click", function () {
+            dataTableInstance.columns().search('').draw(false);
+            dataTableInstance.column(8).search("Recibido en Taller").draw();
+            setActiveButton("btn-por-asignar");
+        });
+
+        $("#btn-recibidos").on("click", function () {
+            dataTableInstance.columns().search('').draw(false);
+            dataTableInstance.column(8).search("Recibido por el Técnico").draw();
+            setActiveButton("btn-recibidos");
+        });
+
+        $("#btn-devuelto").on("click", function () {
+            dataTableInstance.columns().search('').draw(false);
+            dataTableInstance.column(7).search("Enviado devuelta al Rosal").draw();
+           document.querySelector(".load-key-button").style.display = "none"; // Oculta el botón de carga de llave
+            setActiveButton("btn-devuelto");
+        });
+    },
                         });
 
                         // ... (El resto de tus event listeners: .truncated-cell, .load-key-button, tr click, .confirm-waiting-btn) ...
@@ -341,11 +412,17 @@ function getTicketData() {
                                 const hasSendKeyDate = $(this).data("has-send-key-date"); // Leer el atributo del botón
 
                                 if (hasSendKeyDate != true) { // Ojo: Los data attributes devuelven booleanos si son 'true'/'false'
-                                  // Si la llave ya fue enviada, muestra un aviso diferente (o no hagas nada)
+                                  const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
                                   Swal.fire({
-                                    icon: "question",
-                                    title: "Confirmar envio al rosal",
-                                    text: `¿Desea enviar al rosal el POS asociado al Nro de ticket: ${nroTicket} Sin cargar las llaves?.`,
+                                      title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                                                <div class="custom-modal-header-content">Confirmar envio al rosal</div>
+                                              </div>`,
+                                    html: `<div class="custom-modal-body-content">
+                                              <div class="mb-4">
+                                                ${customWarningSvg}
+                                              </div>
+                                              <p class="h4 mb-3" style = "color: black;">¿Desea enviar al rosal el Pos asociado al Nro de ticket: <span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; ">${nroTicket}</span> <span style = "color: #004242;">Sin cargar las llaves?</span></p>
+                                            </div>`,
                                     confirmButtonText: "Si",
                                     color: "black",
                                     confirmButtonColor: "#003594",
@@ -355,7 +432,6 @@ function getTicketData() {
                                     focusConfirm: false,
                                     allowOutsideClick: false, 
                                     allowEscapeKey: false,
-                                    showCloseButton: true,
                                   }).then((result) => { // Aquí capturamos la respuesta del usuario
                                     if (result.isConfirmed) {
                                       sendTicketToRosal(ticketId, nroTicket, false); // `true` podría indicar "sin llaves"
@@ -526,7 +602,7 @@ function sendTicketToRosal(id, nro, withoutKeys) {
                       const nroticket = nro;
                     Swal.fire({
                         title: "¡Enviado!",
-                        text: `El Pos asociado al ticket Nro: ${nroticket} se ha enviado a Gestión Rosal correctamente.`,
+                        text: `El Pos asociado al ticket Nro: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> se ha enviado a Gestión Rosal correctamente.`,
                         icon: "success",
                         confirmButtonText: "Ok",
                         confirmButtonColor: "#003594",
@@ -1108,12 +1184,21 @@ $(document).ready(function () {
     const nro_ticket = checkbox.data("nro-ticket");
 
     if (checkbox.is(":checked")) {
+      const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
       Swal.fire({
-        title: `¿Deseas Cargar las llaves al ticket Nro: ${nro_ticket}?`, // <-- CAMBIO AQUÍ
-        html: "Esta acción registrará la fecha de recepción de la llave. <span style = 'color:red;'>Confirmar carga de llaves en 'Gestión Rosal'.</span>",
-        icon: "warning",
+        title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+              <div class="custom-modal-header-content">Confirmación de Envio de Llaves</div>
+            </div>`,        
+            /*title: `¿Deseas Cargar las llaves al ticket Nro: ${nro_ticket}?`, // <-- CAMBIO AQUÍ*/
+        html: ` <div class="custom-modal-body-content">
+                  <div class="mb-4">
+                    ${customWarningSvg}
+                  </div>
+                    <p class="h4 mb-3" style = "color: #343a40">¿Deseas Cargar las llaves al ticket Nro:<span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span>?</p><br><span style = 'color:red;'>Confirmar carga de llaves en 'Gestión Rosal'.</span>
+                    <span style = "font-size: 70%; display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de recepción de las llaves</span>
+                </div>`,
+                
         showCancelButton: true,
-        showCloseButton: true, // Agrega esta línea para mostrar el botón de cerrar (X)
         confirmButtonColor: "#003594",
         confirmButtonClass: "swal2-confirm-hover-green", // Clase personalizada para el hover
         cancelButtonColor: "#6c757d", // Color inicial gris (ajusta si quieres otro color inicial)
@@ -1124,7 +1209,6 @@ $(document).ready(function () {
         focusConfirm: false,
         allowOutsideClick: false, 
         allowEscapeKey: false,
-        showCloseButton: true,
         keydownListenerCapture: true,
       }).then((result) => {
         if (result.isConfirmed) {
@@ -1158,7 +1242,7 @@ $(document).ready(function () {
           if (response.success) {
             Swal.fire({
               title: "¡Registrado!",
-              text: `La fecha de recepción de llave del Pos asociado el Nro de ticket: ${nroticket}  ha sido guardada.`,
+              text: `La fecha de recepción de llave del Pos asociado el Nro de ticket: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> ha sido guardada.`,
               icon: "success",
               confirmButtonText: "Entendido",
               color: "black",
@@ -1630,7 +1714,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         Swal.fire({
             title: "Notificación",
-            html: `Al ticket con el Nro. <b>${ticket.nro_ticket}</b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Desea colocar otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br>
+            html: `Al ticket con el Nro. <b><span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span></b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Desea colocar otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br>
             <br><div class="swal-custom-button-container">
               <button id="changeStatusButton" class="custom-status-button">Cambiar Estatus del Ticket</button>
             </div>`,
@@ -2408,11 +2492,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (response.success) {
               Swal.fire({
                 icon: "success",
-                title: "¡Éxito!",
-                html: `Fecha de repuesto guardada con éxito: ${selectedDate}.`,
+                title: "¡Fecha Registrada Correctamente!",
+                html: `La fecha de repuesto ha sido guardada con éxito: ${selectedDate}.`,
                 showConfirmButton: true, // Asegura que el botón de confirmación sea visible
                 confirmButtonText: 'Cerrar', // Opcional: Personaliza el texto del botón
-                confirmButtonColor: '#3085d6', // Opcional: Personaliza el color del botón
+                confirmButtonColor: '#003594', // Opcional: Personaliza el color del botón
                 color: 'black', // Opcional: Personaliza el color de fondo del modal
               }).then(() => {
                 rescheduleModal.hide();

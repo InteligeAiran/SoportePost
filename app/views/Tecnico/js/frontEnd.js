@@ -369,7 +369,6 @@ function getTicketData() {
             setActiveButton("btn-asignados");
             dataTableInstance.column(6).search("Asignado al Técnico").draw();
 
-
             // Tus event listeners de clic están correctos
             $("#btn-asignados").on("click", function () {
                 dataTableInstance.column(6).search("Asignado al Técnico").draw();
@@ -390,7 +389,6 @@ function getTicketData() {
                 dataTableInstance.column(6).search("Pos devuelto a cliente").draw();
                 setActiveButton("btn-devuelto");
             });
-
             // ************* FIN CAMBIOS PARA LOS BOTONES *************
 
             $("#tabla-ticket tbody")
@@ -867,7 +865,7 @@ function showConfirmationModalForReceived(ticketId, currentnroTicket) {
             <div class="mb-4">
                 ${customWarningSvg}
             </div>
-            <p class="h4 mb-3">¿Marcar el Pos asociado al ticket Nro: <span class="fw-bold text-primary">${currentnroTicket}</span> como recibido?</p>
+            <p class="h4 mb-3">¿Marcar el Pos asociado al ticket Nro:<span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; ">${currentnroTicket}</span>como recibido?</p>
             <p class="h5 text-muted">Esta acción registrará la fecha de recepción y habilitará la opción Envío a Taller.</p>
         </div>
     `,

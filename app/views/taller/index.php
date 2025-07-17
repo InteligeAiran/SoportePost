@@ -454,6 +454,235 @@
                 margin: 0.3125em;
                 /* !important se usa para asegurar que estos estilos anulen los estilos por defecto de SweetAlert2 si es necesario */
             }
+
+            /* Estilo base para el botón Recibidos cuando es el activo */
+#btn-recibidos.btn-primary {
+  background-color: #003594;
+  /* Tu azul fuerte */
+  border-color: #003594;
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Estilo hover/focus para el botón Recibidos cuando es el activo */
+#btn-recibidos.btn-primary:hover,
+#btn-recibidos.btn-primary:focus {
+  background-color: #0045b4;
+  /* Un tono un poco más oscuro o claro al hover */
+  border-color: #0045b4;
+  box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+  /* Sombra de enfoque/hover */
+}
+
+/* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
+#btn-recibidos.btn-secondary {
+  background-color: #a0a0a0;
+  /* Tu gris sutil */
+  border-color: #a0a0a0;
+  color: #ffffff;
+  /* O un gris oscuro si el fondo es claro */
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+#btn-reasignado.btn-primary {
+  color: #ffffff;
+  background-color: #0045b4;
+  /* Un tono un poco más oscuro o claro al hover */
+  border-color: #0045b4;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+#btn-reasignado.btn-primary:hover,
+#btn-reasignado.btn-primary:focus {
+  color: #ffffff;
+  background-color: #0045b4;
+  /* Un tono un poco más oscuro o claro al hover */
+  border-color: #0045b4;
+  box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+  /* Sombra de enfoque/hover */
+}
+
+#btn-reasignado.btn-secondary:hover,
+#btn-reasignado.btn-secondary:focus {
+  color: white;
+  background-color: #b0b0b0;
+  border-color: #b0b0b0;
+  box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+}
+
+#btn-reasignado.btn-secondary {
+  color: white;
+  background-color: #b0b0b0;
+  border-color: #b0b0b0;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Estilo hover/focus para el botón Recibidos cuando NO es el activo */
+#btn-recibidos.btn-secondary:hover,
+#btn-recibidos.btn-secondary:focus {
+  background-color: #b0b0b0;
+  border-color: #b0b0b0;
+  box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+}
+
+#btn-asignados {
+  background-color: #003594;
+  color: #ffffff;
+  border: 1px solid #003594;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+#btn-por-asignar {
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* CSS para los botones de Asignados/Por Asignar */
+/* Estilo base para el botón Asignados cuando es el activo */
+#btn-asignados.btn-primary {
+  background-color: #003594;
+  /* Tu azul fuerte */
+  border-color: #003594;
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Estilo hover/focus para el botón Asignados cuando es el activo */
+#btn-asignados.btn-primary:hover,
+#btn-asignados.btn-primary:focus {
+  background-color: #0045b4;
+  /* Un tono un poco más oscuro o claro al hover */
+  border-color: #0045b4;
+  box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+  /* Sombra de enfoque/hover */
+}
+
+/* Estilo para el botón Asignados cuando NO es el activo (es gris) */
+#btn-asignados.btn-secondary {
+  background-color: #a0a0a0;
+  /* Tu gris sutil */
+  border-color: #a0a0a0;
+  color: #ffffff;
+  /* O un gris oscuro si el fondo es claro */
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Estilo hover/focus para el botón Asignados cuando NO es el activo */
+#btn-asignados.btn-secondary:hover,
+#btn-asignados.btn-secondary:focus {
+  background-color: #b0b0b0;
+  border-color: #b0b0b0;
+  box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+}
+
+#btn-asignados,
+#btn-por-asignar,
+#btn-recibidos,
+#btn-devuelto {
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-size: 13px;
+}
+
+#btn-recibidos {
+  background-color: #a0a0a0;
+  color: #ffffff;
+  border: 1px solid #a0a0a0;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+#btn-devuelto {
+  background-color: #a0a0a0;
+  color: #ffffff;
+  border: 1px solid #a0a0a0;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+#btn-devuelto.btn-primary {
+  background-color: #003594;
+  /* Tu azul fuerte */
+  border-color: #003594;
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+
+#btn-devuelto.btn-secondary:hover,
+#btn-devuelto.btn-secondary:focus {
+  background-color: #b0b0b0;
+  border-color: #b0b0b0;
+  box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+}
+
+#btn-devuelto.btn-primary:hover,
+#btn-devuelto.btn-primary:focus {
+  background-color: #0045b4;
+  border-color: #0045b4;
+  box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+}
+
+/* Estilo base para el botón Por Asignar cuando es el activo */
+#btn-por-asignar.btn-primary {
+  background-color: #003594;
+  /* Tu azul fuerte */
+  border-color: #003594;
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Estilo hover/focus para el botón Por Asignar cuando es el activo */
+#btn-por-asignar.btn-primary:hover,
+#btn-por-asignar.btn-primary:focus {
+  background-color: #0045b4;
+  border-color: #0045b4;
+  box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+}
+
+
+
+/* Estilo para el botón Por Asignar cuando NO es el activo (es gris) */
+#btn-por-asignar.btn-secondary {
+  background-color: #a0a0a0;
+  border-color: #a0a0a0;
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Estilo hover/focus para el botón Por Asignar cuando NO es el activo */
+#btn-por-asignar.btn-secondary:hover,
+#btn-por-asignar.btn-secondary:focus {
+  background-color: #b0b0b0;
+  border-color: #b0b0b0;
+  box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+}
+
+#modalTicketIdConfirmTaller{
+     display: inline-block; 
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.3rem;
+    background-color: #e0f7fa;
+    color: #007bff;
+}
+
+#TextConfirmTaller{
+    color: #343a40;
+    font-size: 23px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
         </style>
     </head>
 
@@ -587,8 +816,8 @@
                                 <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.5a.5.5 0 0 1-1.002.04l-.35-3.5C7.046 5.462 7.465 5 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2" />
                             </svg>
                         </div>
-                        <p>¿Marcar el POS asociado al ticket Nro: <span id="modalTicketIdConfirmTaller"></span> como recibido?</p>
-                        <p class="small-text">Esta acción registrará la fecha de recepción y habilitará los Estatus Corresopndiente del Taller.</p>
+                        <p id="TextConfirmTaller" >¿Marcar el Pos asociado al ticket Nro: <span id="modalTicketIdConfirmTaller"></span> como recibido?</p>
+                        <p class="small-text" style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de recepción y habilitará los Estatus Corresopndiente del Taller.</p>
                     </div>
                     <div class="modal-footer custom-modal-footer d-flex justify-content-center">
                         <button type="button" class="btn custom-btn-primary" id="confirmTallerBtn">Sí, Recibir POS</button>

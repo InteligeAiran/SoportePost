@@ -35,12 +35,21 @@
     color: #495057; /* Color de texto suave */
 }
 
-#modalTicketNr, #ticketNumberSpan, #NroTicketConfirReceiCoord {
-    display: inline-block; /* Para aplicar padding y margenes correctamente si es necesario */
+#modalTicketNr, #ticketNumberSpan, #NroTicketConfirReceiCoord{
+    display: inline-block; 
     padding: 0.2rem 0.5rem;
     border-radius: 0.3rem;
-    background-color: #e0f7fa; /* Un fondo sutil para el número de ticket */
-    color: #007bff; /* Color primario de Bootstrap */
+    background-color: #e0f7fa;
+    color: #007bff;
+}
+
+#btn-devuelto.btn-primary {
+  background-color: #003594;
+  /* Tu azul fuerte */
+  border-color: #003594;
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 #textConfirm{
@@ -1345,8 +1354,8 @@ div.dataTables_wrapper div.dataTables_filter input {
 
 /* Specific button styles */
 .custom-confirm-button {
-    background-color: #007bff !important; /* Bootstrap primary blue */
-    border-color: #007bff !important;
+   /* background-color: #007bff !important; /* Bootstrap primary blue */
+  /*  border-color: #007bff !important;*/
     font-weight: 500 !important; /* Adjust font weight */
     min-width: 150px; /* Make buttons a bit wider */
 }
