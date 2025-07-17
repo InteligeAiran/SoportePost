@@ -1677,7 +1677,7 @@ class consulta_rifModel extends Model
                     (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     2, // Usamos la acción específica para el historial
-                    $id_accion_ticket, // Usamos la acción específica para el historial
+                    14, // Usamos la acción específica para el historial
                     (int)$id_new_status_lab,
                     $id_new_status_payment,
                     $new_status_domiciliacion,
