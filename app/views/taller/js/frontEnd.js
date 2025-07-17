@@ -3,6 +3,7 @@ let currentNroTicketForConfirmTaller = null; // <--- NUEVA VARIABLE PARA EL NÚM
 let confirmInTallerModalInstance = null;
 
 $(document).ready(function () {
+
   // 1. Obtener el elemento del modal por su ID
   const confirmInTallerModalElement = document.getElementById(
     "confirmInTallerModal"
@@ -1610,6 +1611,7 @@ $(document).ready(function () {
 });
 
 function getStatusLab(currentStatusNameToExclude = null) {
+  
   // Acepta un parámetro opcional
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetStatusLab`);
@@ -1633,6 +1635,24 @@ function getStatusLab(currentStatusNameToExclude = null) {
                 option.textContent = status.name_status_lab;
                 select.appendChild(option);
               }
+                   const changeStatusModal = new bootstrap.Modal(document.getElementById("changeStatusModal"));
+
+                    const closeButton = document.getElementById("CerrarBoton");
+
+                    // Es crucial eliminar cualquier listener previo para evitar que se acumulen
+                    // y se ejecuten múltiples veces si la función getStatusLab se llama de nuevo.
+                    closeButton.onclick = null; // Reinicia el manejador onclick para evitar duplicados
+
+                    closeButton.addEventListener('click', function handler() {
+                        if (currentStatusNameToExclude === "Pendiente por repuesto") {
+                            changeStatusModal.hide(); // Oculta el modal
+                            location.reload(); // Recarga la página
+                        } else {
+                            changeStatusModal.hide(); // Solo oculta el modal
+                        }
+                        // Opcional: Si solo quieres que el listener se ejecute una vez
+                        // closeButton.removeEventListener('click', handler);
+                    });
             });
           } else {
             const option = document.createElement("option");
@@ -1713,8 +1733,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
         Swal.fire({
-            title: "Notificación",
-            html: `Al ticket con el Nro. <b><span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span></b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Desea colocar otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br>
+            /*title: "Notificación",*/
+            title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+              <div class="custom-modal-header-content">Notificación</div>
+            </div>`,
+            html: `Al ticket con el Nro. </b><span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span></b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Desea colocar otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br>
             <br><div class="swal-custom-button-container">
               <button id="changeStatusButton" class="custom-status-button">Cambiar Estatus del Ticket</button>
             </div>`,
@@ -1785,6 +1808,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
                       if (cancelButton) {
                         cancelButton.id = 'ButtonCancelarFecha';
+
+                         const changeStatusModal = new bootstrap.Modal(document.getElementById("changeStatusModal"));
+
+
+
+                    cancelButton.addEventListener('click', function handler() {
+                            changeStatusModal.hide(); // Oculta el modal
+                            location.reload(); // Recarga la página
+                       
+                       
+                    });
                       }
                     },
 
@@ -1983,8 +2017,11 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // --- Primer Modal: Notificación y Opciones ---
         Swal.fire({
-            title: "Notificación",
-            html: `Al ticket con el Nro. <b>${ticket.nro_ticket}</b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Desea colocar otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br>
+           /* title: "Notificación",*/
+           title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+              <div class="custom-modal-header-content">Notificación</div>
+            </div>`,
+            html: `Al ticket con el Nro. <b><span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span></b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Desea colocar otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br>
             <br><div class="swal-custom-button-container">
               <button id="changeStatusButton" class="custom-status-button">Cambiar Estatus del Ticket</button>
             </div>`,
@@ -1995,7 +2032,6 @@ document.addEventListener("DOMContentLoaded", () => {
             focusConfirm: false,
             allowOutsideClick: false, 
             allowEscapeKey: false,
-            showCloseButton: true,
             keydownListenerCapture: true,
             color: "black",
             customClass: {
@@ -2022,7 +2058,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 // --- Lógica para "Renovar Fecha" (Abre un segundo modal) ---
                 
                 Swal.fire({
-                    title: "Renovar Fecha de la llegada de Repuestos",
+                    //title: "Renovar Fecha de la llegada de Repuestos",
+                     title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                              <div class="custom-modal-header-content">Renovar Fecha de la llegada de Repuestos</div>
+                            </div>`,
                     html: `
                         <b>Coloque Nueva Fecha:</b><br>
                         <input type="date" id="swal-input-date-renew" class="swal2-input">
@@ -2034,7 +2073,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     color: "black",
                     allowOutsideClick: false, 
                     allowEscapeKey: false,
-                    showCloseButton: true,
                     keydownListenerCapture: true,
 
                     customClass: {
@@ -2055,6 +2093,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
                       if (cancelButton) {
                         cancelButton.id = 'ButtonCancelarFecha';
+
+                          const changeStatusModal = new bootstrap.Modal(document.getElementById("changeStatusModal"));
+
+
+
+                    cancelButton.addEventListener('click', function handler() {
+      
+                            changeStatusModal.hide(); // Oculta el modal
+                            location.reload(); // Recarga la página
+                    
+                    });
                       }
                     },
 
