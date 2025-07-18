@@ -342,7 +342,7 @@
             }
 
             #rescheduleModalLabel {
-                color: grey;
+                color: white;
             }
 
             .my-custom-select-modal .swal2-select {
@@ -353,6 +353,17 @@
                 width: 90%; /* O el ancho que desees */
                 box-sizing: border-box; /* Para incluir padding y border en el ancho */
                 /* Otros estilos que quieras */
+            }
+
+            #saveRescheduleDate{
+                background-color: #002869;
+                color: white;
+                border: none;
+                cursor: pointer;
+                padding: 10px 20px;
+                font-size: 16px;
+                border-radius: 5px;
+                transition: background-color 0.3s ease;
             }
 
             #ButtonSendDate{
@@ -669,6 +680,11 @@
   box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
 }
 
+#CancelarFecha{
+    background-color: #b0b0b0;
+    transition: background-color 0.3s ease;
+}
+
 #modalTicketIdConfirmTaller{
      display: inline-block; 
     padding: 0.2rem 0.5rem;
@@ -781,9 +797,8 @@
         <div class="modal fade" id="rescheduleModal" tabindex="-1" aria-labelledby="rescheduleModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header bg-gradient-primary text-white">
                         <h5 class="modal-title" id="rescheduleModalLabel">Fecha Estimada de Llegada de Repuesto</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <form id="rescheduleForm">
@@ -797,7 +812,7 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" id="CancelarFecha" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="button" class="btn btn-primary" id="saveRescheduleDate">Guardar Fecha</button>
                     </div>
                 </div>

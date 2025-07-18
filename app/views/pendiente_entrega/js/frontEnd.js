@@ -344,27 +344,30 @@ function getTicketDataFinaljs() {
   const columnTitles = {
     id_ticket: "ID Ticket",
     nro_ticket: "Nro Ticket",
-    full_name_tecnico1: "Técnico Gestión",
+    full_name_tecnico: "Técnico Gestión", // CORREGIDO
     create_ticket: "Fecha Creación",
     serial_pos: "Serial POS",
     rif: "Rif",
     name_failure: "Falla",
-    id_level_failure: "Nivel Falla",
-    full_name_coord: "Coordinador",
-    fecha_envio_coordinador: "Fecha Envío Coordinador",
-    name_status_payment: "Estatus Pago",
-    full_name_tecnico2: "Técnico 2",
-    fecha_assignado_al_tecnico2: "Fecha Asignado al Técnico 2",
-    envio_a_taller: "Envío a Taller",
+    // id_level_failure: "Nivel Falla", // ELIMINADO
+    full_name_coordinador: "Coordinador", // CORREGIDO
+    // fecha_envio_coordinador: "Fecha Envío Coordinador", // ELIMINADO
     fecha_envio_a_taller: "Fecha Envío a Taller",
-    name_process_ticket: "Proceso Ticket",
-    status_taller: "Estatus Taller",
-    name_accion_ticket: "Acción Ticket",
-    name_status_domiciliacion: "Estatus Domiciliación",
     name_status_ticket: "Estatus Ticket",
-    fecha_llaves_enviada: "Fecha de Llaves Enviadas",
-    fecha_carga_llaves: "Fecha Carga Llaves",
-    fecha_envio_destino: "Fecha Envío a Destino",
+    name_process_ticket: "Proceso Ticket",
+    name_status_payment: "Estatus Pago",
+    name_status_lab: "Estatus Taller", // CORREGIDO
+    name_accion_ticket: "Acción Ticket",
+    full_name_tecnicoassignado: "Técnico 2", // CORREGIDO
+    // fecha_assignado_al_tecnico2: "Fecha Asignado al Técnico 2", // ELIMINADO
+    // envio_a_taller: "Envío a Taller", // ELIMINADO
+    date_send_torosal_fromlab: "Fecha Envío Torosal Lab", // CORREGIDO
+    date_sendkey: "Fecha de Llaves Enviadas", // CORREGIDO
+    date_receivekey: "Fecha Carga Llaves", // CORREGIDO
+    date_receivefrom_desti: "Fecha Envío a Destino", // CORREGIDO
+    confirmreceive: "Confirmar Recibido", // AÑADIDO
+    fecha_instalacion: "Fecha Instalación", // Añadido
+    estatus_inteliservices: "Estatus Inteliservices", // Añadido
   };
 
   xhr.onload = function () {
@@ -427,147 +430,145 @@ function getTicketDataFinaljs() {
                     return `<span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
                   };
                 }
-                 // ************* APLICAR LÓGICA DE TRUNCADO A FALLA *************
-                if (key === "name_failure") { // <--- Identifica la columna "nro_ticket"
-                    const displayLength = 25; // Define la longitud máxima para mostrar
-                    columnDef.render = function (data, type, row) {
-                        const fullText = String(data || "").trim();
-                        if (fullText.length > displayLength) {
-                            return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(0, displayLength)}...</span>`;
-                        } else {
-                            return `<span class="full-text-cell" data-full-text="${fullText}">${fullText}</span>`;
-                        }
-                    };
+                // ************* APLICAR LÓGICA DE TRUNCADO A FALLA *************
+                if (key === "name_failure") {
+                  const displayLength = 25;
+                  columnDef.render = function (data, type, row) {
+                    const fullText = String(data || "").trim();
+                    if (fullText.length > displayLength) {
+                      return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(0, displayLength)}...</span>`;
+                    } else {
+                      return `<span class="full-text-cell" data-full-text="${fullText}">${fullText}</span>`;
+                    }
+                  };
                 }
                 // ************* FIN: APLICAR LÓGICA DE TRUNCADO A FALLA *************
 
                 // ************* APLICAR LÓGICA DE TRUNCADO A STATUS_PAYMENTS *************
-                if (key === "name_status_payment") { // <--- Identifica la columna "nro_ticket"
-                    const displayLength = 25; // Define la longitud máxima para mostrar
-                    columnDef.render = function (data, type, row) {
-                        const fullText = String(data || "").trim();
-                        if (fullText.length > displayLength) {
-                            return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(0, displayLength)}...</span>`;
-                        } else {
-                            return `<span class="full-text-cell" data-full-text="${fullText}">${fullText}</span>`;
-                        }
-                    };
+                if (key === "name_status_payment") {
+                  const displayLength = 25;
+                  columnDef.render = function (data, type, row) {
+                    const fullText = String(data || "").trim();
+                    if (fullText.length > displayLength) {
+                      return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(0, displayLength)}...</span>`;
+                    } else {
+                      return `<span class="full-text-cell" data-full-text="${fullText}">${fullText}</span>`;
+                    }
+                  };
                 }
                 // ************* FIN: APLICAR LÓGICA DE TRUNCADO A STATUS_PAYMENTS *************
                 columnsConfig.push(columnDef);
               }
             }
 
-          // Añadir la columna "Acciones" al final
+            // Añadir la columna "Acción" al final
             columnsConfig.push({
-                data: null, // Or the actual data field for this column
-                title: "Acción", // Or whatever title this column currently has
+                data: null,
+                title: "Acción",
                 orderable: false,
                 searchable: false,
-                // visible: true, // Adjust visibility as per your global column logic
                 className: "dt-body-center",
                 render: function (data, type, row) {
-                    const idTicket = row.id_ticket; // Ensure idTicket is available from the row data
+                    const idTicket = row.id_ticket;
                     const name_status_payment = row.name_status_payment;
-                    const currentStatusLab = row.status_taller; // Assuming name_status_lab is your lab status
-                    const verificacionDeLlaves = row.id_status_key; // <-- CORRECCIÓN: Nombre de la columna SQL
+                    const currentStatusLab = row.name_status_lab; // CORREGIDO: Usar name_status_lab de SQL
+                    const verificacionDeLlaves = row.confirmreceive; // CORREGIDO: Usar confirmreceive de SQL
                     const accionllaves = row.name_accion_ticket;
 
-                    // Check if the key needs to be loaded based on verificaSolvencia and lab status
-                    const shouldShowLoadKeyCheckbox = verificacionDeLlaves === true || verificacionDeLlaves === 't';
-
-                    if (shouldShowLoadKeyCheckbox){
-                      if(accionllaves != "Llaves Cargadas"){
-                        return `<input type="checkbox" class="receive-key-checkbox" 
-                                     data-id-ticket="${idTicket}" 
-                                     data-nro-ticket="${row.nro_ticket}" 
-                                     title="Confirmar Carga De llaves">`;
-                      }else{
-                        return `<button type="button" class="btn btn-success btn-sm" disabled>Llaves Cargadas</button>`;
-                     }
-                    // Original logic for "Subir Documento" button
-                    }else if ((name_status_payment === "Pendiente Por Cargar Documentos" || name_status_payment === "Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)" || name_status_payment === "Pendiente Por Cargar Documento(PDF Envio ZOOM)") && currentStatusLab === "Reparado") {
+                    // Lógica para mostrar el checkbox de carga de llaves o el botón de "Subir Documento"
+                    if (verificacionDeLlaves === true || verificacionDeLlaves === 't') { // Si ya está confirmado (llaves cargadas)
+                        if (accionllaves !== "Llaves Cargadas") {
+                            // Esto debería ser el caso si confirmreceive es true pero accionllaves no lo refleja
+                            return `<input type="checkbox" class="receive-key-checkbox" 
+                                    data-id-ticket="${idTicket}" 
+                                    data-nro-ticket="${row.nro_ticket}" 
+                                    title="Confirmar Carga De llaves">`;
+                        } else {
+                            return `<button type="button" class="btn btn-success btn-sm" disabled>Llaves Cargadas</button>`;
+                        }
+                    } else if ((name_status_payment === "Pendiente Por Cargar Documentos" || name_status_payment === "Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)" || name_status_payment === "Pendiente Por Cargar Documento(PDF Envio ZOOM)") && currentStatusLab === "Reparado") {
                         return `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
-                                     data-id-ticket="${idTicket}"
-                                     data-bs-toggle="modal"
-                                     data-bs-target="#uploadDocumentModal">
-                                     Subir Documento
-                                 </button>`;
-                    }
-                    // Default case if none of the above conditions are met
-                    else {
+                                    data-id-ticket="${idTicket}"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#uploadDocumentModal">
+                                    Subir Documento
+                                </button>`;
+                    } else {
                         return `<button type="button" class="btn btn-secondary btn-sm disabled">Falta Requisitos</button>`;
                     }
                 },
             });
 
+            // Añadir la columna "Llaves"
             columnsConfig.push({
-                data: null, // Or the actual data field for this column
-                title: "Llaves", // Or whatever title this column currently has
+                data: null,
+                title: "Llaves",
                 orderable: false,
                 searchable: false,
-                // visible: true, // Adjust visibility as per your global column logic
                 className: "dt-body-center",
                 render: function (data, type, row) {
-                    const idTicket = row.id_ticket; // Ensure idTicket is available from the row data
-                    const verificacionDeLlaves = row.id_status_key; // <-- CORRECCIÓN: Nombre de la columna SQL
+                    const idTicket = row.id_ticket;
+                    const verificacionDeLlaves = row.confirmreceive; // CORREGIDO: Usar confirmreceive
                     const accionllaves = row.name_accion_ticket;
-                    const accionllaves2 = row.fecha_llaves_enviada;
-                    const accionllaves3 = row.fecha_carga_llaves;
+                    const fechaLlavesEnviada = row.date_sendkey; // CORREGIDO: Usar date_sendkey
+                    const fechaCargaLlaves = row.date_receivekey; // CORREGIDO: Usar date_receivekey
 
-                    const shouldShowLoadKeyCheckbox = verificacionDeLlaves === false || verificacionDeLlaves === 'f' || verificacionDeLlaves === null;
-                    const shouldShowReceiveKeyCheckbox = accionllaves2 === null;
-                    const shouldShowReceiveKeyCheckbox2 = accionllaves3 === null;
-                    
-                    if (shouldShowLoadKeyCheckbox){
-                      if(accionllaves != "Llaves Cargadas"){
+                    // Lógica para el checkbox "Cargar Llave"
+                    // shouldShowLoadKeyCheckbox ahora se basa en 'confirmreceive'
+                    const shouldShowLoadKeyCheckbox = !(verificacionDeLlaves === true || verificacionDeLlaves === 't'); // Si NO están confirmadas
+                    if (shouldShowLoadKeyCheckbox) {
+                        if (accionllaves !== "Llaves Cargadas") {
+                            return `<input type="checkbox" class="receive-key-checkbox" 
+                                    data-id-ticket="${idTicket}" 
+                                    data-nro-ticket="${row.nro_ticket}" 
+                                    title="Confirmar Carga De llaves">`;
+                        } else if (fechaLlavesEnviada !== null && fechaCargaLlaves === null) { // Llaves Enviadas pero no Cargadas
+                            return `<button type="button" class="btn btn-success btn-sm" disabled>En espera de Confirmar Carga de llaves</button>`;
+                        } else {
+                            // Este else captura casos donde shouldShowLoadKeyCheckbox es true, pero las condiciones internas no se cumplen.
+                            // Podría ser un estado intermedio o no esperado.
+                            return `<button type="button" class="btn btn-secondary btn-sm disabled">Estado de Llaves No Definido</button>`;
+                        }
+                    } else {
+                        // Esto se ejecuta si verificacionDeLlaves es TRUE o 't' (llaves ya cargadas/verificadas)
                         return `<input type="checkbox" class="receive-key-checkbox" 
-                                     data-id-ticket="${idTicket}" 
-                                     data-nro-ticket="${row.nro_ticket}" 
-                                     title="Confirmar Carga De llaves">`;
-                      }else if(!shouldShowReceiveKeyCheckbox && shouldShowReceiveKeyCheckbox2){
-                        return `<button type="button" class="btn btn-success btn-sm" disabled>En espera de Confirmar Carga de llaves</button>`;
-                     }
-
-                    }else {
-                        return `<input type="checkbox" class="receive-key-checkbox" 
-                            data-id-ticket="${idTicket}" 
-                            data-nro-ticket="${row.nro_ticket}" 
-                            title="Llaves Cargadas" 
-                            checked disabled>`; // Marcado y deshabilitado
+                                data-id-ticket="${idTicket}" 
+                                data-nro-ticket="${row.nro_ticket}" 
+                                title="Llaves Cargadas" 
+                                checked disabled>`; // Marcado y deshabilitado
                     }
-                  
                 },
             });
 
+            // Añadir la columna "Imagen"
             columnsConfig.push({
-              data: null, // Esta columna no mapea directamente a un campo de datos
-              title: "Imagen",
-              orderable: false,
-              searchable: false,
-              width: "8%",
-              render: function (data, type, row) {
-                const idTicket = row.id_ticket;
+                data: null,
+                title: "Imagen",
+                orderable: false,
+                searchable: false,
+                width: "8%",
+                render: function (data, type, row) {
+                    const idTicket = row.id_ticket;
+                    const accionllaves = row.name_accion_ticket; // Necesitas esta variable para la condición
 
-                // "cuando el status de name_accion_ticket sea: Llaves Cargadas me tiene que aparecer un boton para subir una imagen"
-                if (idTicket) {
-                  return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
-                        data-id-ticket="${idTicket}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#viewDocumentModal"> Ver Imagen
-                    </button>`;
-                } else {
-                  // Si el estatus del laboratorio es "Reparado" o "Irreparable"
-                  // y no es "Llaves Cargadas", muestra el botón "Cerrado"
-                  return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay imagen</button>`;
-                }
-              },
+                    // "cuando el status de name_accion_ticket sea: Llaves Cargadas me tiene que aparecer un boton para subir una imagen"
+                    if (accionllaves === "Llaves Cargadas") {
+                        return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
+                                data-id-ticket="${idTicket}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#viewDocumentModal"> Ver Imagen
+                            </button>`;
+                    } else {
+                        // Si el estatus no es "Llaves Cargadas", muestra "No hay imagen"
+                        return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay imagen</button>`;
+                    }
+                },
             });
 
             // Initialize DataTables
             const dataTableInstance = $(tableElement).DataTable({
               responsive: false,
-              scrollX: "200px",
+              scrollX: "200px", // Considera usar true o un valor más dinámico como '100%'
               data: TicketData,
               columns: columnsConfig,
               pagingType: "simple_numbers",
@@ -603,92 +604,94 @@ function getTicketDataFinaljs() {
             });
 
            // ************* INICIO: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
-          $("#tabla-ticket tbody")
-              .off("change", ".receive-key-checkbox") // <--- Usamos 'change' para checkboxes
-              .on("change", ".receive-key-checkbox", function (e) {
-                  e.stopPropagation(); // Evita propagación del evento
+           $("#tabla-ticket tbody")
+                .off("change", ".receive-key-checkbox") // <--- Usamos 'change' para checkboxes
+                .on("change", ".receive-key-checkbox", function (e) {
+                    e.stopPropagation(); // Evita propagación del evento
 
-                  const ticketId = $(this).data("id-ticket");
-                  const nroTicket = $(this).data("nro-ticket");
-                  const isChecked = $(this).is(":checked"); // Verifica si el checkbox está marcado
+                    const ticketId = $(this).data("id-ticket");
+                    const nroTicket = $(this).data("nro-ticket");
+                    const isChecked = $(this).is(":checked"); // Verifica si el checkbox está marcado
 
-                  // Solo actuamos si el checkbox ha sido marcado
-                  if (isChecked) {
-                      Swal.fire({
-                          icon: "question",
-                          title: "¿Confirmar Carga de Llaves?",
-                          text: `¿Desea marcar el Ticket Nro: ${nroTicket} como "Llaves Cargadas". Esta acción registrará la fecha de la carga de llaves?`,
-                          confirmButtonText: "Sí, Confirmar",
-                          color: "black",
-                          confirmButtonColor: "#003594",
-                          cancelButtonText: "No, cancelar",
-                          showCancelButton: true,
-                          focusConfirm: false,
-                          allowOutsideClick: false,
-                          allowEscapeKey: false,
-                          showCloseButton: true,
-                          keydownListenerCapture: true,
-                      }).then((result) => {
-                          if (result.isConfirmed) {
-                              MarkDateKey(ticketId, nroTicket); // `false` indica que se cargaron las llaves
-                              $(this).prop('checked', true);
-                          } else {
-                              $(this).prop('checked', false);
-                          }
-                      });
-                  } else {
-                  }
-              });
-          // ************* FIN: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
+                    // Solo actuamos si el checkbox ha sido marcado
+                    if (isChecked) {
+                        Swal.fire({
+                            icon: "question",
+                            title: "¿Confirmar Carga de Llaves?",
+                            text: `¿Desea marcar el Ticket Nro: ${nroTicket} como "Llaves Cargadas". Esta acción registrará la fecha de la carga de llaves?`,
+                            confirmButtonText: "Sí, Confirmar",
+                            color: "black",
+                            confirmButtonColor: "#003594",
+                            cancelButtonText: "No, cancelar",
+                            showCancelButton: true,
+                            focusConfirm: false,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            showCloseButton: true,
+                            keydownListenerCapture: true,
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                MarkDateKey(ticketId, nroTicket); // `false` indica que se cargaron las llaves
+                                $(this).prop('checked', true);
+                            } else {
+                                $(this).prop('checked', false);
+                            }
+                        });
+                    } else {
+                        // Si el checkbox se desmarca, puedes añadir lógica aquí si es necesario
+                        // Por ahora, no hace nada si se desmarca.
+                    }
+                });
+            // ************* FIN: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
 
-          // === ADD THE CLICK EVENT LISTENER FOR TABLE ROWS HERE ===
-                        $("#tabla-ticket tbody")
-                            .off("click", "tr") // .off() to prevent multiple bindings if called multiple times
-                            .on("click", "tr", function (e) {
-                                // Asegúrate de que el clic no proviene de una celda truncable/expandible o de un botón.
-                                if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('expanded-cell') || $(e.target).is('button') || $(e.target).is('input[type="checkbox"]')) {
-                                    return; // Si el clic fue en la celda del checkbox o el botón, no activar el evento de la fila.
-                                }
+            // === ADD THE CLICK EVENT LISTENER FOR TABLE ROWS HERE ===
+            $("#tabla-ticket tbody")
+                .off("click", "tr") // .off() to prevent multiple bindings if called multiple times
+                .on("click", "tr", function (e) {
+                    // Asegúrate de que el clic no proviene de una celda truncable/expandible o de un botón.
+                    if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('full-text-cell') || $(e.target).is('button') || $(e.target).is('input[type="checkbox"]')) {
+                        return; // Si el clic fue en la celda del checkbox o el botón, no activar el evento de la fila.
+                    }
 
-                                const tr = $(this);
-                                const rowData = dataTableInstance.row(tr).data();
+                    const tr = $(this);
+                    const rowData = dataTableInstance.row(tr).data();
 
-                                if (!rowData) {
-                                    return;
-                                }
+                    if (!rowData) {
+                        return;
+                    }
 
-                                $("#tabla-ticket tbody tr").removeClass("table-active");
-                                tr.addClass("table-active");
+                    $("#tabla-ticket tbody tr").removeClass("table-active");
+                    tr.addClass("table-active");
 
-                                const ticketId = rowData.id_ticket;
+                    const ticketId = rowData.id_ticket;
 
-                                const selectedTicketDetails = TicketData.find(
-                                    (t) => t.id_ticket == ticketId
-                                );
+                    const selectedTicketDetails = TicketData.find(
+                        (t) => t.id_ticket == ticketId
+                    );
 
-                                if (selectedTicketDetails) {
-                                    detailsPanel.innerHTML = formatTicketDetailsPanel(
-                                        selectedTicketDetails
-                                    );
-                                    loadTicketHistory(ticketId);
-                                    if (selectedTicketDetails.serial_pos) {
-                                        downloadImageModal(selectedTicketDetails.serial_pos);
-                                    } else {
-                                        const imgElement = document.getElementById(
-                                            "device-ticket-image"
-                                        );
-                                        if (imgElement) {
-                                            imgElement.src =
-                                                '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png'; // Corrige esta ruta si es JS puro y no PHP
-                                            imgElement.alt = "Serial no disponible";
-                                        }
-                                    }
-                                } else {
-                                    detailsPanel.innerHTML =
-                                        "<p>No se encontraron detalles para este ticket.</p>";
-                                }
-                            });
-                        // === END CLICK EVENT LISTENER ===
+                    if (selectedTicketDetails) {
+                        detailsPanel.innerHTML = formatTicketDetailsPanel(
+                            selectedTicketDetails
+                        );
+                        loadTicketHistory(ticketId);
+                        if (selectedTicketDetails.serial_pos) {
+                            downloadImageModal(selectedTicketDetails.serial_pos);
+                        } else {
+                            const imgElement = document.getElementById(
+                                "device-ticket-image"
+                            );
+                            if (imgElement) {
+                                // Asegúrate de que esta ruta sea correcta en el contexto de tu JS
+                                imgElement.src = '/public/img/consulta_rif/POS/mantainment.png';
+                                imgElement.alt = "Serial no disponible";
+                            }
+                        }
+                    } else {
+                        detailsPanel.innerHTML =
+                            "<p>No se encontraron detalles para este ticket.</p>";
+                    }
+                });
+            // === END CLICK EVENT LISTENER ===
 
             if (tableContainer) {
               tableContainer.style.display = ""; // Show the table container

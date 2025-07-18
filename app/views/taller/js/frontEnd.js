@@ -248,128 +248,140 @@ function getTicketData() {
                                     // Pasamos la información de si ya fue enviada al botón
                                     const dataSent = hasSendKeyDate ? 'true' : 'false';
 
-                                    return `<button class="btn btn-info btn-sm load-key-button" 
-                                                    title="Enviar Al Rosal" 
-                                                    data-id-ticket="${row.id_ticket}" 
-                                                    data-nro-ticket="${row.nro_ticket}" 
-                                                    data-has-send-key-date="${dataSent}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-headset" viewBox="0 0 16 16">
-                                                  <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5"/>
-                                                </svg>
-                                            </button>`;
-                                } else {
-                                    return ""; // No mostrar nada si no es "Reparado"
-                                }
-                            },
-                        });
+                                                          return `<button class="btn btn-info btn-sm load-key-button" 
+                                                                          title="Enviar Al Rosal" 
+                                                                          data-id-ticket="${row.id_ticket}" 
+                                                                          data-nro-ticket="${row.nro_ticket}" 
+                                                                          data-has-send-key-date="${dataSent}">
+                                                                      <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-headset" viewBox="0 0 16 16">
+                                                                        <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5"/>
+                                                                      </svg>
+                                                                  </button>`;
+                                                      } else {
+                                                          return ""; // No mostrar nada si no es "Reparado"
+                                                      }
+                                                  },
+                                              });
 
-                        // Initialize DataTables
-                        const dataTableInstance = $(tableElement).DataTable({
-                            scrollX: "200px",
-                            responsive: false,
-                            data: TicketData,
-                            columns: columnsConfig,
-                            pagingType: "simple_numbers",
-                            lengthMenu: [5, 10, 25, 50, 100],
-                            autoWidth: false,
-                            buttons: [
-                                {
-                                    extend: "colvis",
-                                    text: "Mostrar/Ocultar Columnas",
-                                    className: "btn btn-secondary",
-                                },
-                            ],
-                            language: {
-                                lengthMenu: "Mostrar _MENU_",
-                                emptyTable: "No hay datos disponibles en la tabla",
-                                zeroRecords: "No se encontraron resultados para la búsqueda",
-                                info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
-                                infoEmpty: "No hay datos disponibles",
-                                infoFiltered: " de _MAX_ Disponibles",
-                                search: "Buscar:",
-                                loadingRecords: "Cargando...",
-                                processing: "Procesando...",
-                                paginate: {
-                                    first: "Primero",
-                                    last: "Último",
-                                    next: "Siguiente",
-                                    previous: "Anterior",
-                                },
-                                buttons: {
-                                    colvis: "Visibilidad de Columna",
-                                },
-                            },
-                            // === APLICACIÓN DE CAMBIOS PARA LOS BOTONES DE FILTRO ===
-    dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-    initComplete: function (settings, json) {
-        const dataTableInstance = this.api(); // Obtén la instancia de la API de DataTables
-        const buttonsHtml = `
-            <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets en Taller">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
-                  <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
-                </svg>
-            </button>
+                                              // Initialize DataTables
+                                              const dataTableInstance = $(tableElement).DataTable({
+                                                  scrollX: "200px",
+                                                  responsive: false,
+                                                  data: TicketData,
+                                                  columns: columnsConfig,
+                                                  pagingType: "simple_numbers",
+                                                  lengthMenu: [5, 10, 25, 50, 100],
+                                                  autoWidth: false,
+                                                  buttons: [
+                                                      {
+                                                          extend: "colvis",
+                                                          text: "Mostrar/Ocultar Columnas",
+                                                          className: "btn btn-secondary",
+                                                      },
+                                                  ],
+                                                  language: {
+                                                      lengthMenu: "Mostrar _MENU_",
+                                                      emptyTable: "No hay datos disponibles en la tabla",
+                                                      zeroRecords: "No se encontraron resultados para la búsqueda",
+                                                      info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+                                                      infoEmpty: "No hay datos disponibles",
+                                                      infoFiltered: " de _MAX_ Disponibles",
+                                                      search: "Buscar:",
+                                                      loadingRecords: "Cargando...",
+                                                      processing: "Procesando...",
+                                                      paginate: {
+                                                          first: "Primero",
+                                                          last: "Último",
+                                                          next: "Siguiente",
+                                                          previous: "Anterior",
+                                                      },
+                                                      buttons: {
+                                                          colvis: "Visibilidad de Columna",
+                                                      },
+                                                  },
+                                                  // === APLICACIÓN DE CAMBIOS PARA LOS BOTONES DE FILTRO ===
+                          dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+                          initComplete: function (settings, json) {
+                              const dataTableInstance = this.api(); // Obtén la instancia de la API de DataTables
+                              const buttonsHtml = `
+                                  <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets en Taller">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                                        <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+                                      </svg>
+                                  </button>
 
-            <button id="btn-por-asignar" class="btn btn-secondary me-2" title="Tickets en espera de confirmar recibido en el Taller">
-               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                  <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                  <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                </svg>
-            </button>
+                                  <button id="btn-por-asignar" class="btn btn-secondary me-2" title="Tickets en espera de confirmar recibido en el Taller">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                      </svg>
+                                  </button>
 
-            <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets Por confirmar carga de llaves">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                </svg>
-            </button>
+                                  <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets Por confirmar carga de llaves">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                                          <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                                      </svg>
+                                  </button>
 
-            <button id="btn-devuelto" class="btn btn-secondary me-2" title="Tickets Enviados al Rosal">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house-door" viewBox="0 0 16 16">
-                <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z"/>
-              </svg>
-            </button>
-        `;
-        $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+                                  <button id="btn-devuelto" class="btn btn-secondary me-2" title="Tickets Enviados al Rosal">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house-door" viewBox="0 0 16 16">
+                                      <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z"/>
+                                    </svg>
+                                  </button>
+                              `;
+                              $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
-        // Tu función setActiveButton es correcta.
-        function setActiveButton(activeButtonId) {
-            $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
-            $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
-            $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
-            $("#btn-devuelto").removeClass("btn-primary").addClass("btn-secondary");
-            $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
-        }
+                              // Tu función setActiveButton es correcta.
+                              function setActiveButton(activeButtonId) {
+                                  $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
+                                  $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
+                                  $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
+                                  $("#btn-devuelto").removeClass("btn-primary").addClass("btn-secondary");
+                                  $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
+                              }
 
-        // Inicialmente, establecer "Asignados" como activo y aplicar el filtro
-        setActiveButton("btn-asignados");
-        dataTableInstance.column(8).search("En proceso de Reparación|Reparado|Pendiente por repuesto", true, false, false).draw();
+                              // Inicialmente, establecer "Asignados" como activo y aplicar el filtro
+                              setActiveButton("btn-asignados");
+                             dataTableInstance.column(7).search("Enviado a Taller", true).draw();
+                              dataTableInstance.column(8).search("En proceso de Reparación|Reparado|Pendiente por repuesto|Irreparable", true, false, false, false).draw();
 
-        // Tus event listeners de clic están correctos
-        $("#btn-asignados").on("click", function () {
-            dataTableInstance.columns().search('').draw(false);
-            dataTableInstance.column(8).search("En proceso de Reparación|Reparado|Pendiente por repuesto",  true, false, false).draw();
-            setActiveButton("btn-asignados");
-        });
+                              // Tus event listeners de clic están correctos
+                              $("#btn-asignados").on("click", function () {
+                                  dataTableInstance.columns().search('').draw(false);
+                                  dataTableInstance.column(7).search("Enviado a Taller", true).draw();
+                                  dataTableInstance.column(8).search("En proceso de Reparación|Reparado|Pendiente por repuesto",  true, false, false).draw();
+                                  setActiveButton("btn-asignados");
+                              });
 
-        $("#btn-por-asignar").on("click", function () {
-            dataTableInstance.columns().search('').draw(false);
-            dataTableInstance.column(8).search("Recibido en Taller").draw();
-            setActiveButton("btn-por-asignar");
-        });
+                              $("#btn-por-asignar").on("click", function () {
+                                  dataTableInstance.columns().search('').draw(false);
+                                  dataTableInstance.column(8).search("Recibido en Taller").draw();
+                                  setActiveButton("btn-por-asignar");
+                              });
 
-        $("#btn-recibidos").on("click", function () {
-            dataTableInstance.columns().search('').draw(false);
-            dataTableInstance.column(8).search("Recibido por el Técnico").draw();
-            setActiveButton("btn-recibidos");
-        });
+                              $("#btn-recibidos").on("click", function () {
+                                  dataTableInstance.columns().search('').draw(false);
+                                  dataTableInstance.column(8).search("Recibido por el Técnico").draw();
+                                  setActiveButton("btn-recibidos");
+                              });
 
-        $("#btn-devuelto").on("click", function () {
-            dataTableInstance.columns().search('').draw(false);
-            dataTableInstance.column(7).search("Enviado devuelta al Rosal").draw();
-           document.querySelector(".load-key-button").style.display = "none"; // Oculta el botón de carga de llave
-            setActiveButton("btn-devuelto");
-        });
-    },
+                           $("#btn-devuelto").on("click", function () {
+                              dataTableInstance.columns().search('').draw(false);
+                              dataTableInstance.column(7).search("Enviado devuelta al Rosal").draw();
+
+                              // Obtener todos los botones de carga de llave y ocultarlos
+                              document.querySelectorAll(".load-key-button").forEach(button => {
+                                  button.style.display = "none";
+                              });
+
+                              document.querySelectorAll(".receive-key-checkbox").forEach(checkbox => {
+                                  checkbox.style.display = "none"; // Ocultar checkboxes
+                              });s
+
+                              setActiveButton("btn-devuelto");
+                          });
+
+                          },
                         });
 
                         // ... (El resto de tus event listeners: .truncated-cell, .load-key-button, tr click, .confirm-waiting-btn) ...
@@ -603,7 +615,7 @@ function sendTicketToRosal(id, nro, withoutKeys) {
                       const nroticket = nro;
                     Swal.fire({
                         title: "¡Enviado!",
-                        text: `El Pos asociado al ticket Nro: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> se ha enviado a Gestión Rosal correctamente.`,
+                        html: `El Pos asociado al ticket Nro: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> se ha enviado a Gestión Rosal correctamente.`,
                         icon: "success",
                         confirmButtonText: "Ok",
                         confirmButtonColor: "#003594",
@@ -1243,7 +1255,7 @@ $(document).ready(function () {
           if (response.success) {
             Swal.fire({
               title: "¡Registrado!",
-              text: `La fecha de recepción de llave del Pos asociado el Nro de ticket: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> ha sido guardada.`,
+              html: `La fecha de recepción de llave del Pos asociado el Nro de ticket: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> ha sido guardada.`,
               icon: "success",
               confirmButtonText: "Entendido",
               color: "black",
@@ -1708,7 +1720,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const renewalModalCurrentStatusId = document.getElementById(
     "renewalModalCurrentStatusId"
   );
-  const renewalDateInput = document.getElementById("renewalDate");
+  const renewalDateInput = document.getElementById("swal-input-date-renew");
   const renewalDateError = document.getElementById("renewalDateError");
   const renewDateBtn = document.getElementById("renewDateBtn");
   const sendToCommercialBtn = document.getElementById("sendToCommercialBtn");
@@ -1737,7 +1749,7 @@ document.addEventListener("DOMContentLoaded", () => {
             title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
               <div class="custom-modal-header-content">Notificación</div>
             </div>`,
-            html: `Al ticket con el Nro. </b><span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span></b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Desea colocar otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br>
+            html: `Al ticket con el Nro. </b><span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span></b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). <br><strong>¿Qué desea hacer?</strong><br>
             <br><div class="swal-custom-button-container">
               <button id="changeStatusButton" class="custom-status-button">Cambiar Estatus del Ticket</button>
             </div>`,
@@ -1823,46 +1835,54 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
 
                     // Validamos la fecha con las restricciones
-                    preConfirm: () => {
-                        const newDateStr = document.getElementById("swal-input-date-renew").value;
-                        // 1. Validar que se haya seleccionado una fecha
-                        if (!newDateStr) {
-                            Swal.showValidationMessage("Por favor, selecciona una fecha.");
-                            return false;
-                        }
+                  preConfirm: () => {
+                    const newDateStr = document.getElementById("swal-input-date-renew").value;
 
-                        // Convertir la fecha seleccionada y la fecha actual a objetos Date
-                        const selectedDate = new Date(newDateStr + 'T00:00:00'); 
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
-
-                        // 2. Restricción de año: Solo permite el año actual.
-                        const currentYear = today.getFullYear();
-                        const selectedYear = selectedDate.getFullYear();
-
-                        if (selectedYear !== currentYear) {
-                            Swal.showValidationMessage("Solo puedes seleccionar fechas dentro del año actual.");
-                            return false;
-                        }
-
-                        // 3. Restricción de rango de 3 meses (del pasado y del futuro)
-                        const threeMonthsAgo = new Date(today);
-                        threeMonthsAgo.setMonth(today.getMonth() - 3);
-
-                        const threeMonthsLater = new Date(today);
-                        threeMonthsLater.setMonth(today.getMonth() + 3);
-
-                        if (selectedDate < threeMonthsAgo || selectedDate > threeMonthsLater) {
-                            Swal.showValidationMessage("Por favor, selecciona una fecha dentro de un rango de 3 meses de la fecha actual.");
-                            return false;
-                        }
-
-                        // Si todas las validaciones pasan, retornamos los datos
-                        return {
-                            ticketId: ticket.id_ticket,
-                            newDate: newDateStr, // Usamos la cadena de fecha original para el envío
-                        };
+                    // 1. Validar que se haya seleccionado una fecha
+                    if (!newDateStr) {
+                        Swal.showValidationMessage("Por favor, selecciona una fecha.");
+                        return false;
                     }
+
+                    // Convertir la fecha seleccionada y la fecha actual a objetos Date
+                    const selectedDate = new Date(newDateStr + 'T00:00:00');
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // Establecer la hora a 00:00:00 para comparar solo la fecha
+
+                    // ✨ AÑADIR ESTA VALIDACIÓN: La fecha seleccionada no puede ser anterior a hoy ✨
+                    if (selectedDate < today) {
+                        Swal.showValidationMessage("La fecha no puede ser anterior a la fecha actual.");
+                        return false;
+                    }
+
+                    // 2. Restricción de año: Solo permite el año actual.
+                    // (Esta validación podría volverse redundante o conflictiva si solo permites futuras fechas del año actual)
+                    // Pero si quieres mantenerla para el contexto de un año específico, está bien.
+                    const currentYear = today.getFullYear();
+                    const selectedYear = selectedDate.getFullYear();
+
+                    if (selectedYear !== currentYear) {
+                        Swal.showValidationMessage("Solo puedes seleccionar fechas dentro del año actual.");
+                        return false;
+                    }
+
+                    // 3. Restricción de rango de 3 meses (del pasado y del futuro)
+                    // Con la validación de fecha futura, esta de "tres meses atrás" ya no es estrictamente necesaria para el pasado
+                    // Pero si la quieres como un límite superior para el futuro, está bien.
+                    const threeMonthsLater = new Date(today);
+                    threeMonthsLater.setMonth(today.getMonth() + 3);
+
+                    if (selectedDate > threeMonthsLater) { // Solo necesitamos verificar el límite superior si ya validamos que no sea pasada
+                        Swal.showValidationMessage("Por favor, selecciona una fecha dentro de un rango de 3 meses de la fecha actual.");
+                        return false;
+                    }
+
+                    // Si todas las validaciones pasan, retornamos los datos
+                    return {
+                        ticketId: ticket.id_ticket,
+                        newDate: newDateStr, // Usamos la cadena de fecha original para el envío
+                    };
+                  }
                 }).then((renewResult) => {
                     const ticketId = renewResult.value.ticketId;
                     const newRepuestoDate = renewResult.value.newDate;
@@ -2021,7 +2041,7 @@ document.addEventListener("DOMContentLoaded", () => {
            title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
               <div class="custom-modal-header-content">Notificación</div>
             </div>`,
-            html: `Al ticket con el Nro. <b><span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span></b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). ¿Desea colocar otra fecha, enviar a gestión comercial o cambiar el estatus del ticket?<br>
+            html: `Al ticket con el Nro. <b><span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span></b> se le ha vencido el tiempo de espera para la llegada de los repuestos (Fecha anterior: ${ticket.repuesto_date}). <br><strong>¿Qué desea hacer?</strong><br>
             <br><div class="swal-custom-button-container">
               <button id="changeStatusButton" class="custom-status-button">Cambiar Estatus del Ticket</button>
             </div>`,
@@ -2121,6 +2141,12 @@ document.addEventListener("DOMContentLoaded", () => {
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
 
+                        // ✨ AÑADIR ESTA VALIDACIÓN: La fecha seleccionada no puede ser anterior a hoy ✨
+                        if (selectedDate < today) {
+                            Swal.showValidationMessage("La fecha no puede ser anterior a la fecha actual.");
+                            return false;
+                        }
+
                         // 2. Restricción de año: Solo permite el año actual.
                         const currentYear = today.getFullYear();
                         const selectedYear = selectedDate.getFullYear();
@@ -2144,6 +2170,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         // Si todas las validaciones pasan, retornamos los datos
                         return {
+                          
                             ticketId: ticket.id_ticket,
                             newDate: newDateStr, // Usamos la cadena de fecha original para el envío
                         };
@@ -2599,252 +2626,5 @@ document.addEventListener("DOMContentLoaded", () => {
       dateError.textContent = "Por favor, selecciona una fecha válida.";
       dateError.style.display = "block";
     }
-  });
-
-  // Validar la fecha cuando se seleccione o cambie en renewalModal (YA EXISTENTE)
-  renewalDateInput.addEventListener("change", function () {
-    // ... (Tu lógica de validación de fecha existente para renewalDateInput) ...
-    const selectedDate = new Date(this.value);
-    const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth();
-
-    selectedDate.setFullYear(currentYear);
-
-    const maxMonth = (currentMonth + 3) % 12;
-    const maxYear = currentMonth + 3 >= 12 ? currentYear + 1 : currentYear;
-
-    const maxAllowedDate = new Date(maxYear, maxMonth + 1, 0);
-
-    today.setHours(0, 0, 0, 0);
-    selectedDate.setHours(0, 0, 0, 0);
-    maxAllowedDate.setHours(0, 0, 0, 0);
-
-    if (selectedDate < today) {
-      renewalDateError.textContent =
-        "La fecha seleccionada no puede ser anterior a hoy.";
-      renewalDateError.style.display = "block";
-      renewDateBtn.disabled = true;
-    } else if (selectedDate > maxAllowedDate) {
-      renewalDateError.textContent =
-        "La fecha no puede exceder 3 meses a partir del mes actual.";
-      renewalDateError.style.display = "block";
-      renewDateBtn.disabled = true;
-    } else {
-      renewalDateError.style.display = "none";
-      renewDateBtn.disabled = false;
-    }
-  });
-
-  // "Renovar" button logic in renewalModal
-  renewDateBtn.addEventListener("click", function () {
-    if (renewalDateInput.checkValidity() && !renewDateBtn.disabled) {
-      const newRenewalDate = renewalDateInput.value;
-      const ticketId = renewalModalTicketId.value; // Obtiene el ID del ticket del input hidden del modal
-
-      if (!ticketId) {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "ID de ticket no disponible para renovar la fecha.",
-        });
-        return;
-      }
-
-      console.log(
-        `Renovando fecha de repuesto para Ticket ID: ${ticketId} a: ${newRenewalDate}`
-      );
-      const xhr = new XMLHttpRequest();
-      xhr.open(
-        "POST",
-        `${ENDPOINT_BASE}${APP_PATH}api/conuslta/renewRepuestoDate`
-      ); // Endpoint para renovar
-      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-      xhr.onload = function () {
-        if (xhr.status === 200) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            if (response.success) {
-              Swal.fire({
-                icon: "success",
-                title: "¡Renovado!",
-                text:
-                  "Fecha de repuesto renovada con éxito a: " + newRenewalDate,
-                timer: 2000,
-                timerProgressBar: true,
-                showConfirmButton: false,
-              }).then(() => {
-                renewalModal.hide(); // Oculta el modal actual
-              });
-            } else {
-              Swal.fire({
-                icon: "error",
-                title: "Error",
-                text:
-                  "Error al renovar la fecha: " +
-                  (response.message || "Mensaje de error no disponible."),
-              });
-            }
-          } catch (e) {
-            Swal.fire({
-              icon: "error",
-              title: "Error de Servidor",
-              text: "Error al procesar la respuesta del servidor.",
-            });
-            console.error(
-              "Error al parsear la respuesta JSON:",
-              e,
-              xhr.responseText
-            );
-          }
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Error de Conexión",
-            text: `Error de conexión o servidor: ${xhr.status} - ${xhr.statusText}`,
-          });
-        }
-      };
-      xhr.onerror = function () {
-        Swal.fire({
-          icon: "error",
-          title: "Error de Red",
-          text: "No se pudo conectar con el servidor.",
-        });
-      };
-      const data = `action=renewRepuestoDate&ticket_id=${ticketId}&new_repuesto_date=${newRenewalDate}&id_user=${id_user}`;
-      xhr.send(data);
-    } else {
-      Swal.fire({
-        icon: "warning",
-        title: "Campo Requerido",
-        text: "Por favor, selecciona una fecha válida para renovar.",
-      });
-      renewalDateError.textContent =
-        "Por favor, selecciona una fecha válida para renovar.";
-      renewalDateError.style.display = "block";
-    }
-  });
-
-  // "Enviar a Gestión Comercial" button logic in renewalModal
-  sendToCommercialBtn.addEventListener("click", function () {
-    const ticketId = renewalModalTicketId.value; // Obtiene el ID del ticket del input hidden del modal
-
-    if (!ticketId) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "ID de ticket no disponible para enviar a gestión comercial.",
-      });
-      return;
-    }
-
-    Swal.fire({
-      title: "¿Estás seguro?",
-      text: `¿Deseas enviar el ticket ${ticketId} a Gestión Comercial?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Sí, enviar",
-      cancelButtonText: "Cancelar",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        console.log(`Enviando Ticket ID: ${ticketId} a Gestión Comercial.`);
-        const xhr = new XMLHttpRequest();
-        xhr.open(
-          "POST",
-          `${ENDPOINT_BASE}${APP_PATH}api/ticket/sendToCommercial`
-        ); // Endpoint para enviar a comercial
-        xhr.setRequestHeader(
-          "Content-Type",
-          "application/x-www-form-urlencoded"
-        );
-        xhr.onload = function () {
-          if (xhr.status === 200) {
-            try {
-              const response = JSON.parse(xhr.responseText);
-              if (response.success) {
-                Swal.fire({
-                  icon: "success",
-                  title: "¡Enviado!",
-                  text: "Ticket enviado a Gestión Comercial.",
-                  timer: 2000,
-                  timerProgressBar: true,
-                  showConfirmButton: false,
-                }).then(() => {
-                  renewalModal.hide(); // Oculta el modal actual
-                });
-              } else {
-                Swal.fire({
-                  icon: "error",
-                  title: "Error",
-                  text:
-                    "Error al enviar a Gestión Comercial: " +
-                    (response.message || "Mensaje de error no disponible."),
-                });
-              }
-            } catch (e) {
-              Swal.fire({
-                icon: "error",
-                title: "Error de Servidor",
-                text: "Error al procesar la respuesta del servidor.",
-              });
-              console.error(
-                "Error al parsear la respuesta JSON:",
-                e,
-                xhr.responseText
-              );
-            }
-          } else {
-            Swal.fire({
-              icon: "error",
-              title: "Error de Conexión",
-              text: `Error de conexión o servidor: ${xhr.status} - ${xhr.statusText}`,
-            });
-          }
-        };
-        xhr.onerror = function () {
-          Swal.fire({
-            icon: "error",
-            title: "Error de Red",
-            text: "No se pudo conectar con el servidor.",
-          });
-        };
-        const data = `action=sendToCommercial&ticket_id=${ticketId}`;
-        xhr.send(data);
-      }
-    });
-  });
-
-  // NUEVO: "Cambiar Estatus del Ticket" button logic in renewalModal
-  changeStatusFromRenewalBtn.addEventListener("click", function () {
-    const ticketId = renewalModalTicketId.value; // Obtiene el ID del ticket actual
-    const currentStatusName = renewalModalCurrentStatusName.value;
-    const currentStatusId = renewalModalCurrentStatusId.value; // Si lo necesitas para pre-seleccionar
-
-    if (!ticketId) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "ID de ticket no disponible para cambiar estatus.",
-      });
-      return;
-    }
-
-    // 1. Ocultar el modal de renovación
-    renewalModal.hide();
-
-    // 2. Pre-llenar el modal de cambio de estatus
-    modalTicketIdInput.value = ticketId;
-    modalCurrentStatusInput.value = currentStatusName; // Mostrar el estatus actual
-
-    // 3. (Opcional) Re-cargar las opciones del select de estatus, excluyendo el actual
-    // Si tu getStatusLab ya excluye el currentStatusNameToExclude, puedes usarlo aquí.
-    // O si quieres que muestre todos, simplemente no pases el parámetro.
-    getStatusLab(currentStatusName); // Si getStatusLab filtra, pasa el nombre actual.
-
-    // 4. Mostrar el modal de cambio de estatus
-    changeStatusModal.show();
   });
 });
