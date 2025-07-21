@@ -870,7 +870,7 @@ function showConfirmationModalForReceived(ticketId, currentnroTicket) {
         </div>
     `,
     showCancelButton: true,
-    confirmButtonText: "Sí, Recibir Ticket",
+    confirmButtonText: "Sí, Recibir Pos",
     cancelButtonText: "Cancelar",
     confirmButtonColor: "#003594",
     customClass: {

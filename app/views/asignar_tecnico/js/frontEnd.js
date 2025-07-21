@@ -1103,7 +1103,7 @@ function markTicketAsReceived(ticketId, nroTicket) {
     showCancelButton: true,
     confirmButtonColor: "#003594",
     cancelButtonColor: "#6c757d",
-    confirmButtonText: "Sí, Recibir Ticket",
+    confirmButtonText: "Sí, Recibir Pos",
     cancelButtonText: "Cancelar",
     color: "black",
     customClass: {

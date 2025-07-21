@@ -291,7 +291,6 @@ function mi_navbar()
                     <div id="ModalConfirmarSendTaller" class="modal-content">
                         <div class="modal-header bg-gradient-primary text-white">
                             <h5 class="modal-title" id="staticBackdropLabel">Confirmación de Envío a Taller</h5>
-                            <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
                         </div>
                         <div class="modal-body text-center">
                             <div class="mb-4">
