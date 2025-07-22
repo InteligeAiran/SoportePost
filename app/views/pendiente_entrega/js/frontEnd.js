@@ -358,12 +358,12 @@ function getTicketDataFinaljs() {
     name_status_payment: "Estatus Pago",
     name_status_lab: "Estatus Taller", // CORREGIDO
     name_accion_ticket: "Acción Ticket",
-    full_name_tecnicoassignado: "Técnico 2", // CORREGIDO
+    full_assignado_al_tecnico2: "Técnico 2", // CORREGIDO
     // fecha_assignado_al_tecnico2: "Fecha Asignado al Técnico 2", // ELIMINADO
-    // envio_a_taller: "Envío a Taller", // ELIMINADO
+    //envio_a_taller: "Fecha Envío a Taller", // ELIMINADO
     date_send_torosal_fromlab: "Fecha Envío Torosal Lab", // CORREGIDO
-    date_sendkey: "Fecha de Llaves Enviadas", // CORREGIDO
-    date_receivekey: "Fecha Carga Llaves", // CORREGIDO
+    fecha_llaves_enviada: "Fecha de Llaves Enviadas", // CORREGIDO
+    fecha_carga_llaves: "Fecha Carga Llaves", // CORREGIDO
     date_receivefrom_desti: "Fecha Envío a Destino", // CORREGIDO
     confirmreceive: "Confirmar Recibido", // AÑADIDO
     fecha_instalacion: "Fecha Instalación", // Añadido
@@ -472,21 +472,12 @@ function getTicketDataFinaljs() {
                     const idTicket = row.id_ticket;
                     const name_status_payment = row.name_status_payment;
                     const currentStatusLab = row.name_status_lab; // CORREGIDO: Usar name_status_lab de SQL
-                    const verificacionDeLlaves = row.confirmreceive; // CORREGIDO: Usar confirmreceive de SQL
-                    const accionllaves = row.name_accion_ticket;
+                    const verificacionDeLlaves = row.id_status_key; // CORREGIDO: Usar confirmreceive de SQL
+                    const accionllaves = row.name_accion_ticket;  
 
                     // Lógica para mostrar el checkbox de carga de llaves o el botón de "Subir Documento"
-                    if (verificacionDeLlaves === true || verificacionDeLlaves === 't') { // Si ya está confirmado (llaves cargadas)
-                        if (accionllaves !== "Llaves Cargadas") {
-                            // Esto debería ser el caso si confirmreceive es true pero accionllaves no lo refleja
-                            return `<input type="checkbox" class="receive-key-checkbox" 
-                                    data-id-ticket="${idTicket}" 
-                                    data-nro-ticket="${row.nro_ticket}" 
-                                    title="Confirmar Carga De llaves">`;
-                        } else {
-                            return `<button type="button" class="btn btn-success btn-sm" disabled>Llaves Cargadas</button>`;
-                        }
-                    } else if ((name_status_payment === "Pendiente Por Cargar Documentos" || name_status_payment === "Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)" || name_status_payment === "Pendiente Por Cargar Documento(PDF Envio ZOOM)") && currentStatusLab === "Reparado") {
+                        
+                    if ((name_status_payment === "Pendiente Por Cargar Documentos" || name_status_payment === "Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)" || name_status_payment === "Pendiente Por Cargar Documento(PDF Envio ZOOM)") && currentStatusLab === "Reparado") {
                         return `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
                                     data-id-ticket="${idTicket}"
                                     data-bs-toggle="modal"
@@ -508,35 +499,32 @@ function getTicketDataFinaljs() {
                 className: "dt-body-center",
                 render: function (data, type, row) {
                     const idTicket = row.id_ticket;
-                    const verificacionDeLlaves = row.confirmreceive; // CORREGIDO: Usar confirmreceive
+                    const verificacionDeLlaves = row.id_status_key; // CORREGIDO: Usar confirmreceive
                     const accionllaves = row.name_accion_ticket;
                     const fechaLlavesEnviada = row.date_sendkey; // CORREGIDO: Usar date_sendkey
                     const fechaCargaLlaves = row.date_receivekey; // CORREGIDO: Usar date_receivekey
 
                     // Lógica para el checkbox "Cargar Llave"
                     // shouldShowLoadKeyCheckbox ahora se basa en 'confirmreceive'
-                    const shouldShowLoadKeyCheckbox = !(verificacionDeLlaves === true || verificacionDeLlaves === 't'); // Si NO están confirmadas
-                    if (shouldShowLoadKeyCheckbox) {
-                        if (accionllaves !== "Llaves Cargadas") {
+                    const shouldShowLoadKeyCheckbox = !(verificacionDeLlaves === false || verificacionDeLlaves === 'f'); // Si NO están confirmadas
+                        if (shouldShowLoadKeyCheckbox && accionllaves == "Llaves Cargadas" && fechaLlavesEnviada != "NULL" && fechaCargaLlaves != "NULL") {
                             return `<input type="checkbox" class="receive-key-checkbox" 
                                     data-id-ticket="${idTicket}" 
                                     data-nro-ticket="${row.nro_ticket}" 
-                                    title="Confirmar Carga De llaves">`;
-                        } else if (fechaLlavesEnviada !== null && fechaCargaLlaves === null) { // Llaves Enviadas pero no Cargadas
-                            return `<button type="button" class="btn btn-success btn-sm" disabled>En espera de Confirmar Carga de llaves</button>`;
+                                    title="Llaves Cargadas"
+                                    checked disabled>`;
+                                    
+                        }else if (verificacionDeLlaves === false || verificacionDeLlaves === 'f' && accionllaves === "Llaves Cargadas" && fechaLlavesEnviada == null) {
+                            return `<input type="checkbox" class="receive-key-checkbox" 
+                                    data-id-ticket="${idTicket}" 
+                                    data-nro-ticket="${row.nro_ticket}" 
+                                    title="Llaves Cargadas En el Rosal" checked disabled>`; // Sin marcar y habilitado
                         } else {
-                            // Este else captura casos donde shouldShowLoadKeyCheckbox es true, pero las condiciones internas no se cumplen.
-                            // Podría ser un estado intermedio o no esperado.
-                            return `<button type="button" class="btn btn-secondary btn-sm disabled">Estado de Llaves No Definido</button>`;
+                           return `<input type="checkbox" class="receive-key-checkbox" 
+                                    data-id-ticket="${idTicket}" 
+                                    data-nro-ticket="${row.nro_ticket}" 
+                                    title="Confirmar Carga De llaves">`;
                         }
-                    } else {
-                        // Esto se ejecuta si verificacionDeLlaves es TRUE o 't' (llaves ya cargadas/verificadas)
-                        return `<input type="checkbox" class="receive-key-checkbox" 
-                                data-id-ticket="${idTicket}" 
-                                data-nro-ticket="${row.nro_ticket}" 
-                                title="Llaves Cargadas" 
-                                checked disabled>`; // Marcado y deshabilitado
-                    }
                 },
             });
 
@@ -612,22 +600,27 @@ function getTicketDataFinaljs() {
                     const ticketId = $(this).data("id-ticket");
                     const nroTicket = $(this).data("nro-ticket");
                     const isChecked = $(this).is(":checked"); // Verifica si el checkbox está marcado
+                    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
 
-                    // Solo actuamos si el checkbox ha sido marcado
                     if (isChecked) {
                         Swal.fire({
-                            icon: "question",
-                            title: "¿Confirmar Carga de Llaves?",
-                            text: `¿Desea marcar el Ticket Nro: ${nroTicket} como "Llaves Cargadas". Esta acción registrará la fecha de la carga de llaves?`,
+                              title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                                        <div class="custom-modal-header-content">Confirmación de Carga de Llaves</div>
+                                      </div>`,
+                          html: `<div class="custom-modal-body-content">
+                                  <div class="mb-4">
+                                      ${customWarningSvg}
+                                  </div> 
+                                   <p class="h4 mb-3" style = "color: black;">¿Desea marcar el Ticket Nro: ${nroTicket} como "Llaves Cargadas".?</p> 
+                                   <p class="h5 text-muted">Esta acción registrará la fecha de la carga de llaves</p>`,
                             confirmButtonText: "Sí, Confirmar",
                             color: "black",
                             confirmButtonColor: "#003594",
                             cancelButtonText: "No, cancelar",
-                            showCancelButton: true,
                             focusConfirm: false,
                             allowOutsideClick: false,
+                            showCancelButton: true,
                             allowEscapeKey: false,
-                            showCloseButton: true,
                             keydownListenerCapture: true,
                         }).then((result) => {
                             if (result.isConfirmed) {

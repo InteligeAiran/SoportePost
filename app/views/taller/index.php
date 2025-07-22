@@ -832,7 +832,7 @@
                             </svg>
                         </div>
                         <p id="TextConfirmTaller" >¿Marcar el Pos asociado al ticket Nro: <span id="modalTicketIdConfirmTaller"></span> como recibido?</p>
-                        <p class="small-text" style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de recepción y habilitará los Estatus Corresopndiente del Taller.</p>
+                        <p class="small-text" style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de recepción y habilitará los Estatus Correspondientes del Taller.</p>
                     </div>
                     <div class="modal-footer custom-modal-footer d-flex justify-content-center">
                         <button type="button" class="btn custom-btn-primary" id="confirmTallerBtn">Sí, Recibir POS</button>
