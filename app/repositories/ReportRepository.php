@@ -442,4 +442,19 @@ class ReportRepository
             return [];
         }
     }
+
+    public function GetTicketsPendingDocumentApproval($id_user){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketsPendingDocumentApproval($id_user); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
 }

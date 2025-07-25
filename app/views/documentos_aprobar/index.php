@@ -16,17 +16,16 @@ function mi_navbar()
             <?php echo tituloPagina; ?>
         </title>
 
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
 
-    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
-    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
-    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
     <style>
       
         #ticket-details-panel table td, table th {
@@ -204,7 +203,7 @@ function mi_navbar()
                                             <div
                                                 class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
                                                 <strong>
-                                                    <h5 class="text-black text-capitalize ps-3" style="color: black;">Gestión Técnico</h5>
+                                                    <h5 class="text-black text-capitalize ps-3" style="color: black;">Documentos Por Aprobar</h5>
                                                 </strong>
                                             </div>
                                         </div>
@@ -213,13 +212,6 @@ function mi_navbar()
                                         class="table table-striped table-bordered table-hover table-sm">
                                        <thead>
                                             <tr>
-                                                <th scope="col">ID Ticket</th>
-                                                <th scope="col">RIF</th>
-                                                <th scope="col">Razón Social</th>
-                                                <th scope="col">Fecha Creación</th>
-                                                <th scope="col">Técnico Asignado</th>
-                                                <th scope="col">Nro Ticket</th>
-                                                <th scope="col">Acción Ticket</th> <th scope="col">Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody class="table-group-divider" id="table-ticket-body">
@@ -241,93 +233,64 @@ function mi_navbar()
             </div>
         </main>
 
-        <!-- MODAL PARA SELECCIONAR TECNICO -->
-        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-            aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div id="ModalSelecttecnico" class="modal-content">
+        <!--MODAL PARA SELECCIONAR LAS ACCIONES PARA VIZUALIZAR LA IMAGEN-->
+            <div class="modal fade" id="visualizarImagenModal" tabindex="-1" aria-labelledby="visualizarImagenModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                <div class="modal-dialog">
+                    <div class="modal-content">
                     <div class="modal-header">
-                        <!--h1 class="modal-title fs-5" id="staticBackdropLabel">Seleccione un Técnico</h1-->
-                        <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
+                        <h5 class="modal-title" id="visualizarImagenModalLabel" style="color: black;">Seleccione la imagen que desea visualizar:</h5>
                     </div>
                     <div class="modal-body">
-                        <p style="font-size: 200%; font-family: ui-monospace;">Deseas Enviar al Taller?</p>
+                        <div class="form-check">
+                        <input class="form-check-input" type="radio" name="opcionImagen" id="imagenEnvio" value="Envio" checked>
+                        <label class="form-check-label" for="imagenEnvio">
+                            Imagen del Envío
+                        </label>
+                        </div>
+                        <div class="form-check">
+                        <input class="form-check-input" type="radio" name="opcionImagen" id="imagenExoneracion" value="Exoneracion">
+                        <label class="form-check-label" for="imagenExoneracion">
+                            Imagen de Exoneración
+                        </label>
+                        </div>
+                        <div class="form-check">
+                        <input class="form-check-input" type="radio" name="opcionImagen" id="imagenPago" value="Pago">
+                        <label class="form-check-label" for="imagenPago">
+                            Imagen de Pago
+                        </label>
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <button id="close-button" type="button" class="btn btn-secondary">Cerrar</button>
-                        <button id="SendToTaller-button" type="button" class="btn btn-primary">Enviar a Taller</button>
+                        <button type="button" class="btn btn-secondary" id="closeImagevisualizarModalBtn">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="btnVisualizarImagen">Visualizar</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        <!--END MODAL PARA SELECCIONAR LAS ACCIONES PARA VIZUALIZAR LA IMAGEN-->
+
+        <div class="modal fade" id="imageApprovalModal" tabindex="-1" aria-labelledby="imageApprovalModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="imageApprovalModalLabel" style="color: black;">Revisar y Aprobar Imagen</h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div id="mediaViewerContainer" style="width: 100%; height: 500px; display: flex; justify-content: center; align-items: center; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 4px;">
+                            <img id="ticketImagePreview" src="" alt="Vista previa del documento" class="img-fluid" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
+                            </div>
+                        <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Ticket ID: <span id="currentTicketIdDisplay"></span></p>
+                        <p style="color: black;">Tipo de Documento: <span id="currentImageTypeDisplay"></span></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="closeImageApprovalModalBtn">Cerrar</button>
+                        <button type="button" class="btn btn-success" id="approveTicketFromImage">Aprobar Ticket</button>
                     </div>
                 </div>
             </div>
         </div>
-        <!--MODAL PARA SELECCIONAR TECNICO-->
 
-        <!--MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
-            <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel"
-                aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <strong>
-                                <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
-                                    Documento para Ticket: <span id="modalTicketId"></span></h5>
-                            </strong>
-                            <button type="button" id="icon-close" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="uploadForm">
-                                <div class="mb-3">
-                                    <label for="documentFile" class="form-label text-gray-700">Seleccionar Archivo:</label>
-                                    <input class="form-control" type="file" id="documentFile" accept="image/*,application/pdf"
-                                        style="display:block">
-                                    <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
-                                </div>
-                                <div class="mb-3 text-center">
-                                    <img id="imagePreview" class="img-preview" src="#" alt="Previsualización de Imagen">
-                                </div>
-                                <div id="uploadMessage" class="message-box hidden"></div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" id="CerrarBoton"
-                                data-bs-dismiss="modal">Cerrar</button>
-                            <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <!-- END MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
-
-        <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
-            <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel"
-                aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-                <div class="modal-dialog modal-dialog-centered modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <strong>
-                                <h5 class="modal-title text-lg font-semibold text-gray-800" id="viewDocumentModalLabel">
-                                    Documento para Ticket: <span id="viewModalTicketId"></span></h5>
-                            </strong>
-                            <button type="button" class="btn-close" id="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3 text-center">
-                                <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen"
-                                    style="max-width: 100%; height: auto; display: none;">
-                                <div id="pdfViewViewer"
-                                    style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
-                            </div>
-                            <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" id="modalCerrarshow" data-bs-dismiss="modal">Cerrar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
-    <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
+        <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
@@ -419,11 +382,7 @@ function mi_navbar()
             </div>
         </div>
         
-        <!-- Github buttons -->
-        <script async defer src="https://buttons.github.io/buttons.js"></script>
-        <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
-        <!-- Bootstrap core JavaScript-->
-        <!--JQUERY-->
+         <script async defer src="https://buttons.github.io/buttons.js"></script>
 
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
@@ -433,30 +392,19 @@ function mi_navbar()
         <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
 
-
-        <!--   Core JS Files   -->
         <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
         <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
 
-        <!-- Datatable otro sistema-->
+        <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
 
-        <script src="<?php echo APP; ?>DataTable/jquery.dataTables.min.js"></script>
-        <script src="<?php echo APP; ?>DataTable/dataTables.buttons.min.js"></script>
-        <script src="<?php echo APP; ?>DataTable/buttons.print.min.js"></script>
-        <script src="<?php echo APP; ?>DataTable/buttons.flash.min.js"></script>
-        <script src="<?php echo APP; ?>DataTable/pdfmake.min.js"></script>
-        <script src="<?php echo APP; ?>DataTable/jszip.min.js"></script>
-        <script src="<?php echo APP; ?>DataTable/vfs_fonts.js"></script>
-        <script src="<?php echo APP; ?>DataTable/buttons.html5.min.js"></script>
-
-
-        <script src="<?php echo APP; ?>js/Datatablebuttons5.js"></script>
-        <script src="<?php echo APP; ?>js/Datatablebuttons.min.js"></script>
-        <script src="<?php echo APP; ?>js/Datatablebuttonsprint.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/chart.js/chart.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
         <script src="<?php echo APP; ?>js/datatables.js"></script>
-
 
         <!--  SweetAlert   -->
         <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>

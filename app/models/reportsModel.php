@@ -402,6 +402,16 @@ class reportsModel extends Model
             // Handle exception
         }
     }
+
+    public function GetTicketsPendingDocumentApproval($id_user) {
+        try {
+            $sql = "SELECT * FROM get_tickets_pending_document_approval(".$id_user.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
 ?>
 

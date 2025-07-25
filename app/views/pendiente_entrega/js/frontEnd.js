@@ -18,10 +18,10 @@ document.addEventListener("DOMContentLoaded", function () {
     let bsViewModal = null;
 
     if (modalElementUpload) {
-        bsUploadModal = new bootstrap.Modal(modalElementUpload, { keyboard: true }); // Habilita cierre con ESC
+        bsUploadModal = new bootstrap.Modal(modalElementUpload, { keyboard: false }); // Habilita cierre con ESC
     }
     if (modalElementView) {
-        bsViewModal = new bootstrap.Modal(modalElementView, { keyboard: true }); // Habilita cierre con ESC
+        bsViewModal = new bootstrap.Modal(modalElementView, { keyboard: false }); // Habilita cierre con ESC
     }
 
     // Variable para almacenar el ID del ticket

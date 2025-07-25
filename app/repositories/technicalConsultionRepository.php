@@ -491,20 +491,19 @@ class TechnicalConsultionRepository
     }
 
 
-         public function GetSubmodulesForModule($moduleId,$id_usuario) {
-                $result = $this->model->GetSubmodulesForModule($moduleId,$id_usuario);
-                if ($result) {
-                    //var_dump($result);  
-                    $modules = [];
-                    for ($i = 0; $i < $result['numRows']; $i++) {
-                        $agente = pg_fetch_assoc($result['query'], $i);
-                        $modules[] = $agente;
-                    }
-                    //var_dump($agente);
-                    return $modules;
-                } else {
-                    return null;
-                }
+    public function GetSubmodulesForModule($moduleId,$id_usuario) {
+        $result = $this->model->GetSubmodulesForModule($moduleId,$id_usuario);
+
+        if ($result) {
+            $modules = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $modules[] = $agente;
+            }
+            return $modules;
+        } else {
+            return null;
+        }
     }
 
 
@@ -596,6 +595,27 @@ class TechnicalConsultionRepository
     public function MarkKeyAsReceived($id_ticket, $id_user){
         $result = $this->model->MarkKeyAsReceived($id_ticket, $id_user);
         return $result;
+    }
+
+    public function GetImageToAproval($ticket_id, $image_type) {
+        // El modelo ya debería devolver un solo array asociativo (o null/false)
+        $result = $this->model->GetImageToAproval($ticket_id, $image_type);
+
+        // var_dump($result); // Descomenta esto para ver qué devuelve tu modelo directamente
+
+        if ($result === false) { // Si el modelo devolvió false (error de consulta)
+            return ['success' => false, 'message' => 'Error interno al consultar la imagen en la base de datos.'];
+        } elseif ($result === null || !isset($result['file_path']) || !isset($result['mime_type'])) {
+            // Si el modelo devolvió null (no se encontró) o le faltan campos
+            return ['success' => false, 'message' => 'No se encontró la imagen o los datos son inválidos para el ticket y tipo especificados.'];
+        } else {
+            // Si el modelo devolvió un array con file_path y mime_type
+            return [
+                'success' => true,
+                'file_path' => $result['file_path'],
+                'mime_type' => $result['mime_type']
+            ];
+        }
     }
 }
 ?>

@@ -169,7 +169,6 @@ function getTicketDataCoordinator() {
         if (response.success) {
           const TicketData = response.ticket;
           const modalElement = document.getElementById("staticBackdrop");
-
           if (modalElement) {
             // Asegúrate de que modalInstanceCoordinator es accesible globalmente o en este ámbito
             // Si ya lo declaraste con 'let modalInstanceCoordinator = null;' al inicio del script,
@@ -213,6 +212,7 @@ function getTicketDataCoordinator() {
           const dataForDataTable = [];
 
           TicketData.forEach((data) => {
+            console.log("Datos del ticket:", data.serial_pos);
             let actionButtonsHtml = ""; // Variable para construir los botones de acción
 
             // Lógica para los botones de acción
@@ -276,6 +276,7 @@ function getTicketDataCoordinator() {
             dataForDataTable.push([
               data.id_ticket,
               data.rif,
+              data.serial_pos,
               data.razonsocial_cliente,
               data.name_accion_ticket,
               actionButtonsHtml, // Usa la variable con los botones
@@ -297,6 +298,7 @@ function getTicketDataCoordinator() {
             columns: [
               { title: "ID ticket" },
               { title: "Rif" },
+              { title: "Serial POS" },
               {
                 title: "Raz&oacuten Social",
                 render: function (data, type, row) {
@@ -381,14 +383,14 @@ function getTicketDataCoordinator() {
 
             // Cambiar el filtro inicial a "Asignado al Coordinador" (Tickets por Asignar)
             api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                .column(3)
+                .column(4)
                 .search("Asignado al Coordinador") // CAMBIO AQUÍ
                 .draw();
             setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
 
             $("#btn-asignados").on("click", function () {
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(3)
+                    .column(4)
                     .search("Asignado al Técnico")
                     .draw();
                 setActiveButton("btn-asignados");
@@ -396,7 +398,7 @@ function getTicketDataCoordinator() {
 
             $("#btn-por-asignar").on("click", function () {
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(3)
+                    .column(4)
                     .search("Asignado al Coordinador")
                     .draw();
                 setActiveButton("btn-por-asignar");
@@ -404,7 +406,7 @@ function getTicketDataCoordinator() {
 
             $("#btn-recibidos").on("click", function () {
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(3)
+                    .column(4)
                     .search("Recibido por el Coordinador")
                     .draw();
                 setActiveButton("btn-recibidos");
@@ -412,7 +414,7 @@ function getTicketDataCoordinator() {
 
             $("#btn-reasignado").on("click", function () {
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(3)
+                    .column(4)
                     .search("Reasignado al Técnico")
                     .draw();
                 setActiveButton("btn-reasignado");
@@ -687,10 +689,6 @@ function formatTicketDetailsPanel(d) {
                     <h4 style = "color: black;">Ticket #${d.nro_ticket}</h4>
                     <hr class="mt-2 mb-3">
                     <div class="row">
-                        <div class="col-sm-6 mb-2">
-                            <strong><div>Id Ticket:</div></strong>
-                            ${d.id_ticket}
-                        </div>
                         <div class="col-sm-6 mb-2">
                             <strong><div>Serial POS:</div></strong>
                             ${d.serial_pos}

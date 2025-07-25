@@ -71,6 +71,7 @@ function mi_navbar() {}
                                         <tr>
                                             <th style="width: 12%; height: 10px;">ID ticket</th>
                                             <th style="width: 12%;">RIF</th>
+                                            <th style="width: 12%;">Serial Pos</th>
                                             <th style="width: 12%;">Raz&oacuten Social</th>
                                             <th style="width: 12%;">Accion del Ticket</th>
                                             <th>Acciones</th>

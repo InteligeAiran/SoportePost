@@ -1755,6 +1755,18 @@ class consulta_rifModel extends Model
             return false; // Return false on error
         }
     }
+
+    public function GetImageToAproval($id_ticket, $image_type){
+        try {
+            $sql = "SELECT file_path, mime_type FROM get_image_to_approval(" . (int)$id_ticket . ", '" . $image_type. "');";
+            $result = Model::getResult($sql, $this->db);
+            
+            return $result[0] ?? null; // Retorna la primera fila o null si no hay resultados
+        } catch (Throwable $e) {
+            error_log("Error en el modelo GetImageToAproval: " . $e->getMessage());
+            return false; // Retorna false en caso de error
+        }
+    }
         
 }
 ?>

@@ -185,6 +185,10 @@ class reportes extends Controller {
                     $this->handleGetTicketTimeline();
                 break;
 
+                case 'tickets-pending-document-approval':
+                    $this->ticketsPendingDocumentApproval();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -750,6 +754,24 @@ class reportes extends Controller {
         $result = $repository->GetTicketTimeline($id_ticket);
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+    public function ticketsPendingDocumentApproval(){
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'Falta el id_user'], 400); // Código 400 Bad Request
+        }
+
+        $repository = new ReportRepository();
+        $result = $repository->GetTicketsPendingDocumentApproval($id_user);
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'tickets' => $result], 200);
         } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
