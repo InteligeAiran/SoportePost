@@ -288,7 +288,9 @@ class users extends Controller {
     $_SESSION['name_rol']     = $userData['name_rol'];
     $_SESSION['status']       = (int) $userData['status'];
     
-    $session_lifetime = 1200; // Ejemplo: 20 minutos
+    $session_lifetime = 3600; // Ejemplo: 1200seg = 20 minutos
+                              //          1800seg = 30 minutos
+                              //          3600seg = 1 hora
     $_SESSION['session_lifetime'] = $session_lifetime;
 
     $_SESSION["session_id"] = $new_session_id_for_this_login_attempt; // Asigna el ID ya generado

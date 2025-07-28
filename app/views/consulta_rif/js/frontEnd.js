@@ -822,7 +822,6 @@ function getPosSerials(rif) {
               if (selectedSerial) {
                 getUltimateTicket(selectedSerial);
                 getInstalationDate(selectedSerial);
-                VerificarSucursales(rif);
               }
             };
           }
@@ -1039,23 +1038,29 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
         text: "Tiene Garantía Por Reingreso.",
         icon: "warning",
         confirmButtonText: "OK",
+        confirmButtonColor: "#003594", // Color del botón (opcional, este es el azul predeterminado de SweetAlert)
         color: "black",
       });
       resultadoElemento.textContent = "Garantía por Reingreso aplica";
       resultadoElemento.style.color = "red";
-      botonExoneracion.style.display = "none";
-      botonAnticipo.style.display = "none";
-      // animation.style.display = 'block';
-      document.getElementById("checkExoneracion").style.display = "none";
-      document.getElementById("checkExoneracionLabel").style.display = "none";
-      document.getElementById("checkAnticipo").style.display = "none";
-      document.getElementById("checkAnticipoLabel").style.display = "none";
+
+      const checkExoneracion = document.getElementById("checkExoneracionContainer");
+      const checkAnticipo = document.getElementById("checkAnticipoContainer");
+      const checkEnvio = document.getElementById("checkEnvioContainer");
+
+      checkExoneracion.style.display = "none";
+      checkAnticipo.style.display = "none";
+      checkEnvio.style.display = "block";
+
+      
       return 3;
     } else {
       resultadoElemento.textContent = "Sin Garantía Por Reingreso";
       resultadoElemento.style.color = "";
-      botonExoneracion.style.display = "inline-block";
-      botonAnticipo.style.display = "inline-block";
+      checkExoneracion.style.display = "block";
+      checkAnticipo.style.display = "block";
+      checkEnvio.style.display = "block"; // Ocultar el contenedor de envío si no aplica
+  
       // animation.style.display = 'none';
 
       return null;
@@ -1239,55 +1244,69 @@ function UpdateGuarantees() {
 });*/
 
 function VerificarSucursales(rif) {
-  const xhrSucursales = new XMLHttpRequest();
-  xhrSucursales.open("POST", "app/views/Tecnico/consulta_rif/backEnd.php");
-  xhrSucursales.setRequestHeader(
-    "Content-Type",
-    "application/x-www-form-urlencoded"
-  );
+    const xhrSucursales = new XMLHttpRequest();
+    xhrSucursales.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/VerifingBranches`);
+    xhrSucursales.setRequestHeader(
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+    );
 
-  xhrSucursales.onload = function () {
-    if (xhrSucursales.status === 200) {
-      const responseSucursales = JSON.parse(xhrSucursales.responseText);
-      try {
-        if (responseSucursales.success) {
-          const idRegion = responseSucursales.id_region;
-          const botonCargarEnvio =
-            document.getElementById("DownloadEnvi").parentNode;
-          const idRegionNumero = parseInt(idRegion, 10); // Convertir a entero (base 10)
+    xhrSucursales.onload = function () {
+        if (xhrSucursales.status === 200) {
+            const responseSucursales = JSON.parse(xhrSucursales.responseText);
+            try {
+                if (responseSucursales.success) {
+                    const idRegion = responseSucursales.id_region;
+                    const idRegionNumero = parseInt(idRegion, 10);
 
-          if (idRegionNumero === 1) {
-            botonCargarEnvio.style.display = "none";
-          } else {
-            botonCargarEnvio.style.display = "block";
-          }
+                    // Referencia al div que contiene el botón de carga de PDF
+                    const botonCargaPDFEnvDiv = document.getElementById("botonCargaPDFEnv");
+                    
+
+                    const checkEnvioContainer = document.getElementById("checkEnvioContainer"); // Usando el ID sugerido
+                    const checkExoneracionContainer = document.getElementById("checkExoneracionContainer");
+                    const checkAnticipoContainer = document.getElementById("checkAnticipoContainer");
+
+                    if (idRegionNumero === 1) { // Si es Caracas
+                        if (botonCargaPDFEnvDiv) {
+                            botonCargaPDFEnvDiv.style.display = "none";
+                        }
+                        if (checkEnvioContainer) {
+                            checkEnvioContainer.style.display = "none";
+                            checkExoneracionContainer.style.display = "block"; // Ocultar el checkbox de exoneración
+                            checkAnticipoContainer.style.display = "block"; // Ocultar el checkbox de antic
+                        }
+                      }else{
+                        checkAnticipoContainer.style.display = "block"; // Ocultar el checkbox de anticipo
+                        checkExoneracionContainer.style.display = "block"; // Ocultar el checkbox de ex
+                        checkEnvioContainer.style.display = "block"; // Mostrar el checkbox de envío
+                      }
+                } else {
+                    console.error(
+                        "Error al verificar las sucursales:",
+                        responseSucursales ? responseSucursales.message : "Error desconocido"
+                    );
+                }
+            } catch (error) {
+                console.error("Error al procesar la respuesta del servidor:", error);
+                console.log("Respuesta del servidor completa (para depurar):", xhrSucursales.responseText);
+            }
         } else {
-          console.error(
-            "Error al verificar las sucursales:",
-            responseSucursales
-              ? responseSucursales.message
-              : "Error desconocido"
-          );
-          // En caso de error, podrías mostrar el botón por defecto o tener otra lógica
-          const botonCargarEnvio =
-            document.getElementById("DownloadEnvi").parentNode;
-          botonCargarEnvio.style.display = "block";
+            console.error(
+                "Error en la petición para verificar sucursales. Status:",
+                xhrSucursales.status,
+                xhrSucursales.responseText
+            );
         }
-      } catch (error) {
-        console.log("Respuesta del servidor:", responseSucursales); // Ver la respuesta completa para depurar
-      }
-    } else {
-      console.error(
-        "Error en la petición para verificar sucursales. Status:",
-        xhrSucursales.status
-      );
-    }
-  };
+    };
 
-  const datosSucursales = `action=VerifingBranches&rif=${encodeURIComponent(
-    rif
-  )}`;
-  xhrSucursales.send(datosSucursales);
+    xhrSucursales.onerror = function() {
+        console.error("Error de red en la petición para verificar sucursales.");
+        // Asegúrate de que los elementos se muestren si hay un error de re
+    };
+
+    const datosSucursales = `action=VerifingBranches&rif=${encodeURIComponent(rif)}`;
+    xhrSucursales.send(datosSucursales);
 }
 
 let cargaSeleccionada = null; // Puede ser 'exoneracion', 'anticipo' o null
@@ -1826,7 +1845,6 @@ document.addEventListener("DOMContentLoaded", function () {
     SendDataFailure2(idStatusPayment); // Envía los datos de la falla con ese estado
   });
 
-  console.log(sendForm2Button)
 
   // --- Inicialización al Cargar la Página ---
   updateDocumentUploadVisibility(); // Establecer la visibilidad correcta de los elementos al cargar.
@@ -3023,6 +3041,7 @@ function fetchSerialData(serial, rif) {
             }
           }
           downloadImageModal(serial);
+          VerificarSucursales(rif);
 
           // --- MODIFICACIÓN CLAVE AQUÍ ---
           $(document).ready(function () {

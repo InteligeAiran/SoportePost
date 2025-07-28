@@ -617,5 +617,27 @@ class TechnicalConsultionRepository
             ];
         }
     }
+
+     public function VerifingBranches($rif){
+        $result = $this->model->VerifingBranches($rif); // Llama al modelo
+        if ($result && $result['numRows'] > 0 && isset($result['row']['id_estado'])) {
+            return $result['row']['id_estado']; // Devuelve solo el id_estado
+        }
+        return null; // Si no se encuentra o hay un error
+    }
+
+    // Este método solo devuelve el ID de la región asociado al estado
+    public function getRegionFromStateId($id_state) {
+    $result = $this->model->GetRegionFromState($id_state);
+
+    // AÑADE ESTO PARA DEPURACIÓN:
+    error_log("Resultado de Model::GetRegionFromState en Repository:");
+    error_log(var_export($result, true));
+
+    if ($result && $result['numRows'] > 0 && isset($result['row']['id_region'])) {
+        return (int) $result['row']['id_region']; // Devuelve solo el id_region
+    }
+    return null; // Si no se encuentra o hay un error
+}
 }
 ?>

@@ -122,22 +122,23 @@ class consulta_rifModel extends Model
     {
         try {
             $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif); // Assuming '$this->db' is now a valid PgSql\Connection
-            $sql = "SELECT * FROM VerifingBranches(" . $escaped_rif . ")';";
+            $sql = "SELECT * FROM VerifingBranches(" . $escaped_rif . ");";
             $result = Model::getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
+            if (!$result) {
+                error_log("Error al ejecutar VerifingBranches: " . pg_last_error($this->db->getConnection()));
+                return null; // O maneja el error de otra manera
+            }
             return $result;
         } catch (Throwable $e) {
             // Handle exception
         }
     }
 
-    public function GetRegionFromState($id_state)
+    public function GetRegionFromState($id_estado)
     {
         try {
-            $escaped_id_state = pg_escape_literal($this->db->getConnection(), $id_state); // Assuming '$this->db' is now a valid PgSql\Connection
-            $sql = "SELECT * FROM GetStateRegionById(" . $escaped_id_state . ");";
+            $sql = "SELECT id_region, name_region FROM GetStateRegionById(" . $id_estado . ");";
             $result = Model::getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception

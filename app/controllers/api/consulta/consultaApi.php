@@ -209,6 +209,10 @@ class Consulta extends Controller
                 case 'GetImageToAproval':
                     $this->handleGetImageToAproval();
                     break;
+                
+                case 'VerifingBranches':
+                    $this->handleVerifingBranches();
+                    break;
 
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
@@ -1267,7 +1271,7 @@ class Consulta extends Controller
           // Recupera el ticketId enviado por POST
         $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
         $imageType = isset($_POST['imageType']) ? $_POST['imageType'] : ''; // Tipo de imagen (ej. 'signature', 'photo')
-        
+
         // Validación: Si no se proporciona el ticketId, devuelve un error 400 Bad Request.
         if (!$ticketId || !$imageType) {
             $this->response(['success' => false, 'message' => 'ID de ticket requerido.'], 400); 
@@ -1317,5 +1321,44 @@ class Consulta extends Controller
             return; // Termina la ejecución aquí
         }
     }
+
+   public function handleVerifingBranches(){
+    $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
+    $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+
+    if (empty($rif)) {
+        $this->response(['success' => false, 'message' => 'RIF no proporcionado.', 'id_region' => null], 400);
+        return;
+    }
+
+    // 1. Obtener el id_estado usando el RIF
+    // $estadoId ahora contiene directamente el valor del ID de estado (entero o null)
+    $estadoId = $repository->VerifingBranches($rif);
+
+    // Corrige esta línea:
+    // Ahora, $estadoId ya es el ID de estado o null. No es un array.
+    if ($estadoId !== null) { // <-- Aquí directamente compruebas si $estadoId NO es null
+        // Ya no necesitas $id_estado = $estadoId[0]['id_estado'];
+        // $estadoId ya es el valor que buscas.
+        
+        // 2. Obtener la id_region usando el id_estado
+        $id_region = $repository->getRegionFromStateId($estadoId); // Pasa $estadoId directamente
+        // var_dump($id_region); // Puedes mantener esto para depuración temporal
+
+        if ($id_region !== null) {
+            $this->response([
+                'success' => true,
+                'id_region' => $id_region
+            ], 200);
+        } else {
+            // No se encontró la región para el estado
+            $this->response(['success' => false, 'message' => 'No se encontró la región para el estado asociado al RIF.', 'id_region' => null], 404);
+        }
+    } else {
+        // No se encontró el estado para el RIF
+        $this->response(['success' => false, 'message' => 'No se encontraron sucursales o estado para el RIF proporcionado.', 'id_region' => null], 404);
+    }
+}
+
 }
 ?>
