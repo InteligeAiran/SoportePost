@@ -1323,42 +1323,36 @@ class Consulta extends Controller
     }
 
    public function handleVerifingBranches(){
-    $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
-    $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
 
-    if (empty($rif)) {
-        $this->response(['success' => false, 'message' => 'RIF no proporcionado.', 'id_region' => null], 400);
-        return;
-    }
-
-    // 1. Obtener el id_estado usando el RIF
-    // $estadoId ahora contiene directamente el valor del ID de estado (entero o null)
-    $estadoId = $repository->VerifingBranches($rif);
-
-    // Corrige esta línea:
-    // Ahora, $estadoId ya es el ID de estado o null. No es un array.
-    if ($estadoId !== null) { // <-- Aquí directamente compruebas si $estadoId NO es null
-        // Ya no necesitas $id_estado = $estadoId[0]['id_estado'];
-        // $estadoId ya es el valor que buscas.
-        
-        // 2. Obtener la id_region usando el id_estado
-        $id_region = $repository->getRegionFromStateId($estadoId); // Pasa $estadoId directamente
-        // var_dump($id_region); // Puedes mantener esto para depuración temporal
-
-        if ($id_region !== null) {
-            $this->response([
-                'success' => true,
-                'id_region' => $id_region
-            ], 200);
-        } else {
-            // No se encontró la región para el estado
-            $this->response(['success' => false, 'message' => 'No se encontró la región para el estado asociado al RIF.', 'id_region' => null], 404);
+        if (empty($rif)) {
+            $this->response(['success' => false, 'message' => 'RIF no proporcionado.', 'id_region' => null], 400);
+            return;
         }
-    } else {
-        // No se encontró el estado para el RIF
-        $this->response(['success' => false, 'message' => 'No se encontraron sucursales o estado para el RIF proporcionado.', 'id_region' => null], 404);
-    }
-}
 
+        // 1. Obtener el id_estado usando el RIF
+        // $estadoId ahora contiene directamente el valor del ID de estado (entero o null)
+        $estadoId = $repository->VerifingBranches($rif);
+
+        if ($estadoId !== null) { // <-- Aquí directamente compruebas si $estadoId NO es null
+            
+            // 2. Obtener la id_region usando el id_estado
+            $id_region = $repository->getRegionFromStateId($estadoId); // Pasa $estadoId directamente
+
+            if ($id_region !== null) {
+                $this->response([
+                    'success' => true,
+                    'id_region' => $id_region
+                ], 200);
+            } else {
+                // No se encontró la región para el estado
+                $this->response(['success' => false, 'message' => 'No se encontró la región para el estado asociado al RIF.', 'id_region' => null], 404);
+            }
+        } else {
+            // No se encontró el estado para el RIF
+            $this->response(['success' => false, 'message' => 'No se encontraron sucursales o estado para el RIF proporcionado.', 'id_region' => null], 404);
+        }
+    }
 }
 ?>

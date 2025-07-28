@@ -84,6 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Referencias a elementos dentro de los modales
   const ticketNumberSpan = document.getElementById("ticketNumberSpan");
+  const ticketserialPos = document.getElementById("ticketserialPos");
   const currentTechnicianName = document.getElementById(
     "currentTechnicianName"
   );
@@ -170,11 +171,6 @@ function getTicketDataCoordinator() {
           const TicketData = response.ticket;
           const modalElement = document.getElementById("staticBackdrop");
           if (modalElement) {
-            // Asegúrate de que modalInstanceCoordinator es accesible globalmente o en este ámbito
-            // Si ya lo declaraste con 'let modalInstanceCoordinator = null;' al inicio del script,
-            // entonces solo necesitas asignarle la instancia aquí.
-            // Si no, declárala aquí:
-            // let modalInstanceCoordinator; // <-- Si no está declarada fuera de esta función
             modalInstanceCoordinator = new bootstrap.Modal(modalElement, {
               backdrop: "static", // Para que no se cierre al hacer clic fuera
               keyboard: false, // Para que no se cierre con la tecla ESC
@@ -212,7 +208,6 @@ function getTicketDataCoordinator() {
           const dataForDataTable = [];
 
           TicketData.forEach((data) => {
-            console.log("Datos del ticket:", data.serial_pos);
             let actionButtonsHtml = ""; // Variable para construir los botones de acción
 
             // Lógica para los botones de acción
@@ -224,7 +219,8 @@ function getTicketDataCoordinator() {
                                     data-bs-placement="top"
                                     title="Marcar como Recibido por Coordinador"
                                     data-ticket-id="${data.id_ticket}"
-                                    data-nro-ticket="${data.nro_ticket}">
+                                    data-nro-ticket="${data.nro_ticket}"
+                                    data-serial-pos="${data.serial_pos}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16"><path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/></svg>                                </button>
                                 <button id="myUniqueAssingmentButton"
                                     class="btn btn-sm btn-assign-tech"
@@ -246,7 +242,7 @@ function getTicketDataCoordinator() {
                                     data-bs-placement="top"
                                     title="Ticket ya Recibido por Coordinador"
                                     data-ticket-id="${data.id_ticket}"
-                                    data-nro-ticket="${data.nro_ticket}">
+                                    data-nro-ticket="${data.nro_ticket}"
                                     Recibido
                                 </button>
                                 <button id="myUniqueAssingmentButton"
@@ -266,7 +262,8 @@ function getTicketDataCoordinator() {
                                     data-bs-placement="top"
                                     title="Reasignar Técnico"
                                     data-ticket-id="${data.id_ticket}"
-                                    data-nro-ticket="${data.nro_ticket}">
+                                    data-nro-ticket="${data.nro_ticket}"
+                                    data-serial-pos="${data.serial_pos}">
                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16"><path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/></svg>
                                 </button>
                             `;
@@ -425,46 +422,48 @@ function getTicketDataCoordinator() {
           $("#tabla-ticket").resizableColumns();
 
           $("#tabla-ticket tbody")
-            .off("click", "tr")
-            .on("click", "tr", function () {
+          .off("click", "tr") // Desvincula handlers anteriores para evitar duplicados
+          .on("click", "tr", function () {
               const tr = $(this);
               const rowData = dataTableInstance.row(tr).data(); // Aquí 'dataTableInstance' sí está disponible
 
               if (!rowData) {
-                return;
+                  return;
               }
 
-              $("#tabla-ticket tbody tr").removeClass("table-active");
-              tr.addClass("table-active");
+              // **Estas dos líneas son las que hacen el resaltado**
+              $("#tabla-ticket tbody tr").removeClass("table-active"); // Quita la clase de todas las filas
+              tr.addClass("table-active"); // Añade la clase a la fila clicada
 
-              const ticketId = rowData[0];
+              const ticketId = rowData[0]; // Asume que el ID del ticket está en la primera columna
 
               const selectedTicketDetails = TicketData.find(
-                (t) => t.id_ticket == ticketId
+                  (t) => t.id_ticket == ticketId
               );
 
               if (selectedTicketDetails) {
-                detailsPanel.innerHTML = formatTicketDetailsPanel(
-                  selectedTicketDetails
-                );
-                loadTicketHistory(ticketId);
-                if (selectedTicketDetails.serial_pos) {
-                  downloadImageModal(selectedTicketDetails.serial_pos);
-                } else {
-                  const imgElement = document.getElementById(
-                    "device-ticket-image"
+                  // ... (resto de tu lógica para mostrar el panel de detalles)
+                  detailsPanel.innerHTML = formatTicketDetailsPanel(
+                      selectedTicketDetails
                   );
-                  if (imgElement) {
-                    imgElement.src =
-                      '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png';
-                    imgElement.alt = "Serial no disponible";
+                  loadTicketHistory(ticketId);
+                  if (selectedTicketDetails.serial_pos) {
+                      downloadImageModal(selectedTicketDetails.serial_pos);
+                  } else {
+                      const imgElement = document.getElementById(
+                          "device-ticket-image"
+                      );
+                      if (imgElement) {
+                          // Corrección de la ruta de la imagen estática
+                          imgElement.src = '/public/img/consulta_rif/POS/mantainment.png'; // Ruta relativa o absoluta accesible desde el navegador
+                          imgElement.alt = "Serial no disponible";
+                      }
                   }
-                }
               } else {
-                detailsPanel.innerHTML =
-                  "<p>No se encontraron detalles para este ticket.</p>";
+                  detailsPanel.innerHTML =
+                      "<p>No se encontraron detalles para este ticket.</p>";
               }
-            });
+          });
 
           $("#tabla-ticket tbody")
             .off("click", ".truncated-cell")
@@ -498,7 +497,8 @@ function getTicketDataCoordinator() {
               e.stopPropagation();
               const ticketId = $(this).data("ticket-id");
               const nroTicket = $(this).data("nro-ticket");
-              markTicketAsReceived(ticketId, nroTicket);
+              const serialPos = $(this).data("serial-pos");
+              markTicketAsReceived(ticketId, nroTicket, serialPos);
             });
 
           // Evento click existente para el botón de Asignar Técnico
@@ -525,7 +525,9 @@ function getTicketDataCoordinator() {
               e.stopPropagation();
               currentTicketId = $(this).data("ticket-id");
               currentTicketNro = $(this).data("nro-ticket"); // Asegúrate de obtener el nro_ticket
+              currentserialPos = $(this).data("serial-pos");
               ticketNumberSpan.textContent = currentTicketNro; // Muestra el número en el modal de confirmación
+              ticketserialPos.textContent = currentserialPos; // Muestra el serial en el modal de confirmación
               confirmReassignModalInstance.show(); // Muestra el modal de confirmación
             });
         } else {
@@ -1108,7 +1110,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 //console.log('FrontEnd.js loaded successfully!');
 
-function markTicketAsReceived(ticketId, nroTicket) {
+function markTicketAsReceived(ticketId, nroTicket, serialPos) {
   // Asegúrate de que nroTicket esté como parámetro
   const id_user = document.getElementById("id_user").value;
   // SVG que quieres usar
@@ -1117,7 +1119,8 @@ function markTicketAsReceived(ticketId, nroTicket) {
     // El nuevo texto del header va aquí
     title: `Confirmación de recibido`, // Texto fijo para el encabezado
     // El contenido del cuerpo (SVG y texto explicativo) va en 'html'
-    html: `${customWarningSvg}<p class="mt-3" id = "textConfirm">¿Marcar el ticket <span id = "NroTicketConfirReceiCoord">${nroTicket}</span> como recibido?</p><p id = "textConfirmp">Esta acción registrará la fecha de recepción y habilitará la asignación de técnico.</p>`,
+    html: `${customWarningSvg}<p class="mt-3" id = "textConfirm">¿Deseas Marcar el ticket Nro: <span id = "NroTicketConfirReceiCoord">${nroTicket}</span> Asociado el Pos: <span id = "NroTicketConfirReceiCoord">${serialPos}</span> como recibido? 
+    </p><p id = "textConfirmp">Esta acción registrará la fecha de recepción y habilitará la asignación de técnico.</p>`,
     showCancelButton: true,
     confirmButtonColor: "#003594",
     cancelButtonColor: "#6c757d",
@@ -1163,11 +1166,10 @@ function markTicketAsReceived(ticketId, nroTicket) {
             if (response.success) {
               Swal.fire({
                 title: "¡Recibido!",
-                text:
-                  "El ticket N" + nroTicket + " ha sido marcado como recibido.",
+                text: "El ticket N" + nroTicket + " ha sido marcado como recibido.",
                 icon: "success",
                 color: "black",
-                confirmButtonColor: "#3085d6",
+                confirmButtonColor: "#2703f4ff",
               });
               getTicketDataCoordinator();
               if (modalInstanceCoordinator) {

@@ -35,7 +35,7 @@
     color: #495057; /* Color de texto suave */
 }
 
-#modalTicketNr, #ticketNumberSpan, #NroTicketConfirReceiCoord{
+#modalTicketNr, #ticketNumberSpan, #NroTicketConfirReceiCoord, #ticketserialPos{
     display: inline-block; 
     padding: 0.2rem 0.5rem;
     border-radius: 0.3rem;
@@ -48,17 +48,22 @@
   /* Tu azul fuerte */
   border-color: #003594;
   color: #ffffff;
-  transition: background-color 0.3s ease, border-color 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: background-color 0.3s ease, 
+  border-color 0.3s ease,
+  box-shadow 0.3s ease;
 }
 
 #textConfirm{
-    font-size: 1.4rem; /* Tamaño de fuente más grande para el texto de confirmación */
+    font-size: 1.2rem; /* Tamaño de fuente más grande para el texto de confirmación */
     color: #343a40; /* Color de texto oscuro */
 }
 
 #textConfirmp{
-    font-size: 1.2rem; /* Tamaño de fuente más grande para el texto de confirmación */
+    font-size: 0.9rem; /* Tamaño de fuente más grande para el texto de confirmación */
+     padding: 0.2rem 0.5rem; 
+     border-radius: 0.3rem; 
+     background-color: #e0f7fa; 
+     color: #007bff; 
 }
 
 #ModalConfirmarSendTaller .modal-footer {
