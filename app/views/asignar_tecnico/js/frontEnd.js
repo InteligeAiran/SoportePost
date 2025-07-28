@@ -293,7 +293,11 @@ function getTicketDataCoordinator() {
             ],
             autoWidth: false,
             columns: [
-              { title: "ID ticket" },
+              { title: "N°", orderable: false, searchable: false,
+                render: function (data, type, row, meta) {
+                  return meta.row + meta.settings._iDisplayStart + 1;
+                }
+              },
               { title: "Rif" },
               { title: "Serial POS" },
               {
@@ -309,20 +313,20 @@ function getTicketDataCoordinator() {
               { title: "Acciones", orderable: false },
             ],
             language: {
-              lengthMenu: "Mostrar _MENU_",
-              emptyTable:"No hay Registros disponibles en la tabla",
-              zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
-              infoEmpty: "No hay Registros disponibles",
-              infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
-              search: "Buscar:",
-              loadingRecords: "Buscando...",
-              processing: "Procesando...",
-              paginate: {
-                first: "Primero",
-                last: "Último",
-                next: "Siguiente",
-                previous: "Anterior",
+              lengthMenu: "Mostrar _MENU_ Registros",
+            emptyTable: "No hay datos disponibles en la tabla",
+            zeroRecords: "No se encontraron resultados para la búsqueda",
+            info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+            infoEmpty: "No hay datos disponibles",
+            infoFiltered: " de _MAX_ Disponibles",
+            search: "Buscar:",
+            loadingRecords: "Cargando...",
+            processing: "Procesando...",
+            paginate: {
+              first: "Primero",
+              last: "Último",
+              next: "Siguiente",
+              previous: "Anterior",
               },
             },
             dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',

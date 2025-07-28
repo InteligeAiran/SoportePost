@@ -77,7 +77,7 @@ function mi_navbar() {}
                                 <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
                                     <thead>
                                         <tr>
-                                            <th style="width: 12%; height: 10px;">ID ticket</th>
+                                            <th>N°</th>
                                             <th style="width: 12%;">RIF</th>
                                             <th style="width: 12%;">Serial Pos</th>
                                             <th style="width: 12%;">Raz&oacuten Social</th>
