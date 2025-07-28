@@ -466,29 +466,33 @@ function getTicketDataCoordinator() {
           });
 
           $("#tabla-ticket tbody")
-            .off("click", ".truncated-cell")
-            .on("click", ".truncated-cell", function (e) {
+          .off("click", ".truncated-cell, .expanded-cell") // <--- Importante: Ahora escucha clics en AMBAS clases
+          .on("click", ".truncated-cell, .expanded-cell", function (e) {
               e.stopPropagation();
               const $cellSpan = $(this);
               const fullText = $cellSpan.data("full-text");
+              const displayLength = 25; // Define displayLength aquí para que esté disponible en ambos casos
 
               if ($cellSpan.hasClass("truncated-cell")) {
-                $cellSpan
-                  .removeClass("truncated-cell")
-                  .addClass("expanded-cell");
-                $cellSpan.text(fullText);
-              } else {
-                $cellSpan
-                  .removeClass("expanded-cell")
-                  .addClass("truncated-cell");
-                const displayLength = 25;
-                if (fullText.length > displayLength) {
-                  $cellSpan.text(fullText.substring(0, displayLength) + "...");
-                } else {
+                  // Si está truncado, expandirlo
+                  $cellSpan
+                      .removeClass("truncated-cell")
+                      .addClass("expanded-cell");
                   $cellSpan.text(fullText);
-                }
+              } else if ($cellSpan.hasClass("expanded-cell")) { // <--- Añadimos esta condición para ser explícitos
+                  // Si está expandido, truncarlo (si es necesario)
+                  $cellSpan
+                      .removeClass("expanded-cell")
+                      .addClass("truncated-cell");
+                  
+                  if (fullText.length > displayLength) {
+                      $cellSpan.text(fullText.substring(0, displayLength) + "...");
+                  } else {
+                      $cellSpan.text(fullText); // Si no necesita truncarse, mostrar el texto completo
+                  }
               }
-            });
+              // Si por alguna razón la celda no tiene ninguna de las dos clases, no hará nada.
+          });
 
           // Evento click para el botón "POS Recibido"
           $("#tabla-ticket tbody")
