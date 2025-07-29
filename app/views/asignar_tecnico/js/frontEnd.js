@@ -719,11 +719,11 @@ function formatTicketDetailsPanel(d) {
                         </div><br>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Fecha Instalación:</div></strong>
-                          ${d.fecha_instalacion || 'N/A'}
+                          ${d.fecha_instalacion || 'Sin datos'}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div  style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
-                          ${d.fecha_cierre_anterior || 'N/A'}
+                          ${d.fecha_cierre_anterior || 'Sin datos'}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Garantía:</div></strong>
@@ -737,25 +737,31 @@ function formatTicketDetailsPanel(d) {
                           <br><strong><div>Usuario Gestión:</div></strong>
                           ${d.full_name_tecnico}
                         </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Estado Cliente:</div></strong>
+                          ${d.nombre_estado_cliente || 'Sin datos'}
+                        </div><br>
+                         <div class="col-sm-6 mb-2">
+                            <br><strong><div>Estatus Ticket:</div></strong>
+                            ${d.name_status_ticket}
+                        </div><br>
+                        <br><div class="col-sm-6 mb-2">
+                              <br><strong><div>Falla Reportada:</div></strong>
+                             <span class="falla-reportada-texto">${d.name_failure}</span>
+                            
+                        </div>
+                       
                     </div>
                 </div>
             </div>
-
-            <div class="row mb-3">
+            <div class="row mb-3" style="margin-top: -7%; positipn: relative;">
                 <div class="col-12">
                     <div class="row">
                         <div class="col-sm-4 mb-2">
                             <strong><div>Acción:</div></strong>
                             <span class = "Accion-ticket">${d.name_accion_ticket}</span>
                         </div>
-                           <div class="col-sm-8 mb-2" style = "margin-left: -7%;">
-                           <strong><div>Falla Reportada:</div></strong>
-                           <span class="falla-reportada-texto">${d.name_failure}</span>
-                        </div>
-                        <div class="col-sm-8 mb-2">
-                             <br><strong><div>Estatus Ticket:</div></strong>
-                            ${d.name_status_ticket}
-                        </div>
+                           
                     </div>
                 </div>
             </div>
