@@ -1217,9 +1217,21 @@ document.addEventListener("DOMContentLoaded", getTicketData);
 
 function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
+  // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
 
   const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
   const initialImageAlt = "Cargando imagen del dispositivo...";
+
+  // Determina el mensaje de garantía
+  let garantiaMessage = '';
+  if (d.garantia_instalacion !== null && d.garantia_instalacion !== '' && d.garantia_instalacion !== false && d.garantia_instalacion !== 'f') {
+    garantiaMessage = 'Aplica Garantía de Instalación';
+  } else if (d.garantia_reingreso !== null && d.garantia_reingreso !== '' && d.garantia_reingreso !== false && d.garantia_reingreso !== 'f') {
+    garantiaMessage = 'Aplica Garantía por Reingreso';
+  } else {
+    garantiaMessage = 'No aplica Garantía'; // O simplemente dejarlo vacío si no hay garantía
+  }
+
 
   return `
         <div class="container-fluid">
@@ -1234,44 +1246,58 @@ function formatTicketDetailsPanel(d) {
                     <hr class="mt-2 mb-3">
                     <div class="row">
                         <div class="col-sm-6 mb-2">
-                            <strong><div>Serial POS:</div></strong>
-                            ${d.serial_pos}
+                          <strong><div>Serial POS:</div></strong>
+                          ${d.serial_pos}
                         </div>
                         <div class="col-sm-6 mb-2">
-                            <strong><div>Estatus POS:</div></strong>
-                            ${d.estatus_inteliservices}
+                          <strong><div>Estatus POS:</div></strong>
+                          ${d.estatus_inteliservices}
                         </div><br>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Fecha Instalación:</div></strong>
-                            ${d.fecha_instalacion}
+                          <br><strong><div>Fecha Instalación:</div></strong>
+                          ${d.fecha_instalacion || 'Sin datos'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Creación ticket:</div></strong>
-                            ${d.create_ticket}
+                          <br><strong><div  style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
+                          ${d.fecha_cierre_anterior || 'Sin datos'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Usuario Gestión:</div></strong>
-                            ${d.full_name_tecnico}
+                          <br><strong><div>Garantía:</div></strong>
+                          <span style="font-weight: bold; color: ${garantiaMessage.includes('Aplica') ? 'red' : 'green'};">${garantiaMessage}</span>
                         </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Creación ticket:</div></strong>
+                          ${d.create_ticket}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Usuario Gestión:</div></strong>
+                          ${d.full_name_tecnico}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Estado Cliente:</div></strong>
+                          ${d.nombre_estado_cliente || 'Sin datos'}
+                        </div><br>
+                         <div class="col-sm-6 mb-2">
+                            <br><strong><div>Estatus Ticket:</div></strong>
+                            ${d.name_status_ticket}
+                        </div><br>
+                        <br><div class="col-sm-6 mb-2">
+                              <br><strong><div>Falla Reportada:</div></strong>
+                             <span class="falla-reportada-texto">${d.name_failure}</span>
+                            
+                        </div>
+                       
                     </div>
                 </div>
             </div>
-
-            <div class="row mb-3">
+            <div class="row mb-3" style="margin-top: -7%; positipn: relative;">
                 <div class="col-12">
                     <div class="row">
                         <div class="col-sm-4 mb-2">
                             <strong><div>Acción:</div></strong>
                             <span class = "Accion-ticket">${d.name_accion_ticket}</span>
                         </div>
-                         <div class="col-sm-8 mb-2" style = "margin-left: -7%;">
-                          <strong><div>Falla Reportada:</div></strong>
-                          <span class="falla-reportada-texto">${d.name_failure}</span>
-                        </div>
-                        <div class="col-sm-8 mb-2">
-                             <br><strong><div>Estatus Ticket:</div></strong>
-                            ${d.name_status_ticket}
-                        </div>
+                           
                     </div>
                 </div>
             </div>
@@ -1378,165 +1404,95 @@ function downloadImageModal(serial) {
 }
 
 function loadTicketHistory(ticketId) {
-  // 1. Obtener el contenedor del historial y mostrar mensaje de carga (usando jQuery)
-  const historyPanel = $("#ticket-history-content");
-  historyPanel.html(
-    '<p class="text-center text-muted">Cargando historial...</p>'
-  ); // Usar .html() de jQuery
+    const historyPanel = $("#ticket-history-content");
+    historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
 
-  // 2. Crear y configurar la solicitud AJAX (usando jQuery.ajax)
-  $.ajax({
-    url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
-    type: "POST",
-    data: {
-      // jQuery formatea esto automáticamente a 'application/x-www-form-urlencoded'
-      action: "GetTicketHistory",
-      id_ticket: ticketId,
-    },
-    dataType: "json", // Le decimos a jQuery que esperamos una respuesta JSON
-    success: function (response) {
-      // Verificar si la respuesta es exitosa y contiene historial
-      if (response.success && response.history && response.history.length > 0) {
-        let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">'; // Contenedor del acordeón
+    $.ajax({
+        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
+        type: "POST",
+        data: {
+            action: "GetTicketHistory",
+            id_ticket: ticketId,
+        },
+        dataType: "json",
+        success: function (response) {
+            if (response.success && response.history && response.history.length > 0) {
+                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
-        // Iterar sobre cada item del historial para construir el HTML
-        response.history.forEach((item, index) => {
-          const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
-          const headingId = `headingHistoryItem_${ticketId}_${index}`;
+                response.history.forEach((item, index) => {
+                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
+                    const isCurrent = index === 0;
 
-          let statusHeaderClass = "";
-          let statusHeaderText = "";
+                    // Obtener el registro anterior para la comparación
+                    const prevItem = response.history[index + 1] || {};
 
-          // **Colores por defecto si no hay coincidencia o si el estado es nulo/vacío**
-          let headerStyle = "background-color: #212529;"; // Gris claro de Bootstrap 'light'
-          let textColor = "color: #212529;"; // Texto oscuro de Bootstrap 'dark'
-          statusHeaderText = ""; // Sin texto extra por defecto
+                    // --- Lógica para determinar si un campo ha cambiado ---
+                    const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
+                    const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
+                    const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
+                    const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
+                    const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
+                    const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
 
-          if (item.name_status_ticket) {
-            const statusLower = item.name_status_ticket.toLowerCase();
-            if (statusLower.includes("abierto")) {
-              headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (Abierto)";
-            } else if (
-              statusLower.includes("cerrado") ||
-              statusLower.includes("resuelto")
-            ) {
-              headerStyle = "background-color: #28a745;"; // Verde
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (Cerrado)";
-            } else if (
-              statusLower.includes("pendiente") ||
-              statusLower.includes("en proceso")
-            ) {
-              headerStyle = "background-color: #ffc107;"; // Amarillo
-              textColor = "color: #343a40;"; // Texto oscuro
-              statusHeaderText = " (En Proceso)";
-            } else if (
-              statusLower.includes("cancelado") ||
-              statusLower.includes("rechazado")
-            ) {
-              headerStyle = "background-color: #dc3545;"; // Rojo
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (Cancelado)";
-            } else if (statusLower.includes("espera")) {
-              headerStyle = "background-color: #6c757d;"; // Gris
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (En Espera)";
-            }
-          }
+                    // --- Lógica de colores (tu lógica original, ajustada para la "gestión actual") ---
+                    let headerStyle = isCurrent ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isCurrent ? "color: #343a40;" : "color: #ffffff;";
+                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
 
-          // Esta lógica ANULA cualquier color establecido por el estado si la condición se cumple.
-          if (index === 0) {
-            // Es la última gestión (la "actual")
-            headerStyle = "background-color: #ffc107;"; // Amarillo
-            textColor = "color: #343a40;"; // Texto oscuro
-            statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`; // Agrega el estatus actual o 'Desconocido' si no existe. // Sobrescribe el texto del estado si ya estaba.
-          } else {
-            // Son gestiones pasadas
-            headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-            textColor = "color: #ffffff;"; // Texto blanco
-            // No sobrescribimos statusHeaderText aquí a menos que quieras algo como "(Pasada)"
-          }
-
-          historyHtml += `
-                        <div class="card mb-3 custom-history-card"> <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
+                    historyHtml += `
+                        <div class="card mb-3 custom-history-card">
+                            <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
                                             data-toggle="collapse" data-target="#${collapseId}"
-                                            aria-expanded="${
-                                              index === 0 ? "true" : "false"
-                                            }" aria-controls="${collapseId}"
+                                            aria-expanded="${isCurrent ? "true" : "false"}" aria-controls="${collapseId}"
                                             style="${textColor}">
-                                        ${item.fecha_de_cambio} - ${
-            item.name_accion_ticket
-          }${statusHeaderText}
+                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
                                     </button>
                                 </h2>
                             </div>
-                            <div id="${collapseId}" class="collapse ${
-            index === 0 ? "show" : ""
-          }"
-                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                            <div id="${collapseId}" class="collapse ${isCurrent ? "show" : ""}"
+                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <table class="table table-sm table-borderless mb-0">
                                             <tbody>
                                                 <tr>
                                                     <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
-                                                    <td>${
-                                                      item.fecha_de_cambio ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td>${item.fecha_de_cambio || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Acción:</th>
-                                                    <td>${
-                                                      item.name_accion_ticket ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Operador de Gestión:</th>
-                                                    <td>${
-                                                      item.full_name_tecnico_gestion ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td>${item.full_name_tecnico_gestion || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Coordinador:</th>
-                                                    <td>${
-                                                      item.full_name_coordinador ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td>${item.full_name_coordinador || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Tecnico Asignado:</th>
+                                                    <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Ticket:</th>
-                                                    <td>${
-                                                      item.name_status_ticket ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${item.name_status_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Laboratorio:</th>
-                                                    <td>${
-                                                      item.name_status_lab ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${statusLabChanged ? "highlighted-change" : ""}">${item.name_status_lab || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
-                                                    <td>${
-                                                      item.name_status_domiciliacion ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${statusDomChanged ? "highlighted-change" : ""}">${item.name_status_domiciliacion || "N/A"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-start" style = " word-wrap: break-word; overflow-wrap: break-word;"">Estatus Pago:</th>
-                                                    <td>${
-                                                      item.name_status_payment ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <th class="text-start">Estatus Pago:</th>
+                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -1544,60 +1500,33 @@ function loadTicketHistory(ticketId) {
                                 </div>
                             </div>
                         </div>`;
-        });
+                });
 
-        historyHtml += "</div>"; // Cierre del acordeón principal
-        historyPanel.html(historyHtml); // Insertar el HTML generado (con jQuery)
-
-        // === IMPORTANTE: RE-INICIALIZAR COMPONENTES DE BOOTSTRAP SI ES NECESARIO ===
-        // Para Bootstrap 4, los atributos data-toggle/data-parent usualmente se "enganchan"
-        // automáticamente si jQuery y Bootstrap JS están cargados.
-        // No necesitas una inicialización explícita como en Bootstrap 5.
-        // El problema suele ser que los atributos data-toggle/data-parent están mal,
-        // o jQuery/Bootstrap JS no están cargados.
-
-        // Reiniciar tooltips (si usas Bootstrap 4, la sintaxis es diferente para dispose/init)
-        if ($.fn && $.fn.tooltip) {
-          // Para Bootstrap 4, los tooltips se manejan así:
-          $('[data-toggle="tooltip"]').tooltip("dispose"); // Asegúrate de que el atributo es data-toggle
-          $('[data-toggle="tooltip"]').tooltip(); // Y se inicializan con data-toggle
-        }
-
-        // Aquí no se necesita `new bootstrap.Collapse` porque eso es para JS nativo de Bootstrap 5.
-        // Con jQuery y Bootstrap 4, la magia ocurre a través de los atributos data-toggle y data-parent
-        // una vez que el HTML está en el DOM y las librerías cargadas.
-      } else {
-        historyPanel.html(
-          '<p class="text-center text-muted">No hay historial disponible para este ticket.</p>'
-        );
-      }
-    },
-    error: function (jqXHR, textStatus, errorThrown) {
-      let errorMessage =
-        '<p class="text-center text-danger">Error al cargar el historial.</p>';
-      if (jqXHR.status === 0) {
-        errorMessage =
-          '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
-      } else if (jqXHR.status == 404) {
-        errorMessage =
-          '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
-      } else if (jqXHR.status == 500) {
-        errorMessage =
-          '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
-      } else if (textStatus === "parsererror") {
-        errorMessage =
-          '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
-      } else if (textStatus === "timeout") {
-        errorMessage =
-          '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
-      } else if (textStatus === "abort") {
-        errorMessage =
-          '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
-      }
-      historyPanel.html(errorMessage);
-      console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-    },
-  });
+                historyHtml += "</div>";
+                historyPanel.html(historyHtml);
+            } else {
+                historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
+            if (jqXHR.status === 0) {
+                errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+            } else if (jqXHR.status == 404) {
+                errorMessage = '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
+            } else if (jqXHR.status == 500) {
+                errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+            } else if (textStatus === "parsererror") {
+                errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+            } else if (textStatus === "timeout") {
+                errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+            } else if (textStatus === "abort") {
+                errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+            }
+            historyPanel.html(errorMessage);
+            console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+        },
+    });
 }
 
 document.addEventListener("DOMContentLoaded", function () {

@@ -44,12 +44,12 @@ function mi_navbar() {}
         }
 
         .highlighted-change {
-  font-weight: bold;
-  color: #000; /* Color de texto más oscuro para mayor contraste */
-  background-color: #ffeb3b; /* Amarillo claro */
-  padding: 2px 5px;
-  border-radius: 3px;
-}
+            font-weight: bold;
+            color: #000; /* Color de texto más oscuro para mayor contraste */
+            background-color: #ffeb3b; /* Amarillo claro */
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
     </style>
 </head>
 

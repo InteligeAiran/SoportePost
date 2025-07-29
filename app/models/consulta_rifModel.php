@@ -1094,6 +1094,19 @@ class consulta_rifModel extends Model
             return ['success' => false, 'message' => 'Error al actualizar el estado de domiciliación del ticket.'];
         }
 
+        $id_status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = ".$id_ticket.";";
+        $id_status_ticket_result = pg_query($this->db->getConnection(), $id_status_ticket_sql);
+
+        if ($id_status_ticket_result && pg_num_rows($id_status_ticket_result) > 0) {
+            $row = [];
+            for ($i = 0; $i < pg_num_rows($id_status_ticket_result); $i++) {
+                $row[] = pg_fetch_assoc($id_status_ticket_result, $i);
+            }
+            $id_status_ticket = $row[0]['id_status_ticket'] ?? null;
+        } else {
+            $id_status_ticket = null;
+        }
+
         // Obtener los estados actuales para el historial (importante: los estados antes de esta actualización)
         // Asumiendo que GetAccion, GetStatuslab, GetStatusPayment devuelven los estados actuales del ticket.
         $accion_ticket_sql = "SELECT new_action FROM tickets_status_history WHERE id_ticket = ".$id_ticket." ORDER BY id_history DESC LIMIT 1;";
@@ -1144,7 +1157,7 @@ class consulta_rifModel extends Model
             "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
             (int)$id_ticket,                  // p_id_ticket
             (int)$id_user,                    // p_changedstatus_by (según tu código PHP previo, $id_user era el 2do param)
-            (int)$id_new_status,              // p_new_status (según tu código PHP previo, $id_new_status era el 3er param)
+            (int)$id_status_ticket,              // p_new_status (según tu código PHP previo, $id_new_status era el 3er param)
             (int)$id_accion_ticket,           // p_new_action
             (int)$id_new_status_lab,          // p_new_status_lab
             (int)$id_new_status_payment,      // p_new_status_payment

@@ -1312,7 +1312,6 @@ function getTecnico21(tecnicoActualParaFiltrar) { // Nuevo parámetro
     xhr.send(datos);
 }
 
-
 function getTecnico2() { // Nuevo parámetro
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);

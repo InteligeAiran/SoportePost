@@ -953,102 +953,56 @@ function downloadImageModal(serial) {
 }
 
 function loadTicketHistory(ticketId) {
-    // 1. Obtener el contenedor del historial y mostrar mensaje de carga (usando jQuery)
     const historyPanel = $("#ticket-history-content");
-    historyPanel.html(
-        '<p class="text-center text-muted">Cargando historial...</p>'
-    ); // Usar .html() de jQuery
+    historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
 
-    // 2. Crear y configurar la solicitud AJAX (usando jQuery.ajax)
     $.ajax({
-        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory1`,
+        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
         type: "POST",
         data: {
-            // jQuery formatea esto automáticamente a 'application/x-www-form-urlencoded'
             action: "GetTicketHistory",
             id_ticket: ticketId,
         },
-        dataType: "json", // Le decimos a jQuery que esperamos una respuesta JSON
+        dataType: "json",
         success: function (response) {
-            // Verificar si la respuesta es exitosa y contiene historial
             if (response.success && response.history && response.history.length > 0) {
-                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">'; // Contenedor del acordeón
+                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
-                // Iterar sobre cada item del historial para construir el HTML
                 response.history.forEach((item, index) => {
                     const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
                     const headingId = `headingHistoryItem_${ticketId}_${index}`;
+                    const isCurrent = index === 0;
 
-                    let statusHeaderClass = "";
-                    let statusHeaderText = "";
+                    // Obtener el registro anterior para la comparación
+                    const prevItem = response.history[index + 1] || {};
 
-                    // **Colores por defecto si no hay coincidencia o si el estado es nulo/vacío**
-                    let headerStyle = "background-color: #212529;"; // Gris oscuro (cambiado de "Gris claro" a #212529 para contrastar)
-                    let textColor = "color: #212529;"; // Texto oscuro 
-                    statusHeaderText = ""; // Sin texto extra por defecto
+                    // --- Lógica para determinar si un campo ha cambiado ---
+                    const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
+                    const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
+                    const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
+                    const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
+                    const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
+                    const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
 
-                    if (item.name_status_ticket) {
-                        const statusLower = item.name_status_ticket.toLowerCase();
-                        if (statusLower.includes("abierto")) {
-                            headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-                            textColor = "color: #ffffff;"; // Texto blanco
-                            statusHeaderText = " (Abierto)";
-                        } else if (
-                            statusLower.includes("cerrado") ||
-                            statusLower.includes("resuelto")
-                        ) {
-                            headerStyle = "background-color: #28a745;"; // Verde
-                            textColor = "color: #ffffff;"; // Texto blanco
-                            statusHeaderText = " (Cerrado)";
-                        } else if (
-                            statusLower.includes("pendiente") ||
-                            statusLower.includes("en proceso")
-                        ) {
-                            headerStyle = "background-color: #ffc107;"; // Amarillo
-                            textColor = "color: #343a40;"; // Texto oscuro
-                            statusHeaderText = " (En Proceso)";
-                        } else if (
-                            statusLower.includes("cancelado") ||
-                            statusLower.includes("rechazado")
-                        ) {
-                            headerStyle = "background-color: #dc3545;"; // Rojo
-                            textColor = "color: #ffffff;"; // Texto blanco
-                            statusHeaderText = " (Cancelado)";
-                        } else if (statusLower.includes("espera")) {
-                            headerStyle = "background-color: #6c757d;"; // Gris
-                            textColor = "color: #ffffff;"; // Texto blanco
-                            statusHeaderText = " (En Espera)";
-                        }
-                    }
-
-                    // Esta lógica sobrescribe el color y texto de la última gestión (index === 0)
-                    if (index === 0) {
-                        // Es la última gestión (la "actual")
-                        headerStyle = "background-color: #ffc107;"; // Amarillo
-                        textColor = "color: #343a40;"; // Texto oscuro
-                        statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`; // Agrega el estatus actual o 'Desconocido' si no existe. 
-                    } else {
-                        // Son gestiones pasadas
-                        headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-                        textColor = "color: #ffffff;"; // Texto blanco
-                        // Se mantiene el statusHeaderText determinado anteriormente, o se deja vacío.
-                    }
+                    // --- Lógica de colores (tu lógica original, ajustada para la "gestión actual") ---
+                    let headerStyle = isCurrent ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isCurrent ? "color: #343a40;" : "color: #ffffff;";
+                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
 
                     historyHtml += `
-                        <div class="card mb-3 custom-history-card"> 
+                        <div class="card mb-3 custom-history-card">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
-                                        data-toggle="collapse" data-target="#${collapseId}"
-                                        aria-expanded="${index === 0 ? "true" : "false"}" 
-                                        aria-controls="${collapseId}"
-                                        style="${textColor}">
+                                            data-toggle="collapse" data-target="#${collapseId}"
+                                            aria-expanded="${isCurrent ? "true" : "false"}" aria-controls="${collapseId}"
+                                            style="${textColor}">
                                         ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
                                     </button>
                                 </h2>
                             </div>
-                            <div id="${collapseId}" class="collapse ${index === 0 ? "show" : ""}"
-                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                            <div id="${collapseId}" class="collapse ${isCurrent ? "show" : ""}"
+                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <table class="table table-sm table-borderless mb-0">
@@ -1059,7 +1013,7 @@ function loadTicketHistory(ticketId) {
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Acción:</th>
-                                                    <td>${item.name_accion_ticket || "N/A"}</td>
+                                                    <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Operador de Gestión:</th>
@@ -1070,29 +1024,26 @@ function loadTicketHistory(ticketId) {
                                                     <td>${item.full_name_coordinador || "N/A"}</td>
                                                 </tr>
                                                 <tr>
+                                                    <th class="text-start">Tecnico Asignado:</th>
+                                                    <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
+                                                </tr>
+                                                <tr>
                                                     <th class="text-start">Estatus Ticket:</th>
-                                                    <td>${item.name_status_ticket || "N/A"}</td>
+                                                    <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${item.name_status_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Laboratorio:</th>
-                                                    <td>${item.name_status_lab || "N/A"}</td>
+                                                    <td class="${statusLabChanged ? "highlighted-change" : ""}">${item.name_status_lab || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
-                                                    <td>${item.name_status_domiciliacion || "N/A"}</td>
+                                                    <td class="${statusDomChanged ? "highlighted-change" : ""}">${item.name_status_domiciliacion || "N/A"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-start" style="word-wrap: break-word; overflow-wrap: break-word;">Estatus Pago:</th>
-                                                    <td>${item.name_status_payment || "N/A"}</td>
+                                                    <th class="text-start">Estatus Pago:</th>
+                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
                                                 </tr>
-                                                
-                                                ${item.name_status_lab === "Pendiente por repuesto" ? `
-                                                    <tr>
-                                                        <th class="text-start" style="word-wrap: break-word; overflow-wrap: break-word; font-size: 80%">Fecha Estimada de la Llegada de repuesto:</th>
-                                                        <td>${item.new_repuesto_date || "N/A"}</td>
-                                                    </tr>
-                                                ` : ''}
-                                                </tbody>
+                                            </tbody>
                                         </table>
                                     </div>
                                 </div>
@@ -1100,41 +1051,26 @@ function loadTicketHistory(ticketId) {
                         </div>`;
                 });
 
-                historyHtml += "</div>"; // Cierre del acordeón principal
-                historyPanel.html(historyHtml); // Insertar el HTML generado (con jQuery)
-
-                // Reiniciar tooltips (si usas Bootstrap 4)
-                if ($.fn && $.fn.tooltip) {
-                    $('[data-toggle="tooltip"]').tooltip("dispose"); 
-                    $('[data-toggle="tooltip"]').tooltip(); 
-                }
+                historyHtml += "</div>";
+                historyPanel.html(historyHtml);
             } else {
-                historyPanel.html(
-                    '<p class="text-center text-muted">No hay historial disponible para este ticket.</p>'
-                );
+                historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            let errorMessage =
-                '<p class="text-center text-danger">Error al cargar el historial.</p>';
+            let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
             if (jqXHR.status === 0) {
-                errorMessage =
-                    '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+                errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
             } else if (jqXHR.status == 404) {
-                errorMessage =
-                    '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
+                errorMessage = '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
             } else if (jqXHR.status == 500) {
-                errorMessage =
-                    '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+                errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
             } else if (textStatus === "parsererror") {
-                errorMessage =
-                    '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+                errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
             } else if (textStatus === "timeout") {
-                errorMessage =
-                    '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+                errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
             } else if (textStatus === "abort") {
-                errorMessage =
-                    '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+                errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
             }
             historyPanel.html(errorMessage);
             console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
