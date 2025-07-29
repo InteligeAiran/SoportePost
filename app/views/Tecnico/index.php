@@ -182,6 +182,14 @@ function mi_navbar()
             /* color: #E67E22; */ /* Un naranja más suave */
             font-weight: bold; /* Opcional: para que resalte más */
         }
+
+        #tabla-ticket tbody tr.table-active {
+            background-color: #CCE5FF !important; /* Un gris claro para el resaltado */
+            color: #333; /* Color de texto para que sea legible sobre el gris */
+            /* Puedes añadir un borde o sombra si lo deseas */
+            /* border: 1px solid #ccc; */
+            /* box-shadow: 0 0 5px rgba(0,0,0,0.2); */
+        }
     </style>
     </head>
 

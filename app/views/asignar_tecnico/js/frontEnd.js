@@ -4,6 +4,8 @@ let currentTicketId = null;
 let modalInstanceCoordinator;
 let confirmReassignModalInstance = null;
 let selectTechnicianModalInstance = null;
+let inputTecnicoActual = null;
+
 
 // --- Función para obtener el técnico actual y la lista de técnicos ---
 // --- DOMContentLoaded para inicializar los modales y eventos ---
@@ -47,6 +49,7 @@ document.addEventListener("DOMContentLoaded", function () {
           // Carga los datos del técnico ANTES de mostrar el modal de selección
           // AWAIT es crucial aquí para esperar que la promesa se resuelva
           await getTechnicianData(currentTicketId);
+          getTecnico21(inputTecnicoActual);
           selectTechnicianModalInstance.show(); // Muestra el modal de selección de técnico
         } catch (error) {
           console.error(
@@ -101,8 +104,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Evento para el botón "Asignar" del modal de selección de técnico
   assignTechnicianBtn.addEventListener("click", async function () {
     const newTechnicianId = technicianSelect.value;
-    const newTechnicianName =
-      technicianSelect.options[technicianSelect.selectedIndex].textContent; // Para el alert
+    const newTechnicianName = technicianSelect.options[technicianSelect.selectedIndex].textContent; // Para el alert
 
     if (newTechnicianId) {
       // Deshabilitar botón para evitar múltiples clics
@@ -269,13 +271,13 @@ function getTicketDataCoordinator() {
                             `;
             }
             // Puedes añadir más condiciones para otros estados si es necesario
-
             dataForDataTable.push([
               data.id_ticket,
               data.rif,
               data.serial_pos,
               data.razonsocial_cliente,
               data.name_accion_ticket,
+              data.full_name_tecnico_n2_actual,
               actionButtonsHtml, // Usa la variable con los botones
             ]);
           });
@@ -310,6 +312,7 @@ function getTicketDataCoordinator() {
                 },
               },
               { title: "Acción Ticket" },
+              { title: "Técnico Asignado", visible: false }, // Oculta esta columna por defecto
               { title: "Acciones", orderable: false },
             ],
             language: {
@@ -383,6 +386,8 @@ function getTicketDataCoordinator() {
             }
 
             // Cambiar el filtro inicial a "Asignado al Coordinador" (Tickets por Asignar)
+            api.column(5).visible(false); // Oculta Técnico Asignado
+            api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
             api // <--- Usar 'api' en lugar de 'dataTableInstance'
                 .column(4)
                 .search("Asignado al Coordinador") // CAMBIO AQUÍ
@@ -390,14 +395,18 @@ function getTicketDataCoordinator() {
             setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
 
             $("#btn-asignados").on("click", function () {
+                api.column(5).visible(true); // Oculta Técnico Asignado
+                api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
                     .column(4)
-                    .search("Asignado al Técnico")
+                    .search("^Asignado al Técnico$", true, false) // <-- Cambio aquí
                     .draw();
                 setActiveButton("btn-asignados");
             });
 
             $("#btn-por-asignar").on("click", function () {
+                api.column(5).visible(false); // Índice 6 para "Técnico Asignado
+                api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
                     .column(4)
                     .search("Asignado al Coordinador")
@@ -406,6 +415,8 @@ function getTicketDataCoordinator() {
             });
 
             $("#btn-recibidos").on("click", function () {
+                api.column(5).visible(false); // Índice 6 para "Técnico Asignado
+                api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
                     .column(4)
                     .search("Recibido por el Coordinador")
@@ -414,6 +425,8 @@ function getTicketDataCoordinator() {
             });
 
             $("#btn-reasignado").on("click", function () {
+                api.column(5).visible(true); // Índice 6 para "Técnico Asignado
+                api.column(6).visible(false); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
                     .column(4)
                     .search("Reasignado al Técnico")
@@ -593,25 +606,38 @@ function getTechnicianData(ticketIdToFetch) {
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const response = JSON.parse(xhr.responseText);
-          const inputNtecnico = document.getElementById(
-            "currentTechnicianDisplay"
-          );
-          const inputFecha = document.getElementById(
-            "currentAssignmentDateDisplay"
-          );
+          const inputNtecnico = document.getElementById("currentTechnicianDisplay");
+          const inputFecha = document.getElementById("currentAssignmentDateDisplay");
           const inputRegion = document.getElementById("currentRegion");
           const technicianSelect = document.getElementById("technicianSelect");
+
           if (response.success) {
-            inputNtecnico.innerHTML =
-              response.technicians.full_tecnicoassig1 || "No Asignado";
-            inputFecha.innerHTML =
-              response.technicians.fecha_asignacion || "N/A";
+            // *** ESTA ES LA LÍNEA CRÍTICA ***
+            // 1. Asigna el valor del técnico actual a la variable global 'inputTecnicoActual'
+            inputTecnicoActual = response.technicians.full_tecnicoassig1 || "No Asignado";
+
+            // 2. Luego, usa inputTecnicoActual (o directamente response.technicians.full_tecnicoassig1) para actualizar el DOM
+            // Ya tienes 'inputNtecnico' que es la referencia a "currentTechnicianDisplay"
+            if (inputNtecnico) { // Reutiliza inputNtecnico que ya está declarado
+              inputNtecnico.innerHTML = inputTecnicoActual; // Usa la variable global que ya tiene el valor
+            }
+
+            // Continuar con las otras actualizaciones del DOM
+            inputFecha.innerHTML = response.technicians.fecha_asignacion || "N/A";
             inputRegion.innerHTML = response.technicians.name_region || "N/A";
+
           } else {
-            inputNtecnico.innerHTML = "No Asignado";
+            // Si la respuesta no es exitosa, asegúrate de que inputTecnicoActual también se maneje
+            inputTecnicoActual = "No Asignado"; // Establece un valor predeterminado
+            if (inputNtecnico) {
+                inputNtecnico.innerHTML = "No Asignado";
+            }
             inputFecha.innerHTML = "N/A";
             inputRegion.innerHTML = "N/A";
-            technicianSelect.value = "";
+            if (technicianSelect) { // Asegúrate de que technicianSelect existe antes de intentar acceder a .value
+                technicianSelect.value = "";
+            }
+            console.error("Error en la respuesta de la API:", response.message);
           }
           resolve(response);
         } catch (error) {
@@ -633,7 +659,6 @@ function getTechnicianData(ticketIdToFetch) {
       reject(new Error("Error de red"));
     };
 
-    // Construye el dataToSend usando el parámetro 'ticketIdToFetch'
     const dataToSend = `action=GetTechniciansAndCurrentTicketTechnician&ticket_id=${ticketIdToFetch}`;
     xhr.send(dataToSend);
   });
@@ -644,7 +669,6 @@ function reassignTicket(ticketId, newTechnicianId) {
     const xhr = new XMLHttpRequest();
     const id_user = document.getElementById("id_user").value; // Asumiendo que tienes el ID del usuario logueado
     const comment = document.getElementById("reassignObservation").value; // Asumiendo que tienes el comentario del usuario
-    console.log("comentario: " + comment);
     const API_URL_REASSIGN = `${ENDPOINT_BASE}${APP_PATH}api/users/ReassignTicket`;
 
     xhr.open("POST", API_URL_REASSIGN);
@@ -1003,6 +1027,13 @@ function loadTicketHistory(ticketId) {
                                                     }</td>
                                                 </tr>
                                                 <tr>
+                                                    <th class="text-start">Tecnico Asignado:</th>
+                                                    <td>${
+                                                      item.full_name_tecnico_n2_history ||
+                                                      "N/A"
+                                                    }</td>
+                                                </tr>
+                                                <tr>
                                                     <th class="text-start">Estatus Ticket:</th>
                                                     <td>${
                                                       item.name_status_ticket ||
@@ -1315,81 +1346,145 @@ function AssignTicket() {
   xhr.send(datos);
 }
 
-function getTecnico2() {
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+// Asegúrate de que esta variable sea global y esté definida antes de llamar a getTecnico2()
+// Por ejemplo:
+// let inputTecnicoActual = null; // Inicialízala a null o a una cadena vacía al principio
+// Y luego, cuando obtengas la información del ticket, la actualizas:
+// inputTecnicoActual = response.technicians.full_tecnicoassig1 || "No Asignado";
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          const select = document.getElementById("idSelectionTec");
-          const select2 = document.getElementById("technicianSelect");
+function getTecnico21(tecnicoActualParaFiltrar) { // Nuevo parámetro
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-          select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
-          select2.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const select2 = document.getElementById("technicianSelect");
 
-          if (
-            Array.isArray(response.tecnicos) &&
-            response.tecnicos.length > 0
-          ) {
-            response.tecnicos.forEach((tecnico) => {
-              const option = document.createElement("option");
-              option.value = tecnico.id_user;
-              option.textContent = tecnico.full_name;
-              select.appendChild(option);
+                    select2.innerHTML = '<option value="">Seleccione</option>';
 
-              const option2 = document.createElement("option");
-              option2.value = tecnico.id_user;
-              option2.textContent = tecnico.full_name;
-              select2.appendChild(option2);
-            });
+                    if (
+                        Array.isArray(response.tecnicos) &&
+                        response.tecnicos.length > 0
+                    ) {
+                        response.tecnicos.forEach((tecnico) => {
+                            if (tecnico.full_name !== tecnicoActualParaFiltrar) {
+                                const option2 = document.createElement("option");
+                                option2.value = tecnico.id_user;
+                                option2.textContent = tecnico.full_name;
+                                select2.appendChild(option2);
+                            } else {
+                            }
+                        });
 
-            select.addEventListener("change", function () {
-              const selectedTecnicoId = this.value;
-              if (selectedTecnicoId) {
-                GetRegionUser(selectedTecnicoId);
-              } else {
-                document.getElementById("InputRegion").value = "";
-              }
-            });
+                        select2.addEventListener("change", function () {
+                            const selectedTecnicoId = this.value;
+                            if (selectedTecnicoId) {
+                                GetRegionUser(selectedTecnicoId);
+                            } else {
+                                document.getElementById("InputRegionUser2").value = "";
+                            }
+                        });
 
-            select2.addEventListener("change", function () {
-              const selectedTecnicoId = this.value;
-              if (selectedTecnicoId) {
-                GetRegionUser(selectedTecnicoId);
-              } else {
-                document.getElementById("InputRegionUser2").value = "";
-              }
-            });
-          } else {
-            const option = document.createElement("option");
-            option.value = "";
-            option.textContent = "No hay Técnicos Disponibles";
-            select.appendChild(option);
-          }
+                    } else {
+                        const option = document.createElement("option");
+                        option.value = "";
+                        option.textContent = "No hay Técnicos Disponibles";
+                        select.appendChild(option);
+                        select2.appendChild(option.cloneNode(true));
+                    }
+                } else {
+                    document.getElementById("rifMensaje").innerHTML +=
+                        "<br>Error al obtener los Técnicos.";
+                    console.error("Error al obtener los técnicos:", response.message);
+                }
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+                document.getElementById("rifMensaje").innerHTML +=
+                    "<br>Error al procesar la respuesta de los Técnicos.";
+            }
         } else {
-          document.getElementById("rifMensaje").innerHTML +=
-            "<br>Error al obtener los Técnicos.";
-          console.error("Error al obtener los técnicos:", response.message);
+            console.error("Error:", xhr.status, xhr.statusText);
+            document.getElementById("rifMensaje").innerHTML +=
+                "<br>Error de conexión con el servidor para los Técnicos.";
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        document.getElementById("rifMensaje").innerHTML +=
-          "<br>Error al procesar la respuesta de los Técnicos.";
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
-      document.getElementById("rifMensaje").innerHTML +=
-        "<br>Error de conexión con el servidor para los Técnicos.";
-    }
-  };
+    };
 
-  const datos = `action=GetTecnico2`;
-  xhr.send(datos);
+    const datos = `action=GetTecnico2`;
+    xhr.send(datos);
 }
+
+
+function getTecnico2() { // Nuevo parámetro
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const select = document.getElementById("idSelectionTec");
+                    const select2 = document.getElementById("technicianSelect");
+
+                    select.innerHTML = '<option value="">Seleccione</option>';
+
+                    if (
+                        Array.isArray(response.tecnicos) &&
+                        response.tecnicos.length > 0
+                    ) {
+                        response.tecnicos.forEach((tecnico) => {
+                            const option = document.createElement("option");
+                            option.value = tecnico.id_user;
+                            option.textContent = tecnico.full_name;
+                            select.appendChild(option);
+
+                            
+                        });
+
+                        // Event Listeners (no cambian)
+                        select.addEventListener("change", function () {
+                            const selectedTecnicoId = this.value;
+                            if (selectedTecnicoId) {
+                                GetRegionUser(selectedTecnicoId);
+                            } else {
+                                document.getElementById("InputRegion").value = "";
+                            }
+                        }); 
+
+                    } else {
+                        const option = document.createElement("option");
+                        option.value = "";
+                        option.textContent = "No hay Técnicos Disponibles";
+                        select.appendChild(option);
+                        select2.appendChild(option.cloneNode(true));
+                    }
+                } else {
+                    document.getElementById("rifMensaje").innerHTML +=
+                        "<br>Error al obtener los Técnicos.";
+                    console.error("Error al obtener los técnicos:", response.message);
+                }
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+                document.getElementById("rifMensaje").innerHTML +=
+                    "<br>Error al procesar la respuesta de los Técnicos.";
+            }
+        } else {
+            console.error("Error:", xhr.status, xhr.statusText);
+            document.getElementById("rifMensaje").innerHTML +=
+                "<br>Error de conexión con el servidor para los Técnicos.";
+        }
+    };
+
+    const datos = `action=GetTecnico2`;
+    xhr.send(datos);
+}
+
+Document.addEventListener("DOMContentLoaded", getTecnico2())
 
 function GetRegionUser(id_user) {
   const xhr = new XMLHttpRequest();
@@ -1437,5 +1532,3 @@ function GetRegionUser(id_user) {
   )}`;
   xhr.send(datos);
 }
-
-document.addEventListener("DOMContentLoaded", getTecnico2);

@@ -82,6 +82,7 @@ function mi_navbar() {}
                                             <th style="width: 12%;">Serial Pos</th>
                                             <th style="width: 12%;">Raz&oacuten Social</th>
                                             <th style="width: 12%;">Accion del Ticket</th>
+                                            <th style="width: 12%;">Técnico Asignado</th>
                                             <th>Acciones</th>
                                         </tr>
                                     </thead>

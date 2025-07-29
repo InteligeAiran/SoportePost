@@ -276,11 +276,10 @@ function getTicketData() {
 
           return [
             ticket.id_ticket,
-            ticket.rif,
             ticket.nro_ticket,
+            ticket.serial_pos, // Usar el HTML del span aquí
+            ticket.rif,
             truncatedRazonSocial, // Usar el HTML truncado aquí
-            ticket.create_ticket,
-            ticket.full_name_tecnico,
             ticket.name_accion_ticket,
             finalActionColumnHTML,
           ];
@@ -297,12 +296,15 @@ function getTicketData() {
           autoWidth: false,
           data: dataForDataTable,
           columns: [
-            { title: "ID ticket" },
-            { title: "Rif" },
+            { title: "N°", orderable: false, searchable: false,
+              render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+              }
+            },
             { title: "Nro Ticket" },
+            {title: "Serial" }, // Esta columna ahora contendrá el HTML del span}
+            { title: "Rif" },
             { title: "Razón Social" }, // Esta columna ahora contendrá el HTML del span
-            { title: "Fecha Creación" },
-            { title: "Técnico Gestor" },
             { title: "Acción Ticket" },
             { title: "Acciones", orderable: false },
           ],
@@ -367,26 +369,26 @@ function getTicketData() {
 
             // Inicialmente, establecer "Asignados" como activo (esto es correcto)
             setActiveButton("btn-asignados");
-            dataTableInstance.column(6).search("Asignado al Técnico").draw();
+            dataTableInstance.column(5).search("Asignado al Técnico").draw();
 
             // Tus event listeners de clic están correctos
             $("#btn-asignados").on("click", function () {
-                dataTableInstance.column(6).search("Asignado al Técnico").draw();
+                dataTableInstance.column(5).search("Asignado al Técnico").draw();
                 setActiveButton("btn-asignados");
             });
 
             $("#btn-por-asignar").on("click", function () {
-                dataTableInstance.column(6).search("Enviado a taller").draw();
+                dataTableInstance.column(5).search("Enviado a taller").draw();
                 setActiveButton("btn-por-asignar");
             });
 
             $("#btn-recibidos").on("click", function () {
-                dataTableInstance.column(6).search("Recibido por el Técnico").draw();
+                dataTableInstance.column(5).search("Recibido por el Técnico").draw();
                 setActiveButton("btn-recibidos");
             });
 
             $("#btn-devuelto").on("click", function () {
-                dataTableInstance.column(6).search("Pos devuelto a cliente").draw();
+                dataTableInstance.column(5).search("Pos devuelto a cliente").draw();
                 setActiveButton("btn-devuelto");
             });
             // ************* FIN CAMBIOS PARA LOS BOTONES *************
@@ -699,11 +701,15 @@ function getTicketData() {
           autoWidth: false,
           data: [], // Sin datos
           columns: [
-            { title: "ID ticket" },
-            { title: "Rif" },
+            { title: "N°", orderable: false, searchable: false,
+              render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+              }
+            },
             { title: "Nro Ticket" },
+            { title: "Serial" }, // Esta columna ahora contendrá el HTML del span
+            { title: "Rif" },
             { title: "Razón Social" },
-            { title: "Fecha Creación" },
             { title: "Técnico Asignado" },
             { title: "Acción Ticket" },
             { title: "Acciones", orderable: false },
@@ -792,13 +798,16 @@ function getTicketData() {
         ],
         autoWidth: false,
         data: [],
-        columns: [
-          { title: "ID ticket" },
-          { title: "Rif" },
+         columns: [
+          { title: "N°", orderable: false, searchable: false,
+            render: function (data, type, row, meta) {
+              return meta.row + meta.settings._iDisplayStart + 1;
+            }
+          },
           { title: "Nro Ticket" },
+          { title: "Serial" }, // Esta columna ahora contendrá el HTML del span
+          { title: "Rif" },
           { title: "Razón Social" },
-          { title: "Fecha Creación" },
-          { title: "Técnico Asignado" },
           { title: "Acción Ticket" },
           { title: "Acciones", orderable: false },
         ],
