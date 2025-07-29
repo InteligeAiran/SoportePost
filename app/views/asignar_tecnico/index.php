@@ -42,6 +42,14 @@ function mi_navbar() {}
             /* border: 1px solid #ccc; */
             /* box-shadow: 0 0 5px rgba(0,0,0,0.2); */
         }
+
+        .highlighted-change {
+  font-weight: bold;
+  color: #000; /* Color de texto más oscuro para mayor contraste */
+  background-color: #ffeb3b; /* Amarillo claro */
+  padding: 2px 5px;
+  border-radius: 3px;
+}
     </style>
 </head>
 
@@ -112,7 +120,6 @@ function mi_navbar() {}
                 <div id="ModalSelecttecnico" class="modal-content">
                     <div class="modal-header bg-gradient-primary">
                         <h1 class="modal-title fs-5" id="staticBackdropLabel" style="color: white;">Seleccione un Técnico</h1>
-                        <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <select id="idSelectionTec" class="form-select" onchange="GetRegionUser()" aria-label="Default select example"></select>

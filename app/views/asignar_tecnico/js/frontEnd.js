@@ -293,7 +293,8 @@ function getTicketDataCoordinator() {
               [5, 10],
               ["5", "10"],
             ],
-            autoWidth: false,
+            autoWidth: true,
+            autoheight: true,
             columns: [
               { title: "N°", orderable: false, searchable: false,
                 render: function (data, type, row, meta) {
@@ -385,7 +386,7 @@ function getTicketDataCoordinator() {
                     .addClass("btn-primary");
             }
 
-            // Cambiar el filtro inicial a "Asignado al Coordinador" (Tickets por Asignar)
+            api.columns().search('').draw(false);
             api.column(5).visible(false); // Oculta Técnico Asignado
             api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
             api // <--- Usar 'api' en lugar de 'dataTableInstance'
@@ -395,6 +396,7 @@ function getTicketDataCoordinator() {
             setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
 
             $("#btn-asignados").on("click", function () {
+                api.columns().search('').draw(false);
                 api.column(5).visible(true); // Oculta Técnico Asignado
                 api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
@@ -405,6 +407,7 @@ function getTicketDataCoordinator() {
             });
 
             $("#btn-por-asignar").on("click", function () {
+                api.columns().search('').draw(false);
                 api.column(5).visible(false); // Índice 6 para "Técnico Asignado
                 api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
@@ -415,6 +418,7 @@ function getTicketDataCoordinator() {
             });
 
             $("#btn-recibidos").on("click", function () {
+                api.columns().search('').draw(false);
                 api.column(5).visible(false); // Índice 6 para "Técnico Asignado
                 api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
@@ -425,6 +429,7 @@ function getTicketDataCoordinator() {
             });
 
             $("#btn-reasignado").on("click", function () {
+                api.columns().search('').draw(false);
                 api.column(5).visible(true); // Índice 6 para "Técnico Asignado
                 api.column(6).visible(false); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
@@ -898,168 +903,95 @@ function downloadImageModal(serial) {
 // Opcional: Función para cargar historial si tienes una API separada para ello
 
 function loadTicketHistory(ticketId) {
-  // 1. Obtener el contenedor del historial y mostrar mensaje de carga (usando jQuery)
-  const historyPanel = $("#ticket-history-content");
-  historyPanel.html(
-    '<p class="text-center text-muted">Cargando historial...</p>'
-  ); // Usar .html() de jQuery
+    const historyPanel = $("#ticket-history-content");
+    historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
 
-  // 2. Crear y configurar la solicitud AJAX (usando jQuery.ajax)
-  $.ajax({
-    url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
-    type: "POST",
-    data: {
-      // jQuery formatea esto automáticamente a 'application/x-www-form-urlencoded'
-      action: "GetTicketHistory",
-      id_ticket: ticketId,
-    },
-    dataType: "json", // Le decimos a jQuery que esperamos una respuesta JSON
-    success: function (response) {
-      // Verificar si la respuesta es exitosa y contiene historial
-      if (response.success && response.history && response.history.length > 0) {
-        let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">'; // Contenedor del acordeón
+    $.ajax({
+        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
+        type: "POST",
+        data: {
+            action: "GetTicketHistory",
+            id_ticket: ticketId,
+        },
+        dataType: "json",
+        success: function (response) {
+            if (response.success && response.history && response.history.length > 0) {
+                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
-        // Iterar sobre cada item del historial para construir el HTML
-        response.history.forEach((item, index) => {
-          const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
-          const headingId = `headingHistoryItem_${ticketId}_${index}`;
+                response.history.forEach((item, index) => {
+                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
+                    const isCurrent = index === 0;
 
-          let headerStyle = "";
-          let textColor = "";
-          let statusHeaderText = ""; // Inicializa para asegurar que siempre haya un valor
+                    // Obtener el registro anterior para la comparación
+                    const prevItem = response.history[index + 1] || {};
 
-          // --- Lógica de colores basada en el 'name_status_ticket' (prioridad baja/media) ---
-          if (item.name_status_ticket) {
-            const statusLower = item.name_status_ticket.toLowerCase();
-            if (statusLower.includes("abierto")) {
-              headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (Abierto)";
-            } else if (
-              statusLower.includes("cerrado") ||
-              statusLower.includes("resuelto")
-            ) {
-              headerStyle = "background-color: #28a745;"; // Verde
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (Cerrado)";
-            } else if (
-              statusLower.includes("pendiente") ||
-              statusLower.includes("en proceso")
-            ) {
-              headerStyle = "background-color: #ffc107;"; // Amarillo (Nota: este es el mismo amarillo que quieres para "Gestión Actual")
-              textColor = "color: #343a40;"; // Texto oscuro
-              statusHeaderText = " (En Proceso)";
-            } else if (
-              statusLower.includes("cancelado") ||
-              statusLower.includes("rechazado")
-            ) {
-              headerStyle = "background-color: #dc3545;"; // Rojo
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (Cancelado)";
-            } else if (statusLower.includes("espera")) {
-              headerStyle = "background-color: #6c757d;"; // Gris
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (En Espera)";
-            }
-          }
+                    // --- Lógica para determinar si un campo ha cambiado ---
+                    const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
+                    const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
+                    const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
+                    const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
+                    const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
+                    const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
 
-          if (index === 0) {
-            // Es la última gestión (la "actual")
-            headerStyle = "background-color: #ffc107;"; // Amarillo
-            textColor = "color: #343a40;"; // Texto oscuro
-            statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`; // Agrega el estatus actual o 'Desconocido' si no existe. // Sobrescribe el texto del estado si ya estaba.
-          } else {
-            // Son gestiones pasadas
-            headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-            textColor = "color: #ffffff;"; // Texto blanco
-            // No sobrescribimos statusHeaderText aquí a menos que quieras algo como "(Pasada)"
-          }
+                    // --- Lógica de colores (tu lógica original, ajustada para la "gestión actual") ---
+                    let headerStyle = isCurrent ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isCurrent ? "color: #343a40;" : "color: #ffffff;";
+                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
 
-          historyHtml += `
-                        <div class="card mb-3 custom-history-card"> <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
+                    historyHtml += `
+                        <div class="card mb-3 custom-history-card">
+                            <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
                                             data-toggle="collapse" data-target="#${collapseId}"
-                                            aria-expanded="${
-                                              index === 0 ? "true" : "false"
-                                            }" aria-controls="${collapseId}"
+                                            aria-expanded="${isCurrent ? "true" : "false"}" aria-controls="${collapseId}"
                                             style="${textColor}">
-                                        ${item.fecha_de_cambio} - ${
-            item.name_accion_ticket
-          }${statusHeaderText}
+                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
                                     </button>
                                 </h2>
                             </div>
-                            <div id="${collapseId}" class="collapse ${
-            index === 0 ? "show" : ""
-          }"
-                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                            <div id="${collapseId}" class="collapse ${isCurrent ? "show" : ""}"
+                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <table class="table table-sm table-borderless mb-0">
                                             <tbody>
                                                 <tr>
                                                     <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
-                                                    <td>${
-                                                      item.fecha_de_cambio ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td>${item.fecha_de_cambio || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Acción:</th>
-                                                    <td>${
-                                                      item.name_accion_ticket ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Operador de Gestión:</th>
-                                                    <td>${
-                                                      item.full_name_tecnico_gestion ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td>${item.full_name_tecnico_gestion || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Coordinador:</th>
-                                                    <td>${
-                                                      item.full_name_coordinador ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td>${item.full_name_coordinador || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Tecnico Asignado:</th>
-                                                    <td>${
-                                                      item.full_name_tecnico_n2_history ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Ticket:</th>
-                                                    <td>${
-                                                      item.name_status_ticket ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${item.name_status_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Laboratorio:</th>
-                                                    <td>${
-                                                      item.name_status_lab ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${statusLabChanged ? "highlighted-change" : ""}">${item.name_status_lab || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
-                                                    <td>${
-                                                      item.name_status_domiciliacion ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${statusDomChanged ? "highlighted-change" : ""}">${item.name_status_domiciliacion || "N/A"}</td>
                                                 </tr>
-                                                 <tr>
+                                                <tr>
                                                     <th class="text-start">Estatus Pago:</th>
-                                                    <td>${
-                                                      item.name_status_payment ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -1067,60 +999,33 @@ function loadTicketHistory(ticketId) {
                                 </div>
                             </div>
                         </div>`;
-        });
+                });
 
-        historyHtml += "</div>"; // Cierre del acordeón principal
-        historyPanel.html(historyHtml); // Insertar el HTML generado (con jQuery)
-
-        // === IMPORTANTE: RE-INICIALIZAR COMPONENTES DE BOOTSTRAP SI ES NECESARIO ===
-        // Para Bootstrap 4, los atributos data-toggle/data-parent usualmente se "enganchan"
-        // automáticamente si jQuery y Bootstrap JS están cargados.
-        // No necesitas una inicialización explícita como en Bootstrap 5.
-        // El problema suele ser que los atributos data-toggle/data-parent están mal,
-        // o jQuery/Bootstrap JS no están cargados.
-
-        // Reiniciar tooltips (si usas Bootstrap 4, la sintaxis es diferente para dispose/init)
-        if ($.fn && $.fn.tooltip) {
-          // Para Bootstrap 4, los tooltips se manejan así:
-          $('[data-toggle="tooltip"]').tooltip("dispose"); // Asegúrate de que el atributo es data-toggle
-          $('[data-toggle="tooltip"]').tooltip(); // Y se inicializan con data-toggle
-        }
-
-        // Aquí no se necesita `new bootstrap.Collapse` porque eso es para JS nativo de Bootstrap 5.
-        // Con jQuery y Bootstrap 4, la magia ocurre a través de los atributos data-toggle y data-parent
-        // una vez que el HTML está en el DOM y las librerías cargadas.
-      } else {
-        historyPanel.html(
-          '<p class="text-center text-muted">No hay historial disponible para este ticket.</p>'
-        );
-      }
-    },
-    error: function (jqXHR, textStatus, errorThrown) {
-      let errorMessage =
-        '<p class="text-center text-danger">Error al cargar el historial.</p>';
-      if (jqXHR.status === 0) {
-        errorMessage =
-          '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
-      } else if (jqXHR.status == 404) {
-        errorMessage =
-          '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
-      } else if (jqXHR.status == 500) {
-        errorMessage =
-          '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
-      } else if (textStatus === "parsererror") {
-        errorMessage =
-          '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
-      } else if (textStatus === "timeout") {
-        errorMessage =
-          '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
-      } else if (textStatus === "abort") {
-        errorMessage =
-          '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
-      }
-      historyPanel.html(errorMessage);
-      console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-    },
-  });
+                historyHtml += "</div>";
+                historyPanel.html(historyHtml);
+            } else {
+                historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
+            if (jqXHR.status === 0) {
+                errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+            } else if (jqXHR.status == 404) {
+                errorMessage = '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
+            } else if (jqXHR.status == 500) {
+                errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+            } else if (textStatus === "parsererror") {
+                errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+            } else if (textStatus === "timeout") {
+                errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+            } else if (textStatus === "abort") {
+                errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+            }
+            historyPanel.html(errorMessage);
+            console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+        },
+    });
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -1128,21 +1033,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Obtén la referencia al botón cerrar FUERA de la función getTicketData y del bucle
   const cerrar = document.getElementById("close-button");
-  const icon = document.getElementById("Close-icon");
   const assignButton = document.getElementById("assingment-button"); // Obtén el botón "Asignar"
   const inputRegion = document.getElementById("InputRegion"); // Obtén el input de región
 
   // Agrega el event listener al botón cerrar
   cerrar.addEventListener("click", function () {
-    if (modalInstance) {
-      modalInstance.hide();
-      currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
-      inputRegion.value = ""; // Limpia el campo de región al cerrar el modal
-    }
-    document.getElementById("idSelectionTec").value = "";
-  });
-
-  icon.addEventListener("click", function () {
     if (modalInstance) {
       modalInstance.hide();
       currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
@@ -1484,7 +1379,7 @@ function getTecnico2() { // Nuevo parámetro
     xhr.send(datos);
 }
 
-Document.addEventListener("DOMContentLoaded", getTecnico2())
+document.addEventListener("DOMContentLoaded", getTecnico2);
 
 function GetRegionUser(id_user) {
   const xhr = new XMLHttpRequest();
