@@ -4,6 +4,8 @@ let currentTicketId = null;
 let modalInstanceCoordinator;
 let confirmReassignModalInstance = null;
 let selectTechnicianModalInstance = null;
+let inputTecnicoActual = null;
+
 
 // --- Función para obtener el técnico actual y la lista de técnicos ---
 // --- DOMContentLoaded para inicializar los modales y eventos ---
@@ -47,6 +49,7 @@ document.addEventListener("DOMContentLoaded", function () {
           // Carga los datos del técnico ANTES de mostrar el modal de selección
           // AWAIT es crucial aquí para esperar que la promesa se resuelva
           await getTechnicianData(currentTicketId);
+          getTecnico21(inputTecnicoActual);
           selectTechnicianModalInstance.show(); // Muestra el modal de selección de técnico
         } catch (error) {
           console.error(
@@ -84,6 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Referencias a elementos dentro de los modales
   const ticketNumberSpan = document.getElementById("ticketNumberSpan");
+  const ticketserialPos = document.getElementById("ticketserialPos");
   const currentTechnicianName = document.getElementById(
     "currentTechnicianName"
   );
@@ -100,8 +104,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Evento para el botón "Asignar" del modal de selección de técnico
   assignTechnicianBtn.addEventListener("click", async function () {
     const newTechnicianId = technicianSelect.value;
-    const newTechnicianName =
-      technicianSelect.options[technicianSelect.selectedIndex].textContent; // Para el alert
+    const newTechnicianName = technicianSelect.options[technicianSelect.selectedIndex].textContent; // Para el alert
 
     if (newTechnicianId) {
       // Deshabilitar botón para evitar múltiples clics
@@ -169,13 +172,7 @@ function getTicketDataCoordinator() {
         if (response.success) {
           const TicketData = response.ticket;
           const modalElement = document.getElementById("staticBackdrop");
-
           if (modalElement) {
-            // Asegúrate de que modalInstanceCoordinator es accesible globalmente o en este ámbito
-            // Si ya lo declaraste con 'let modalInstanceCoordinator = null;' al inicio del script,
-            // entonces solo necesitas asignarle la instancia aquí.
-            // Si no, declárala aquí:
-            // let modalInstanceCoordinator; // <-- Si no está declarada fuera de esta función
             modalInstanceCoordinator = new bootstrap.Modal(modalElement, {
               backdrop: "static", // Para que no se cierre al hacer clic fuera
               keyboard: false, // Para que no se cierre con la tecla ESC
@@ -224,7 +221,8 @@ function getTicketDataCoordinator() {
                                     data-bs-placement="top"
                                     title="Marcar como Recibido por Coordinador"
                                     data-ticket-id="${data.id_ticket}"
-                                    data-nro-ticket="${data.nro_ticket}">
+                                    data-nro-ticket="${data.nro_ticket}"
+                                    data-serial-pos="${data.serial_pos}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16"><path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/></svg>                                </button>
                                 <button id="myUniqueAssingmentButton"
                                     class="btn btn-sm btn-assign-tech"
@@ -246,7 +244,7 @@ function getTicketDataCoordinator() {
                                     data-bs-placement="top"
                                     title="Ticket ya Recibido por Coordinador"
                                     data-ticket-id="${data.id_ticket}"
-                                    data-nro-ticket="${data.nro_ticket}">
+                                    data-nro-ticket="${data.nro_ticket}"
                                     Recibido
                                 </button>
                                 <button id="myUniqueAssingmentButton"
@@ -266,18 +264,20 @@ function getTicketDataCoordinator() {
                                     data-bs-placement="top"
                                     title="Reasignar Técnico"
                                     data-ticket-id="${data.id_ticket}"
-                                    data-nro-ticket="${data.nro_ticket}">
+                                    data-nro-ticket="${data.nro_ticket}"
+                                    data-serial-pos="${data.serial_pos}">
                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16"><path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/></svg>
                                 </button>
                             `;
             }
             // Puedes añadir más condiciones para otros estados si es necesario
-
             dataForDataTable.push([
               data.id_ticket,
               data.rif,
+              data.serial_pos,
               data.razonsocial_cliente,
               data.name_accion_ticket,
+              data.full_name_tecnico_n2_actual,
               actionButtonsHtml, // Usa la variable con los botones
             ]);
           });
@@ -293,10 +293,16 @@ function getTicketDataCoordinator() {
               [5, 10],
               ["5", "10"],
             ],
-            autoWidth: false,
+            autoWidth: true,
+            autoheight: true,
             columns: [
-              { title: "ID ticket" },
+              { title: "N°", orderable: false, searchable: false,
+                render: function (data, type, row, meta) {
+                  return meta.row + meta.settings._iDisplayStart + 1;
+                }
+              },
               { title: "Rif" },
+              { title: "Serial POS" },
               {
                 title: "Raz&oacuten Social",
                 render: function (data, type, row) {
@@ -307,23 +313,24 @@ function getTicketDataCoordinator() {
                 },
               },
               { title: "Acción Ticket" },
+              { title: "Técnico Asignado", visible: false }, // Oculta esta columna por defecto
               { title: "Acciones", orderable: false },
             ],
             language: {
-              lengthMenu: "Mostrar _MENU_",
-              emptyTable:"No hay Registros disponibles en la tabla",
-              zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
-              infoEmpty: "No hay Registros disponibles",
-              infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
-              search: "Buscar:",
-              loadingRecords: "Buscando...",
-              processing: "Procesando...",
-              paginate: {
-                first: "Primero",
-                last: "Último",
-                next: "Siguiente",
-                previous: "Anterior",
+              lengthMenu: "Mostrar _MENU_ Registros",
+            emptyTable: "No hay datos disponibles en la tabla",
+            zeroRecords: "No se encontraron resultados para la búsqueda",
+            info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+            infoEmpty: "No hay datos disponibles",
+            infoFiltered: " de _MAX_ Disponibles",
+            search: "Buscar:",
+            loadingRecords: "Cargando...",
+            processing: "Procesando...",
+            paginate: {
+              first: "Primero",
+              last: "Último",
+              next: "Siguiente",
+              previous: "Anterior",
               },
             },
             dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
@@ -379,40 +386,54 @@ function getTicketDataCoordinator() {
                     .addClass("btn-primary");
             }
 
-            // Cambiar el filtro inicial a "Asignado al Coordinador" (Tickets por Asignar)
+            api.columns().search('').draw(false);
+            api.column(5).visible(false); // Oculta Técnico Asignado
+            api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
             api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                .column(3)
+                .column(4)
                 .search("Asignado al Coordinador") // CAMBIO AQUÍ
                 .draw();
             setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
 
             $("#btn-asignados").on("click", function () {
+                api.columns().search('').draw(false);
+                api.column(5).visible(true); // Oculta Técnico Asignado
+                api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(3)
-                    .search("Asignado al Técnico")
+                    .column(4)
+                    .search("^Asignado al Técnico$", true, false) // <-- Cambio aquí
                     .draw();
                 setActiveButton("btn-asignados");
             });
 
             $("#btn-por-asignar").on("click", function () {
+                api.columns().search('').draw(false);
+                api.column(5).visible(false); // Índice 6 para "Técnico Asignado
+                api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(3)
+                    .column(4)
                     .search("Asignado al Coordinador")
                     .draw();
                 setActiveButton("btn-por-asignar");
             });
 
             $("#btn-recibidos").on("click", function () {
+                api.columns().search('').draw(false);
+                api.column(5).visible(false); // Índice 6 para "Técnico Asignado
+                api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(3)
+                    .column(4)
                     .search("Recibido por el Coordinador")
                     .draw();
                 setActiveButton("btn-recibidos");
             });
 
             $("#btn-reasignado").on("click", function () {
+                api.columns().search('').draw(false);
+                api.column(5).visible(true); // Índice 6 para "Técnico Asignado
+                api.column(6).visible(false); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(3)
+                    .column(4)
                     .search("Reasignado al Técnico")
                     .draw();
                 setActiveButton("btn-reasignado");
@@ -423,71 +444,77 @@ function getTicketDataCoordinator() {
           $("#tabla-ticket").resizableColumns();
 
           $("#tabla-ticket tbody")
-            .off("click", "tr")
-            .on("click", "tr", function () {
+          .off("click", "tr") // Desvincula handlers anteriores para evitar duplicados
+          .on("click", "tr", function () {
               const tr = $(this);
               const rowData = dataTableInstance.row(tr).data(); // Aquí 'dataTableInstance' sí está disponible
 
               if (!rowData) {
-                return;
+                  return;
               }
 
-              $("#tabla-ticket tbody tr").removeClass("table-active");
-              tr.addClass("table-active");
+              // **Estas dos líneas son las que hacen el resaltado**
+              $("#tabla-ticket tbody tr").removeClass("table-active"); // Quita la clase de todas las filas
+              tr.addClass("table-active"); // Añade la clase a la fila clicada
 
-              const ticketId = rowData[0];
+              const ticketId = rowData[0]; // Asume que el ID del ticket está en la primera columna
 
               const selectedTicketDetails = TicketData.find(
-                (t) => t.id_ticket == ticketId
+                  (t) => t.id_ticket == ticketId
               );
 
               if (selectedTicketDetails) {
-                detailsPanel.innerHTML = formatTicketDetailsPanel(
-                  selectedTicketDetails
-                );
-                loadTicketHistory(ticketId);
-                if (selectedTicketDetails.serial_pos) {
-                  downloadImageModal(selectedTicketDetails.serial_pos);
-                } else {
-                  const imgElement = document.getElementById(
-                    "device-ticket-image"
+                  // ... (resto de tu lógica para mostrar el panel de detalles)
+                  detailsPanel.innerHTML = formatTicketDetailsPanel(
+                      selectedTicketDetails
                   );
-                  if (imgElement) {
-                    imgElement.src =
-                      '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png';
-                    imgElement.alt = "Serial no disponible";
+                  loadTicketHistory(ticketId);
+                  if (selectedTicketDetails.serial_pos) {
+                      downloadImageModal(selectedTicketDetails.serial_pos);
+                  } else {
+                      const imgElement = document.getElementById(
+                          "device-ticket-image"
+                      );
+                      if (imgElement) {
+                          // Corrección de la ruta de la imagen estática
+                          imgElement.src = '/public/img/consulta_rif/POS/mantainment.png'; // Ruta relativa o absoluta accesible desde el navegador
+                          imgElement.alt = "Serial no disponible";
+                      }
                   }
-                }
               } else {
-                detailsPanel.innerHTML =
-                  "<p>No se encontraron detalles para este ticket.</p>";
+                  detailsPanel.innerHTML =
+                      "<p>No se encontraron detalles para este ticket.</p>";
               }
-            });
+          });
 
           $("#tabla-ticket tbody")
-            .off("click", ".truncated-cell")
-            .on("click", ".truncated-cell", function (e) {
+          .off("click", ".truncated-cell, .expanded-cell") // <--- Importante: Ahora escucha clics en AMBAS clases
+          .on("click", ".truncated-cell, .expanded-cell", function (e) {
               e.stopPropagation();
               const $cellSpan = $(this);
               const fullText = $cellSpan.data("full-text");
+              const displayLength = 25; // Define displayLength aquí para que esté disponible en ambos casos
 
               if ($cellSpan.hasClass("truncated-cell")) {
-                $cellSpan
-                  .removeClass("truncated-cell")
-                  .addClass("expanded-cell");
-                $cellSpan.text(fullText);
-              } else {
-                $cellSpan
-                  .removeClass("expanded-cell")
-                  .addClass("truncated-cell");
-                const displayLength = 25;
-                if (fullText.length > displayLength) {
-                  $cellSpan.text(fullText.substring(0, displayLength) + "...");
-                } else {
+                  // Si está truncado, expandirlo
+                  $cellSpan
+                      .removeClass("truncated-cell")
+                      .addClass("expanded-cell");
                   $cellSpan.text(fullText);
-                }
+              } else if ($cellSpan.hasClass("expanded-cell")) { // <--- Añadimos esta condición para ser explícitos
+                  // Si está expandido, truncarlo (si es necesario)
+                  $cellSpan
+                      .removeClass("expanded-cell")
+                      .addClass("truncated-cell");
+                  
+                  if (fullText.length > displayLength) {
+                      $cellSpan.text(fullText.substring(0, displayLength) + "...");
+                  } else {
+                      $cellSpan.text(fullText); // Si no necesita truncarse, mostrar el texto completo
+                  }
               }
-            });
+              // Si por alguna razón la celda no tiene ninguna de las dos clases, no hará nada.
+          });
 
           // Evento click para el botón "POS Recibido"
           $("#tabla-ticket tbody")
@@ -496,7 +523,8 @@ function getTicketDataCoordinator() {
               e.stopPropagation();
               const ticketId = $(this).data("ticket-id");
               const nroTicket = $(this).data("nro-ticket");
-              markTicketAsReceived(ticketId, nroTicket);
+              const serialPos = $(this).data("serial-pos");
+              markTicketAsReceived(ticketId, nroTicket, serialPos);
             });
 
           // Evento click existente para el botón de Asignar Técnico
@@ -523,7 +551,9 @@ function getTicketDataCoordinator() {
               e.stopPropagation();
               currentTicketId = $(this).data("ticket-id");
               currentTicketNro = $(this).data("nro-ticket"); // Asegúrate de obtener el nro_ticket
+              currentserialPos = $(this).data("serial-pos");
               ticketNumberSpan.textContent = currentTicketNro; // Muestra el número en el modal de confirmación
+              ticketserialPos.textContent = currentserialPos; // Muestra el serial en el modal de confirmación
               confirmReassignModalInstance.show(); // Muestra el modal de confirmación
             });
         } else {
@@ -581,25 +611,38 @@ function getTechnicianData(ticketIdToFetch) {
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const response = JSON.parse(xhr.responseText);
-          const inputNtecnico = document.getElementById(
-            "currentTechnicianDisplay"
-          );
-          const inputFecha = document.getElementById(
-            "currentAssignmentDateDisplay"
-          );
+          const inputNtecnico = document.getElementById("currentTechnicianDisplay");
+          const inputFecha = document.getElementById("currentAssignmentDateDisplay");
           const inputRegion = document.getElementById("currentRegion");
           const technicianSelect = document.getElementById("technicianSelect");
+
           if (response.success) {
-            inputNtecnico.innerHTML =
-              response.technicians.full_tecnicoassig1 || "No Asignado";
-            inputFecha.innerHTML =
-              response.technicians.fecha_asignacion || "N/A";
+            // *** ESTA ES LA LÍNEA CRÍTICA ***
+            // 1. Asigna el valor del técnico actual a la variable global 'inputTecnicoActual'
+            inputTecnicoActual = response.technicians.full_tecnicoassig1 || "No Asignado";
+
+            // 2. Luego, usa inputTecnicoActual (o directamente response.technicians.full_tecnicoassig1) para actualizar el DOM
+            // Ya tienes 'inputNtecnico' que es la referencia a "currentTechnicianDisplay"
+            if (inputNtecnico) { // Reutiliza inputNtecnico que ya está declarado
+              inputNtecnico.innerHTML = inputTecnicoActual; // Usa la variable global que ya tiene el valor
+            }
+
+            // Continuar con las otras actualizaciones del DOM
+            inputFecha.innerHTML = response.technicians.fecha_asignacion || "N/A";
             inputRegion.innerHTML = response.technicians.name_region || "N/A";
+
           } else {
-            inputNtecnico.innerHTML = "No Asignado";
+            // Si la respuesta no es exitosa, asegúrate de que inputTecnicoActual también se maneje
+            inputTecnicoActual = "No Asignado"; // Establece un valor predeterminado
+            if (inputNtecnico) {
+                inputNtecnico.innerHTML = "No Asignado";
+            }
             inputFecha.innerHTML = "N/A";
             inputRegion.innerHTML = "N/A";
-            technicianSelect.value = "";
+            if (technicianSelect) { // Asegúrate de que technicianSelect existe antes de intentar acceder a .value
+                technicianSelect.value = "";
+            }
+            console.error("Error en la respuesta de la API:", response.message);
           }
           resolve(response);
         } catch (error) {
@@ -621,7 +664,6 @@ function getTechnicianData(ticketIdToFetch) {
       reject(new Error("Error de red"));
     };
 
-    // Construye el dataToSend usando el parámetro 'ticketIdToFetch'
     const dataToSend = `action=GetTechniciansAndCurrentTicketTechnician&ticket_id=${ticketIdToFetch}`;
     xhr.send(dataToSend);
   });
@@ -632,7 +674,6 @@ function reassignTicket(ticketId, newTechnicianId) {
     const xhr = new XMLHttpRequest();
     const id_user = document.getElementById("id_user").value; // Asumiendo que tienes el ID del usuario logueado
     const comment = document.getElementById("reassignObservation").value; // Asumiendo que tienes el comentario del usuario
-    console.log("comentario: " + comment);
     const API_URL_REASSIGN = `${ENDPOINT_BASE}${APP_PATH}api/users/ReassignTicket`;
 
     xhr.open("POST", API_URL_REASSIGN);
@@ -667,13 +708,23 @@ function reassignTicket(ticketId, newTechnicianId) {
   });
 }
 
-// *** NUEVA FUNCIÓN PARA MARCAR TICKET COMO RECIBIDO ***
 function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
+  // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
 
-  // La imageUrl inicial puede ser una imagen de "cargando" o un placeholder.
   const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
   const initialImageAlt = "Cargando imagen del dispositivo...";
+
+  // Determina el mensaje de garantía
+  let garantiaMessage = '';
+  if (d.garantia_instalacion !== null && d.garantia_instalacion !== '' && d.garantia_instalacion !== false && d.garantia_instalacion !== 'f') {
+    garantiaMessage = 'Aplica Garantía de Instalación';
+  } else if (d.garantia_reingreso !== null && d.garantia_reingreso !== '' && d.garantia_reingreso !== false && d.garantia_reingreso !== 'f') {
+    garantiaMessage = 'Aplica Garantía por Reingreso';
+  } else {
+    garantiaMessage = 'No aplica Garantía'; // O simplemente dejarlo vacío si no hay garantía
+  }
+
 
   return `
         <div class="container-fluid">
@@ -688,47 +739,58 @@ function formatTicketDetailsPanel(d) {
                     <hr class="mt-2 mb-3">
                     <div class="row">
                         <div class="col-sm-6 mb-2">
-                            <strong><div>Id Ticket:</div></strong>
-                            ${d.id_ticket}
+                          <strong><div>Serial POS:</div></strong>
+                          ${d.serial_pos}
                         </div>
                         <div class="col-sm-6 mb-2">
-                            <strong><div>Serial POS:</div></strong>
-                            ${d.serial_pos}
+                          <strong><div>Estatus POS:</div></strong>
+                          ${d.estatus_inteliservices}
+                        </div><br>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Fecha Instalación:</div></strong>
+                          ${d.fecha_instalacion || 'Sin datos'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                            <br><strong><div>Estatus POS:</div></strong>
-                            ${d.estatus_inteliservices}
+                          <br><strong><div  style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
+                          ${d.fecha_cierre_anterior || 'Sin datos'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Fecha Instalación:</div></strong>
-                            ${d.fecha_instalacion}
+                          <br><strong><div>Garantía:</div></strong>
+                          <span style="font-weight: bold; color: ${garantiaMessage.includes('Aplica') ? 'red' : 'green'};">${garantiaMessage}</span>
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Creación ticket:</div></strong>
-                            ${d.create_ticket}
+                          <br><strong><div>Creación ticket:</div></strong>
+                          ${d.create_ticket}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Usuario Gestión:</div></strong>
-                            ${d.full_name_tecnico}
+                          <br><strong><div>Usuario Gestión:</div></strong>
+                          ${d.full_name_tecnico}
                         </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Estado Cliente:</div></strong>
+                          ${d.nombre_estado_cliente || 'Sin datos'}
+                        </div><br>
+                         <div class="col-sm-6 mb-2">
+                            <br><strong><div>Estatus Ticket:</div></strong>
+                            ${d.name_status_ticket}
+                        </div><br>
+                        <br><div class="col-sm-6 mb-2">
+                              <br><strong><div>Falla Reportada:</div></strong>
+                             <span class="falla-reportada-texto">${d.name_failure}</span>
+                            
+                        </div>
+                       
                     </div>
                 </div>
             </div>
-            <div class="row mb-3">
+            <div class="row mb-3" style="margin-top: -7%; positipn: relative;">
                 <div class="col-12">
                     <div class="row">
                         <div class="col-sm-4 mb-2">
-                             <strong><div>Acción:</div></strong>
-                            ${d.name_accion_ticket}
+                            <strong><div>Acción:</div></strong>
+                            <span class = "Accion-ticket">${d.name_accion_ticket}</span>
                         </div>
-                        <div class="col-sm-8 mb-2"  style = "margin-left: -7%;">
-                          <strong><div class="falla-reportada">Falla Reportada:</div></strong>
-                          <span class="falla-reportada-texto">${d.name_failure}</span>
-                        </div>
-                        <div class="col-sm-8 mb-2">
-                            <br><strong><div>Estatus Ticket:</div></strong>
-                            ${d.name_status_ticket}
-                        </div>
+                           
                     </div>
                 </div>
             </div>
@@ -737,7 +799,7 @@ function formatTicketDetailsPanel(d) {
 
             <div class="row">
                 <div class="col-12">
-                    <h5 style = "color: black;">Gestión / Historial:</h5>
+                    <h5 style = "color: black;" >Gestión / Historial:</h5>
                     <div id="ticket-history-content">
                         <p>Selecciona un ticket para cargar su historial.</p>
                     </div>
@@ -746,6 +808,7 @@ function formatTicketDetailsPanel(d) {
         </div>
     `;
 }
+
 // =============================================================================
 // Función para descargar y mostrar la imagen del dispositivo
 // Ahora adaptada para actualizar la imagen en el panel de detalles del ticket.
@@ -840,161 +903,95 @@ function downloadImageModal(serial) {
 // Opcional: Función para cargar historial si tienes una API separada para ello
 
 function loadTicketHistory(ticketId) {
-  // 1. Obtener el contenedor del historial y mostrar mensaje de carga (usando jQuery)
-  const historyPanel = $("#ticket-history-content");
-  historyPanel.html(
-    '<p class="text-center text-muted">Cargando historial...</p>'
-  ); // Usar .html() de jQuery
+    const historyPanel = $("#ticket-history-content");
+    historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
 
-  // 2. Crear y configurar la solicitud AJAX (usando jQuery.ajax)
-  $.ajax({
-    url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
-    type: "POST",
-    data: {
-      // jQuery formatea esto automáticamente a 'application/x-www-form-urlencoded'
-      action: "GetTicketHistory",
-      id_ticket: ticketId,
-    },
-    dataType: "json", // Le decimos a jQuery que esperamos una respuesta JSON
-    success: function (response) {
-      // Verificar si la respuesta es exitosa y contiene historial
-      if (response.success && response.history && response.history.length > 0) {
-        let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">'; // Contenedor del acordeón
+    $.ajax({
+        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
+        type: "POST",
+        data: {
+            action: "GetTicketHistory",
+            id_ticket: ticketId,
+        },
+        dataType: "json",
+        success: function (response) {
+            if (response.success && response.history && response.history.length > 0) {
+                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
-        // Iterar sobre cada item del historial para construir el HTML
-        response.history.forEach((item, index) => {
-          const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
-          const headingId = `headingHistoryItem_${ticketId}_${index}`;
+                response.history.forEach((item, index) => {
+                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
+                    const isCurrent = index === 0;
 
-          let headerStyle = "";
-          let textColor = "";
-          let statusHeaderText = ""; // Inicializa para asegurar que siempre haya un valor
+                    // Obtener el registro anterior para la comparación
+                    const prevItem = response.history[index + 1] || {};
 
-          // --- Lógica de colores basada en el 'name_status_ticket' (prioridad baja/media) ---
-          if (item.name_status_ticket) {
-            const statusLower = item.name_status_ticket.toLowerCase();
-            if (statusLower.includes("abierto")) {
-              headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (Abierto)";
-            } else if (
-              statusLower.includes("cerrado") ||
-              statusLower.includes("resuelto")
-            ) {
-              headerStyle = "background-color: #28a745;"; // Verde
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (Cerrado)";
-            } else if (
-              statusLower.includes("pendiente") ||
-              statusLower.includes("en proceso")
-            ) {
-              headerStyle = "background-color: #ffc107;"; // Amarillo (Nota: este es el mismo amarillo que quieres para "Gestión Actual")
-              textColor = "color: #343a40;"; // Texto oscuro
-              statusHeaderText = " (En Proceso)";
-            } else if (
-              statusLower.includes("cancelado") ||
-              statusLower.includes("rechazado")
-            ) {
-              headerStyle = "background-color: #dc3545;"; // Rojo
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (Cancelado)";
-            } else if (statusLower.includes("espera")) {
-              headerStyle = "background-color: #6c757d;"; // Gris
-              textColor = "color: #ffffff;"; // Texto blanco
-              statusHeaderText = " (En Espera)";
-            }
-          }
+                    // --- Lógica para determinar si un campo ha cambiado ---
+                    const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
+                    const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
+                    const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
+                    const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
+                    const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
+                    const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
 
-          if (index === 0) {
-            // Es la última gestión (la "actual")
-            headerStyle = "background-color: #ffc107;"; // Amarillo
-            textColor = "color: #343a40;"; // Texto oscuro
-            statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`; // Agrega el estatus actual o 'Desconocido' si no existe. // Sobrescribe el texto del estado si ya estaba.
-          } else {
-            // Son gestiones pasadas
-            headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-            textColor = "color: #ffffff;"; // Texto blanco
-            // No sobrescribimos statusHeaderText aquí a menos que quieras algo como "(Pasada)"
-          }
+                    // --- Lógica de colores (tu lógica original, ajustada para la "gestión actual") ---
+                    let headerStyle = isCurrent ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isCurrent ? "color: #343a40;" : "color: #ffffff;";
+                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
 
-          historyHtml += `
-                        <div class="card mb-3 custom-history-card"> <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
+                    historyHtml += `
+                        <div class="card mb-3 custom-history-card">
+                            <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
                                             data-toggle="collapse" data-target="#${collapseId}"
-                                            aria-expanded="${
-                                              index === 0 ? "true" : "false"
-                                            }" aria-controls="${collapseId}"
+                                            aria-expanded="${isCurrent ? "true" : "false"}" aria-controls="${collapseId}"
                                             style="${textColor}">
-                                        ${item.fecha_de_cambio} - ${
-            item.name_accion_ticket
-          }${statusHeaderText}
+                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
                                     </button>
                                 </h2>
                             </div>
-                            <div id="${collapseId}" class="collapse ${
-            index === 0 ? "show" : ""
-          }"
-                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                            <div id="${collapseId}" class="collapse ${isCurrent ? "show" : ""}"
+                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <table class="table table-sm table-borderless mb-0">
                                             <tbody>
                                                 <tr>
                                                     <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
-                                                    <td>${
-                                                      item.fecha_de_cambio ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td>${item.fecha_de_cambio || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Acción:</th>
-                                                    <td>${
-                                                      item.name_accion_ticket ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Operador de Gestión:</th>
-                                                    <td>${
-                                                      item.full_name_tecnico_gestion ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td>${item.full_name_tecnico_gestion || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Coordinador:</th>
-                                                    <td>${
-                                                      item.full_name_coordinador ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td>${item.full_name_coordinador || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Tecnico Asignado:</th>
+                                                    <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Ticket:</th>
-                                                    <td>${
-                                                      item.name_status_ticket ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${item.name_status_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Laboratorio:</th>
-                                                    <td>${
-                                                      item.name_status_lab ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${statusLabChanged ? "highlighted-change" : ""}">${item.name_status_lab || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
-                                                    <td>${
-                                                      item.name_status_domiciliacion ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${statusDomChanged ? "highlighted-change" : ""}">${item.name_status_domiciliacion || "N/A"}</td>
                                                 </tr>
-                                                 <tr>
+                                                <tr>
                                                     <th class="text-start">Estatus Pago:</th>
-                                                    <td>${
-                                                      item.name_status_payment ||
-                                                      "N/A"
-                                                    }</td>
+                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -1002,60 +999,33 @@ function loadTicketHistory(ticketId) {
                                 </div>
                             </div>
                         </div>`;
-        });
+                });
 
-        historyHtml += "</div>"; // Cierre del acordeón principal
-        historyPanel.html(historyHtml); // Insertar el HTML generado (con jQuery)
-
-        // === IMPORTANTE: RE-INICIALIZAR COMPONENTES DE BOOTSTRAP SI ES NECESARIO ===
-        // Para Bootstrap 4, los atributos data-toggle/data-parent usualmente se "enganchan"
-        // automáticamente si jQuery y Bootstrap JS están cargados.
-        // No necesitas una inicialización explícita como en Bootstrap 5.
-        // El problema suele ser que los atributos data-toggle/data-parent están mal,
-        // o jQuery/Bootstrap JS no están cargados.
-
-        // Reiniciar tooltips (si usas Bootstrap 4, la sintaxis es diferente para dispose/init)
-        if ($.fn && $.fn.tooltip) {
-          // Para Bootstrap 4, los tooltips se manejan así:
-          $('[data-toggle="tooltip"]').tooltip("dispose"); // Asegúrate de que el atributo es data-toggle
-          $('[data-toggle="tooltip"]').tooltip(); // Y se inicializan con data-toggle
-        }
-
-        // Aquí no se necesita `new bootstrap.Collapse` porque eso es para JS nativo de Bootstrap 5.
-        // Con jQuery y Bootstrap 4, la magia ocurre a través de los atributos data-toggle y data-parent
-        // una vez que el HTML está en el DOM y las librerías cargadas.
-      } else {
-        historyPanel.html(
-          '<p class="text-center text-muted">No hay historial disponible para este ticket.</p>'
-        );
-      }
-    },
-    error: function (jqXHR, textStatus, errorThrown) {
-      let errorMessage =
-        '<p class="text-center text-danger">Error al cargar el historial.</p>';
-      if (jqXHR.status === 0) {
-        errorMessage =
-          '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
-      } else if (jqXHR.status == 404) {
-        errorMessage =
-          '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
-      } else if (jqXHR.status == 500) {
-        errorMessage =
-          '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
-      } else if (textStatus === "parsererror") {
-        errorMessage =
-          '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
-      } else if (textStatus === "timeout") {
-        errorMessage =
-          '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
-      } else if (textStatus === "abort") {
-        errorMessage =
-          '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
-      }
-      historyPanel.html(errorMessage);
-      console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-    },
-  });
+                historyHtml += "</div>";
+                historyPanel.html(historyHtml);
+            } else {
+                historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
+            if (jqXHR.status === 0) {
+                errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+            } else if (jqXHR.status == 404) {
+                errorMessage = '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
+            } else if (jqXHR.status == 500) {
+                errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+            } else if (textStatus === "parsererror") {
+                errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+            } else if (textStatus === "timeout") {
+                errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+            } else if (textStatus === "abort") {
+                errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+            }
+            historyPanel.html(errorMessage);
+            console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+        },
+    });
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -1063,7 +1033,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Obtén la referencia al botón cerrar FUERA de la función getTicketData y del bucle
   const cerrar = document.getElementById("close-button");
-  const icon = document.getElementById("Close-icon");
   const assignButton = document.getElementById("assingment-button"); // Obtén el botón "Asignar"
   const inputRegion = document.getElementById("InputRegion"); // Obtén el input de región
 
@@ -1076,38 +1045,26 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     document.getElementById("idSelectionTec").value = "";
   });
-
-  icon.addEventListener("click", function () {
-    if (modalInstance) {
-      modalInstance.hide();
-      currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
-      inputRegion.value = ""; // Limpia el campo de región al cerrar el modal
-    }
-    document.getElementById("idSelectionTec").value = "";
-  });
   // Agrega el event listener al botón "Asignar"
   assignButton.addEventListener("click", AssignTicket);
 });
 //console.log('FrontEnd.js loaded successfully!');
 
-function markTicketAsReceived(ticketId, nroTicket) {
+function markTicketAsReceived(ticketId, nroTicket, serialPos) {
   // Asegúrate de que nroTicket esté como parámetro
   const id_user = document.getElementById("id_user").value;
   // SVG que quieres usar
-  const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#ffc107" class="swal2-icon-custom-svg" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.5a.5.5 0 0 1-1.002.04l-.35-3.5C7.046 5.462 7.465 5 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/></svg>`;
+  const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
   Swal.fire({
     // El nuevo texto del header va aquí
     title: `Confirmación de recibido`, // Texto fijo para el encabezado
     // El contenido del cuerpo (SVG y texto explicativo) va en 'html'
-    html: `
-            ${customWarningSvg}
-            <p class="mt-3">¿Marcar el ticket ${nroTicket} como recibido?</p>
-            <p>Esta acción registrará la fecha de recepción y habilitará la asignación de técnico.</p>
-        `,
+    html: `${customWarningSvg}<p class="mt-3" id = "textConfirm">¿Deseas Marcar el ticket Nro: <span id = "NroTicketConfirReceiCoord">${nroTicket}</span> Asociado el Pos: <span id = "NroTicketConfirReceiCoord">${serialPos}</span> como recibido? 
+    </p><p id = "textConfirmp">Esta acción registrará la fecha de recepción y habilitará la asignación de técnico.</p>`,
     showCancelButton: true,
-    confirmButtonColor: "#007bff",
+    confirmButtonColor: "#003594",
     cancelButtonColor: "#6c757d",
-    confirmButtonText: "Sí, Recibir Ticket",
+    confirmButtonText: "Sí, Recibir Pos",
     cancelButtonText: "Cancelar",
     color: "black",
     customClass: {
@@ -1149,11 +1106,10 @@ function markTicketAsReceived(ticketId, nroTicket) {
             if (response.success) {
               Swal.fire({
                 title: "¡Recibido!",
-                text:
-                  "El ticket N" + nroTicket + " ha sido marcado como recibido.",
+                text: "El ticket N" + nroTicket + " ha sido marcado como recibido.",
                 icon: "success",
                 color: "black",
-                confirmButtonColor: "#3085d6",
+                confirmButtonColor: "#2703f4ff",
               });
               getTicketDataCoordinator();
               if (modalInstanceCoordinator) {
@@ -1236,14 +1192,12 @@ function AssignTicket() {
         if (response.success) {
           Swal.fire({
             icon: "success",
-            title:
-              "Asignado Correctamente el Ticket nro: " +
-              currentTicketNroForAssignment,
-            text: response.message,
+            title: response.message,
+            text: "El Pos asociado al nro ticket: " + currentTicketNroForAssignment + " ha sido asignado correctamente.",
             color: "black",
             showConfirmButton: true,
             confirmButtonText: "Ok",
-            confirmButtonColor: "#3085d6",
+            confirmButtonColor: "#003594",
           }).then((result) => {
             if (result.isConfirmed) {
               getTicketDataCoordinator();
@@ -1287,81 +1241,144 @@ function AssignTicket() {
   xhr.send(datos);
 }
 
-function getTecnico2() {
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+// Asegúrate de que esta variable sea global y esté definida antes de llamar a getTecnico2()
+// Por ejemplo:
+// let inputTecnicoActual = null; // Inicialízala a null o a una cadena vacía al principio
+// Y luego, cuando obtengas la información del ticket, la actualizas:
+// inputTecnicoActual = response.technicians.full_tecnicoassig1 || "No Asignado";
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          const select = document.getElementById("idSelectionTec");
-          const select2 = document.getElementById("technicianSelect");
+function getTecnico21(tecnicoActualParaFiltrar) { // Nuevo parámetro
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-          select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
-          select2.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const select2 = document.getElementById("technicianSelect");
 
-          if (
-            Array.isArray(response.tecnicos) &&
-            response.tecnicos.length > 0
-          ) {
-            response.tecnicos.forEach((tecnico) => {
-              const option = document.createElement("option");
-              option.value = tecnico.id_user;
-              option.textContent = tecnico.full_name;
-              select.appendChild(option);
+                    select2.innerHTML = '<option value="">Seleccione</option>';
 
-              const option2 = document.createElement("option");
-              option2.value = tecnico.id_user;
-              option2.textContent = tecnico.full_name;
-              select2.appendChild(option2);
-            });
+                    if (
+                        Array.isArray(response.tecnicos) &&
+                        response.tecnicos.length > 0
+                    ) {
+                        response.tecnicos.forEach((tecnico) => {
+                            if (tecnico.full_name !== tecnicoActualParaFiltrar) {
+                                const option2 = document.createElement("option");
+                                option2.value = tecnico.id_user;
+                                option2.textContent = tecnico.full_name;
+                                select2.appendChild(option2);
+                            } else {
+                            }
+                        });
 
-            select.addEventListener("change", function () {
-              const selectedTecnicoId = this.value;
-              if (selectedTecnicoId) {
-                GetRegionUser(selectedTecnicoId);
-              } else {
-                document.getElementById("InputRegion").value = "";
-              }
-            });
+                        select2.addEventListener("change", function () {
+                            const selectedTecnicoId = this.value;
+                            if (selectedTecnicoId) {
+                                GetRegionUser(selectedTecnicoId);
+                            } else {
+                                document.getElementById("InputRegionUser2").value = "";
+                            }
+                        });
 
-            select2.addEventListener("change", function () {
-              const selectedTecnicoId = this.value;
-              if (selectedTecnicoId) {
-                GetRegionUser(selectedTecnicoId);
-              } else {
-                document.getElementById("InputRegionUser2").value = "";
-              }
-            });
-          } else {
-            const option = document.createElement("option");
-            option.value = "";
-            option.textContent = "No hay Técnicos Disponibles";
-            select.appendChild(option);
-          }
+                    } else {
+                        const option = document.createElement("option");
+                        option.value = "";
+                        option.textContent = "No hay Técnicos Disponibles";
+                        select.appendChild(option);
+                        select2.appendChild(option.cloneNode(true));
+                    }
+                } else {
+                    document.getElementById("rifMensaje").innerHTML +=
+                        "<br>Error al obtener los Técnicos.";
+                    console.error("Error al obtener los técnicos:", response.message);
+                }
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+                document.getElementById("rifMensaje").innerHTML +=
+                    "<br>Error al procesar la respuesta de los Técnicos.";
+            }
         } else {
-          document.getElementById("rifMensaje").innerHTML +=
-            "<br>Error al obtener los Técnicos.";
-          console.error("Error al obtener los técnicos:", response.message);
+            console.error("Error:", xhr.status, xhr.statusText);
+            document.getElementById("rifMensaje").innerHTML +=
+                "<br>Error de conexión con el servidor para los Técnicos.";
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        document.getElementById("rifMensaje").innerHTML +=
-          "<br>Error al procesar la respuesta de los Técnicos.";
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
-      document.getElementById("rifMensaje").innerHTML +=
-        "<br>Error de conexión con el servidor para los Técnicos.";
-    }
-  };
+    };
 
-  const datos = `action=GetTecnico2`;
-  xhr.send(datos);
+    const datos = `action=GetTecnico2`;
+    xhr.send(datos);
 }
+
+function getTecnico2() { // Nuevo parámetro
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const select = document.getElementById("idSelectionTec");
+                    const select2 = document.getElementById("technicianSelect");
+
+                    select.innerHTML = '<option value="">Seleccione</option>';
+
+                    if (
+                        Array.isArray(response.tecnicos) &&
+                        response.tecnicos.length > 0
+                    ) {
+                        response.tecnicos.forEach((tecnico) => {
+                            const option = document.createElement("option");
+                            option.value = tecnico.id_user;
+                            option.textContent = tecnico.full_name;
+                            select.appendChild(option);
+
+                            
+                        });
+
+                        // Event Listeners (no cambian)
+                        select.addEventListener("change", function () {
+                            const selectedTecnicoId = this.value;
+                            if (selectedTecnicoId) {
+                                GetRegionUser(selectedTecnicoId);
+                            } else {
+                                document.getElementById("InputRegion").value = "";
+                            }
+                        }); 
+
+                    } else {
+                        const option = document.createElement("option");
+                        option.value = "";
+                        option.textContent = "No hay Técnicos Disponibles";
+                        select.appendChild(option);
+                        select2.appendChild(option.cloneNode(true));
+                    }
+                } else {
+                    document.getElementById("rifMensaje").innerHTML +=
+                        "<br>Error al obtener los Técnicos.";
+                    console.error("Error al obtener los técnicos:", response.message);
+                }
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+                document.getElementById("rifMensaje").innerHTML +=
+                    "<br>Error al procesar la respuesta de los Técnicos.";
+            }
+        } else {
+            console.error("Error:", xhr.status, xhr.statusText);
+            document.getElementById("rifMensaje").innerHTML +=
+                "<br>Error de conexión con el servidor para los Técnicos.";
+        }
+    };
+
+    const datos = `action=GetTecnico2`;
+    xhr.send(datos);
+}
+
+document.addEventListener("DOMContentLoaded", getTecnico2);
 
 function GetRegionUser(id_user) {
   const xhr = new XMLHttpRequest();
@@ -1409,5 +1426,3 @@ function GetRegionUser(id_user) {
   )}`;
   xhr.send(datos);
 }
-
-document.addEventListener("DOMContentLoaded", getTecnico2);

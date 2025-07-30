@@ -16,23 +16,15 @@ function mi_navbar()
         <?php echo tituloPagina; ?>
     </title>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
 
-    <link rel="stylesheet" type="text/css"
-        href="<?php echo APP; ?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
 
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-    <link rel="stylesheet" type="text/css"
-        href="<?php echo APP; ?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/bootstrap.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
 
     <style>
         div.dataTables_wrapper div.dataTables_length label {
@@ -42,6 +34,75 @@ function mi_navbar()
             /* Ejemplo: Color del texto */
             margin-right: 10px;
             /* Ejemplo: Espacio a la derecha del label */
+        }
+
+         /* Estilo para los elementos LI de la paginación (números, Anterior, Siguiente) */
+            .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button {
+                background-color: #f0f0f0;
+                /* Un gris claro para el fondo */
+                color: black;
+                /* Un gris oscuro para el texto */
+                border: 1px solid #cccccc;
+                /* Un borde sutil */
+                padding: 8px 12px;
+                margin: 0 4px;
+                cursor: pointer;
+                transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+                /* Transición suave */
+                border-radius: 4px;
+                /* Bordes ligeramente redondeados */
+                list-style: none;
+                /* Eliminar viñetas de lista */
+                display: inline-block;
+                /* Asegura que se comporten como bloques en línea */
+            }
+
+            /* Estilo al pasar el puntero (hover) sobre los LI que no están activos ni deshabilitados */
+            .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button:hover:not(.active):not(.disabled) {
+                background-color: #fff;
+                /* Un gris ligeramente más oscuro al pasar el puntero */
+                color: #007bff;
+                /* Un azul suave para el texto, o puedes mantener el gris oscuro */
+                border-color: #a0a0a0;
+                /* Un borde un poco más visible */
+                text-decoration: none;
+                /* Asegurar que no haya subrayado si hay un enlace dentro */
+            }
+
+            /* Estilo de la página activa */
+            .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button.active {
+                background-color: #8392ab;
+                /* Azul para la página activa (puedes elegir un color más sutil aquí) */
+                color: #ffffff;
+                /* Texto blanco para la página activa */
+                border-color: #8392ab;
+                /* Borde del mismo color que el fondo */
+                cursor: default;
+                /* No cambia el cursor al pasar por la página actual */
+            }
+
+            /* Estilo para los botones deshabilitados (Anterior, Siguiente, o los "...") */
+            .dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button.disabled {
+                background-color: #f8f8f8;
+                /* Un gris muy claro, casi blanco */
+                color: #999999;
+                /* Un gris más claro para el texto */
+                border: 1px solid #e0e0e0;
+                /* Un borde muy sutil */
+                cursor: not-allowed;
+                /* Indica que no es clickeable */
+                pointer-events: none;
+                /* Asegura que no sea clickeable incluso si hay un 'a' dentro */
+            }
+
+
+        /* Estilizar el input de búsqueda al enfocarlo */
+        div.dataTables_wrapper div.dataTables_filter input[type="search"]:focus {
+            color: #495057;
+            background-color: #fff;
+            border-color: #007bff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
 
         /* Estilizar el select dropdown del lengthMenu */
@@ -58,15 +119,16 @@ function mi_navbar()
         }
 
         /* Estilizar el label "Buscar:" */
-        div.dataTables_wrapper div.dataTables_filter label {
-            font-weight: bold;
-            /* Ejemplo: Texto en negrita */
-            color: #333;
-            /* Ejemplo: Color del texto */
-            margin-right: 0.5em;
-            /* Ejemplo: Espacio a la derecha del label */
-            margin-left: -100%;
-        }
+            div.dataTables_wrapper div.dataTables_filter label {
+                font-weight: bold;
+                /* Ejemplo: Texto en negrita */
+                color: #333;
+                /* Ejemplo: Color del texto */
+                margin-right: 0.5em;
+                /* Ejemplo: Espacio a la derecha del label */
+                /* margin-left: -100%;*/
+                width: 10%;
+            }
 
         /* Estilizar el input de búsqueda */
         div.dataTables_wrapper div.dataTables_filter input[type="search"] {
@@ -118,7 +180,8 @@ function mi_navbar()
             background-color: green;
         }
 
-        #uploadFileBtn, #openModalButton{
+        #uploadFileBtn,
+        #openModalButton {
             background-color: #003594;
             color: #fff;
             border: none;
@@ -136,7 +199,7 @@ function mi_navbar()
             background-color: green;
         }
 
-        #viewimage{
+        #viewimage {
             background-color: #20B2AA;
             color: #fff;
             border: none;
@@ -146,11 +209,12 @@ function mi_navbar()
             transition: background-color 0.3s ease-in-out;
         }
 
-        #viewimage:hover{
+        #viewimage:hover {
             background-color: #4CC9B7;
         }
 
-        #CerrarBoton, #modalCerrarshow {
+        #CerrarBoton,
+        #modalCerrarshow {
             background-color: #8392ab;
             color: #fff;
             border: none;
@@ -168,7 +232,8 @@ function mi_navbar()
             background-color: red;
         }
 
-        #icon-close, #btn-close {
+        #icon-close,
+        #btn-close {
             background-color: #8392ab;
             color: #fff;
             border: none;
@@ -305,30 +370,43 @@ function mi_navbar()
     <?php require_once 'app/core/components/navbar/index.php';
     mi_navbar(); ?>
     <main class="main-content position-relative border-radius-lg">
-        <div class="container-fluid py-4" style="padding-left: 2%;">
-            <div id="Row" class="row mt-4">
-                <div class="cord">
-
-                    <div class="card">
-                        <div class="card-header pb-0 p-3">
-                            <div class="col-lg-12 col-md-12 mt-4 mb-4">
-                                <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                    <strong>
-                                        <h5 class="text-black text-capitalize ps-3">Equipo Pendientes por Entregar</h5>
-                                    </strong>
+        <div class="container-fluid py-4" style="height: calc(100vh - 80px);">
+            <div class="row h-100">
+                <div class="col-md-7 h-100 d-flex flex-column">
+                    <div id="Row" class="row mt-4">
+                        <div class="cord">
+                            <div class="card">
+                                <div class="card-header pb-0 p-3">
+                                    <div class="col-lg-12 col-md-12 mt-4 mb-4">
+                                        <div
+                                            class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
+                                            <strong>
+                                                <h5 class="text-black text-capitalize ps-3" style="color: black;">Gestión Rosal</h5>
+                                            </strong>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="tabla-ticket"
+                                        class="table table-striped table-bordered table-hover table-sm">
+                                        </thead>
+                                        <tbody id="table-ticket-body">
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-between">
-                                <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
-                            </div>
                         </div>
-                        <div class="table-responsive">
-                            <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
-                                </thead>
-                                <tbody id="table-ticket-body">
-                                </tbody>
-                            </table>
-                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5 h-100 d-flex flex-column border-start ps-4">
+                    <h3 class="mb-3">Detalles del Ticket</h3>
+                    <div id="ticket-details-panel" class="flex-grow-1 overflow-auto p-3 bg-light rounded">
+                        <strong>
+                            <p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>
+                        </strong>
                     </div>
                 </div>
             </div>
@@ -336,40 +414,40 @@ function mi_navbar()
     </main>
 
     <!--MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
-        <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel"
-            aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <strong>
-                            <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
-                                Documento para Ticket: <span id="modalTicketId"></span></h5>
-                        </strong>
-                        <button type="button" id="icon-close" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="uploadForm">
-                            <div class="mb-3">
-                                <label for="documentFile" class="form-label text-gray-700">Seleccionar Archivo:</label>
-                                <input class="form-control" type="file" id="documentFile" accept="image/*,application/pdf"
-                                    style="display:block">
-                                <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
-                            </div>
-                            <div class="mb-3 text-center">
-                                <img id="imagePreview" class="img-preview" src="#" alt="Previsualización de Imagen">
-                            </div>
-                            <div id="uploadMessage" class="message-box hidden"></div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" id="CerrarBoton"
-                            data-bs-dismiss="modal">Cerrar</button>
-                        <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
-                    </div>
+    <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel"
+        aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <strong>
+                        <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
+                            Documento para Ticket: <span id="modalTicketId"></span></h5>
+                    </strong>
+                    <button type="button" id="icon-close" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadForm">
+                        <div class="mb-3">
+                            <label for="documentFile" class="form-label text-gray-700">Seleccionar Archivo:</label>
+                            <input class="form-control" type="file" id="documentFile" accept="image/*,application/pdf"
+                                style="display:block">
+                            <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
+                        </div>
+                        <div class="mb-3 text-center">
+                            <img id="imagePreview" class="img-preview" src="#" alt="Previsualización de Imagen">
+                        </div>
+                        <div id="uploadMessage" class="message-box hidden"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="CerrarBoton"
+                        data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
                 </div>
             </div>
         </div>
+    </div>
     <!-- END MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
 
     <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
@@ -382,7 +460,8 @@ function mi_navbar()
                         <h5 class="modal-title text-lg font-semibold text-gray-800" id="viewDocumentModalLabel">
                             Documento para Ticket: <span id="viewModalTicketId"></span></h5>
                     </strong>
-                    <button type="button" class="btn-close" id="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" id="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3 text-center">
@@ -394,7 +473,8 @@ function mi_navbar()
                     <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="modalCerrarshow" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-secondary" id="modalCerrarshow"
+                        data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
@@ -491,43 +571,33 @@ function mi_navbar()
             </div>
         </div>
     </div>
-    <!-- Github buttons -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
 
-    <!-- Bootstrap-->
-    <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
-    <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
 
-    <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
 
-    <!--JQUERY-->
-    <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
-    <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
-    <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
-    <script
-        src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
+        <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
 
-    <!--   Core JS Files   -->
-    <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
-    <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
-    <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
-    <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
+        <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
 
-    <!-- Datatable -->
-    <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
-    <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/chart.js/chart.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
+        <script src="<?php echo APP; ?>js/datatables.js"></script>
 
-    <!--  SweetAlert   -->
-    <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
-    <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
-
-    <!--MASCARAS JQUERY-->
-    <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
-
-    <!-- Custom scripts for all pages-->
-    <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
+        <!--  SweetAlert   -->
+        <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
 
     <?php
     if (isset($this->js)) {

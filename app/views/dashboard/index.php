@@ -238,10 +238,8 @@ function mi_navbar() {}
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
                                             <p class="card-category" style="color: black">Total Tickets</p>
-                                            <h5 id="TotalTicket" class="card-title">0</h5>
-                                            <p class="card-text mb-0"><br><br><br>
-                                                <!--span class="text font-weight-bolder"
-                                                    id="totalTicketPercentage"></span>De 100 Mensual-->
+                                            <h5 id="TotalTicket" class="card-title"></h5>
+                                            <p class="card-text mb-0"><br><br>
                                             </p>
                                         </div>
                                         <div class="icon-on-right">

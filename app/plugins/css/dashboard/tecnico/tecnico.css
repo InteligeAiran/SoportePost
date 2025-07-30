@@ -1,9 +1,108 @@
 #ModalSelecttecnico {
-  width: 55%;
+  width: 68%;
   justify-content: center;
   text-align: center;
   margin-top: 27%;
-  margin-left: 37%;
+  margin-left: 30%;
+}
+
+/* Estilos para el modal personalizado */
+#ModalConfirmarSendTaller {
+    border-radius: 1rem; /* Bordes más redondeados */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Sombra suave */
+    overflow: hidden; /* Asegura que los bordes redondeados se vean bien */
+}
+
+#ModalConfirmarSendTaller .modal-header {
+    background-color: #f8f9fa; /* Un fondo gris claro para el encabezado */
+    border-bottom: 1px solid #dee2e6; /* Separador */
+    padding: 1.5rem; /* Más espacio */
+    border-top-left-radius: 1rem; /* Mantener redondeo */
+    border-top-right-radius: 1rem; /* Mantener redondeo */
+}
+
+#ModalConfirmarSendTaller .modal-title {
+    font-weight: 600; /* Un poco más de negrita para el título */
+    color: white; /* Color de texto oscuro */
+}
+
+#ModalConfirmarSendTaller .modal-body {
+    padding: 2rem; /* Más espaciado interno */
+}
+
+#ModalConfirmarSendTaller .modal-body p {
+    line-height: 1.5; /* Espaciado entre líneas para mejor lectura */
+    color: #495057; /* Color de texto suave */
+}
+
+#modalTicketNr, #ticketNumberSpan, #NroTicketConfirReceiCoord, #ticketserialPos{
+    display: inline-block; 
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.3rem;
+    background-color: #e0f7fa;
+    color: #007bff;
+}
+
+#btn-devuelto.btn-primary {
+  background-color: #003594;
+  /* Tu azul fuerte */
+  border-color: #003594;
+  color: #ffffff;
+  transition: background-color 0.3s ease, 
+  border-color 0.3s ease,
+  box-shadow 0.3s ease;
+}
+
+#textConfirm{
+    font-size: 1.2rem; /* Tamaño de fuente más grande para el texto de confirmación */
+    color: #343a40; /* Color de texto oscuro */
+}
+
+#textConfirmp{
+    font-size: 0.9rem; /* Tamaño de fuente más grande para el texto de confirmación */
+     padding: 0.2rem 0.5rem; 
+     border-radius: 0.3rem; 
+     background-color: #e0f7fa; 
+     color: #007bff; 
+}
+
+#ModalConfirmarSendTaller .modal-footer {
+    background-color: #f8f9fa; /* Fondo gris claro para el pie de página */
+    border-top: 1px solid #dee2e6; /* Separador */
+    padding: 1.5rem; /* Más espacio */
+    border-bottom-left-radius: 1rem; /* Mantener redondeo */
+    border-bottom-right-radius: 1rem; /* Mantener redondeo */
+}
+
+/* Animación sutil para el icono */
+.custom-icon-animation {
+    animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Estilos para el botón de cerrar en el encabezado */
+#Close-icon {
+    font-size: 1.2rem; /* Ajustar tamaño si es necesario */
+}
+
+#Close-icon:focus {
+    box-shadow: none; /* Eliminar el borde de foco si no lo deseas */
 }
 
 #devolverClienteModal{
@@ -1194,4 +1293,103 @@ div.dataTables_wrapper div.dataTables_filter input {
     background-color: green; /* Azul más oscuro al pasar el ratón */
     color: white;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+
+/* Main popup container */
+.custom-swal-popup {
+    border-radius: 0.5rem !important; /* Match border-radius of Gestión Técnico */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important; /* Soft shadow */
+    overflow: hidden; /* Ensures content respects border-radius */
+    max-width: 500px; /* Adjust max width as needed */
+    width: 100% !important; /* Ensure it respects max-width */
+}
+
+/* Custom header for the modal */
+.custom-swal-header {
+    background-color: #003594 !important; /* Dark blue background like Gestión Técnico header */
+    color: white !important; /* White text */
+    padding: 1rem 1.5rem !important; /* Padding for the header */
+    border-top-left-radius: 0.5rem !important;
+    border-top-right-radius: 0.5rem !important;
+    text-align: left !important; /* Align text to left */
+    display: flex; /* Use flexbox for alignment */
+    align-items: center; /* Center items vertically */
+    justify-content: space-between; /* Space title and potential close button */
+    height: auto !important; /* Auto height to fit content */
+}
+
+.custom-modal-header-content {
+    font-size: 1.5rem; /* Larger font size for the header title */
+    font-weight: bold; /* Bold text */
+    margin: 0; /* Remove default margin */
+}
+
+/* Hide the default SweetAlert2 title that gets rendered by the `title` option */
+.custom-swal-title-hidden {
+    display: none !important;
+}
+
+/* Content area (where your custom HTML goes) */
+.custom-swal-content {
+    padding: 2rem 1.5rem !important; /* Adjust padding for content */
+    color: #343a40 !important; /* Darker text color */
+    font-size: 1.1rem !important; /* Slightly larger text */
+}
+
+.custom-modal-body-content .h4 {
+    font-size: 1.3rem; /* Adjust font size for the main question */
+    color: #343a40; /* Darker grey for question text */
+}
+
+.custom-modal-body-content .h5 {
+    font-size: 1rem; /* Adjust font size for explanatory text */
+    color: #6c757d; /* Lighter grey for descriptive text */
+}
+
+/* Footer (buttons container) */
+.custom-swal-actions {
+    background-color: #f8f9fa !important; /* Light background for footer */
+    border-top: 1px solid #e9ecef !important; /* Light border at top */
+    border-bottom-left-radius: 0.5rem !important;
+    border-bottom-right-radius: 0.5rem !important;
+    justify-content: center !important; /* Center buttons */
+    gap: 1rem; /* Space between buttons */
+}
+
+/* Specific button styles */
+.custom-confirm-button {
+   /* background-color: #007bff !important; /* Bootstrap primary blue */
+  /*  border-color: #007bff !important;*/
+    font-weight: 500 !important; /* Adjust font weight */
+    min-width: 150px; /* Make buttons a bit wider */
+}
+
+.custom-cancel-button {
+    background-color: #6c757d !important; /* Bootstrap secondary grey */
+    border-color: #6c757d !important;
+    font-weight: 500 !important; /* Adjust font weight */
+    min-width: 150px; /* Make buttons a bit wider */
+}
+
+/* Animation for the icon */
+.custom-icon-animation {
+    animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+    }
 }

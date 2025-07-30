@@ -34,6 +34,22 @@ function mi_navbar() {}
             overflow: hidden;
             width: none;
        }
+
+       #tabla-ticket tbody tr.table-active {
+            background-color: #CCE5FF !important; /* Un gris claro para el resaltado */
+            color: #333; /* Color de texto para que sea legible sobre el gris */
+            /* Puedes añadir un borde o sombra si lo deseas */
+            /* border: 1px solid #ccc; */
+            /* box-shadow: 0 0 5px rgba(0,0,0,0.2); */
+        }
+
+        .highlighted-change {
+            font-weight: bold;
+            color: #000; /* Color de texto más oscuro para mayor contraste */
+            background-color: #ffeb3b; /* Amarillo claro */
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
     </style>
 </head>
 
@@ -69,10 +85,12 @@ function mi_navbar() {}
                                 <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
                                     <thead>
                                         <tr>
-                                            <th style="width: 12%; height: 10px;">ID ticket</th>
+                                            <th>N°</th>
                                             <th style="width: 12%;">RIF</th>
+                                            <th style="width: 12%;">Serial Pos</th>
                                             <th style="width: 12%;">Raz&oacuten Social</th>
                                             <th style="width: 12%;">Accion del Ticket</th>
+                                            <th style="width: 12%;">Técnico Asignado</th>
                                             <th>Acciones</th>
                                         </tr>
                                     </thead>
@@ -102,7 +120,6 @@ function mi_navbar() {}
                 <div id="ModalSelecttecnico" class="modal-content">
                     <div class="modal-header bg-gradient-primary">
                         <h1 class="modal-title fs-5" id="staticBackdropLabel" style="color: white;">Seleccione un Técnico</h1>
-                        <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <select id="idSelectionTec" class="form-select" onchange="GetRegionUser()" aria-label="Default select example"></select>
@@ -129,9 +146,9 @@ function mi_navbar() {}
                     </div>
                     <div class="modal-body text-center py-4">
                         <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#ffc107" class="bi bi-exclamation-triangle-fill mx-auto mb-3" viewBox="0 0 16 16">
-                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.5a.5.5 0 0 1-1.002.04l-.35-3.5C7.046 5.462 7.465 5 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                            <path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/>
                         </svg>
-                        <p class="fs-5"><strong>¿Está seguro que desea reasignar el ticket Nro. <span id="ticketNumberSpan"></span>?</strong></p>
+                        <p class="fs-5">¿Está seguro que desea reasignar el ticket Nro. <span id="ticketNumberSpan"></span>Asociado al Pos <span id="ticketserialPos"></span>?</p>
                     </div>
                     <div class="modal-footer justify-content-center">
                         <button type="button" id="noConfirm" class="btn btn-secondary" data-bs-dismiss="modal">No</button>

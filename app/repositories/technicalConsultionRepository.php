@@ -491,20 +491,19 @@ class TechnicalConsultionRepository
     }
 
 
-         public function GetSubmodulesForModule($moduleId,$id_usuario) {
-                $result = $this->model->GetSubmodulesForModule($moduleId,$id_usuario);
-                if ($result) {
-                    //var_dump($result);  
-                    $modules = [];
-                    for ($i = 0; $i < $result['numRows']; $i++) {
-                        $agente = pg_fetch_assoc($result['query'], $i);
-                        $modules[] = $agente;
-                    }
-                    //var_dump($agente);
-                    return $modules;
-                } else {
-                    return null;
-                }
+    public function GetSubmodulesForModule($moduleId,$id_usuario) {
+        $result = $this->model->GetSubmodulesForModule($moduleId,$id_usuario);
+
+        if ($result) {
+            $modules = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $modules[] = $agente;
+            }
+            return $modules;
+        } else {
+            return null;
+        }
     }
 
 
@@ -587,5 +586,58 @@ class TechnicalConsultionRepository
         $result = $this->model->SendToComercial($id_ticket, $id_user);
         return $result;
     }
+
+    public function SendToGestionRosal($id_ticket, $id_user, $keyCharged){
+        $result = $this->model->SendToGestionRosal($id_ticket, $id_user, $keyCharged);
+        return $result;
+    }
+
+    public function MarkKeyAsReceived($id_ticket, $id_user){
+        $result = $this->model->MarkKeyAsReceived($id_ticket, $id_user);
+        return $result;
+    }
+
+    public function GetImageToAproval($ticket_id, $image_type) {
+        // El modelo ya debería devolver un solo array asociativo (o null/false)
+        $result = $this->model->GetImageToAproval($ticket_id, $image_type);
+
+        // var_dump($result); // Descomenta esto para ver qué devuelve tu modelo directamente
+
+        if ($result === false) { // Si el modelo devolvió false (error de consulta)
+            return ['success' => false, 'message' => 'Error interno al consultar la imagen en la base de datos.'];
+        } elseif ($result === null || !isset($result['file_path']) || !isset($result['mime_type'])) {
+            // Si el modelo devolvió null (no se encontró) o le faltan campos
+            return ['success' => false, 'message' => 'No se encontró la imagen o los datos son inválidos para el ticket y tipo especificados.'];
+        } else {
+            // Si el modelo devolvió un array con file_path y mime_type
+            return [
+                'success' => true,
+                'file_path' => $result['file_path'],
+                'mime_type' => $result['mime_type']
+            ];
+        }
+    }
+
+     public function VerifingBranches($rif){
+        $result = $this->model->VerifingBranches($rif); // Llama al modelo
+        if ($result && $result['numRows'] > 0 && isset($result['row']['id_estado'])) {
+            return $result['row']['id_estado']; // Devuelve solo el id_estado
+        }
+        return null; // Si no se encuentra o hay un error
+    }
+
+    // Este método solo devuelve el ID de la región asociado al estado
+    public function getRegionFromStateId($id_state) {
+    $result = $this->model->GetRegionFromState($id_state);
+
+    // AÑADE ESTO PARA DEPURACIÓN:
+    error_log("Resultado de Model::GetRegionFromState en Repository:");
+    error_log(var_export($result, true));
+
+    if ($result && $result['numRows'] > 0 && isset($result['row']['id_region'])) {
+        return (int) $result['row']['id_region']; // Devuelve solo el id_region
+    }
+    return null; // Si no se encuentra o hay un error
+}
 }
 ?>

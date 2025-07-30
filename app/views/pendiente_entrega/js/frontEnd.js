@@ -18,10 +18,10 @@ document.addEventListener("DOMContentLoaded", function () {
     let bsViewModal = null;
 
     if (modalElementUpload) {
-        bsUploadModal = new bootstrap.Modal(modalElementUpload, { keyboard: true }); // Habilita cierre con ESC
+        bsUploadModal = new bootstrap.Modal(modalElementUpload, { keyboard: false }); // Habilita cierre con ESC
     }
     if (modalElementView) {
-        bsViewModal = new bootstrap.Modal(modalElementView, { keyboard: true }); // Habilita cierre con ESC
+        bsViewModal = new bootstrap.Modal(modalElementView, { keyboard: false }); // Habilita cierre con ESC
     }
 
     // Variable para almacenar el ID del ticket
@@ -329,6 +329,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function getTicketDataFinaljs() {
   const xhr = new XMLHttpRequest();
   xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketDataFinal`);
+  const detailsPanel = document.getElementById("ticket-details-panel");
 
   const tableElement = document.getElementById("tabla-ticket");
   const theadElement = tableElement
@@ -342,28 +343,31 @@ function getTicketDataFinaljs() {
   // Define column titles strictly based on your SQL function's output
   const columnTitles = {
     id_ticket: "ID Ticket",
-    full_name_tecnico1: "Nombre Técnico 1",
+    nro_ticket: "Nro Ticket",
+    full_name_tecnico: "Técnico Gestión", // CORREGIDO
     create_ticket: "Fecha Creación",
     serial_pos: "Serial POS",
-    rif: "RIF",
+    rif: "Rif",
     name_failure: "Falla",
-    id_level_failure: "Nivel Falla",
-    full_name_coord: "Nombre Coordinador",
-    fecha_envio_coordinador: "Fecha Envío Coordinador",
-    name_status_payment: "Estatus Pago",
-    full_name_tecnico2: "Nombre Técnico 2",
-    fecha_assignado_al_tecnico2: "Fecha Asignado al Técnico 2",
-    envio_a_taller: "Envío a Taller",
+    // id_level_failure: "Nivel Falla", // ELIMINADO
+    full_name_coordinador: "Coordinador", // CORREGIDO
+    // fecha_envio_coordinador: "Fecha Envío Coordinador", // ELIMINADO
     fecha_envio_a_taller: "Fecha Envío a Taller",
-    name_process_ticket: "Proceso Ticket",
-    status_taller: "Estatus Taller",
-    name_accion_ticket: "Acción Ticket",
-    fecha_carga_llaves: "Fecha Carga Llaves",
-    verificacion_de_solvencia: "Verificación de Solvencia",
-    name_status_domiciliacion: "Estatus Domiciliación",
     name_status_ticket: "Estatus Ticket",
-    fecha_carga_llaves: "Fecha Carga Llaves",
-    fecha_envio_destino: "Fecha Envío a Destino",
+    name_process_ticket: "Proceso Ticket",
+    name_status_payment: "Estatus Pago",
+    name_status_lab: "Estatus Taller", // CORREGIDO
+    name_accion_ticket: "Acción Ticket",
+    full_assignado_al_tecnico2: "Técnico 2", // CORREGIDO
+    // fecha_assignado_al_tecnico2: "Fecha Asignado al Técnico 2", // ELIMINADO
+    //envio_a_taller: "Fecha Envío a Taller", // ELIMINADO
+    date_send_torosal_fromlab: "Fecha Envío Torosal Lab", // CORREGIDO
+    fecha_llaves_enviada: "Fecha de Llaves Enviadas", // CORREGIDO
+    fecha_carga_llaves: "Fecha Carga Llaves", // CORREGIDO
+    date_receivefrom_desti: "Fecha Envío a Destino", // CORREGIDO
+    confirmreceive: "Confirmar Recibido", // AÑADIDO
+    fecha_instalacion: "Fecha Instalación", // Añadido
+    estatus_inteliservices: "Estatus Inteliservices", // Añadido
   };
 
   xhr.onload = function () {
@@ -413,11 +417,8 @@ function getTicketDataFinaljs() {
                       case "Abierto":
                         statusColor = "#4CAF50"; // Verde
                         break;
-                      case "Enviado a taller":
+                      case "En proceso":
                         statusColor = "#2196F3"; // Azul
-                        break;
-                      case "actualizacion de cifrado":
-                        statusColor = "#FF9800"; // Naranja
                         break;
                       default:
                         if (statusText === "") {
@@ -429,73 +430,133 @@ function getTicketDataFinaljs() {
                     return `<span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
                   };
                 }
+                // ************* APLICAR LÓGICA DE TRUNCADO A FALLA *************
+                if (key === "name_failure") {
+                  const displayLength = 25;
+                  columnDef.render = function (data, type, row) {
+                    const fullText = String(data || "").trim();
+                    if (fullText.length > displayLength) {
+                      return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(0, displayLength)}...</span>`;
+                    } else {
+                      return `<span class="full-text-cell" data-full-text="${fullText}">${fullText}</span>`;
+                    }
+                  };
+                }
+                // ************* FIN: APLICAR LÓGICA DE TRUNCADO A FALLA *************
+
+                // ************* APLICAR LÓGICA DE TRUNCADO A STATUS_PAYMENTS *************
+                if (key === "name_status_payment") {
+                  const displayLength = 25;
+                  columnDef.render = function (data, type, row) {
+                    const fullText = String(data || "").trim();
+                    if (fullText.length > displayLength) {
+                      return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(0, displayLength)}...</span>`;
+                    } else {
+                      return `<span class="full-text-cell" data-full-text="${fullText}">${fullText}</span>`;
+                    }
+                  };
+                }
+                // ************* FIN: APLICAR LÓGICA DE TRUNCADO A STATUS_PAYMENTS *************
                 columnsConfig.push(columnDef);
               }
             }
 
-            // Añadir la columna "Acciones" al final
+            // Añadir la columna "Acción" al final
             columnsConfig.push({
-              data: null, // Esta columna no mapea directamente a un campo de datos
-              title: "Acciones",
-              orderable: false,
-              searchable: false,
-              width: "8%",
-              render: function (data, type, row) {
-                const idTicket = row.id_ticket;
-                const currentStatusLab = row.name_status_lab; // Estatus del taller (e.g., 'Reparado', 'Irreparable')
-                const currentAccionTicket = row.name_accion_ticket; // Estatus de la acción del ticket (e.g., 'Llaves Cargadas')
-                const verificaSolvencia = row.verificacion_de_solvencia; // Estatus de la verificación de solvencia (e.g., 'Si', 'No')
+                data: null,
+                title: "Acción",
+                orderable: false,
+                searchable: false,
+                className: "dt-body-center",
+                render: function (data, type, row) {
+                    const idTicket = row.id_ticket;
+                    const name_status_payment = row.name_status_payment;
+                    const currentStatusLab = row.name_status_lab; // CORREGIDO: Usar name_status_lab de SQL
+                    const verificacionDeLlaves = row.id_status_key; // CORREGIDO: Usar confirmreceive de SQL
+                    const accionllaves = row.name_accion_ticket;  
 
-                // "cuando el status de name_accion_ticket sea: Llaves Cargadas me tiene que aparecer un boton para subir una imagen"
-                if (
-                  (currentAccionTicket === "Llaves Cargadas",
-                  currentStatusLab === "Reparado",
-                  verificaSolvencia === "Verificado")
-                ) {
-                  return `<button type="button" id= "openModalButton" class="btn btn-info btn-sm upload-document-btn"
-                        data-id-ticket="${idTicket}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#uploadDocumentModal">
-                        Subir Documento
-                    </button>`;
-                } else {
-                  // Si el estatus del laboratorio es "Reparado" o "Irreparable"
-                  // y no es "Llaves Cargadas", muestra el botón "Cerrado"
-                  return `<button type="button" class="btn btn-secondary btn-sm disabled">Falta Requisitos</button>`;
-                }
-              },
+                    // Lógica para mostrar el checkbox de carga de llaves o el botón de "Subir Documento"
+                        
+                    if ((name_status_payment === "Pendiente Por Cargar Documentos" || name_status_payment === "Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)" || name_status_payment === "Pendiente Por Cargar Documento(PDF Envio ZOOM)") && currentStatusLab === "Reparado") {
+                        return `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
+                                    data-id-ticket="${idTicket}"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#uploadDocumentModal">
+                                    Subir Documento
+                                </button>`;
+                    } else {
+                        return `<button type="button" class="btn btn-secondary btn-sm disabled">Falta Requisitos</button>`;
+                    }
+                },
             });
 
+            // Añadir la columna "Llaves"
             columnsConfig.push({
-              data: null, // Esta columna no mapea directamente a un campo de datos
-              title: "Imagen",
-              orderable: false,
-              searchable: false,
-              width: "8%",
-              render: function (data, type, row) {
-                const idTicket = row.id_ticket;
+                data: null,
+                title: "Llaves",
+                orderable: false,
+                searchable: false,
+                className: "dt-body-center",
+                render: function (data, type, row) {
+                    const idTicket = row.id_ticket;
+                    const verificacionDeLlaves = row.id_status_key; // CORREGIDO: Usar confirmreceive
+                    const accionllaves = row.name_accion_ticket;
+                    const fechaLlavesEnviada = row.date_sendkey; // CORREGIDO: Usar date_sendkey
+                    const fechaCargaLlaves = row.date_receivekey; // CORREGIDO: Usar date_receivekey
 
-                // "cuando el status de name_accion_ticket sea: Llaves Cargadas me tiene que aparecer un boton para subir una imagen"
-                if (idTicket) {
-                  return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
-                        data-id-ticket="${idTicket}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#viewDocumentModal"> Ver Imagen
-                    </button>`;
-                } else {
-                  // Si el estatus del laboratorio es "Reparado" o "Irreparable"
-                  // y no es "Llaves Cargadas", muestra el botón "Cerrado"
-                  return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay imagen</button>`;
-                }
-              },
+                    // Lógica para el checkbox "Cargar Llave"
+                    // shouldShowLoadKeyCheckbox ahora se basa en 'confirmreceive'
+                    const shouldShowLoadKeyCheckbox = !(verificacionDeLlaves === false || verificacionDeLlaves === 'f'); // Si NO están confirmadas
+                        if (shouldShowLoadKeyCheckbox && accionllaves == "Llaves Cargadas" && fechaLlavesEnviada != "NULL" && fechaCargaLlaves != "NULL") {
+                            return `<input type="checkbox" class="receive-key-checkbox" 
+                                    data-id-ticket="${idTicket}" 
+                                    data-nro-ticket="${row.nro_ticket}" 
+                                    title="Llaves Cargadas"
+                                    checked disabled>`;
+                                    
+                        }else if (verificacionDeLlaves === false || verificacionDeLlaves === 'f' && accionllaves === "Llaves Cargadas" && fechaLlavesEnviada == null) {
+                            return `<input type="checkbox" class="receive-key-checkbox" 
+                                    data-id-ticket="${idTicket}" 
+                                    data-nro-ticket="${row.nro_ticket}" 
+                                    title="Llaves Cargadas En el Rosal" checked disabled>`; // Sin marcar y habilitado
+                        } else {
+                           return `<input type="checkbox" class="receive-key-checkbox" 
+                                    data-id-ticket="${idTicket}" 
+                                    data-nro-ticket="${row.nro_ticket}" 
+                                    title="Confirmar Carga De llaves">`;
+                        }
+                },
             });
 
-            // === ADD "CARGA DE LLAVE" COLUMN FIRST ===
-            // It's a calculated column, so its data source is `null`
+            // Añadir la columna "Imagen"
+            columnsConfig.push({
+                data: null,
+                title: "Imagen",
+                orderable: false,
+                searchable: false,
+                width: "8%",
+                render: function (data, type, row) {
+                    const idTicket = row.id_ticket;
+                    const accionllaves = row.name_accion_ticket; // Necesitas esta variable para la condición
+
+                    // "cuando el status de name_accion_ticket sea: Llaves Cargadas me tiene que aparecer un boton para subir una imagen"
+                    if (accionllaves === "Llaves Cargadas") {
+                        return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
+                                data-id-ticket="${idTicket}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#viewDocumentModal"> Ver Imagen
+                            </button>`;
+                    } else {
+                        // Si el estatus no es "Llaves Cargadas", muestra "No hay imagen"
+                        return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay imagen</button>`;
+                    }
+                },
+            });
 
             // Initialize DataTables
-            const dataTable = $(tableElement).DataTable({
-              responsive: true,
+            const dataTableInstance = $(tableElement).DataTable({
+              responsive: false,
+              scrollX: "200px", // Considera usar true o un valor más dinámico como '100%'
               data: TicketData,
               columns: columnsConfig,
               pagingType: "simple_numbers",
@@ -509,12 +570,12 @@ function getTicketDataFinaljs() {
                 },
               ],
               language: {
-                lengthMenu: "Mostrar _MENU_ registros",
+                lengthMenu: "Mostrar _MENU_",
                 emptyTable: "No hay datos disponibles en la tabla",
                 zeroRecords: "No se encontraron resultados para la búsqueda",
-                info: "Mostrando página _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
+                info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
                 infoEmpty: "No hay datos disponibles",
-                infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
+                infoFiltered: " de _MAX_ Disponibles",
                 search: "Buscar:",
                 loadingRecords: "Cargando...",
                 processing: "Procesando...",
@@ -529,6 +590,101 @@ function getTicketDataFinaljs() {
                 },
               },
             });
+
+           // ************* INICIO: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
+           $("#tabla-ticket tbody")
+                .off("change", ".receive-key-checkbox") // <--- Usamos 'change' para checkboxes
+                .on("change", ".receive-key-checkbox", function (e) {
+                    e.stopPropagation(); // Evita propagación del evento
+
+                    const ticketId = $(this).data("id-ticket");
+                    const nroTicket = $(this).data("nro-ticket");
+                    const isChecked = $(this).is(":checked"); // Verifica si el checkbox está marcado
+                    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+
+                    if (isChecked) {
+                        Swal.fire({
+                              title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                                        <div class="custom-modal-header-content">Confirmación de Carga de Llaves</div>
+                                      </div>`,
+                          html: `<div class="custom-modal-body-content">
+                                  <div class="mb-4">
+                                      ${customWarningSvg}
+                                  </div> 
+                                   <p class="h4 mb-3" style = "color: black;">¿Desea marcar el Ticket Nro: ${nroTicket} como "Llaves Cargadas".?</p> 
+                                   <p class="h5 text-muted">Esta acción registrará la fecha de la carga de llaves</p>`,
+                            confirmButtonText: "Sí, Confirmar",
+                            color: "black",
+                            confirmButtonColor: "#003594",
+                            cancelButtonText: "No, cancelar",
+                            focusConfirm: false,
+                            allowOutsideClick: false,
+                            showCancelButton: true,
+                            allowEscapeKey: false,
+                            keydownListenerCapture: true,
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                MarkDateKey(ticketId, nroTicket); // `false` indica que se cargaron las llaves
+                                $(this).prop('checked', true);
+                            } else {
+                                $(this).prop('checked', false);
+                            }
+                        });
+                    } else {
+                        // Si el checkbox se desmarca, puedes añadir lógica aquí si es necesario
+                        // Por ahora, no hace nada si se desmarca.
+                    }
+                });
+            // ************* FIN: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
+
+            // === ADD THE CLICK EVENT LISTENER FOR TABLE ROWS HERE ===
+            $("#tabla-ticket tbody")
+                .off("click", "tr") // .off() to prevent multiple bindings if called multiple times
+                .on("click", "tr", function (e) {
+                    // Asegúrate de que el clic no proviene de una celda truncable/expandible o de un botón.
+                    if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('full-text-cell') || $(e.target).is('button') || $(e.target).is('input[type="checkbox"]')) {
+                        return; // Si el clic fue en la celda del checkbox o el botón, no activar el evento de la fila.
+                    }
+
+                    const tr = $(this);
+                    const rowData = dataTableInstance.row(tr).data();
+
+                    if (!rowData) {
+                        return;
+                    }
+
+                    $("#tabla-ticket tbody tr").removeClass("table-active");
+                    tr.addClass("table-active");
+
+                    const ticketId = rowData.id_ticket;
+
+                    const selectedTicketDetails = TicketData.find(
+                        (t) => t.id_ticket == ticketId
+                    );
+
+                    if (selectedTicketDetails) {
+                        detailsPanel.innerHTML = formatTicketDetailsPanel(
+                            selectedTicketDetails
+                        );
+                        loadTicketHistory(ticketId);
+                        if (selectedTicketDetails.serial_pos) {
+                            downloadImageModal(selectedTicketDetails.serial_pos);
+                        } else {
+                            const imgElement = document.getElementById(
+                                "device-ticket-image"
+                            );
+                            if (imgElement) {
+                                // Asegúrate de que esta ruta sea correcta en el contexto de tu JS
+                                imgElement.src = '/public/img/consulta_rif/POS/mantainment.png';
+                                imgElement.alt = "Serial no disponible";
+                            }
+                        }
+                    } else {
+                        detailsPanel.innerHTML =
+                            "<p>No se encontraron detalles para este ticket.</p>";
+                    }
+                });
+            // === END CLICK EVENT LISTENER ===
 
             if (tableContainer) {
               tableContainer.style.display = ""; // Show the table container
@@ -580,7 +736,87 @@ function getTicketDataFinaljs() {
   const datos = `action=GetTicketDataFinal`;
   xhr.send(datos);
 }
+
 document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
+
+
+function MarkDateKey(ticketId, nroTicket) {
+  const id_user = document.getElementById("userId").value;
+  const nro_ticket = nroTicket;
+    if (!ticketId) {
+        console.error("El ID del ticket no puede ser nulo o indefinido.");
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No se pudo marcar la fecha de la llave. ID de ticket no proporcionado.",
+        });
+        return; // Detener la ejecución si no hay ID de ticket
+    }
+    const dataToSendString = `action=MarkKeyAsReceived&id_ticket=${encodeURIComponent(ticketId)}&id_user=${encodeURIComponent(id_user)}`;
+
+    const xhr = new XMLHttpRequest();
+    // Ajusta esta URL a la ruta de tu endpoint de API en el backend
+    const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/MarkKeyAsReceived`; // O el nombre de tu endpoint
+
+    xhr.open("POST", apiUrl, true); // true para asíncrono
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        console.log(response);
+        if (response.success === true) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "¡Éxito!",
+                        text: `La fecha de la carga de llaves al POS asociado al Nro de ticket: ${nro_ticket} fue registrada correctamente.`,
+                        confirmButtonText: "Aceptar", // <-- OPCIONAL: Puedes personalizar el texto del botón
+                        allowOutsideClick: false, // <-- ELIMINAR O COMENTAR esta línea
+                        color: "black", // <-- ELIMINAR O COMENTAR esta línea
+                       confirmButtonColor: "#003594", // <-- ELIMINAR O COMENTAR esta línea
+                    }).then((result) => {
+                        // Verifica si el botón de confirmación fue presionado
+                        if (result.isConfirmed) {
+                            location.reload(); // Recarga la página después de que el usuario haga clic en Aceptar
+                        }
+                    });
+                  } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: response.message || "No se pudo marcar la fecha de la llave.",
+                    });
+                }
+            } catch (error) {
+                console.error("Error al parsear la respuesta JSON:",error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Hubo un problema al procesar la respuesta del servidor.",
+                });
+            }
+        } else {
+            console.error("Error en la solicitud:", xhr.status, xhr.statusText);
+            Swal.fire({
+                icon: "error",
+                title: "Error de Servidor",
+                text: `El servidor respondió con el estado: ${xhr.status} ${xhr.statusText}`,
+            });
+        }
+    };
+
+    xhr.onerror = function () {
+        console.error("Error de red al intentar marcar la fecha de la llave.");
+        Swal.fire({
+            icon: "error",
+            title: "Error de Red",
+            text: "No se pudo conectar con el servidor. Verifica tu conexión.",
+        });
+    };
+
+    // Envía el id_ticket como JSON en el cuerpo de la solicitud
+    xhr.send(dataToSendString);
+}
 
 document.addEventListener("DOMContentLoaded", function () {
   // Obtén las referencias a los elementos del DOM que SÍ ESTÁN PRESENTES AL CARGAR LA PÁGINA
@@ -951,3 +1187,355 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+function formatTicketDetailsPanel(d) {
+  // d es el objeto `data` completo del ticket
+
+  const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
+  const initialImageAlt = "Cargando imagen del dispositivo...";
+
+  return `
+        <div class="container-fluid">
+            <div class="row mb-3 align-items-center">
+                <div class="col-md-3 text-center">
+                    <div id="device-image-container" class="p-2">
+                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" class="img-fluid rounded" style="max-width: 120px; height: auto; object-fit: contain;">
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <h4 style = "color: black;">Ticket #${d.nro_ticket}</h4>
+                    <hr class="mt-2 mb-3">
+                    <div class="row">
+                        <div class="col-sm-6 mb-2">
+                            <strong><div>Serial POS:</div></strong>
+                            ${d.serial_pos}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                            <strong><div>Estatus POS:</div></strong>
+                            ${d.estatus_inteliservices}
+                        </div><br>
+                        <div class="col-sm-6 mb-2">
+                             <br><strong><div>Fecha Instalación:</div></strong>
+                            ${d.fecha_instalacion}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                             <br><strong><div>Creación ticket:</div></strong>
+                            ${d.create_ticket}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                             <br><strong><div>Usuario Gestión:</div></strong>
+                            ${d.full_name_tecnico}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="row">
+                        <div class="col-sm-4 mb-2">
+                            <strong><div>Acción:</div></strong>
+                            <span class = "Accion-ticket">${d.name_accion_ticket}</span>
+                        </div>
+                         <div class="col-sm-8 mb-2" style = "margin-left: -7%;">
+                          <strong><div>Falla Reportada:</div></strong>
+                          <span class="falla-reportada-texto">${d.name_failure}</span>
+                        </div>
+                        <div class="col-sm-8 mb-2">
+                             <br><strong><div>Estatus Ticket:</div></strong>
+                            ${d.name_status_ticket}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="mt-2 mb-3">
+
+            <div class="row">
+                <div class="col-12">
+                    <h5 style = "color: black;" >Gestión / Historial:</h5>
+                    <div id="ticket-history-content">
+                        <p>Selecciona un ticket para cargar su historial.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function downloadImageModal(serial) {
+  // Considera renombrar a loadDeviceImage(serial) para mayor claridad
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhoto`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        //console.log("Respuesta de GetPhoto:", response); // Descomenta para depuración
+
+        // ***** CAMBIO CLAVE AQUÍ *****
+        // Selecciona el elemento de imagen en el panel de detalles, NO en un modal
+        const imgElement = document.getElementById("device-ticket-image");
+
+        if (imgElement) {
+          if (response.success && response.rutaImagen) {
+            const srcImagen = response.rutaImagen;
+            const claseImagen = response.claseImagen || ""; // Obtener la clase CSS, si no hay, usar cadena vacía
+
+            imgElement.src = srcImagen;
+            imgElement.alt = `Imagen del dispositivo ${serial}`; // Actualiza el alt text
+
+            // Opcional: Si 'claseImagen' trae clases CSS específicas que quieres añadir
+            // y no colisionan con img-fluid o rounded, puedes hacer:
+            // if (claseImagen) {
+            //     imgElement.classList.add(claseImagen);
+            // }
+            // Si 'claseImagen' es una clase para reemplazar el estilo (lo cual no es común aquí),
+            // entonces tendrías que asegurarte de que la clase de tu backend incluya
+            // las propiedades de img-fluid y rounded, o volver a añadirlas.
+            // Para este caso, con Bootstrap, probablemente no necesites asignar `className` aquí
+            // ya que `max-height` y `width: auto` en el style ya controlan el tamaño.
+          } else {
+            // Si no hay éxito o rutaImagen, carga una imagen de "no disponible"
+            imgElement.src = "assets/img/image-not-found.png"; // Crea esta imagen
+            imgElement.alt = `Imagen no disponible para serial ${serial}`;
+            console.warn(
+              "No se obtuvo ruta de imagen o éxito de la API para el serial:",
+              serial,
+              response.message
+            );
+          }
+        } else {
+          console.error(
+            'Error: No se encontró el elemento <img> con ID "device-ticket-image" en el DOM.'
+          );
+        }
+      } catch (error) {
+        console.error("Error parsing JSON response for image:", error);
+        const imgElement = document.getElementById("device-ticket-image");
+        if (imgElement) {
+          imgElement.src = "assets/img/error-loading-image.png"; // Crea esta imagen
+          imgElement.alt = "Error al cargar imagen";
+        }
+      }
+    } else {
+      console.error(
+        "Error al obtener la imagen (HTTP):",
+        xhr.status,
+        xhr.statusText
+      );
+      const imgElement = document.getElementById("device-ticket-image");
+      if (imgElement) {
+        imgElement.src = "assets/img/error-loading-image.png";
+        imgElement.alt = "Error de servidor al cargar imagen";
+      }
+    }
+  };
+
+  xhr.onerror = function () {
+    console.error(
+      "Error de red al intentar obtener la imagen para el serial:",
+      serial
+    );
+    const imgElement = document.getElementById("device-ticket-image");
+    if (imgElement) {
+      imgElement.src = "assets/img/network-error-image.png"; // Crea esta imagen
+      imgElement.alt = "Error de red";
+    }
+  };
+
+  const datos = `action=GetPhoto&serial=${encodeURIComponent(serial)}`;
+  xhr.send(datos);
+}
+
+function loadTicketHistory(ticketId) {
+    // 1. Obtener el contenedor del historial y mostrar mensaje de carga (usando jQuery)
+    const historyPanel = $("#ticket-history-content");
+    historyPanel.html(
+        '<p class="text-center text-muted">Cargando historial...</p>'
+    ); // Usar .html() de jQuery
+
+    // 2. Crear y configurar la solicitud AJAX (usando jQuery.ajax)
+    $.ajax({
+        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory1`,
+        type: "POST",
+        data: {
+            // jQuery formatea esto automáticamente a 'application/x-www-form-urlencoded'
+            action: "GetTicketHistory",
+            id_ticket: ticketId,
+        },
+        dataType: "json", // Le decimos a jQuery que esperamos una respuesta JSON
+        success: function (response) {
+            // Verificar si la respuesta es exitosa y contiene historial
+            if (response.success && response.history && response.history.length > 0) {
+                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">'; // Contenedor del acordeón
+
+                // Iterar sobre cada item del historial para construir el HTML
+                response.history.forEach((item, index) => {
+                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
+
+                    let statusHeaderClass = "";
+                    let statusHeaderText = "";
+
+                    // **Colores por defecto si no hay coincidencia o si el estado es nulo/vacío**
+                    let headerStyle = "background-color: #212529;"; // Gris oscuro (cambiado de "Gris claro" a #212529 para contrastar)
+                    let textColor = "color: #212529;"; // Texto oscuro 
+                    statusHeaderText = ""; // Sin texto extra por defecto
+
+                    if (item.name_status_ticket) {
+                        const statusLower = item.name_status_ticket.toLowerCase();
+                        if (statusLower.includes("abierto")) {
+                            headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
+                            textColor = "color: #ffffff;"; // Texto blanco
+                            statusHeaderText = " (Abierto)";
+                        } else if (
+                            statusLower.includes("cerrado") ||
+                            statusLower.includes("resuelto")
+                        ) {
+                            headerStyle = "background-color: #28a745;"; // Verde
+                            textColor = "color: #ffffff;"; // Texto blanco
+                            statusHeaderText = " (Cerrado)";
+                        } else if (
+                            statusLower.includes("pendiente") ||
+                            statusLower.includes("en proceso")
+                        ) {
+                            headerStyle = "background-color: #ffc107;"; // Amarillo
+                            textColor = "color: #343a40;"; // Texto oscuro
+                            statusHeaderText = " (En Proceso)";
+                        } else if (
+                            statusLower.includes("cancelado") ||
+                            statusLower.includes("rechazado")
+                        ) {
+                            headerStyle = "background-color: #dc3545;"; // Rojo
+                            textColor = "color: #ffffff;"; // Texto blanco
+                            statusHeaderText = " (Cancelado)";
+                        } else if (statusLower.includes("espera")) {
+                            headerStyle = "background-color: #6c757d;"; // Gris
+                            textColor = "color: #ffffff;"; // Texto blanco
+                            statusHeaderText = " (En Espera)";
+                        }
+                    }
+
+                    // Esta lógica sobrescribe el color y texto de la última gestión (index === 0)
+                    if (index === 0) {
+                        // Es la última gestión (la "actual")
+                        headerStyle = "background-color: #ffc107;"; // Amarillo
+                        textColor = "color: #343a40;"; // Texto oscuro
+                        statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`; // Agrega el estatus actual o 'Desconocido' si no existe. 
+                    } else {
+                        // Son gestiones pasadas
+                        headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
+                        textColor = "color: #ffffff;"; // Texto blanco
+                        // Se mantiene el statusHeaderText determinado anteriormente, o se deja vacío.
+                    }
+
+                    historyHtml += `
+                        <div class="card mb-3 custom-history-card"> 
+                            <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
+                                        data-toggle="collapse" data-target="#${collapseId}"
+                                        aria-expanded="${index === 0 ? "true" : "false"}" 
+                                        aria-controls="${collapseId}"
+                                        style="${textColor}">
+                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="${collapseId}" class="collapse ${index === 0 ? "show" : ""}"
+                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-borderless mb-0">
+                                            <tbody>
+                                                <tr>
+                                                    <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
+                                                    <td>${item.fecha_de_cambio || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Acción:</th>
+                                                    <td>${item.name_accion_ticket || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Operador de Gestión:</th>
+                                                    <td>${item.full_name_tecnico_gestion || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Coordinador:</th>
+                                                    <td>${item.full_name_coordinador || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Ticket:</th>
+                                                    <td>${item.name_status_ticket || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Laboratorio:</th>
+                                                    <td>${item.name_status_lab || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Domiciliación:</th>
+                                                    <td>${item.name_status_domiciliacion || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start" style="word-wrap: break-word; overflow-wrap: break-word;">Estatus Pago:</th>
+                                                    <td>${item.name_status_payment || "N/A"}</td>
+                                                </tr>
+                                                
+                                                ${item.name_status_lab === "Pendiente por repuesto" ? `
+                                                    <tr>
+                                                        <th class="text-start" style="word-wrap: break-word; overflow-wrap: break-word; font-size: 80%">Fecha Estimada de la Llegada de repuesto:</th>
+                                                        <td>${item.new_repuesto_date || "N/A"}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+
+                historyHtml += "</div>"; // Cierre del acordeón principal
+                historyPanel.html(historyHtml); // Insertar el HTML generado (con jQuery)
+
+                // Reiniciar tooltips (si usas Bootstrap 4)
+                if ($.fn && $.fn.tooltip) {
+                    $('[data-toggle="tooltip"]').tooltip("dispose"); 
+                    $('[data-toggle="tooltip"]').tooltip(); 
+                }
+            } else {
+                historyPanel.html(
+                    '<p class="text-center text-muted">No hay historial disponible para este ticket.</p>'
+                );
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            let errorMessage =
+                '<p class="text-center text-danger">Error al cargar el historial.</p>';
+            if (jqXHR.status === 0) {
+                errorMessage =
+                    '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+            } else if (jqXHR.status == 404) {
+                errorMessage =
+                    '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
+            } else if (jqXHR.status == 500) {
+                errorMessage =
+                    '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+            } else if (textStatus === "parsererror") {
+                errorMessage =
+                    '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+            } else if (textStatus === "timeout") {
+                errorMessage =
+                    '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+            } else if (textStatus === "abort") {
+                errorMessage =
+                    '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+            }
+            historyPanel.html(errorMessage);
+            console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+        },
+    });
+}

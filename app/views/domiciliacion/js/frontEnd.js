@@ -1,36 +1,28 @@
 function searchDomiciliacionTickets() {
     const xhr = new XMLHttpRequest();
-    // Cambia la ruta de la API para que sea más descriptiva para esta funcionalidad
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getDomiciliacionTickets`); // Nueva ruta de la API
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/getDomiciliacionTickets`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-    // Referencias a los elementos HTML
-    const tableContainerParent = document.getElementById('tableContainerParent'); // El div que contiene la tabla si lo usas para mostrar/ocultar
-    const existingTable = document.getElementById('tabla-ticket'); // La tabla HTML existente
-    const existingTableBody = document.getElementById('table-ticket-body'); // El tbody de la tabla existente
+    const tableContainerParent = document.getElementById('tableContainerParent');
+    const existingTable = document.getElementById('tabla-ticket');
+    const existingTableBody = document.getElementById('table-ticket-body');
+    const detailsPanel = document.getElementById("ticket-details-panel");
 
-    // 1. Destruir la instancia de DataTables si ya existe en la tabla.
-    // Esto es CRÍTICO para evitar errores cuando se llama la función múltiples veces.
     if ($.fn.DataTable.isDataTable('#tabla-ticket')) {
         $('#tabla-ticket').DataTable().destroy();
-        // Opcional: limpiar el thead y tbody para evitar duplicados si DataTables no los limpia completamente al destruir
         $('#tabla-ticket thead').empty();
         $('#tabla-ticket tbody').empty();
     }
 
-    // Limpiar mensajes previos de "No hay datos" o "Error"
     if (tableContainerParent) {
-        // Eliminar todos los párrafos de mensajes dentro del tableContainerParent
         const existingMessages = tableContainerParent.querySelectorAll('p.message-info, p.message-error');
         existingMessages.forEach(msg => msg.remove());
     }
 
-
     xhr.onload = function () {
-        // Asegúrate de que la tabla sea visible si hay datos
         if (tableContainerParent) {
-            existingTable.style.display = 'table'; // Mostrar la tabla
-            tableContainerParent.style.display = ''; // Asegurar que el contenedor padre también sea visible
+            existingTable.style.display = 'table';
+            tableContainerParent.style.display = '';
         }
 
         if (xhr.status >= 200 && xhr.status < 300) {
@@ -38,98 +30,95 @@ function searchDomiciliacionTickets() {
                 const response = JSON.parse(xhr.responseText);
 
                 if (response.success) {
-                    const TicketData = response.tickets; // Cambié 'ticket' a 'tickets' para pluralizar y ser más claro
+                    const TicketData = response.tickets;
 
-                    // Definir los títulos de las columnas exactamente como la función SQL los devuelve
-                    // Y aplicar tus nombres mejorados y diplomáticos
-                    const columnTitles = {
-                        id_ticket: 'ID Ticket',
-                        serial_pos: 'Serial POS',
-                        name_status_domiciliacion: 'Estado de Domiciliación', // Nombre mejorado
-                        rif: 'RIF',
-                        name_status_ticket: 'Estado del Ticket', // Nombre mejorado
-                        name_process_ticket: 'Proceso del Ticket', // Nombre mejorado
-                        name_accion_ticket: 'Acción Realizada', // Nombre mejorado
-                        name_status_lab: 'Estado de Laboratorio', // Nombre mejorado
-                        // No es necesario agregar 'Acciones' aquí, se maneja en columnsConfig directamente
-                    };
+                    // Definir la longitud de truncado para las celdas
+                    const displayLengthForTruncate = 25; // Puedes ajustar este valor
 
-                    // Generar dinámicamente el thead (encabezados de la tabla)
-                    const thead = existingTable.querySelector('thead');
-                    thead.innerHTML = ''; // Limpiar thead existente
-                    const headerRow = thead.insertRow();
-                    const columnsConfig = [];
-
-                    // Iterar sobre la primera fila de datos para obtener las claves y crear los encabezados
-                    // Esto asegura que la tabla siempre tenga los encabezados correctos de los datos recibidos
-                   if (TicketData && TicketData.length > 0) {
-                        const firstTicket = TicketData[0];
-                        for (const key in firstTicket) {
-                            if (firstTicket.hasOwnProperty(key)) {
-                                // === INICIO DE LA MODIFICACIÓN ===
-                                // Excluir la columna id_status_domiciliacion
-                                if (key === 'id_status_domiciliacion') {
-                                    continue; // Salta esta iteración, no se agrega esta columna
+                    const columnDefinitions = [
+                        { data: 'id_ticket', title: 'ID Ticket' },
+                        {
+                            data: 'razonsocial_cliente',
+                            title: 'Razon social',
+                            // *** MODIFICACIÓN PARA TRUNCAR/EXPANDIR TEXTO ***
+                            render: function (data, type, row) {
+                                if (type === 'display' && data && data.length > displayLengthForTruncate) {
+                                    return `<span class="truncated-cell" data-full-text="${data}">${data.substring(0, displayLengthForTruncate)}...</span>`;
                                 }
-                                // === FIN DE LA MODIFICACIÓN ===
-
-                                const th = document.createElement('th');
-                                th.textContent = columnTitles[key] || key; // Usa el título definido o el nombre de la clave
-                                headerRow.appendChild(th);
-                                columnsConfig.push({ data: key, title: columnTitles[key] || key, defaultContent: '' });
+                                return data;
                             }
-                        }
-
-                        // === AÑADIR LA COLUMNA DE ACCIONES DINÁMICA ===
-                        // Esta columna no viene de los datos, se genera en el frontend
-                        const actionsTh = document.createElement('th');
-                        actionsTh.textContent = 'Acciones';
-                        headerRow.appendChild(actionsTh); // Añadir el encabezado de Acciones
-
-                        columnsConfig.push({
-                            data: null, // No está vinculado a una propiedad de datos directa
+                            // ************************************************
+                        },
+                        { data: 'rif', title: 'Rif' },
+                        { data: 'serial_pos', title: 'Serial POS' },
+                        { data: 'name_status_domiciliacion', title: 'Estado de Domiciliación' },
+                        {
+                            data: 'name_accion_ticket',
+                            title: 'Acción Realizada',
+                            // *** MODIFICACIÓN PARA TRUNCAR/EXPANDIR TEXTO ***
+                            render: function (data, type, row) {
+                                if (type === 'display' && data && data.length > displayLengthForTruncate) {
+                                    return `<span class="truncated-cell" data-full-text="${data}">${data.substring(0, displayLengthForTruncate)}...</span>`;
+                                }
+                                return data;
+                            }
+                            // ************************************************
+                        },
+                        { data: 'name_status_lab', title: 'Estado de Laboratorio' },
+                        {
+                            data: null,
                             title: 'Acciones',
                             orderable: false,
                             searchable: false,
-                            width: "10%", // Ajusta el ancho si es necesario
+                            width: "10%",
                             render: function (data, type, row) {
                                 const idTicket = row.id_ticket;
-                                const currentStatusDomiciliacion = row.id_status_domiciliacion; // Usamos el ID del estado de domiciliación
-                                const currentNameStatusDomiciliacion = row.name_status_domiciliacion; // Usamos el nombre del estado de domiciliación
-                                // Si el id_status_domiciliacion es 2 (Solvente), el botón estará deshabilitado
+                                const currentStatusDomiciliacion = row.id_status_domiciliacion;
+                                const currentNameStatusDomiciliacion = row.name_status_domiciliacion;
+
                                 if (currentStatusDomiciliacion === '2') {
                                     return `<button class="btn btn-secondary btn-sm" disabled>Solvente</button>`;
                                 } else {
-                                    // Si no es 2, el botón estará habilitado para cambiar estatus
-                                    return `<button type="button" id= "BtnChange" class="btn btn-primary btn-sm cambiar-estatus-domiciliacion-btn"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#changeStatusDomiciliacionModal"
-                                                data-id="${idTicket}"
-                                                data-current-status-id="${currentStatusDomiciliacion}"
-                                                data-current-status-name="${currentNameStatusDomiciliacion}">
-                                                Cambiar Estatus
-                                            </button>`;
+                                    return `
+                                        <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-domiciliacion-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#changeStatusDomiciliacionModal"
+                                            data-id="${idTicket}"
+                                            data-current-status-id="${currentStatusDomiciliacion}"
+                                            data-current-status-name="${currentNameStatusDomiciliacion}">
+                                            Cambiar Estatus
+                                        </button>`;
                                 }
                             }
-                        });
+                        }
+                    ];
+
+                    const thead = existingTable.querySelector('thead');
+                    thead.innerHTML = '';
+                    const headerRow = thead.insertRow();
+                    columnDefinitions.forEach(col => {
+                        const th = document.createElement('th');
+                        th.textContent = col.title;
+                        headerRow.appendChild(th);
+                    });
 
 
-                        // Inicializa DataTable en la tabla existente
-                        $(existingTable).DataTable({
-                            
-                            responsive: true,
+                    if (TicketData && TicketData.length > 0) {
+                        const dataTableInstance = $(existingTable).DataTable({
+                            scrollX: "200px",
+                            responsive: false,
                             data: TicketData,
-                            columns: columnsConfig,
+                            columns: columnDefinitions,
                             "pagingType": "simple_numbers",
-                            "lengthMenu": [5, 10, 25, 50], // Más opciones de longitud
+                            "lengthMenu": [5, 10, 25, 50],
                             autoWidth: false,
                             "language": {
-                                "lengthMenu": "Mostrar _MENU_ registros",
+                                "lengthMenu": "Mostrar _MENU_",
                                 "emptyTable": "No hay datos disponibles en la tabla",
                                 "zeroRecords": "No se encontraron resultados para la búsqueda",
-                                "info": "Mostrando página _PAGE_ de _PAGES_ ( _TOTAL_ registro(s) )",
+                                "info": "(_PAGE_/_PAGES_) _TOTAL_ Registros",
                                 "infoEmpty": "No hay datos disponibles",
-                                "infoFiltered": "(Filtrado de _MAX_ datos disponibles)",
+                                "infoFiltered": " de _MAX_ Disponibles",
                                 "search": "Buscar:",
                                 "loadingRecords": "Buscando...",
                                 "processing": "Procesando...",
@@ -141,24 +130,94 @@ function searchDomiciliacionTickets() {
                                 }
                             }
                         });
+
+                        // ************* INICIO: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO (Aplicada DESPUÉS de la inicialización de DataTables) *************
+                        $("#tabla-ticket tbody")
+                            .off("click", ".truncated-cell, .expanded-cell") // Usa .off() para evitar múltiples listeners
+                            .on("click", ".truncated-cell, .expanded-cell", function (e) {
+                                e.stopPropagation(); // Evita que el clic en la celda active el clic de la fila completa
+                                const $cellSpan = $(this);
+                                const fullText = $cellSpan.data("full-text"); // Obtiene el texto completo del atributo data-
+
+                                if ($cellSpan.hasClass("truncated-cell")) {
+                                    $cellSpan
+                                        .removeClass("truncated-cell")
+                                        .addClass("expanded-cell");
+                                    $cellSpan.text(fullText);
+                                } else {
+                                    $cellSpan
+                                        .removeClass("expanded-cell")
+                                        .addClass("truncated-cell");
+                                    // Asegúrate de que displayLengthForTruncate sea accesible o defínela aquí de nuevo
+                                    const displayLength = 25; // La misma longitud de truncado usada en el render
+                                    if (fullText.length > displayLength) {
+                                        $cellSpan.text(
+                                            fullText.substring(0, displayLength) + "..."
+                                        );
+                                    } else {
+                                        $cellSpan.text(fullText); // Si el texto es corto, no debería tener "...", solo el texto completo
+                                    }
+                                }
+                            });
+                        // ************* FIN: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO *************
+
+
+                        $("#tabla-ticket tbody")
+                            .off("click", "tr") // Mantener este .off() para el clic de la fila
+                            .on("click", "tr", function () {
+                                const tr = $(this);
+                                const rowData = dataTableInstance.row(tr).data();
+
+                                if (!rowData) {
+                                    return;
+                                }
+
+                                $("#tabla-ticket tbody tr").removeClass("table-active");
+                                tr.addClass("table-active");
+
+                                const ticketId = rowData.id_ticket;
+
+                                const selectedTicketDetails = TicketData.find(
+                                    (t) => t.id_ticket == ticketId
+                                );
+
+                                if (selectedTicketDetails) {
+                                    detailsPanel.innerHTML = formatTicketDetailsPanel(
+                                        selectedTicketDetails
+                                    );
+                                    loadTicketHistory(ticketId);
+                                    if (selectedTicketDetails.serial_pos) {
+                                        downloadImageModal(selectedTicketDetails.serial_pos);
+                                    } else {
+                                        const imgElement = document.getElementById(
+                                            "device-ticket-image"
+                                        );
+                                        if (imgElement) {
+                                            imgElement.src =
+                                                '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png';
+                                            imgElement.alt = "Serial no disponible";
+                                        }
+                                    }
+                                } else {
+                                    detailsPanel.innerHTML =
+                                        "<p>No se encontraron detalles para este ticket.</p>";
+                                }
+                            });
                     } else {
-                        // Si no hay datos, mostrar mensaje y ocultar tabla
-                        existingTable.style.display = 'none'; // Ocultar la tabla
+                        existingTable.style.display = 'none';
                         const noDataMessage = document.createElement('p');
-                        noDataMessage.className = 'message-info'; // Clase para identificar este mensaje
+                        noDataMessage.className = 'message-info';
                         noDataMessage.textContent = 'No hay datos disponibles para el ID de usuario proporcionado.';
                         if (tableContainerParent) {
                             tableContainerParent.appendChild(noDataMessage);
                         } else {
-                            // Fallback si tableContainerParent no existe
                             existingTable.parentNode.insertBefore(noDataMessage, existingTable);
                         }
                     }
                 } else {
-                    // Manejo de errores de la API
-                    existingTable.style.display = 'none'; // Ocultar la tabla
+                    existingTable.style.display = 'none';
                     const errorMessage = document.createElement('p');
-                    errorMessage.className = 'message-error'; // Clase para identificar este mensaje
+                    errorMessage.className = 'message-error';
                     errorMessage.textContent = response.message || 'Error al cargar los datos desde la API.';
                     if (tableContainerParent) {
                         tableContainerParent.appendChild(errorMessage);
@@ -168,10 +227,9 @@ function searchDomiciliacionTickets() {
                     console.error('Error de la API:', response.message);
                 }
             } catch (error) {
-                // Manejo de errores de parsing JSON
-                existingTable.style.display = 'none'; // Ocultar la tabla
+                existingTable.style.display = 'none';
                 const errorMessage = document.createElement('p');
-                errorMessage.className = 'message-error'; // Clase para identificar este mensaje
+                errorMessage.className = 'message-error';
                 errorMessage.textContent = 'Error al procesar la respuesta del servidor (JSON inválido).';
                 if (tableContainerParent) {
                     tableContainerParent.appendChild(errorMessage);
@@ -181,10 +239,9 @@ function searchDomiciliacionTickets() {
                 console.error('Error parsing JSON:', error);
             }
         } else if (xhr.status === 404) {
-            // Manejo de 404 (Endpoint no encontrado)
-            existingTable.style.display = 'none'; // Ocultar la tabla
+            existingTable.style.display = 'none';
             const noDataMessage = document.createElement('p');
-            noDataMessage.className = 'message-info'; // Clase para identificar este mensaje
+            noDataMessage.className = 'message-info';
             noDataMessage.textContent = 'El servicio solicitado no se encontró o no hay datos.';
             if (tableContainerParent) {
                 tableContainerParent.appendChild(noDataMessage);
@@ -192,10 +249,9 @@ function searchDomiciliacionTickets() {
                 existingTable.parentNode.insertBefore(noDataMessage, existingTable);
             }
         } else {
-            // Manejo de otros errores HTTP
-            existingTable.style.display = 'none'; // Ocultar la tabla
+            existingTable.style.display = 'none';
             const errorMessage = document.createElement('p');
-            errorMessage.className = 'message-error'; // Clase para identificar este mensaje
+            errorMessage.className = 'message-error';
             errorMessage.textContent = `Error del servidor: ${xhr.status} ${xhr.statusText}`;
             if (tableContainerParent) {
                 tableContainerParent.appendChild(errorMessage);
@@ -207,10 +263,9 @@ function searchDomiciliacionTickets() {
     };
 
     xhr.onerror = function () {
-        // Manejo de errores de red
-        existingTable.style.display = 'none'; // Ocultar la tabla
+        existingTable.style.display = 'none';
         const errorMessage = document.createElement('p');
-        errorMessage.className = 'message-error'; // Clase para identificar este mensaje
+        errorMessage.className = 'message-error';
         errorMessage.textContent = 'Error de conexión a la red. Verifica tu conexión a Internet.';
         if (tableContainerParent) {
             tableContainerParent.appendChild(errorMessage);
@@ -220,22 +275,371 @@ function searchDomiciliacionTickets() {
         console.error('Error de red');
     };
 
-    // Asegúrate de que este ID corresponda al input donde el usuario introduce el ID
-    const id_user_input = document.getElementById('iduser'); // Asumiendo que 'idTicket' es el ID de tu input
+    const id_user_input = document.getElementById('iduser');
     let id_user_value = '';
     if (id_user_input) {
         id_user_value = id_user_input.value;
     } else {
-        console.warn("Elemento con ID 'idTicket' no encontrado. La búsqueda podría no funcionar correctamente.");
-        // Opcional: podrías mostrar un mensaje de error al usuario aquí
-        // return; // Podrías detener la ejecución si el ID es crítico
+        console.warn("Elemento con ID 'iduser' no encontrado. La búsqueda podría no funcionar correctamente.");
     }
 
-    // Envía el filtro como parámetro
     const datos = `action=getDomiciliacionTickets&id_user=${id_user_value}`;
     xhr.send(datos);
 }
+
 document.addEventListener('DOMContentLoaded', searchDomiciliacionTickets);
+
+function formatTicketDetailsPanel(d) {
+  // d es el objeto `data` completo del ticket
+
+  const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
+  const initialImageAlt = "Cargando imagen del dispositivo...";
+
+  return `
+        <div class="container-fluid">
+            <div class="row mb-3 align-items-center">
+                <div class="col-md-3 text-center">
+                    <div id="device-image-container" class="p-2">
+                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" class="img-fluid rounded" style="max-width: 120px; height: auto; object-fit: contain;">
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <h4 style = "color: black;">Ticket #${d.nro_ticket}</h4>
+                    <hr class="mt-2 mb-3">
+                    <div class="row">
+                        <div class="col-sm-6 mb-2">
+                            <strong><div>Serial POS:</div></strong>
+                            ${d.serial_pos}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                            <strong><div>Estatus POS:</div></strong>
+                            ${d.desc_estatus}
+                        </div><br>
+                        <div class="col-sm-6 mb-2">
+                             <br><strong><div>Fecha Instalación:</div></strong>
+                            ${d.fechainstalacion}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                             <br><strong><div>Creación ticket:</div></strong>
+                            ${d.create_ticket}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                             <br><strong><div>Usuario Gestión:</div></strong>
+                            ${d.full_name_tecnico}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="row">
+                        <div class="col-sm-4 mb-2">
+                            <strong><div>Acción:</div></strong>
+                            <span class = "Accion-ticket">${d.name_accion_ticket}</span>
+                        </div>
+                         <div class="col-sm-8 mb-2" style = "margin-left: -7%;">
+                          <strong><div>Falla Reportada:</div></strong>
+                          <span class="falla-reportada-texto">${d.name_failure}</span>
+                        </div>
+                        <div class="col-sm-8 mb-2">
+                             <br><strong><div>Estatus Ticket:</div></strong>
+                            ${d.name_status_ticket}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="mt-2 mb-3">
+
+            <div class="row">
+                <div class="col-12">
+                    <h5 style = "color: black;" >Gestión / Historial:</h5>
+                    <div id="ticket-history-content">
+                        <p>Selecciona un ticket para cargar su historial.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function downloadImageModal(serial) {
+  // Considera renombrar a loadDeviceImage(serial) para mayor claridad
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhoto`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        //console.log("Respuesta de GetPhoto:", response); // Descomenta para depuración
+
+        // ***** CAMBIO CLAVE AQUÍ *****
+        // Selecciona el elemento de imagen en el panel de detalles, NO en un modal
+        const imgElement = document.getElementById("device-ticket-image");
+
+        if (imgElement) {
+          if (response.success && response.rutaImagen) {
+            const srcImagen = response.rutaImagen;
+            const claseImagen = response.claseImagen || ""; // Obtener la clase CSS, si no hay, usar cadena vacía
+
+            imgElement.src = srcImagen;
+            imgElement.alt = `Imagen del dispositivo ${serial}`; // Actualiza el alt text
+
+            // Opcional: Si 'claseImagen' trae clases CSS específicas que quieres añadir
+            // y no colisionan con img-fluid o rounded, puedes hacer:
+            // if (claseImagen) {
+            //     imgElement.classList.add(claseImagen);
+            // }
+            // Si 'claseImagen' es una clase para reemplazar el estilo (lo cual no es común aquí),
+            // entonces tendrías que asegurarte de que la clase de tu backend incluya
+            // las propiedades de img-fluid y rounded, o volver a añadirlas.
+            // Para este caso, con Bootstrap, probablemente no necesites asignar `className` aquí
+            // ya que `max-height` y `width: auto` en el style ya controlan el tamaño.
+          } else {
+            // Si no hay éxito o rutaImagen, carga una imagen de "no disponible"
+            imgElement.src = "assets/img/image-not-found.png"; // Crea esta imagen
+            imgElement.alt = `Imagen no disponible para serial ${serial}`;
+            console.warn(
+              "No se obtuvo ruta de imagen o éxito de la API para el serial:",
+              serial,
+              response.message
+            );
+          }
+        } else {
+          console.error(
+            'Error: No se encontró el elemento <img> con ID "device-ticket-image" en el DOM.'
+          );
+        }
+      } catch (error) {
+        console.error("Error parsing JSON response for image:", error);
+        const imgElement = document.getElementById("device-ticket-image");
+        if (imgElement) {
+          imgElement.src = "assets/img/error-loading-image.png"; // Crea esta imagen
+          imgElement.alt = "Error al cargar imagen";
+        }
+      }
+    } else {
+      console.error(
+        "Error al obtener la imagen (HTTP):",
+        xhr.status,
+        xhr.statusText
+      );
+      const imgElement = document.getElementById("device-ticket-image");
+      if (imgElement) {
+        imgElement.src = "assets/img/error-loading-image.png";
+        imgElement.alt = "Error de servidor al cargar imagen";
+      }
+    }
+  };
+
+  xhr.onerror = function () {
+    console.error(
+      "Error de red al intentar obtener la imagen para el serial:",
+      serial
+    );
+    const imgElement = document.getElementById("device-ticket-image");
+    if (imgElement) {
+      imgElement.src = "assets/img/network-error-image.png"; // Crea esta imagen
+      imgElement.alt = "Error de red";
+    }
+  };
+
+  const datos = `action=GetPhoto&serial=${encodeURIComponent(serial)}`;
+  xhr.send(datos);
+}
+
+function loadTicketHistory(ticketId) {
+    // 1. Obtener el contenedor del historial y mostrar mensaje de carga (usando jQuery)
+    const historyPanel = $("#ticket-history-content");
+    historyPanel.html(
+        '<p class="text-center text-muted">Cargando historial...</p>'
+    ); // Usar .html() de jQuery
+
+    // 2. Crear y configurar la solicitud AJAX (usando jQuery.ajax)
+    $.ajax({
+        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory1`,
+        type: "POST",
+        data: {
+            // jQuery formatea esto automáticamente a 'application/x-www-form-urlencoded'
+            action: "GetTicketHistory",
+            id_ticket: ticketId,
+        },
+        dataType: "json", // Le decimos a jQuery que esperamos una respuesta JSON
+        success: function (response) {
+            // Verificar si la respuesta es exitosa y contiene historial
+            if (response.success && response.history && response.history.length > 0) {
+                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">'; // Contenedor del acordeón
+
+                // Iterar sobre cada item del historial para construir el HTML
+                response.history.forEach((item, index) => {
+                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
+
+                    let statusHeaderClass = "";
+                    let statusHeaderText = "";
+
+                    // **Colores por defecto si no hay coincidencia o si el estado es nulo/vacío**
+                    let headerStyle = "background-color: #212529;"; // Gris oscuro (cambiado de "Gris claro" a #212529 para contrastar)
+                    let textColor = "color: #212529;"; // Texto oscuro 
+                    statusHeaderText = ""; // Sin texto extra por defecto
+
+                    if (item.name_status_ticket) {
+                        const statusLower = item.name_status_ticket.toLowerCase();
+                        if (statusLower.includes("abierto")) {
+                            headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
+                            textColor = "color: #ffffff;"; // Texto blanco
+                            statusHeaderText = " (Abierto)";
+                        } else if (
+                            statusLower.includes("cerrado") ||
+                            statusLower.includes("resuelto")
+                        ) {
+                            headerStyle = "background-color: #28a745;"; // Verde
+                            textColor = "color: #ffffff;"; // Texto blanco
+                            statusHeaderText = " (Cerrado)";
+                        } else if (
+                            statusLower.includes("pendiente") ||
+                            statusLower.includes("en proceso")
+                        ) {
+                            headerStyle = "background-color: #ffc107;"; // Amarillo
+                            textColor = "color: #343a40;"; // Texto oscuro
+                            statusHeaderText = " (En Proceso)";
+                        } else if (
+                            statusLower.includes("cancelado") ||
+                            statusLower.includes("rechazado")
+                        ) {
+                            headerStyle = "background-color: #dc3545;"; // Rojo
+                            textColor = "color: #ffffff;"; // Texto blanco
+                            statusHeaderText = " (Cancelado)";
+                        } else if (statusLower.includes("espera")) {
+                            headerStyle = "background-color: #6c757d;"; // Gris
+                            textColor = "color: #ffffff;"; // Texto blanco
+                            statusHeaderText = " (En Espera)";
+                        }
+                    }
+
+                    // Esta lógica sobrescribe el color y texto de la última gestión (index === 0)
+                    if (index === 0) {
+                        // Es la última gestión (la "actual")
+                        headerStyle = "background-color: #ffc107;"; // Amarillo
+                        textColor = "color: #343a40;"; // Texto oscuro
+                        statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`; // Agrega el estatus actual o 'Desconocido' si no existe. 
+                    } else {
+                        // Son gestiones pasadas
+                        headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
+                        textColor = "color: #ffffff;"; // Texto blanco
+                        // Se mantiene el statusHeaderText determinado anteriormente, o se deja vacío.
+                    }
+
+                    historyHtml += `
+                        <div class="card mb-3 custom-history-card"> 
+                            <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
+                                        data-toggle="collapse" data-target="#${collapseId}"
+                                        aria-expanded="${index === 0 ? "true" : "false"}" 
+                                        aria-controls="${collapseId}"
+                                        style="${textColor}">
+                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="${collapseId}" class="collapse ${index === 0 ? "show" : ""}"
+                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-borderless mb-0">
+                                            <tbody>
+                                                <tr>
+                                                    <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
+                                                    <td>${item.fecha_de_cambio || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Acción:</th>
+                                                    <td>${item.name_accion_ticket || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Operador de Gestión:</th>
+                                                    <td>${item.full_name_tecnico_gestion || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Coordinador:</th>
+                                                    <td>${item.full_name_coordinador || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Ticket:</th>
+                                                    <td>${item.name_status_ticket || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Laboratorio:</th>
+                                                    <td>${item.name_status_lab || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Domiciliación:</th>
+                                                    <td>${item.name_status_domiciliacion || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start" style="word-wrap: break-word; overflow-wrap: break-word;">Estatus Pago:</th>
+                                                    <td>${item.name_status_payment || "N/A"}</td>
+                                                </tr>
+                                                
+                                                ${item.name_status_lab === "Pendiente por repuesto" ? `
+                                                    <tr>
+                                                        <th class="text-start" style="word-wrap: break-word; overflow-wrap: break-word; font-size: 80%">Fecha Estimada de la Llegada de repuesto:</th>
+                                                        <td>${item.new_repuesto_date || "N/A"}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+
+                historyHtml += "</div>"; // Cierre del acordeón principal
+                historyPanel.html(historyHtml); // Insertar el HTML generado (con jQuery)
+
+                // Reiniciar tooltips (si usas Bootstrap 4)
+                if ($.fn && $.fn.tooltip) {
+                    $('[data-toggle="tooltip"]').tooltip("dispose"); 
+                    $('[data-toggle="tooltip"]').tooltip(); 
+                }
+            } else {
+                historyPanel.html(
+                    '<p class="text-center text-muted">No hay historial disponible para este ticket.</p>'
+                );
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            let errorMessage =
+                '<p class="text-center text-danger">Error al cargar el historial.</p>';
+            if (jqXHR.status === 0) {
+                errorMessage =
+                    '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+            } else if (jqXHR.status == 404) {
+                errorMessage =
+                    '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
+            } else if (jqXHR.status == 500) {
+                errorMessage =
+                    '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+            } else if (textStatus === "parsererror") {
+                errorMessage =
+                    '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+            } else if (textStatus === "timeout") {
+                errorMessage =
+                    '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+            } else if (textStatus === "abort") {
+                errorMessage =
+                    '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+            }
+            historyPanel.html(errorMessage);
+            console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+        },
+    });
+}
 
 $(document).ready(function () {
     const changeStatusDomiciliacionModalElement = document.getElementById("changeStatusDomiciliacionModal");

@@ -15,23 +15,23 @@ function mi_navbar()
     <title>
         <?php echo tituloPagina; ?>
     </title>
+
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
+
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
 
-    <link rel="stylesheet" type="text/css"
-        href="<?php echo APP; ?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css" />
+
 
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
 
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-    <link rel="stylesheet" type="text/css"
-        href="<?php echo APP; ?>app/plugins/bootstrap-5.3.6/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/bootstrap.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
 
     <style>
@@ -54,7 +54,7 @@ function mi_navbar()
             /* Ejemplo: Espaciado interno */
             font-size: 0.9em;
             /* Ejemplo: Tamaño de la fuente */
-            width: 18%;
+            width: 30%;
         }
 
         /* Estilizar el label "Buscar:" */
@@ -63,9 +63,9 @@ function mi_navbar()
             /* Ejemplo: Texto en negrita */
             color: #333;
             /* Ejemplo: Color del texto */
-            margin-right: 0.5em;
+            margin-right: -0.5em;
             /* Ejemplo: Espacio a la derecha del label */
-            margin-left: -100%;
+            margin-left: -7%;
         }
 
         /* Estilizar el input de búsqueda */
@@ -305,39 +305,50 @@ function mi_navbar()
     <?php require_once 'app/core/components/navbar/index.php';
     mi_navbar(); ?>
     <main class="main-content position-relative border-radius-lg">
-        <div class="container-fluid py-4" style="padding-left: 2%;">
-            <div id="Row" class="row mt-4">
-                <div class="cord">
-
-                    <div class="card">
-                        <div class="card-header pb-0 p-3">
-                            <div class="col-lg-12 col-md-12 mt-4 mb-4">
-                                <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
-                                    <strong>
-                                        <h5 class="text-black text-capitalize ps-3">Verificación de Domiciliación</h5>
-                                    </strong>
+        <div class="container-fluid py-4" style="padding-left: 2%; height: calc(100vh - 80px);">
+            <div class="row h-100">
+                <div class="col-md-7 h-100 d-flex flex-column">
+                    <div id="Row" class="row mt-4">
+                        <div class="cord">
+                            <div class="card">
+                                <div class="card-header pb-0 p-3">
+                                    <div class="col-lg-12 col-md-12 mt-4 mb-4">
+                                        <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
+                                            <strong>
+                                                <h5 class="text-black text-capitalize ps-3" style = "color: black">Verificación de Domiciliación</h5>
+                                            </strong>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
+                                        <thead>
+                                        </thead>
+                                        <tbody id="table-ticket-body">
+                                            <tr>
+                                                <td colspan="3">No hay datos</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-between">
-                                <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
-                            </div>
                         </div>
-                        <div class="table-responsive">
-                            <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
-                                <thead>
-                                </thead>
-                                <tbody id="table-ticket-body">
-                                    <tr>
-                                        <td colspan="3">No hay datos</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5 h-100 d-flex flex-column border-start ps-4">
+                    <h3 class="mb-3">Detalles del Ticket</h3>
+                    <div id="ticket-details-panel" class="flex-grow-1 overflow-auto p-3 bg-light rounded">
+                        <strong>
+                            <p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>
+                        </strong>
                     </div>
                 </div>
             </div>
         </div>
-    <<input type="hidden" id="iduser" value="<?php echo $_SESSION['id_user'] ?>">
+        <input type="hidden" id="iduser" value="<?php echo $_SESSION['id_user'] ?>">
             <div class="modal fade" id="changeStatusDomiciliacionModal" tabindex="-1" aria-labelledby="changeStatusDomiciliacionModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -369,7 +380,6 @@ function mi_navbar()
             </div>
         <input type="hidden" id="idTicket">
     </main>
-
 
     <div class="fixed-plugin">
         <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
@@ -460,43 +470,37 @@ function mi_navbar()
             </div>
         </div>
     </div>
-    <!-- Github buttons -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
 
-    <!-- Bootstrap-->
     <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
 
-    <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.js"></script>
-
-    <!--JQUERY-->
     <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
     <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
-    <script
-        src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
 
-    <!--   Core JS Files   -->
     <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
     <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
 
-    <!-- Datatable -->
-    <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
-    <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
+    <script src="<?php echo APP; ?>DataTable/dataTables.buttons.min.js"></script>
+    <script src="<?php echo APP; ?>DataTable/buttons.print.min.js"></script>
+    <script src="<?php echo APP; ?>DataTable/buttons.flash.min.js"></script>
+    <script src="<?php echo APP; ?>DataTable/pdfmake.min.js"></script>
+    <script src="<?php echo APP; ?>DataTable/jszip.min.js"></script>
+    <script src="<?php echo APP; ?>DataTable/vfs_fonts.js"></script>
+    <script src="<?php echo APP; ?>DataTable/buttons.html5.min.js"></script>
 
-    <!--  SweetAlert   -->
+
+    <script src="<?php echo APP; ?>js/Datatablebuttons5.js"></script>
+    <script src="<?php echo APP; ?>js/Datatablebuttons.min.js"></script>
+    <script src="<?php echo APP; ?>js/Datatablebuttonsprint.min.js"></script>
+    <script src="<?php echo APP; ?>js/datatables.js"></script>
+
     <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
     <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
-
-    <!--MASCARAS JQUERY-->
-    <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
-
-    <!-- Custom scripts for all pages-->
-    <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
 
     <?php
     if (isset($this->js)) {
