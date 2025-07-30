@@ -66,6 +66,7 @@ function getTicketData() {
         id_ticket: "ID Ticket",
         nro_ticket: "Nro Ticket",
         rif: "Rif",
+        serial_pos: "Serial",
         razonsocial_cliente: "Razón Social", // Columna donde aplicaremos el truncado
         full_name_tecnicoassignado: "Técnico Asignado",
         fecha_envio_a_taller: "Fecha Envío a Taller",
@@ -342,33 +343,33 @@ function getTicketData() {
 
                               // Inicialmente, establecer "Asignados" como activo y aplicar el filtro
                               setActiveButton("btn-por-asignar");
-                                  dataTableInstance.column(8).search("Recibido en Taller", true).draw();
+                                  dataTableInstance.column(9).search("Recibido en Taller", true).draw();
 
                                       $("#btn-por-asignar").on("click", function () {
                                   dataTableInstance.columns().search('').draw(false);
-                                  dataTableInstance.column(10).visible(false); // Índice 6 para "Técnico Asignado
-                                  dataTableInstance.column(8).search("Recibido en Taller", true).draw();
+                                  dataTableInstance.column(11).visible(false); // Índice 6 para "Técnico Asignado
+                                  dataTableInstance.column(9).search("Recibido en Taller", true).draw();
                                   setActiveButton("btn-por-asignar");
                               });
 
                               // Tus event listeners de clic están correctos
                               $("#btn-asignados").on("click", function () {
                                   dataTableInstance.columns().search('').draw(false);
-                                  dataTableInstance.column(7).search("Enviado a Taller", true).draw();
-                                  dataTableInstance.column(8).search("En proceso de Reparación|Reparado|Pendiente por repuesto",  true, false, false).draw();
+                                  dataTableInstance.column(8).search("Enviado a Taller", true).draw();
+                                  dataTableInstance.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto",  true, false, false).draw();
                                   setActiveButton("btn-asignados");
                               });
 
                               $("#btn-recibidos").on("click", function () {
                                   dataTableInstance.columns().search('').draw(false);
-                                  dataTableInstance.column(7).search("Enviado a Taller", true).draw();
-                                  dataTableInstance.column(7).search("En espera confirmación carga de llaves", true).draw();
+                                  dataTableInstance.column(8).search("Enviado a Taller", true).draw();
+                                  dataTableInstance.column(8).search("En espera confirmación carga de llaves", true).draw();
                                   setActiveButton("btn-recibidos");
                               });
 
                            $("#btn-devuelto").on("click", function () {
                               dataTableInstance.columns().search('').draw(false);
-                              dataTableInstance.column(7).search("Enviado devuelta al Rosal").draw();
+                              dataTableInstance.column(8).search("Enviado devuelta al Rosal").draw();
 
                               // Obtener todos los botones de carga de llave y ocultarlos
                               document.querySelectorAll(".load-key-button").forEach(button => {
@@ -477,8 +478,7 @@ function getTicketData() {
                                     return;
                                 }
 
-                                $("#tabla-ticket tbody tr").removeClass("table-active");
-                                tr.addClass("table-active");
+                                $("#tabla-ticket tbody tr").removeClass("table-active");tr.addClass("table-active");
 
                                 const ticketId = rowData.id_ticket;
 

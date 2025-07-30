@@ -707,6 +707,15 @@
                 padding: 2px 5px;
                 border-radius: 3px;
             }
+
+            
+            #tabla-ticket tbody tr.table-active {
+                background-color: #CCE5FF !important; /* Un gris claro para el resaltado */
+                color: #333; /* Color de texto para que sea legible sobre el gris */
+                /* Puedes añadir un borde o sombra si lo deseas */
+                /* border: 1px solid #ccc; */
+                /* box-shadow: 0 0 5px rgba(0,0,0,0.2); */
+            }
         </style>
     </head>
 
