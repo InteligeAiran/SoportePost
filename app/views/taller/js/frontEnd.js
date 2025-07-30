@@ -170,6 +170,7 @@ function getTicketData() {
                                 const currentStatus = row.name_status_lab;
                                 const nroTicket = row.nro_ticket;
                                 const confirmTaller = row.confirmreceive;
+                                const serialPos = row.serial_pos || ""; // Asegúrate de que serial_pos esté definido
 
                                 let buttonsHtml = "";
 
@@ -183,7 +184,7 @@ function getTicketData() {
                                 ) {
                                     buttonsHtml += `
                                         <button type="button" id = "CheckConfirmTaller"  class="btn btn-warning btn-sm confirm-waiting-btn"
-                                            title="En espera de confirmar en el taller"  data-id-ticket="${idTicket}" data-nro-ticket="${nroTicket}">
+                                            title="En espera de confirmar en el taller" data-serial-pos = "${serialPos}"  data-id-ticket="${idTicket}" data-nro-ticket="${nroTicket}">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-all" viewBox="0 0 16 16">
                                                 <path d="M8.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L2.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093L8.95 4.992zm-.92 5.14.92.92a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 1 0-1.091-1.028L9.477 9.417l-.485-.486z"/>
                                             </svg>
@@ -208,6 +209,7 @@ function getTicketData() {
                         columnsConfig.push({
                             data: null,
                             title: "Carga de Llave",
+                            name: "carga_de_llave", // <-- Añade esta línea para darle un nombre
                             orderable: false,
                             searchable: false,
                             visible: shouldShowCargaLlaveColumn, // <--- APLICA LA VISIBILIDAD AQUI
@@ -232,6 +234,7 @@ function getTicketData() {
                         columnsConfig.push({
                             data: null,
                             title: "Acción", // Nuevo título para la columna del botón
+                            name: "Enviar_AlRosal", // Nombre para la columna del botón
                             orderable: false,
                             searchable: false,
                             visible: true, // El botón SIEMPRE es visible si la columna es visible
@@ -253,7 +256,8 @@ function getTicketData() {
                                                                           title="Enviar Al Rosal" 
                                                                           data-id-ticket="${row.id_ticket}" 
                                                                           data-nro-ticket="${row.nro_ticket}" 
-                                                                          data-has-send-key-date="${dataSent}">
+                                                                          data-has-send-key-date="${dataSent}"
+                                                                          data-serial-pos="${row.serial_pos}">
                                                                       <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-headset" viewBox="0 0 16 16">
                                                                         <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5"/>
                                                                       </svg>
@@ -342,30 +346,43 @@ function getTicketData() {
                               }
 
                               // Inicialmente, establecer "Asignados" como activo y aplicar el filtro
-                              setActiveButton("btn-por-asignar");
-                                  dataTableInstance.column(9).search("Recibido en Taller", true).draw();
-
-                                      $("#btn-por-asignar").on("click", function () {
                                   dataTableInstance.columns().search('').draw(false);
-                                  dataTableInstance.column(11).visible(false); // Índice 6 para "Técnico Asignado
                                   dataTableInstance.column(9).search("Recibido en Taller", true).draw();
+                                  dataTableInstance.column('carga_de_llave:name').visible(false);
+                                  dataTableInstance.column('Enviar_AlRosal:name').visible(false); // Asegúrate de que esta columna esté visible
+                                  dataTableInstance.column(11).visible(false); // Índice 6 para "Técnico Asignado
+                                  setActiveButton("btn-por-asignar");
+
+
+                                  $("#btn-por-asignar").on("click", function () {
+                                  dataTableInstance.columns().search('').draw(false);
+                                  dataTableInstance.column(9).search("Recibido en Taller", true).draw();
+                                  dataTableInstance.column('carga_de_llave:name').visible(false);
+                                  dataTableInstance.column('Enviar_AlRosal:name').visible(false); // Asegúrate de que esta columna esté visible
+                                  dataTableInstance.column(11).visible(false); // Índice 6 para "Técnico Asignado
                                   setActiveButton("btn-por-asignar");
                               });
 
                               // Tus event listeners de clic están correctos
                               $("#btn-asignados").on("click", function () {
                                   dataTableInstance.columns().search('').draw(false);
-                                  dataTableInstance.column(8).search("Enviado a Taller", true).draw();
+                                  dataTableInstance.column(8).search("En Taller", true).draw();
                                   dataTableInstance.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto",  true, false, false).draw();
+                                  dataTableInstance.column('carga_de_llave:name').visible(true);
+                                  dataTableInstance.column('Enviar_AlRosal:name').visible(true); // Asegúrate de que esta columna esté visible
+                                  dataTableInstance.column(11).visible(false); 
                                   setActiveButton("btn-asignados");
                               });
 
                               $("#btn-recibidos").on("click", function () {
-                                  dataTableInstance.columns().search('').draw(false);
-                                  dataTableInstance.column(8).search("Enviado a Taller", true).draw();
-                                  dataTableInstance.column(8).search("En espera confirmación carga de llaves", true).draw();
-                                  setActiveButton("btn-recibidos");
-                              });
+                              dataTableInstance.columns().search('').draw(false);
+                              dataTableInstance.column(8).search("En espera confirmación carga de llaves", true).draw()
+                              dataTableInstance.column(11).visible(true); 
+                              dataTableInstance.column('carga_de_llave:name').visible(false);
+                              dataTableInstance.column('Enviar_AlRosal:name').visible(true); // Asegúrate de que esta columna esté visible
+                              setActiveButton("btn-recibidos");
+                            });
+                              
 
                            $("#btn-devuelto").on("click", function () {
                               dataTableInstance.columns().search('').draw(false);
@@ -425,6 +442,7 @@ function getTicketData() {
                                 const ticketId = $(this).data("id-ticket");
                                 const nroTicket = $(this).data("nro-ticket");
                                 const hasSendKeyDate = $(this).data("has-send-key-date"); // Leer el atributo del botón
+                                const serialPos = $(this).data("serial-pos");
 
                                 if (hasSendKeyDate != true) { // Ojo: Los data attributes devuelven booleanos si son 'true'/'false'
                                   const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
@@ -436,7 +454,7 @@ function getTicketData() {
                                               <div class="mb-4">
                                                 ${customWarningSvg}
                                               </div>
-                                              <p class="h4 mb-3" style = "color: black;">¿Desea enviar al rosal el Pos asociado al Nro de ticket: <span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; ">${nroTicket}</span> <span style = "color: #004242;">Sin cargar las llaves?</span></p>
+                                              <p class="h4 mb-3" style = "color: black;">¿Desea enviar al rosal el Pos asociado <span id = "numeroserial" style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; ">${serialPos}</span> al Nro de ticket: <span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> <span style = "color: #004242;">Sin cargar las llaves?</span></p>
                                             </div>`,
                                     confirmButtonText: "Si",
                                     color: "black",
@@ -449,14 +467,14 @@ function getTicketData() {
                                     allowEscapeKey: false,
                                   }).then((result) => { // Aquí capturamos la respuesta del usuario
                                     if (result.isConfirmed) {
-                                      sendTicketToRosal(ticketId, nroTicket, false); // `true` podría indicar "sin llaves"
+                                      sendTicketToRosal(ticketId, nroTicket, false, serialPos); // `true` podría indicar "sin llaves"
                                     }
                                   });
                                   return; // Detiene la ejecución aquí, no abre el modal de confirmación
                                 }else{
                                 $("#modalTicketNroSendKey").text(nroTicket);
                                 $("#modalHiddenTicketIdSendKey").val(ticketId); // Guardar el ID en un hidden input
-                                sendTicketToRosal(ticketId, nroTicket, true); // `true` podría indicar "sin llaves"
+                                sendTicketToRosal(ticketId, nroTicket, true, serialPos); // `true` podría indicar "sin llaves"
                               }
                             });
                         // ************* FIN: LÓGICA PARA EL BOTÓN "ENVIAR AL ROSAL" *************
@@ -516,12 +534,15 @@ function getTicketData() {
                                 e.stopPropagation();
                                 const ticketId = $(this).data("id-ticket");
                                 const nroTicket = $(this).data("nro-ticket");
+                                const serialPos = $(this).data("serial-pos") || ""; // Asegúrate de que serial_pos esté definido
+
 
                                 currentTicketIdForConfirmTaller = ticketId;
                                 currentNroTicketForConfirmTaller = nroTicket;
 
                                 $("#modalTicketIdConfirmTaller").val(ticketId);
                                 $("#modalHiddenNroTicketConfirmTaller").val(nroTicket);
+                                $("#serialPost").text(serialPos);
 
                                 $("#modalTicketIdConfirmTaller").text(nroTicket);
 
@@ -591,8 +612,9 @@ function getTicketData() {
  * @param {string} id - El ID del ticket.
  * @param {string} nro - El número de ticket.
  * @param {boolean} withoutKeys - Indica si el envío es "sin llaves" (opcional).
+ * @param {string} serialPos
  */
-function sendTicketToRosal(id, nro, withoutKeys) {
+function sendTicketToRosal(id, nro, withoutKeys, serialPos) {
     const id_user = document.getElementById("userId").value; // Obtener el ID del usuario desde el formulario
     const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/SendToGestionRosal`; // **IMPORTANTE: Define la URL correcta para tu backend**
     const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
@@ -600,18 +622,18 @@ function sendTicketToRosal(id, nro, withoutKeys) {
     // 1. Mostrar el modal de confirmación antes de enviar la solicitud
     Swal.fire({
        title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
-              <div class="custom-modal-header-content">¿Confirmar envío?</div>
+              <div class="custom-modal-header-content">Confirmar Envío</div>
             </div>`,
         html: `<div class="custom-modal-body-content">
                   <div class="mb-4">
                     ${customWarningSvg}
                   </div>
-                  <p class="h4 mb-3"  style = "color: black">¿Seguro que desea Enviar el Pos asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro}</span> a Gestión Rosal?</p>`,
+                  <p class="h4 mb-3"  style = "color: black">¿Seguro que desea Enviar el Pos con el Serial <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro}</span> a Gestión Rosal?</p>`,
         showCancelButton: true,
         confirmButtonColor: "#003594", // Color para el botón 'Sí'
         cancelButtonColor: "#d33",   // Color para el botón 'No'
-        confirmButtonText: "Sí, enviar",
-        cancelButtonText: "No, cancelar",
+        confirmButtonText: "Enviar",
+        cancelButtonText: "Cancelar",
         color: "black",
     }).then((result) => {
         // 2. Verificar la respuesta del usuario en el modal de confirmación
@@ -1169,7 +1191,7 @@ $(document).ready(function () {
                   <div class="mb-4">
                     ${customWarningSvg}
                   </div>
-                    <p class="h4 mb-3" style = "color: #343a40">¿Deseas Cargar las llaves al ticket Nro:<span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span>?</p><br><span style = 'color:red;'>Confirmar carga de llaves en 'Gestión Rosal'.</span>
+                    <p class="h4 mb-3" style = "color: #343a40">¿Deseas Cargar las llaves con el Nro de ticket:<span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span>?</p><br><span style = 'color:red;'>Confirmar carga de llaves en 'Gestión Rosal'.</span>
                     <span style = "font-size: 70%; display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de recepción de las llaves</span>
                 </div>`,
                 

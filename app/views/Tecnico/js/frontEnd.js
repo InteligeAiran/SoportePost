@@ -2,6 +2,7 @@ let dataTableInstance;
 let currentTicketId;
 let modalInstance;
 let currentnroTicket;
+let currentSerial;
 
 function getTicketData() {
   const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
@@ -158,7 +159,8 @@ function getTicketData() {
                         data-bs-toggle="tooltip" data-bs-placement="top"
                         title="Enviar a Taller"
                         data-ticket-id="${ticket.id_ticket}"
-                        data-nro_ticket="${ticket.nro_ticket}">
+                        data-nro_ticket="${ticket.nro_ticket}",
+                        data-serial_pos="${ticket.serial_pos || ''}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
                     </button>`;
             }
@@ -272,6 +274,7 @@ function getTicketData() {
 
             $("#btn-por-asignar").on("click", function () {
                 dataTableInstance.column(5).search("Enviado a taller").draw();
+                dataTableInstance.column(5).search("En Taller").draw();
                 setActiveButton("btn-por-asignar");
             });
 
@@ -304,9 +307,9 @@ function getTicketData() {
                     if (selectedTicketDetails) {
                         // Obtener el nro_ticket de los detalles del ticket
                         const currentnroTicket = selectedTicketDetails.nro_ticket;
-
+                        const serialPos = selectedTicketDetails.serial_pos || "No disponible";
                         // Llama a la función showConfirmationModalForReceived
-                        showConfirmationModalForReceived(ticketId, currentnroTicket);
+                        showConfirmationModalForReceived(ticketId, currentnroTicket, serialPos);
                     } else {
                         console.error(`Error: No se encontraron detalles para el ticket ID: ${ticketId}`);
                         // Opcional: Mostrar un SweetAlert2 de error al usuario
@@ -474,8 +477,10 @@ function getTicketData() {
             e.stopPropagation();
             const ticketId = $(this).data("ticket-id");
             const nroTicket = $(this).data("nro_ticket");
+            const serialPos = $(this).data("serial_pos") || "No disponible";
             currentTicketId = ticketId; // Asigna al currentTicketId para el modal de taller
             currentnroTicket = nroTicket;
+            currentSerial = serialPos; // Asigna el serial al currentSerial
 
             if (actionSelectionModalInstance) {
               actionSelectionModalInstance.show(); // Abre el modal de selección de acción
@@ -491,8 +496,10 @@ function getTicketData() {
           .on("click", function () {
 
             const modalTicketNrSpan = document.getElementById("modalTicketNr");
-             if (modalTicketNrSpan && currentnroTicket) {
+            const modalSerialPosSpan = document.getElementById("serialpos");
+             if (modalTicketNrSpan && currentnroTicket && modalSerialPosSpan) {
                 modalTicketNrSpan.textContent = currentnroTicket;
+                modalSerialPosSpan.textContent = currentSerial; // Asigna el serial al span del modal
             } else {
                 modalTicketNrSpan.textContent = " seleccionado"; // Texto por defecto si no se encontró el número
                 console.warn("No se pudo inyectar el número de ticket en el modal de taller.");
@@ -931,7 +938,7 @@ $(document).on('click', '#CerrarBoton', function() {
     }, 300);
 });
 
-function showConfirmationModalForReceived(ticketId, currentnroTicket) {
+function showConfirmationModalForReceived(ticketId, currentnroTicket, serialPos) {
    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
  Swal.fire({
     title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
@@ -942,7 +949,7 @@ function showConfirmationModalForReceived(ticketId, currentnroTicket) {
             <div class="mb-4">
                 ${customWarningSvg}
             </div>
-            <p class="h4 mb-3">¿Marcar el Pos asociado al ticket Nro:<span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; ">${currentnroTicket}</span>como recibido?</p>
+            <p class="h4 mb-3">¿Marcar el Pos asociado <span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> al ticket Nro:<span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentnroTicket}</span>como recibido?</p>
             <p class="h5 text-muted">Esta acción registrará la fecha de recepción y habilitará la opción Envío a Taller.</p>
         </div>
     `,
@@ -1650,6 +1657,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function handleSendToTallerClick() {
   const idTicket = currentTicketId; // Usa la variable global para obtener el ID del ticket
   const nroticket = currentnroTicket;
+  const serialpos = currentSerial; // Asegúrate de que esta variable esté definida en tu contexto
 
   if (idTicket) {
     const xhr = new XMLHttpRequest();
@@ -1662,7 +1670,7 @@ function handleSendToTallerClick() {
         Swal.fire({
             icon: "success",
             title: "Notificación", // <-- FIX IS HERE
-            text:`El POS asociado al ticket Nro: ${nroticket} fue enviado a Taller`,
+            text:`El POS asociado ${serialpos} al ticket Nro: ${nroticket} fue enviado a Taller`,
             color: "black",
             // Eliminamos 'timer' y 'timerProgressBar' si quieres un botón explícito
             showConfirmButton: true, // Muestra el botón de confirmación

@@ -35,13 +35,14 @@
     color: #495057; /* Color de texto suave */
 }
 
-#modalTicketNr, #ticketNumberSpan, #NroTicketConfirReceiCoord, #ticketserialPos{
+#modalTicketNr, #ticketNumberSpan, #NroTicketConfirReceiCoord, #ticketserialPos, #serialpos{
     display: inline-block; 
     padding: 0.2rem 0.5rem;
     border-radius: 0.3rem;
     background-color: #e0f7fa;
     color: #007bff;
 }
+
 
 #btn-devuelto.btn-primary {
   background-color: #003594;
