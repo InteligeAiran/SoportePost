@@ -198,6 +198,33 @@ function mi_navbar()
                 padding: 2px 5px;
                 border-radius: 3px;
             }
+
+            .dropdown-menu {
+                min-width: 250px; /* Ajusta el ancho del menú desplegable */
+            }
+            .dropdown-item {
+                white-space: normal; /* Permite que el texto del botón se envuelva si es muy largo */
+            }
+
+            /* Estilo del menú desplegable personalizado */
+            .custom-dropdown {
+                border-radius: 0.5rem; /* Bordes redondeados */
+                box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; /* Sombra más pronunciada */
+                padding: 0.5rem 0; /* Espaciado interno */
+            }
+
+            /* Estilo para los elementos del menú */
+            .custom-dropdown .dropdown-item {
+                font-size: 0.9rem; /* Tamaño de fuente más pequeño */
+                padding: 0.5rem 1rem; /* Más espacio para cada opción */
+                transition: background-color 0.2s ease, color 0.2s ease; /* Transición suave en el hover */
+            }
+
+            /* Efecto de hover para los elementos del menú */
+            .custom-dropdown .dropdown-item:hover {
+                background-color: #e9ecef; /* Un color de fondo más sutil al pasar el mouse */
+                color: #007bff; /* Color del texto cambia al pasar el mouse */
+            }
         </style>
     </head>
 
@@ -365,7 +392,7 @@ function mi_navbar()
 
         <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
             <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel"
-                aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); z-index: 1055px;">
                 <div class="modal-dialog modal-dialog-centered modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -391,6 +418,25 @@ function mi_navbar()
                 </div>
             </div>
         <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
+
+        <div class="modal fade" id="documentActionsModal" tabindex="-1" role="dialog" aria-labelledby="documentActionsModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentActionsModalLabel" style="color: #000;">Acciones de Documentos</h5>                  
+                </div>
+                <div class="modal-body">
+                    <p>Selecciona una opción para guardar documento del ticket <strong id="modalTicketId"></strong>:</p>
+                    <div id="modal-buttons-container" class="d-grid gap-2">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
     <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 
         <div class="fixed-plugin">

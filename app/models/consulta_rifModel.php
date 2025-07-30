@@ -1356,7 +1356,7 @@ class consulta_rifModel extends Model
     public function UpdateStatusToReceiveInTaller($ticketId, $id_user){
         try {
                 $id_status_lab = 1;
-                $id_accion_ticket = 7;
+                $id_accion_ticket = 15;
 
                 $sql = "UPDATE tickets_status_lab SET id_status_lab = ".(int)$id_status_lab.", confirmreceive = TRUE WHERE id_ticket = ".$ticketId.";";
                 $result = Model::getResult($sql, $this->db);

@@ -843,7 +843,7 @@
                         <p class="small-text" style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de recepción y habilitará los Estatus Correspondientes del Taller.</p>
                     </div>
                     <div class="modal-footer custom-modal-footer d-flex justify-content-center">
-                        <button type="button" class="btn custom-btn-primary" id="confirmTallerBtn">Sí, Recibir POS</button>
+                        <button type="button" class="btn custom-btn-primary" id="confirmTallerBtn">Recibir POS</button>
                         <button type="button" class="btn custom-btn-secondary" id="CerrarButtonTallerRecib" data-bs-dismiss="modal">Cancelar</button>
                     </div>
                 </div>

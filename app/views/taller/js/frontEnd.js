@@ -304,23 +304,23 @@ function getTicketData() {
                           initComplete: function (settings, json) {
                               const dataTableInstance = this.api(); // Obtén la instancia de la API de DataTables
                               const buttonsHtml = `
-                                  <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets en Taller">
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
-                                        <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
-                                      </svg>
-                                  </button>
-
                                   <button id="btn-por-asignar" class="btn btn-secondary me-2" title="Tickets en espera de confirmar recibido en el Taller">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                                      </svg>
+                                      <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                      <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                    </svg>
+                                  </button>
+
+                                  <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets en Taller">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                                      <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+                                    </svg>
                                   </button>
 
                                   <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets Por confirmar carga de llaves">
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                                          <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                                      </svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                                      <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                                    </svg>
                                   </button>
 
                                   <button id="btn-devuelto" class="btn btn-secondary me-2" title="Tickets Enviados al Rosal">
@@ -341,9 +341,15 @@ function getTicketData() {
                               }
 
                               // Inicialmente, establecer "Asignados" como activo y aplicar el filtro
-                              setActiveButton("btn-asignados");
-                             dataTableInstance.column(7).search("Enviado a Taller", true).draw();
-                              dataTableInstance.column(8).search("En proceso de Reparación|Reparado|Pendiente por repuesto|Irreparable", true, false, false, false).draw();
+                              setActiveButton("btn-por-asignar");
+                                  dataTableInstance.column(8).search("Recibido en Taller", true).draw();
+
+                                      $("#btn-por-asignar").on("click", function () {
+                                  dataTableInstance.columns().search('').draw(false);
+                                  dataTableInstance.column(10).visible(false); // Índice 6 para "Técnico Asignado
+                                  dataTableInstance.column(8).search("Recibido en Taller", true).draw();
+                                  setActiveButton("btn-por-asignar");
+                              });
 
                               // Tus event listeners de clic están correctos
                               $("#btn-asignados").on("click", function () {
@@ -351,12 +357,6 @@ function getTicketData() {
                                   dataTableInstance.column(7).search("Enviado a Taller", true).draw();
                                   dataTableInstance.column(8).search("En proceso de Reparación|Reparado|Pendiente por repuesto",  true, false, false).draw();
                                   setActiveButton("btn-asignados");
-                              });
-
-                              $("#btn-por-asignar").on("click", function () {
-                                  dataTableInstance.columns().search('').draw(false);
-                                  dataTableInstance.column(8).search("Recibido en Taller", true).draw();
-                                  setActiveButton("btn-por-asignar");
                               });
 
                               $("#btn-recibidos").on("click", function () {
@@ -377,7 +377,7 @@ function getTicketData() {
 
                               document.querySelectorAll(".receive-key-checkbox").forEach(checkbox => {
                                   checkbox.style.display = "none"; // Ocultar checkboxes
-                              });s
+                              });
 
                               setActiveButton("btn-devuelto");
                           });
@@ -973,10 +973,8 @@ function loadTicketHistory(ticketId) {
                     const headingId = `headingHistoryItem_${ticketId}_${index}`;
                     const isCurrent = index === 0;
 
-                    // Obtener el registro anterior para la comparación
                     const prevItem = response.history[index + 1] || {};
 
-                    // --- Lógica para determinar si un campo ha cambiado ---
                     const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
                     const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
                     const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
@@ -984,10 +982,17 @@ function loadTicketHistory(ticketId) {
                     const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
                     const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
 
-                    // --- Lógica de colores (tu lógica original, ajustada para la "gestión actual") ---
                     let headerStyle = isCurrent ? "background-color: #ffc107;" : "background-color: #5d9cec;";
                     let textColor = isCurrent ? "color: #343a40;" : "color: #ffffff;";
-                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
+
+                    // --- Lógica para mostrar el estatus correcto según la acción del ticket ---
+                    let statusDisplayText;
+                    if (item.name_accion_ticket === "Enviado a taller" || item.name_accion_ticket === "En Taller") {
+                        statusDisplayText = item.name_status_lab || "Desconocido";
+                    } else {
+                        statusDisplayText = item.name_status_ticket || "Desconocido";
+                    }
+                    const statusHeaderText = ` (${statusDisplayText})`;
 
                     historyHtml += `
                         <div class="card mb-3 custom-history-card">
@@ -1024,7 +1029,7 @@ function loadTicketHistory(ticketId) {
                                                     <td>${item.full_name_coordinador || "N/A"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-start">Tecnico Asignado:</th>
+                                                    <th class="text-start">Técnico Asignado:</th>
                                                     <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
                                                 </tr>
                                                 <tr>
