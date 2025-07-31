@@ -467,7 +467,7 @@ function getTicketData() {
                                     allowEscapeKey: false,
                                   }).then((result) => { // Aquí capturamos la respuesta del usuario
                                     if (result.isConfirmed) {
-                                      sendTicketToRosal(ticketId, nroTicket, false, serialPos); // `true` podría indicar "sin llaves"
+                                      sendTicketToRosal1(ticketId, nroTicket, false, serialPos); // `true` podría indicar "sin llaves"
                                     }
                                   });
                                   return; // Detiene la ejecución aquí, no abre el modal de confirmación
@@ -720,6 +720,89 @@ function sendTicketToRosal(id, nro, withoutKeys, serialPos) {
         }
     });
 }
+
+
+function sendTicketToRosal1(id, nro, withoutKeys, serialPos) {
+    const id_user = document.getElementById("userId").value; // Obtener el ID del usuario desde el formulario
+    const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/SendToGestionRosal`; // **IMPORTANTE: Define la URL correcta para tu backend**
+      
+            // Si el usuario hace clic en "Sí, enviar", procedemos con la lógica de la solicitud XHR
+            const dataToSendString = `action=SendToGestionRosal&ticketId=${encodeURIComponent(id)}&sendWithoutKeys=${encodeURIComponent(withoutKeys)}&id_user=${encodeURIComponent(id_user)}`;
+            const xhr = new XMLHttpRequest();
+
+            xhr.open("POST", url);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success === true) {
+                            const nroticket = nro; // Ya tienes 'nro' disponible aquí
+                            Swal.fire({
+                                title: "¡Enviado!",
+                                html: `El Pos asociado al ticket Nro: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> se ha enviado a Gestión Rosal correctamente.`,
+                                icon: "success",
+                                confirmButtonText: "Ok",
+                                confirmButtonColor: "#003594",
+                                color: "black",
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    location.reload(); // Recargar la página
+                                }
+                            });
+                        } else {
+                            // Si la API retorna success: false o un error en el cuerpo
+                            console.warn("La API retornó éxito: falso o un valor inesperado:", response);
+                            Swal.fire({
+                                title: "Error al enviar",
+                                text: response.message || "No se pudo enviar el ticket a Gestión Rosal. (Mensaje inesperado)",
+                                icon: "error",
+                                confirmButtonText: "Ok",
+                                confirmButtonColor: "#d33",
+                                color: "black",
+                            });
+                        }
+                    } catch (error) {
+                        console.error("Error al analizar la respuesta JSON para el envío al Rosal:", error, xhr.responseText);
+                        Swal.fire({
+                            title: "Error de Procesamiento",
+                            text: "Hubo un problema al procesar la respuesta del servidor.",
+                            icon: "error",
+                            confirmButtonText: "Ok",
+                            confirmButtonColor: "#d33",
+                            color: "black",
+                        });
+                    }
+                } else {
+                    // Errores HTTP como 404, 500, etc.
+                    console.error("Error al enviar el ticket (HTTP):", xhr.status, xhr.statusText, xhr.responseText);
+                    Swal.fire({
+                        title: "Error del Servidor",
+                        text: `No se pudo comunicar con el servidor. Código: ${xhr.status} - ${xhr.statusText}`,
+                        icon: "error",
+                        confirmButtonText: "Ok",
+                        confirmButtonColor: "#d33",
+                        color: "black",
+                    });
+                }
+            };
+
+            xhr.onerror = function () {
+                // Errores de red como conexión perdida
+                console.error("Error de red al intentar enviar el ticket al Rosal.");
+                Swal.fire({
+                    title: "Error de Conexión",
+                    text: "Hubo un problema de red. Por favor, inténtalo de nuevo.",
+                    icon: "error",
+                    confirmButtonText: "Ok",
+                    confirmButtonColor: "#d33",
+                    color: "black",
+                });
+            };
+            xhr.send(dataToSendString); // Envía la solicitud solo si se confirmó
+    }
+
 
 function updateTicketStatusInTaller(ticketId) {
   const id_user = document.getElementById("userId").value;

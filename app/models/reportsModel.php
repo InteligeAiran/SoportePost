@@ -139,9 +139,45 @@ class reportsModel extends Model
         }
     }
     
-    public function saveDocument($id_ticket, $originalDocumentName, $documentSize, $mimeTypeFromFrontend, $relativePathForDb){
+    public function saveDocument($id_ticket, $filePathForDatabase, $mimeTypeFromFrontend, $originalDocumentName, $documentSize, $document_type, $id_user) {
+        try {
+            // Escapar las cadenas de texto para evitar problemas de sintaxis y seguridad
+            $escapedOriginalFilename = pg_escape_literal($this->db->getConnection(), $originalDocumentName);
+            $escapedFilePath = pg_escape_literal($this->db->getConnection(), $filePathForDatabase);
+            $escapedMimeType = pg_escape_literal($this->db->getConnection(), $mimeTypeFromFrontend);
+            $escapedDocumentType = pg_escape_literal($this->db->getConnection(), $document_type);
+
+            // Construir la consulta SQL con los parámetros en el orden correcto
+            $sql = "SELECT save_document_to_db(
+                " . ((int) $id_ticket) . ",
+                " . $escapedOriginalFilename . ",
+                " . $escapedFilePath . ",
+                " . $escapedMimeType . ",
+                " . ((int) $documentSize) . ",
+                " . ((int) $id_user) . ",
+                " . $escapedDocumentType . "
+            )";
+            
+            // Debugging: descomentar para ver la consulta generada
+            $result = Model::getResult($sql, $this->db);
+
+            // Verifica si la consulta se ejecutó y devuelve el resultado de la función
+            if ($result && isset($result['query'])) {
+                return pg_fetch_result($result['query'], 0, 0) === 't';
+            } else {
+                error_log("Error: La consulta SQL no devolvió un resultado válido.");
+                return false;
+            }
+
+        } catch (Throwable $e) {
+            error_log("Error al llamar a la función SQL 'save_document_to_db': " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getDocument($id_ticket){
         try{
-            $sql = "INSERT INTO archivos_adjuntos_prueba (ticket_id, original_filename, file_path, mime_type, file_size_bytes, uploaded_by_user_id) values (".$id_ticket.", '".$originalDocumentName."', '".$relativePathForDb."',  '".$mimeTypeFromFrontend."', '".$documentSize."', 1)";
+            $sql = "SELECT file_path, mime_type FROM archivos_adjuntos_prueba WHERE ticket_id = (".$id_ticket.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -149,9 +185,9 @@ class reportsModel extends Model
         }
     }
 
-    public function getDocument($id_ticket){
+    public function GetTicketDetailsById($id_ticket){
         try{
-            $sql = "SELECT file_path, mime_type FROM archivos_adjuntos_prueba WHERE ticket_id = (".$id_ticket.")";
+            $sql = "SELECT * FROM get_ticket_details_by_id(".$id_ticket.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

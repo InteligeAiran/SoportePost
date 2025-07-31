@@ -767,7 +767,7 @@ function formatTicketDetailsPanel(d) {
                           ${d.full_name_tecnico}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div>>Dirección Instalación:</div></strong>
+                          <br><strong><div>Dirección Instalación:</div></strong>
                           ${d.nombre_estado_cliente || 'Sin datos'}
                         </div><br>
                          <div class="col-sm-6 mb-2">
