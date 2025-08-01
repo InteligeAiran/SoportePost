@@ -149,17 +149,27 @@ class ReportRepository
 
     public function saveDocument(
         $id_ticket,
+        $originalDocumentName,
+        $stored_filename,
         $filePathForDatabase,
         $mimeTypeFromFrontend,
-        $originalDocumentName,
         $documentSize,
-        $document_type, // *** NUEVO PARÁMETRO ***
-        $id_user
+        $id_user,
+        $document_type
     ) {
-    // Pasar el nuevo parámetro al método del modelo
-        $result = $this->model->saveDocument($id_ticket, $originalDocumentName, $documentSize, $mimeTypeFromFrontend, $filePathForDatabase, $document_type, $id_user);
-        return $result;
-    }
+    // Pasar los parámetros al modelo en el mismo orden
+    $result = $this->model->saveDocument(
+        $id_ticket,
+        $originalDocumentName,
+        $stored_filename,
+        $filePathForDatabase,
+        $mimeTypeFromFrontend,
+        $documentSize,
+        $id_user,
+        $document_type
+    );
+    return $result;
+}
 
     public function getDocument($id_ticket)
     {

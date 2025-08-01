@@ -139,18 +139,27 @@ class reportsModel extends Model
         }
     }
     
-    public function saveDocument($id_ticket, $filePathForDatabase, $mimeTypeFromFrontend, $originalDocumentName, $documentSize, $document_type, $id_user) {
+    public function saveDocument(
+        $id_ticket,
+        $originalDocumentName,
+        $stored_filename,
+        $filePathForDatabase,
+        $mimeTypeFromFrontend,
+        $documentSize,
+        $id_user,
+        $document_type
+    ){
         try {
-            // Escapar las cadenas de texto para evitar problemas de sintaxis y seguridad
             $escapedOriginalFilename = pg_escape_literal($this->db->getConnection(), $originalDocumentName);
+            $escapedStoredFilename = pg_escape_literal($this->db->getConnection(), $stored_filename);
             $escapedFilePath = pg_escape_literal($this->db->getConnection(), $filePathForDatabase);
             $escapedMimeType = pg_escape_literal($this->db->getConnection(), $mimeTypeFromFrontend);
             $escapedDocumentType = pg_escape_literal($this->db->getConnection(), $document_type);
 
-            // Construir la consulta SQL con los parámetros en el orden correcto
             $sql = "SELECT save_document_to_db(
                 " . ((int) $id_ticket) . ",
                 " . $escapedOriginalFilename . ",
+                " . $escapedStoredFilename . ",
                 " . $escapedFilePath . ",
                 " . $escapedMimeType . ",
                 " . ((int) $documentSize) . ",
@@ -158,10 +167,8 @@ class reportsModel extends Model
                 " . $escapedDocumentType . "
             )";
             
-            // Debugging: descomentar para ver la consulta generada
             $result = Model::getResult($sql, $this->db);
 
-            // Verifica si la consulta se ejecutó y devuelve el resultado de la función
             if ($result && isset($result['query'])) {
                 return pg_fetch_result($result['query'], 0, 0) === 't';
             } else {

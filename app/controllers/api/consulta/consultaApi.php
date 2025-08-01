@@ -214,6 +214,10 @@ class Consulta extends Controller
                     $this->handleVerifingBranches();
                     break;
 
+                case 'entregar_ticket':
+                    $this->handleEntregarTicket();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -1353,6 +1357,26 @@ class Consulta extends Controller
             // No se encontró el estado para el RIF
             $this->response(['success' => false, 'message' => 'No se encontraron sucursales o estado para el RIF proporcionado.', 'id_region' => null], 404);
         }
+    }
+
+    public function handleEntregarTicket(){
+        $ticketId = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+        $comment = isset($_POST['comentario'])? $_POST['comentario'] : '';
+
+        if (!$ticketId || !$comment || !$id_user) {
+            $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->EntregarTicket($ticketId, $id_user,  $comment);
+        if ($result) {
+            $this->response(['success' => true,'message' => 'El ticket ha sido entregado exitosamente.'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+        
     }
 }
 ?>

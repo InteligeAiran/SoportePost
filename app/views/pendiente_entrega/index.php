@@ -375,6 +375,13 @@ function mi_navbar()
              border: 1px solid #ccc; 
              box-shadow: 0 0 5px rgba(0,0,0,0.2); 
         }
+
+        #buttonEntregarCliente{
+            background-color: #3b82f6;
+            color: #fff;
+            border-color: #3b82f6;
+            border-radius: 0.5rem;
+        }
     </style>
     <!-- CSS Files -->
     <link id="pagestyle" rel="stylesheet"

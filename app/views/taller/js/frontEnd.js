@@ -270,6 +270,9 @@ function getTicketData() {
 
                                               // Initialize DataTables
                                               const dataTableInstance = $(tableElement).DataTable({
+                                                    order: [
+                                                      [0, 'desc']
+                                                    ], // Esto ordena
                                                   scrollX: "200px",
                                                   responsive: false,
                                                   data: TicketData,

@@ -353,7 +353,7 @@ class reportes extends Controller {
         }
     }
 
-     public function uploadDocument(){
+    public function uploadDocument(){
         // 1. Instancia el repositorio para interactuar con la base de datos
         $repository = new ReportRepository();
 
@@ -361,13 +361,13 @@ class reportes extends Controller {
         $id_ticket = isset($_POST['ticket_id']) ? $_POST['ticket_id'] : null;
         $file = isset($_FILES['document_file']) ? $_FILES['document_file'] : null;
         $document_type = isset($_POST['document_type']) ? $_POST['document_type'] : null;
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         // 3. Validación inicial de la solicitud
-        if (!$id_ticket || !$file || $file['error'] !== UPLOAD_ERR_OK || !$document_type) {
+        if (!$id_ticket || !$file || $file['error'] !== UPLOAD_ERR_OK || !$document_type || !$id_user) {
             $errorMessage = 'Error en la subida: ';
             if (!$id_ticket) $errorMessage .= 'ID de ticket no proporcionado. ';
-            if(!$id_user) $errorMessage.= 'ID de usuario no proporcionado. ';
+            if (!$id_user) $errorMessage .= 'ID de usuario no proporcionado. ';
             if (!$file) $errorMessage .= 'Archivo no proporcionado. ';
             if (!$document_type) $errorMessage .= 'Tipo de documento no proporcionado. ';
             if ($file && $file['error'] !== UPLOAD_ERR_OK) {
@@ -376,14 +376,14 @@ class reportes extends Controller {
             $this->response(['success' => false, 'message' => $errorMessage], 400);
             return;
         }
-
+        
         // 4. Procesa la información del archivo
-        $originalDocumentName = $file['name'];
+        $originalDocumentName = basename($file['name']);
         $documentSize = $file['size'];
-        $documentType = $file['type']; // Tipo MIME detectado por PHP
+        $documentType = $file['type'];
         $mimeTypeFromFrontend = isset($_POST['mime_type']) ? $_POST['mime_type'] : $documentType;
 
-        // 5. Obtiene el serial del ticket desde la base de datos
+        // 5. Obtiene el serial del ticket
         $ticketDetails = $repository->getTicketDetailsById($id_ticket);
         if (!$ticketDetails || !isset($ticketDetails[0]['serial'])) {
             $this->response(['success' => false, 'message' => 'No se pudo obtener el serial del ticket. Por favor, asegúrese de que el ticket existe.'], 500);
@@ -391,15 +391,11 @@ class reportes extends Controller {
         }
         $serial = $ticketDetails[0]['serial'];
 
-        // 6. Configurar y Crear la Estructura de Carpetas de Archivos usando la constante UPLOAD_BASE_DIR
+        // 6. Configura y crea la estructura de carpetas
         $cleanSerial = preg_replace("/[^a-zA-Z0-9_-]/", "_", $serial);
-
-        // ** RUTA FÍSICA para el sistema de archivos **
-        // Esta es la ruta completa en el servidor donde se guardará el archivo
         $baseUploadDir = UPLOAD_BASE_DIR;
         $serialUploadDir = $baseUploadDir . $cleanSerial . DIRECTORY_SEPARATOR;
         $ticketUploadDir = $serialUploadDir . $id_ticket . DIRECTORY_SEPARATOR;
-
         if (!is_dir($baseUploadDir)) {
             if (!mkdir($baseUploadDir, 0755, true)) {
                 error_log("Error al crear el directorio base: " . $baseUploadDir);
@@ -421,7 +417,7 @@ class reportes extends Controller {
                 return;
             }
         }
-
+        
         // Ahora creamos el subdirectorio para el tipo de documento
         $documentTypeDir = $ticketUploadDir . $document_type . DIRECTORY_SEPARATOR;
         if (!is_dir($documentTypeDir)) {
@@ -436,50 +432,59 @@ class reportes extends Controller {
         $nombreSinExtension = $info['filename'];
         $extension = isset($info['extension']) ? '.' . $info['extension'] : '';
         $cleanNombreSinExtension = preg_replace("/[^a-zA-Z0-9_\-.]/", "_", $nombreSinExtension);
-        
+
         $dateForFilename = date('Ymd_His');
         $uniqueFileName = $document_type . '_' . $dateForFilename . '_' . uniqid() . '_' . $cleanNombreSinExtension . $extension;
 
         // La ruta completa donde se guardará el archivo en el sistema de archivos
         $uploadPath = $documentTypeDir . $uniqueFileName;
         
-        // ** RUTA RELATIVA para la base de datos y la web **
-        // Esta es la ruta que se usará para acceder al archivo a través de una URL
+        // RUTA RELATIVA para la base de datos y la web
         $filePathForDatabase = UPLOAD_BASE_DIR . $cleanSerial . '/' . $id_ticket . '/' . $document_type . '/' . $uniqueFileName;
-
+        
         // 8. Mueve el archivo temporal al destino final
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
             try {
-                // 9. Llama al repositorio para guardar la información en la base de datos
+                // 9. Llama al repositorio para guardar la información
                 $success = $repository->saveDocument(
                     $id_ticket,
+                    $originalDocumentName,
+                    $uniqueFileName, // <--- CAMBIO: Nombre del archivo único
                     $filePathForDatabase,
                     $mimeTypeFromFrontend,
-                    $originalDocumentName,
                     $documentSize,
-                    $document_type,
-                    $id_user
+                    $id_user,
+                    $document_type
                 );
 
                 if ($success) {
-                    // 10. Si la operación fue exitosa, envía una respuesta positiva
-                    $this->response(['success' => true, 'message' => 'Documento subido y registrado exitosamente.', 'filePath' => $filePathForDatabase], 200);
+                    $responseData = [
+                        'success' => true,
+                        'message' => 'Documento subido y registrado exitosamente.',
+                        'ticket_id' => $id_ticket,
+                        'original_filename' => $originalDocumentName,
+                        'stored_filename' => $uniqueFileName,
+                        'file_path' => $filePathForDatabase,
+                        'mime_type' => $mimeTypeFromFrontend,
+                        'file_size_bytes' => $documentSize,
+                        'uploaded_by_user_id' => $id_user,
+                        'document_type' => $document_type
+                    ];
+                    $this->response($responseData, 200);
                 } else {
                     // 11. Si hubo un error en la DB, borra el archivo y responde con error
                     unlink($uploadPath);
                     $this->response(['success' => false, 'message' => 'El archivo se subió, pero hubo un error al registrarlo en la base de datos.'], 500);
                 }
-
             } catch (\Exception $e) {
-                // 12. Si hubo una excepción, borra el archivo y responde con error
                 unlink($uploadPath);
                 $this->response(['success' => false, 'message' => 'Error interno al guardar el documento: ' . $e->getMessage()], 500);
             }
         } else {
-            // 13. Si el archivo no se pudo mover, responde con error
             $this->response(['success' => false, 'message' => 'Error al mover el archivo subido. Verifique los permisos de escritura en la carpeta de destino.'], 500);
         }
     }
+
 
     function getDocument(){
         $repository = new ReportRepository();
