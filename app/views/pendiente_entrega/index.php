@@ -382,6 +382,184 @@ function mi_navbar()
             border-color: #3b82f6;
             border-radius: 0.5rem;
         }
+
+        #btn-asignados {
+            background-color: #003594;
+            color: #ffffff;
+            border: 1px solid #003594;
+            transition: background-color 0.3s ease, border-color 0.3s ease,
+            box-shadow 0.3s ease;
+        }
+
+        #btn-asignados,
+        #btn-por-asignar,
+        #btn-recibidos,
+        #btn-devuelto {
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 13px;
+        }
+
+        #btn-por-asignar {
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease,
+            box-shadow 0.3s ease;
+        }
+
+        /* Estilo base para el botón Por Asignar cuando es el activo */
+        #btn-por-asignar.btn-primary {
+            background-color: #003594;
+            /* Tu azul fuerte */
+            border-color: #003594;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease,
+            box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Por Asignar cuando es el activo */
+        #btn-por-asignar.btn-primary:hover,
+        #btn-por-asignar.btn-primary:focus {
+            background-color: #0045b4;
+            border-color: #0045b4;
+            box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+        }
+
+        #btn-devuelto.btn-primary:hover,
+        #btn-devuelto.btn-primary:focus {
+            background-color: #0045b4;
+            border-color: #0045b4;
+            box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+        }
+
+        /* Estilo para el botón Por Asignar cuando NO es el activo (es gris) */
+        #btn-por-asignar.btn-secondary {
+            background-color: #a0a0a0;
+            border-color: #a0a0a0;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease,
+            box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Por Asignar cuando NO es el activo */
+        #btn-por-asignar.btn-secondary:hover,
+        #btn-por-asignar.btn-secondary:focus {
+            background-color: #b0b0b0;
+            border-color: #b0b0b0;
+            box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+        }
+
+        /* Estilo hover/focus para el botón Asignados cuando es el activo */
+        #btn-asignados.btn-primary:hover,
+        #btn-asignados.btn-primary:focus {
+            background-color: #0045b4;
+            /* Un tono un poco más oscuro o claro al hover */
+            border-color: #0045b4;
+            box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+            /* Sombra de enfoque/hover */
+        }
+
+        /* Estilo para el botón Asignados cuando NO es el activo (es gris) */
+        #btn-asignados.btn-secondary {
+            background-color: #a0a0a0;
+            /* Tu gris sutil */
+            border-color: #a0a0a0;
+            color: #ffffff;
+            /* O un gris oscuro si el fondo es claro */
+            transition: background-color 0.3s ease, border-color 0.3s ease,
+            box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Asignados cuando NO es el activo */
+        #btn-asignados.btn-secondary:hover,
+        #btn-asignados.btn-secondary:focus {
+            background-color: #b0b0b0;
+            border-color: #b0b0b0;
+            box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+        }
+
+        #btn-recibidos {
+            background-color: #a0a0a0;
+            color: #ffffff;
+            border: 1px solid #a0a0a0;
+            transition: background-color 0.3s ease, border-color 0.3s ease,
+            box-shadow 0.3s ease;
+        }
+
+        /* Estilo base para el botón Recibidos cuando es el activo */
+        #btn-recibidos.btn-primary {
+            background-color: #003594;
+            /* Tu azul fuerte */
+            border-color: #003594;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease,
+            box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Recibidos cuando es el activo */
+        #btn-recibidos.btn-primary:hover,
+        #btn-recibidos.btn-primary:focus {
+            background-color: #0045b4;
+            /* Un tono un poco más oscuro o claro al hover */
+            border-color: #0045b4;
+            box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+            /* Sombra de enfoque/hover */
+        }
+
+        /* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
+        #btn-recibidos.btn-secondary {
+            background-color: #a0a0a0;
+            /* Tu gris sutil */
+            border-color: #a0a0a0;
+            color: #ffffff;
+            /* O un gris oscuro si el fondo es claro */
+            transition: background-color 0.3s ease, border-color 0.3s ease,
+            box-shadow 0.3s ease;
+        }
+
+        #confirmTallerBtn {
+            background-color: #0045b4;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #confirmTallerBtn:hover {
+            background-color: #002884;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #CerrarButtonTallerRecib {
+            background-color: #b0b0b0;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #CerrarButtonTallerRecib:hover {
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
     </style>
     <!-- CSS Files -->
     <link id="pagestyle" rel="stylesheet"
@@ -449,6 +627,29 @@ function mi_navbar()
             </div>
         </div>
     </main>
+
+    <div class="modal fade" id="confirmInRosalModal" tabindex="-1" aria-labelledby="confirmInTallerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content custom-modal-content">
+                <div class="modal-header bg-gradient-primary text-white">
+                    <h5 class="modal-title " id="confirmInTallerModalLabel">Confirmación de recibido</h5>
+                </div>
+                <div class="modal-body custom-modal-body text-center">
+                    <div class="swal2-icon-wrapper mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#ffc107" class="swal2-icon-custom-svg" viewBox="0 0 16 16">
+                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.5a.5.5 0 0 1-1.002.04l-.35-3.5C7.046 5.462 7.465 5 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2" />
+                        </svg>
+                    </div>
+                    <p id="TextConfirmTaller" >¿Marcar el Pos con el serial <span id="serialPost" style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"></span> asociado al Nro de ticket: <span id="modalTicketIdConfirmTaller" style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"></span> como recibido?</p>
+                    <p class="small-text" style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de recepción y habilitará los Estatus Correspondientes del Rosal.</p>
+                </div>
+                <div class="modal-footer custom-modal-footer d-flex justify-content-center">
+                    <button type="button" class="btn custom-btn-primary" id="confirmTallerBtn">Recibir POS</button>
+                    <button type="button" class="btn custom-btn-secondary" id="CerrarButtonTallerRecib" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!--MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
     <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel"

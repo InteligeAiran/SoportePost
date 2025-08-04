@@ -217,6 +217,10 @@ class Consulta extends Controller
                 case 'entregar_ticket':
                     $this->handleEntregarTicket();
                     break;
+                
+                 case 'UpdateStatusToReceiveInRosal':
+                    $this->handleUpdateStatusToReceiveInRosal();
+                    break;
 
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
@@ -1377,6 +1381,24 @@ class Consulta extends Controller
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }
         
+    }
+
+    public function handleUpdateStatusToReceiveInRosal(){
+        $ticketId = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+
+        if (!$ticketId ||!$id_user) {
+            $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->UpdateStatusToReceiveInRosal($ticketId, $id_user);
+        if ($result) {
+            $this->response(['success' => true,'message' => 'El estado del ticket ha sido actualizado a Recibido en Rosal.'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
     }
 }
 ?>

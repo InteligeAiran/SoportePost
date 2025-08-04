@@ -5,9 +5,7 @@ let confirmInTallerModalInstance = null;
 $(document).ready(function () {
 
   // 1. Obtener el elemento del modal por su ID
-  const confirmInTallerModalElement = document.getElementById(
-    "confirmInTallerModal"
-  );
+  const confirmInTallerModalElement = document.getElementById("confirmInTallerModal");
   const CerramodalBtn = document.getElementById("CerrarButtonTallerRecib");
 
   // 2. Instanciar el modal de Bootstrap una sola vez
@@ -354,6 +352,7 @@ function getTicketData() {
                                   dataTableInstance.column('carga_de_llave:name').visible(false);
                                   dataTableInstance.column('Enviar_AlRosal:name').visible(false); // Asegúrate de que esta columna esté visible
                                   dataTableInstance.column(11).visible(false); // Índice 6 para "Técnico Asignado
+                                  dataTableInstance.column(10).visible(false); 
                                   setActiveButton("btn-por-asignar");
 
 
@@ -363,6 +362,7 @@ function getTicketData() {
                                   dataTableInstance.column('carga_de_llave:name').visible(false);
                                   dataTableInstance.column('Enviar_AlRosal:name').visible(false); // Asegúrate de que esta columna esté visible
                                   dataTableInstance.column(11).visible(false); // Índice 6 para "Técnico Asignado
+                                  dataTableInstance.column(10).visible(false); 
                                   setActiveButton("btn-por-asignar");
                               });
 
@@ -374,6 +374,7 @@ function getTicketData() {
                                   dataTableInstance.column('carga_de_llave:name').visible(true);
                                   dataTableInstance.column('Enviar_AlRosal:name').visible(true); // Asegúrate de que esta columna esté visible
                                   dataTableInstance.column(11).visible(false); 
+                                  dataTableInstance.column(10).visible(false); 
                                   setActiveButton("btn-asignados");
                               });
 
@@ -557,7 +558,6 @@ function getTicketData() {
                                     );
                                 }
                             });
-
 
                         if (tableContainer) {
                             tableContainer.style.display = ""; // Show the table container

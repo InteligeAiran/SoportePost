@@ -1,3 +1,7 @@
+let currentTicketIdForConfirmTaller = null;
+let currentNroTicketForConfirmTaller = null; // <--- NUEVA VARIABLE PARA EL NÚMERO DE TICKET
+let confirmInTallerModalInstance = null;
+
 document.addEventListener("DOMContentLoaded", function () {
     // --- Referencias a elementos estáticos del DOM (que siempre están presentes al cargar la página) ---
     // Modal para Subir Documento
@@ -6,6 +10,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const iconoCerrarUpload = document.getElementById("icon-close"); // Icono 'x' del modal de subida
     const inputFile = document.getElementById("documentFile");
     const modalTicketIdSpanUpload = modalElementUpload ? modalElementUpload.querySelector("#modalTicketId") : null; // Encuentra el span dentro de su modal
+    const confirmInTallerModalElement = document.getElementById("confirmInRosalModal");
+    const CerramodalBtn = document.getElementById("CerrarButtonTallerRecib");
+
 
     // Modal para Visualizar Documento
     const modalElementView = document.getElementById("viewDocumentModal");
@@ -22,6 +29,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (modalElementView) {
         bsViewModal = new bootstrap.Modal(modalElementView, { keyboard: false }); // Habilita cierre con ESC
+    }
+
+    // 2. Instanciar el modal de Bootstrap una sola vez
+    if (confirmInTallerModalElement) {
+      confirmInTallerModalInstance = new bootstrap.Modal(
+        confirmInTallerModalElement,
+        {
+          backdrop: "static", // Para que no se cierre al hacer clic fuera
+        }
+      );
+    }
+
+    if (CerramodalBtn && confirmInTallerModalInstance) {
+      CerramodalBtn.addEventListener("click", function () {
+        if (confirmInTallerModalInstance) {
+          confirmInTallerModalInstance.hide();
+        }
+      });
     }
 
     // Variable para almacenar el ID del ticket
@@ -373,7 +398,7 @@ function getTicketDataFinaljs() {
                 };
 
                 // Lógica para aplicar estilo al estado del ticket
-                if (key === "name_status_ticket") {
+               /* if (key === "name_status_ticket") {
                   columnDef.render = function (data, type, row) {
                     let statusText = String(data || "").trim();
                     let statusColor = "gray";
@@ -394,7 +419,7 @@ function getTicketDataFinaljs() {
                     }
                     return `<span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
                   };
-                }
+                }*/
 
                 const displayLengthForTruncate = 25; // Define la longitud a la que truncar el texto
 
@@ -437,95 +462,85 @@ function getTicketDataFinaljs() {
             // Añadir la columna "Acción" al final
            // ... (código anterior hasta la columna "Acción")
 
-          // Añadir la columna "Acción" al final
-          columnsConfig.push({
-            data: null,
-            title: "Acción",
-            orderable: false,
-            searchable: false,
-            className: "dt-body-center",
-            render: function (data, type, row) {
-                const idTicket = row.id_ticket;
-                const serialPos = row.serial_pos;
-                const nroTicket = row.nro_ticket;
-                const name_status_payment = row.name_status_payment;
-                const currentStatusLab = row.status_taller;
-                
-                // Aplica .trim() para eliminar espacios en blanco
-                const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
-                const nombre_estado_cliente = row.nombre_estado_cliente;
-                
-                // Asumiendo que el campo para el documento cargado es 'url_document_invoice'
-                const documentoCargado = row.url_document_invoice !== null && row.url_document_invoice !== '';
+            // Añadir la columna "Acción" al final
+            columnsConfig.push({
+                data: null,
+                title: "Acción",
+                orderable: false,
+                searchable: false,
+                className: "dt-body-center",
+                render: function (data, type, row) {
+                    const idTicket = row.id_ticket;
+                    const serialPos = row.serial_pos;
+                    const nroTicket = row.nro_ticket;
+                    const name_status_payment = row.name_status_payment;
+                    const currentStatusLab = row.status_taller;
+                    const name_accion_ticket = (row.name_accion_ticket || "").trim();
+                    
+                    const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
+                    const nombre_estado_cliente = row.nombre_estado_cliente;
+                    
+                    // ** VALOR OBTENIDO DE LA FUNCIÓN getdataticketfinal() **
+                    // Verifica si la cadena de tipos de documentos incluye 'Envio_Destino'
+                    const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
+                    console.log(hasEnvioDestinoDocument)
 
-                // *******************************************************
-                // LÓGICA DE VALIDACIÓN PARA LOS BOTONES
-                // *******************************************************
-                
-                // =========================================================
-                // NUEVA LÓGICA: Si es de Caracas y está Reparado
-                // =========================================================
-                if (currentStatusLab === "Reparado" && nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda"){
-                    return `<button type="button" id = "buttonEntregarCliente" class="btn btn-primary btn-sm deliver-ticket-btn"
-                                data-id-ticket="${idTicket}"
-                                data-serial-pos="${serialPos}"
-                                data-nro-ticket="${nroTicket}">
-                                Entregar al Cliente
-                            </button>`;
-                }
-                
-                // =========================================================
-                // Lógica existente para tickets que NO son de Caracas
-                // =========================================================
+                    let actionButton = '';
 
-                // Condición para mostrar el botón "Subir Documento"
-                // Nota: Mantuve tu lógica original (con '!=') para isPendingDocument como me pediste,
-                // aunque te recomiendo cambiarla a '&&' como te expliqué anteriormente.
-                const isPendingDocument = (
-                    name_status_payment != "Pendiente Por Cargar Documentos" ||
-                    name_status_payment != "Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)" ||
-                    name_status_payment != "Pendiente Por Cargar Documento(PDF Envio ZOOM)"
-                );
+                    // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
+                    if (name_accion_ticket === "En espera de confirmar recibido en el Rosal") {
+                        actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
+                                            data-id-ticket="${idTicket}"
+                                            data-serial-pos="${serialPos}"
+                                            data-nro-ticket="${nroTicket}">
+                                            <i class="fas fa-hand-holding-box"></i> Recibido
+                                        </button>`;
+                    }
+                    // Prioridad 2: Validar si el ticket es de Caracas o Miranda y está Reparado
+                    else if (currentStatusLab === "Reparado" && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda")) {
+                        actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
+                                            data-id-ticket="${idTicket}"
+                                            data-serial-pos="${serialPos}"
+                                            data-nro-ticket="${nroTicket}">
+                                            Entregar al Cliente
+                                        </button>`;
+                    }
+                    // Prioridad 3: Lógica para tickets fuera de Caracas, Solvente y Reparado
+                    else {
+                        const commonConditions = (
+                            currentStatusLab === "Reparado" &&
+                            name_status_domiciliacion === "Solvente" &&
+                            nombre_estado_cliente !== "Caracas"
+                        );
 
-                // La condición base que los otros botones deben cumplir
-                const commonConditions = (
-                    currentStatusLab === "Reparado" &&
-                    name_status_domiciliacion === "Solvente" &&
-                    nombre_estado_cliente !== "Caracas"
-                );
-                
-                // PRIMERA CONDICIÓN (original): MOSTRAR BOTÓN "ENTREGAR AL CLIENTE"
-                // Si cumple las condiciones base Y el estado de pago indica documento cargado
-                if (commonConditions && name_status_payment === "Documentos Cargados") {
-                    return `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
-                                data-id-ticket="${idTicket}"
-                                data-serial-pos="${serialPos}"
-                                data-nro-ticket="${nroTicket}">
-                                Entregar al Cliente
-                            </button>`;
-                }
-                
-                // SEGUNDA CONDICIÓN (original): MOSTRAR BOTÓN "SUBIR DOCUMENTO"
-                // Si cumple las condiciones base Y falta por subir el documento
-                else if (commonConditions && isPendingDocument) {
-                    return `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
-                                data-id-ticket="${idTicket}"
-                                data-nro-ticket="${nroTicket}"
-                                data-bs-toggle="modal"
-                                data-bs-target="#uploadDocumentModal">
-                                Subir Documento
-                            </button>`;
-                }
+                        // Si cumple las condiciones base y NO se ha subido el documento de "Envio_Destino"
+                        if (commonConditions && !hasEnvioDestinoDocument) {
+                            actionButton = `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
+                                                data-id-ticket="${idTicket}"
+                                                data-nro-ticket="${nroTicket}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#uploadDocumentModal">
+                                                Subir Documento
+                                            </button>`;
+                        }
+                        // Si cumple las condiciones base y YA se subió el documento
+                       if (commonConditions && hasEnvioDestinoDocument) {
+                          actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn"
+                                              data-id-ticket="${idTicket}"
+                                              data-region-name="${nombre_estado_cliente}">
+                                              Enviar a Región: ${nombre_estado_cliente}
+                                          </button>`;
+                      }
 
-                // TERCERA CONDICIÓN (POR DEFECTO): MOSTRAR BOTÓN "Falta Requisitos"
-                else {
-                    return `<button type="button" class="btn btn-secondary btn-sm disabled">Falta Requisitos</button>`;
-                }
-                // *******************************************************
-                // FIN: LÓGICA DE VALIDACIÓN
-                // *******************************************************
-            },
-        });
+                        else {
+                            // Estado por defecto si no se cumplen las condiciones anteriores
+                            actionButton = `<button type="button" class="btn btn-secondary btn-sm disabled">Falta Requisitos</button>`;
+                        }
+                    }
+                    return actionButton;
+                },
+            });
+
 
 
             // Añadir la columna "Llaves"
@@ -569,7 +584,7 @@ function getTicketDataFinaljs() {
             // Añadir la columna "Imagen"
             columnsConfig.push({
                 data: null,
-                title: "Imagen",
+                title: "Vizualizar Documentos",
                 orderable: false,
                 searchable: false,
                 width: "8%",
@@ -582,11 +597,11 @@ function getTicketDataFinaljs() {
                         return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
                                 data-id-ticket="${idTicket}"
                                 data-bs-toggle="modal"
-                                data-bs-target="#viewDocumentModal"> Ver Imagen
+                                data-bs-target="#viewDocumentModal"> Ver Documento Cargados
                             </button>`;
                     } else {
                         // Si el estatus no es "Llaves Cargadas", muestra "No hay imagen"
-                        return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay imagen</button>`;
+                        return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Docuemntos Cargados</button>`;
                     }
                 },
             });
@@ -627,7 +642,107 @@ function getTicketDataFinaljs() {
                   colvis: "Visibilidad de Columna",
                 },
               },
-            });
+
+                  dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+                          initComplete: function (settings, json) {
+                              const dataTableInstance = this.api(); // Obtén la instancia de la API de DataTables
+                              const buttonsHtml = `
+                                  <button id="btn-por-asignar" class="btn btn-secondary me-2" title="Tickets en espera de confirmar recibido en el Rosal">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                                      <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                      <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                    </svg>
+                                  </button>
+
+                                  <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets en el Rosal">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                                      <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+                                    </svg>
+                                  </button>
+
+                                  <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets Por confirmar carga de llaves">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                                      <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                                    </svg>
+                                  </button>
+
+                                  <button id="btn-devuelto" class="btn btn-secondary me-2" title="Tickets Enviados al Rosal">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house-door" viewBox="0 0 16 16">
+                                      <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z"/>
+                                    </svg>
+                                  </button>
+                              `;
+                              $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+
+                              // Tu función setActiveButton es correcta.
+                              function setActiveButton(activeButtonId) {
+                                  $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
+                                  $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
+                                  $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
+                                  $("#btn-devuelto").removeClass("btn-primary").addClass("btn-secondary");
+                                  $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
+                              }
+
+                              // Inicialmente, establecer "Asignados" como activo y aplicar el filtro
+                                  dataTableInstance.columns().search('').draw(false);
+                                  dataTableInstance.column(10).search("En espera de confirmar recibido en el Rosal", true).draw();
+                                  dataTableInstance.column(17).visible(false);
+                                  dataTableInstance.column(17).visible(true);
+                                  dataTableInstance.column(18).visible(true);
+                                  dataTableInstance.column(19).visible(true);
+                                  dataTableInstance.column(20).visible(true);
+                                  setActiveButton("btn-por-asignar");
+
+
+                                  $("#btn-por-asignar").on("click", function () {
+                                  dataTableInstance.columns().search('').draw(false);
+                                  dataTableInstance.column(10).search("En espera de confirmar recibido en el Rosal", true).draw();
+                                  dataTableInstance.column(17).visible(true);
+                                  dataTableInstance.column(18).visible(true);
+                                  dataTableInstance.column(19).visible(true);
+                                  dataTableInstance.column(20).visible(true);
+                                  setActiveButton("btn-por-asignar");
+                              });
+
+                              // Tus event listeners de clic están correctos
+                              $("#btn-asignados").on("click", function () {
+                                  dataTableInstance.columns().search('').draw(false);
+                                  dataTableInstance.column(10).search("^En el Rosal$", true, false).draw();
+                                  dataTableInstance.column(17).visible(true);
+                                  dataTableInstance.column(18).visible(true);
+                                  dataTableInstance.column(19).visible(true);
+                                  dataTableInstance.column(20).visible(true);                                  
+                                    setActiveButton("btn-asignados");
+                              });
+
+                              $("#btn-recibidos").on("click", function () {
+                              dataTableInstance.columns().search('').draw(false);
+                              dataTableInstance.column(10).search("Entregado a Cliente", true).draw();
+                              dataTableInstance.column(17).visible(false);
+                              dataTableInstance.column(18).visible(false);
+                              dataTableInstance.column(19).visible(false);
+                              dataTableInstance.column(20).visible(false);
+                              setActiveButton("btn-recibidos");
+                            });
+                              
+
+                           $("#btn-devuelto").on("click", function () {
+                              dataTableInstance.columns().search('').draw(false);
+                              dataTableInstance.column(8).search("Enviado devuelta al Rosal").draw();
+
+                              // Obtener todos los botones de carga de llave y ocultarlos
+                              document.querySelectorAll(".load-key-button").forEach(button => {
+                                  button.style.display = "none";
+                              });
+
+                              document.querySelectorAll(".receive-key-checkbox").forEach(checkbox => {
+                                  checkbox.style.display = "none"; // Ocultar checkboxes
+                              });
+
+                              setActiveButton("btn-devuelto");
+                            });
+                          },
+                      });
 
                   $(document).on("click", ".deliver-ticket-btn", function () {
                     const idTicket = $(this).data("id-ticket");
@@ -789,6 +904,32 @@ function getTicketDataFinaljs() {
                         // Por ahora, no hace nada si se desmarca.
                     }
                 });
+
+                 $("#tabla-ticket tbody")
+                            .off("click", ".received-ticket-btn")
+                            .on("click", ".received-ticket-btn", function (e) {
+                                e.stopPropagation();
+                                const ticketId = $(this).data("id-ticket");
+                                const nroTicket = $(this).data("nro-ticket");
+                                const serialPos = $(this).data("serial-pos") || ""; // Asegúrate de que serial_pos esté definido
+
+                                currentTicketIdForConfirmTaller = ticketId;
+                                currentNroTicketForConfirmTaller = nroTicket;
+
+                                $("#modalTicketIdConfirmTaller").val(ticketId);
+                                $("#modalHiddenNroTicketConfirmTaller").val(nroTicket);
+                                $("#serialPost").text(serialPos);
+
+                                $("#modalTicketIdConfirmTaller").text(nroTicket);
+
+                                if (confirmInTallerModalInstance) {
+                                    confirmInTallerModalInstance.show();
+                                } else {
+                                    console.error(
+                                        "La instancia del modal 'confirmInTallerModal' no está disponible."
+                                    );
+                                }
+                            });
             // ************* FIN: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
 
             $("#tabla-ticket tbody").on("click", ".truncated-cell", function (e) {
@@ -908,6 +1049,107 @@ function getTicketDataFinaljs() {
 
 document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
 
+$("#confirmTallerBtn").on("click", function () {
+    const ticketIdToConfirm = currentTicketIdForConfirmTaller;
+    // const nroTicketToConfirm = currentNroTicketForConfirmTaller; // Si necesitas el nro_ticket aquí
+
+    if (ticketIdToConfirm) {
+      updateTicketStatusInRosal(ticketIdToConfirm);
+      if (confirmInTallerModalInstance) {
+        confirmInTallerModalInstance.hide();
+      }
+    } else {
+      console.error("ID de ticket no encontrado para confirmar en taller.");
+    }
+});
+
+function updateTicketStatusInRosal(ticketId) {
+  const id_user = document.getElementById("userId").value;
+
+  const dataToSendString = `action=UpdateStatusToReceiveInRosal&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(ticketId)}`;
+
+  const xhr = new XMLHttpRequest();
+
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/consulta/UpdateStatusToReceiveInRosal`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+
+        if (response.success === true) {
+          // Or `response.success == "true"` if your backend sends a string
+          Swal.fire({
+            // Changed from swal(...) to Swal.fire(...)
+            title: "¡Éxito!",
+            text: "El POS se encontrará en el taller como 'En Proceso de reparación'.",
+            icon: "success",
+            confirmButtonText: "¡Entendido!", // SweetAlert2 uses confirmButtonText
+            customClass: {
+              confirmButton: "BtnConfirmacion", // For custom button styling
+            },
+            color: "black",
+          }).then((result) => {
+            // SweetAlert2 uses 'result' object
+            if (result.isConfirmed) {
+              // Check if the confirm button was clicked
+              location.reload();
+            }
+          });
+        } else {
+          console.warn(
+            "La API retornó éxito: falso o un valor inesperado:",
+            response
+          );
+          Swal.fire(
+            "Error",
+            response.message ||
+              "No se pudo actualizar el ticket. (Mensaje inesperado)",
+            "error"
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Error al analizar la respuesta JSON para la actualización de estado:",
+          error
+        );
+        // The original error "Class constructor SweetAlert cannot be invoked without 'new'"
+        // might be thrown here if SweetAlert2 is loaded but you try to use swal() within the catch block as well.
+        Swal.fire(
+          "Error de Procesamiento",
+          "Hubo un problema al procesar la respuesta del servidor.",
+          "error"
+        );
+      }
+    } else {
+      console.error(
+        "Error al actualizar el estado (HTTP):",
+        xhr.status,
+        xhr.statusText,
+        xhr.responseText
+      );
+      Swal.fire(
+        "Error del Servidor",
+        `No se pudo comunicar con el servidor. Código: ${xhr.status}`,
+        "error"
+      );
+    }
+  };
+
+  xhr.onerror = function () {
+    console.error("Error de red al intentar actualizar el ticket.");
+    Swal.fire(
+      "Error de Conexión",
+      "Hubo un problema de red. Por favor, inténtalo de nuevo.",
+      "error"
+    );
+  };
+  xhr.send(dataToSendString);
+}
 
 function MarkDateKey(ticketId, nroTicket) {
   const id_user = document.getElementById("userId").value;

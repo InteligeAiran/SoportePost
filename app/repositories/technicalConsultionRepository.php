@@ -644,5 +644,10 @@ class TechnicalConsultionRepository
         $result = $this->model->EntregarTicket($id_ticket, $id_user, $comment);
         return $result;
     }
+
+    public function UpdateStatusToReceiveInRosal($ticketId, $id_user){
+        $result = $this->model->UpdateStatusToReceiveInRosal($ticketId, $id_user);
+        return $result;
+    }
 }
 ?>
