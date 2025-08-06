@@ -281,7 +281,7 @@ function mi_navbar() {
 
         <div class="modal fade" id="ModalAggUsers" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"
      data-keyboard="false">
-         <div class="modal-dialog" role="document">
+         <div class="modal-dialog modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel"></h5>
@@ -392,7 +392,7 @@ function mi_navbar() {
 
     <div class="modal fade" id="ModalEditUsers" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"
      data-keyboard="false">
-         <div class="modal-dialog" role="document">
+         <div class="modal-dialog modal-dialog-scrollable"  role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel"></h5>
