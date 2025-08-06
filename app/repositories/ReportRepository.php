@@ -149,19 +149,47 @@ class ReportRepository
 
     public function saveDocument(
         $id_ticket,
-        $filePathForDatabase,    // La ruta relativa que se guarda en la DB
-        $mimeTypeFromFrontend,   // El tipo MIME
-        $originalDocumentName,   // Nombre original del archivo
-        $documentSize            // La ruta relativa que se guarda en la DB para acceder al archivo
+        $originalDocumentName,
+        $stored_filename,
+        $filePathForDatabase,
+        $mimeTypeFromFrontend,
+        $documentSize,
+        $id_user,
+        $document_type
     ) {
-        $result = $this->model->saveDocument($id_ticket, $originalDocumentName, $documentSize, $mimeTypeFromFrontend, $filePathForDatabase);
-        return $result;
-    }
+    // Pasar los parámetros al modelo en el mismo orden
+    $result = $this->model->saveDocument(
+        $id_ticket,
+        $originalDocumentName,
+        $stored_filename,
+        $filePathForDatabase,
+        $mimeTypeFromFrontend,
+        $documentSize,
+        $id_user,
+        $document_type
+    );
+    return $result;
+}
 
     public function getDocument($id_ticket)
     {
         $result = $this->model->getDocument($id_ticket);
         return $result;
+    }
+
+    public function getTicketDetailsById($id_ticket){
+        $result = $this->model->GetTicketDetailsById($id_ticket);
+        if ($result) {
+            //var_dump($result);  
+            $ticket = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            return $ticket;
+        } else {
+            return null;
+        }
     }
 
     public function GetMonthlyTicketDetails(){

@@ -248,11 +248,6 @@ function inicializeModal() {
     clearFormFields(); // Limpiar campos de ambos modales
   }
 
-  /*cerrarNivelFalla.off('click').on('click', function() { // Cierre Modal Nivel de Falla
-        modal.css("display", "none");
-        clearFormFields(); // Limpiar campos de ambos modales
-    });*/
-
   crearTicketDropdownItems.off("click").on("click", function (event) {
     event.preventDefault(); // Evitar que el enlace navegue
     var selectedValue = $(this).data("value");
@@ -269,14 +264,6 @@ function inicializeModal() {
         text: "Se ha seleccionado: " + selectedValue,
         color: "black",
       });
-      // Si quieres mostrar directamente un modal (Nivel 1 o Nivel 2)
-      // en lugar del nivel de falla, puedes llamar a mostrarMiModal1() o mostrarMiModal() aquí.
-      // Por ejemplo:
-      // if (selectedValue === 'Sustitución de POS') {
-      //     mostrarMiModal1('sustitucion');
-      // } else if (selectedValue === 'Préstamo de POS') {
-      //     mostrarMiModal('prestamo');
-      // }
     } else {
       Swal.fire({
         icon: "warning",

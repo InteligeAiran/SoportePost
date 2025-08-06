@@ -2,23 +2,17 @@ let dataTableInstance;
 let currentTicketId;
 let modalInstance;
 let currentnroTicket;
+let currentSerial;
 
 function getTicketData() {
-  const tbody = document
-    .getElementById("tabla-ticket")
-    .getElementsByTagName("tbody")[0];
+  const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
   const detailsPanel = document.getElementById("ticket-details-panel");
-  const actionSelectionModalElement = document.getElementById(
-    "actionSelectionModal"
-  ); // Modal de "Seleccionar Acción"
+  const actionSelectionModalElement = document.getElementById("actionSelectionModal"); // Modal de "Seleccionar Acción"
   const staticBackdropModalElement = document.getElementById("staticBackdrop"); // Modal de "Deseas Enviar al Taller?"
-  const uploadDocumentModalElement = document.getElementById(
-    "uploadDocumentModal"
-  );
+  const uploadDocumentModalElement = document.getElementById("uploadDocumentModal");
   const viewDocumentModalElement = document.getElementById("viewDocumentModal");
   const devuelveModalElement = document.getElementById("devolverClienteModal");
 
-  // Instancias de los modales de Bootstrap (se inicializan una vez)
   let modaldevolucion = null;
   let actionSelectionModalInstance = null;
   let staticBackdropModalInstance = null;
@@ -99,178 +93,79 @@ function getTicketData() {
       return response.json();
     })
     .then((data) => {
-      if (data.success && data.ticket) {
+    if (data.success && data.ticket) {
         const TicketData = data.ticket;
 
         detailsPanel.innerHTML =
-          "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
+            "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
 
         const dataForDataTable = TicketData.map((ticket) => {
-          let actionButtonsHTML = "";
+            let actionButtonsHTML = '<div class="d-flex align-items-center">';
 
-          // Truncar la razón social para la visualización inicial
-          const fullRazonSocial = ticket.razonsocial_cliente || "";
-          const displayLength = 25;
-          const truncatedRazonSocial =
-            fullRazonSocial.length > displayLength
-              ? `<span class="truncated-cell" data-full-text="${fullRazonSocial}">${fullRazonSocial.substring(
-                  0,
-                  displayLength
-                )}...</span>`
-              : `<span class="truncated-cell" data-full-text="${fullRazonSocial}">${fullRazonSocial}</span>`;
+            const fullRazonSocial = ticket.razonsocial_cliente || "";
+            const displayLength = 25;
+            const truncatedRazonSocial =
+                fullRazonSocial.length > displayLength
+                    ? `<span class="truncated-cell" data-full-text="${fullRazonSocial}">${fullRazonSocial.substring(
+                          0,
+                          displayLength
+                      )}...</span>`
+                    : `<span class="truncated-cell" data-full-text="${fullRazonSocial}">${fullRazonSocial}</span>`;
 
-          const hasBeenConfirmedByAnyone =
-            ticket.confirmcoord === "t" ||
-            ticket.confirmcoord === true ||
-            ticket.confirmtecn === "t" ||
-            ticket.confirmtecn === true;
+            const hasBeenConfirmedByAnyone =
+                ticket.confirmcoord === "t" ||
+                ticket.confirmcoord === true ||
+                ticket.confirmtecn === "t" ||
+                ticket.confirmtecn === true;
 
-          if (hasBeenConfirmedByAnyone) {
-            if (ticket.name_accion_ticket === "Enviado a taller") {
-                
-            } else { // Si ya fue confirmado, pero NO ha sido enviado a taller
+            // --- Lógica para el botón que abre el modal ---
+            // Solo se muestra el botón si hay acciones de documentos disponibles
+            if (
+                ticket.id_status_payment == 11 ||
+                ticket.id_status_payment == 10 ||
+                ticket.id_status_payment == 9 ||
+                ticket.id_status_payment == 6 ||
+                ticket.id_status_payment == 4
+            ) {
+                actionButtonsHTML += `
+                    <button class="btn btn-sm btn-info btn-document-actions-modal mr-2"
+                        data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Acciones de Documentos"
+                        data-ticket-id="${ticket.id_ticket}"
+                        data-status-payment="${ticket.id_status_payment}"
+                        data-pdf-zoom-url="${ticket.pdf_zoom_url || ""}"
+                        data-img-exoneracion-url="${ticket.img_exoneracion_url || ""}"
+                        data-pdf-pago-url="${ticket.pdf_pago_url || ""}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
+                    </button>
+                `;
+            }
+
+            // Lógica para el botón "Marcar como Recibido"
+            if (!hasBeenConfirmedByAnyone) {
+                actionButtonsHTML += `
+                    <button class="btn btn-sm btn-dark btn-received-ticket mr-2"
+                        data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Marcar como Recibido"
+                        data-ticket-id="${ticket.id_ticket}">
+                        ¿Recibido?
+                    </button>`;
+            }
+
+            // Lógica para el botón "Enviar a Taller"
+            if (hasBeenConfirmedByAnyone && ticket.name_accion_ticket !== "Enviado a taller") {
                 actionButtonsHTML += `
                     <button class="btn btn-sm btn-wrench-custom"
                         data-bs-toggle="tooltip" data-bs-placement="top"
                         title="Enviar a Taller"
                         data-ticket-id="${ticket.id_ticket}"
-                        data-nro_ticket="${ticket.nro_ticket}">
+                        data-nro_ticket="${ticket.nro_ticket}",
+                        data-serial_pos="${ticket.serial_pos || ''}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
                     </button>`;
             }
-        } else { // Si aún NO ha sido confirmado por nadie
-            actionButtonsHTML += `
-                <button class="btn btn-sm btn-dark btn-received-ticket ml-2"
-                    data-bs-toggle="tooltip" data-bs-placement="top"
-                    title="Marcar como Recibido"
-                    data-ticket-id="${ticket.id_ticket}">
-                    ¿Recibido?
-                </button>`;
-        }
 
-          // Lógica para añadir los botones adicionales basada en id_status_payment
-          if (ticket.id_status_payment == 11) {
-            actionButtonsHTML += `
-                            <button class="btn btn-sm btn-info btn-zoom-pdf ml-2"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Cargue PDF o Imagen de Envio"
-                                data-ticket-id="${ticket.id_ticket}"
-                                data-status-payment="${
-                                  ticket.id_status_payment
-                                }"
-                                data-document-type="zoom">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
-                            </button>
-                            <button class="btn btn-sm btn-secondary btn-view-document ml-2"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Ver PDF o Imagen de Envio de ZOOM"
-                                data-ticket-id="${ticket.id_ticket}"
-                                data-document-type="zoom"
-                                data-file-url="${ticket.pdf_zoom_url || ""}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/></svg>
-                            </button>
-                        `;
-          } else if (ticket.id_status_payment == 10) {
-            actionButtonsHTML += `
-                            <button class="btn btn-sm btn-primary btn-exoneracion-img ml-2"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Cargar Imagen o PDF de la Exoneracion"
-                                data-ticket-id="${ticket.id_ticket}"
-                                data-status-payment="${
-                                  ticket.id_status_payment
-                                }"
-                                data-document-type="exoneracion">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
-                            </button>
-                            <button class="btn btn-sm btn-success btn-pago-pdf ml-2"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Carge el PDF o Imagen de Pago"
-                                data-ticket-id="${ticket.id_ticket}"
-                                data-status-payment="${
-                                  ticket.id_status_payment
-                                }"
-                                data-document-type="pago">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
-                            </button>
-                            <button class="btn btn-sm btn-secondary btn-view-document ml-2"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Ver Documento de Exoneración o Pago"
-                                data-ticket-id="${ticket.id_ticket}"
-                                data-document-type="exoneracion_pago"
-                                data-file-url="${
-                                  ticket.img_exoneracion_url ||
-                                  ticket.pdf_pago_url ||
-                                  ""
-                                }">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/></svg>
-                            </button>
-                        `;
-          } else if (ticket.id_status_payment == 9) {
-            actionButtonsHTML += `
-                            <button class="btn btn-sm btn-info btn-zoom-pdf ml-2"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Cargue Imagen o PDF de Envio ZOOM"
-                                data-ticket-id="${ticket.id_ticket}"
-                                data-status-payment="${
-                                  ticket.id_status_payment
-                                }"
-                                data-document-type="zoom">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
-                            </button>
-                            <button class="btn btn-sm btn-primary btn-exoneracion-img ml-2"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Cargar Imagen o PDF de la Exoneracion"
-                                data-ticket-id="${ticket.id_ticket}"
-                                data-status-payment="${
-                                  ticket.id_status_payment
-                                }"
-                                data-document-type="exoneracion">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
-                            </button>
-                            <button class="btn btn-sm btn-success btn-pago-pdf ml-2"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Carge el PDF o Imagen de Pago"
-                                data-ticket-id="${ticket.id_ticket}"
-                                data-status-payment="${
-                                  ticket.id_status_payment
-                                }"
-                                data-document-type="pago">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
-                            </button>
-                            <button class="btn btn-sm btn-secondary btn-view-document ml-2"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Ver Documento"
-                                data-ticket-id="${ticket.id_ticket}"
-                                data-document-type="all"
-                                data-file-url="${
-                                  ticket.img_exoneracion_url ||
-                                  ticket.pdf_pago_url ||
-                                  ticket.pdf_zoom_url ||
-                                  ""
-                                }">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/></svg>
-                            </button>
-                        `;
-          } else if (
-            ticket.id_status_payment == 6 ||
-            ticket.id_status_payment == 4
-          ) {
-            actionButtonsHTML += `
-                            <button class="btn btn-sm btn-secondary btn-view-document ml-2"
-                                data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="Ver Documento"
-                                data-ticket-id="${ticket.id_ticket}"
-                                data-document-type="all"
-                                data-file-url="${
-                                  ticket.img_exoneracion_url ||
-                                  ticket.pdf_pago_url ||
-                                  ticket.pdf_zoom_url ||
-                                  ""
-                                }">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/></svg>
-                            </button>
-                        `;
-          }
+          actionButtonsHTML += '</div>';
 
           const finalActionColumnHTML = `<div class="acciones-container">${actionButtonsHTML}</div>`;
 
@@ -337,23 +232,23 @@ function getTicketData() {
                     </svg>
                 </button>
 
-                <button id="btn-por-asignar" class="btn btn-secondary me-2" title = "Enviados Taller">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
-                    <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
-                    </svg>
+                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Técnico">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                  </svg>
                 </button>
 
-                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Técnico">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                        <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                    </svg>
+                <button id="btn-por-asignar" class="btn btn-secondary me-2" title = "Enviados Taller">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                    <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+                  </svg>
                 </button>
 
                 <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos devuelto a cliente">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
-                        <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
-                    </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
+                    <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
+                  </svg>
                 </button>
             `;
             $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
@@ -379,6 +274,7 @@ function getTicketData() {
 
             $("#btn-por-asignar").on("click", function () {
                 dataTableInstance.column(5).search("Enviado a taller").draw();
+                dataTableInstance.column(5).search("En Taller").draw();
                 setActiveButton("btn-por-asignar");
             });
 
@@ -411,9 +307,9 @@ function getTicketData() {
                     if (selectedTicketDetails) {
                         // Obtener el nro_ticket de los detalles del ticket
                         const currentnroTicket = selectedTicketDetails.nro_ticket;
-
+                        const serialPos = selectedTicketDetails.serial_pos || "No disponible";
                         // Llama a la función showConfirmationModalForReceived
-                        showConfirmationModalForReceived(ticketId, currentnroTicket);
+                        showConfirmationModalForReceived(ticketId, currentnroTicket, serialPos);
                     } else {
                         console.error(`Error: No se encontraron detalles para el ticket ID: ${ticketId}`);
                         // Opcional: Mostrar un SweetAlert2 de error al usuario
@@ -581,8 +477,10 @@ function getTicketData() {
             e.stopPropagation();
             const ticketId = $(this).data("ticket-id");
             const nroTicket = $(this).data("nro_ticket");
+            const serialPos = $(this).data("serial_pos") || "No disponible";
             currentTicketId = ticketId; // Asigna al currentTicketId para el modal de taller
             currentnroTicket = nroTicket;
+            currentSerial = serialPos; // Asigna el serial al currentSerial
 
             if (actionSelectionModalInstance) {
               actionSelectionModalInstance.show(); // Abre el modal de selección de acción
@@ -593,17 +491,15 @@ function getTicketData() {
             }
           });
 
-        // *** Mantenemos la lógica para los botones de los modales de acción ***
-
-        // Listener para el botón "Enviar a Taller" dentro del modal actionSelectionModal
-        // Este botón DEBE tener el ID 'ButtonSendToTaller'
-        $("#ButtonSendToTaller")
+          $("#ButtonSendToTaller")
           .off("click")
           .on("click", function () {
 
             const modalTicketNrSpan = document.getElementById("modalTicketNr");
-             if (modalTicketNrSpan && currentnroTicket) {
+            const modalSerialPosSpan = document.getElementById("serialpos");
+             if (modalTicketNrSpan && currentnroTicket && modalSerialPosSpan) {
                 modalTicketNrSpan.textContent = currentnroTicket;
+                modalSerialPosSpan.textContent = currentSerial; // Asigna el serial al span del modal
             } else {
                 modalTicketNrSpan.textContent = " seleccionado"; // Texto por defecto si no se encontró el número
                 console.warn("No se pudo inyectar el número de ticket en el modal de taller.");
@@ -860,10 +756,189 @@ function getTicketData() {
     });
 }
 
-// --- NUEVA FUNCIÓN PARA MOSTRAR UN MODAL DE CONFIRMACIÓN (OPCIONAL PERO RECOMENDADO) ---
-// Puedes usar un modal de Bootstrap existente o crear uno nuevo.
-// Este es un ejemplo conceptual.
-function showConfirmationModalForReceived(ticketId, currentnroTicket) {
+// Espera a que el DOM esté completamente cargado
+// Espera a que el DOM esté completamente cargado$(document).ready(function() {
+    // 1. Instanciar todos los modales al inicio
+    const documentActionsModal = new bootstrap.Modal(document.getElementById('documentActionsModal'));
+    const uploadDocumentModal = new bootstrap.Modal(document.getElementById('uploadDocumentModal'));
+    const viewDocumentModal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
+    
+    // Variables y referencias a elementos que se usarán en múltiples funciones
+    const uploadForm = $('#uploadForm');
+    const pdfViewViewer = document.getElementById('pdfViewViewer');
+    const imageViewPreview = document.getElementById('imageViewPreview');
+    
+    // 2. Manejador de eventos para el botón principal de la tabla (abre el modal de acciones)
+    $(document).on('click', '.btn-document-actions-modal', function() {
+        const ticketId = $(this).data('ticket-id');
+        const statusPayment = $(this).data('status-payment');
+        const pdfZoomUrl = $(this).data('pdf-zoom-url');
+        const imgExoneracionUrl = $(this).data('img-exoneracion-url');
+        const pdfPagoUrl = $(this).data('pdf-pago-url');
+
+        const modalTitle = $('#modalTicketId');
+        const buttonsContainer = $('#modal-buttons-container');
+
+        buttonsContainer.empty();
+        modalTitle.text(ticketId);
+
+        let modalButtonsHTML = '';
+
+        // Lógica para crear los botones dinámicamente
+        if (statusPayment == 11) {
+            modalButtonsHTML = `
+                <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="zoom">
+                    Cargar Documento de Envio
+                </button>
+                <button class="btn btn-secondary btn-block btn-view-document" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}">
+                    Ver Documento de Envio
+                </button>
+            `;
+        } else if (statusPayment == 10) {
+            modalButtonsHTML = `
+                <button class="btn btn-primary btn-block btn-exoneracion-img" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="exoneracion">
+                    Cargar Documento de Exoneración
+                </button>
+                <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="pago">
+                    Cargar Documento de Pago
+                </button>
+                <button class="btn btn-secondary btn-block btn-view-document" data-ticket-id="${ticketId}" data-document-type="exoneracion_pago" data-file-url="${imgExoneracionUrl || pdfPagoUrl}">
+                    Ver Documento (Exoneración/Pago)
+                </button>
+            `;
+        } else if (statusPayment == 9) {
+            modalButtonsHTML = `
+                <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="zoom">
+                    Cargar Documento Envio ZOOM
+                </button>
+                <button class="btn btn-primary btn-block btn-exoneracion-img" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="exoneracion">
+                    Cargar Documento de Exoneración
+                </button>
+                <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="pago">
+                    Cargar Documento de Pago
+                </button>
+                <button class="btn btn-secondary btn-block btn-view-document" data-ticket-id="${ticketId}" data-document-type="all" data-file-url="${imgExoneracionUrl || pdfPagoUrl || pdfZoomUrl}">
+                    Ver Documento
+                </button>
+            `;
+        } else if (statusPayment == 6 || statusPayment == 4) {
+            modalButtonsHTML = `
+                <button class="btn btn-secondary btn-block btn-view-document" data-ticket-id="${ticketId}" data-document-type="all" data-file-url="${imgExoneracionUrl || pdfPagoUrl || pdfZoomUrl}">
+                    Ver Documento
+                </button>
+            `;
+        }
+        
+        buttonsContainer.html(modalButtonsHTML);
+        documentActionsModal.show();
+    });
+
+    // 3. Manejador de eventos para los botones de "Cargar Documento" (desde el modal de acciones)
+    $(document).on('click', '.btn-zoom-pdf, .btn-exoneracion-img, .btn-pago-pdf', function() {
+        documentActionsModal.hide(); // Oculta el modal de acciones
+        
+        const ticketId = $(this).data('ticket-id');
+        const documentType = $(this).data('document-type');
+
+        uploadForm[0].reset();
+        $('#imagePreview').attr('src', '#').hide();
+        $('#uploadMessage').removeClass('alert-success alert-danger').addClass('hidden').text('');
+        
+        $('#uploadDocumentModal .modal-title h5').html(`Subir Documento para Ticket: <span id="modalTicketId">${ticketId}</span>`);
+        
+        $('#uploadForm').data('document-type', documentType);
+        $('#uploadForm').data('ticket-id', ticketId);
+
+        setTimeout(() => {
+            uploadDocumentModal.show();
+        }, 300);
+    });
+
+    // 4. Manejador de eventos para los botones de "Ver Documento" (desde el modal de acciones)
+    $(document).on('click', '.btn-view-document', function() {
+        documentActionsModal.hide(); // Oculta el modal de acciones
+
+        const ticketId = $(this).data('ticket-id');
+        const fileUrl = $(this).data('file-url');
+        const viewModalTicketId = $('#viewModalTicketId');
+
+        pdfViewViewer.style.display = 'none';
+        imageViewPreview.style.display = 'none';
+        viewModalTicketId.text(ticketId);
+
+        if (!fileUrl) {
+            $('#viewDocumentMessage').removeClass('hidden').text('No hay documento disponible para este ticket.');
+        } else {
+            $('#viewDocumentMessage').addClass('hidden').text('');
+            const isPdf = fileUrl.toLowerCase().endsWith('.pdf');
+
+            if (isPdf) {
+                pdfViewViewer.src = fileUrl;
+                pdfViewViewer.style.display = 'block';
+            } else {
+                imageViewPreview.src = fileUrl;
+                imageViewPreview.style.display = 'block';
+            }
+        }
+
+        setTimeout(() => {
+            viewDocumentModal.show();
+        }, 300);
+    });
+    
+    // 5. Previsualización de la imagen
+    $('#documentFile').on('change', function(event) {
+        const [file] = event.target.files;
+        const preview = $('#imagePreview');
+        if (file) {
+            preview.attr('src', URL.createObjectURL(file)).show();
+        } else {
+            preview.hide();
+        }
+    });
+    
+    // 6. Manejador de eventos para el botón de "Subir" dentro del modal de subida
+    // ... Todo el código anterior del document.ready ...
+
+// 6. Manejador de eventos para el botón de "Subir" dentro del modal de subida
+$(document).on('click', '#uploadFileBtn', function() {
+    const fileInput = $('#documentFile')[0];
+    const documentType = $('#uploadForm').data('document-type');
+    const ticketId = $('#uploadForm').data('ticket-id');
+
+    if (!fileInput.files || fileInput.files.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: '¡Advertencia!',
+            text: 'Por favor, selecciona un archivo antes de continuar.',
+            confirmButtonText: 'Entendido', 
+            confirmButtonColor: '#003594', // Color del botón
+            color: 'black',
+        });
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('documentFile', fileInput.files[0]);
+    formData.append('ticketId', ticketId);
+    formData.append('documentType', documentType);
+
+    // ... Tu lógica de AJAX para enviar el formulario al servidor ...
+});
+
+$(document).on('click', '#CerrarBoton', function() {
+    // 1. Oculta el modal de visualización actual
+    uploadDocumentModal.hide();
+    viewDocumentModal.hide();
+
+    // 2. Muestra el modal de acciones de nuevo
+    // Usamos un pequeño retraso para evitar problemas de superposición y animaciones
+    setTimeout(() => {
+        documentActionsModal.show();
+    }, 300);
+});
+
+function showConfirmationModalForReceived(ticketId, currentnroTicket, serialPos) {
    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
  Swal.fire({
     title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
@@ -874,12 +949,12 @@ function showConfirmationModalForReceived(ticketId, currentnroTicket) {
             <div class="mb-4">
                 ${customWarningSvg}
             </div>
-            <p class="h4 mb-3">¿Marcar el Pos asociado al ticket Nro:<span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; ">${currentnroTicket}</span>como recibido?</p>
+            <p class="h4 mb-3">¿Marcar el Pos asociado <span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> al ticket Nro:<span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentnroTicket}</span>como recibido?</p>
             <p class="h5 text-muted">Esta acción registrará la fecha de recepción y habilitará la opción Envío a Taller.</p>
         </div>
     `,
     showCancelButton: true,
-    confirmButtonText: "Sí, Recibir Pos",
+    confirmButtonText: "Recibir Pos",
     cancelButtonText: "Cancelar",
     confirmButtonColor: "#003594",
     customClass: {
@@ -1274,7 +1349,7 @@ function formatTicketDetailsPanel(d) {
                           ${d.full_name_tecnico}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div>Estado Cliente:</div></strong>
+                          <br><strong><div>Dirección Instalación:</div></strong>
                           ${d.nombre_estado_cliente || 'Sin datos'}
                         </div><br>
                          <div class="col-sm-6 mb-2">
@@ -1415,98 +1490,104 @@ function loadTicketHistory(ticketId) {
             id_ticket: ticketId,
         },
         dataType: "json",
-        success: function (response) {
-            if (response.success && response.history && response.history.length > 0) {
-                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
+       success: function (response) {
+    if (response.success && response.history && response.history.length > 0) {
+        let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
-                response.history.forEach((item, index) => {
-                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
-                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
-                    const isCurrent = index === 0;
+        response.history.forEach((item, index) => {
+            const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+            const headingId = `headingHistoryItem_${ticketId}_${index}`;
 
-                    // Obtener el registro anterior para la comparación
-                    const prevItem = response.history[index + 1] || {};
+            // *** CAMBIO CLAVE AQUÍ ***
+            // Usamos una variable para el color y otra para el estado de expansión.
+            // La primera gestion (index === 0) tiene el color especial.
+            const isLatest = index === 0;
+            // Pero la cartilla del acordeón siempre estará cerrada por defecto.
+            const isExpanded = false;
 
-                    // --- Lógica para determinar si un campo ha cambiado ---
-                    const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
-                    const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
-                    const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
-                    const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
-                    const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
-                    const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
+            // Obtener el registro anterior para la comparación
+            const prevItem = response.history[index + 1] || {};
 
-                    // --- Lógica de colores (tu lógica original, ajustada para la "gestión actual") ---
-                    let headerStyle = isCurrent ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-                    let textColor = isCurrent ? "color: #343a40;" : "color: #ffffff;";
-                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
+            // --- Lógica para determinar si un campo ha cambiado ---
+            const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
+            const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
+            const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
+            const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
+            const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
+            const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
 
-                    historyHtml += `
-                        <div class="card mb-3 custom-history-card">
-                            <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
-                                <h2 class="mb-0">
-                                    <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
-                                            data-toggle="collapse" data-target="#${collapseId}"
-                                            aria-expanded="${isCurrent ? "true" : "false"}" aria-controls="${collapseId}"
-                                            style="${textColor}">
-                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
-                                    </button>
-                                </h2>
+            // --- Lógica de colores (ahora usa isLatest) ---
+            let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+            let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+            const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
+
+            historyHtml += `
+                <div class="card mb-3 custom-history-card">
+                    <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
+                        <h2 class="mb-0">
+                            <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
+                                data-toggle="collapse" data-target="#${collapseId}"
+                                aria-expanded="${isExpanded}" aria-controls="${collapseId}"
+                                style="${textColor}">
+                                ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
+                            </button>
+                        </h2>
+                    </div>
+                    <div id="${collapseId}" class="collapse"
+                         aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
+                                            <td>${item.fecha_de_cambio || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Acción:</th>
+                                            <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Operador de Gestión:</th>
+                                            <td>${item.full_name_tecnico_gestion || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Coordinador:</th>
+                                            <td>${item.full_name_coordinador || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Tecnico Asignado:</th>
+                                            <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Estatus Ticket:</th>
+                                            <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${item.name_status_ticket || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Estatus Laboratorio:</th>
+                                            <td class="${statusLabChanged ? "highlighted-change" : ""}">${item.name_status_lab || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Estatus Domiciliación:</th>
+                                            <td class="${statusDomChanged ? "highlighted-change" : ""}">${item.name_status_domiciliacion || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Estatus Pago:</th>
+                                            <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
-                            <div id="${collapseId}" class="collapse ${isCurrent ? "show" : ""}"
-                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-borderless mb-0">
-                                            <tbody>
-                                                <tr>
-                                                    <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
-                                                    <td>${item.fecha_de_cambio || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Acción:</th>
-                                                    <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Operador de Gestión:</th>
-                                                    <td>${item.full_name_tecnico_gestion || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Coordinador:</th>
-                                                    <td>${item.full_name_coordinador || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Tecnico Asignado:</th>
-                                                    <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Estatus Ticket:</th>
-                                                    <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${item.name_status_ticket || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Estatus Laboratorio:</th>
-                                                    <td class="${statusLabChanged ? "highlighted-change" : ""}">${item.name_status_lab || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Estatus Domiciliación:</th>
-                                                    <td class="${statusDomChanged ? "highlighted-change" : ""}">${item.name_status_domiciliacion || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Estatus Pago:</th>
-                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`;
-                });
+                        </div>
+                    </div>
+                </div>`;
+        });
 
-                historyHtml += "</div>";
-                historyPanel.html(historyHtml);
-            } else {
-                historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
-            }
+        historyHtml += "</div>";
+        historyPanel.html(historyHtml);
+    } else {
+        historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
+    }
         },
         error: function (jqXHR, textStatus, errorThrown) {
             let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
@@ -1576,6 +1657,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function handleSendToTallerClick() {
   const idTicket = currentTicketId; // Usa la variable global para obtener el ID del ticket
   const nroticket = currentnroTicket;
+  const serialpos = currentSerial; // Asegúrate de que esta variable esté definida en tu contexto
 
   if (idTicket) {
     const xhr = new XMLHttpRequest();
@@ -1588,7 +1670,7 @@ function handleSendToTallerClick() {
         Swal.fire({
             icon: "success",
             title: "Notificación", // <-- FIX IS HERE
-            text:`El POS asociado al ticket Nro: ${nroticket} fue enviado a Taller`,
+            text:`El POS asociado ${serialpos} al ticket Nro: ${nroticket} fue enviado a Taller`,
             color: "black",
             // Eliminamos 'timer' y 'timerProgressBar' si quieres un botón explícito
             showConfirmButton: true, // Muestra el botón de confirmación

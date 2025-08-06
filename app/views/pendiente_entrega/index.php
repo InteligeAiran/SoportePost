@@ -273,6 +273,14 @@ function mi_navbar()
             border-color: #2563eb;
         }
 
+        .highlighted-change {
+            font-weight: bold;
+            color: #000; /* Color de texto más oscuro para mayor contraste */
+            background-color: #ffeb3b; /* Amarillo claro */
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
         .btn-info {
             background-color: #0ea5e9;
             /* Light blue for info button */
@@ -344,6 +352,35 @@ function mi_navbar()
             /* light blue */
             color: #0c4a6e;
             /* dark blue */
+        }
+
+        .falla-reportada-texto {
+            color: #dc3545;
+            /* Rojo de Bootstrap 'danger' */
+            /* O un color naranja: */
+            /* color: #FD7E14; */
+            /* Naranja de Bootstrap 'warning' */
+            /* O un color personalizado: */
+            /* color: #C0392B; */
+            /* Un rojo ladrillo */
+            /* color: #E67E22; */
+            /* Un naranja más suave */
+            font-weight: bold;
+            /* Opcional: para que resalte más */
+        }
+
+        #tabla-ticket tbody tr.table-active {
+            background-color: #CCE5FF !important; /* Un gris claro para el resaltado */
+            color: #333; /* Color de texto para que sea legible sobre el gris */
+             border: 1px solid #ccc; 
+             box-shadow: 0 0 5px rgba(0,0,0,0.2); 
+        }
+
+        #buttonEntregarCliente{
+            background-color: #3b82f6;
+            color: #fff;
+            border-color: #3b82f6;
+            border-radius: 0.5rem;
         }
     </style>
     <!-- CSS Files -->
@@ -418,13 +455,12 @@ function mi_navbar()
         aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header bg-gradient-primary">
                     <strong>
                         <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
-                            Documento para Ticket: <span id="modalTicketId"></span></h5>
+                            Documento para el Nro Ticket: <span id="modalTicketId"></span></h5>
+                            <input type="hidden" id="id_ticket"></input>
                     </strong>
-                    <button type="button" id="icon-close" class="btn-close" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="uploadForm">
@@ -460,8 +496,6 @@ function mi_navbar()
                         <h5 class="modal-title text-lg font-semibold text-gray-800" id="viewDocumentModalLabel">
                             Documento para Ticket: <span id="viewModalTicketId"></span></h5>
                     </strong>
-                    <button type="button" class="btn-close" id="btn-close" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3 text-center">

@@ -628,16 +628,21 @@ class TechnicalConsultionRepository
 
     // Este método solo devuelve el ID de la región asociado al estado
     public function getRegionFromStateId($id_state) {
-    $result = $this->model->GetRegionFromState($id_state);
+        $result = $this->model->GetRegionFromState($id_state);
 
-    // AÑADE ESTO PARA DEPURACIÓN:
-    error_log("Resultado de Model::GetRegionFromState en Repository:");
-    error_log(var_export($result, true));
+        // AÑADE ESTO PARA DEPURACIÓN:
+        error_log("Resultado de Model::GetRegionFromState en Repository:");
+        error_log(var_export($result, true));
 
-    if ($result && $result['numRows'] > 0 && isset($result['row']['id_region'])) {
-        return (int) $result['row']['id_region']; // Devuelve solo el id_region
+        if ($result && $result['numRows'] > 0 && isset($result['row']['id_region'])) {
+            return (int) $result['row']['id_region']; // Devuelve solo el id_region
+        }
+        return null; // Si no se encuentra o hay un error
     }
-    return null; // Si no se encuentra o hay un error
-}
+
+    public function EntregarTicket($id_ticket, $id_user, $comment){
+        $result = $this->model->EntregarTicket($id_ticket, $id_user, $comment);
+        return $result;
+    }
 }
 ?>

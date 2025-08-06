@@ -186,9 +186,8 @@ function mi_navbar()
             #tabla-ticket tbody tr.table-active {
                 background-color: #CCE5FF !important; /* Un gris claro para el resaltado */
                 color: #333; /* Color de texto para que sea legible sobre el gris */
-                /* Puedes añadir un borde o sombra si lo deseas */
-                /* border: 1px solid #ccc; */
-                /* box-shadow: 0 0 5px rgba(0,0,0,0.2); */
+                border: 1px solid #ccc;
+                box-shadow: 0 0 5px rgba(0,0,0,0.2);
             }
 
             .highlighted-change {
@@ -197,6 +196,33 @@ function mi_navbar()
                 background-color: #ffeb3b; /* Amarillo claro */
                 padding: 2px 5px;
                 border-radius: 3px;
+            }
+
+            .dropdown-menu {
+                min-width: 250px; /* Ajusta el ancho del menú desplegable */
+            }
+            .dropdown-item {
+                white-space: normal; /* Permite que el texto del botón se envuelva si es muy largo */
+            }
+
+            /* Estilo del menú desplegable personalizado */
+            .custom-dropdown {
+                border-radius: 0.5rem; /* Bordes redondeados */
+                box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; /* Sombra más pronunciada */
+                padding: 0.5rem 0; /* Espaciado interno */
+            }
+
+            /* Estilo para los elementos del menú */
+            .custom-dropdown .dropdown-item {
+                font-size: 0.9rem; /* Tamaño de fuente más pequeño */
+                padding: 0.5rem 1rem; /* Más espacio para cada opción */
+                transition: background-color 0.2s ease, color 0.2s ease; /* Transición suave en el hover */
+            }
+
+            /* Efecto de hover para los elementos del menú */
+            .custom-dropdown .dropdown-item:hover {
+                background-color: #e9ecef; /* Un color de fondo más sutil al pasar el mouse */
+                color: #007bff; /* Color del texto cambia al pasar el mouse */
             }
         </style>
     </head>
@@ -314,8 +340,8 @@ function mi_navbar()
                                     <path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/>
                                 </svg>
                             </div>
-                            <p class="h4 mb-3">¿Deseas enviar a taller el POS asociado al Nro ticket:</p>
-                            <p class="h3 fw-bold text-primary" id="modalTicketNr"></p><p class="h4">?</p>
+                            <p class="h4 mb-3" style="color: black;">¿Deseas enviar a taller el POS asociado <span id="serialpos"></span> al nro de ticket:</p>
+                            <span class="h3" id="modalTicketNr"></span><p class="h4" style="color: black;">?</p>
                         </div>
                         <div class="modal-footer justify-content-center">
                             <button id="close-button" type="button" class="btn btn-lg btn-secondary">Cerrar</button>
@@ -365,7 +391,7 @@ function mi_navbar()
 
         <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
             <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel"
-                aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); z-index: 1055px;">
                 <div class="modal-dialog modal-dialog-centered modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -391,6 +417,25 @@ function mi_navbar()
                 </div>
             </div>
         <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
+
+        <div class="modal fade" id="documentActionsModal" tabindex="-1" role="dialog" aria-labelledby="documentActionsModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentActionsModalLabel" style="color: #000;">Acciones de Documentos</h5>                  
+                </div>
+                <div class="modal-body">
+                    <p>Selecciona una opción para guardar documento del ticket <strong id="modalTicketId"></strong>:</p>
+                    <div id="modal-buttons-container" class="d-grid gap-2">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
     <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 
         <div class="fixed-plugin">

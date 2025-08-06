@@ -353,97 +353,138 @@ class reportes extends Controller {
         }
     }
 
-  public function uploadDocument(){
+    public function uploadDocument(){
+        // 1. Instancia el repositorio para interactuar con la base de datos
         $repository = new ReportRepository();
 
+        // 2. Obtiene los datos del POST y FILES
         $id_ticket = isset($_POST['ticket_id']) ? $_POST['ticket_id'] : null;
         $file = isset($_FILES['document_file']) ? $_FILES['document_file'] : null;
+        $document_type = isset($_POST['document_type']) ? $_POST['document_type'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
-        // --- Validación inicial del archivo ---
-        if (!$id_ticket || !$file || $file['error'] !== UPLOAD_ERR_OK) {
+        // 3. Validación inicial de la solicitud
+        if (!$id_ticket || !$file || $file['error'] !== UPLOAD_ERR_OK || !$document_type || !$id_user) {
             $errorMessage = 'Error en la subida: ';
             if (!$id_ticket) $errorMessage .= 'ID de ticket no proporcionado. ';
+            if (!$id_user) $errorMessage .= 'ID de usuario no proporcionado. ';
             if (!$file) $errorMessage .= 'Archivo no proporcionado. ';
+            if (!$document_type) $errorMessage .= 'Tipo de documento no proporcionado. ';
             if ($file && $file['error'] !== UPLOAD_ERR_OK) {
                 $errorMessage .= 'Error de subida del archivo. Código de error: ' . $file['error'];
-                // Puedes añadir más detalles según el código de error de UPLOAD_ERR_...
-                // Por ejemplo: if ($file['error'] == UPLOAD_ERR_INI_SIZE) $errorMessage .= ' (El archivo es más grande de lo permitido por php.ini)';
             }
             $this->response(['success' => false, 'message' => $errorMessage], 400);
             return;
         }
-
-        // Estos son los datos originales del archivo subido por el cliente
-        $originalDocumentName = $file['name'];
+        
+        // 4. Procesa la información del archivo
+        $originalDocumentName = basename($file['name']);
         $documentSize = $file['size'];
-        $documentType = $file['type']; // PHP's detected MIME type
+        $documentType = $file['type'];
+        $mimeTypeFromFrontend = isset($_POST['mime_type']) ? $_POST['mime_type'] : $documentType;
 
-        // Estos son los datos que el frontend envió explícitamente en el FormData (opcional)
-        $mimeTypeFromFrontend = isset($_POST['mime_type']) ? $_POST['mime_type'] : $documentType; // Usa el tipo detectado por PHP si no viene del frontend
+        // 5. Obtiene el serial del ticket
+        $ticketDetails = $repository->getTicketDetailsById($id_ticket);
+        if (!$ticketDetails || !isset($ticketDetails[0]['serial'])) {
+            $this->response(['success' => false, 'message' => 'No se pudo obtener el serial del ticket. Por favor, asegúrese de que el ticket existe.'], 500);
+            return;
+        }
+        $serial = $ticketDetails[0]['serial'];
 
-        // --- Define el subdirectorio para las cargas dentro de tu proyecto ---
-        // Basado en tu nueva estructura: C:\xampp\htdocs\SoportePost\app\public\images\uploads\
-        // La parte 'app/public/images/uploads/' es lo que necesitamos añadir a la ruta base de tu proyecto.
-        $targetSubDir = 'app/public/images/uploads/'; // <-- ¡¡¡CAMBIO REALIZADO AQUÍ!!!
-
-        // --- CONSTRUIR LA RUTA ABSOLUTA EN EL SERVIDOR PARA GUARDAR EL ARCHIVO ---
-        // $_SERVER['DOCUMENT_ROOT']  = C:\xampp\htdocs\
-        // parse_url(APP, PHP_URL_PATH) = /SoportePost/ (si APP es http://localhost/SoportePost/)
-        $appRelativePath = parse_url(APP, PHP_URL_PATH); // Obtiene '/SoportePost/'
-
-        // La ruta física completa en el servidor donde se guardará el archivo
-        $uploadDir = $_SERVER['DOCUMENT_ROOT'] . rtrim($appRelativePath, '/') . '/' . $targetSubDir; // Construye C:\xampp\htdocs\SoportePost\app\public\images\uploads\
-
-        // Asegúrate de que el directorio de subida exista. Si no existe, créalo.
-        if (!is_dir($uploadDir)) {
-            if (!mkdir($uploadDir, 0755, true)) { // 'true' para crear recursivamente
-                $this->response(['success' => false, 'message' => 'No se pudo crear el directorio de subida: ' . $uploadDir], 500);
+        // 6. Configura y crea la estructura de carpetas
+        $cleanSerial = preg_replace("/[^a-zA-Z0-9_-]/", "_", $serial);
+        $baseUploadDir = UPLOAD_BASE_DIR;
+        $serialUploadDir = $baseUploadDir . $cleanSerial . DIRECTORY_SEPARATOR;
+        $ticketUploadDir = $serialUploadDir . $id_ticket . DIRECTORY_SEPARATOR;
+        if (!is_dir($baseUploadDir)) {
+            if (!mkdir($baseUploadDir, 0755, true)) {
+                error_log("Error al crear el directorio base: " . $baseUploadDir);
+                $this->response(['success' => false, 'message' => 'Error interno del servidor al preparar el almacenamiento de archivos (base).'], 500);
                 return;
             }
         }
+        if (!is_dir($serialUploadDir)) {
+            if (!mkdir($serialUploadDir, 0755, true)) {
+                error_log("Error al crear el directorio del serial: " . $serialUploadDir);
+                $this->response(['success' => false, 'message' => 'Error interno del servidor al preparar el almacenamiento de archivos (serial).'], 500);
+                return;
+            }
+        }
+        if (!is_dir($ticketUploadDir)) {
+            if (!mkdir($ticketUploadDir, 0755, true)) {
+                error_log("Error al crear el directorio del ticket: " . $ticketUploadDir);
+                $this->response(['success' => false, 'message' => 'Error interno del servidor al preparar el almacenamiento de archivos (ticket).'], 500);
+                return;
+            }
+        }
+        
+        // Ahora creamos el subdirectorio para el tipo de documento
+        $documentTypeDir = $ticketUploadDir . $document_type . DIRECTORY_SEPARATOR;
+        if (!is_dir($documentTypeDir)) {
+            if (!mkdir($documentTypeDir, 0755, true)) {
+                $this->response(['success' => false, 'message' => 'No se pudo crear el subdirectorio para el tipo de documento: ' . $documentTypeDir], 500);
+                return;
+            }
+        }
+        
+        // 7. Genera un nombre de archivo único y descriptivo
+        $info = pathinfo($originalDocumentName);
+        $nombreSinExtension = $info['filename'];
+        $extension = isset($info['extension']) ? '.' . $info['extension'] : '';
+        $cleanNombreSinExtension = preg_replace("/[^a-zA-Z0-9_\-.]/", "_", $nombreSinExtension);
 
-        // Generar un nombre de archivo único para evitar colisiones y problemas de seguridad
-        $fileExtension = pathinfo($originalDocumentName, PATHINFO_EXTENSION);
-        $uniqueFileName = uniqid() . '.' . $fileExtension; // Ejemplo: 65a8e2b3c4d5f.jpg
-        $uploadPath = $uploadDir . $uniqueFileName; // Ruta COMPLETA donde se guardará el archivo en el servidor
+        $dateForFilename = date('Ymd_His');
+        $uniqueFileName = $document_type . '_' . $dateForFilename . '_' . uniqid() . '_' . $cleanNombreSinExtension . $extension;
 
-        // Ruta RELATIVA para guardar en la DB. Esta es la que el frontend usará con ENDPOINT_BASE.
-        // Ejemplo: app/public/images/uploads/65a8e2b3c4d5f.jpg
-        $filePathForDatabase = $targetSubDir . $uniqueFileName;
-
-        // --- Mover el archivo subido ---
+        // La ruta completa donde se guardará el archivo en el sistema de archivos
+        $uploadPath = $documentTypeDir . $uniqueFileName;
+        
+        // RUTA RELATIVA para la base de datos y la web
+        $filePathForDatabase = UPLOAD_BASE_DIR . $cleanSerial . '/' . $id_ticket . '/' . $document_type . '/' . $uniqueFileName;
+        
+        // 8. Mueve el archivo temporal al destino final
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
             try {
-                // Llama a un método en tu ReportRepository para guardar los detalles del documento.
-                // Asegúrate de que tu método 'saveDocument' en ReportRepository exista y use prepared statements.
+                // 9. Llama al repositorio para guardar la información
                 $success = $repository->saveDocument(
                     $id_ticket,
-                    $filePathForDatabase,    // La ruta relativa que se guarda en la DB
-                    $mimeTypeFromFrontend,   // El tipo MIME
-                    $originalDocumentName,   // Nombre original del archivo
-                    $documentSize            // Tamaño del archivo
+                    $originalDocumentName,
+                    $uniqueFileName, // <--- CAMBIO: Nombre del archivo único
+                    $filePathForDatabase,
+                    $mimeTypeFromFrontend,
+                    $documentSize,
+                    $id_user,
+                    $document_type
                 );
 
                 if ($success) {
-                    // Envía la ruta relativa al frontend, tal como está en la DB
-                    $this->response(['success' => true, 'message' => 'Documento subido y registrado exitosamente.', 'filePath' => $filePathForDatabase], 200);
+                    $responseData = [
+                        'success' => true,
+                        'message' => 'Documento subido y registrado exitosamente.',
+                        'ticket_id' => $id_ticket,
+                        'original_filename' => $originalDocumentName,
+                        'stored_filename' => $uniqueFileName,
+                        'file_path' => $filePathForDatabase,
+                        'mime_type' => $mimeTypeFromFrontend,
+                        'file_size_bytes' => $documentSize,
+                        'uploaded_by_user_id' => $id_user,
+                        'document_type' => $document_type
+                    ];
+                    $this->response($responseData, 200);
                 } else {
-                    // Si el saveDocument del repo devuelve false o lanza excepción
-                    unlink($uploadPath); // Elimina el archivo subido si no se pudo registrar en la DB
+                    // 11. Si hubo un error en la DB, borra el archivo y responde con error
+                    unlink($uploadPath);
                     $this->response(['success' => false, 'message' => 'El archivo se subió, pero hubo un error al registrarlo en la base de datos.'], 500);
                 }
-
             } catch (\Exception $e) {
-                // Captura cualquier excepción que pueda lanzar el repositorio (ej. error de DB)
-                unlink($uploadPath); // Elimina el archivo subido si la operación de DB falla
+                unlink($uploadPath);
                 $this->response(['success' => false, 'message' => 'Error interno al guardar el documento: ' . $e->getMessage()], 500);
             }
-
         } else {
-            // Error al mover el archivo (ej. permisos insuficientes en $uploadDir)
-            $this->response(['success' => false, 'message' => 'Error al mover el archivo subido. Verifique los permisos de escritura en la carpeta de destino: ' . $uploadDir], 500);
+            $this->response(['success' => false, 'message' => 'Error al mover el archivo subido. Verifique los permisos de escritura en la carpeta de destino.'], 500);
         }
     }
+
 
     function getDocument(){
         $repository = new ReportRepository();

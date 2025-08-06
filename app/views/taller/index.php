@@ -661,8 +661,6 @@
             box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
             }
 
-
-
             /* Estilo para el botón Por Asignar cuando NO es el activo (es gris) */
             #btn-por-asignar.btn-secondary {
             background-color: #a0a0a0;
@@ -706,6 +704,14 @@
                 background-color: #ffeb3b; /* Amarillo claro */
                 padding: 2px 5px;
                 border-radius: 3px;
+            }
+
+            
+            #tabla-ticket tbody tr.table-active {
+                background-color: #CCE5FF !important; /* Un gris claro para el resaltado */
+                color: #333; /* Color de texto para que sea legible sobre el gris */
+                border: 1px solid #ccc;
+                box-shadow: 0 0 5px rgba(0,0,0,0.2);
             }
         </style>
     </head>
@@ -839,11 +845,11 @@
                                 <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.5a.5.5 0 0 1-1.002.04l-.35-3.5C7.046 5.462 7.465 5 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2" />
                             </svg>
                         </div>
-                        <p id="TextConfirmTaller" >¿Marcar el Pos asociado al ticket Nro: <span id="modalTicketIdConfirmTaller"></span> como recibido?</p>
+                        <p id="TextConfirmTaller" >¿Marcar el Pos con el serial <span id="serialPost" style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"></span> asociado al Nro de ticket: <span id="modalTicketIdConfirmTaller"></span> como recibido?</p>
                         <p class="small-text" style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de recepción y habilitará los Estatus Correspondientes del Taller.</p>
                     </div>
                     <div class="modal-footer custom-modal-footer d-flex justify-content-center">
-                        <button type="button" class="btn custom-btn-primary" id="confirmTallerBtn">Sí, Recibir POS</button>
+                        <button type="button" class="btn custom-btn-primary" id="confirmTallerBtn">Recibir POS</button>
                         <button type="button" class="btn custom-btn-secondary" id="CerrarButtonTallerRecib" data-bs-dismiss="modal">Cancelar</button>
                     </div>
                 </div>

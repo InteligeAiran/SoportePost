@@ -278,52 +278,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
-    // --- Lógica para el botón de "Subir" (uploadFileBtn) ---
-    const uploadFileButton = document.getElementById("uploadFileBtn");
-    if (uploadFileButton) {
-        uploadFileButton.addEventListener('click', function() {
-            const file = inputFile.files[0];
-            if (file && currentTicketId) {
-                const formData = new FormData();
-                formData.append('document', file);
-                formData.append('ticketId', currentTicketId);
-
-                // Aquí iría tu llamada AJAX para subir el archivo
-                // Ejemplo con fetch API:
-                fetch('/api/upload-document', { // Reemplaza con tu endpoint real
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    const uploadMessage = document.getElementById("uploadMessage");
-                    if (data.success) {
-                        uploadMessage.textContent = "Documento subido exitosamente.";
-                        uploadMessage.classList.remove("hidden");
-                        uploadMessage.style.color = "green";
-                        // Puedes cerrar el modal o recargar la tabla después de un éxito
-                        // setTimeout(closeUploadModalAndClean, 2000);
-                        // Recargar DataTables si es necesario
-                        // $('#myDataTable').DataTable().ajax.reload();
-                    } else {
-                        uploadMessage.textContent = "Error al subir documento: " + (data.message || "Error desconocido.");
-                        uploadMessage.classList.remove("hidden");
-                        uploadMessage.style.color = "red";
-                    }
-                })
-                .catch(error => {
-                    console.error('Error en la subida:', error);
-                    const uploadMessage = document.getElementById("uploadMessage");
-                    uploadMessage.textContent = "Error de red o servidor.";
-                    uploadMessage.classList.remove("hidden");
-                    uploadMessage.style.color = "red";
-                });
-            } else {
-                alert("Por favor, selecciona un archivo y asegúrate de que el ID del ticket esté disponible.");
-            }
-        });
-    }
 });
 
 function getTicketDataFinaljs() {
@@ -342,32 +296,34 @@ function getTicketDataFinaljs() {
 
   // Define column titles strictly based on your SQL function's output
   const columnTitles = {
-    id_ticket: "ID Ticket",
+    //id_ticket: "ID Ticket",
     nro_ticket: "Nro Ticket",
-    full_name_tecnico: "Técnico Gestión", // CORREGIDO
-    create_ticket: "Fecha Creación",
+    full_name_tecnico1: "Técnico Gestión", // CORREGIDO
+   // create_ticket: "Fecha Creación",
     serial_pos: "Serial POS",
     rif: "Rif",
     name_failure: "Falla",
     // id_level_failure: "Nivel Falla", // ELIMINADO
-    full_name_coordinador: "Coordinador", // CORREGIDO
-    // fecha_envio_coordinador: "Fecha Envío Coordinador", // ELIMINADO
+    full_name_coord: "Coordinador", // CORREGIDO
+    fecha_envio_coordinador: "Fecha Envío Coordinador", // ELIMINADO
     fecha_envio_a_taller: "Fecha Envío a Taller",
     name_status_ticket: "Estatus Ticket",
-    name_process_ticket: "Proceso Ticket",
+    //name_process_ticket: "Proceso Ticket",
     name_status_payment: "Estatus Pago",
     name_status_lab: "Estatus Taller", // CORREGIDO
     name_accion_ticket: "Acción Ticket",
-    full_assignado_al_tecnico2: "Técnico 2", // CORREGIDO
-    // fecha_assignado_al_tecnico2: "Fecha Asignado al Técnico 2", // ELIMINADO
-    //envio_a_taller: "Fecha Envío a Taller", // ELIMINADO
+    full_name_tecnico2: "Técnico 2", // CORREGIDO
+    fecha_assignado_al_tecnico2: "Fecha Asignado al Técnico 2", // ELIMINADO
+    envio_a_taller: "Fecha Envío a Taller", // ELIMINADO
+    status_taller: "Estatus Taller", // ELIMINADO
+    name_status_domiciliacion: "Estatus Domiciliación", // CORREGIDO
     date_send_torosal_fromlab: "Fecha Envío Torosal Lab", // CORREGIDO
     fecha_llaves_enviada: "Fecha de Llaves Enviadas", // CORREGIDO
     fecha_carga_llaves: "Fecha Carga Llaves", // CORREGIDO
     date_receivefrom_desti: "Fecha Envío a Destino", // CORREGIDO
     confirmreceive: "Confirmar Recibido", // AÑADIDO
-    fecha_instalacion: "Fecha Instalación", // Añadido
-    estatus_inteliservices: "Estatus Inteliservices", // Añadido
+    //fecha_instalacion: "Fecha Instalación", // Añadido
+    //estatus_inteliservices: "Estatus Inteliservices", // Añadido
   };
 
   xhr.onload = function () {
@@ -388,6 +344,15 @@ function getTicketDataFinaljs() {
 
             const allDataKeys = Object.keys(TicketData[0] || {});
             const columnsConfig = [];
+
+            columnsConfig.push({
+                            title: "N°",
+                            orderable: false,
+                            searchable: false,
+                            render: function (data, type, row, meta) {
+                                return meta.row + meta.settings._iDisplayStart + 1;
+                            },
+                        });
 
             for (const key in columnTitles) {
               if (allDataKeys.includes(key)) {
@@ -430,18 +395,26 @@ function getTicketDataFinaljs() {
                     return `<span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
                   };
                 }
+
+                const displayLengthForTruncate = 25; // Define la longitud a la que truncar el texto
+
                 // ************* APLICAR LÓGICA DE TRUNCADO A FALLA *************
                 if (key === "name_failure") {
-                  const displayLength = 25;
                   columnDef.render = function (data, type, row) {
-                    const fullText = String(data || "").trim();
-                    if (fullText.length > displayLength) {
-                      return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(0, displayLength)}...</span>`;
-                    } else {
-                      return `<span class="full-text-cell" data-full-text="${fullText}">${fullText}</span>`;
+                    if (type === "display" || type === "filter") {
+                      const fullText = String(data || "").trim();
+                      if (fullText.length > displayLengthForTruncate) {
+                        return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(
+                         0,
+                         displayLengthForTruncate
+                        )
+                      }...</span>`;
+                     }
+                     return fullText;
                     }
+                    return data;
                   };
-                }
+                }                   
                 // ************* FIN: APLICAR LÓGICA DE TRUNCADO A FALLA *************
 
                 // ************* APLICAR LÓGICA DE TRUNCADO A STATUS_PAYMENTS *************
@@ -462,33 +435,98 @@ function getTicketDataFinaljs() {
             }
 
             // Añadir la columna "Acción" al final
-            columnsConfig.push({
-                data: null,
-                title: "Acción",
-                orderable: false,
-                searchable: false,
-                className: "dt-body-center",
-                render: function (data, type, row) {
-                    const idTicket = row.id_ticket;
-                    const name_status_payment = row.name_status_payment;
-                    const currentStatusLab = row.name_status_lab; // CORREGIDO: Usar name_status_lab de SQL
-                    const verificacionDeLlaves = row.id_status_key; // CORREGIDO: Usar confirmreceive de SQL
-                    const accionllaves = row.name_accion_ticket;  
+           // ... (código anterior hasta la columna "Acción")
 
-                    // Lógica para mostrar el checkbox de carga de llaves o el botón de "Subir Documento"
-                        
-                    if ((name_status_payment === "Pendiente Por Cargar Documentos" || name_status_payment === "Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)" || name_status_payment === "Pendiente Por Cargar Documento(PDF Envio ZOOM)") && currentStatusLab === "Reparado") {
-                        return `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
-                                    data-id-ticket="${idTicket}"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#uploadDocumentModal">
-                                    Subir Documento
-                                </button>`;
-                    } else {
-                        return `<button type="button" class="btn btn-secondary btn-sm disabled">Falta Requisitos</button>`;
-                    }
-                },
-            });
+          // Añadir la columna "Acción" al final
+          columnsConfig.push({
+            data: null,
+            title: "Acción",
+            orderable: false,
+            searchable: false,
+            className: "dt-body-center",
+            render: function (data, type, row) {
+                const idTicket = row.id_ticket;
+                const serialPos = row.serial_pos;
+                const nroTicket = row.nro_ticket;
+                const name_status_payment = row.name_status_payment;
+                const currentStatusLab = row.status_taller;
+                
+                // Aplica .trim() para eliminar espacios en blanco
+                const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
+                const nombre_estado_cliente = row.nombre_estado_cliente;
+                
+                // Asumiendo que el campo para el documento cargado es 'url_document_invoice'
+                const documentoCargado = row.url_document_invoice !== null && row.url_document_invoice !== '';
+
+                // *******************************************************
+                // LÓGICA DE VALIDACIÓN PARA LOS BOTONES
+                // *******************************************************
+                
+                // =========================================================
+                // NUEVA LÓGICA: Si es de Caracas y está Reparado
+                // =========================================================
+                if (currentStatusLab === "Reparado" && nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda"){
+                    return `<button type="button" id = "buttonEntregarCliente" class="btn btn-primary btn-sm deliver-ticket-btn"
+                                data-id-ticket="${idTicket}"
+                                data-serial-pos="${serialPos}"
+                                data-nro-ticket="${nroTicket}">
+                                Entregar al Cliente
+                            </button>`;
+                }
+                
+                // =========================================================
+                // Lógica existente para tickets que NO son de Caracas
+                // =========================================================
+
+                // Condición para mostrar el botón "Subir Documento"
+                // Nota: Mantuve tu lógica original (con '!=') para isPendingDocument como me pediste,
+                // aunque te recomiendo cambiarla a '&&' como te expliqué anteriormente.
+                const isPendingDocument = (
+                    name_status_payment != "Pendiente Por Cargar Documentos" ||
+                    name_status_payment != "Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)" ||
+                    name_status_payment != "Pendiente Por Cargar Documento(PDF Envio ZOOM)"
+                );
+
+                // La condición base que los otros botones deben cumplir
+                const commonConditions = (
+                    currentStatusLab === "Reparado" &&
+                    name_status_domiciliacion === "Solvente" &&
+                    nombre_estado_cliente !== "Caracas"
+                );
+                
+                // PRIMERA CONDICIÓN (original): MOSTRAR BOTÓN "ENTREGAR AL CLIENTE"
+                // Si cumple las condiciones base Y el estado de pago indica documento cargado
+                if (commonConditions && name_status_payment === "Documentos Cargados") {
+                    return `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
+                                data-id-ticket="${idTicket}"
+                                data-serial-pos="${serialPos}"
+                                data-nro-ticket="${nroTicket}">
+                                Entregar al Cliente
+                            </button>`;
+                }
+                
+                // SEGUNDA CONDICIÓN (original): MOSTRAR BOTÓN "SUBIR DOCUMENTO"
+                // Si cumple las condiciones base Y falta por subir el documento
+                else if (commonConditions && isPendingDocument) {
+                    return `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
+                                data-id-ticket="${idTicket}"
+                                data-nro-ticket="${nroTicket}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#uploadDocumentModal">
+                                Subir Documento
+                            </button>`;
+                }
+
+                // TERCERA CONDICIÓN (POR DEFECTO): MOSTRAR BOTÓN "Falta Requisitos"
+                else {
+                    return `<button type="button" class="btn btn-secondary btn-sm disabled">Falta Requisitos</button>`;
+                }
+                // *******************************************************
+                // FIN: LÓGICA DE VALIDACIÓN
+                // *******************************************************
+            },
+        });
+
 
             // Añadir la columna "Llaves"
             columnsConfig.push({
@@ -591,6 +629,122 @@ function getTicketDataFinaljs() {
               },
             });
 
+                  $(document).on("click", ".deliver-ticket-btn", function () {
+                    const idTicket = $(this).data("id-ticket");
+                    const nroTicket = $(this).data("nro-ticket"); // Asegúrate de que el botón tenga este data-attribute
+                    const serialPos = $(this).data("serial-pos"); // Asegúrate de que el botón tenga este data-attribute
+                    const customDeliverSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+                    const id_user = document.getElementById('userId').value;
+
+                    // Lógica para mostrar el modal
+                    Swal.fire({
+                      title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                        <div class="custom-modal-header-content">Confirmación de Entrega al Cliente</div>
+                      </div>`,
+                      html: `<div class="custom-modal-body-content">
+                        <div class="mb-4">
+                          ${customDeliverSvg}
+                        </div> 
+                        <p class="h4 mb-3" style="color: black;">¿Desea marcar el dispositivo con serial <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> del Ticket Nro: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> como "Entregado al Cliente"?</p> 
+                        <p class="h5" style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">Esta acción registrará la fecha de entrega al cliente.</p>
+                      </div>`,
+                      confirmButtonText: "Sí, Confirmar Entrega",
+                      color: "black",
+                      confirmButtonColor: "#28a745", // Un color verde para la confirmación
+                      cancelButtonText: "No, cancelar",
+                      focusConfirm: false,
+                      allowOutsideClick: false,
+                      showCancelButton: true,
+                      allowEscapeKey: false,
+                      keydownListenerCapture: true,
+                      screenX: false,
+                      screenY: false,
+                    }).then((result) => {
+                      Swal.fire({
+                          title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                            <div class="custom-modal-header-content">Detalles de la Entrega</div>
+                      </div>`,
+                      html: `<div class="custom-modal-body-content">
+                        <p class="h4 mb-1" style="color: black;">Por favor, ingrese un comentario o un texto adicional sobre el Dispositivo a entregar con el Serial: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">${serialPos}</span> asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">${nroTicket}</span>.</p>
+                        <div class="form-group mb-3"><br>
+                          <textarea id="comentarioEntrega" class="form-control" rows="3" placeholder="Escriba aquí cualquier detalle relevante sobre la entrega... O reparación del Equipo"></textarea>
+                        </div>
+                      </div>`,
+                      showCancelButton: true,
+                      confirmButtonText: 'Guardar y Completar',
+                      cancelButtonText: 'Cancelar',
+                      confirmButtonColor: '#003594', // Un color azul para el botón de guardar
+                      color: "black",
+                      focusConfirm: false,
+                      allowOutsideClick: false,
+                      allowEscapeKey: false,
+                      keydownListenerCapture: true,
+                      screenX: false,
+                      screenY: false,
+                      width: '600px', // Aumenta el ancho del modal
+                      customClass: {
+                        popup: 'no-scroll' // Una clase CSS que definiremos
+                      },
+
+                    preConfirm: () => {
+                      const comentario = Swal.getPopup().querySelector('#comentarioEntrega').value.trim(); // .trim() elimina espacios en blanco
+                        if (!comentario) {
+                          Swal.showValidationMessage('El campo de texto no puede estar vacío.');
+                          return false; // Retornar false evita que el modal se cierre
+                        }
+                        return { comentario: comentario };
+                      }
+                  }).then((resultFinal) => {
+                      if (resultFinal.isConfirmed) {
+
+                      const comentario = resultFinal.value.comentario;
+                      const dataToSendString = `action=entregar_ticket&id_ticket=${encodeURIComponent(idTicket)}&comentario=${encodeURIComponent(comentario)}&id_user=${encodeURIComponent(id_user)}`;
+
+                      const xhr = new XMLHttpRequest();
+                      const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/entregar_ticket`;
+
+                      xhr.open('POST', url, true);
+                      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                      xhr.onload = function() {
+                          if (xhr.status >= 200 && xhr.status < 300) {
+                              // Petición exitosa
+                            Swal.fire({
+                              title: '¡Éxito!', 
+                              html: `El Pos con el serial <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; ">${serialPos}</span> ha sido entregado con éxito, asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span>.`,                                                            
+                              icon: 'success',
+                              color: "black",
+                              confirmButtonColor: "#003594", // Un color azul para el botón de confirmación
+                              confirmButtonText: 'Aceptar', 
+                              showCloseButton: false, 
+                              allowOutsideClick: false, 
+                              allowEscapeKey: false, 
+                              keydownListenerCapture: true,
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.reload();
+                                }
+                            });
+                          } else {
+                              // Petición fallida
+                              Swal.fire('Error', 'Hubo un problema al conectar con el servidor. Código de estado: ' + xhr.status, 'error');
+                          }
+                      };
+                      xhr.onerror = function() {
+                          // Error de red
+                          Swal.fire('Error de red', 'Hubo un problema con la conexión.', 'error');
+                      };
+                      // Envía la petición con los datos
+                      xhr.send(dataToSendString);
+                      } else if (resultFinal.dismiss === Swal.DismissReason.cancel) {
+                          // El usuario canceló el segundo modal, no pasa nada
+                          console.log("El usuario canceló el segundo modal.");
+                      }
+                  });
+              });
+          });
+
+
            // ************* INICIO: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
            $("#tabla-ticket tbody")
                 .off("change", ".receive-key-checkbox") // <--- Usamos 'change' para checkboxes
@@ -612,8 +766,8 @@ function getTicketDataFinaljs() {
                                       ${customWarningSvg}
                                   </div> 
                                    <p class="h4 mb-3" style = "color: black;">¿Desea marcar el Ticket Nro: ${nroTicket} como "Llaves Cargadas".?</p> 
-                                   <p class="h5 text-muted">Esta acción registrará la fecha de la carga de llaves</p>`,
-                            confirmButtonText: "Sí, Confirmar",
+                                   <p class="h5" style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de la carga de llaves</p>`,
+                              confirmButtonText: "Sí, Confirmar",
                             color: "black",
                             confirmButtonColor: "#003594",
                             cancelButtonText: "No, cancelar",
@@ -636,6 +790,23 @@ function getTicketDataFinaljs() {
                     }
                 });
             // ************* FIN: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
+
+            $("#tabla-ticket tbody").on("click", ".truncated-cell", function (e) {
+              // Detiene la propagación del evento para que no se active el clic en la fila
+              e.stopPropagation();
+
+              const cell = $(this);
+              const fullText = cell.data("full-text");
+              const displayLength = 25; // Reutiliza la misma constante de longitud
+              const currentText = cell.text();
+
+              // Alterna entre el texto completo y el texto truncado
+              if (currentText.endsWith("...")) {
+                  cell.text(fullText);
+              } else {
+                  cell.text(fullText.substring(0, displayLength) + "...");
+              }
+          });
 
             // === ADD THE CLICK EVENT LISTENER FOR TABLE ROWS HERE ===
             $("#tabla-ticket tbody")
@@ -684,8 +855,6 @@ function getTicketDataFinaljs() {
                             "<p>No se encontraron detalles para este ticket.</p>";
                     }
                 });
-            // === END CLICK EVENT LISTENER ===
-
             if (tableContainer) {
               tableContainer.style.display = ""; // Show the table container
             }
@@ -825,6 +994,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const inputFile = document.getElementById("documentFile");
   const modalElement = document.getElementById("uploadDocumentModal");
   const modalTicketIdSpan = document.getElementById("modalTicketId");
+  const modalhiddenid_ticket = document.getElementById("id_ticket"); 
 
     document.addEventListener("click", function (event) {
         // Verifica si el elemento que fue clickeado (o su ancestro) tiene el ID 'openModalButton'
@@ -836,9 +1006,13 @@ document.addEventListener("DOMContentLoaded", function () {
             event.preventDefault(); // Opcional: evita el comportamiento por defecto si es necesario
 
             const idTicket = clickedButton.dataset.idTicket; // Accede al data-id-ticket
+            const nroTicket = clickedButton.dataset.nroTicket; // Accede al data-nro-ticket
+            if (modalhiddenid_ticket) {
+                modalhiddenid_ticket.value = idTicket;
+            }
 
             if (modalTicketIdSpan) {
-                modalTicketIdSpan.textContent = idTicket;
+                modalTicketIdSpan.textContent = nroTicket;
             }
 
             // Si el modal no se abre automáticamente con data-bs-toggle, puedes hacerlo manualmente:
@@ -849,8 +1023,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-
-
   document.addEventListener("click", function (event) {
     // Verifica si el elemento que fue clickeado (o su ancestro) tiene el ID 'openModalButton'
     // Puedes usar event.target o event.closest()
@@ -862,8 +1034,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const idTicket = clickedButton.dataset.idTicket; // Accede al data-id-ticket
 
-      if (modalTicketIdSpan) {
-        modalTicketIdSpan.textContent = idTicket;
+      if (modalhiddenid_ticket) {
+        modalhiddenid_ticket.textContent = idTicket;
       }
 
       // Si el modal no se abre automáticamente con data-bs-toggle, puedes hacerlo manualmente:
@@ -877,7 +1049,7 @@ $(document).ready(function () {
   // 1. Declaración de referencias a elementos del DOM usando jQuery
   // Deben estar declaradas al inicio de $(document).ready para que sean accesibles en todo el bloque.
   const $uploadDocumentModalElement = $("#uploadDocumentModal"); // <-- Este es el modal DIV
-  const $modalTicketIdSpan = $("#modalTicketId");
+  const $modalTicketIdSpan = $("#id_ticket");
   const $documentFileInput = $("#documentFile");
   const $imagePreview = $("#imagePreview");
   const $uploadFileBtn = $("#uploadFileBtn"); // <-- Este es el botón "Subir" dentro del modal
@@ -994,7 +1166,8 @@ $(document).ready(function () {
     $uploadFileBtn.on("click", async function () {
       const file = $documentFileInput[0].files[0];
       const idTicket = $modalTicketIdSpan.text();
-
+      const id_user = document.getElementById("userId").value; // Aquí se debe obtener el id_user del usuario logueado
+      console.log("idTicket:", idTicket);
       if (!file) {
         showMessage("Por favor, seleccione un archivo para subir.", "error");
         return;
@@ -1008,6 +1181,9 @@ $(document).ready(function () {
       // *** AÑADIR EL MIME TYPE DEL ARCHIVO AL formData ***
       formData.append("mime_type", file.type);
       formData.append("action", "uploadDocument"); // Ya estaba aquí, pero se mantiene para la claridad
+      formData.append("id_user", id_user); // Aquí se debe obtener el id_user del usuario logueado
+      formData.append("document_type", "Envio_Destino");
+
 
       try {
         const uploadUrl = `${ENDPOINT_BASE}${APP_PATH}api/reportes/uploadDocument`;
@@ -1018,11 +1194,21 @@ $(document).ready(function () {
         });
 
         const result = await response.json();
-
         if (response.ok && result.success) {
-          showMessage("Documento subido exitosamente!", "success");
-          if (uploadDocumentModalInstance) {
-            // Usar la instancia creada previamente
+          Swal.fire({
+            icon: "success",
+            title: "¡Éxito!",
+            text: `El Documento ha sido guardado exitosamente.`,
+            confirmButtonText: "Aceptar", // <-- OPCIONAL: Puedes personalizar el texto del botón
+            allowOutsideClick: false, // <-- ELIMINAR O COMENTAR esta línea
+            color: "black", // <-- ELIMINAR O COMENTAR esta línea
+            confirmButtonColor: "#003594", // <-- ELIMINAR O COMENTAR esta línea
+          }).then((result) => {
+            if (result.isConfirmed) {
+              location.reload(); // Recarga la página después de que el usuario haga clic en Aceptar
+            }
+          });
+           if (uploadDocumentModalInstance) {  
             uploadDocumentModalInstance.hide();
           }
           // Opcional: $('#tuTablaID').DataTable().ajax.reload();
@@ -1190,9 +1376,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
+  // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
 
   const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
   const initialImageAlt = "Cargando imagen del dispositivo...";
+
+  // Determina el mensaje de garantía
+  let garantiaMessage = '';
+  if (d.garantia_instalacion !== null && d.garantia_instalacion !== '' && d.garantia_instalacion !== false && d.garantia_instalacion !== 'f') {
+    garantiaMessage = 'Aplica Garantía de Instalación';
+  } else if (d.garantia_reingreso !== null && d.garantia_reingreso !== '' && d.garantia_reingreso !== false && d.garantia_reingreso !== 'f') {
+    garantiaMessage = 'Aplica Garantía por Reingreso';
+  } else {
+    garantiaMessage = 'No aplica Garantía'; // O simplemente dejarlo vacío si no hay garantía
+  }
+
 
   return `
         <div class="container-fluid">
@@ -1207,44 +1405,58 @@ function formatTicketDetailsPanel(d) {
                     <hr class="mt-2 mb-3">
                     <div class="row">
                         <div class="col-sm-6 mb-2">
-                            <strong><div>Serial POS:</div></strong>
-                            ${d.serial_pos}
+                          <strong><div>Serial POS:</div></strong>
+                          ${d.serial_pos}
                         </div>
                         <div class="col-sm-6 mb-2">
-                            <strong><div>Estatus POS:</div></strong>
-                            ${d.estatus_inteliservices}
+                          <strong><div>Estatus POS:</div></strong>
+                          ${d.estatus_inteliservices}
                         </div><br>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Fecha Instalación:</div></strong>
-                            ${d.fecha_instalacion}
+                          <br><strong><div>Fecha Instalación:</div></strong>
+                          ${d.fecha_instalacion || 'Sin datos'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Creación ticket:</div></strong>
-                            ${d.create_ticket}
+                          <br><strong><div  style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
+                          ${d.fecha_cierre_anterior || 'Sin datos'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Usuario Gestión:</div></strong>
-                            ${d.full_name_tecnico}
+                          <br><strong><div>Garantía:</div></strong>
+                          <span style="font-weight: bold; color: ${garantiaMessage.includes('Aplica') ? 'red' : 'green'};">${garantiaMessage}</span>
                         </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Creación ticket:</div></strong>
+                          ${d.create_ticket}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Usuario Gestión:</div></strong>
+                          ${d.full_name_tecnico1}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Dirección Instalación:</div></strong>
+                          ${d.nombre_estado_cliente || 'Sin datos'}
+                        </div><br>
+                         <div class="col-sm-6 mb-2">
+                            <br><strong><div>Estatus Ticket:</div></strong>
+                            ${d.name_status_ticket}
+                        </div><br>
+                        <br><div class="col-sm-6 mb-2">
+                              <br><strong><div>Falla Reportada:</div></strong>
+                             <span class="falla-reportada-texto">${d.name_failure}</span>
+                            
+                        </div>
+                       
                     </div>
                 </div>
             </div>
-
-            <div class="row mb-3">
+            <div class="row mb-3" style="margin-top: -7%; positipn: relative;">
                 <div class="col-12">
                     <div class="row">
                         <div class="col-sm-4 mb-2">
                             <strong><div>Acción:</div></strong>
                             <span class = "Accion-ticket">${d.name_accion_ticket}</span>
                         </div>
-                         <div class="col-sm-8 mb-2" style = "margin-left: -7%;">
-                          <strong><div>Falla Reportada:</div></strong>
-                          <span class="falla-reportada-texto">${d.name_failure}</span>
-                        </div>
-                        <div class="col-sm-8 mb-2">
-                             <br><strong><div>Estatus Ticket:</div></strong>
-                            ${d.name_status_ticket}
-                        </div>
+                           
                     </div>
                 </div>
             </div>
@@ -1351,102 +1563,64 @@ function downloadImageModal(serial) {
 }
 
 function loadTicketHistory(ticketId) {
-    // 1. Obtener el contenedor del historial y mostrar mensaje de carga (usando jQuery)
     const historyPanel = $("#ticket-history-content");
-    historyPanel.html(
-        '<p class="text-center text-muted">Cargando historial...</p>'
-    ); // Usar .html() de jQuery
+    historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
 
-    // 2. Crear y configurar la solicitud AJAX (usando jQuery.ajax)
     $.ajax({
-        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory1`,
+        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
         type: "POST",
         data: {
-            // jQuery formatea esto automáticamente a 'application/x-www-form-urlencoded'
             action: "GetTicketHistory",
             id_ticket: ticketId,
         },
-        dataType: "json", // Le decimos a jQuery que esperamos una respuesta JSON
+        dataType: "json",
         success: function (response) {
-            // Verificar si la respuesta es exitosa y contiene historial
             if (response.success && response.history && response.history.length > 0) {
-                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">'; // Contenedor del acordeón
+                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
-                // Iterar sobre cada item del historial para construir el HTML
                 response.history.forEach((item, index) => {
                     const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
                     const headingId = `headingHistoryItem_${ticketId}_${index}`;
+                    
+                    // Lógica para el estilo del elemento actual (el primero en el historial)
+                    const isCurrent = index === 0;
 
-                    let statusHeaderClass = "";
-                    let statusHeaderText = "";
+                    const prevItem = response.history[index + 1] || {};
 
-                    // **Colores por defecto si no hay coincidencia o si el estado es nulo/vacío**
-                    let headerStyle = "background-color: #212529;"; // Gris oscuro (cambiado de "Gris claro" a #212529 para contrastar)
-                    let textColor = "color: #212529;"; // Texto oscuro 
-                    statusHeaderText = ""; // Sin texto extra por defecto
+                    const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
+                    const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
+                    const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
+                    const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
+                    const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
+                    const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
 
-                    if (item.name_status_ticket) {
-                        const statusLower = item.name_status_ticket.toLowerCase();
-                        if (statusLower.includes("abierto")) {
-                            headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-                            textColor = "color: #ffffff;"; // Texto blanco
-                            statusHeaderText = " (Abierto)";
-                        } else if (
-                            statusLower.includes("cerrado") ||
-                            statusLower.includes("resuelto")
-                        ) {
-                            headerStyle = "background-color: #28a745;"; // Verde
-                            textColor = "color: #ffffff;"; // Texto blanco
-                            statusHeaderText = " (Cerrado)";
-                        } else if (
-                            statusLower.includes("pendiente") ||
-                            statusLower.includes("en proceso")
-                        ) {
-                            headerStyle = "background-color: #ffc107;"; // Amarillo
-                            textColor = "color: #343a40;"; // Texto oscuro
-                            statusHeaderText = " (En Proceso)";
-                        } else if (
-                            statusLower.includes("cancelado") ||
-                            statusLower.includes("rechazado")
-                        ) {
-                            headerStyle = "background-color: #dc3545;"; // Rojo
-                            textColor = "color: #ffffff;"; // Texto blanco
-                            statusHeaderText = " (Cancelado)";
-                        } else if (statusLower.includes("espera")) {
-                            headerStyle = "background-color: #6c757d;"; // Gris
-                            textColor = "color: #ffffff;"; // Texto blanco
-                            statusHeaderText = " (En Espera)";
-                        }
-                    }
+                    // Lógica para los estilos del encabezado
+                    let headerStyle = isCurrent ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isCurrent ? "color: #343a40;" : "color: #ffffff;";
 
-                    // Esta lógica sobrescribe el color y texto de la última gestión (index === 0)
-                    if (index === 0) {
-                        // Es la última gestión (la "actual")
-                        headerStyle = "background-color: #ffc107;"; // Amarillo
-                        textColor = "color: #343a40;"; // Texto oscuro
-                        statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`; // Agrega el estatus actual o 'Desconocido' si no existe. 
+                    // Lógica para mostrar el estatus correcto según la acción del ticket
+                    let statusDisplayText;
+                    if (item.name_accion_ticket === "Enviado a taller" || item.name_accion_ticket === "En Taller") {
+                        statusDisplayText = item.name_status_lab || "Desconocido";
                     } else {
-                        // Son gestiones pasadas
-                        headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-                        textColor = "color: #ffffff;"; // Texto blanco
-                        // Se mantiene el statusHeaderText determinado anteriormente, o se deja vacío.
+                        statusDisplayText = item.name_status_ticket || "Desconocido";
                     }
+                    const statusHeaderText = ` (${statusDisplayText})`;
 
                     historyHtml += `
-                        <div class="card mb-3 custom-history-card"> 
+                        <div class="card mb-3 custom-history-card">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
-                                    <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
-                                        data-toggle="collapse" data-target="#${collapseId}"
-                                        aria-expanded="${index === 0 ? "true" : "false"}" 
-                                        aria-controls="${collapseId}"
-                                        style="${textColor}">
+                                    <button class="btn btn-link w-100 text-left py-2 px-3 collapsed" type="button"
+                                            data-toggle="collapse" data-target="#${collapseId}"
+                                            aria-expanded="false" aria-controls="${collapseId}"
+                                            style="${textColor}">
                                         ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
                                     </button>
                                 </h2>
                             </div>
-                            <div id="${collapseId}" class="collapse ${index === 0 ? "show" : ""}"
-                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                            <div id="${collapseId}" class="collapse"
+                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <table class="table table-sm table-borderless mb-0">
@@ -1457,7 +1631,7 @@ function loadTicketHistory(ticketId) {
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Acción:</th>
-                                                    <td>${item.name_accion_ticket || "N/A"}</td>
+                                                    <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Operador de Gestión:</th>
@@ -1468,29 +1642,26 @@ function loadTicketHistory(ticketId) {
                                                     <td>${item.full_name_coordinador || "N/A"}</td>
                                                 </tr>
                                                 <tr>
+                                                    <th class="text-start">Técnico Asignado:</th>
+                                                    <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
+                                                </tr>
+                                                <tr>
                                                     <th class="text-start">Estatus Ticket:</th>
-                                                    <td>${item.name_status_ticket || "N/A"}</td>
+                                                    <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${item.name_status_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Laboratorio:</th>
-                                                    <td>${item.name_status_lab || "N/A"}</td>
+                                                    <td class="${statusLabChanged ? "highlighted-change" : ""}">${item.name_status_lab || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
-                                                    <td>${item.name_status_domiciliacion || "N/A"}</td>
+                                                    <td class="${statusDomChanged ? "highlighted-change" : ""}">${item.name_status_domiciliacion || "N/A"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-start" style="word-wrap: break-word; overflow-wrap: break-word;">Estatus Pago:</th>
-                                                    <td>${item.name_status_payment || "N/A"}</td>
+                                                    <th class="text-start">Estatus Pago:</th>
+                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
                                                 </tr>
-                                                
-                                                ${item.name_status_lab === "Pendiente por repuesto" ? `
-                                                    <tr>
-                                                        <th class="text-start" style="word-wrap: break-word; overflow-wrap: break-word; font-size: 80%">Fecha Estimada de la Llegada de repuesto:</th>
-                                                        <td>${item.new_repuesto_date || "N/A"}</td>
-                                                    </tr>
-                                                ` : ''}
-                                                </tbody>
+                                            </tbody>
                                         </table>
                                     </div>
                                 </div>
@@ -1498,44 +1669,29 @@ function loadTicketHistory(ticketId) {
                         </div>`;
                 });
 
-                historyHtml += "</div>"; // Cierre del acordeón principal
-                historyPanel.html(historyHtml); // Insertar el HTML generado (con jQuery)
-
-                // Reiniciar tooltips (si usas Bootstrap 4)
-                if ($.fn && $.fn.tooltip) {
-                    $('[data-toggle="tooltip"]').tooltip("dispose"); 
-                    $('[data-toggle="tooltip"]').tooltip(); 
-                }
+                historyHtml += "</div>";
+                historyPanel.html(historyHtml);
             } else {
-                historyPanel.html(
-                    '<p class="text-center text-muted">No hay historial disponible para este ticket.</p>'
-                );
+                historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            let errorMessage =
-                '<p class="text-center text-danger">Error al cargar el historial.</p>';
+            let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
             if (jqXHR.status === 0) {
-                errorMessage =
-                    '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+                errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
             } else if (jqXHR.status == 404) {
-                errorMessage =
-                    '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
+                errorMessage = '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
             } else if (jqXHR.status == 500) {
-                errorMessage =
-                    '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+                errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
             } else if (textStatus === "parsererror") {
-                errorMessage =
-                    '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+                errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
             } else if (textStatus === "timeout") {
-                errorMessage =
-                    '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+                errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
             } else if (textStatus === "abort") {
-                errorMessage =
-                    '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+                errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
             }
             historyPanel.html(errorMessage);
             console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-        },
+        }
     });
 }

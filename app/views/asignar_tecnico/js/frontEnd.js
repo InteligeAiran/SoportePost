@@ -348,16 +348,16 @@ function getTicketDataCoordinator() {
                                     </svg>
                                 </button>
 
+                                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Coordinador">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                                        <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                                    </svg>
+                                </button>
+
                                 <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets ya Asignados">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
                                         <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
                                         <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                                    </svg>
-                                </button>
-
-                                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Coordinador">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                                        <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
                                     </svg>
                                 </button>
 
@@ -767,7 +767,7 @@ function formatTicketDetailsPanel(d) {
                           ${d.full_name_tecnico}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div>Estado Cliente:</div></strong>
+                          <br><strong><div>Dirección Instalación:</div></strong>
                           ${d.nombre_estado_cliente || 'Sin datos'}
                         </div><br>
                          <div class="col-sm-6 mb-2">
@@ -914,98 +914,104 @@ function loadTicketHistory(ticketId) {
             id_ticket: ticketId,
         },
         dataType: "json",
-        success: function (response) {
-            if (response.success && response.history && response.history.length > 0) {
-                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
+       success: function (response) {
+    if (response.success && response.history && response.history.length > 0) {
+        let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
-                response.history.forEach((item, index) => {
-                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
-                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
-                    const isCurrent = index === 0;
+        response.history.forEach((item, index) => {
+            const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+            const headingId = `headingHistoryItem_${ticketId}_${index}`;
 
-                    // Obtener el registro anterior para la comparación
-                    const prevItem = response.history[index + 1] || {};
+            // *** CAMBIO CLAVE AQUÍ ***
+            // Usamos una variable para el color y otra para el estado de expansión.
+            // La primera gestion (index === 0) tiene el color especial.
+            const isLatest = index === 0;
+            // Pero la cartilla del acordeón siempre estará cerrada por defecto.
+            const isExpanded = false;
 
-                    // --- Lógica para determinar si un campo ha cambiado ---
-                    const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
-                    const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
-                    const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
-                    const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
-                    const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
-                    const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
+            // Obtener el registro anterior para la comparación
+            const prevItem = response.history[index + 1] || {};
 
-                    // --- Lógica de colores (tu lógica original, ajustada para la "gestión actual") ---
-                    let headerStyle = isCurrent ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-                    let textColor = isCurrent ? "color: #343a40;" : "color: #ffffff;";
-                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
+            // --- Lógica para determinar si un campo ha cambiado ---
+            const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
+            const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
+            const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
+            const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
+            const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
+            const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
 
-                    historyHtml += `
-                        <div class="card mb-3 custom-history-card">
-                            <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
-                                <h2 class="mb-0">
-                                    <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
-                                            data-toggle="collapse" data-target="#${collapseId}"
-                                            aria-expanded="${isCurrent ? "true" : "false"}" aria-controls="${collapseId}"
-                                            style="${textColor}">
-                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
-                                    </button>
-                                </h2>
+            // --- Lógica de colores (ahora usa isLatest) ---
+            let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+            let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+            const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
+
+            historyHtml += `
+                <div class="card mb-3 custom-history-card">
+                    <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
+                        <h2 class="mb-0">
+                            <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
+                                data-toggle="collapse" data-target="#${collapseId}"
+                                aria-expanded="${isExpanded}" aria-controls="${collapseId}"
+                                style="${textColor}">
+                                ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
+                            </button>
+                        </h2>
+                    </div>
+                    <div id="${collapseId}" class="collapse"
+                         aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
+                                            <td>${item.fecha_de_cambio || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Acción:</th>
+                                            <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Operador de Gestión:</th>
+                                            <td>${item.full_name_tecnico_gestion || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Coordinador:</th>
+                                            <td>${item.full_name_coordinador || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Tecnico Asignado:</th>
+                                            <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Estatus Ticket:</th>
+                                            <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${item.name_status_ticket || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Estatus Laboratorio:</th>
+                                            <td class="${statusLabChanged ? "highlighted-change" : ""}">${item.name_status_lab || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Estatus Domiciliación:</th>
+                                            <td class="${statusDomChanged ? "highlighted-change" : ""}">${item.name_status_domiciliacion || "N/A"}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-start">Estatus Pago:</th>
+                                            <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
-                            <div id="${collapseId}" class="collapse ${isCurrent ? "show" : ""}"
-                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-borderless mb-0">
-                                            <tbody>
-                                                <tr>
-                                                    <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
-                                                    <td>${item.fecha_de_cambio || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Acción:</th>
-                                                    <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Operador de Gestión:</th>
-                                                    <td>${item.full_name_tecnico_gestion || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Coordinador:</th>
-                                                    <td>${item.full_name_coordinador || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Tecnico Asignado:</th>
-                                                    <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Estatus Ticket:</th>
-                                                    <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${item.name_status_ticket || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Estatus Laboratorio:</th>
-                                                    <td class="${statusLabChanged ? "highlighted-change" : ""}">${item.name_status_lab || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Estatus Domiciliación:</th>
-                                                    <td class="${statusDomChanged ? "highlighted-change" : ""}">${item.name_status_domiciliacion || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Estatus Pago:</th>
-                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`;
-                });
+                        </div>
+                    </div>
+                </div>`;
+        });
 
-                historyHtml += "</div>";
-                historyPanel.html(historyHtml);
-            } else {
-                historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
-            }
+        historyHtml += "</div>";
+        historyPanel.html(historyHtml);
+    } else {
+        historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
+    }
         },
         error: function (jqXHR, textStatus, errorThrown) {
             let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
@@ -1064,7 +1070,7 @@ function markTicketAsReceived(ticketId, nroTicket, serialPos) {
     showCancelButton: true,
     confirmButtonColor: "#003594",
     cancelButtonColor: "#6c757d",
-    confirmButtonText: "Sí, Recibir Pos",
+    confirmButtonText: "Recibir Pos",
     cancelButtonText: "Cancelar",
     color: "black",
     customClass: {
