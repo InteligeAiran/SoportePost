@@ -182,9 +182,10 @@ class reportsModel extends Model
         }
     }
 
-    public function getDocument($id_ticket){
+    public function getDocument($id_ticket, $document_type){
         try{
-            $sql = "SELECT file_path, mime_type FROM archivos_adjuntos_prueba WHERE ticket_id = (".$id_ticket.")";
+
+            $sql = "SELECT file_path, mime_type, original_filename FROM archivos_adjuntos WHERE ticket_id = ".$id_ticket." AND document_type = '".$document_type."';";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -449,6 +450,16 @@ class reportsModel extends Model
     public function GetTicketsPendingDocumentApproval($id_user) {
         try {
             $sql = "SELECT * FROM get_tickets_pending_document_approval(".$id_user.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetTicketDataRegion($id_user){
+        try {
+            $sql = "SELECT * FROM getdataticketregion(".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

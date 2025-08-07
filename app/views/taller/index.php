@@ -846,7 +846,7 @@
                             </svg>
                         </div>
                         <p id="TextConfirmTaller" >¿Marcar el Pos con el serial <span id="serialPost" style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"></span> asociado al Nro de ticket: <span id="modalTicketIdConfirmTaller" style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"></span> como recibido?</p>
-                        <p class="small-text" style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de recepción y habilitará los Estatus Correspondientes del Taller.</p>
+                        <p class="small-text" style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de recepción y habilitará los Estatus Correspondientes del Taller.</p>
                     </div>
                     <div class="modal-footer custom-modal-footer d-flex justify-content-center">
                         <button type="button" class="btn custom-btn-primary" id="confirmTallerBtn">Recibir POS</button>

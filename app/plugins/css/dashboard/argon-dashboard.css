@@ -3162,11 +3162,11 @@ textarea.form-control-lg {
 }
 
 .form-check-input:checked[type=checkbox] {
-  --bs-form-check-bg-image: linear-gradient(310deg, #5e72e4 0%, #825ee4 100%);
+  --bs-form-check-bg-image: linear-gradient(310deg, #193cec 0%, #a640b6 100%);
 }
 
 .form-check-input:checked[type=radio] {
-  --bs-form-check-bg-image: linear-gradient(310deg, #5e72e4 0%, #825ee4 100%);
+  --bs-form-check-bg-image: linear-gradient(310deg, #1338ee 0%, #b930ce 100%);
 }
 
 .form-check-input[type=checkbox]:indeterminate {
@@ -22885,19 +22885,28 @@ fieldset:disabled .btn {
   border: 0;
 }
 
-.form-check:not(.form-switch) .form-check-input[type=checkbox]:after {
-  transition: opacity 0.25s ease-in-out;
-  font-family: "FontAwesome";
-  content: "\f00c";
-  width: 100%;
-  height: 100%;
-  color: #fff;
-  position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.67rem;
-  opacity: 0;
+.form-check:not(.form-switch) .form-check-input[type=checkbox]:checked + .form-check-label::before {
+    /* Aquí va el código para el ícono de FontAwesome */
+    font-family: "Font Awesome 5 Free"; /* O "Font Awesome 6 Free" si usas v6 */
+    font-weight: 900; /* Esto es crucial para los íconos 'solid' */
+    content: "\f00c";
+    color: #fff;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.67rem;
+}
+
+/* También necesitarás un estilo para el fondo del checkbox */
+.form-check:not(.form-switch) .form-check-input[type=checkbox]:checked {
+    background-color: #007bff; /* Color de fondo cuando está seleccionado */
+    border-color: #007bff; /* Color del borde cuando está seleccionado */
+}
+
+/* Y el estilo para que el ícono esté oculto cuando no esté seleccionado */
+.form-check:not(.form-switch) .form-check-input[type=checkbox]:not(:checked) + .form-check-label::before {
+    display: none;
 }
 
 .form-check:not(.form-switch) .form-check-input[type=checkbox]:checked:after {

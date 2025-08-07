@@ -28,11 +28,13 @@ define('tituloPagina', 'Soporte Post Venta');
 /* ENDPOINT*/ 
 
 // config/config.php (ejemplo)
-define('UPLOAD_BASE_DIR', 'C:\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
-//define(constant_name: 'UPLOAD_BASE_DIR', 'G:\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
+//define('UPLOAD_BASE_DIR', 'C:\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
+//define(constant_name: 'UPLOAD_BASE_DIR', 'D:\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
+define('UPLOAD_BASE_DIR', 'Documents\\SoportePost\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
 
 //Envio Correo 
 define('SMTP_HOST', 'smtp.gmail.com');
+//define('UPLOAD_BASE_DIR', 'C:Users\\Airan Bracamonte\Documents\\uploads_tickets/');
 define('SMTP_AUTH', true);
 define('SMTP_USERNAME', 'soporte.sistemas@inteligensa.com');
 define('SMTP_PASSWORD', 'igld qnmb afzw ywgv');

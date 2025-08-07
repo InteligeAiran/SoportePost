@@ -222,6 +222,18 @@ class Consulta extends Controller
                     $this->handleUpdateStatusToReceiveInRosal();
                     break;
 
+                case 'GetRegionsByTechnician':
+                    $this->handleGetRegionsByTechnician();
+                    break;
+
+                case 'UpdateStatusToReceiveInRegion':
+                    $this->handleUpdateStatusToReceiveInRegion();
+                    break;
+
+                case 'GetComponents':
+                    $this->handleGetComponents();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -1320,7 +1332,6 @@ class Consulta extends Controller
             header('Pragma: public'); // Para compatibilidad con versiones anteriores de HTTP 1.0
             header('Content-Length: ' . filesize($filePath)); // Tamaño del archivo en bytes
 
-            // Lee el contenido del archivo y lo envía directamente al cliente
             readfile($filePath);
             exit(); // ¡CRÍTICO! Termina la ejecución del script PHP aquí para que no se envíe nada más (ej. HTML extra o JSON)
         } else {
@@ -1396,6 +1407,52 @@ class Consulta extends Controller
         $result = $repository->UpdateStatusToReceiveInRosal($ticketId, $id_user);
         if ($result) {
             $this->response(['success' => true,'message' => 'El estado del ticket ha sido actualizado a Recibido en Rosal.'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleGetRegionsByTechnician(){
+        $id_user = isset($_POST['id_tecnico'])? $_POST['id_tecnico'] : '';
+
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetRegionsByTechnician($id_user);
+        if ($result) {
+            $this->response(['success' => true,'regions' => $result], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleUpdateStatusToReceiveInRegion(){
+        $ticketId = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+
+        if (!$ticketId ||!$id_user) {
+            $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->UpdateStatusToReceiveInRegion($ticketId, $id_user);
+        if ($result) {
+            $this->response(['success' => true,'message' => 'El estado del ticket ha sido actualizado a Recibido en Región.'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleGetComponents(){
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetComponents();
+        
+        if ($result) {
+            $this->response(['success' => true,'components' => $result], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }

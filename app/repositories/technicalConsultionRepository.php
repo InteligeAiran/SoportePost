@@ -649,5 +649,39 @@ class TechnicalConsultionRepository
         $result = $this->model->UpdateStatusToReceiveInRosal($ticketId, $id_user);
         return $result;
     }
+
+    public function GetRegionsByTechnician($id_user){
+        $result = $this->model->GetRegionsByTechnician($id_user);
+        if ($result) {
+            $regions = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $region = pg_fetch_assoc($result['query'], $i);
+                $regions[] = $region;
+            }
+            return $regions;
+        } else {
+            return null;
+        }
+    }
+
+    public function UpdateStatusToReceiveInRegion($ticketId, $id_user){
+        $result = $this->model->UpdateStatusToReceiveInRegion($ticketId, $id_user);
+        return $result;
+    }
+
+    public function GetComponents(){
+        $result = $this->model->GetComponents();
+        if ($result) {
+            $components = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $component = pg_fetch_assoc($result['query'], $i);
+                $components[] = $component;
+            }
+            return $components;
+        } else {
+            return null;
+        }
+    }
+        
 }
 ?>

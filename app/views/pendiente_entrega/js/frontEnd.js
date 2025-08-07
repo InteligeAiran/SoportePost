@@ -1,6 +1,7 @@
 let currentTicketIdForConfirmTaller = null;
 let currentNroTicketForConfirmTaller = null; // <--- NUEVA VARIABLE PARA EL NÚMERO DE TICKET
 let confirmInTallerModalInstance = null;
+let currentSerialPosForConfirmTaller = null; // <--- NUEVA VARIABLE PARA EL SERIAL POS
 
 document.addEventListener("DOMContentLoaded", function () {
     // --- Referencias a elementos estáticos del DOM (que siempre están presentes al cargar la página) ---
@@ -52,12 +53,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Variable para almacenar el ID del ticket
     let currentTicketId = null;
 
-    // --- Funciones para abrir/cerrar modales (Usando Bootstrap JS si es posible, o tu manual) ---
-    // Si estás utilizando data-bs-toggle="modal", estas funciones solo necesitarían actualizar el contenido
-    // y luego llamar a bsUploadModal.show() / bsUploadModal.hide().
-
     // Función para mostrar el modal de subida
-    function showUploadModal(ticketId) {
+function showUploadModal(ticketId) {
         currentTicketId = ticketId; // Guarda el ID del ticket
         if (modalTicketIdSpanUpload) {
             modalTicketIdSpanUpload.textContent = currentTicketId;
@@ -94,13 +91,14 @@ document.addEventListener("DOMContentLoaded", function () {
             document.body.classList.add("modal-open");
             modalElementUpload.setAttribute("aria-hidden", "false");
         }
-    }
+}
 
-    // Función para mostrar el modal de visualización
-    function showViewModal(ticketId, imageUrl, pdfUrl) {
+// Función para mostrar el modal de visualización
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl) {
         currentTicketId = ticketId; // Guarda el ID del ticket
+        currentNroTicket = nroTicket; // Guarda el número de ticket
         if (modalTicketIdSpanView) {
-            modalTicketIdSpanView.textContent = currentTicketId;
+            modalTicketIdSpanView.textContent = currentNroTicket;
         }
 
         const imageViewPreview = document.getElementById("imageViewPreview");
@@ -144,10 +142,10 @@ document.addEventListener("DOMContentLoaded", function () {
             document.body.classList.add("modal-open");
             modalElementView.setAttribute("aria-hidden", "false");
         }
-    }
+}
 
-    // Función para cerrar el modal de subida
-    function closeUploadModalAndClean() {
+// Función para cerrar el modal de subida
+function closeUploadModalAndClean() {
         if (bsUploadModal) {
             bsUploadModal.hide(); // Usa el método de Bootstrap para ocultar el modal
         } else {
@@ -176,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
         currentTicketId = null; // Restablecer el ID del ticket
-    }
+}
 
     // Función para cerrar el modal de visualización
     function closeViewModalAndClean() {
@@ -257,16 +255,17 @@ document.addEventListener("DOMContentLoaded", function () {
         if (openViewBtn) {
             event.preventDefault();
             const idTicket = openViewBtn.dataset.idTicket;
+            const nroTicket = openViewBtn.dataset.nroTicket; // Asegúrate de que este atributo exista en tu botón dinámico
             const documentUrl = openViewBtn.dataset.urlDocument; // Asegúrate de que este atributo exista en tu botón dinámico
             const documentType = openViewBtn.dataset.documentType; // 'image' o 'pdf'
 
             if (documentType === 'image') {
-                showViewModal(idTicket, documentUrl, null);
+                showViewModal(idTicket, nroTicket, documentUrl, null);
             } else if (documentType === 'pdf') {
-                showViewModal(idTicket, null, documentUrl);
+                showViewModal(idTicket, nroTicket, null, documentUrl);
             } else {
                 console.warn("Tipo de documento no especificado para la visualización.");
-                showViewModal(idTicket, null, null); // Abre el modal sin contenido
+                showViewModal(idTicket, nroTicket, null, null); // Abre el modal sin contenido
             }
             return;
         }
@@ -473,17 +472,15 @@ function getTicketDataFinaljs() {
                     const idTicket = row.id_ticket;
                     const serialPos = row.serial_pos;
                     const nroTicket = row.nro_ticket;
-                    const name_status_payment = row.name_status_payment;
-                    const currentStatusLab = row.status_taller;
+                    const currentStatusLab = (row.status_taller || "").trim();
                     const name_accion_ticket = (row.name_accion_ticket || "").trim();
-                    
                     const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
-                    const nombre_estado_cliente = row.nombre_estado_cliente;
+                    const nombre_estado_cliente = (row.nombre_estado_cliente || "").trim();
                     
                     // ** VALOR OBTENIDO DE LA FUNCIÓN getdataticketfinal() **
                     // Verifica si la cadena de tipos de documentos incluye 'Envio_Destino'
                     const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
-                    console.log(hasEnvioDestinoDocument)
+                    const isDocumentMissing = !hasEnvioDestinoDocument || hasEnvioDestinoDocument === null || hasEnvioDestinoDocument === '';
 
                     let actionButton = '';
 
@@ -497,24 +494,16 @@ function getTicketDataFinaljs() {
                                         </button>`;
                     }
                     // Prioridad 2: Validar si el ticket es de Caracas o Miranda y está Reparado
-                    else if (currentStatusLab === "Reparado" && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda")) {
+                    else if (currentStatusLab === "Reparado" && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas")) {
                         actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
                                             data-id-ticket="${idTicket}"
                                             data-serial-pos="${serialPos}"
                                             data-nro-ticket="${nroTicket}">
                                             Entregar al Cliente
                                         </button>`;
-                    }
-                    // Prioridad 3: Lógica para tickets fuera de Caracas, Solvente y Reparado
-                    else {
-                        const commonConditions = (
-                            currentStatusLab === "Reparado" &&
-                            name_status_domiciliacion === "Solvente" &&
-                            nombre_estado_cliente !== "Caracas"
-                        );
-
-                        // Si cumple las condiciones base y NO se ha subido el documento de "Envio_Destino"
-                        if (commonConditions && !hasEnvioDestinoDocument) {
+                    }else {
+                        const commonConditions = (currentStatusLab === "Reparado" && name_status_domiciliacion === "Solvente" && nombre_estado_cliente !== "Caracas" || nombre_estado_cliente !== "Miranda" ||  nombre_estado_cliente !== "Distrito Capital" || nombre_estado_cliente !== "Vargas" );
+                        if (commonConditions && isDocumentMissing) {
                             actionButton = `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
                                                 data-id-ticket="${idTicket}"
                                                 data-nro-ticket="${nroTicket}"
@@ -527,21 +516,16 @@ function getTicketDataFinaljs() {
                        if (commonConditions && hasEnvioDestinoDocument) {
                           actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn"
                                               data-id-ticket="${idTicket}"
-                                              data-region-name="${nombre_estado_cliente}">
+                                              data-region-name="${nombre_estado_cliente}"
+                                              data-serial-pos="${serialPos}"
+                                              data-nro-ticket="${nroTicket}">
                                               Enviar a Región: ${nombre_estado_cliente}
                                           </button>`;
-                      }
-
-                        else {
-                            // Estado por defecto si no se cumplen las condiciones anteriores
-                            actionButton = `<button type="button" class="btn btn-secondary btn-sm disabled">Falta Requisitos</button>`;
-                        }
+                      }     
                     }
                     return actionButton;
                 },
             });
-
-
 
             // Añadir la columna "Llaves"
             columnsConfig.push({
@@ -590,12 +574,16 @@ function getTicketDataFinaljs() {
                 width: "8%",
                 render: function (data, type, row) {
                     const idTicket = row.id_ticket;
+                    const nroTicket = row.nro_ticket;
                     const accionllaves = row.name_accion_ticket; // Necesitas esta variable para la condición
+                    const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
+
 
                     // "cuando el status de name_accion_ticket sea: Llaves Cargadas me tiene que aparecer un boton para subir una imagen"
-                    if (accionllaves === "Llaves Cargadas") {
+                    if (hasEnvioDestinoDocument) {
                         return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
                                 data-id-ticket="${idTicket}"
+                                data-nro-ticket="${nroTicket}"
                                 data-bs-toggle="modal"
                                 data-bs-target="#viewDocumentModal"> Ver Documento Cargados
                             </button>`;
@@ -882,10 +870,10 @@ function getTicketDataFinaljs() {
                                   </div> 
                                    <p class="h4 mb-3" style = "color: black;">¿Desea marcar el Ticket Nro: ${nroTicket} como "Llaves Cargadas".?</p> 
                                    <p class="h5" style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de la carga de llaves</p>`,
-                              confirmButtonText: "Sí, Confirmar",
+                              confirmButtonText: "Confirmar",
                             color: "black",
                             confirmButtonColor: "#003594",
-                            cancelButtonText: "No, cancelar",
+                            cancelButtonText: "Cancelar",
                             focusConfirm: false,
                             allowOutsideClick: false,
                             showCancelButton: true,
@@ -905,6 +893,45 @@ function getTicketDataFinaljs() {
                     }
                 });
 
+                $("#tabla-ticket tbody")
+                  .off("click", ".send-to-region-btn") // Usamos 'click' para el botón
+                  .on("click", ".send-to-region-btn", function (e) {
+                      e.stopPropagation(); // Evita la propagación del evento
+
+                      const ticketId = $(this).data("id-ticket");
+                      const serialPos = $(this).data("serial-pos") || ""; // Asegúrate de que serial_pos esté definido
+                      const nroTicket = $(this).data("nro-ticket");
+                      const regionName = $(this).data("region-name"); // Asumiendo que tienes un data attribute para el nombre de la región
+
+                      const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+                      
+                      Swal.fire({
+                          title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                                      <div class="custom-modal-header-content">Confirmación de Envío a Región</div>
+                                  </div>`,
+                          html: `<div class="custom-modal-body-content">
+                                      <div class="mb-4">
+                                          ${customWarningSvg}
+                                      </div> 
+                                      <p class="h4 mb-3" style="color: black;">¿Seguro que desea enviar el Ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> a la región: ${regionName}?</p> 
+                                      <p class="h5" style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; font-size: 70%; color: #007bff;">Esta acción cambiará el estado del ticket a "Enviado a Región"</p>
+                                </div>`,
+                          confirmButtonText: "Seleccionar Componentes",
+                          color: "black",
+                          confirmButtonColor: "#003594",
+                          cancelButtonText: "cancelar",
+                          focusConfirm: false,
+                          allowOutsideClick: false,
+                          showCancelButton: true,
+                          allowEscapeKey: false,
+                          keydownListenerCapture: true,
+                      }).then((result) => {
+                          if (result.isConfirmed) {
+                            showSelectComponentsModal(ticketId, regionName); 
+                          }
+                      });
+                  });
+
                  $("#tabla-ticket tbody")
                             .off("click", ".received-ticket-btn")
                             .on("click", ".received-ticket-btn", function (e) {
@@ -915,6 +942,7 @@ function getTicketDataFinaljs() {
 
                                 currentTicketIdForConfirmTaller = ticketId;
                                 currentNroTicketForConfirmTaller = nroTicket;
+                                currentSerialPosForConfirmTaller = serialPos; // Asegúrate de que serial_pos esté definido
 
                                 $("#modalTicketIdConfirmTaller").val(ticketId);
                                 $("#modalHiddenNroTicketConfirmTaller").val(nroTicket);
@@ -1049,12 +1077,104 @@ function getTicketDataFinaljs() {
 
 document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
 
+/**
+ * Muestra un modal de SweetAlert para seleccionar componentes antes de enviar el ticket.
+ * La función primero obtiene los componentes de la base de datos y luego muestra el modal.
+ * @param {string} ticketId El ID del ticket que se está procesando.
+ * @param {string} regionName El nombre de la región a la que se enviará el ticket.
+ */
+function showSelectComponentsModal(ticketId, regionName) {
+      const xhr = new XMLHttpRequest();
+    // URL de tu API para obtener los componentes.
+    // Asegúrate de que esta URL sea la correcta para tu backend.
+    const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetComponents`;
+
+    // Configurar la solicitud GET. No se envía un cuerpo de datos.
+    xhr.open("GET", apiUrl, true);
+
+    // Definir la función que se ejecutará al recibir la respuesta
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            // La solicitud fue exitosa
+            try {
+                const response = JSON.parse(xhr.responseText);
+
+                // Parsear la respuesta JSON del servidor
+                const components = response.components;
+                // Construir el HTML de los componentes a partir de los datos de la base de datos
+                let componentsHtml = '';
+                components.forEach(comp => {
+                    componentsHtml += `
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="${comp.id_component}" id="component" style = accent-color: #007bff;">
+                            <label class="form-check-label" style="width: 80%;" for="component-${comp.id_component}">
+                                ${comp.name_component}
+                            </label>
+                        </div>
+                    `;
+                });
+
+                // AHORA MOSTRAR EL MODAL CON LOS DATOS OBTENIDOS
+                const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+
+                Swal.fire({
+                    title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                                <div class="custom-modal-header-content">Enviar a ${regionName}</div>
+                            </div>`,
+                    html: `
+                        <div class="custom-modal-body-content">
+                            <div class="mb-4">
+                                ${customWarningSvg}
+                            </div> 
+                            <p class="h5 mb-3" style="color: black;">Seleccione los componentes que serán enviados junto al POS:</p>
+                            <div id="components-list" style="margin-left: 28%;" class="text-left mt-3">
+                                ${componentsHtml}
+                            </div>
+                        </div>`,
+                    showCancelButton: true,
+                    confirmButtonText: 'Confirmar Envío',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: "#003594",
+                    preConfirm: () => {
+                        const selectedComponents = [];
+                        const checkboxes = Swal.getPopup().querySelectorAll('input[type="checkbox"]:checked');
+                        checkboxes.forEach(checkbox => {
+                            selectedComponents.push(checkbox.value);
+                        });
+                        return selectedComponents;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Llama a tu función para enviar a la región
+                        sendToRegion(ticketId, result.value);
+                    }
+                });
+            } catch (e) {
+                // Manejar errores si la respuesta no es un JSON válido
+                Swal.fire('Error', 'No se pudieron cargar los componentes. Intente de nuevo más tarde.', 'error');
+            }
+        } else {
+            // La solicitud al backend falló
+            Swal.fire('Error', 'No se pudo obtener la lista de componentes.', 'error');
+        }
+    };
+
+    // Manejar posibles errores de red
+    xhr.onerror = function() {
+        Swal.fire('Error de red', 'No se pudo conectar con el servidor para obtener los componentes.', 'error');
+    };
+    const dataToSendString = `action=GetComponents`;
+    // Enviar la solicitud
+    xhr.send(dataToSendString);
+}
+
 $("#confirmTallerBtn").on("click", function () {
     const ticketIdToConfirm = currentTicketIdForConfirmTaller;
-    // const nroTicketToConfirm = currentNroTicketForConfirmTaller; // Si necesitas el nro_ticket aquí
+    const nroTicketToConfirm = currentNroTicketForConfirmTaller; // Si necesitas el nro_ticket aquí
+    const serialPosToConfirm = currentSerialPosForConfirmTaller; // Si necesitas el serial_pos aquí
 
     if (ticketIdToConfirm) {
-      updateTicketStatusInRosal(ticketIdToConfirm);
+      updateTicketStatusInRosal(ticketIdToConfirm, nroTicketToConfirm, serialPosToConfirm);
       if (confirmInTallerModalInstance) {
         confirmInTallerModalInstance.hide();
       }
@@ -1063,8 +1183,10 @@ $("#confirmTallerBtn").on("click", function () {
     }
 });
 
-function updateTicketStatusInRosal(ticketId) {
+function updateTicketStatusInRosal(ticketId, nroTicketToConfirm, serialPosToConfirm) {
   const id_user = document.getElementById("userId").value;
+  const nro_ticket = nroTicketToConfirm;
+  const serial_pos = serialPosToConfirm;
 
   const dataToSendString = `action=UpdateStatusToReceiveInRosal&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(ticketId)}`;
 
@@ -1082,13 +1204,12 @@ function updateTicketStatusInRosal(ticketId) {
         const response = JSON.parse(xhr.responseText);
 
         if (response.success === true) {
-          // Or `response.success == "true"` if your backend sends a string
           Swal.fire({
-            // Changed from swal(...) to Swal.fire(...)
             title: "¡Éxito!",
-            text: "El POS se encontrará en el taller como 'En Proceso de reparación'.",
+            html:  `El Pos con el serial <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serial_pos}</span> asociado al Nro de ticket: <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> ha sido marcado como recibido en Gestión Rosal correctamente.`,
             icon: "success",
             confirmButtonText: "¡Entendido!", // SweetAlert2 uses confirmButtonText
+            confirmButtonColor: "#003594", // SweetAlert2 uses confirmButtonColor
             customClass: {
               confirmButton: "BtnConfirmacion", // For custom button styling
             },
@@ -1229,64 +1350,6 @@ function MarkDateKey(ticketId, nroTicket) {
     xhr.send(dataToSendString);
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  // Obtén las referencias a los elementos del DOM que SÍ ESTÁN PRESENTES AL CARGAR LA PÁGINA
-  const cerrarBoton = document.getElementById("CerrarBoton");
-  const iconoCerrar = document.getElementById("icon-close");
-  const inputFile = document.getElementById("documentFile");
-  const modalElement = document.getElementById("uploadDocumentModal");
-  const modalTicketIdSpan = document.getElementById("modalTicketId");
-  const modalhiddenid_ticket = document.getElementById("id_ticket"); 
-
-    document.addEventListener("click", function (event) {
-        // Verifica si el elemento que fue clickeado (o su ancestro) tiene el ID 'openModalButton'
-        // Puedes usar event.target o event.closest()
-        const clickedButton = event.target.closest("#openModalButton");
-
-        if (clickedButton) {
-            // Se hizo clic en un botón con el ID 'openModalButton'
-            event.preventDefault(); // Opcional: evita el comportamiento por defecto si es necesario
-
-            const idTicket = clickedButton.dataset.idTicket; // Accede al data-id-ticket
-            const nroTicket = clickedButton.dataset.nroTicket; // Accede al data-nro-ticket
-            if (modalhiddenid_ticket) {
-                modalhiddenid_ticket.value = idTicket;
-            }
-
-            if (modalTicketIdSpan) {
-                modalTicketIdSpan.textContent = nroTicket;
-            }
-
-            // Si el modal no se abre automáticamente con data-bs-toggle, puedes hacerlo manualmente:
-            const uploadDocumentModal = new bootstrap.Modal(modalElement);
-            uploadDocumentModal.show();
-        }
-    });
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-  document.addEventListener("click", function (event) {
-    // Verifica si el elemento que fue clickeado (o su ancestro) tiene el ID 'openModalButton'
-    // Puedes usar event.target o event.closest()
-    const clickedButton = event.target.closest("#viewimage");
-
-    if (clickedButton) {
-      // Se hizo clic en un botón con el ID 'openModalButton'
-      event.preventDefault(); // Opcional: evita el comportamiento por defecto si es necesario
-
-      const idTicket = clickedButton.dataset.idTicket; // Accede al data-id-ticket
-
-      if (modalhiddenid_ticket) {
-        modalhiddenid_ticket.textContent = idTicket;
-      }
-
-      // Si el modal no se abre automáticamente con data-bs-toggle, puedes hacerlo manualmente:
-      const viewDocumentModal1 = new bootstrap.Modal(modalElement1);
-      viewDocumentModal1.show();
-    }
-  });
-});
-
 $(document).ready(function () {
   // 1. Declaración de referencias a elementos del DOM usando jQuery
   // Deben estar declaradas al inicio de $(document).ready para que sean accesibles en todo el bloque.
@@ -1409,7 +1472,6 @@ $(document).ready(function () {
       const file = $documentFileInput[0].files[0];
       const idTicket = $modalTicketIdSpan.text();
       const id_user = document.getElementById("userId").value; // Aquí se debe obtener el id_user del usuario logueado
-      console.log("idTicket:", idTicket);
       if (!file) {
         showMessage("Por favor, seleccione un archivo para subir.", "error");
         return;
@@ -1488,132 +1550,117 @@ $(document).ready(function () {
 }); // Cierre correcto de $(document).ready
 
 document.addEventListener("DOMContentLoaded", function () {
-  // --- Referencias a elementos del MODAL DE VISUALIZACIÓN ---
-  const viewDocumentModalElement = document.getElementById("viewDocumentModal");
-  // Instancia el modal de Bootstrap una vez que el DOM esté cargado
-  const viewDocumentBootstrapModal = new bootstrap.Modal(
-    viewDocumentModalElement
-  );
+    // --- Referencias a elementos del MODAL DE VISUALIZACIÓN ---
+    const viewDocumentModalElement = document.getElementById("viewDocumentModal");
+    const viewDocumentBootstrapModal = new bootstrap.Modal(viewDocumentModalElement);
 
-  const viewModalTicketIdSpan = document.getElementById("viewModalTicketId");
-  const imageViewPreview = document.getElementById("imageViewPreview");
-  const pdfViewViewer = document.getElementById("pdfViewViewer");
-  const viewDocumentMessage = document.getElementById("viewDocumentMessage"); // Para mensajes de carga/error en el modal de vista
+    const viewModalTicketIdSpan = document.getElementById("viewModalTicketId");
+    const imageViewPreview = document.getElementById("imageViewPreview");
+    const pdfViewViewer = document.getElementById("pdfViewViewer");
+    const viewDocumentMessage = document.getElementById("viewDocumentMessage");
+    const nameDocumento = document.getElementById("NombreImage");
 
-  // --- ¡CORRECCIÓN CRÍTICA! Define tus constantes de ruta aquí ---
-  // Asegúrate de que `APP` esté definida en tu PHP y se imprima correctamente aquí.
-  // Ejemplo: Si tu APP es "http://localhost/tu_proyecto/"
-  const ENDPOINT_ROOT = `${ENDPOINT_BASE}`; // Ejemplo: 'http://localhost'
-  const APP_RELATIVE_PATH = `${APP_PATH}`; // Ejemplo: '/SoportePost/'
+    // Función auxiliar para mostrar el documento en el MODAL
+    function displayDocumentInViewModal(filePath, mimeType, originalName) {
+        imageViewPreview.style.display = "none";
+        pdfViewViewer.style.display = "none";
+        viewDocumentMessage.classList.add("hidden");
+        viewDocumentMessage.textContent = "";
+        nameDocumento.textContent = originalName;
+        
+       // La ruta que recibes del backend ya debería ser 'uploads_tickets/...'
+      const documentPathFromBackend = filePath; 
 
-  // La URL base completa para tu aplicación
-  const ENDPOINT_BASE1 = ENDPOINT_ROOT + APP_RELATIVE_PATH; // Esto resultará en 'http://localhost/SoportePost/'
+      // AQUI ESTA LA CORRECCIÓN: Concatena la ruta de tu servidor con la ruta del backend
+      const fullUrl = `http://localhost/SoportePost/${documentPathFromBackend}`;
 
-  const API_DOCUMENTS_PATH = "api/reportes/"; // La ruta dentro de tu APP donde está tu controlador PHP de API
-  // --- FIN DE LA CORRECCIÓN CRÍTICA ---
-
-  // --- Función auxiliar para mostrar el documento en el MODAL DE VISUALIZACIÓN ---
-  function displayDocumentInViewModal(filePath, mimeType) {
-    imageViewPreview.style.display = "none";
-    pdfViewViewer.style.display = "none";
-    viewDocumentMessage.classList.add("hidden");
-
-    // CONSTRUYE LA URL COMPLETA DE LA IMAGEN/PDF
-    // Ahora `ENDPOINT_BASE` está definida y podemos usarla.
-    // Asegúrate de que `ENDPOINT_BASE` termine con una barra '/' y que `filePath` empiece con una.
-    // Si `filePath` ya tiene una barra al inicio, `replace(/^\//, '')` la quita para evitar '//'.
-    const fullFilePath = ENDPOINT_BASE1 + filePath.replace(/^\//, "");
-
-    // Puedes agregar un console.log aquí para depurar y ver la URL completa que se está generando
-    if (mimeType.startsWith("image/")) {
-      imageViewPreview.src = fullFilePath; // Usa la URL completa
-      imageViewPreview.style.display = "block";
-    } else if (mimeType === "application/pdf") {
-      pdfViewViewer.innerHTML = `<embed src="${fullFilePath}" type="application/pdf" width="100%" height="100%">`; // Usa la URL completa
-      pdfViewViewer.style.display = "block";
-    } else {
-      viewDocumentMessage.classList.remove("hidden", "success");
-      viewDocumentMessage.classList.add("error");
-      viewDocumentMessage.textContent =
-        "Tipo de archivo no soportado para previsualización directa.";
+      if (mimeType.startsWith("image/")) {
+          imageViewPreview.src = fullUrl; // Usa la URL completa aquí
+          imageViewPreview.style.display = "block";
+      } else if (mimeType === "application/pdf") {
+          // Para PDF, también debes usar la URL completa
+          pdfViewViewer.innerHTML = `<embed src="${fullUrl}" type="application/pdf" width="100%" height="100%">`;
+          pdfViewViewer.style.display = "block";
+      }
     }
-  }
 
-  // --- Listener para el evento 'click' en el botón 'Ver Imagen' ---
-  document.body.addEventListener("click", function (event) {
-    if (event.target.classList.contains("See_imagen")) {
-      const button = event.target;
-      const idTicket = button.getAttribute("data-id-ticket");
+    // --- Listener para el evento 'click' en el botón 'Ver Imagen' ---
+    document.body.addEventListener("click", function (event) {
+        if (event.target.classList.contains("See_imagen")) {
+            const button = event.target;
+            const idTicket = button.getAttribute("data-id-ticket");
+            const nro_ticket = button.getAttribute("data-nro-ticket");
+            const documentType = button.getAttribute("data-document-type");
 
-      // Mostrar el modal programáticamente
-      viewDocumentBootstrapModal.show();
+            viewDocumentBootstrapModal.show();
 
-      // 1. Limpiar y preparar el modal de visualización
-      viewModalTicketIdSpan.textContent = idTicket;
-      imageViewPreview.src = "#";
-      imageViewPreview.style.display = "none";
-      pdfViewViewer.innerHTML = "";
-      pdfViewViewer.style.display = "none";
-      viewDocumentMessage.classList.add("hidden");
-      viewDocumentMessage.textContent = "";
+            // Limpiar y preparar el modal
+            viewModalTicketIdSpan.textContent = nro_ticket;
+            imageViewPreview.src = "#";
+            imageViewPreview.style.display = "none";
+            pdfViewViewer.innerHTML = "";
+            pdfViewViewer.style.display = "none";
+            viewDocumentMessage.classList.add("hidden");
 
-      // 2. Mostrar un mensaje de carga
-      viewDocumentMessage.classList.remove("hidden", "success", "error");
-      viewDocumentMessage.textContent = "Cargando documento...";
-      viewDocumentMessage.classList.add("info");
+            // Mostrar mensaje de carga
+            viewDocumentMessage.classList.remove("hidden");
+            viewDocumentMessage.textContent = "Cargando documento...";
+            viewDocumentMessage.classList.add("info");
 
-      // 3. Preparar los datos a enviar al backend
-      const formData = new FormData();
-      formData.append("ticket_id", idTicket); // ¡Asegúrate que coincida con tu API!
-      formData.append("action", "getDocument");
+            // Preparar los datos a enviar
+            const dataToSendString = `action=getDocument&ticket_id=${encodeURIComponent(idTicket)}&document_type=${encodeURIComponent(documentType)}`;
 
-      // 4. Construir la URL de la API correctamente
-      // ¡CORRECCIÓN AQUÍ! Usa las constantes definidas al inicio.
-      const getDocumentUrl = `${ENDPOINT_BASE1}${API_DOCUMENTS_PATH}getDocument`;
-      console.log(`URL de la API para obtener documento: ${getDocumentUrl}`);
+            // Realizar la petición con XMLHttpRequest
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/reportes/getDocument`);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-      // 5. Realizar la petición HTTP POST
-      fetch(getDocumentUrl, {
-        method: "POST",
-        body: formData,
-      })
-        .then((response) => {
-          if (!response.ok) {
-            // Si la respuesta no es OK, intenta leer el texto para un mejor depurado
-            return response.text().then((text) => {
-              throw new Error(
-                "Error de red al cargar documento. Respuesta del servidor: " +
-                  text
-              );
-            });
-          }
-          return response.json();
-        })
-        .then((data) => {
-          console.log("Datos recibidos de la API:", data); // Para depurar la respuesta completa
-          if (data.success && data.document && data.document.row) {
-            // Accede a `data.document.row`
-            const documentPath = data.document.row.file_path; // <--- ¡CORRECCIÓN! Acceder a `row.file_path`
-            const mimeType = data.document.row.mime_type; // <--- ¡CORRECCIÓN! Acceder a `row.mime_type`
-            displayDocumentInViewModal(documentPath, mimeType);
-            viewDocumentMessage.style.display = "none";
-          } else {
-            viewDocumentMessage.classList.remove("hidden", "success");
-            viewDocumentMessage.classList.add("error");
-            viewDocumentMessage.textContent =
-              data.message ||
-              "No se encontró ningún documento para este ticket o el formato de respuesta es incorrecto.";
-          }
-        })
-        .catch((error) => {
-          console.error("Error en la petición Fetch:", error); // Muestra el error completo en la consola
-          viewDocumentMessage.classList.remove("hidden", "success");
-          viewDocumentMessage.classList.add("error");
-          viewDocumentMessage.textContent =
-            "Error al cargar el documento: " + error.message;
-        });
-    }
-  });
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        console.log("Datos recibidos de la API:", data);
+
+                        // **CORREGIDO:** Acceder al primer elemento del array 'document'
+                        if (data.success && data.document && data.document.length > 0) { 
+                            const documentData = data.document[0];
+                            const documentPath = documentData.file_path;
+                            const mimeType = documentData.mime_type;
+                            const nameoriginal = documentData.original_filename
+
+                            
+                            // Llama a la función que mostrará el documento
+                            displayDocumentInViewModal(documentPath, mimeType, nameoriginal);
+                            viewDocumentMessage.style.display = "none";
+                        } else {
+                            viewDocumentMessage.classList.remove("hidden");
+                            viewDocumentMessage.classList.add("error");
+                            viewDocumentMessage.textContent = data.message || "Documento no encontrado.";
+                        }
+                    } catch (e) {
+                        console.error("Error al parsear la respuesta JSON:", e);
+                        viewDocumentMessage.classList.remove("hidden");
+                        viewDocumentMessage.classList.add("error");
+                        viewDocumentMessage.textContent = "Error al procesar la respuesta del servidor.";
+                    }
+                } else {
+                    console.error("Error en la petición XMLHttpRequest:", xhr.status, xhr.statusText);
+                    viewDocumentMessage.classList.remove("hidden");
+                    viewDocumentMessage.classList.add("error");
+                    viewDocumentMessage.textContent = `Error del servidor: ${xhr.status} - ${xhr.statusText}`;
+                }
+            };
+
+            xhr.onerror = function () {
+                console.error("Error de red en la petición XMLHttpRequest.");
+                viewDocumentMessage.classList.remove("hidden");
+                viewDocumentMessage.classList.add("error");
+                viewDocumentMessage.textContent = "Error de red.";
+            };
+
+            xhr.send(dataToSendString);
+        }
+    });
 });
 
 function formatTicketDetailsPanel(d) {

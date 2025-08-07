@@ -171,10 +171,20 @@ class ReportRepository
     return $result;
 }
 
-    public function getDocument($id_ticket)
+    public function getDocument($id_ticket, $document_type)
     {
-        $result = $this->model->getDocument($id_ticket);
-        return $result;
+        $result = $this->model->getDocument($id_ticket, $document_type);
+        if ($result) {
+            //var_dump($result);  
+            $ticket = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            return $ticket;
+        } else {
+            return null;
+        }
     }
 
     public function getTicketDetailsById($id_ticket){
@@ -474,6 +484,21 @@ class ReportRepository
     public function GetTicketsPendingDocumentApproval($id_user){
         // Lógica para obtener todos los usuarios
         $result = $this->model->GetTicketsPendingDocumentApproval($id_user); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
+    public function GetTicketDataRegion($id_user){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketDataRegion($id_user); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {

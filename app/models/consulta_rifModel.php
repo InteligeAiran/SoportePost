@@ -1896,10 +1896,100 @@ class consulta_rifModel extends Model
                     $new_status_domiciliacion
                 );
 
-                var_dump($sqlInsertHistory);
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
 
                 return array('save_result' => $result, 'history_result' => $sqlInsertHistory);
+            }
+        } catch (Throwable $e) {
+            // Log the error (e.g., error_log($e->getMessage());)
+            return false; // Return false on error
+        }
+    }
+    public function GetRegionsByTechnician($id_user){
+        try {
+            $sql = "SELECT DISTINCT r.id_region, r.name_region, st.name_state FROM users u 
+                JOIN regionsusers utr ON u.id_user = utr.id_user 
+                JOIN regions r ON utr.id_region = r.id_region 
+                JOIN states  st ON utr.id_region = st.id_region WHERE u.id_user = ".(int)$id_user.";";
+            $result = Model::getResult($sql, $this->db);
+            if ($result) {
+                return $result;
+            } else {
+                return false;
+            }
+        } catch (Throwable $e) {
+            // Log the error (e.g., error_log($e->getMessage());)
+            return false; // Return false on error
+        }
+    }
+
+    public function UpdateStatusToReceiveInRegion($ticketId, $id_user){
+        try{
+          $id_accion_ticket = 19;
+
+                $sql = "UPDATE tickets SET id_accion_ticket = ".(int)$id_accion_ticket." WHERE id_ticket = ".$ticketId.";";
+                $result = Model::getResult($sql, $this->db);
+                if ($result) {
+
+                    $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $ticketId. ";";
+                    $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+
+                    if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                        $row = [];
+                        for ($i = 0; $i < pg_num_rows($status_lab_result); $i++) {
+                            $row[] = pg_fetch_assoc($status_lab_result, $i);
+                        }
+                        $id_status_lab = $row[0]['id_status_lab'] ?? null;
+                    } else {
+                        $id_status_lab = 0;
+                    }
+
+                $id_new_status_payment = 'NULL'; 
+                $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . $ticketId . ";";
+                $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
+                if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
+                    $status_payment_data = pg_fetch_assoc($status_payment_status_result, 0);
+                    $id_new_status_payment = $status_payment_data['id_status_payment'] !== null ? (int)$status_payment_data['id_status_payment'] : 'NULL';
+                }
+
+                $new_status_domiciliacion = 'NULL'; 
+                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . $ticketId . ";";
+                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                    $domiciliacion_data = pg_fetch_assoc($status_domiciliacion_result, 0);
+                    $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
+                }
+
+
+                    $sqlInsertHistory = sprintf(
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                    (int)$ticketId, // Se asume que $id_ticket ya es un entero válido o se castea
+                    (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
+                    (int)2, // Usamos la acción específica para el historial
+                    (int)$id_accion_ticket, // Usamos la acción específica para el historial
+                    $id_status_lab,
+                    $id_new_status_payment,
+                    $new_status_domiciliacion
+                );
+
+                $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
+
+                return array('save_result' => $result, 'history_result' => $sqlInsertHistory);
+            }
+        } catch (Throwable $e) {
+            // Log the error (e.g., error_log($e->getMessage());)
+            return false; // Return false on error
+        }
+    }
+
+    public function GetComponents(){
+        try {
+            $sql = "SELECT * FROM components;";
+            $result = Model::getResult($sql, $this->db);
+            if ($result) {
+                return $result;
+            } else {
+                return false;
             }
         } catch (Throwable $e) {
             // Log the error (e.g., error_log($e->getMessage());)

@@ -21,7 +21,6 @@ function mi_navbar()
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
-
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
@@ -559,7 +558,6 @@ function mi_navbar()
             border-radius: 5px;
             transition: background-color 0.3s ease;
         }
-
     </style>
     <!-- CSS Files -->
     <link id="pagestyle" rel="stylesheet"
@@ -688,33 +686,34 @@ function mi_navbar()
     <!-- END MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
 
     <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
-    <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel"
-        aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <strong>
-                        <h5 class="modal-title text-lg font-semibold text-gray-800" id="viewDocumentModalLabel">
-                            Documento para Ticket: <span id="viewModalTicketId"></span></h5>
-                    </strong>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3 text-center">
-                        <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen"
-                            style="max-width: 100%; height: auto; display: none;">
-                        <div id="pdfViewViewer"
-                            style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
+        <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header bg-gradient-primary">
+                        <strong>
+                            <h5 class="modal-title text-lg font-semibold text-gray-800" id="viewDocumentModalLabel">
+                                Documento para Nro Ticket: <span id="viewModalTicketId"></span></h5>
+                        </strong>
                     </div>
-                    <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="modalCerrarshow"
-                        data-bs-dismiss="modal">Cerrar</button>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label>Nombre de la imagen: <span id="NombreImage"></span></label>
+                        </div>
+                        <div class="mb-3 text-center" style="max-height: 80vh; overflow-y: auto;">
+                            <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen" style="max-width: 100%; height: auto; display: none;">
+                            <div id="pdfViewViewer" style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
+                        </div>
+                        <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="modalCerrarshow"
+                            data-bs-dismiss="modal">Cerrar</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
+    
     <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 
     <div class="fixed-plugin">

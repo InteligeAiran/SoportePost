@@ -189,6 +189,10 @@ class reportes extends Controller {
                     $this->ticketsPendingDocumentApproval();
                 break;
 
+                case 'GetTicketDataRegion':
+                    $this->GetTicketDataRegion();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -489,15 +493,16 @@ class reportes extends Controller {
     function getDocument(){
         $repository = new ReportRepository();
         $id_ticket = isset($_POST['ticket_id'])? $_POST['ticket_id'] : null;
+        $document_type = "Envio_Destino";
         if ($id_ticket) {
-            $documentData = $repository->getDocument($id_ticket);
+            $documentData = $repository->getDocument($id_ticket, $document_type);
             if ($documentData) {
                 $this->response(['success' => true, 'document' => $documentData], 200);
             } else {
                 $this->response(['success' => false, 'message' => 'No se encontró el documento'], 404);
             }
         } else {
-
+            $this->response(['success' => false, 'message' => 'Debe proporcionar un ID de ticket'], 400); // Código 400 Bad Request
         }
     }
 
@@ -818,5 +823,24 @@ class reportes extends Controller {
         } else {
             $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
+    }
+
+    public function GetTicketDataRegion(){
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'Falta el id_user'], 400); // Código 400 Bad Request
+        }
+
+        $repository = new ReportRepository();
+        $result = $repository->GetTicketDataRegion($id_user);
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+        
     }
 }

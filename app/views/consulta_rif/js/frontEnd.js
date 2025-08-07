@@ -1334,9 +1334,7 @@ document
     //console.log("Validación de exoneración pasada.");
   });
 
-document
-  .getElementById("DownloadAntici")
-  .addEventListener("click", function (event) {
+document.getElementById("DownloadAntici").addEventListener("click", function (event) {
     document.getElementById("DownloadExo").style.display = "none";
     document.getElementById("ExoneracionInput").style.display = "none";
     event.stopPropagation(); // Detener la propagación del evento
