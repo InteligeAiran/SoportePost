@@ -411,7 +411,7 @@ function mi_navbar()
                             <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" id="modalCerrarshow" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-secondary"  data-dismiss="modal">Cerrar</button>
                         </div>
                     </div>
                 </div>

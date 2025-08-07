@@ -1539,6 +1539,19 @@ function SendDataFailure2(idStatusPayment) {
               // Muestra un mensaje de error al usuario
             }
           };
+
+          if (uploadNowRadio.checked && (checkAnticipo.style.display === "block") && (checkAnticipo.style.display === "block") && (checkEnvio.style.display === "block")) { 
+
+              Swal.fire({
+              title: "¡Notificación!",
+              text: "Debe cargar los documentos pendientes.",
+              icon: "warning",
+              confirmButtonText: "OK",
+              color: "black",
+            });
+
+          } else { 
+
           const params = `id_coordinador=${encodeURIComponent(
             coordinador
           )}&id_user=${encodeURIComponent(id_user)}`;
@@ -1630,7 +1643,8 @@ function SendDataFailure2(idStatusPayment) {
                 }, 1000); // 2000 milisegundos = 2 segundos
               }); // Este cierra el .then()
             },
-          });
+          }); 
+      }
         } else {
           Swal.fire({
             icon: "error",
