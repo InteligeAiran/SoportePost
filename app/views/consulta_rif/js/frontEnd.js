@@ -1604,33 +1604,51 @@ function SendDataFailure2(idStatusPayment) {
 </div>
 `;
 
-              Swal.fire({
-                icon: "success",
-                title: "Detalles del Ticket",
-                html: beautifulHtmlContent,
-                color: "black",
-                confirmButtonText: "Cerrar",
-                confirmButtonColor: "#003594",
-                showClass: {
-                  popup: "animate__animated animate__fadeInDown",
-                },
-                hideClass: {
-                  popup: "animate__animated animate__fadeOutUp",
-                },
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-              }).then(() => {
-                // Este bloque de código se ejecuta DESPUÉS de que el usuario interactúa y el modal de SweetAlert2 se cierra.
-
-                // Oculta tu modal personalizado (si lo tienes y estás usando jQuery)
-                // Es crucial que esto se haga ANTES de la recarga.
-                $("#miModal").css("display", "none");
-
-                // Establece un temporizador para recargar la página después de 2 segundos.
-                setTimeout(() => {
-                  location.reload(); // Recarga la página
-                }, 1000); // 2000 milisegundos = 2 segundos
-              }); // Este cierra el .then()
+    Swal.fire({
+      icon: "success",
+      title: "Detalles del Ticket",
+      html: beautifulHtmlContent,
+      color: "black",
+      confirmButtonText: "Cerrar",
+      confirmButtonColor: "#003594",
+      showClass: {
+        popup: "animate__animated animate__fadeInDown",
+      },
+      hideClass: {
+        popup: "animate__animated animate__fadeOutUp",
+      },
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showCancelButton: true, // Habilita el botón de cancelar
+      cancelButtonText: "Agregar Componentes", // Personaliza el texto del botón de cancelar
+      cancelButtonColor: "#28a745", // Asigna un color diferente al nuevo botón
+    }).then((result) => {
+      // Este bloque de código se ejecuta DESPUÉS de que el usuario interactúa y el modal de SweetAlert2 se cierra.
+      if (result.isConfirmed) {
+        // Si el usuario hace clic en "Cerrar" (botón de confirmación)
+        // Oculta tu modal personalizado (si lo tienes y estás usando jQuery)
+        $("#miModal").css("display", "none");
+        // Recarga la página después de un breve temporizador
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+          $("#miModal").css("display", "none");
+          
+          // Se extraen el ticketId y el serialPos del objeto ticketData para pasarlos a la función.
+        const ticketId = ticketData.Nr_ticket;
+        const serialPos = ticketData.serial;
+        
+        // Se llama a la función que abre el modal de componentes
+        // Nota: La función 'abrirModalComponentes' ya se encargará de mostrar el modal y cargar la información.
+        abrirModalComponentes({
+          dataset: {
+            idTicket: ticketId,
+            serialPos: serialPos
+          }
+        });
+      }
+      });
             },
           });
         } else {
@@ -1998,7 +2016,7 @@ function SendDataFailure1() {
                 // Oculta tu modal personalizado (si lo tienes y estás usando jQuery)
                 // Es crucial que esto se haga ANTES de la recarga.
                 $("#miModal1").css("display", "none");
-
+                $("#miModal").css("display", "none");
                 // Establece un temporizador para recargar la página después de 2 segundos.
                 setTimeout(() => {
                   location.reload(); // Recarga la página
@@ -3191,5 +3209,333 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
   }
 });
+
+// Obtén una referencia al modal y al tbody de la tabla
+const modalComponentesEl = document.getElementById('modalComponentes');
+const tbodyComponentes = document.getElementById('tbodyComponentes');
+const contadorComponentes = document.getElementById('contadorComponentes');
+const botonCargarComponentes = document.getElementById('hiperbinComponents');
+const ModalBotonCerrar = document.getElementById('BotonCerrarModal');
+
+// Inicializa el modal de Bootstrap una sola vez.
+const modalComponentes = new bootstrap.Modal(modalComponentesEl, {
+    keyboard: false,
+    backdrop:'static'
+});
+
+// Escuchar el evento 'show.bs.modal' para resetear el estado del modal cada vez que se abre
+modalComponentesEl.addEventListener('show.bs.modal', function () {
+    // Limpiar el contador y el checkbox de "seleccionar todos" cada vez que se abra el modal
+    document.getElementById('selectAllComponents').checked = false;
+    contadorComponentes.textContent = '0';
+});
+
+// Función para actualizar el contador de componentes seleccionados
+// Función para actualizar el contador de componentes seleccionados
+
+// Función para actualizar el contador de componentes seleccionados
+function actualizarContador() {
+    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
+    const selectAllCheckbox = document.getElementById('selectAllComponents');
+
+    contadorComponentes.textContent = checkboxes.length;
+
+    const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+    const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+
+    selectAllCheckbox.checked = allChecked;
+    selectAllCheckbox.indeterminate = someChecked && !allChecked;
+}
+
+// Función para limpiar la selección de componentes
+function limpiarSeleccion() {
+    // Solo desmarca los checkboxes que NO están deshabilitados
+    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+    checkboxes.forEach(cb => cb.checked = false);
+    
+    document.getElementById('selectAllComponents').checked = false;
+    contadorComponentes.textContent = '0';
+}
+
+// CORRECCIÓN PRINCIPAL: Se modificó la función para que reciba los componentes seleccionados
+function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos) {
+    const id_user = document.getElementById('id_user').value;
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success) {
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        html: `Los componentes del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar',
+                        color: 'black',
+                        confirmButtonColor: '#003594',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        keydownListenerCapture: true
+                    }).then(() => {
+                        modalComponentes.hide();
+                        window.location.reload(); 
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: response.message || 'Error al guardar los componentes.',
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al procesar la respuesta del servidor.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+        } else {
+            Swal.fire({
+                title: 'Error del Servidor',
+                text: `Error al comunicarse con el servidor. Código: ${xhr.status}`,
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
+        }
+    };
+    
+    xhr.onerror = function() {
+        Swal.fire({
+            title: 'Error de Red',
+            text: 'No se pudo conectar con el servidor.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+        });
+    };
+    
+    const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}`;
+    xhr.send(dataToSend);
+}
+
+// Función para obtener el ticket ID (ajusta según tu estructura)
+function obtenerTicketId() {
+    return currentTicketId;
+}
+
+// Función para obtener el nombre de la región (ajusta según tu estructura)
+function obtenerRegionName() {
+    const regionSelect = document.getElementById('AsiganrCoordinador');
+    if (regionSelect && regionSelect.selectedOptions.length > 0) {
+        return regionSelect.selectedOptions[0].text;
+    }
+    return 'Sin región asignada';
+}
+
+// FUNCIÓN PRINCIPAL PARA CARGAR Y MOSTRAR EL MODAL
+function showSelectComponentsModal(ticketId, regionName, serialPos) {
+    const xhr = new XMLHttpRequest();
+
+    // Limpia el contenido previo y muestra un mensaje de carga
+    tbodyComponentes.innerHTML = `<tr><td colspan="2" class="text-center text-muted">Cargando componentes...</td></tr>`;
+    
+    const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetComponents`;
+    const dataToSendString = `action=GetComponents&ticketId=${ticketId}`;
+
+    xhr.open('POST', apiUrl, true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+
+                if (response.success && response.components) {
+                    const components = response.components;
+                    let componentsHtml = '';
+                    
+                    if (components.length > 0) {
+                        components.forEach(comp => {
+                            // Ahora verificamos si `comp.is_selected` es 't' para marcar y deshabilitar
+                            const isChecked = comp.is_selected === 't' ? 'checked' : '';
+                            const isDisabled = comp.is_selected === 't' ? 'disabled' : '';
+                            
+                            componentsHtml += `
+                                <tr>
+                                  <td>
+                                    <input type="checkbox" class="form-check-input" value="${comp.id_component}" ${isChecked} ${isDisabled}>
+                                    </td>
+                                  <td>${comp.name_component}</td>
+                                </tr>
+                            `;
+                        });
+                        
+                        document.getElementById('btnGuardarComponentes').dataset.ticketId = ticketId;
+                        document.getElementById('btnGuardarComponentes').dataset.serialPos = serialPos;
+
+                    } else {
+                        componentsHtml = `<tr><td colspan="2" class="text-center text-muted">No se encontraron componentes.</td></tr>`;
+                    }
+                    
+                    tbodyComponentes.innerHTML = componentsHtml;
+                    document.getElementById('modalComponentesLabel').innerHTML = `
+                        <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
+                    `;
+
+                    // Finalmente, muestra el modal de Bootstrap
+                    modalComponentes.show();
+
+                    // Llama a actualizar contador después de cargar los componentes
+                    actualizarContador();
+
+                } else {
+                    Swal.fire('Error', response.message || 'No se pudieron obtener los componentes.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error de Procesamiento', 'Hubo un problema al procesar la respuesta del servidor.', 'error');
+            }
+        } else {
+            Swal.fire('Error del Servidor', `No se pudo comunicar con el servidor. Código: ${xhr.status}`, 'error');
+        }
+    };
+
+    xhr.onerror = function() {
+        Swal.fire('Error de red', 'No se pudo conectar con el servidor para obtener los componentes.', 'error');
+    };
+    
+    xhr.send(dataToSendString);
+}
+
+// Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
+// Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
+document.addEventListener('DOMContentLoaded', function () {
+    const modalComponentesEl = document.getElementById('modalComponentes');
+    const modalComponentes = new bootstrap.Modal(modalComponentesEl, { keyboard: false });
+
+    // Escucha el evento `click` en el documento y usa delegación.
+    document.addEventListener('click', function (e) {
+        // Verifica si el clic proviene del botón con el ID 'hiperbinComponents'
+        if (e.target && e.target.id === 'hiperbinComponents' || e.target.closest('#hiperbinComponents')) {
+            const botonClicado = e.target.closest('#hiperbinComponents');
+            if (botonClicado) {
+                // Llama a la función que abre el modal, pasándole el botón como argumento
+                abrirModalComponentes(botonClicado);
+            }
+        }
+
+        // Event listener para el botón "Limpiar Selección" (usando delegación)
+        if (e.target && e.target.closest('.btn-outline-secondary.btn-sm') && e.target.closest('.modal-body')) {
+            limpiarSeleccion();
+        }
+
+        // Event listener para el botón "Guardar Componentes"
+        if (e.target && e.target.id === 'btnGuardarComponentes') {
+            const ticketId = e.target.dataset.ticketId;
+            const serialPos = e.target.dataset.serialPos;
+
+            // --- INICIO DE LA LÓGICA AGREGADA ---
+            const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
+            const allDisabledAndChecked = Array.from(allCheckboxes).every(cb => cb.checked && cb.disabled);
+
+            if (allCheckboxes.length > 0 && allDisabledAndChecked) {
+                Swal.fire({
+                    title: '¡Información!',
+                    html: `Todos los componentes del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
+                    icon: 'info',
+                    confirmButtonText: 'Aceptar',
+                    color: 'black',
+                    confirmButtonColor: '#003594'
+                });
+                return; // Detiene la ejecución para no intentar guardar
+            }
+            // --- FIN DE LA LÓGICA AGREGADA ---
+
+            const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
+            const selectedComponents = Array.from(checkboxes).map(cb => cb.value);
+
+            if (selectedComponents.length === 0) {
+                Swal.fire({
+                    title: 'Atención',
+                    text: 'Debes seleccionar al menos un componente nuevo para guardar.',
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido',
+                    color: 'black',
+                    confirmButtonColor: '#003594',
+                });
+                return;
+            }
+            guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos);
+        }
+
+        // Event listener para el botón de cerrar el modal
+        if (e.target && e.target.id === 'BotonCerrarModal') {
+            modalComponentes.hide();
+        }
+
+        // Event listener para el checkbox "Seleccionar Todos"
+        if (e.target && e.target.id === 'selectAllComponents') {
+            const isChecked = e.target.checked;
+            const enabledCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+            
+            enabledCheckboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+            
+            actualizarContador();
+        }
+
+        // Event listener para checkboxes individuales de componentes
+        if (e.target && e.target.type === 'checkbox' && e.target.closest('#tbodyComponentes')) {
+            actualizarContador();
+        }
+    });
+  });
+
+function abrirModalComponentes(boton) {
+
+    const modalCerrarComponnets = document.getElementById('BotonCerrarModal');
+    const ticketId = boton.dataset.idTicket;
+    const serialPos = boton.dataset.serialPos;
+
+    const regionName = obtenerRegionName();
+
+    if (!ticketId) {
+        Swal.fire({
+            title: 'Atención',
+            text: 'No se pudo obtener el ID del ticket.',
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            color: 'black',
+            confirmButtonColor: '#003594',
+        });
+        return;
+    }
+
+    if (!serialPos) {
+        Swal.fire({
+            title: 'Atención',
+            text: 'No hay serial disponible para este ticket.',
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            color: 'black',
+            confirmButtonColor: '#003594',
+        });
+        return;
+    }
+
+    if(modalCerrarComponnets){
+      modalCerrarComponnets.addEventListener('click', function() {
+        modalComponentes.hide();
+      });
+    }
+    showSelectComponentsModal(ticketId, regionName, serialPos);
+}
+
 
 

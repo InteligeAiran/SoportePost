@@ -1704,6 +1704,23 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.target && e.target.id === 'BotonCerrarModal') {
             modalComponentes.hide();
         }
+
+        // Event listener para el checkbox "Seleccionar Todos"
+        if (e.target && e.target.id === 'selectAllComponents') {
+            const isChecked = e.target.checked;
+            const enabledCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+            
+            enabledCheckboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+            
+            actualizarContador();
+        }
+
+        // Event listener para checkboxes individuales de componentes
+        if (e.target && e.target.type === 'checkbox' && e.target.closest('#tbodyComponentes')) {
+            actualizarContador();
+        }
     });
   });
 

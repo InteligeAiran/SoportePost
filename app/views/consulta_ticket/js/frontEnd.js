@@ -109,33 +109,24 @@ document.addEventListener("DOMContentLoaded", function () {
     const buscarPorSerialBtn = document.getElementById("buscarPorSerialBtn");
     const buscarPorRifBtn = document.getElementById("buscarPorRifBtn");
     const buscarPorRegionsBtn = document.getElementById("buscarPorRegionsBtn");
-    // Asumo que buscarPorRazonBtn apunta a buscarPorNombreBtn, lo corregimos
     const buscarPorRazonBtn = document.getElementById("buscarPorNombreBtn"); 
-
-
     const searchRifDiv = document.getElementById("SearchRif"); // Contenedor principal de los inputs de búsqueda
     const rifTipoSelect = document.getElementById("rifTipo");
     const rifInput = document.getElementById("rifInput");
     const buscarRifBtn = document.getElementById("buscarRif");
-
     const serialInput = document.getElementById("serialInput");
     const buscarSerialBtn = document.getElementById("buscarSerial");
-
     const razonInput = document.getElementById("RazonInput");
     const buscarRazonBtn = document.getElementById("buscarRazon");
-
     const inputsDateDiv = document.getElementById("inputsDate"); // El div que contiene los inputs de fecha
     const dateIniInput = document.getElementById("date-ini");
     const dateEndInput = document.getElementById("date-end");
     const buscarRangoBtn = document.getElementById("buscarRango");
     const errorDateIni = document.getElementById("errorDateIni");
     const errorDateEnd = document.getElementById("errorDateEnd");
-
     const selectRegions = document.getElementById("SelectRgions");
     const buscarRegionsBtn = document.getElementById("buscarRegions");
-
     const resultsCard = document.querySelector(".card"); // El contenedor principal para los resultados (la tabla)
-
 
     // Función para ocultar todos los campos de búsqueda y limpiar mensajes de error
     function hideAllSearchInputs() {
@@ -249,13 +240,7 @@ document.addEventListener("DOMContentLoaded", function () {
             resultsCard.style.display = "block"; // Muestra el card de resultados
         });
     }
-
-    // Inicializar ocultando todo al cargar la página
     hideAllSearchInputs();
-
-    // Puedes agregar aquí la lógica para cargar la tabla de "Notificación de Repuestos Vencidos"
-    // cuando la página carga, o cuando se dispare el modal de SweetAlert.
-    // La notificación de repuestos vencidos es una ventana emergente separada del panel de búsqueda.
 });
 
 function getRegionUsuarios() {
