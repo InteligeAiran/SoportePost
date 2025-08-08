@@ -682,6 +682,10 @@ class TechnicalConsultionRepository
             return null;
         }
     }
-        
+    
+    public function SendToRegion($ticketId, $id_user, $component, $serial){
+        $result = $this->model->SendToRegion($ticketId, $id_user, $component, $serial);
+        return $result;
+    }
 }
 ?>

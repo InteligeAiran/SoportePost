@@ -127,6 +127,27 @@ function mi_navbar() {}
                 overflow: visible;
                 text-overflow: clip;
             }
+
+            #btnGuardarComponentes{
+                color: white;
+                background-color: #003594;
+            }
+
+            #btnGuardarComponentes:hover{
+                background-color: green;
+                color: white;
+                border: none;
+                cursor: pointer;
+                padding: 10px 20px;
+            }
+
+            #BotonCerrarModal:hover{
+                background-color: red;
+                color: white;
+                border: none;
+                cursor: pointer;
+                padding: 10px 20px;
+            }
         </style>
     </head>
 
@@ -275,11 +296,6 @@ function mi_navbar() {}
                                             <input type="text" class="form-control" id="serialSelect" name="serialSelect" disabled></input>
                                         </div><br>
                                     </div>
-                                    <div class="mt-2">
-                                        <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-bs-toggle="modal" data-bs-target="#modalComponentes">
-                                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Componentes del Dispositivo
-                                        </button>
-                                    </div>
                                     <br>
                                     <div>
                                         <label id="LabelCoordinador" class="form-label" for="AsiganrCoordinador">Asignar a
@@ -387,109 +403,53 @@ function mi_navbar() {}
                 </div>
             </div>
         <!--END MODAL FALLA NIVEL 2-->
-        
-        <!-- PARA SELECCIONAR LOS COMPONENTES ASOCIADOS AL SERIAL DEL POS -->
-            <div class="modal" id="miModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"  style="background-color: rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px);">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalToggleLabel" style = "color: grey;">Falla Nivel 2</h1>
-                            <button id="cerraModal2" type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body" style="margin-left: 0;">
-                            <form id="miFormulario" class="row g-3">
-                                <div id="detalle1" class="col-md-6">
-                                    <div>
-                                        <label id="LabelSerial" class="form-label" for="serialSelect">Seriales de POS:</label>
-                                        <div id="serialSelectContainer">
-                                            <input type="text" class="form-control" id="serialSelect" name="serialSelect" disabled></input>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-2">
-                                        <button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#modalComponentes">
-                                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Componentes del Dispositivo
-                                        </button>
-                                    </div>
-                                    <br>
-
-                                    </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button id="SendForm2" class="btn btn-primary">Guardar</button>
-                            <button id="buttonCerrar2" type="button" class="btn btn-secondary"data-bs-dismiss="modal">Cerrar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal fade" id="modalComponentes" tabindex="-1" aria-labelledby="modalComponentesLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalComponentesLabel">Cargar Componentes</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Formulario para componentes del dispositivo...</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                            <button type="button" class="btn btn-primary">Guardar Componentes</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <!-- END PARA SELECCIONAR LOS COMPONENTES ASOCIADOS AL SERIAL DEL POS -->
 
         <!--MODAL FALLA NIVEL 1-->
-        <div class="modal" id="miModal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"
-            data-bs-backdrop="static" data-bs-keyboard="false">
-            <div id="Modal2-div" class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalToggleLabel" style = "color: grey;">Falla Nivel 1</h1>
-                        <button id="cerrar-iconNivel1" type="button" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div>
-                            <label for="FallaSelect1">Falla Descrita Por el Cliente</label>
-                            <div id="FallaSelect1Container">
-                                <select id="FallaSelect1" name="FallaSelect1">
-                                </select>
-                            </div><br>
-                            <label for="serialInputDetalle1">RIF cliente</label>
-                            <input type="text" onchange="checkRif1()" id="InputRif1" placeholder="JV123456789" disabled>
-                            <p id="rifMensaje1"></p>
-                            <label for="serialSelect">Seriales de POS:</label>
-                           <div id="serialSelectContainer">
-                                <input type="text" class="form-control" id="serialSelect1" name="serialSelect" disabled>
-                            </div><br>
-                            <label style="display: none;" for="FallaSelect">Nivel Falla</label>
-                            <div id="FallaSelectContainer">
-                                <select id="FallaSelectt1" name="FallaSelect" style="display: none;">
-                                    <option value="1">Nivel 1</option>
-                                </select>
-                            </div>
-                            <input type="hidden" id="id_user" name="userId">
-                            <table id="serialCountTableDetalle1" class="table">
-                                <tbody></tbody>
-                            </table>
+            <div class="modal" id="miModal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div id="Modal2-div" class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalToggleLabel" style = "color: grey;">Falla Nivel 1</h1>
+                            <button id="cerrar-iconNivel1" type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button id="SendForm1" onclick="SendDataFailure1();" style="display: block;" class="btn btn-primary">Guardar</button>
+                        <div class="modal-body">
+                            <div>
+                                <label for="FallaSelect1">Falla Descrita Por el Cliente</label>
+                                <div id="FallaSelect1Container">
+                                    <select id="FallaSelect1" name="FallaSelect1">
+                                    </select>
+                                </div><br>
+                                <label for="serialInputDetalle1">RIF cliente</label>
+                                <input type="text" onchange="checkRif1()" id="InputRif1" placeholder="JV123456789" disabled>
+                                <p id="rifMensaje1"></p>
+                                <label for="serialSelect">Seriales de POS:</label>
+                            <div id="serialSelectContainer">
+                                    <input type="text" class="form-control" id="serialSelect1" name="serialSelect" disabled>
+                                </div><br>
+                                <label style="display: none;" for="FallaSelect">Nivel Falla</label>
+                                <div id="FallaSelectContainer">
+                                    <select id="FallaSelectt1" name="FallaSelect" style="display: none;">
+                                        <option value="1">Nivel 1</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" id="id_user" name="userId">
+                                <table id="serialCountTableDetalle1" class="table">
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="SendForm1" onclick="SendDataFailure1();" style="display: block;" class="btn btn-primary">Guardar</button>
 
-                        <button id="buttonCerrar" type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">Cerrar</button>
+                            <button id="buttonCerrar" type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">Cerrar</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         <!--END MODAL FALLA NIVEL 1-->
-
 
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
@@ -671,6 +631,8 @@ function mi_navbar() {}
             }
         </script>
         <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
+
+
     </body>
 
     </html>

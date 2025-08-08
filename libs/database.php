@@ -12,6 +12,11 @@ define("mvc_port", '5432');
 define("bd_usuario", 'postgres');
 define("bd_clave", 'Int3l1g3ns@.');
 
+/*define ("bd_hostname", 'localhost');
+define("mvc_port", '5432');
+define("bd_usuario", 'postgres');
+define("bd_clave", 'Airan1234');*/
+
 // DB NUEVA
 define("database", 'SoportePost');
 

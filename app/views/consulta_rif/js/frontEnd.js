@@ -402,7 +402,11 @@ function inicializeModal() {
 
 $(document).ready(function () {
   inicializeModal();
+
+
 });
+
+  // Obtener los elementos del DOM una sola v
 
 const inputEnvio1 = document.getElementById("DownloadEnvi");
 const inputEnvio = document.getElementById("EnvioInput");
@@ -3187,4 +3191,5 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
   }
 });
-//Llamar a la función PHP usando fetch    SESSION EXPIRE DEL USE
+
+

@@ -1974,7 +1974,7 @@ class consulta_rifModel extends Model
 
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
 
-                return array('save_result' => $result, 'history_result' => $sqlInsertHistory);
+                return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory);
             }
         } catch (Throwable $e) {
             // Log the error (e.g., error_log($e->getMessage());)
@@ -1994,6 +1994,91 @@ class consulta_rifModel extends Model
         } catch (Throwable $e) {
             // Log the error (e.g., error_log($e->getMessage());)
             return false; // Return false on error
+        }
+    }
+
+        public function SendToRegion($ticketId, $id_user, $component, $serial){
+        try{
+            $id_accion_ticket = 18;
+            $modulo_insertcolumn = "Rosal_region";
+
+            // 1. Inicia una transacción
+            pg_query($this->db->getConnection(), "BEGIN");
+
+            // 2. Actualiza el ticket
+            $sql = "UPDATE tickets SET id_accion_ticket = " . (int)$id_accion_ticket . ", date_sentRegion = NOW() WHERE id_ticket = " . (int)$ticketId . ";";
+            $result = Model::getResult($sql, $this->db);
+
+            if (!$result) {
+                pg_query($this->db->getConnection(), "ROLLBACK");
+                return false;
+            }
+
+            // 3. Itera sobre los componentes y los inserta
+            // La validación is_array y !empty ya es una buena práctica
+           if (is_array($component) && !empty($component)) {
+                foreach ($component as $comp_id) {
+                    // --- CORRECCIÓN AQUÍ ---
+                    // Envuelve la variable $modulo_insertcolumn con comillas simples
+                    $sqlcomponents = "INSERT INTO tickets_componets (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert) 
+                                    VALUES ('" .$serial. "', " . (int)$ticketId . ", " . (int)$comp_id . ", " . (int)$id_user . ", NOW(), '" .$modulo_insertcolumn. "');";
+
+                    // Ejecuta la consulta
+                    $resultcomponent = pg_query($this->db->getConnection(), $sqlcomponents);
+                    
+                    if ($resultcomponent === false) {
+                        pg_query($this->db->getConnection(), "ROLLBACK");
+                        return false;
+                    }
+                }
+            }else {
+                return false;
+            }   
+            
+            // El resto del código para el historial se mantiene igual.
+            // ...
+            
+            $id_status_lab = 0;
+            $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . (int)$ticketId . ";";
+            $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+            if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab') ?? 0;
+            }
+
+            $id_new_status_payment = 'NULL';
+            $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . (int)$ticketId . ";";
+            $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
+            if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
+                $id_new_status_payment = pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') !== null ? (int)pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') : 'NULL';
+            }
+
+            $new_status_domiciliacion = 'NULL';
+            $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . (int)$ticketId . ";";
+            $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+            if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') !== null ? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
+            }
+
+            $sqlInsertHistory = sprintf(
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                (int)$ticketId,
+                (int)$id_user,
+                (int)2,
+                (int)$id_accion_ticket,
+                $id_status_lab,
+                $id_new_status_payment,
+                $new_status_domiciliacion
+            );
+            $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
+
+            // Si todo ha sido exitoso, confirma la transacción
+            return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory, 'component_result' => true);
+
+        } catch (Throwable $e) {
+            // En caso de cualquier error, revierte la transacción
+            error_log("Error in SendToRegion: " . $e->getMessage());
+            pg_query($this->db->getConnection(), "ROLLBACK");
+            return false;
         }
     }
 }

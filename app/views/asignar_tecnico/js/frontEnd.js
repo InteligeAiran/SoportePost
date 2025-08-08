@@ -725,7 +725,6 @@ function formatTicketDetailsPanel(d) {
     garantiaMessage = 'No aplica Garantía'; // O simplemente dejarlo vacío si no hay garantía
   }
 
-
   return `
         <div class="container-fluid">
             <div class="row mb-3 align-items-center">
@@ -777,9 +776,12 @@ function formatTicketDetailsPanel(d) {
                         <br><div class="col-sm-6 mb-2">
                               <br><strong><div>Falla Reportada:</div></strong>
                              <span class="falla-reportada-texto">${d.name_failure}</span>
-                            
                         </div>
-                       
+                        <div class="col-sm-6 mb-2">
+                          <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = ${d.id_ticket}" data-serial-pos = ${d.serial_pos}>
+                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Componentes del Dispositivo
+                          </button>
+                        </div>    
                     </div>
                 </div>
             </div>
@@ -999,6 +1001,7 @@ function loadTicketHistory(ticketId) {
                                             <th class="text-start">Estatus Pago:</th>
                                             <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
                                         </tr>
+
                                     </tbody>
                                 </table>
                             </div>
@@ -1432,3 +1435,296 @@ function GetRegionUser(id_user) {
   )}`;
   xhr.send(datos);
 }
+
+// Obtén una referencia al modal y al tbody de la tabla
+const modalComponentesEl = document.getElementById('modalComponentes');
+const tbodyComponentes = document.getElementById('tbodyComponentes');
+const contadorComponentes = document.getElementById('contadorComponentes');
+const botonCargarComponentes = document.getElementById('hiperbinComponents');
+const ModalBotonCerrar = document.getElementById('BotonCerrarModal');
+
+// Inicializa el modal de Bootstrap una sola vez.
+const modalComponentes = new bootstrap.Modal(modalComponentesEl, {
+    keyboard: false,
+    backdrop:'static'
+});
+
+// Escuchar el evento 'show.bs.modal' para resetear el estado del modal cada vez que se abre
+modalComponentesEl.addEventListener('show.bs.modal', function () {
+    // Limpiar el contador y el checkbox de "seleccionar todos" cada vez que se abra el modal
+    document.getElementById('selectAllComponents').checked = false;
+    contadorComponentes.textContent = '0';
+});
+
+// Función para actualizar el contador de componentes seleccionados
+function actualizarContador() {
+    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked');
+    const selectAllCheckbox = document.getElementById('selectAllComponents');
+    
+    // Actualizar contador
+    contadorComponentes.textContent = checkboxes.length;
+    
+    // Actualizar estado del checkbox "seleccionar todos"
+    const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
+    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+    const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+    
+    selectAllCheckbox.checked = allChecked;
+    selectAllCheckbox.indeterminate = someChecked && !allChecked;
+}
+
+// Función para limpiar la selección de componentes
+function limpiarSeleccion() {
+    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = false);
+    document.getElementById('selectAllComponents').checked = false;
+    contadorComponentes.textContent = '0';
+}
+
+// Función para guardar los componentes seleccionados
+function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveComponents`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success) {
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: 'Los componentes han sido guardados correctamente.',
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar'
+                    }).then(() => {
+                        modalComponentes.hide();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: response.message || 'Error al guardar los componentes.',
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al procesar la respuesta del servidor.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+        } else {
+            Swal.fire({
+                title: 'Error del Servidor',
+                text: `Error al comunicarse con el servidor. Código: ${xhr.status}`,
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
+        }
+    };
+    
+    xhr.onerror = function() {
+        Swal.fire({
+            title: 'Error de Red',
+            text: 'No se pudo conectar con el servidor.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+        });
+    };
+    
+    const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(selectedComponents)}`;
+    xhr.send(dataToSend);
+}
+
+// Función para obtener el ticket ID (ajusta según tu estructura)
+function obtenerTicketId() {
+    return currentTicketId;
+}
+
+// Función para obtener el nombre de la región (ajusta según tu estructura)
+function obtenerRegionName() {
+    const regionSelect = document.getElementById('AsiganrCoordinador');
+    if (regionSelect && regionSelect.selectedOptions.length > 0) {
+        return regionSelect.selectedOptions[0].text;
+    }
+    return 'Sin región asignada';
+}
+
+// FUNCIÓN PRINCIPAL PARA CARGAR Y MOSTRAR EL MODAL
+function showSelectComponentsModal(ticketId, regionName, serialPos) {
+    const xhr = new XMLHttpRequest();
+    
+    // Limpia el contenido previo y muestra un mensaje de carga
+    tbodyComponentes.innerHTML = `<tr><td colspan="2" class="text-center text-muted">Cargando componentes...</td></tr>`;
+    
+    const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetComponents`;
+    const dataToSendString = `action=GetComponents`;
+
+    xhr.open('POST', apiUrl, true);
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+
+                if (response.success && response.components) {
+                    const components = response.components;
+                    let componentsHtml = '';
+                    
+                    if (components.length > 0) {
+                        components.forEach(comp => {
+                            componentsHtml += `
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="form-check-input" value="${comp.id_component}">
+                                    </td>
+                                    <td>${comp.name_component}</td>
+                                </tr>
+                            `;
+                        });
+                        
+                        document.getElementById('btnGuardarComponentes').dataset.ticketId = ticketId;
+                        document.getElementById('btnGuardarComponentes').dataset.serialPos = serialPos;
+
+                    } else {
+                        componentsHtml = `<tr><td colspan="2" class="text-center text-muted">No se encontraron componentes.</td></tr>`;
+                    }
+                    
+                    tbodyComponentes.innerHTML = componentsHtml;
+                    document.getElementById('modalComponentesLabel').innerHTML = `
+                        <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
+                    `;
+
+                    // Finalmente, muestra el modal de Bootstrap
+                    modalComponentes.show();
+
+                } else {
+                    Swal.fire('Error', response.message || 'No se pudieron obtener los componentes.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error de Procesamiento', 'Hubo un problema al procesar la respuesta del servidor.', 'error');
+            }
+        } else {
+            Swal.fire('Error del Servidor', `No se pudo comunicar con el servidor. Código: ${xhr.status}`, 'error');
+        }
+    };
+
+    xhr.onerror = function() {
+        Swal.fire('Error de red', 'No se pudo conectar con el servidor para obtener los componentes.', 'error');
+    };
+    
+    xhr.send(dataToSendString);
+}
+
+// Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
+document.addEventListener('DOMContentLoaded', function() {
+    const modalComponentesEl = document.getElementById('modalComponentes');
+    const modalComponentes = new bootstrap.Modal(modalComponentesEl, { keyboard: false });
+
+    // Escucha el evento `click` en el documento y usa delegación.
+    // Esto funciona porque el documento siempre existe, incluso si el botón se crea dinámicamente.
+    document.addEventListener('click', function(e) {
+        // Verifica si el clic proviene del botón con el ID 'hiperbinComponents'
+        if (e.target && e.target.id === 'hiperbinComponents' || e.target.closest('#hiperbinComponents')) {
+          const botonClicado = e.target.closest('#hiperbinComponents');
+          if (botonClicado) {
+            // Llama a la función que abre el modal, pasándole el botón como argumento
+            abrirModalComponentes(botonClicado);
+          }
+        }
+
+        // Event listener para el botón "Limpiar Selección" (usando delegación)
+        if (e.target && e.target.closest('.btn-outline-secondary.btn-sm') && e.target.closest('.modal-body')) {
+            limpiarSeleccion();
+        }
+
+        // Event listener para el botón "Guardar Componentes"
+        if (e.target && e.target.id === 'btnGuardarComponentes') {
+            const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked');
+            const selectedComponents = Array.from(checkboxes).map(cb => cb.value);
+
+            if (selectedComponents.length === 0) {
+                Swal.fire({
+                    title: 'Atención',
+                    text: 'Debes seleccionar al menos un componente.',
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido',
+                    color: 'black',
+                    confirmButtonColor: '#003594',
+                });
+                return;
+            }
+
+            const ticketId = e.target.dataset.ticketId;
+            const serialPos = e.target.dataset.serialPos;
+
+            guardarComponentesSeleccionados(ticketId, JSON.stringify(selectedComponents), serialPos);
+        }
+
+        // Event listener para el botón de cerrar el modal
+        if (e.target && e.target.id === 'BotonCerrarModal') {
+            modalComponentes.hide();
+        }
+    });
+
+    // Event listener para los checkboxes
+    document.addEventListener('change', function(e) {
+        if (e.target.id === 'selectAllComponents') {
+            const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = e.target.checked);
+            actualizarContador();
+        } else if (e.target.type === 'checkbox' && e.target.closest('#tbodyComponentes')) {
+            actualizarContador();
+        }
+    });
+});
+
+// Función para abrir el modal de componentes
+// Función para abrir el modal de componentes
+function abrirModalComponentes(boton) {
+
+    const modalCerrarComponnets = document.getElementById('BotonCerrarModal');
+    const ticketId = boton.dataset.idTicket;
+    const serialPos = boton.dataset.serialPos;
+
+    const regionName = obtenerRegionName();
+
+    if (!ticketId) {
+        Swal.fire({
+            title: 'Atención',
+            text: 'No se pudo obtener el ID del ticket.',
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            color: 'black',
+            confirmButtonColor: '#003594',
+        });
+        return;
+    }
+
+    if (!serialPos) {
+        Swal.fire({
+            title: 'Atención',
+            text: 'No hay serial disponible para este ticket.',
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            color: 'black',
+            confirmButtonColor: '#003594',
+        });
+        return;
+    }
+
+    if(modalCerrarComponnets){
+      modalCerrarComponnets.addEventListener('click', function() {
+        modalComponentes.hide();
+      });
+    }
+
+    // Ahora, ambos valores se pasan a la función `showSelectComponentsModal`
+    showSelectComponentsModal(ticketId, regionName, serialPos);
+}
+
+// ... (el resto de tu código)

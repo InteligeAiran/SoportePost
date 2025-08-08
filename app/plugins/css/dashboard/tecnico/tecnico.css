@@ -106,7 +106,7 @@
     box-shadow: none; /* Eliminar el borde de foco si no lo deseas */
 }
 
-#devolverClienteModal{
+#devolverClienteModal, #modalComponentes{
   background-color: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(8px);
 }
