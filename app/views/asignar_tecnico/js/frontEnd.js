@@ -1458,35 +1458,38 @@ modalComponentesEl.addEventListener('show.bs.modal', function () {
 
 // Función para actualizar el contador de componentes seleccionados
 function actualizarContador() {
-    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked');
+    // Solo cuenta los checkboxes que están checked y que NO están deshabilitados
+    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
     const selectAllCheckbox = document.getElementById('selectAllComponents');
     
     // Actualizar contador
     contadorComponentes.textContent = checkboxes.length;
     
     // Actualizar estado del checkbox "seleccionar todos"
-    const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
+    // Solo consideramos los checkboxes que NO están deshabilitados para esta lógica
+    const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
     const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
     const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
     
     selectAllCheckbox.checked = allChecked;
     selectAllCheckbox.indeterminate = someChecked && !allChecked;
 }
-
 // Función para limpiar la selección de componentes
 function limpiarSeleccion() {
-    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
+    // CORRECCIÓN: Solo desmarca los checkboxes que NO están deshabilitados
+    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
     checkboxes.forEach(cb => cb.checked = false);
+    
     document.getElementById('selectAllComponents').checked = false;
     contadorComponentes.textContent = '0';
 }
-
 // Función para guardar los componentes seleccionados
 function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos) {
+    const id_user = document.getElementById('id_user').value;
+    //console.log('Ticket ID:', ticketId, 'Selected Components:', selectedComponents, 'Serial Pos:', serialPos);
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveComponents`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300) {
             try {
@@ -1536,7 +1539,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
         });
     };
     
-    const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(selectedComponents)}`;
+    const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(selectedComponents)}&id_user=${encodeURIComponent(id_user)}`;
     xhr.send(dataToSend);
 }
 
@@ -1555,16 +1558,18 @@ function obtenerRegionName() {
 }
 
 // FUNCIÓN PRINCIPAL PARA CARGAR Y MOSTRAR EL MODAL
+// FUNCIÓN PRINCIPAL PARA CARGAR Y MOSTRAR EL MODAL
 function showSelectComponentsModal(ticketId, regionName, serialPos) {
     const xhr = new XMLHttpRequest();
-    
+
     // Limpia el contenido previo y muestra un mensaje de carga
     tbodyComponentes.innerHTML = `<tr><td colspan="2" class="text-center text-muted">Cargando componentes...</td></tr>`;
     
     const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetComponents`;
-    const dataToSendString = `action=GetComponents`;
+    const dataToSendString = `action=GetComponents&ticketId=${ticketId}`;
 
     xhr.open('POST', apiUrl, true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300) {
@@ -1577,12 +1582,16 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                     
                     if (components.length > 0) {
                         components.forEach(comp => {
+                            // CORRECCIÓN: Ahora verificamos si `comp.is_selected` es 't' para marcar y deshabilitar
+                            const isChecked = comp.is_selected === 't' ? 'checked' : '';
+                            const isDisabled = comp.is_selected === 't' ? 'disabled' : '';
+                            
                             componentsHtml += `
                                 <tr>
-                                    <td>
-                                        <input type="checkbox" class="form-check-input" value="${comp.id_component}">
+                                  <td>
+                                    <input type="checkbox" class="form-check-input" value="${comp.id_component}" ${isChecked} ${isDisabled}>
                                     </td>
-                                    <td>${comp.name_component}</td>
+                                  <td>${comp.name_component}</td>
                                 </tr>
                             `;
                         });
@@ -1601,6 +1610,9 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
 
                     // Finalmente, muestra el modal de Bootstrap
                     modalComponentes.show();
+
+                    // Llama a actualizar contador después de cargar los componentes
+                    actualizarContador();
 
                 } else {
                     Swal.fire('Error', response.message || 'No se pudieron obtener los componentes.', 'error');
@@ -1672,15 +1684,21 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Event listener para los checkboxes
-    document.addEventListener('change', function(e) {
-        if (e.target.id === 'selectAllComponents') {
-            const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = e.target.checked);
-            actualizarContador();
-        } else if (e.target.type === 'checkbox' && e.target.closest('#tbodyComponentes')) {
-            actualizarContador();
-        }
-    });
+  document.addEventListener('change', function(e) {
+      if (e.target.id === 'selectAllComponents') {
+          const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
+          checkboxes.forEach(cb => {
+              // Solo cambia el estado si el checkbox NO está deshabilitado
+              if (!cb.disabled) {
+                  cb.checked = e.target.checked;
+              }
+          });
+          actualizarContador();
+      } else if (e.target.type === 'checkbox' && e.target.closest('#tbodyComponentes')) {
+          actualizarContador();
+      }
+  });
+
 });
 
 // Función para abrir el modal de componentes

@@ -193,6 +193,10 @@ class reportes extends Controller {
                     $this->GetTicketDataRegion();
                 break;
 
+                case 'SaveComponents':
+                    $this->SaveComponents();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -842,5 +846,40 @@ class reportes extends Controller {
             $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
         
+    }
+
+    public function SaveComponents(){
+        $id_ticket = isset($_POST['ticketId'])? $_POST['ticketId'] : null;
+        $components_json = isset($_POST['selectedComponents'])? $_POST['selectedComponents'] : null;
+        $serial_pos = isset($_POST['serialPos'])? $_POST['serialPos'] : null;
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+
+        // --- CORRECCIÓN AQUÍ ---
+        // Decodifica la cadena JSON que se espera desde el cliente
+        $componentes_array = json_decode($components_json, true);
+        
+        // Si la cadena está vacía o el decodificado falla, usa un array vacío
+        if ($componentes_array === null) {
+            $componentes_array = [];
+        }
+
+        if (!$id_ticket || !$id_user || !$serial_pos) {
+            $this->response(['success' => false, 'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+
+        // Verifica que $componentes_array sea un array
+        if (!is_array($componentes_array)) {
+            $this->response(['success' => false, 'message' => 'Los datos de los componentes no son válidos.'], 400);
+            return;
+        }
+
+        $repository = new ReportRepository();
+        $result = $repository->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user);
+        if ($result!== false) { // Verifica si se guardó correctamente
+            $this->response(['success' => true,'message' => 'Componentes guardados correctamente'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al guardar los componentes'], 500); // Código 500 Internal Server Error
+        }
     }
 }

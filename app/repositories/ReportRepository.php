@@ -510,4 +510,10 @@ class ReportRepository
             return [];
         }
     }
+
+    public function SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user){
+        // Lógica para guardar los componentes del ticket
+        $result = $this->model->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user);
+        return $result;
+    }
 }

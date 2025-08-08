@@ -669,8 +669,8 @@ class TechnicalConsultionRepository
         return $result;
     }
 
-    public function GetComponents(){
-        $result = $this->model->GetComponents();
+    public function GetComponents($ticketId){
+        $result = $this->model->GetComponents($ticketId);
         if ($result) {
             $components = [];
             for ($i = 0; $i < $result['numRows']; $i++) {

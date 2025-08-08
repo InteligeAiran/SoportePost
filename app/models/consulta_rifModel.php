@@ -1982,9 +1982,9 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function GetComponents(){
+    public function GetComponents($ticketId){
         try {
-            $sql = "SELECT * FROM components;";
+            $sql = "SELECT * FROM get_components_by_ticket(".$ticketId.")";
             $result = Model::getResult($sql, $this->db);
             if ($result) {
                 return $result;
@@ -1997,7 +1997,7 @@ class consulta_rifModel extends Model
         }
     }
 
-        public function SendToRegion($ticketId, $id_user, $component, $serial){
+    public function SendToRegion($ticketId, $id_user, $componentes_array, $serial){
         try{
             $id_accion_ticket = 18;
             $modulo_insertcolumn = "Rosal_region";
@@ -2016,7 +2016,7 @@ class consulta_rifModel extends Model
 
             // 3. Itera sobre los componentes y los inserta
             // La validación is_array y !empty ya es una buena práctica
-           if (is_array($component) && !empty($component)) {
+           if (is_array($componentes_array) && !empty($component)) {
                 foreach ($component as $comp_id) {
                     // --- CORRECCIÓN AQUÍ ---
                     // Envuelve la variable $modulo_insertcolumn con comillas simples
@@ -2031,9 +2031,10 @@ class consulta_rifModel extends Model
                         return false;
                     }
                 }
+                var_dump($sqlcomponents);
             }else {
                 return false;
-            }   
+            }
             
             // El resto del código para el historial se mantiene igual.
             // ...

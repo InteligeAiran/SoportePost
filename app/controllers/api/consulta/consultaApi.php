@@ -1450,9 +1450,11 @@ class Consulta extends Controller
     }
 
     public function handleGetComponents(){
+        $ticketId = isset($_POST['ticketId'])? $_POST['ticketId'] : '';
+        $id_ticket = (int)$ticketId;
         $repository = new technicalConsultionRepository();
-        $result = $repository->GetComponents();
 
+        $result = $repository->GetComponents($id_ticket);
         if ($result) {
             $this->response(['success' => true,'components' => $result], 200);
         } else {
