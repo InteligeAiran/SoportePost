@@ -509,6 +509,7 @@ class Consulta extends Controller
     // Recoger y sanear los datos de entrada
     $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
     $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
+    $razonsocial = isset($_POST['razonsocial']) ? $_POST['razonsocial'] : '';
     $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
 
     $falla_id = isset($_POST['falla_id']) ? $_POST['falla_id'] : '';
@@ -699,6 +700,7 @@ class Consulta extends Controller
                 'falla_text' => $falla_text,
                 'nivelFalla_text' => $nivelFalla_text,
                 'rif' => $rif,
+                'razonsocial' => $razonsocial,
                 'user_gestion' => $_SESSION['nombres'] . ' ' . $_SESSION['apellidos'],
                 'coordinador' => $coordinador_nombre,
                 'id_ticket_creado' => $idTicketCreado, // Incluye el ID del ticket
