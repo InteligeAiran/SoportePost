@@ -469,49 +469,54 @@ class reportsModel extends Model
 
     public function SaveComponents($id_ticket, $components, $serial_pos, $id_user){
         try {
-            $idticket = (int)$id_ticket;
-            $id_user = (int)$id_user;
+
+            $id_ticket1 = (int)$id_ticket;
             
-            // El módulo de inserción puede ser una constante
-            $modulo_insertcolumn = 'coordinador';
+            $sql = "UPDATE tickets set id_status_components = TRUE WHERE id_ticket = ".$id_ticket1.";";
+            $result = Model::getResult($sql, $this->db);
 
-            // 1. Inicia una transacción para asegurar que la operación sea atómica.
-            pg_query($this->db->getConnection(), "BEGIN");
+            if($result){
+                $idticket = (int)$id_ticket;
+                $id_user = (int)$id_user;
+                
+                // El módulo de inserción puede ser una constante
+                $modulo_insertcolumn = 'coordinador';
 
-            // 2. Opcionalmente, borra los componentes anteriores si es necesario.
-            // DELETE FROM tickets_componets WHERE id_ticket = $idticket;
+                // 1. Inicia una transacción para asegurar que la operación sea atómica.
+                pg_query($this->db->getConnection(), "BEGIN");
 
-            // 3. Itera sobre los componentes y los inserta de manera segura
-            if (is_array($components) && !empty($components)) {
-                foreach ($components as $comp_id) {
-                    // Utiliza pg_query_params para evitar la inyección de SQL.
-                    // Los valores se pasan como un array y no se concatenan en la cadena SQL.
-                    $sqlcomponents = "INSERT INTO tickets_componets (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert) 
-                                    VALUES ($1, $2, $3, $4, NOW(), $5);";
+                // 2. Opcionalmente, borra los componentes anteriores si es necesario.
+                // DELETE FROM tickets_componets WHERE id_ticket = $idticket;
 
-                    $resultcomponent = pg_query_params(
-                        $this->db->getConnection(),
-                        $sqlcomponents,
-                        array($serial_pos, $idticket, (int)$comp_id, $id_user, $modulo_insertcolumn)
-                    );
-                    
-                    if ($resultcomponent === false) {
-                        pg_query($this->db->getConnection(), "ROLLBACK");
-                        return false;
+                // 3. Itera sobre los componentes y los inserta de manera segura
+                if (is_array($components) && !empty($components)) {
+                    foreach ($components as $comp_id) {
+                        // Utiliza pg_query_params para evitar la inyección de SQL.
+                        // Los valores se pasan como un array y no se concatenan en la cadena SQL.
+                        $sqlcomponents = "INSERT INTO tickets_componets (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert) 
+                                        VALUES ($1, $2, $3, $4, NOW(), $5);";
+
+                        $resultcomponent = pg_query_params(
+                            $this->db->getConnection(),
+                            $sqlcomponents,
+                            array($serial_pos, $idticket, (int)$comp_id, $id_user, $modulo_insertcolumn)
+                        );
+                        if ($resultcomponent === false) {
+                            pg_query($this->db->getConnection(), "ROLLBACK");
+                            return false;
+                        }
                     }
+                } else {
+                    pg_query($this->db->getConnection(), "ROLLBACK");
+                    return false;
                 }
-            } else {
+                pg_query($this->db->getConnection(), "COMMIT");
+                return true;
+            }else{
+                // En caso de error en la actualización del status_components, hace un rollback
                 pg_query($this->db->getConnection(), "ROLLBACK");
                 return false;
             }
-
-            // Si todas las inserciones fueron exitosas, confirma la transacción
-            pg_query($this->db->getConnection(), "COMMIT");
-            
-            // Si necesitas actualizar el estado del ticket en otra tabla, puedes hacerlo aquí
-            // pg_query_params($this->db->getConnection(), "UPDATE tickets SET id_status_components = TRUE WHERE id_ticket = $1", array($idticket));
-
-            return true;
 
         } catch (Throwable $e) {
             // En caso de cualquier error no capturado, hace un rollback

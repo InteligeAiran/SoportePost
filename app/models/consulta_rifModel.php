@@ -2031,7 +2031,6 @@ class consulta_rifModel extends Model
                         return false;
                     }
                 }
-                var_dump($sqlcomponents);
             }else {
                 return false;
             }

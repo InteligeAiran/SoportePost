@@ -1474,19 +1474,21 @@ function actualizarContador() {
     selectAllCheckbox.checked = allChecked;
     selectAllCheckbox.indeterminate = someChecked && !allChecked;
 }
+
 // Función para limpiar la selección de componentes
 function limpiarSeleccion() {
-    // CORRECCIÓN: Solo desmarca los checkboxes que NO están deshabilitados
+    // Solo desmarca los checkboxes que NO están deshabilitados
     const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
     checkboxes.forEach(cb => cb.checked = false);
     
     document.getElementById('selectAllComponents').checked = false;
     contadorComponentes.textContent = '0';
 }
-// Función para guardar los componentes seleccionados
+
+// CORRECCIÓN PRINCIPAL: Se modificó la función para que reciba los componentes seleccionados
 function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos) {
     const id_user = document.getElementById('id_user').value;
-    //console.log('Ticket ID:', ticketId, 'Selected Components:', selectedComponents, 'Serial Pos:', serialPos);
+    
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -1498,11 +1500,17 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                 if (response.success) {
                     Swal.fire({
                         title: '¡Éxito!',
-                        text: 'Los componentes han sido guardados correctamente.',
+                        html: `Los componentes del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
                         icon: 'success',
-                        confirmButtonText: 'Aceptar'
+                        confirmButtonText: 'Aceptar',
+                        color: 'black',
+                        confirmButtonColor: '#003594',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        keydownListenerCapture: true
                     }).then(() => {
                         modalComponentes.hide();
+                        window.location.reload(); 
                     });
                 } else {
                     Swal.fire({
@@ -1539,7 +1547,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
         });
     };
     
-    const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(selectedComponents)}&id_user=${encodeURIComponent(id_user)}`;
+    const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}`;
     xhr.send(dataToSend);
 }
 
@@ -1557,7 +1565,6 @@ function obtenerRegionName() {
     return 'Sin región asignada';
 }
 
-// FUNCIÓN PRINCIPAL PARA CARGAR Y MOSTRAR EL MODAL
 // FUNCIÓN PRINCIPAL PARA CARGAR Y MOSTRAR EL MODAL
 function showSelectComponentsModal(ticketId, regionName, serialPos) {
     const xhr = new XMLHttpRequest();
@@ -1582,7 +1589,7 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                     
                     if (components.length > 0) {
                         components.forEach(comp => {
-                            // CORRECCIÓN: Ahora verificamos si `comp.is_selected` es 't' para marcar y deshabilitar
+                            // Ahora verificamos si `comp.is_selected` es 't' para marcar y deshabilitar
                             const isChecked = comp.is_selected === 't' ? 'checked' : '';
                             const isDisabled = comp.is_selected === 't' ? 'disabled' : '';
                             
@@ -1633,20 +1640,20 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
 }
 
 // Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
-document.addEventListener('DOMContentLoaded', function() {
+// Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
+document.addEventListener('DOMContentLoaded', function () {
     const modalComponentesEl = document.getElementById('modalComponentes');
     const modalComponentes = new bootstrap.Modal(modalComponentesEl, { keyboard: false });
 
     // Escucha el evento `click` en el documento y usa delegación.
-    // Esto funciona porque el documento siempre existe, incluso si el botón se crea dinámicamente.
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         // Verifica si el clic proviene del botón con el ID 'hiperbinComponents'
         if (e.target && e.target.id === 'hiperbinComponents' || e.target.closest('#hiperbinComponents')) {
-          const botonClicado = e.target.closest('#hiperbinComponents');
-          if (botonClicado) {
-            // Llama a la función que abre el modal, pasándole el botón como argumento
-            abrirModalComponentes(botonClicado);
-          }
+            const botonClicado = e.target.closest('#hiperbinComponents');
+            if (botonClicado) {
+                // Llama a la función que abre el modal, pasándole el botón como argumento
+                abrirModalComponentes(botonClicado);
+            }
         }
 
         // Event listener para el botón "Limpiar Selección" (usando delegación)
@@ -1656,13 +1663,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Event listener para el botón "Guardar Componentes"
         if (e.target && e.target.id === 'btnGuardarComponentes') {
-            const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked');
+            const ticketId = e.target.dataset.ticketId;
+            const serialPos = e.target.dataset.serialPos;
+
+            // --- INICIO DE LA LÓGICA AGREGADA ---
+            const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
+            const allDisabledAndChecked = Array.from(allCheckboxes).every(cb => cb.checked && cb.disabled);
+
+            if (allCheckboxes.length > 0 && allDisabledAndChecked) {
+                Swal.fire({
+                    title: '¡Información!',
+                    html: `Todos los componentes del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
+                    icon: 'info',
+                    confirmButtonText: 'Aceptar',
+                    color: 'black',
+                    confirmButtonColor: '#003594'
+                });
+                return; // Detiene la ejecución para no intentar guardar
+            }
+            // --- FIN DE LA LÓGICA AGREGADA ---
+
+            const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
             const selectedComponents = Array.from(checkboxes).map(cb => cb.value);
 
             if (selectedComponents.length === 0) {
                 Swal.fire({
                     title: 'Atención',
-                    text: 'Debes seleccionar al menos un componente.',
+                    text: 'Debes seleccionar al menos un componente nuevo para guardar.',
                     icon: 'warning',
                     confirmButtonText: 'Entendido',
                     color: 'black',
@@ -1670,11 +1697,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 return;
             }
-
-            const ticketId = e.target.dataset.ticketId;
-            const serialPos = e.target.dataset.serialPos;
-
-            guardarComponentesSeleccionados(ticketId, JSON.stringify(selectedComponents), serialPos);
+            guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos);
         }
 
         // Event listener para el botón de cerrar el modal
@@ -1682,27 +1705,8 @@ document.addEventListener('DOMContentLoaded', function() {
             modalComponentes.hide();
         }
     });
-
-    // Event listener para los checkboxes
-  document.addEventListener('change', function(e) {
-      if (e.target.id === 'selectAllComponents') {
-          const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
-          checkboxes.forEach(cb => {
-              // Solo cambia el estado si el checkbox NO está deshabilitado
-              if (!cb.disabled) {
-                  cb.checked = e.target.checked;
-              }
-          });
-          actualizarContador();
-      } else if (e.target.type === 'checkbox' && e.target.closest('#tbodyComponentes')) {
-          actualizarContador();
-      }
   });
 
-});
-
-// Función para abrir el modal de componentes
-// Función para abrir el modal de componentes
 function abrirModalComponentes(boton) {
 
     const modalCerrarComponnets = document.getElementById('BotonCerrarModal');
@@ -1740,9 +1744,5 @@ function abrirModalComponentes(boton) {
         modalComponentes.hide();
       });
     }
-
-    // Ahora, ambos valores se pasan a la función `showSelectComponentsModal`
     showSelectComponentsModal(ticketId, regionName, serialPos);
 }
-
-// ... (el resto de tu código)
