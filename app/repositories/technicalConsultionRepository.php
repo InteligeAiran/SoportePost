@@ -687,5 +687,10 @@ class TechnicalConsultionRepository
         $result = $this->model->SendToRegion($ticketId, $id_user, $component, $serial);
         return $result;
     }
+
+    public function CheckTicketEnProceso($serial){
+        $result = $this->model->CheckTicketEnProceso($serial);
+        return $result;
+    }
 }
 ?>

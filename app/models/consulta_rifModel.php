@@ -2078,5 +2078,20 @@ class consulta_rifModel extends Model
             return false;
         }
     }
+
+    public function CheckTicketEnProceso($serial){
+        try {
+            $sql = "SELECT * FROM check_ticket_en_proceso('". $serial. "');";
+            $result = Model::getResult($sql, $this->db);
+            if ($result) {
+                return $result;
+            } else {
+                return false;
+            }
+        } catch (Throwable $e) {
+            // Log the error (e.g., error_log($e->getMessage());)
+            return false; // Return false on error
+        }
+    }
 }
 ?>

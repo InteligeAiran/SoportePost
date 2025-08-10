@@ -238,6 +238,10 @@ class Consulta extends Controller
                     $this->handleSendToRegion();
                     break;
 
+                case 'CheckTicketEnProceso':
+                    $this->handleCheckTicketEnProceso();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -1505,6 +1509,41 @@ class Consulta extends Controller
     } else {
         $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
     }
-}
+    }
+
+    public function handleCheckTicketEnProceso(){
+        $serial = isset($_POST['serial'])? $_POST['serial'] : '';
+
+        if (!$serial) {
+            $this->response([
+                'success' => false,
+                'message' => 'Serial no proporcionado'
+            ], 400);
+            return;
+        }
+        
+        $consultaModel = new technicalConsultionRepository();
+        // NOTA: Asegúrate de que el nombre de la función en el repositorio y el modelo sea el mismo que el de la función SQL
+        // En este caso, tu función SQL se llama 'get_tickets_by_serial', pero tu código PHP llama 'CheckTicketEnProceso'.
+        // Debes actualizar el nombre de la función en el modelo y repositorio para que coincida.
+        $result = $consultaModel->CheckTicketEnProceso($serial);
+        
+        if ($result !== false && $result['row'] !== null && $result['numRows'] > 0) {
+            $ticket = $result['row'];
+            $this->response([
+                'success' => true,
+                'ticket_en_proceso' => true,
+                'numero_ticket' => $ticket['nro_ticket'], // Asumiendo que ahora tu función SQL devuelve este campo o que existe en la tabla tickets
+                'estado_ticket' => $ticket['name_status_ticket'], // Asumiendo que existe 'name_status_ticket' en el resultado
+                'fecha_creacion' => $ticket['date_create_ticket'], // Asumiendo que existe 'issue_date' en la tabla tickets
+                'falla' => $ticket['failure'] ?? 'No especificada' // Asumiendo que existe 'description' en la tabla tickets
+            ]);
+        } else {
+            $this->response([
+                'success' => true,
+                'ticket_en_proceso' => false
+            ]);
+        }
+    }
 }
 ?>
