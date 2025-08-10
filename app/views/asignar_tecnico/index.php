@@ -51,25 +51,25 @@ function mi_navbar() {}
         }
 
         #btnGuardarComponentes{
-                color: white;
-                background-color: #003594;
-            }
+            color: white;
+            background-color: #003594;
+        }
 
-            #btnGuardarComponentes:hover{
-                background-color: green;
-                color: white;
-                border: none;
-                cursor: pointer;
-                padding: 10px 20px;
-            }
+        #btnGuardarComponentes:hover{
+            background-color: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
 
-            #BotonCerrarModal:hover{
-                background-color: red;
-                color: white;
-                border: none;
-                cursor: pointer;
-                padding: 10px 20px;
-            }
+        #BotonCerrarModal:hover{
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
     </style>
 </head>
 

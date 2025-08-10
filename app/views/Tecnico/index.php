@@ -224,6 +224,27 @@ function mi_navbar()
                 background-color: #e9ecef; /* Un color de fondo más sutil al pasar el mouse */
                 color: #007bff; /* Color del texto cambia al pasar el mouse */
             }
+
+             #btnGuardarComponentes{
+            color: white;
+            background-color: #003594;
+        }
+
+        #btnGuardarComponentes:hover{
+            background-color: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #BotonCerrarModal:hover{
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
         </style>
     </head>
 
@@ -435,6 +456,74 @@ function mi_navbar()
                 </div>
             </div>
         </div>
+
+        <!-- PARA SELECCIONAR LOS COMPONENTES ASOCIADOS AL SERIAL DEL POS -->
+            <div class="modal fade" id="modalComponentes" tabindex="-1" aria-labelledby="modalComponentesLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-gradient-primary">
+                                <h5 class="modal-title text-white" id="modalComponentesLabel">
+                                    <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="alert bg-gradient-primary text-white" role="alert">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            Selecciona los componentes que deseas cargar para este dispositivo.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="tablaComponentes">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>
+                                                            <input type="checkbox" id="selectAllComponents" class="form-check-input">
+                                                        </th>
+                                                        <th>Componente</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbodyComponentes">
+                                                    </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="text-muted">Componentes seleccionados: </span>
+                                                <span id="contadorComponentes" class="badge bg-primary">0</span>
+                                            </div>
+                                            <div>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="limpiarSeleccion()">
+                                                    <i class="bi bi-arrow-clockwise me-1"></i>Limpiar Selección
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" id="BotonCerrarModal">
+                                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                                </button>
+                                <button type="button" class="btn btn-primary" id="btnGuardarComponentes">
+                                    <i class="bi bi-check-circle me-1"></i>Guardar Componentes Seleccionados
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        <!-- END PARA SELECCIONAR LOS COMPONENTES ASOCIADOS AL SERIAL DEL POS -->
 
     <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 

@@ -230,7 +230,8 @@ function getTicketDataCoordinator() {
                                     data-bs-placement="top"
                                     title="Asignar Técnico"
                                     data-ticket-id="${data.id_ticket}"
-                                    data-nro-ticket="${data.nro_ticket}">
+                                    data-nro-ticket="${data.nro_ticket}"
+                                    data-serial-pos="${data.serial_pos}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/></svg>                                
                                   </button>
                             `;
@@ -253,7 +254,8 @@ function getTicketDataCoordinator() {
                                     data-bs-placement="top"
                                     title="Asignar Técnico"
                                     data-ticket-id="${data.id_ticket}"
-                                    data-nro-ticket="${data.nro_ticket}">
+                                    data-nro-ticket="${data.nro_ticket}"
+                                    data-serial-pos="${data.serial_pos}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/></svg>                               
                                   </button>
                             `;
@@ -534,8 +536,11 @@ function getTicketDataCoordinator() {
               e.stopPropagation();
               const ticketId = $(this).data("ticket-id");
               const nroTicket = $(this).data("nro-ticket");
+              const serialPos = $(this).data("serial-pos");
               currentTicketId = ticketId;
               currentTicketNroForAssignment = nroTicket;
+              currentTicketSerialPosForAssignment = serialPos;
+
               if (modalInstanceCoordinator) {
                 modalInstanceCoordinator.show();
               } else {
@@ -1116,7 +1121,7 @@ function markTicketAsReceived(ticketId, nroTicket, serialPos) {
             if (response.success) {
               Swal.fire({
                 title: "¡Recibido!",
-                text: "El ticket N" + nroTicket + " ha sido marcado como recibido.",
+                html: `El ticket Nr: <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido marcado como recibido.`,
                 icon: "success",
                 color: "black",
                 confirmButtonColor: "#2703f4ff",
@@ -1203,7 +1208,7 @@ function AssignTicket() {
           Swal.fire({
             icon: "success",
             title: response.message,
-            text: "El Pos asociado al nro ticket: " + currentTicketNroForAssignment + " ha sido asignado correctamente.",
+            html: `El Pos asociado <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketSerialPosForAssignment}</span> al nro de ticket: <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNroForAssignment}</span> ha sido asignado correctamente.`,
             color: "black",
             showConfirmButton: true,
             confirmButtonText: "Ok",

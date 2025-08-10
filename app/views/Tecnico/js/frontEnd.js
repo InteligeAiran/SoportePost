@@ -1307,7 +1307,6 @@ function formatTicketDetailsPanel(d) {
     garantiaMessage = 'No aplica Garantía'; // O simplemente dejarlo vacío si no hay garantía
   }
 
-
   return `
         <div class="container-fluid">
             <div class="row mb-3 align-items-center">
@@ -1359,9 +1358,12 @@ function formatTicketDetailsPanel(d) {
                         <br><div class="col-sm-6 mb-2">
                               <br><strong><div>Falla Reportada:</div></strong>
                              <span class="falla-reportada-texto">${d.name_failure}</span>
-                            
                         </div>
-                       
+                        <div class="col-sm-6 mb-2">
+                          <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = ${d.id_ticket}" data-serial-pos = ${d.serial_pos}>
+                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Componentes del Dispositivo
+                          </button>
+                        </div>    
                     </div>
                 </div>
             </div>
@@ -1390,6 +1392,7 @@ function formatTicketDetailsPanel(d) {
         </div>
     `;
 }
+
 
 function downloadImageModal(serial) {
   // Considera renombrar a loadDeviceImage(serial) para mayor claridad
@@ -1490,104 +1493,105 @@ function loadTicketHistory(ticketId) {
             id_ticket: ticketId,
         },
         dataType: "json",
-       success: function (response) {
-    if (response.success && response.history && response.history.length > 0) {
-        let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
+        success: function (response) {
+            if (response.success && response.history && response.history.length > 0) {
+                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
-        response.history.forEach((item, index) => {
-            const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
-            const headingId = `headingHistoryItem_${ticketId}_${index}`;
+                response.history.forEach((item, index) => {
+                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
 
-            // *** CAMBIO CLAVE AQUÍ ***
-            // Usamos una variable para el color y otra para el estado de expansión.
-            // La primera gestion (index === 0) tiene el color especial.
-            const isLatest = index === 0;
-            // Pero la cartilla del acordeón siempre estará cerrada por defecto.
-            const isExpanded = false;
+                    const isLatest = index === 0;
+                    const isExpanded = false;
 
-            // Obtener el registro anterior para la comparación
-            const prevItem = response.history[index + 1] || {};
+                    const prevItem = response.history[index + 1] || {};
 
-            // --- Lógica para determinar si un campo ha cambiado ---
-            const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
-            const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
-            const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
-            const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
-            const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
-            const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
+                    const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
+                    const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
+                    const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
+                    const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
+                    const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
+                    const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
+                    // Nueva lógica para detectar si la lista de componentes ha cambiado
+                    const componentsChanged = prevItem.components_list && item.components_list !== prevItem.components_list;
 
-            // --- Lógica de colores (ahora usa isLatest) ---
-            let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-            let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
-            const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
+                    let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
 
-            historyHtml += `
-                <div class="card mb-3 custom-history-card">
-                    <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
-                        <h2 class="mb-0">
-                            <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
-                                data-toggle="collapse" data-target="#${collapseId}"
-                                aria-expanded="${isExpanded}" aria-controls="${collapseId}"
-                                style="${textColor}">
-                                ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
-                            </button>
-                        </h2>
-                    </div>
-                    <div id="${collapseId}" class="collapse"
-                         aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-borderless mb-0">
-                                    <tbody>
-                                        <tr>
-                                            <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
-                                            <td>${item.fecha_de_cambio || "N/A"}</td>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-start">Acción:</th>
-                                            <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-start">Operador de Gestión:</th>
-                                            <td>${item.full_name_tecnico_gestion || "N/A"}</td>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-start">Coordinador:</th>
-                                            <td>${item.full_name_coordinador || "N/A"}</td>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-start">Tecnico Asignado:</th>
-                                            <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-start">Estatus Ticket:</th>
-                                            <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${item.name_status_ticket || "N/A"}</td>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-start">Estatus Laboratorio:</th>
-                                            <td class="${statusLabChanged ? "highlighted-change" : ""}">${item.name_status_lab || "N/A"}</td>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-start">Estatus Domiciliación:</th>
-                                            <td class="${statusDomChanged ? "highlighted-change" : ""}">${item.name_status_domiciliacion || "N/A"}</td>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-start">Estatus Pago:</th>
-                                            <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                    historyHtml += `
+                        <div class="card mb-3 custom-history-card">
+                            <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
+                                        data-toggle="collapse" data-target="#${collapseId}"
+                                        aria-expanded="${isExpanded}" aria-controls="${collapseId}"
+                                        style="${textColor}">
+                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
+                                    </button>
+                                </h2>
                             </div>
-                        </div>
-                    </div>
-                </div>`;
-        });
+                            <div id="${collapseId}" class="collapse"
+                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-borderless mb-0">
+                                            <tbody>
+                                                <tr>
+                                                    <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
+                                                    <td>${item.fecha_de_cambio || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Acción:</th>
+                                                    <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Operador de Gestión:</th>
+                                                    <td>${item.full_name_tecnico_gestion || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Coordinador:</th>
+                                                    <td>${item.full_name_coordinador || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Tecnico Asignado:</th>
+                                                    <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Ticket:</th>
+                                                    <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${item.name_status_ticket || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Laboratorio:</th>
+                                                    <td class="${statusLabChanged ? "highlighted-change" : ""}">${item.name_status_lab || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Domiciliación:</th>
+                                                    <td class="${statusDomChanged ? "highlighted-change" : ""}">${item.name_status_domiciliacion || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-start">Estatus Pago:</th>
+                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
+                                                </tr>
+                                                ${item.name_accion_ticket === 'Asignación de Componentes' && item.components_list ? `
+                                                    <tr>
+                                                        <th class="text-start">Componentes Asociados:</th>
+                                                        <td class="${componentsChanged ? "highlighted-change" : ""}">${item.components_list}</td>
+                                                    </tr>
+                                                ` : ''}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
 
-        historyHtml += "</div>";
-        historyPanel.html(historyHtml);
-    } else {
-        historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
-    }
+                historyHtml += "</div>";
+                historyPanel.html(historyHtml);
+            } else {
+                historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
+            }
         },
         error: function (jqXHR, textStatus, errorThrown) {
             let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
@@ -1670,7 +1674,7 @@ function handleSendToTallerClick() {
         Swal.fire({
             icon: "success",
             title: "Notificación", // <-- FIX IS HERE
-            text:`El POS asociado ${serialpos} al ticket Nro: ${nroticket} fue enviado a Taller`,
+            text:`El POS asociado <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialpos}</span> al ticket Nro: <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> fue enviado a Taller`,
             color: "black",
             // Eliminamos 'timer' y 'timerProgressBar' si quieres un botón explícito
             showConfirmButton: true, // Muestra el botón de confirmación
@@ -1850,4 +1854,332 @@ function SendToDevolution(ticketId, currentnroTicket) {
             console.log("Devolución cancelada por el usuario (SweetAlert).");
         }
     });
+}
+
+// Obtén una referencia al modal y al tbody de la tabla
+const modalComponentesEl = document.getElementById('modalComponentes');
+const tbodyComponentes = document.getElementById('tbodyComponentes');
+const contadorComponentes = document.getElementById('contadorComponentes');
+const botonCargarComponentes = document.getElementById('hiperbinComponents');
+const ModalBotonCerrar = document.getElementById('BotonCerrarModal');
+
+// Inicializa el modal de Bootstrap una sola vez.
+const modalComponentes = new bootstrap.Modal(modalComponentesEl, {
+    keyboard: false,
+    backdrop:'static'
+});
+
+// Escuchar el evento 'show.bs.modal' para resetear el estado del modal cada vez que se abre
+modalComponentesEl.addEventListener('show.bs.modal', function () {
+    // Limpiar el contador y el checkbox de "seleccionar todos" cada vez que se abra el modal
+    document.getElementById('selectAllComponents').checked = false;
+    contadorComponentes.textContent = '0';
+});
+
+// Función para actualizar el contador de componentes seleccionados
+function actualizarContador() {
+    // Solo cuenta los checkboxes que están checked y que NO están deshabilitados
+    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
+    const selectAllCheckbox = document.getElementById('selectAllComponents');
+    
+    // Actualizar contador
+    contadorComponentes.textContent = checkboxes.length;
+    
+    // Actualizar estado del checkbox "seleccionar todos"
+    // Solo consideramos los checkboxes que NO están deshabilitados para esta lógica
+    const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+    const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+    
+    selectAllCheckbox.checked = allChecked;
+    selectAllCheckbox.indeterminate = someChecked && !allChecked;
+}
+
+// Función para limpiar la selección de componentes
+function limpiarSeleccion() {
+    // Solo desmarca los checkboxes que NO están deshabilitados
+    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+    checkboxes.forEach(cb => cb.checked = false);
+    
+    document.getElementById('selectAllComponents').checked = false;
+    contadorComponentes.textContent = '0';
+}
+
+// CORRECCIÓN PRINCIPAL: Se modificó la función para que reciba los componentes seleccionados
+function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos) {
+    const id_user = document.getElementById('id_user').value;
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success) {
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        html: `Los componentes del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar',
+                        color: 'black',
+                        confirmButtonColor: '#003594',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        keydownListenerCapture: true
+                    }).then(() => {
+                        modalComponentes.hide();
+                        window.location.reload(); 
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: response.message || 'Error al guardar los componentes.',
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al procesar la respuesta del servidor.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+        } else {
+            Swal.fire({
+                title: 'Error del Servidor',
+                text: `Error al comunicarse con el servidor. Código: ${xhr.status}`,
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
+        }
+    };
+    
+    xhr.onerror = function() {
+        Swal.fire({
+            title: 'Error de Red',
+            text: 'No se pudo conectar con el servidor.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+        });
+    };
+    
+    const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}`;
+    xhr.send(dataToSend);
+}
+
+// Función para obtener el ticket ID (ajusta según tu estructura)
+function obtenerTicketId() {
+    return currentTicketId;
+}
+
+// Función para obtener el nombre de la región (ajusta según tu estructura)
+function obtenerRegionName() {
+    const regionSelect = document.getElementById('AsiganrCoordinador');
+    if (regionSelect && regionSelect.selectedOptions.length > 0) {
+        return regionSelect.selectedOptions[0].text;
+    }
+    return 'Sin región asignada';
+}
+
+// FUNCIÓN PRINCIPAL PARA CARGAR Y MOSTRAR EL MODAL
+function showSelectComponentsModal(ticketId, regionName, serialPos) {
+    const xhr = new XMLHttpRequest();
+
+    // Limpia el contenido previo y muestra un mensaje de carga
+    tbodyComponentes.innerHTML = `<tr><td colspan="2" class="text-center text-muted">Cargando componentes...</td></tr>`;
+    
+    const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetComponents`;
+    const dataToSendString = `action=GetComponents&ticketId=${ticketId}`;
+
+    xhr.open('POST', apiUrl, true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+
+                if (response.success && response.components) {
+                    const components = response.components;
+                    let componentsHtml = '';
+                    
+                    if (components.length > 0) {
+                        components.forEach(comp => {
+                            // Ahora verificamos si `comp.is_selected` es 't' para marcar y deshabilitar
+                            const isChecked = comp.is_selected === 't' ? 'checked' : '';
+                            const isDisabled = comp.is_selected === 't' ? 'disabled' : '';
+                            
+                            componentsHtml += `
+                                <tr>
+                                  <td>
+                                    <input type="checkbox" class="form-check-input" value="${comp.id_component}" ${isChecked} ${isDisabled}>
+                                    </td>
+                                  <td>${comp.name_component}</td>
+                                </tr>
+                            `;
+                        });
+                        
+                        document.getElementById('btnGuardarComponentes').dataset.ticketId = ticketId;
+                        document.getElementById('btnGuardarComponentes').dataset.serialPos = serialPos;
+
+                    } else {
+                        componentsHtml = `<tr><td colspan="2" class="text-center text-muted">No se encontraron componentes.</td></tr>`;
+                    }
+                    
+                    tbodyComponentes.innerHTML = componentsHtml;
+                    document.getElementById('modalComponentesLabel').innerHTML = `
+                        <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
+                    `;
+
+                    // Finalmente, muestra el modal de Bootstrap
+                    modalComponentes.show();
+
+                    // Llama a actualizar contador después de cargar los componentes
+                    actualizarContador();
+
+                } else {
+                    Swal.fire('Error', response.message || 'No se pudieron obtener los componentes.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error de Procesamiento', 'Hubo un problema al procesar la respuesta del servidor.', 'error');
+            }
+        } else {
+            Swal.fire('Error del Servidor', `No se pudo comunicar con el servidor. Código: ${xhr.status}`, 'error');
+        }
+    };
+
+    xhr.onerror = function() {
+        Swal.fire('Error de red', 'No se pudo conectar con el servidor para obtener los componentes.', 'error');
+    };
+    
+    xhr.send(dataToSendString);
+}
+
+// Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
+// Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
+document.addEventListener('DOMContentLoaded', function () {
+    const modalComponentesEl = document.getElementById('modalComponentes');
+    const modalComponentes = new bootstrap.Modal(modalComponentesEl, { keyboard: false });
+
+    // Escucha el evento `click` en el documento y usa delegación.
+    document.addEventListener('click', function (e) {
+        // Verifica si el clic proviene del botón con el ID 'hiperbinComponents'
+        if (e.target && e.target.id === 'hiperbinComponents' || e.target.closest('#hiperbinComponents')) {
+            const botonClicado = e.target.closest('#hiperbinComponents');
+            if (botonClicado) {
+                // Llama a la función que abre el modal, pasándole el botón como argumento
+                abrirModalComponentes(botonClicado);
+            }
+        }
+
+        // Event listener para el botón "Limpiar Selección" (usando delegación)
+        if (e.target && e.target.closest('.btn-outline-secondary.btn-sm') && e.target.closest('.modal-body')) {
+            limpiarSeleccion();
+        }
+
+        // Event listener para el botón "Guardar Componentes"
+        if (e.target && e.target.id === 'btnGuardarComponentes') {
+            const ticketId = e.target.dataset.ticketId;
+            const serialPos = e.target.dataset.serialPos;
+
+            // --- INICIO DE LA LÓGICA AGREGADA ---
+            const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
+            const allDisabledAndChecked = Array.from(allCheckboxes).every(cb => cb.checked && cb.disabled);
+
+            if (allCheckboxes.length > 0 && allDisabledAndChecked) {
+                Swal.fire({
+                    title: '¡Información!',
+                    html: `Todos los componentes del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
+                    icon: 'info',
+                    confirmButtonText: 'Aceptar',
+                    color: 'black',
+                    confirmButtonColor: '#003594'
+                });
+                return; // Detiene la ejecución para no intentar guardar
+            }
+            // --- FIN DE LA LÓGICA AGREGADA ---
+
+            const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
+            const selectedComponents = Array.from(checkboxes).map(cb => cb.value);
+
+            if (selectedComponents.length === 0) {
+                Swal.fire({
+                    title: 'Atención',
+                    text: 'Debes seleccionar al menos un componente nuevo para guardar.',
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido',
+                    color: 'black',
+                    confirmButtonColor: '#003594',
+                });
+                return;
+            }
+            guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos);
+        }
+
+        // Event listener para el botón de cerrar el modal
+        if (e.target && e.target.id === 'BotonCerrarModal') {
+            modalComponentes.hide();
+        }
+
+        // Event listener para el checkbox "Seleccionar Todos"
+        if (e.target && e.target.id === 'selectAllComponents') {
+            const isChecked = e.target.checked;
+            const enabledCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+            
+            enabledCheckboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+            
+            actualizarContador();
+        }
+
+        // Event listener para checkboxes individuales de componentes
+        if (e.target && e.target.type === 'checkbox' && e.target.closest('#tbodyComponentes')) {
+            actualizarContador();
+        }
+    });
+  });
+
+function abrirModalComponentes(boton) {
+
+    const modalCerrarComponnets = document.getElementById('BotonCerrarModal');
+    const ticketId = boton.dataset.idTicket;
+    const serialPos = boton.dataset.serialPos;
+
+    const regionName = obtenerRegionName();
+
+    if (!ticketId) {
+        Swal.fire({
+            title: 'Atención',
+            text: 'No se pudo obtener el ID del ticket.',
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            color: 'black',
+            confirmButtonColor: '#003594',
+        });
+        return;
+    }
+
+    if (!serialPos) {
+        Swal.fire({
+            title: 'Atención',
+            text: 'No hay serial disponible para este ticket.',
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            color: 'black',
+            confirmButtonColor: '#003594',
+        });
+        return;
+    }
+
+    if(modalCerrarComponnets){
+      modalCerrarComponnets.addEventListener('click', function() {
+        modalComponentes.hide();
+      });
+    }
+    showSelectComponentsModal(ticketId, regionName, serialPos);
 }
