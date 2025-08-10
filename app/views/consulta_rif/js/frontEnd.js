@@ -1544,7 +1544,6 @@ function SendDataFailure2(idStatusPayment) {
           const params = `id_coordinador=${encodeURIComponent(
             coordinador
           )}&id_user=${encodeURIComponent(id_user)}`;
-          console.log("Parámetros del correo:", params); // Para depuración
           xhrEmail.send(params);
 
           // Mostrar el primer modal (Guardado exitoso)
@@ -1560,57 +1559,48 @@ function SendDataFailure2(idStatusPayment) {
             },
             willClose: () => {
               const ticketData = response.ticket_data;
-              const beautifulHtmlContent = `
-                                <div style="text-align: left; padding: 15px;">
-    <h3 style="color: #0056b3; margin-bottom: 15px; text-align: center;">🔧 ¡Ticket Generado! 🔧</h3>
-    <p style="font-size: 1.1em; margin-bottom: 10px;">
-        <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${
-          ticketData.Nr_ticket
-        }</span>
-    </p>
-    <p style="margin-bottom: 8px;">
-        <strong>⚙️ Serial del Equipo:</strong> ${ticketData.serial}
-    </p>
-    <p style="margin-bottom: 8px;">
-        <strong>📝 Falla Reportada:</strong> ${ticketData.falla_text}
-    </p>
-    <p style="margin-bottom: 8px;">
-        <strong>📊 Nivel de Falla:</strong> ${ticketData.nivelFalla_text}
-    </p>
-    <p style="margin-bottom: 8px;">
-        <strong>🏢 RIF Cliente:</strong> ${ticketData.rif || "N/A"}
-    </p>
-    <p style="margin-bottom: 8px;">
-        <strong>👤 Usuario Gesti&oacuten:</strong> ${
-          ticketData.user_gestion || "N/A"
-        }
-    </p>
-    <p style="margin-bottom: 8px;">
-        <strong>🧑‍💻 Coordinador Asignado:</strong> ${
-          ticketData.coordinador || "N/A"
-        }
-    </p>
-    <p style="margin-bottom: 8px;">
-            <strong>💳 Estado de Documentos:</strong> <span style="color: darkblue; font-weight: bold;">${
-              ticketData.status_payment || "N/A" // Asume que tienes una variable ticketData.payment_status
-            }</span>
-        </p>
-     <strong><p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
-                                        Se ha enviado una notificación por correo electrónico.<br>
-                                        <h7>El Estatus del Ticket es: <span style = "color: #28a745"; font-weight: bold;">${
-                                          ticketData.status_text
-                                        }</span></h7>
-                                    </p></strong>
-</div>
-`;
-
+              const beautifulHtmlContent =
+               `<div style="text-align: left; padding: 15px;">
+                  <h3 style="color: #0056b3; margin-bottom: 15px; text-align: center;">🔧 ¡Ticket Generado! 🔧</h3>
+                  <p style="font-size: 1.1em; margin-bottom: 10px;">
+                    <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.Nr_ticket}</span>
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                    <strong>⚙️ Serial del Equipo:</strong> ${ticketData.serial}
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                    <strong>📝 Falla Reportada:</strong> ${ticketData.falla_text}
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                    <strong>📊 Nivel de Falla:</strong> ${ticketData.nivelFalla_text}
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                    <strong>🏢 RIF Cliente:</strong> ${ticketData.rif || "N/A"}
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                    <strong>👤 Usuario Gesti&oacuten:</strong> ${ticketData.user_gestion || "N/A"}
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                    <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.coordinador || "N/A"}
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                    <strong>💳 Estado de Documentos:</strong> <span style="color: darkblue; font-weight: bold;">${ticketData.status_payment || "N/A"}</span>
+                  </p>
+                  <strong>
+                    <p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
+                      Se ha enviado una notificación por correo electrónico.<br>
+                      <h7>El Estatus del Ticket es: <span style = "color: #28a745"; font-weight: bold;">${ticketData.status_text}</span></h7>
+                    </p>
+                  </strong>
+                </div>`;
     Swal.fire({
       icon: "success",
       title: "Detalles del Ticket",
       html: beautifulHtmlContent,
       color: "black",
-      confirmButtonText: "Cerrar",
-      confirmButtonColor: "#003594",
+      /*confirmButtonText: "Cerrar",
+      confirmButtonColor: "#003594",*/
+      showConfirmButton: false, // Deshabilita el botón de confirmación
       showClass: {
         popup: "animate__animated animate__fadeInDown",
       },
@@ -1636,7 +1626,7 @@ function SendDataFailure2(idStatusPayment) {
           $("#miModal").css("display", "none");
           
           // Se extraen el ticketId y el serialPos del objeto ticketData para pasarlos a la función.
-        const ticketId = ticketData.Nr_ticket;
+        const ticketId = ticketData.id_ticket_creado;
         const serialPos = ticketData.serial;
         
         // Se llama a la función que abre el modal de componentes

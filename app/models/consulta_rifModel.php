@@ -2035,9 +2035,6 @@ class consulta_rifModel extends Model
                 return false;
             }
             
-            // El resto del código para el historial se mantiene igual.
-            // ...
-            
             $id_status_lab = 0;
             $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . (int)$ticketId . ";";
             $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
