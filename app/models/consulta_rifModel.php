@@ -1944,21 +1944,21 @@ class consulta_rifModel extends Model
                         $id_status_lab = 0;
                     }
 
-                $id_new_status_payment = 'NULL'; 
-                $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . $ticketId . ";";
-                $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
-                if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
-                    $status_payment_data = pg_fetch_assoc($status_payment_status_result, 0);
-                    $id_new_status_payment = $status_payment_data['id_status_payment'] !== null ? (int)$status_payment_data['id_status_payment'] : 'NULL';
-                }
+                    $id_new_status_payment = 'NULL'; 
+                    $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . $ticketId . ";";
+                    $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
+                    if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
+                        $status_payment_data = pg_fetch_assoc($status_payment_status_result, 0);
+                        $id_new_status_payment = $status_payment_data['id_status_payment'] !== null ? (int)$status_payment_data['id_status_payment'] : 'NULL';
+                    }
 
-                $new_status_domiciliacion = 'NULL'; 
-                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . $ticketId . ";";
-                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
-                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
-                    $domiciliacion_data = pg_fetch_assoc($status_domiciliacion_result, 0);
-                    $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
-                }
+                    $new_status_domiciliacion = 'NULL'; 
+                    $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . $ticketId . ";";
+                    $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+                    if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                        $domiciliacion_data = pg_fetch_assoc($status_domiciliacion_result, 0);
+                        $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
+                    }
 
 
                     $sqlInsertHistory = sprintf(

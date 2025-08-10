@@ -1610,7 +1610,7 @@ function SendDataFailure2(idStatusPayment) {
       allowOutsideClick: false,
       allowEscapeKey: false,
       showCancelButton: true, // Habilita el botón de cancelar
-      cancelButtonText: "Agregar Componentes", // Personaliza el texto del botón de cancelar
+      cancelButtonText: "Asociar Componentes", // Personaliza el texto del botón de cancelar
       cancelButtonColor: "#28a745", // Asigna un color diferente al nuevo botón
     }).then((result) => {
       // Este bloque de código se ejecuta DESPUÉS de que el usuario interactúa y el modal de SweetAlert2 se cierra.

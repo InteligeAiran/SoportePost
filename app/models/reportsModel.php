@@ -467,59 +467,100 @@ class reportsModel extends Model
         }
     }
 
-    public function SaveComponents($id_ticket, $components, $serial_pos, $id_user){
+    public function SaveComponents($id_ticket, $components, $serial_pos, $id_user) {
         try {
-
             $id_ticket1 = (int)$id_ticket;
             
-            $sql = "UPDATE tickets set id_status_components = TRUE WHERE id_ticket = ".$id_ticket1.";";
+            $sql = "UPDATE tickets SET id_status_components = TRUE WHERE id_ticket = ".$id_ticket1.";";
             $result = Model::getResult($sql, $this->db);
 
-            if($result){
-                $idticket = (int)$id_ticket;
-                $id_user = (int)$id_user;
-                
-                // El módulo de inserción puede ser una constante
-                $modulo_insertcolumn = 'coordinador';
+            if (!$result) {
+                return false;
+            }
 
-                // 1. Inicia una transacción para asegurar que la operación sea atómica.
-                pg_query($this->db->getConnection(), "BEGIN");
+            $idticket = (int)$id_ticket;
+            $id_user = (int)$id_user;
+            $modulo_insertcolumn = 'coordinador';
 
-                // 2. Opcionalmente, borra los componentes anteriores si es necesario.
-                // DELETE FROM tickets_componets WHERE id_ticket = $idticket;
+            // Inicia transacción
+            pg_query($this->db->getConnection(), "BEGIN");
 
-                // 3. Itera sobre los componentes y los inserta de manera segura
-                if (is_array($components) && !empty($components)) {
-                    foreach ($components as $comp_id) {
-                        // Utiliza pg_query_params para evitar la inyección de SQL.
-                        // Los valores se pasan como un array y no se concatenan en la cadena SQL.
-                        $sqlcomponents = "INSERT INTO tickets_componets (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert) 
-                                        VALUES ($1, $2, $3, $4, NOW(), $5);";
+            // Inserta componentes
+            if (is_array($components) && !empty($components)) {
+                foreach ($components as $comp_id) {
+                    $sqlcomponents = "INSERT INTO tickets_componets (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert) 
+                                    VALUES ($1, $2, $3, $4, NOW(), $5);";
 
-                        $resultcomponent = pg_query_params(
-                            $this->db->getConnection(),
-                            $sqlcomponents,
-                            array($serial_pos, $idticket, (int)$comp_id, $id_user, $modulo_insertcolumn)
-                        );
-                        if ($resultcomponent === false) {
-                            pg_query($this->db->getConnection(), "ROLLBACK");
-                            return false;
-                        }
+                    $resultcomponent = pg_query_params(
+                        $this->db->getConnection(),
+                        $sqlcomponents,
+                        array($serial_pos, $idticket, (int)$comp_id, $id_user, $modulo_insertcolumn)
+                    );
+
+                    if ($resultcomponent === false) {
+                        pg_query($this->db->getConnection(), "ROLLBACK");
+                        return false;
                     }
-                } else {
-                    pg_query($this->db->getConnection(), "ROLLBACK");
-                    return false;
                 }
-                pg_query($this->db->getConnection(), "COMMIT");
-                return true;
-            }else{
-                // En caso de error en la actualización del status_components, hace un rollback
+            } else {
                 pg_query($this->db->getConnection(), "ROLLBACK");
                 return false;
             }
 
+            // Obtiene los estados para el historial (fuera del foreach)
+            $id_status_ticket = 0;
+            $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = " . (int)$idticket . ";";
+            $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
+            if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
+                $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') ?? 0;
+            }
+                        
+            $id_status_lab = 0;
+            $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . (int)$idticket . ";";
+            $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+            if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab') ?? 0;
+            }
+
+            $id_new_status_payment = 'NULL';
+            $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . (int)$idticket . ";";
+            $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
+            if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
+                $id_new_status_payment = pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') !== null ? (int)pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') : 'NULL';
+            }
+
+            $new_status_domiciliacion = 'NULL';
+            $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . (int)$idticket . ";";
+            $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+            if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') !== null ? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
+            }
+
+            $id_accion_ticket = 15;
+
+            $sqlInsertHistory = sprintf(
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                (int)$idticket,
+                (int)$id_user,
+                (int)$id_status_ticket,
+                (int)$id_accion_ticket,
+                $id_status_lab,
+                $id_new_status_payment,
+                $new_status_domiciliacion
+            );
+
+            $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
+
+            if (!$resultsqlInsertHistory) {
+                pg_query($this->db->getConnection(), "ROLLBACK");
+                return false;
+            }
+
+            // Si todo ha sido exitoso, confirma la transacción
+            pg_query($this->db->getConnection(), "COMMIT");
+            return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory, 'component_result' => true);
+
         } catch (Throwable $e) {
-            // En caso de cualquier error no capturado, hace un rollback
             pg_query($this->db->getConnection(), "ROLLBACK");
             error_log("Error en SaveComponents: " . $e->getMessage());
             return false;
