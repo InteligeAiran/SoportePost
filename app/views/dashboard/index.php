@@ -26,6 +26,125 @@ function mi_navbar() {}
         <link id="pagestyle" rel="stylesheet"
             href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
+
+        <style>
+            input[type="text"], input[type="password"]{
+                width: calc(100% - 1rem);
+                padding: 0.5rem 0.75rem;
+                margin-bottom: 0.75rem;
+                border: 1px solid #ced4da;
+                border-radius: 0.25rem;
+                box-sizing: border-box;
+                font-size: 0.9rem;
+                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+                font-family: 'Arial', sans-serif;
+            }
+
+            .password-legend {
+                text-align: left;
+                margin-top: 1rem;
+                color: black;
+                font-size: 0.875rem;
+            }
+
+            .password-legend ul {
+                list-style: none;
+                padding-left: 0;
+                margin-top: 0.5rem;
+            }
+
+            .password-legend li {
+                position: relative;
+                padding-left: 20px;
+                color: #888; /* Color inicial del texto */
+                transition: color 0.3s ease;
+            }
+
+            .password-legend li::before {
+                content: '•';
+                position: absolute;
+                left: 0;
+                top: 0;
+                font-size: 1.2rem;
+                line-height: 1;
+            }
+            
+            /* Reglas de color para los estados de validación */
+            .password-legend li.valid {
+                color: green;
+            }
+
+            .password-legend li.invalid {
+                color: red;
+            }
+
+            /* Estilo para los inputs con error o éxito */
+            .form-control.error {
+                border-color: #dc3545;
+            }
+
+            .form-control.success {
+                border-color: #198754;
+            }
+
+            .error-message {
+                color: #dc3545;
+                font-size: 0.875em;
+                margin-top: 0.25rem;
+            }
+            
+            /* Estilos para el input con icono */
+            .input-with-icon-wrapper {
+                position: relative;
+            }
+            
+            .password-toggle-icon {
+                position: absolute;
+                right: 6%;
+                top: 50%;
+                transform: translateY(-50%);
+                cursor: pointer;
+                color: #6c757d; /* Color de icono por defecto */
+            }
+
+            /* Contenedor del botón y la sugerencia de contraseña */
+            #suggestedPasswordContainer {
+                margin-top: -2%;
+                margin-left: 10%;
+                position: fixed;
+                align-items: center;
+            }
+
+            #Cerrar-botton{
+                background-color: #A0A0A0;
+                  color: white;
+                border: none;
+                cursor: pointer;
+                padding: 10px 20px;
+                font-size: 16px;
+                border-radius: 5px;
+                transition: background-color 0.3s ease;
+            }
+
+            #Cerrar-botton:hover{
+                background-color: red;
+            }
+
+            #submitNewPasswordBtn{
+                background-color: #003594;
+                color: white;
+                border: none;
+                cursor: pointer;
+                padding: 10px 20px;
+                font-size: 16px;
+                border-radius: 5px;
+                transition: background-color 0.3s ease;
+            }
+
+            #submitNewPasswordBtn:hover{
+                background-color: green;
+            }
+        </style>
     </head>
 
     <body class="g-sidenav-show bg-gray-100">
@@ -736,23 +855,23 @@ function mi_navbar() {}
                 </div>
             </div>
 
-            <div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel"
-                aria-hidden="true"
+            
+        <!-- MODAL PARA NUEVA CONTRASENA -->
+            <div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel" aria-hidden="true"
                 style="display: none; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);"
                 data-bs-backdrop="static" data-bs-keyboard="false">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content rounded-lg shadow-lg">
                         <div class="modal-header bg-gradient-primary text-white rounded-t-lg"
                             id="newPasswordModalHeader">
-                            <h5 class="modal-title text-white" id="newPasswordModalLabel">Ingrese Nueva Contraseña
-                            </h5>
+                            <h5 class="modal-title text-white" id="newPasswordModalLabel">Ingrese Nueva Contraseña</h5>
                             <button type="button" id="CloseIcon" class="btn-close btn-close-white"
-                                data-bs-dismiss="modal" aria-label="Close"></button>
+                                data-bs-dismiss="modal" aria-label="Close">
+                            </button>
                         </div>
-                        <div class="modal-body p-6">
+                        <div class="modal-body p-6" style="margin-top: -6%;">
                             <form id="newPasswordForm">
                                 <input type="hidden" id="modalUserIdForPassword">
-
                                 <div class="input-group-container">
                                     <label for="newPassword" class="form-label">Nueva Contraseña:</label>
                                     <div class="input-with-icon-wrapper">
@@ -764,11 +883,13 @@ function mi_navbar() {}
                                             <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
                                         </svg>
                                     </div>
+                                    <!-- Mensaje de error de la contraseña directamente debajo del input -->
+                                    <div id="passwordError" class="error-message"></div><br>
+                                    
                                     <button type="button" id="generatePasswordBtn" class="btn btn-info btn-sm mt-2">Generar Contraseña</button>
                                     <div id="suggestedPasswordContainer" class="mt-2" style="display: none;">
                                         <span class="text-muted">Sugerencia: </span><span id="suggestedPassword" class="font-weight-bold text-success"></span>
                                     </div>
-                                    <div id="passwordError" class="error-message"></div>
                                 </div>
 
                                 <div class="input-group-container">
@@ -783,10 +904,10 @@ function mi_navbar() {}
                                         </svg>
                                     </div>
                                     <div id="confirmPasswordError" class="error-message"></div>
+                                </div>
 
-                                    <div id="passwordRequirements" class="password-legend" style="text-align: center; color: black;">
+                                <div id="passwordRequirements" class="password-legend" style="text-align: center; color: black;">
                                         La contraseña debe contener al menos:
-
                                         <ul><br>
                                             <li id="lengthCheck">8 caracteres de longitud.</li>
                                             <li id="uppercaseCheck">Una letra mayúscula.</li>
@@ -795,42 +916,38 @@ function mi_navbar() {}
                                             <li id="specialCharCheck">Un carácter especial (!@#$%^&*).</li>
                                         </ul>
                                     </div>
-                                </div>
                             </form>
-                            <input type="hidden" id="modalUserIdForPassword">
                         </div>
                         <div class="modal-footer flex justify-end p-4 bg-gray-50 rounded-b-lg">
-                            <button type="button"
-                                class="btn btn-secondary rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                data-bs-dismiss="modal" id="Cerrar-botton">Cancelar</button>
-                            <button type="button"
-                                class="btn btn-primary rounded-md px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                id="submitNewPasswordBtn">Guardar Contraseña</button>
+                            <button type="button" class="btn btn-secondary rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" data-bs-dismiss="modal" id="Cerrar-botton">Cancelar</button>
+                            <button type="button" class="btn btn-primary rounded-md px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="submitNewPasswordBtn">Guardar Contraseña</button>
                         </div>
                     </div>
                 </div>
             </div>
+        <!-- END MODAL PARA NUEVA CONTRASENA -->
 
-            <!-- ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
-            <input type="hidden" id="userIdForPassword" value="<?php echo $_SESSION['id_user']; ?>">
-            <!-- END ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
-            <footer class="footer pt-3  ">
-                <div class="container-fluid">
-                    <div class="row align-items-center justify-content-lg-between">
-                        <div class="col-lg-6 mb-lg-0 mb-4">
-                            <div class="copyright text-center text-sm text-muted text-lg-start">
-                                ©
-                                <script>
-                                    document.write(new Date().getFullYear())
-                                </script>,
-                                made with <i class="fa fa-heart"></i> by
-                                <a href="https://www.inteligensa.com/" class="font-weight-bold" target="_blank">Plataforma Creada por Intelisoft</a> para una mejor web.
-                            </div>
+        <!-- ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
+        <input type="hidden" id="userIdForPassword" value="<?php echo $_SESSION['id_user']; ?>">
+        <!-- END ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
+
+        <footer class="footer pt-3  ">
+            <div class="container-fluid">
+                <div class="row align-items-center justify-content-lg-between">
+                    <div class="col-lg-6 mb-lg-0 mb-4">
+                        <div class="copyright text-center text-sm text-muted text-lg-start">
+                            ©
+                            <script>
+                                document.write(new Date().getFullYear())
+                            </script>,
+                            made with <i class="fa fa-heart"></i> by
+                            <a href="https://www.inteligensa.com/" class="font-weight-bold" target="_blank">Plataforma Creada por Intelisoft</a> para una mejor web.
                         </div>
                     </div>
                 </div>
-            </footer>
             </div>
+        </footer>
+        </div>
         </main>
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">

@@ -21,11 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const ModalReparado = document.getElementById("ReparadosModal"); // ��NUEVO ELEMENTO!
   const ModalPendienteRepuesto = document.getElementById("pendienterespuestoModal"); // ��NUEVO ELEMENTO!
   const ModalTikIrreparable = document.getElementById("IrreparableModal"); // ��NUEVO ELEMENTO!
-    const timelineModalElement = document.getElementById("TimelineModal");
-
-    
-
-
+  const timelineModalElement = document.getElementById("TimelineModal");
 
   // --- Instancias de Bootstrap Modals (declaradas para ser accesibles globalmente dentro de este scope) ---
   let monthlyTicketsModalInstance = null;
@@ -1607,10 +1603,12 @@ $("#newPassword").keyup(function () {
   let string = $("#newPassword").val();
   $("#newPassword").val(string.replace(/ /g, ""));
 });
+
 $("#confirmNewPassword").keyup(function () {
   let string = $("#confirmNewPassword").val();
   $("#confirmNewPassword").val(string.replace(/ /g, ""));
 });
+
 //Llamar a la función PHP usando fetch    SESSION EXPIRE DEL USER
 fetch("/SoportePost/app/controllers/dashboard.php", {
   method: "POST",
@@ -2181,6 +2179,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+
 function getTicketOpen() {
   const xhr = new XMLHttpRequest();
   xhr.open(
@@ -2560,8 +2559,7 @@ function formatOpenDetails(details) {
             </div>
         `;
     });
-
-    return htmlContent;
+  return htmlContent;
 }
 
 
