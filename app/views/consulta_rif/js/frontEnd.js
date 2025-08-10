@@ -1598,9 +1598,9 @@ function SendDataFailure2(idStatusPayment) {
       title: "Detalles del Ticket",
       html: beautifulHtmlContent,
       color: "black",
-      /*confirmButtonText: "Cerrar",
-      confirmButtonColor: "#003594",*/
-      showConfirmButton: false, // Deshabilita el botón de confirmación
+      confirmButtonText: "Cerrar",
+      confirmButtonColor: "#003594",
+      showConfirmButton: true, // Deshabilita el botón de confirmación
       showClass: {
         popup: "animate__animated animate__fadeInDown",
       },
