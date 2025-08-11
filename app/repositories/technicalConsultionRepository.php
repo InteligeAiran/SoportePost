@@ -692,5 +692,21 @@ class TechnicalConsultionRepository
         $result = $this->model->CheckTicketEnProceso($serial);
         return $result;
     }
+
+    public function HasComponents($ticketId){
+        // El modelo devuelve la lista completa de componentes con el flag is_selected.
+        $result = $this->model->HasComponents($ticketId);
+
+        if ($result) {
+            $components = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $component = pg_fetch_assoc($result['query'], $i);
+                $components[] = $component;
+            }
+            return $components;
+        } else {
+            return false;
+        }
+    }
 }
 ?>

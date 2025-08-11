@@ -362,7 +362,7 @@ function mi_navbar()
                                 </svg>
                             </div>
                             <p class="h4 mb-3" style="color: black;">¿Deseas enviar a taller el POS asociado <span id="serialpos"></span> al nro de ticket:</p>
-                            <span class="h3" id="modalTicketNr"></span><p class="h4" style="color: black;">?</p>
+                            <span class="h4 mb-3" id="modalTicketNr"></span><p class="h4" style="color: black;">?</p>
                         </div>
                         <div class="modal-footer justify-content-center">
                             <button id="close-button" type="button" class="btn btn-lg btn-secondary">Cerrar</button>

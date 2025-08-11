@@ -909,7 +909,7 @@ function downloadImageModal(serial) {
 
 // Opcional: Función para cargar historial si tienes una API separada para ello
 
-// Función para cargar y mostrar el historial de tickets.
+// Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
 function loadTicketHistory(ticketId) {
     const historyPanel = $("#ticket-history-content");
     historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
@@ -923,6 +923,10 @@ function loadTicketHistory(ticketId) {
         },
         dataType: "json",
         success: function (response) {
+            // Revisa la consola del navegador para ver la respuesta completa del servidor.
+            console.log("Respuesta del servidor:", response);
+
+            // Verifica si la respuesta es exitosa y contiene datos de historial.
             if (response.success && response.history && response.history.length > 0) {
                 let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
@@ -935,14 +939,40 @@ function loadTicketHistory(ticketId) {
 
                     const prevItem = response.history[index + 1] || {};
 
-                    const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
-                    const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
-                    const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
-                    const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
-                    const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
-                    const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
-                    // Nueva lógica para detectar si la lista de componentes ha cambiado
-                    const componentsChanged = prevItem.components_list && item.components_list !== prevItem.components_list;
+                    // -- CORRECCIÓN PARA ESPACIOS EN BLANCO Y ESPACIOS DE NO SEPARACIÓN --
+                    // Reemplazamos todos los caracteres de espacio en blanco, incluyendo los de no separación,
+                    // con un espacio normal, y luego usamos trim() para asegurar una comparación precisa.
+                    const cleanString = (str) => str ? str.replace(/\s/g, ' ').trim() : null;
+
+                    const itemAccion = cleanString(item.name_accion_ticket);
+                    const prevAccion = cleanString(prevItem.name_accion_ticket);
+                    const accionChanged = prevAccion && itemAccion !== prevAccion;
+
+                    const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
+                    const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
+                    const tecnicoChanged = prevTecnico && itemTecnico !== prevTecnico;
+
+                    const itemStatusLab = cleanString(item.name_status_lab);
+                    const prevStatusLab = cleanString(prevItem.name_status_lab);
+                    const statusLabChanged = prevStatusLab && itemStatusLab !== prevStatusLab;
+
+                    const itemStatusDom = cleanString(item.name_status_domiciliacion);
+                    const prevStatusDom = cleanString(prevItem.name_status_domiciliacion);
+                    const statusDomChanged = prevStatusDom && itemStatusDom !== prevStatusDom;
+
+                    const itemStatusPayment = cleanString(item.name_status_payment);
+                    const prevStatusPayment = cleanString(prevItem.name_status_payment);
+                    const statusPaymentChanged = prevStatusPayment && itemStatusPayment !== prevStatusPayment;
+
+                    const itemStatusTicket = cleanString(item.name_status_ticket);
+                    const prevStatusTicket = cleanString(prevItem.name_status_ticket);
+                    const estatusTicketChanged = prevStatusTicket && itemStatusTicket !== prevStatusTicket;
+
+                    const itemComponents = cleanString(item.components_list);
+                    const prevComponents = cleanString(prevItem.components_list);
+                    const componentsChanged = prevComponents && itemComponents !== prevComponents;
+
+                    const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
 
                     let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
                     let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
@@ -961,7 +991,7 @@ function loadTicketHistory(ticketId) {
                                 </h2>
                             </div>
                             <div id="${collapseId}" class="collapse"
-                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <table class="table table-sm table-borderless mb-0">
@@ -1002,7 +1032,7 @@ function loadTicketHistory(ticketId) {
                                                     <th class="text-start">Estatus Pago:</th>
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
                                                 </tr>
-                                                ${item.name_accion_ticket === 'Asignación de Componentes' && item.components_list ? `
+                                                ${showComponents ? `
                                                     <tr>
                                                         <th class="text-start">Componentes Asociados:</th>
                                                         <td class="${componentsChanged ? "highlighted-change" : ""}">${item.components_list}</td>
@@ -1019,10 +1049,17 @@ function loadTicketHistory(ticketId) {
                 historyHtml += "</div>";
                 historyPanel.html(historyHtml);
             } else {
+                // Si la respuesta es exitosa pero no hay historial, muestra este mensaje.
                 historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
+            // Revisa la consola para obtener detalles sobre por qué falló la llamada AJAX.
+            console.error("Error completo de AJAX:", {
+                jqXHR: jqXHR,
+                textStatus: textStatus,
+                errorThrown: errorThrown,
+            });
             let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
             if (jqXHR.status === 0) {
                 errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';

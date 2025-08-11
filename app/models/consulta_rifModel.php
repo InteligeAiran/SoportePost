@@ -2093,5 +2093,19 @@ class consulta_rifModel extends Model
             return false; // Return false on error
         }
     }
+
+    public function HasComponents($ticketId){
+        try {
+            // La función SQL está bien, la dejamos como está.
+            // Nos retorna la lista de todos los componentes con el flag.
+            $sql = "SELECT * FROM get_components_by_ticket(".$ticketId.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Log the error
+            error_log("Error en el modelo HasComponents: " . $e->getMessage());
+            return false;
+        }
+    }
 }
 ?>

@@ -3,16 +3,15 @@ function mi_navbar() {}
 ?>
 <!DOCTYPE html>
 <lang="en">
-
     <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-        <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    <link rel="icon" type="image/x-icon" href="<?php echo APP; ?>app/public/img/login/Logo.png">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+            <link rel="apple-touch-icon" sizes="76x76" href="<?php echo APP; ?>app/public/img/login/Logo.png">
+            
         <title>
             <?php echo tituloPagina; ?>
-
         </title>
         <!--     Fonts and icons     -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
@@ -23,8 +22,7 @@ function mi_navbar() {}
         <!-- Font Awesome Icons -->
         <script> var currentUserRole = <?php echo $_SESSION['id_rol'] ?? 'guest'; ?>;</script>
         <!-- CSS Files -->
-        <link id="pagestyle" rel="stylesheet"
-            href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
 
         <style>

@@ -242,6 +242,10 @@ class Consulta extends Controller
                     $this->handleCheckTicketEnProceso();
                     break;
 
+                case 'HasComponents':
+                    $this->handleHasComponents();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -1545,5 +1549,36 @@ class Consulta extends Controller
             ]);
         }
     }
+
+   
+    public function handleHasComponents(){
+    $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
+    $repository = new technicalConsultionRepository();
+    
+    // Llamamos al repositorio, que devuelve el array de componentes
+    $components = $repository->HasComponents($ticketId);
+
+    // Inicializamos una bandera para verificar si al menos un componente está seleccionado
+    $anyComponentSelected = false;
+
+    // Solo si se encontraron componentes, los recorremos para validar si alguno está seleccionado
+    if (is_array($components) && !empty($components)) {
+        foreach ($components as $component) {
+            // El valor 't' de PostgreSQL se lee como un string en PHP
+            if (isset($component['is_selected']) && $component['is_selected'] === 't') {
+                $anyComponentSelected = true;
+                // Salimos del bucle una vez que encontramos un componente seleccionado para optimizar
+                break;
+            }
+        }
+    }
+
+    // Usamos la bandera para determinar la respuesta final de la API
+    if ($anyComponentSelected) {
+        $this->response(['success' => true, 'hasComponents' => true, 'message' => 'El ticket tiene componentes asociados.', 'components' => $components], 200);
+    } else {
+        $this->response(['success' => true, 'hasComponents' => false, 'message' => 'El ticket no tiene componentes asociados.'], 200);
+    }
+}
 }
 ?>

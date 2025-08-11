@@ -534,7 +534,8 @@ class reportsModel extends Model
                     $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') !== null ? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
                 }
 
-                $id_accion_ticket = 15;
+                
+                $id_accion_ticket = 20;
 
                 $sqlInsertHistory = sprintf(
                     "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",

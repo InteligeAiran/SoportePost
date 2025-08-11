@@ -304,6 +304,66 @@ function closeUploadModalAndClean() {
     }
 });
 
+// Función para verificar si un ticket tiene componentes asociados usando XMLHttpRequest
+function checkTicketComponents(ticketId, serialPos, regionName) {
+    const xhr = new XMLHttpRequest();
+    const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/HasComponents`;
+
+    xhr.open("POST", apiUrl, true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const validationResponse = JSON.parse(xhr.responseText);
+                if (validationResponse.success && validationResponse.hasComponents) {
+                    console.log(validationResponse.message);
+                    // Si el ticket ya tiene componentes, muestra el modal de selección
+                    showSelectComponentsModal(ticketId, regionName, serialPos);
+                } else {
+                    // Si NO tiene componentes, muestra la advertencia
+                    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-exclamation-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>`;
+                    Swal.fire({
+                        html: `<div class="custom-modal-body-content">
+                                    <div class="mb-4">
+                                        ${customWarningSvg}
+                                    </div>
+                                    <p class="h4 mb-3" style="color: black;">El POS con serial: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> no tiene componentes cargados.</p>
+                                    <p class="h5" style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; font-size: 80%; color: #007bff;">¿Desea enviar a la región sin componentes?</p>
+                                </div>`,
+                        showCancelButton: true,
+                        confirmButtonText: "Sí, enviar",
+                        cancelButtonText: "Cancelar",
+                        confirmButtonColor: "#003594",
+                        focusConfirm: false,
+                        allowOutsideClick: false,
+                    }).then((warningResult) => {
+                        if (warningResult.isConfirmed) {
+                            sendToRegion(ticketId, [], serialPos);
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('Error al parsear la respuesta JSON del servidor:', e);
+                Swal.fire('Error de Validación', 'Respuesta del servidor inválida. Intente de nuevo.', 'error');
+            }
+        } else {
+            console.error('Error en la solicitud AJAX:', xhr.status, xhr.statusText);
+            Swal.fire('Error de Validación', 'No se pudo verificar si el ticket tiene componentes. Intente de nuevo.', 'error');
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error('Error de red al intentar verificar los componentes.');
+        Swal.fire('Error de red', 'No se pudo conectar con el servidor para la validación.', 'error');
+    };
+
+    // Corregimos el nombre del parámetro de 'id_ticket' a 'ticketId' para que coincida con el backend
+    const dataToSend = `action=HasComponents&ticketId=${ticketId}`;
+    xhr.send(dataToSend);
+}
+
+
 function getTicketDataFinaljs() {
   const xhr = new XMLHttpRequest();
   xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketDataFinal`);
@@ -475,7 +535,7 @@ function getTicketDataFinaljs() {
                     const currentStatusLab = (row.status_taller || "").trim();
                     const name_accion_ticket = (row.name_accion_ticket || "").trim();
                     const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
-                    const nombre_estado_cliente = (row.nombre_estado_cliente || "").trim();
+                    const nombre_estado_cliente = (row.name_region || "").trim();
                     
                     // ** VALOR OBTENIDO DE LA FUNCIÓN getdataticketfinal() **
                     // Verifica si la cadena de tipos de documentos incluye 'Envio_Destino'
@@ -643,8 +703,8 @@ function getTicketDataFinaljs() {
                                   </button>
 
                                   <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets en el Rosal">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
-                                      <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house-door" viewBox="0 0 16 16">
+                                      <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z"/>
                                     </svg>
                                   </button>
 
@@ -893,44 +953,45 @@ function getTicketDataFinaljs() {
                     }
                 });
 
-                $("#tabla-ticket tbody")
-                  .off("click", ".send-to-region-btn") // Usamos 'click' para el botón
-                  .on("click", ".send-to-region-btn", function (e) {
-                      e.stopPropagation(); // Evita la propagación del evento
+               $("#tabla-ticket tbody")
+                .off("click", ".send-to-region-btn")
+                .on("click", ".send-to-region-btn", function (e) {
+                    e.stopPropagation();
 
-                      const ticketId = $(this).data("id-ticket");
-                      const serialPos = $(this).data("serial-pos") || ""; // Asegúrate de que serial_pos esté definido
-                      const nroTicket = $(this).data("nro-ticket");
-                      const regionName = $(this).data("region-name"); // Asumiendo que tienes un data attribute para el nombre de la región
+                    const ticketId = $(this).data("id-ticket");
+                    const serialPos = $(this).data("serial-pos") || "";
+                    const nroTicket = $(this).data("nro-ticket");
+                    const regionName = $(this).data("region-name");
 
-                      const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
-                      
-                      Swal.fire({
-                          title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
-                                      <div class="custom-modal-header-content">Confirmación de Envío a Región</div>
-                                  </div>`,
-                          html: `<div class="custom-modal-body-content">
-                                      <div class="mb-4">
-                                          ${customWarningSvg}
-                                      </div> 
-                                      <p class="h4 mb-3" style="color: black;">¿Seguro que desea enviar el Ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> a la región: ${regionName}?</p> 
-                                      <p class="h5" style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; font-size: 70%; color: #007bff;">Esta acción cambiará el estado del ticket a "Enviado a Región"</p>
+                    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+                    
+                    Swal.fire({
+                        title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                                    <div class="custom-modal-header-content">Confirmación de Envío a Región</div>
                                 </div>`,
-                          confirmButtonText: "Seleccionar Componentes",
-                          color: "black",
-                          confirmButtonColor: "#003594",
-                          cancelButtonText: "cancelar",
-                          focusConfirm: false,
-                          allowOutsideClick: false,
-                          showCancelButton: true,
-                          allowEscapeKey: false,
-                          keydownListenerCapture: true,
-                      }).then((result) => {
-                          if (result.isConfirmed) {
-                            showSelectComponentsModal(ticketId, regionName, serialPos); 
-                          }
-                      });
-                  });
+                        html: `<div class="custom-modal-body-content">
+                                    <div class="mb-4">
+                                        ${customWarningSvg}
+                                    </div> 
+                                    <p class="h4 mb-3" style="color: black;">¿Seguro que desea enviar el Ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> a la región: ${regionName}?</p> 
+                                    <p class="h5" style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; font-size: 70%; color: #007bff;">Esta acción cambiará el estado del ticket a "Enviado a Región"</p>
+                                </div>`,
+                        confirmButtonText: "Continuar",
+                        color: "black",
+                        confirmButtonColor: "#003594",
+                        cancelButtonText: "Cancelar",
+                        focusConfirm: false,
+                        allowOutsideClick: false,
+                        showCancelButton: true,
+                        allowEscapeKey: false,
+                        keydownListenerCapture: true,
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Llama a la función que usa XMLHttpRequest para la validación
+                            checkTicketComponents(ticketId, serialPos, regionName);
+                        }
+                    });
+                });
 
                  $("#tabla-ticket tbody")
                             .off("click", ".received-ticket-btn")
@@ -1083,31 +1144,32 @@ document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
  * @param {string} ticketId El ID del ticket que se está procesando.
  * @param {string} regionName El nombre de la región a la que se enviará el ticket.
  */
+// La función showSelectComponentsModal y sendToRegion permanecen igual.
 function showSelectComponentsModal(ticketId, regionName, serialPos) {
-      const xhr = new XMLHttpRequest();
-    // URL de tu API para obtener los componentes.
-    // Asegúrate de que esta URL sea la correcta para tu backend.
+    const xhr = new XMLHttpRequest();
     const serial_Pos = serialPos;
+    // La API URL debe ser la que devuelve la lista de componentes asociados.
     const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetComponents`;
 
-    // Configurar la solicitud GET. No se envía un cuerpo de datos.
-    xhr.open("GET", apiUrl, true);
+    // Cambiamos el método a POST para enviar el ticketId
+    xhr.open("POST", apiUrl, true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-    // Definir la función que se ejecutará al recibir la respuesta
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300) {
-            // La solicitud fue exitosa
             try {
                 const response = JSON.parse(xhr.responseText);
-
-                // Parsear la respuesta JSON del servidor
                 const components = response.components;
-                // Construir el HTML de los componentes a partir de los datos de la base de datos
                 let componentsHtml = '';
                 components.forEach(comp => {
+                    // ** Lógica corregida para pre-seleccionar el checkbox y deshabilitarlo **
+                    // Se verifica explícitamente si el valor es la cadena 't'
+                    const isSelected = comp.is_selected === 't';
+                    const isChecked = isSelected ? 'checked' : '';
+                    const isDisabled = isSelected ? 'disabled' : '';
                     componentsHtml += `
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="${comp.id_component}" id="component" style = accent-color: #007bff;">
+                            <input class="form-check-input" type="checkbox" value="${comp.id_component}" id="component-${comp.id_component}" style="accent-color: #007bff;" ${isChecked} ${isDisabled}>
                             <label class="form-check-label" style="width: 80%;" for="component-${comp.id_component}">
                                 ${comp.name_component}
                             </label>
@@ -1118,7 +1180,7 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                 const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
                 Swal.fire({
                     title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
-                                <div class="custom-modal-header-content">Enviar a ${regionName}</div>
+                                <div class="custom-modal-header-content">Enviar a la Región ${regionName}</div>
                             </div>`,
                     html: `
                         <div class="custom-modal-body-content">
@@ -1148,23 +1210,27 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                     }
                 });
             } catch (e) {
-                // Manejar errores si la respuesta no es un JSON válido
                 Swal.fire('Error', 'No se pudieron cargar los componentes. Intente de nuevo más tarde.', 'error');
             }
         } else {
-            // La solicitud al backend falló
             Swal.fire('Error', 'No se pudo obtener la lista de componentes.', 'error');
         }
     };
 
-    // Manejar posibles errores de red
     xhr.onerror = function() {
         Swal.fire('Error de red', 'No se pudo conectar con el servidor para obtener los componentes.', 'error');
     };
-    const dataToSendString = `action=GetComponents`;
-    // Enviar la solicitud
+    const dataToSendString = `ticketId=${ticketId}`; // Adaptado para enviar ticketId en el body.
     xhr.send(dataToSendString);
 }
+
+function sendToRegion(ticketId, components, serialPos) {
+    console.log(`Enviando ticket ${ticketId} con serial ${serialPos} a la región. Componentes: ${components}`);
+    // Aquí iría la lógica para la llamada AJAX final para enviar el ticket.
+    // ...
+    Swal.fire('Éxito', `Ticket ${ticketId} enviado a la región.`, 'success');
+}
+
 
 $("#confirmTallerBtn").on("click", function () {
     const ticketIdToConfirm = currentTicketIdForConfirmTaller;
@@ -1910,52 +1976,75 @@ function loadTicketHistory(ticketId) {
         },
         dataType: "json",
         success: function (response) {
+            // Revisa la consola del navegador para ver la respuesta completa del servidor.
+            console.log("Respuesta del servidor:", response);
+
+            // Verifica si la respuesta es exitosa y contiene datos de historial.
             if (response.success && response.history && response.history.length > 0) {
                 let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
                 response.history.forEach((item, index) => {
                     const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
                     const headingId = `headingHistoryItem_${ticketId}_${index}`;
-                    
-                    // Lógica para el estilo del elemento actual (el primero en el historial)
-                    const isCurrent = index === 0;
+
+                    const isLatest = index === 0;
+                    const isExpanded = false;
 
                     const prevItem = response.history[index + 1] || {};
 
-                    const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
-                    const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
-                    const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
-                    const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
-                    const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
-                    const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
+                    // -- CORRECCIÓN PARA ESPACIOS EN BLANCO Y ESPACIOS DE NO SEPARACIÓN --
+                    // Reemplazamos todos los caracteres de espacio en blanco, incluyendo los de no separación,
+                    // con un espacio normal, y luego usamos trim() para asegurar una comparación precisa.
+                    const cleanString = (str) => str ? str.replace(/\s/g, ' ').trim() : null;
 
-                    // Lógica para los estilos del encabezado
-                    let headerStyle = isCurrent ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-                    let textColor = isCurrent ? "color: #343a40;" : "color: #ffffff;";
+                    const itemAccion = cleanString(item.name_accion_ticket);
+                    const prevAccion = cleanString(prevItem.name_accion_ticket);
+                    const accionChanged = prevAccion && itemAccion !== prevAccion;
 
-                    // Lógica para mostrar el estatus correcto según la acción del ticket
-                    let statusDisplayText;
-                    if (item.name_accion_ticket === "Enviado a taller" || item.name_accion_ticket === "En Taller") {
-                        statusDisplayText = item.name_status_lab || "Desconocido";
-                    } else {
-                        statusDisplayText = item.name_status_ticket || "Desconocido";
-                    }
-                    const statusHeaderText = ` (${statusDisplayText})`;
+                    const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
+                    const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
+                    const tecnicoChanged = prevTecnico && itemTecnico !== prevTecnico;
+
+                    const itemStatusLab = cleanString(item.name_status_lab);
+                    const prevStatusLab = cleanString(prevItem.name_status_lab);
+                    const statusLabChanged = prevStatusLab && itemStatusLab !== prevStatusLab;
+
+                    const itemStatusDom = cleanString(item.name_status_domiciliacion);
+                    const prevStatusDom = cleanString(prevItem.name_status_domiciliacion);
+                    const statusDomChanged = prevStatusDom && itemStatusDom !== prevStatusDom;
+
+                    const itemStatusPayment = cleanString(item.name_status_payment);
+                    const prevStatusPayment = cleanString(prevItem.name_status_payment);
+                    const statusPaymentChanged = prevStatusPayment && itemStatusPayment !== prevStatusPayment;
+
+                    const itemStatusTicket = cleanString(item.name_status_ticket);
+                    const prevStatusTicket = cleanString(prevItem.name_status_ticket);
+                    const estatusTicketChanged = prevStatusTicket && itemStatusTicket !== prevStatusTicket;
+
+                    const itemComponents = cleanString(item.components_list);
+                    const prevComponents = cleanString(prevItem.components_list);
+                    const componentsChanged = prevComponents && itemComponents !== prevComponents;
+
+                    const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
+
+                    let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
 
                     historyHtml += `
                         <div class="card mb-3 custom-history-card">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
-                                    <button class="btn btn-link w-100 text-left py-2 px-3 collapsed" type="button"
-                                            data-toggle="collapse" data-target="#${collapseId}"
-                                            aria-expanded="false" aria-controls="${collapseId}"
-                                            style="${textColor}">
+                                    <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
+                                        data-toggle="collapse" data-target="#${collapseId}"
+                                        aria-expanded="${isExpanded}" aria-controls="${collapseId}"
+                                        style="${textColor}">
                                         ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
                                     </button>
                                 </h2>
                             </div>
                             <div id="${collapseId}" class="collapse"
-                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <table class="table table-sm table-borderless mb-0">
@@ -1977,7 +2066,7 @@ function loadTicketHistory(ticketId) {
                                                     <td>${item.full_name_coordinador || "N/A"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-start">Técnico Asignado:</th>
+                                                    <th class="text-start">Tecnico Asignado:</th>
                                                     <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
                                                 </tr>
                                                 <tr>
@@ -1996,6 +2085,12 @@ function loadTicketHistory(ticketId) {
                                                     <th class="text-start">Estatus Pago:</th>
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
                                                 </tr>
+                                                ${showComponents ? `
+                                                    <tr>
+                                                        <th class="text-start">Componentes Asociados:</th>
+                                                        <td class="${componentsChanged ? "highlighted-change" : ""}">${item.components_list}</td>
+                                                    </tr>
+                                                ` : ''}
                                             </tbody>
                                         </table>
                                     </div>
@@ -2007,10 +2102,17 @@ function loadTicketHistory(ticketId) {
                 historyHtml += "</div>";
                 historyPanel.html(historyHtml);
             } else {
+                // Si la respuesta es exitosa pero no hay historial, muestra este mensaje.
                 historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
+            // Revisa la consola para obtener detalles sobre por qué falló la llamada AJAX.
+            console.error("Error completo de AJAX:", {
+                jqXHR: jqXHR,
+                textStatus: textStatus,
+                errorThrown: errorThrown,
+            });
             let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
             if (jqXHR.status === 0) {
                 errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
@@ -2027,6 +2129,6 @@ function loadTicketHistory(ticketId) {
             }
             historyPanel.html(errorMessage);
             console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-        }
+        },
     });
 }

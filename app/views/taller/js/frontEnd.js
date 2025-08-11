@@ -390,7 +390,7 @@ function getTicketData() {
 
                            $("#btn-devuelto").on("click", function () {
                               dataTableInstance.columns().search('').draw(false);
-                              dataTableInstance.column(8).search("Enviado devuelta al Rosal").draw();
+                              dataTableInstance.column(8).search("En el Rosal").draw();
 
                               // Obtener todos los botones de carga de llave y ocultarlos
                               document.querySelectorAll(".load-key-button").forEach(button => {
@@ -1073,49 +1073,75 @@ function loadTicketHistory(ticketId) {
         },
         dataType: "json",
         success: function (response) {
+            // Revisa la consola del navegador para ver la respuesta completa del servidor.
+            console.log("Respuesta del servidor:", response);
+
+            // Verifica si la respuesta es exitosa y contiene datos de historial.
             if (response.success && response.history && response.history.length > 0) {
                 let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
                 response.history.forEach((item, index) => {
                     const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
                     const headingId = `headingHistoryItem_${ticketId}_${index}`;
-                    const isCurrent = index === 0;
+
+                    const isLatest = index === 0;
+                    const isExpanded = false;
 
                     const prevItem = response.history[index + 1] || {};
 
-                    const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
-                    const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
-                    const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
-                    const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
-                    const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
-                    const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
+                    // -- CORRECCIÓN PARA ESPACIOS EN BLANCO Y ESPACIOS DE NO SEPARACIÓN --
+                    // Reemplazamos todos los caracteres de espacio en blanco, incluyendo los de no separación,
+                    // con un espacio normal, y luego usamos trim() para asegurar una comparación precisa.
+                    const cleanString = (str) => str ? str.replace(/\s/g, ' ').trim() : null;
 
-                    let headerStyle = isCurrent ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-                    let textColor = isCurrent ? "color: #343a40;" : "color: #ffffff;";
+                    const itemAccion = cleanString(item.name_accion_ticket);
+                    const prevAccion = cleanString(prevItem.name_accion_ticket);
+                    const accionChanged = prevAccion && itemAccion !== prevAccion;
 
-                    // --- Lógica para mostrar el estatus correcto según la acción del ticket ---
-                    let statusDisplayText;
-                    if (item.name_accion_ticket === "Enviado a taller" || item.name_accion_ticket === "En Taller") {
-                        statusDisplayText = item.name_status_lab || "Desconocido";
-                    } else {
-                        statusDisplayText = item.name_status_ticket || "Desconocido";
-                    }
-                    const statusHeaderText = ` (${statusDisplayText})`;
+                    const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
+                    const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
+                    const tecnicoChanged = prevTecnico && itemTecnico !== prevTecnico;
+
+                    const itemStatusLab = cleanString(item.name_status_lab);
+                    const prevStatusLab = cleanString(prevItem.name_status_lab);
+                    const statusLabChanged = prevStatusLab && itemStatusLab !== prevStatusLab;
+
+                    const itemStatusDom = cleanString(item.name_status_domiciliacion);
+                    const prevStatusDom = cleanString(prevItem.name_status_domiciliacion);
+                    const statusDomChanged = prevStatusDom && itemStatusDom !== prevStatusDom;
+
+                    const itemStatusPayment = cleanString(item.name_status_payment);
+                    const prevStatusPayment = cleanString(prevItem.name_status_payment);
+                    const statusPaymentChanged = prevStatusPayment && itemStatusPayment !== prevStatusPayment;
+
+                    const itemStatusTicket = cleanString(item.name_status_ticket);
+                    const prevStatusTicket = cleanString(prevItem.name_status_ticket);
+                    const estatusTicketChanged = prevStatusTicket && itemStatusTicket !== prevStatusTicket;
+
+                    const itemComponents = cleanString(item.components_list);
+                    const prevComponents = cleanString(prevItem.components_list);
+                    const componentsChanged = prevComponents && itemComponents !== prevComponents;
+
+                    const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
+
+                    let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
 
                     historyHtml += `
                         <div class="card mb-3 custom-history-card">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
-                                            data-toggle="collapse" data-target="#${collapseId}"
-                                            aria-expanded="${isCurrent ? "true" : "false"}" aria-controls="${collapseId}"
-                                            style="${textColor}">
+                                        data-toggle="collapse" data-target="#${collapseId}"
+                                        aria-expanded="${isExpanded}" aria-controls="${collapseId}"
+                                        style="${textColor}">
                                         ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
                                     </button>
                                 </h2>
                             </div>
-                            <div id="${collapseId}" class="collapse ${isCurrent ? "show" : ""}"
-                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                            <div id="${collapseId}" class="collapse"
+                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <table class="table table-sm table-borderless mb-0">
@@ -1137,7 +1163,7 @@ function loadTicketHistory(ticketId) {
                                                     <td>${item.full_name_coordinador || "N/A"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-start">Técnico Asignado:</th>
+                                                    <th class="text-start">Tecnico Asignado:</th>
                                                     <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
                                                 </tr>
                                                 <tr>
@@ -1156,6 +1182,12 @@ function loadTicketHistory(ticketId) {
                                                     <th class="text-start">Estatus Pago:</th>
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
                                                 </tr>
+                                                ${showComponents ? `
+                                                    <tr>
+                                                        <th class="text-start">Componentes Asociados:</th>
+                                                        <td class="${componentsChanged ? "highlighted-change" : ""}">${item.components_list}</td>
+                                                    </tr>
+                                                ` : ''}
                                             </tbody>
                                         </table>
                                     </div>
@@ -1167,10 +1199,17 @@ function loadTicketHistory(ticketId) {
                 historyHtml += "</div>";
                 historyPanel.html(historyHtml);
             } else {
+                // Si la respuesta es exitosa pero no hay historial, muestra este mensaje.
                 historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
+            // Revisa la consola para obtener detalles sobre por qué falló la llamada AJAX.
+            console.error("Error completo de AJAX:", {
+                jqXHR: jqXHR,
+                textStatus: textStatus,
+                errorThrown: errorThrown,
+            });
             let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
             if (jqXHR.status === 0) {
                 errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
