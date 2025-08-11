@@ -238,6 +238,10 @@ class Consulta extends Controller
                     $this->handleSendToRegion();
                     break;
 
+                case 'sendToRegionWithoutComponent':
+                    $this->handleSendToRegionWithoutComponent();
+                    break;
+
                 case 'CheckTicketEnProceso':
                     $this->handleCheckTicketEnProceso();
                     break;
@@ -1471,48 +1475,66 @@ class Consulta extends Controller
     }
 
     public function handleSendToRegion(){
-    $ticketId = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
-    $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
-    $serial = isset($_POST['pos_serial']) ? $_POST['pos_serial'] : '';
+        $ticketId = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
+        $serial = isset($_POST['pos_serial']) ? $_POST['pos_serial'] : '';
 
-  // --- CORRECCIÓN AQUÍ ---
-    // Recibe la cadena de texto de componentes, ej. "1,2"
-    $componentsString = isset($_POST['components']) ? $_POST['components'] : '';
-    
-    // Divide la cadena por la coma para crear un array de PHP
-    // Esto convierte "1,2" en un array ['1', '2']
-    $componentes_array = explode(',', $componentsString);
+        // --- CORRECCIÓN AQUÍ ---
+        // Recibe la cadena de texto de componentes, ej. "1,2"
+        $componentsString = isset($_POST['components']) ? $_POST['components'] : '';
+        
+        // Divide la cadena por la coma para crear un array de PHP
+        // Esto convierte "1,2" en un array ['1', '2']
+        $componentes_array = explode(',', $componentsString);
 
-    // Si la cadena está vacía, asegúrate de que el array también lo esté
-    if (empty($componentsString)) {
-        $componentes_array = [];
+        // Si la cadena está vacía, asegúrate de que el array también lo esté
+        if (empty($componentsString)) {
+            $componentes_array = [];
+        }
+
+        if (!$ticketId || !$id_user || !$serial) {
+            $this->response(['success' => false, 'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+
+
+        // Verifica que $componentes_array sea un array y no nulo
+        if (!is_array($componentes_array)) {
+            $this->response(['success' => false, 'message' => 'Los datos de los componentes no son válidos.'], 400);
+            return;
+        }
+
+        if (!$ticketId || !$id_user || !$serial) {
+            $this->response(['success' => false, 'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        // Pasa el array decodificado al repositorio
+        $result = $repository->SendToRegion($ticketId, $id_user, $componentes_array, $serial);
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'El ticket ha sido enviado a la región exitosamente.'], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
+        }
     }
 
-    if (!$ticketId || !$id_user || !$serial) {
-        $this->response(['success' => false, 'message' => 'Hay un campo vacío.'], 400);
-        return;
-    }
+    public function handleSendToRegionWithoutComponent(){
+        $ticketId = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
 
+        if (!$ticketId || !$id_user) {
+            $this->response(['success' => false, 'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
 
-    // Verifica que $componentes_array sea un array y no nulo
-    if (!is_array($componentes_array)) {
-        $this->response(['success' => false, 'message' => 'Los datos de los componentes no son válidos.'], 400);
-        return;
-    }
-
-    if (!$ticketId || !$id_user || !$serial) {
-        $this->response(['success' => false, 'message' => 'Hay un campo vacío.'], 400);
-        return;
-    }
-
-    $repository = new technicalConsultionRepository();
-    // Pasa el array decodificado al repositorio
-    $result = $repository->SendToRegion($ticketId, $id_user, $componentes_array, $serial);
-    if ($result) {
-        $this->response(['success' => true, 'message' => 'El ticket ha sido enviado a la región exitosamente.'], 200);
-    } else {
-        $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
-    }
+        $repository = new technicalConsultionRepository();
+        $result = $repository->SendToRegionWithoutComponent($ticketId, $id_user);
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'El ticket ha sido enviado a la región sin componentes.'], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
+        }
     }
 
     public function handleCheckTicketEnProceso(){

@@ -123,8 +123,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-
-
 let globalTicketData = [];
 
 function getTicketDataFinaljs() {
@@ -180,13 +178,13 @@ function getTicketDataFinaljs() {
             const columnsConfig = [];
 
             columnsConfig.push({
-                            title: "N°",
-                            orderable: false,
-                            searchable: false,
-                            render: function (data, type, row, meta) {
-                                return meta.row + meta.settings._iDisplayStart + 1;
-                            },
-                        });
+              title: "N°",
+              orderable: false,
+              searchable: false,
+              render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+              },
+            });
 
             for (const key in columnTitles) {
               if (allDataKeys.includes(key)) {
@@ -244,8 +242,6 @@ function getTicketDataFinaljs() {
               }
             }
 
-            // Añadir la columna "Acción" al final
-           // ... (código anterior hasta la columna "Acción")
 
             // Añadir la columna "Acción" al final
             columnsConfig.push({

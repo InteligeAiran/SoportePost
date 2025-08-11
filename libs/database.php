@@ -35,7 +35,7 @@ define('tituloPagina', 'Soporte Post Venta');
 // config/config.php (ejemplo)
 //define('UPLOAD_BASE_DIR', 'C:\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
 //define(constant_name: 'UPLOAD_BASE_DIR', 'D:\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
-define('UPLOAD_BASE_DIR', 'Documents\\SoportePost\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
+define('UPLOAD_BASE_DIR', 'Documents\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
 
 //Envio Correo 
 define('SMTP_HOST', 'smtp.gmail.com');

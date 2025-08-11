@@ -688,6 +688,11 @@ class TechnicalConsultionRepository
         return $result;
     }
 
+    public function SendToRegionWithoutComponent($ticketId, $id_user){
+        $result = $this->model->SendToRegionWithoutComponent($ticketId, $id_user);
+        return $result;
+    }
+    
     public function CheckTicketEnProceso($serial){
         $result = $this->model->CheckTicketEnProceso($serial);
         return $result;

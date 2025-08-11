@@ -4,8 +4,8 @@
   console.log(`Ancho de la pantalla: ${anchoPantalla}px`);
   console.log(`Alto de la pantalla: ${altoPantalla}px`);
 });*/
-  let ModalTimelineInstance = null; // Variable para la instancia del modal de línea de tiempo
 
+let ModalTimelineInstance = null; // Variable para la instancia del modal de línea de tiempo
 
 document.addEventListener("DOMContentLoaded", function () {
   // --- Referencias a los elementos HTML de los Modales ---
@@ -3952,5 +3952,4 @@ document.addEventListener("DOMContentLoaded", function () {
   getTicketPendienteRepuesto();
   getTicketIrreparables();
   getTicketCounts(); // Para la tabla de conteos
-  // ... (resto de tu código DOMContentLoaded para modals, estadísticas de cards, etc.)
 });

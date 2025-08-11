@@ -1522,7 +1522,6 @@ function SendDataFailure2(idStatusPayment) {
         });
         return; // Detener la ejecución
       }
-
       // Si no hay ticket en proceso, continuar con la creación
       continuarCreacionTicket();
     })
