@@ -500,13 +500,13 @@ function getTicketData() {
 
             const id_document=currentDocument;
 
-            if(id_document==9){ 
+            if(id_document!=9 || id_document==10){ 
 
                 Swal.fire({
                 icon: 'warning',
                 title: '¡Advertencia!',
                 text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
-                confirmButtonText: 'Entendido', 
+                confirmButtonText: 'Ok', 
                 confirmButtonColor: '#003594', // Color del botón
                 color: 'black',
             });
@@ -932,7 +932,7 @@ $(document).on('click', '#uploadFileBtn', function() {
             icon: 'warning',
             title: '¡Advertencia!',
             text: 'Por favor, selecciona un archivo antes de continuar.',
-            confirmButtonText: 'Entendido', 
+            confirmButtonText: 'Ok', 
             confirmButtonColor: '#003594', // Color del botón
             color: 'black',
         });
@@ -1801,7 +1801,7 @@ function SendToDevolution(ticketId, currentnroTicket) {
             icon: 'warning',
             title: '¡Advertencia!',
             text: 'El campo no puede estar en blanco.',
-            confirmButtonText: 'Entendido', 
+            confirmButtonText: 'Ok', 
             confirmButtonColor: '#003594', // Color del botón
             color: 'black',
         });
@@ -1848,7 +1848,7 @@ function SendToDevolution(ticketId, currentnroTicket) {
                                 icon: 'success',
                                 title: '¡Devolución Exitosa!',
                                 text: response.message || 'El ticket ha sido devuelto al cliente exitosamente.',
-                                confirmButtonText: 'Entendido',
+                                confirmButtonText: 'Ok',
                                 color: 'black',
                                 confirmButtonColor: '#3085d6',
                             }).then(() => {
@@ -2185,7 +2185,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     title: 'Atención',
                     text: 'Debes seleccionar al menos un componente nuevo para guardar.',
                     icon: 'warning',
-                    confirmButtonText: 'Entendido',
+                    confirmButtonText: 'Ok',
                     color: 'black',
                     confirmButtonColor: '#003594',
                 });
@@ -2231,7 +2231,7 @@ function abrirModalComponentes(boton) {
             title: 'Atención',
             text: 'No se pudo obtener el ID del ticket.',
             icon: 'warning',
-            confirmButtonText: 'Entendido',
+            confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594',
         });
@@ -2243,7 +2243,7 @@ function abrirModalComponentes(boton) {
             title: 'Atención',
             text: 'No hay serial disponible para este ticket.',
             icon: 'warning',
-            confirmButtonText: 'Entendido',
+            confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594',
         });

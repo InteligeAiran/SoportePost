@@ -257,12 +257,9 @@ function getTicketDataFinaljs() {
                     const name_status_payment = row.name_status_payment;
                     const currentStatusLab = row.status_taller;
                     const name_accion_ticket = (row.name_accion_ticket || "").trim();
-                    
                     const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
                     const nombre_estado_cliente = row.nombre_estado_cliente;
-                    
                     const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
-
                     let actionButton = '';
 
                     // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
@@ -292,7 +289,7 @@ function getTicketDataFinaljs() {
                     const accionllaves = row.name_accion_ticket; // Necesitas esta variable para la condición
 
                     // "cuando el status de name_accion_ticket sea: Llaves Cargadas me tiene que aparecer un boton para subir una imagen"
-                    if (accionllaves === "Llaves Cargadas") {
+                    if (accionllaves === "En la región") {
                         return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
                                 data-id-ticket="${idTicket}"
                                 data-bs-toggle="modal"
@@ -340,10 +337,8 @@ function getTicketDataFinaljs() {
                 buttons: {
                   colvis: "Visibilidad de Columna",
                 },
-              },
-
-               
-                      });
+              },   
+            });
 
                   $(document).on("click", ".deliver-ticket-btn", function () {
                     const idTicket = $(this).data("id-ticket");
@@ -556,14 +551,14 @@ function getTicketDataFinaljs() {
                 .on("click", "tr", function (e) {
                     // Asegúrate de que el clic no proviene de una celda truncable/expandible o de un botón.
                     if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('full-text-cell') || $(e.target).is('button') || $(e.target).is('input[type="checkbox"]')) {
-                        return; // Si el clic fue en la celda del checkbox o el botón, no activar el evento de la fila.
+                      return; // Si el clic fue en la celda del checkbox o el botón, no activar el evento de la fila.
                     }
 
                     const tr = $(this);
                     const rowData = dataTableInstance.row(tr).data();
 
                     if (!rowData) {
-                        return;
+                      return;
                     }
 
                     $("#tabla-ticket tbody tr").removeClass("table-active");
@@ -852,52 +847,75 @@ function loadTicketHistory(ticketId) {
         },
         dataType: "json",
         success: function (response) {
+            // Revisa la consola del navegador para ver la respuesta completa del servidor.
+            console.log("Respuesta del servidor:", response);
+
+            // Verifica si la respuesta es exitosa y contiene datos de historial.
             if (response.success && response.history && response.history.length > 0) {
                 let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
                 response.history.forEach((item, index) => {
                     const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
                     const headingId = `headingHistoryItem_${ticketId}_${index}`;
-                    
-                    // Lógica para el estilo del elemento actual (el primero en el historial)
-                    const isCurrent = index === 0;
+
+                    const isLatest = index === 0;
+                    const isExpanded = false;
 
                     const prevItem = response.history[index + 1] || {};
 
-                    const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
-                    const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
-                    const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
-                    const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
-                    const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
-                    const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
+                    // -- CORRECCIÓN PARA ESPACIOS EN BLANCO Y ESPACIOS DE NO SEPARACIÓN --
+                    // Reemplazamos todos los caracteres de espacio en blanco, incluyendo los de no separación,
+                    // con un espacio normal, y luego usamos trim() para asegurar una comparación precisa.
+                    const cleanString = (str) => str ? str.replace(/\s/g, ' ').trim() : null;
 
-                    // Lógica para los estilos del encabezado
-                    let headerStyle = isCurrent ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-                    let textColor = isCurrent ? "color: #343a40;" : "color: #ffffff;";
+                    const itemAccion = cleanString(item.name_accion_ticket);
+                    const prevAccion = cleanString(prevItem.name_accion_ticket);
+                    const accionChanged = prevAccion && itemAccion !== prevAccion;
 
-                    // Lógica para mostrar el estatus correcto según la acción del ticket
-                    let statusDisplayText;
-                    if (item.name_accion_ticket === "Enviado a taller" || item.name_accion_ticket === "En Taller") {
-                        statusDisplayText = item.name_status_lab || "Desconocido";
-                    } else {
-                        statusDisplayText = item.name_status_ticket || "Desconocido";
-                    }
-                    const statusHeaderText = ` (${statusDisplayText})`;
+                    const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
+                    const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
+                    const tecnicoChanged = prevTecnico && itemTecnico !== prevTecnico;
+
+                    const itemStatusLab = cleanString(item.name_status_lab);
+                    const prevStatusLab = cleanString(prevItem.name_status_lab);
+                    const statusLabChanged = prevStatusLab && itemStatusLab !== prevStatusLab;
+
+                    const itemStatusDom = cleanString(item.name_status_domiciliacion);
+                    const prevStatusDom = cleanString(prevItem.name_status_domiciliacion);
+                    const statusDomChanged = prevStatusDom && itemStatusDom !== prevStatusDom;
+
+                    const itemStatusPayment = cleanString(item.name_status_payment);
+                    const prevStatusPayment = cleanString(prevItem.name_status_payment);
+                    const statusPaymentChanged = prevStatusPayment && itemStatusPayment !== prevStatusPayment;
+
+                    const itemStatusTicket = cleanString(item.name_status_ticket);
+                    const prevStatusTicket = cleanString(prevItem.name_status_ticket);
+                    const estatusTicketChanged = prevStatusTicket && itemStatusTicket !== prevStatusTicket;
+
+                    const itemComponents = cleanString(item.components_list);
+                    const prevComponents = cleanString(prevItem.components_list);
+                    const componentsChanged = prevComponents && itemComponents !== prevComponents;
+
+                    const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
+
+                    let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
 
                     historyHtml += `
                         <div class="card mb-3 custom-history-card">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
-                                    <button class="btn btn-link w-100 text-left py-2 px-3 collapsed" type="button"
-                                            data-toggle="collapse" data-target="#${collapseId}"
-                                            aria-expanded="false" aria-controls="${collapseId}"
-                                            style="${textColor}">
+                                    <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
+                                        data-toggle="collapse" data-target="#${collapseId}"
+                                        aria-expanded="${isExpanded}" aria-controls="${collapseId}"
+                                        style="${textColor}">
                                         ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
                                     </button>
                                 </h2>
                             </div>
                             <div id="${collapseId}" class="collapse"
-                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <table class="table table-sm table-borderless mb-0">
@@ -919,7 +937,7 @@ function loadTicketHistory(ticketId) {
                                                     <td>${item.full_name_coordinador || "N/A"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-start">Técnico Asignado:</th>
+                                                    <th class="text-start">Tecnico Asignado:</th>
                                                     <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
                                                 </tr>
                                                 <tr>
@@ -938,6 +956,12 @@ function loadTicketHistory(ticketId) {
                                                     <th class="text-start">Estatus Pago:</th>
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
                                                 </tr>
+                                                ${showComponents ? `
+                                                    <tr>
+                                                        <th class="text-start">Componentes Asociados:</th>
+                                                        <td class="${componentsChanged ? "highlighted-change" : ""}">${item.components_list}</td>
+                                                    </tr>
+                                                ` : ''}
                                             </tbody>
                                         </table>
                                     </div>
@@ -949,10 +973,17 @@ function loadTicketHistory(ticketId) {
                 historyHtml += "</div>";
                 historyPanel.html(historyHtml);
             } else {
+                // Si la respuesta es exitosa pero no hay historial, muestra este mensaje.
                 historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
+            // Revisa la consola para obtener detalles sobre por qué falló la llamada AJAX.
+            console.error("Error completo de AJAX:", {
+                jqXHR: jqXHR,
+                textStatus: textStatus,
+                errorThrown: errorThrown,
+            });
             let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
             if (jqXHR.status === 0) {
                 errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
@@ -969,7 +1000,7 @@ function loadTicketHistory(ticketId) {
             }
             historyPanel.html(errorMessage);
             console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-        }
+        },
     });
 }
 
@@ -998,7 +1029,7 @@ function updateTicketStatusInRegion(ticketId) {
             title: "¡Éxito!",
             text: "El POS se encontrará en el taller como 'En Proceso de reparación'.",
             icon: "success",
-            confirmButtonText: "¡Entendido!", // SweetAlert2 uses confirmButtonText
+            confirmButtonText: "Ok", // SweetAlert2 uses confirmButtonText
             customClass: {
               confirmButton: "BtnConfirmacion", // For custom button styling
             },
@@ -1059,4 +1090,77 @@ function updateTicketStatusInRegion(ticketId) {
     );
   };
   xhr.send(dataToSendString);
+}
+
+
+document.addEventListener("click", function (event) {
+  const openUploadBtn = event.target.closest("#openModalButton");
+  if (openUploadBtn) {
+    event.preventDefault(); // Previene el comportamiento por defecto del botón
+    const idTicket = openUploadBtn.dataset.idTicket;
+    showUploadModal(idTicket);
+    return; // Detiene la ejecución para no procesar otros botones
+  }
+
+  const openViewBtn = event.target.closest("#viewimage"); // O la clase CSS que uses
+  if (openViewBtn) {
+    event.preventDefault();
+    const idTicket = openViewBtn.dataset.idTicket;
+    const nroTicket = openViewBtn.dataset.nroTicket; // Asegúrate de que este atributo exista en tu botón dinámico
+    const documentUrl = openViewBtn.dataset.urlDocument; // Asegúrate de que este atributo exista en tu botón dinámico
+    const documentType = openViewBtn.dataset.documentType; // 'image' o 'pdf'
+
+    if (documentType === 'image') {
+      showViewModal(idTicket, nroTicket, documentUrl, null);
+    } else if (documentType === 'pdf') {
+      showViewModal(idTicket, nroTicket, null, documentUrl);
+    } else {
+      console.warn("Tipo de documento no especificado para la visualización.");
+      showViewModal(idTicket, nroTicket, null, null); // Abre el modal sin contenido
+    }
+    return;
+  }
+});
+
+
+function showUploadModal(ticketId) {
+  currentTicketId = ticketId; // Guarda el ID del ticket
+  if (modalTicketIdSpanUpload) {
+    modalTicketIdSpanUpload.textContent = currentTicketId;
+  }
+
+  // Aquí puedes cargar la imagen previa, etc.
+  if (inputFile) {
+    inputFile.value = ""; // Limpiar el input de archivo al abrir
+    const imagePreview = document.getElementById("imagePreview");
+    if (imagePreview) {
+      imagePreview.src = "#";
+      imagePreview.style.display = "none";
+    }
+  }
+
+  if (bsUploadModal) {
+    bsUploadModal.show(); // Usa el método de Bootstrap para mostrar el modal
+  } else {
+    console.error("Error: Instancia de Bootstrap Modal para 'uploadDocumentModal' no creada.");
+    // Si no usas Bootstrap JS, aquí iría tu lógica manual de mostrarModal
+    modalElementUpload.style.display = "block";
+    setTimeout(() => {
+      modalElementUpload.classList.add("show");
+    }, 10);
+
+    let backdrop = document.querySelector(".manual-modal-backdrop");
+
+    if (!backdrop) {
+      backdrop = document.createElement("div");
+      backdrop.classList.add("manual-modal-backdrop", "fade");
+      document.body.appendChild(backdrop);
+    }
+
+    setTimeout(() => {
+      backdrop.classList.add("show");
+    }, 10);
+    document.body.classList.add("modal-open");
+    modalElementUpload.setAttribute("aria-hidden", "false");
+  }
 }

@@ -1273,7 +1273,7 @@ function updateTicketStatusInRosal(ticketId, nroTicketToConfirm, serialPosToConf
             title: "¡Éxito!",
             html:  `El Pos con el serial <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serial_pos}</span> asociado al Nro de ticket: <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> ha sido marcado como recibido en Gestión Rosal correctamente.`,
             icon: "success",
-            confirmButtonText: "¡Entendido!", // SweetAlert2 uses confirmButtonText
+            confirmButtonText: "Ok", // SweetAlert2 uses confirmButtonText
             confirmButtonColor: "#003594", // SweetAlert2 uses confirmButtonColor
             customClass: {
               confirmButton: "BtnConfirmacion", // For custom button styling
@@ -1759,7 +1759,7 @@ function sendToRegion(ticketId, selectedComponents, serial_Pos) {
                     title: "¡Éxito!",
                     html: `El Pos: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serial_Pos}</span> Fue enviado a la región con el componente seleccionado.`,
                     icon: "success",
-                    confirmButtonText: "Entendido",
+                    confirmButtonText: "Ok",
                     color: "black",
                     confirmButtonColor: "#003594",
                   }).then((result) => {
@@ -1806,7 +1806,7 @@ function sendToRegionWithoutComponent(ticketId, serial_Pos) {
                     title: "¡Éxito!",
                     html: `El Pos: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serial_Pos}</span> Fue enviado a la región sin componentes.`,
                     icon: "success",
-                    confirmButtonText: "Entendido",
+                    confirmButtonText: "Ok",
                     color: "black",
                     confirmButtonColor: "#003594",
                   }).then((result) => {

@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: 'success',
             title: '¡Reasignación Exitosa!',
             text: `El Ticket ${currentTicketNro} ha sido reasignado con éxito a ${newTechnicianName}.`,
-            confirmButtonText: 'Entendido',
+            confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594'
           }).then(() => { // El .then() se ejecuta cuando el usuario hace clic en el botón
@@ -1734,7 +1734,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     title: 'Atención',
                     text: 'Debes seleccionar al menos un componente nuevo para guardar.',
                     icon: 'warning',
-                    confirmButtonText: 'Entendido',
+                    confirmButtonText: 'Ok',
                     color: 'black',
                     confirmButtonColor: '#003594',
                 });
@@ -1780,7 +1780,7 @@ function abrirModalComponentes(boton) {
             title: 'Atención',
             text: 'No se pudo obtener el ID del ticket.',
             icon: 'warning',
-            confirmButtonText: 'Entendido',
+            confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594',
         });
@@ -1792,7 +1792,7 @@ function abrirModalComponentes(boton) {
             title: 'Atención',
             text: 'No hay serial disponible para este ticket.',
             icon: 'warning',
-            confirmButtonText: 'Entendido',
+            confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594',
         });

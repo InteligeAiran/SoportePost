@@ -1521,7 +1521,7 @@ function SendDataFailure2(idStatusPayment) {
               <p style="color: #d9534f; font-weight: bold;">Debe esperar a que este ticket se complete antes de crear uno nuevo.</p>
             </div>
           `,
-          confirmButtonText: "Entendido",
+          confirmButtonText: "Ok",
           confirmButtonColor: "#003594",
           allowOutsideClick: false,
           allowEscapeKey: false,
@@ -1772,7 +1772,7 @@ function SendDataFailure2(idStatusPayment) {
               title: "Demasiadas Solicitudes",
               text: response.message,
               color: "black",
-              confirmButtonText: "Entendido",
+              confirmButtonText: "Ok",
               confirmButtonColor: "#003594",
             });
           } catch (error) {
@@ -2142,7 +2142,7 @@ function SendDataFailure1() {
           title: "Demasiadas Solicitudes",
           text: response.message, // Muestra el mensaje específico del backend (ej. "Debes esperar X minutos...")
           color: "black",
-          confirmButtonText: "Entendido",
+          confirmButtonText: "Ok",
           confirmButtonColor: "#003594", // Botón de confirmación AZUL
         });
       } catch (error) {
@@ -3544,7 +3544,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     title: 'Atención',
                     text: 'Debes seleccionar al menos un componente nuevo para guardar.',
                     icon: 'warning',
-                    confirmButtonText: 'Entendido',
+                    confirmButtonText: 'Ok',
                     color: 'black',
                     confirmButtonColor: '#003594',
                 });
@@ -3590,7 +3590,7 @@ function abrirModalComponentes(boton) {
             title: 'Atención',
             text: 'No se pudo obtener el ID del ticket.',
             icon: 'warning',
-            confirmButtonText: 'Entendido',
+            confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594',
         });
@@ -3602,7 +3602,7 @@ function abrirModalComponentes(boton) {
             title: 'Atención',
             text: 'No hay serial disponible para este ticket.',
             icon: 'warning',
-            confirmButtonText: 'Entendido',
+            confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594',
         });
