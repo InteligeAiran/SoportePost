@@ -275,8 +275,7 @@ function mi_navbar() {}
 
                         </div><br>
                         <div class="card" style="display: none;">
-                            <div class="table-responsive">
-                                <table id="rifCountTable" style="display: none;">
+                                <table id="rifCountTable" style="display: none;" class="background-users-table">
                                     <thead>
                                     </thead>
                                     <tbody>
@@ -285,7 +284,6 @@ function mi_navbar() {}
                                         </tr>
                                     </tbody>
                                 </table>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -415,6 +413,9 @@ function mi_navbar() {}
         <!-- Datatable -->
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
+        <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
+         <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
+         <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
 
         <!-- Chart -->
         <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>

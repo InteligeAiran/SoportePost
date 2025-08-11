@@ -1,5 +1,6 @@
 let globalSerial = "";
 let globalRif = "";
+let globalRazon = "";
 let globalEstatusPos = ""; // O null, dependiendo de cómo quieras inicializarla
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -174,6 +175,7 @@ function inicializeModal() {
 
   const InputRifModal2 = document.getElementById("InputRif"); // Para miModal (Nivel 2)
   const serialSelectModal2 = document.getElementById("serialSelect"); // Para miModal (Nivel 2)
+  const InputRazon2 = document.getElementById("InputRazon"); // Para miModal (Nivel 2)
 
   var crearTicketDropdownItems = $("#crearTicketDropdown + ul.dropdown-menu a"); // Seleccionamos los items del dropdown
 
@@ -333,7 +335,10 @@ function inicializeModal() {
           globalEstatusPos !== "Equipo Desafiliado" &&
           globalEstatusPos !== "Equipo Inactivo"
         ) {
-          if (InputRifModal2) InputRifModal2.value = globalRif;
+          if (InputRifModal2) 
+            InputRifModal2.value = globalRif;
+            InputRazon2.value = globalRazon;
+            console.log(globalRazon);
           if (serialSelectModal2) {
             serialSelectModal2.innerHTML = `<input value="${globalSerial}">${globalSerial}</input>`;
             // Puedes seleccionar la opción si lo deseas:
@@ -429,113 +434,113 @@ $(document).ready(function () {
 });
 /* END CAMPO 2 FALLA*/
 
-function checkRif() {
-  const input = document.getElementById("InputRif");
-  const mensajeDivt = document.getElementById("rifMensaje");
-  mensajeDivt.innerHTML = "";
-  mensajeDivt.style.color = ""; // Limpia el color anterior
+// function checkRif() {
+//   const input = document.getElementById("InputRif");
+//   const mensajeDivt = document.getElementById("rifMensaje");
+//   mensajeDivt.innerHTML = "";
+//   mensajeDivt.style.color = ""; // Limpia el color anterior
 
-  if (input.value === "") {
-    mensajeDivt.innerHTML = "Campo vacío";
-    mensajeDivt.style.color = "red";
-  } else {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/ValidateRif`);
+//   if (input.value === "") {
+//     mensajeDivt.innerHTML = "Campo vacío";
+//     mensajeDivt.style.color = "red";
+//   } else {
+//     const xhr = new XMLHttpRequest();
+//     xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/ValidateRif`);
 
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+//     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-    xhr.onload = function () {
-      if (xhr.status === 200) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          mensajeDivt.innerHTML = response.message;
-          mensajeDivt.style.color = response.color;
-          if (response.success) {
-            getPosSerials(response.rif);
-          }
-        } catch (error) {
-          console.error("Error parsing JSON:", error);
-          mensajeDivt.innerHTML =
-            "Error al procesar la respuesta del servidor.";
-          mensajeDivt.style.color = "red";
-        }
-      } else if (xhr.status === 404) {
-        mensajeDivt.innerHTML = "El RIF No Existe";
-        mensajeDivt.style.color = "red";
-      } else if (xhr.status === 400) {
-        mensajeDivt.innerHTML = "Error: RIF no proporcionado";
-        mensajeDivt.style.color = "red";
-      } else {
-        console.error("Error:", xhr.status, xhr.statusText);
-        mensajeDivt.innerHTML = "Error de conexión con el servidor.";
-        mensajeDivt.style.color = "red";
-      }
-    };
+//     xhr.onload = function () {
+//       if (xhr.status === 200) {
+//         try {
+//           const response = JSON.parse(xhr.responseText);
+//           mensajeDivt.innerHTML = response.message;
+//           mensajeDivt.style.color = response.color;
+//           if (response.success) {
+//             getPosSerials(response.rif);
+//           }
+//         } catch (error) {
+//           console.error("Error parsing JSON:", error);
+//           mensajeDivt.innerHTML =
+//             "Error al procesar la respuesta del servidor.";
+//           mensajeDivt.style.color = "red";
+//         }
+//       } else if (xhr.status === 404) {
+//         mensajeDivt.innerHTML = "El RIF No Existe";
+//         mensajeDivt.style.color = "red";
+//       } else if (xhr.status === 400) {
+//         mensajeDivt.innerHTML = "Error: RIF no proporcionado";
+//         mensajeDivt.style.color = "red";
+//       } else {
+//         console.error("Error:", xhr.status, xhr.statusText);
+//         mensajeDivt.innerHTML = "Error de conexión con el servidor.";
+//         mensajeDivt.style.color = "red";
+//       }
+//     };
 
-    xhr.onerror = function () {
-      mensajeDivt.innerHTML = "Error de red al intentar verificar el RIF.";
-      mensajeDivt.style.color = "red";
-      console.error("Error de red");
-    };
+//     xhr.onerror = function () {
+//       mensajeDivt.innerHTML = "Error de red al intentar verificar el RIF.";
+//       mensajeDivt.style.color = "red";
+//       console.error("Error de red");
+//     };
 
-    const datos = `action=ValidateRif&rif=${encodeURIComponent(input.value)}`;
-    xhr.send(datos);
-  }
-}
+//     const datos = `action=ValidateRif&rif=${encodeURIComponent(input.value)}`;
+//     xhr.send(datos);
+//   }
+// }
 
-function checkRif1() {
-  const input = document.getElementById("InputRif1");
-  const mensajeDivt = document.getElementById("rifMensaje1");
-  mensajeDivt.innerHTML = "";
-  mensajeDivt.style.color = ""; // Limpia el color anterior
+// function checkRif1() {
+//   const input = document.getElementById("InputRif1");
+//   const mensajeDivt = document.getElementById("rifMensaje1");
+//   mensajeDivt.innerHTML = "";
+//   mensajeDivt.style.color = ""; // Limpia el color anterior
 
-  if (input.value === "") {
-    mensajeDivt.innerHTML = "Campo vacío";
-    mensajeDivt.style.color = "red";
-  } else {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/ValidateRif1`);
+//   if (input.value === "") {
+//     mensajeDivt.innerHTML = "Campo vacío";
+//     mensajeDivt.style.color = "red";
+//   } else {
+//     const xhr = new XMLHttpRequest();
+//     xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/ValidateRif1`);
 
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+//     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-    xhr.onload = function () {
-      if (xhr.status === 200) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          mensajeDivt.innerHTML = response.message;
-          mensajeDivt.style.color = response.color;
-          if (response.success) {
-            getPosSerials1(response.rif);
-          }
-        } catch (error) {
-          console.error("Error parsing JSON:", error);
-          mensajeDivt.innerHTML =
-            "Error al procesar la respuesta del servidor.";
-          mensajeDivt.style.color = "red";
-        }
-      } else if (xhr.status === 404) {
-        mensajeDivt.innerHTML = "El RIF No Existe";
-        mensajeDivt.style.color = "red";
-      } else if (xhr.status === 400) {
-        mensajeDivt.innerHTML = "Error: RIF no proporcionado";
-        mensajeDivt.style.color = "red";
-      } else {
-        console.error("Error:", xhr.status, xhr.statusText);
-        mensajeDivt.innerHTML = "Error de conexión con el servidor.";
-        mensajeDivt.style.color = "red";
-      }
-    };
+//     xhr.onload = function () {
+//       if (xhr.status === 200) {
+//         try {
+//           const response = JSON.parse(xhr.responseText);
+//           mensajeDivt.innerHTML = response.message;
+//           mensajeDivt.style.color = response.color;
+//           if (response.success) {
+//             getPosSerials1(response.rif);
+//           }
+//         } catch (error) {
+//           console.error("Error parsing JSON:", error);
+//           mensajeDivt.innerHTML =
+//             "Error al procesar la respuesta del servidor.";
+//           mensajeDivt.style.color = "red";
+//         }
+//       } else if (xhr.status === 404) {
+//         mensajeDivt.innerHTML = "El RIF No Existe";
+//         mensajeDivt.style.color = "red";
+//       } else if (xhr.status === 400) {
+//         mensajeDivt.innerHTML = "Error: RIF no proporcionado";
+//         mensajeDivt.style.color = "red";
+//       } else {
+//         console.error("Error:", xhr.status, xhr.statusText);
+//         mensajeDivt.innerHTML = "Error de conexión con el servidor.";
+//         mensajeDivt.style.color = "red";
+//       }
+//     };
 
-    xhr.onerror = function () {
-      mensajeDivt.innerHTML = "Error de red al intentar verificar el RIF.";
-      mensajeDivt.style.color = "red";
-      console.error("Error de red");
-    };
+//     xhr.onerror = function () {
+//       mensajeDivt.innerHTML = "Error de red al intentar verificar el RIF.";
+//       mensajeDivt.style.color = "red";
+//       console.error("Error de red");
+//     };
 
-    const datos = `action=ValidateRif1&rif=${encodeURIComponent(input.value)}`;
-    xhr.send(datos);
-  }
-}
+//     const datos = `action=ValidateRif1&rif=${encodeURIComponent(input.value)}`;
+//     xhr.send(datos);
+//   }
+// }
 
 function getPosSerials1(rif) {
   const xhr = new XMLHttpRequest();
@@ -1410,6 +1415,7 @@ function SendDataFailure2(idStatusPayment) {
 
   const id_user = document.getElementById("id_user").value;
   const rif = document.getElementById("InputRif").value;
+  const razonsocial = document.getElementById("InputRazon").value;
   const serial = document.getElementById("serialSelect").value;
   const selectElement = document.getElementById("AsiganrCoordinador");
   const coordinador = selectElement.value;
@@ -2227,6 +2233,9 @@ function clearFormFields() {
   const rifMensaje = document.getElementById("rifMensaje");
   if (rifMensaje) rifMensaje.innerHTML = "";
 
+  const inputRazon = document.getElementById("InputRazon");
+  if (inputRazon) inputRazon.value = "";
+
   // --- Función auxiliar para limpiar un input de tipo file ---
   function clearFileInput(fileInputId) {
     const oldFileInput = document.getElementById(fileInputId);
@@ -2538,7 +2547,7 @@ function SendRif() {
               document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
               modalSerial.style.display = "block";
-              fetchSerialData(item.serial_pos, item.rif);
+              fetchSerialData(item.serial_pos, item.rif, item.razonsocial);
             };
             spanSerialClose.onclick = function () {
               modalSerial.style.display = "none";
@@ -2719,7 +2728,7 @@ function SendSerial() {
               document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
               modalSerial.style.display = "block";
-              fetchSerialData(item.serial_pos, item.rif);
+              fetchSerialData(item.serial_pos, item.rif, item.razonsocial);
             };
             spanSerialClose.onclick = function () {
               modalSerial.style.display = "none";
@@ -2896,7 +2905,7 @@ function SendRazon() {
               document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
               modalSerial.style.display = "block";
-              fetchSerialData(item.serial_pos, item.rif);
+              fetchSerialData(item.serial_pos, item.rif, item.razonsocial);
             };
             spanSerialClose.onclick = function () {
               modalSerial.style.display = "none";
@@ -3014,12 +3023,14 @@ function SendRazon() {
   xhr.send(datos);
 }
 
-function fetchSerialData(serial, rif) {
+function fetchSerialData(serial, rif,razonsocial) {
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchSerial`);
 
+  console.log(razonsocial);
   globalSerial = serial;
   globalRif = rif;
+  globalRazon = razonsocial;
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   const tbody = document
     .getElementById("serialCountTable")

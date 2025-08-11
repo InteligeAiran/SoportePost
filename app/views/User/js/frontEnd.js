@@ -265,6 +265,7 @@ function getUserData() {
           }
           $("#tabla-ticket").DataTable({
             scrollX: "200px",
+            scrollY: "300px",
             responsive: true,
             pagingType: "simple_numbers",
             lengthMenu: [5],
@@ -1106,6 +1107,7 @@ function VerModulos(idusuario) {
                         ],
 
                         scrollX: "200px",
+                        scrollY: "350px",
                         responsive: true,
                         paginate:false,
                         info:false,

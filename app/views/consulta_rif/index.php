@@ -356,6 +356,7 @@ function mi_navbar() {}
                                             cliente</label>
                                         <input type="text" onchange="checkRif()" id="InputRif" class="form-control"
                                             placeholder="JV123456789" disabled>
+                                            <input type="hidden" id="InputRazon" class="form-control"disabled>
                                         <p style="margin-left: 143%; width: 100%;" id="rifMensaje"></p>
                                     </div>
                                     <div>

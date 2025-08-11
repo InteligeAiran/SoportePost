@@ -428,7 +428,9 @@ function SendRegions() {
           //     }
           // });
 
-          $(rifCountTable).DataTable({
+          $("rifCountTable").DataTable({
+            scrollCollapse: true,
+            scrollX: "300px",
             responsive: false,
             data: TicketData,
             columns: columnsConfig,
@@ -1127,6 +1129,7 @@ function SendRango() {
           // });
 
           $(rifCountTable).DataTable({
+            scrollY: "200px",
             responsive: false,
             data: TicketData,
             columns: columnsConfig,

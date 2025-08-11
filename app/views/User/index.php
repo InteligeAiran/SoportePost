@@ -26,13 +26,10 @@ function mi_navbar() {
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
 
-
-        <!-- <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/bootstrap1.min.css"> -->
-        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/datatable.css">
-        <!-- <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/bootstrap.min.css"> -->
-        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/jquery.dataTables.min.css">
+       <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
+        <!--link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/bootstrap.css" /-->
         <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
-
         <!-- Font Awesome Icons -->
       
         <!-- CSS Files -->
@@ -57,6 +54,173 @@ function mi_navbar() {
             #icon-close:hover {
                 background-color: red;
             }
+            #rifTipo {
+                width: auto;
+                max-width: 80px;
+                padding: 0.5rem 0.75rem;
+                font-size: 1rem;
+                height: auto;
+                -webkit-appearance: none;
+                /* Elimina la apariencia nativa en navegadores WebKit */
+                -moz-appearance: none;
+                /* Elimina la apariencia nativa en Firefox */
+                appearance: none;
+                /* Elimina la apariencia nativa en otros navegadores */
+                background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>');
+                background-repeat: no-repeat;
+                background-position: right 0.5rem center;
+                background-size: 1em;
+                border-radius: 0.25rem;
+                /* Mantén o ajusta el radio del borde */
+                border: 1px solid #ced4da;
+                /* Mantén o ajusta el color del borde */
+                color: #495057;
+                /* Mantén o ajusta el color del texto */
+            }
+
+            /* Opcional: Para eliminar el espaciado extra en algunos navegadores */
+            #rifTipo::-ms-expand {
+                display: none;
+            }
+
+            div.dataTables_wrapper div.dataTables_length label {
+                font-weight: bold;
+                /* Ejemplo: Texto en negrita */
+                color: #333;
+                /* Ejemplo: Color del texto */
+                margin-right: 10px;
+                /* Ejemplo: Espacio a la derecha del label */
+                margin-top: 23px;
+            }
+
+            /* Estilizar el select dropdown del lengthMenu */
+            div.dataTables_wrapper div.dataTables_length select {
+                border: 1px solid #ccc;
+                /* Ejemplo: Borde */
+                border-radius: 5px;
+                /* Ejemplo: Bordes redondeados */
+                padding: 5px 10px;
+                /* Ejemplo: Espaciado interno */
+                font-size: 0.9em;
+                /* Ejemplo: Tamaño de la fuente */
+                width: 29%;
+            }
+
+            /* Estilizar el label "Buscar:" */
+            div.dataTables_wrapper div.dataTables_filter label {
+                font-weight: bold;
+                /* Ejemplo: Texto en negrita */
+                color: #333;
+                /* Ejemplo: Color del texto */
+                margin-right: 0.5em;
+                /* Ejemplo: Espacio a la derecha del label */
+                margin-left: -100%;
+            }
+
+            /* Estilizar el input de búsqueda */
+            div.dataTables_wrapper div.dataTables_filter input[type="search"] {
+                border: 1px solid #ccc;
+                /* Ejemplo: Borde */
+                border-radius: 0.25rem;
+                /* Ejemplo: Bordes redondeados */
+                padding: 0.375rem 0.75rem;
+                /* Ejemplo: Espaciado interno */
+                font-size: 1rem;
+                /* Ejemplo: Tamaño de la fuente */
+                color: #495057;
+                /* Ejemplo: Color del texto del input */
+                background-color: #fff;
+                /* Ejemplo: Color de fondo del input */
+                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+                /* Ejemplo: Transiciones suaves */
+                margin-top: 18px;
+            }
+
+            /* Estilizar el input de búsqueda al enfocarlo */
+            div.dataTables_wrapper div.dataTables_filter input[type="search"]:focus {
+                color: #495057;
+                background-color: #fff;
+                border-color: #007bff;
+                /* Ejemplo: Color del borde al enfocar */
+                outline: 0;
+                box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+                /* Ejemplo: Sombra al enfocar */
+            }
+
+
+            .dataTables_wrapper {
+                width: 100%;
+                overflow-x: auto;
+            }
+
+            .dataTables_scrollBody {
+                overflow-x: auto;
+                overflow-y: auto;
+                border-bottom: 1px solid #ddd;
+            }
+
+            /* Estilos para columnas específicas si es necesario */
+            #rifCountTable th:nth-child(1),
+            #rifCountTable td:nth-child(1) {
+                min-width: 50px;
+                /* ID Ticket */
+            }
+
+            #rifCountTable th:nth-child(2),
+            #rifCountTable td:nth-child(2) {
+                min-width: 100px;
+                /* Create Ticket */
+            }
+
+            /* Añade más estilos específicos para otras columnas según sea necesario */
+
+            #rifCountTable tbody tr {
+                margin-bottom: 5px;
+                /* Ajusta este valor según necesites */
+            }
+
+ 
+
+        .date-input-container {
+            display: flex;
+            gap: 2rem; /* Espacio entre los inputs */
+            padding: 2.5rem;
+            border-radius: 1rem;
+            /* box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); // Sombra opcional */
+        }
+        .date-input-wrapper {
+            position: relative;
+        }
+        input[type="text"] {
+            padding: 1rem 1.5rem; /* Más padding */
+            border: none; /* Sin borde por defecto */
+            border-radius: 0.75rem; /* Bordes más redondeados */
+            font-size: 1.25rem; /* Texto más grande */
+            width: 200px; /* Ancho fijo para cada input */
+            text-align: center;
+            background-color: #ffffff; /* Fondo blanco */
+            color: #333;
+            outline: none; /* Quita el outline por defecto en focus */
+            transition: box-shadow 0.2s ease-in-out;
+        }
+        input[type="text"]:focus {
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.4); /* Sombra azul al enfocar */
+        }
+        .error-message {
+            color: #ef4444; /* Rojo para mensajes de error */
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            position: absolute;
+            width: 100%;
+            left: 0;
+        }
+
+        #inputsDate{
+                margin-left: -190%;
+    margin-top: -18%;
+
+        }
 
         </style>
     </head>
@@ -117,7 +281,7 @@ function mi_navbar() {
 
         <div class="modal fade" id="ModalAggUsers" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"
      data-keyboard="false">
-         <div class="modal-dialog" role="document">
+         <div class="modal-dialog modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel"></h5>
@@ -228,7 +392,7 @@ function mi_navbar() {
 
     <div class="modal fade" id="ModalEditUsers" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"
      data-keyboard="false">
-         <div class="modal-dialog" role="document">
+         <div class="modal-dialog modal-dialog-scrollable"  role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel"></h5>
@@ -487,30 +651,13 @@ function mi_navbar() {
         <script src="<?php echo APP;?>app/plugins/js/perfect-scrollbar.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/js/smooth-scrollbar.min.js"></script>
         <script src="<?php echo APP;?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
-        
+
         <!-- Datatable -->
-        <script src = "<?php echo APP;?>app/plugins/datatables/datatables.min.js"></script>
-        <script src = "<?php echo APP;?>app/plugins/datatables/datatables.js"></script>
-
-        <!-- Datatable otro sistema-->
-
-        <script src = "<?php echo APP;?>DataTable/jquery.dataTables.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/dataTables.buttons.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.print.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.flash.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/pdfmake.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/jszip.min.js"></script>
-        <script src = "<?php echo APP;?>DataTable/vfs_fonts.js"></script>
-        <script src = "<?php echo APP;?>DataTable/buttons.html5.min.js"></script>
-
-
-         <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
+        <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
          <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
          <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
-         <script src = "<?php echo APP;?>js/datatables.js"></script>
-
-
-
 
         <!-- Chart -->
         <script src="<?php echo APP;?>app/plugins/chart.js/chart.js"></script>
