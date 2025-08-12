@@ -1,6 +1,7 @@
 let currentTicketIdForConfirmTaller = null;
 let currentNroTicketForConfirmTaller = null; // <--- NUEVA VARIABLE PARA EL NÚMERO DE TICKET
 let confirmInTallerModalInstance = null;
+let currentSerialPos = null; // <--- NUEVA VARIABLE PARA EL SERIAL POS
 
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -29,10 +30,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 $("#confirmTallerBtn").on("click", function () {
     const ticketIdToConfirm = currentTicketIdForConfirmTaller;
-    // const nroTicketToConfirm = currentNroTicketForConfirmTaller; // Si necesitas el nro_ticket aquí
+    const nroTicketToConfirm = currentNroTicketForConfirmTaller; // Si necesitas el nro_ticket aquí
+    const serialPosToConfirm = currentSerialPos; // Si necesitas el serial_pos aquí
+    
 
     if (ticketIdToConfirm) {
-      updateTicketStatusInRegion(ticketIdToConfirm);
+      updateTicketStatusInRegion(ticketIdToConfirm, nroTicketToConfirm, serialPosToConfirm);
       if (confirmInTallerModalInstance) {
         confirmInTallerModalInstance.hide();
       }
@@ -286,18 +289,33 @@ function getTicketDataFinaljs() {
                 width: "8%",
                 render: function (data, type, row) {
                     const idTicket = row.id_ticket;
-                    const accionllaves = row.name_accion_ticket; // Necesitas esta variable para la condición
+                    const nroTicket = row.nro_ticket;
+                    const accionllaves = row.name_accion_ticket;
+                    const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
+                    
+                    // Obtener la ruta del documento, si existe.
+                    const documentUrl = row.file_paths || row.document_path || '';
+                    const documentType = getDocumentType(documentUrl);
+                    const documentName = row.original_filename || row.file_name || 'Documento';
 
-                    // "cuando el status de name_accion_ticket sea: Llaves Cargadas me tiene que aparecer un boton para subir una imagen"
-                    if (accionllaves === "En la región") {
-                        return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
+                    if (hasEnvioDestinoDocument) {
+                        // Se asume que el estatus "En la región" significa que el documento ya fue subido y puede ser visto
+                        if(row.name_accion_ticket === "En la región"){
+                            // CORRECCIÓN: Agregar los atributos data-url-document y data-document-type al botón
+                            return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
                                 data-id-ticket="${idTicket}"
+                                data-nro-ticket="${nroTicket}"
+                                data-url-document="${documentUrl}"
+                                data-document-type="${documentType}"
+                                data-document-name="${documentName}"
                                 data-bs-toggle="modal"
-                                data-bs-target="#viewDocumentModal"> Ver Documento Cargados
+                                data-bs-target="#viewDocumentModal">Ver Documento Cargados
                             </button>`;
+                        } else {
+                            return `<button type="button" class="btn btn-secondary btn-sm disabled">Confirme Recibido</button>`; 
+                        }
                     } else {
-                        // Si el estatus no es "Llaves Cargadas", muestra "No hay imagen"
-                        return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Docuemntos Cargados</button>`;
+                        return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Documentos Cargados</button>`;
                     }
                 },
             });
@@ -511,6 +529,7 @@ function getTicketDataFinaljs() {
 
                                 currentTicketIdForConfirmTaller = ticketId;
                                 currentNroTicketForConfirmTaller = nroTicket;
+                                currentSerialPos = serialPos; // Asegúrate de que serial_pos esté definido
 
                                 $("#modalTicketIdConfirmTaller").val(ticketId);
                                 $("#modalHiddenNroTicketConfirmTaller").val(nroTicket);
@@ -645,6 +664,148 @@ function getTicketDataFinaljs() {
 
 document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
 
+// Función para determinar el tipo de documento basado en la extensión
+// Función para determinar el tipo de documento
+function getDocumentType(filePath) {
+    if (!filePath) return 'unknown';
+    
+    // Si tienes múltiples archivos separados por '|', toma el primero
+    const singleFilePath = filePath.split('|')[0];
+    const extension = singleFilePath.split('.').pop().toLowerCase();
+    
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension)) {
+        return 'image';
+    } else if (['pdf'].includes(extension)) {
+        return 'pdf';
+    } else {
+        return 'unknown';
+    }
+}
+
+// Event listener para manejar los clics en los botones
+document.addEventListener("click", function (event) {
+    // Maneja el botón para subir, si existe
+    const openUploadBtn = event.target.closest("#openModalButton");
+    if (openUploadBtn) {
+        event.preventDefault();
+        const idTicket = openUploadBtn.dataset.idTicket;
+        showUploadModal(idTicket);
+        return;
+    }
+
+    // Maneja el botón para ver la imagen
+    const openViewBtn = event.target.closest("#viewimage");
+    if (openViewBtn) {
+        event.preventDefault();
+        const idTicket = openViewBtn.dataset.idTicket;
+        const nroTicket = openViewBtn.dataset.nroTicket;
+        const documentUrl = openViewBtn.dataset.urlDocument;
+        
+        // CORRECCIÓN: Obtenemos el tipo de documento de la función
+        const documentType = getDocumentType(documentUrl);
+        
+        // IMPORTANTE: Aquí se debe construir la URL completa y accesible por el navegador
+        // Reemplaza '/uploads_tickets/' con la ruta real en tu servidor web
+        
+        if (documentType === 'image') {
+            showViewModal(idTicket, nroTicket, documentUrl, null);
+        } else if (documentType === 'pdf') {
+            showViewModal(idTicket, nroTicket, null, fullDocumentUrl);
+        } else {
+            console.warn("Tipo de documento no especificado para la visualización.");
+            showViewModal(idTicket, nroTicket, null, null);
+        }
+    }
+});
+
+// Función para mostrar el modal de visualización
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl) {
+    const modalElementView = document.getElementById("viewDocumentModal");
+    const modalTicketIdSpanView = modalElementView ? modalElementView.querySelector("#viewModalTicketId") : null;
+
+    let bsViewModal = null;
+    if (modalElementView) {
+        bsViewModal = new bootstrap.Modal(modalElementView, { keyboard: false });
+    }
+
+    currentTicketId = ticketId;
+    currentNroTicket = nroTicket;
+    if (modalTicketIdSpanView) {
+        modalTicketIdSpanView.textContent = currentNroTicket;
+    }
+
+    const imageViewPreview = document.getElementById("imageViewPreview");
+    const pdfViewViewer = document.getElementById("pdfViewViewer");
+    const messageContainer = document.getElementById("viewDocumentMessage");
+
+    // Limpiar vistas y mensajes
+    if (imageViewPreview) imageViewPreview.style.display = "none";
+    if (pdfViewViewer) pdfViewViewer.style.display = "none";
+    if (messageContainer) {
+        messageContainer.textContent = "";
+        messageContainer.classList.add("hidden");
+    }
+
+    const fullUrl = `C:/${imageUrl}`;
+
+console.log("URL de imagen:", fullUrl);
+    if (imageUrl) {
+        // CORRECCIÓN: Asigna la URL construida
+        if (imageViewPreview) {
+             imageViewPreview.src = fullUrl;
+             imageViewPreview.style.display = "block";
+        }
+    } else if (pdfUrl) {
+        // CORRECCIÓN: Asigna la URL construida
+        if (pdfViewViewer) {
+            pdfViewViewer.innerHTML = `<iframe src="${pdfUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
+            pdfViewViewer.style.display = "block";
+        }
+    } else {
+        if (messageContainer) {
+            messageContainer.textContent = "No hay documento disponible para este ticket.";
+            messageContainer.classList.remove("hidden");
+        }
+    }
+
+    if (bsViewModal) {
+        bsViewModal.show();
+    } else {
+        console.error("Error: Instancia de Bootstrap Modal para 'viewDocumentModal' no creada.");
+    }
+}
+
+// Tu función showUploadModal permanece sin cambios ya que el problema está en la visualización
+function showUploadModal(ticketId) {
+    const modalElementUpload = document.getElementById("uploadDocumentModal");
+    const modalTicketIdSpanUpload = modalElementUpload ? modalElementUpload.querySelector("#uploadModalTicketId") : null;
+    const inputFile = modalElementUpload ? modalElementUpload.querySelector("#documentFile") : null;
+    let bsUploadModal = null;
+
+    if (modalElementUpload) {
+        bsUploadModal = new bootstrap.Modal(modalElementUpload, { keyboard: false });
+    }
+
+    currentTicketId = ticketId;
+    if (modalTicketIdSpanUpload) {
+        modalTicketIdSpanUpload.textContent = currentTicketId;
+    }
+
+    if (inputFile) {
+        inputFile.value = "";
+        const imagePreview = document.getElementById("imagePreview");
+        if (imagePreview) {
+            imagePreview.src = "#";
+            imagePreview.style.display = "none";
+        }
+    }
+
+    if (bsUploadModal) {
+        bsUploadModal.show();
+    } else {
+        console.error("Error: Instancia de Bootstrap Modal para 'uploadDocumentModal' no creada.");
+    }
+}
 
 function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
@@ -1004,7 +1165,7 @@ function loadTicketHistory(ticketId) {
     });
 }
 
-function updateTicketStatusInRegion(ticketId) {
+function updateTicketStatusInRegion(ticketId, nroTicketToConfirm, serialPosToConfirm) {
   const id_user = document.getElementById("userId").value;
 
   const dataToSendString = `action=UpdateStatusToReceiveInRegion&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(ticketId)}`;
@@ -1025,11 +1186,11 @@ function updateTicketStatusInRegion(ticketId) {
         if (response.success === true) {
           // Or `response.success == "true"` if your backend sends a string
           Swal.fire({
-            // Changed from swal(...) to Swal.fire(...)
             title: "¡Éxito!",
-            text: "El POS se encontrará en el taller como 'En Proceso de reparación'.",
+            html: `El Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPosToConfirm}</span> asociado al Nro de Ticket <span  style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicketToConfirm}</span> fue recibido en la región.`,
             icon: "success",
             confirmButtonText: "Ok", // SweetAlert2 uses confirmButtonText
+            confirmButtonColor: "#003594", // SweetAlert2 uses confirmButtonColor
             customClass: {
               confirmButton: "BtnConfirmacion", // For custom button styling
             },
@@ -1090,77 +1251,4 @@ function updateTicketStatusInRegion(ticketId) {
     );
   };
   xhr.send(dataToSendString);
-}
-
-
-document.addEventListener("click", function (event) {
-  const openUploadBtn = event.target.closest("#openModalButton");
-  if (openUploadBtn) {
-    event.preventDefault(); // Previene el comportamiento por defecto del botón
-    const idTicket = openUploadBtn.dataset.idTicket;
-    showUploadModal(idTicket);
-    return; // Detiene la ejecución para no procesar otros botones
-  }
-
-  const openViewBtn = event.target.closest("#viewimage"); // O la clase CSS que uses
-  if (openViewBtn) {
-    event.preventDefault();
-    const idTicket = openViewBtn.dataset.idTicket;
-    const nroTicket = openViewBtn.dataset.nroTicket; // Asegúrate de que este atributo exista en tu botón dinámico
-    const documentUrl = openViewBtn.dataset.urlDocument; // Asegúrate de que este atributo exista en tu botón dinámico
-    const documentType = openViewBtn.dataset.documentType; // 'image' o 'pdf'
-
-    if (documentType === 'image') {
-      showViewModal(idTicket, nroTicket, documentUrl, null);
-    } else if (documentType === 'pdf') {
-      showViewModal(idTicket, nroTicket, null, documentUrl);
-    } else {
-      console.warn("Tipo de documento no especificado para la visualización.");
-      showViewModal(idTicket, nroTicket, null, null); // Abre el modal sin contenido
-    }
-    return;
-  }
-});
-
-
-function showUploadModal(ticketId) {
-  currentTicketId = ticketId; // Guarda el ID del ticket
-  if (modalTicketIdSpanUpload) {
-    modalTicketIdSpanUpload.textContent = currentTicketId;
-  }
-
-  // Aquí puedes cargar la imagen previa, etc.
-  if (inputFile) {
-    inputFile.value = ""; // Limpiar el input de archivo al abrir
-    const imagePreview = document.getElementById("imagePreview");
-    if (imagePreview) {
-      imagePreview.src = "#";
-      imagePreview.style.display = "none";
-    }
-  }
-
-  if (bsUploadModal) {
-    bsUploadModal.show(); // Usa el método de Bootstrap para mostrar el modal
-  } else {
-    console.error("Error: Instancia de Bootstrap Modal para 'uploadDocumentModal' no creada.");
-    // Si no usas Bootstrap JS, aquí iría tu lógica manual de mostrarModal
-    modalElementUpload.style.display = "block";
-    setTimeout(() => {
-      modalElementUpload.classList.add("show");
-    }, 10);
-
-    let backdrop = document.querySelector(".manual-modal-backdrop");
-
-    if (!backdrop) {
-      backdrop = document.createElement("div");
-      backdrop.classList.add("manual-modal-backdrop", "fade");
-      document.body.appendChild(backdrop);
-    }
-
-    setTimeout(() => {
-      backdrop.classList.add("show");
-    }, 10);
-    document.body.classList.add("modal-open");
-    modalElementUpload.setAttribute("aria-hidden", "false");
-  }
 }

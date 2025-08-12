@@ -345,12 +345,12 @@ function mi_navbar() {}
                                 </svg>
                             </div>
                             <p id="TextConfirmTaller">¿Marcar el Pos con el serial <span id="serialPost"
-                                    style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"></span>
+                                    style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"></span>
                                 asociado al Nro de ticket: <span id="modalTicketIdConfirmTaller"
-                                    style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"></span>
+                                    style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"></span>
                                 como recibido?</p>
                             <p class="small-text"
-                                style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                                style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
                                 Esta acción registrará la fecha de recepción y habilitará la opción de entregar a Cliente.</p>
                         </div>
                         <div class="modal-footer custom-modal-footer d-flex justify-content-center">
@@ -363,36 +363,34 @@ function mi_navbar() {}
             </div>
         <!-- MODAL PARA CONFIRMAR EN REGION -->
 
-        <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
-            <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel"
-                aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-                <div class="modal-dialog modal-dialog-centered modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <strong>
-                                <h5 class="modal-title text-lg font-semibold text-gray-800" id="viewDocumentModalLabel">
-                                    Documento para Ticket: <span id="viewModalTicketId"></span></h5>
-                            </strong>
-                            <button type="button" class="btn-close" id="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
+       <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
+        <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header bg-gradient-primary">
+                        <strong>
+                            <h5 class="modal-title text-lg font-semibold text-gray-800" id="viewDocumentModalLabel">
+                                Documento para Nro Ticket: <span id="viewModalTicketId"></span></h5>
+                        </strong>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label>Nombre de la imagen: <span id="NombreImage"></span></label>
                         </div>
-                        <div class="modal-body">
-                            <div class="mb-3 text-center">
-                                <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen"
-                                    style="max-width: 100%; height: auto; display: none;">
-                                <div id="pdfViewViewer"
-                                    style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
-                            </div>
-                            <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
+                        <div class="mb-3 text-center" style="max-height: 80vh; overflow-y: auto;">
+                            <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen" style="max-width: 100%; height: auto; display: none;">
+                            <div id="pdfViewViewer" style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" id="modalCerrarshow"
-                                data-bs-dismiss="modal">Cerrar</button>
-                        </div>
+                        <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="modalCerrarshow"
+                            data-bs-dismiss="modal">Cerrar</button>
                     </div>
                 </div>
             </div>
-        <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
+        </div>
+    <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
 
         <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 

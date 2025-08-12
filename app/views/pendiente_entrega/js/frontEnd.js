@@ -1637,7 +1637,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const documentPathFromBackend = filePath; 
 
       // AQUI ESTA LA CORRECCIÓN: Concatena la ruta de tu servidor con la ruta del backend
-      const fullUrl = `http://localhost/SoportePost/${documentPathFromBackend}`;
+      const fullUrl = `http://${documentPathFromBackend}`;
 
       if (mimeType.startsWith("image/")) {
           imageViewPreview.src = fullUrl; // Usa la URL completa aquí
