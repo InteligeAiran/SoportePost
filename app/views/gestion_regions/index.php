@@ -254,6 +254,10 @@ function mi_navbar() {}
                 border-radius: 5px;
                 transition: background-color 0.3s ease;
             }
+
+            #modalCerrarshow:hover{
+                background-color: red;
+            }
         </style>
     </head>
 

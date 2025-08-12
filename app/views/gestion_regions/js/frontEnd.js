@@ -145,7 +145,6 @@ function getTicketDataFinaljs() {
   const tableContainer = document.querySelector(".table-responsive");
 
    const columnTitles = {
-        nro_ticket: "Nro Ticket",
         serial_pos: "Serial POS",
         rif: "Rif",
         name_failure: "Falla",
@@ -267,15 +266,21 @@ function getTicketDataFinaljs() {
 
                     // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
                     if (name_accion_ticket === "En espera de confirmar recibido en Región") {
-                        actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
-                                            data-id-ticket="${idTicket}"
-                                            data-serial-pos="${serialPos}"
-                                            data-nro-ticket="${nroTicket}">
-                                            <i class="fas fa-hand-holding-box"></i> Recibido
-                                        </button>`;
+                      actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
+                        data-id-ticket="${idTicket}"
+                        data-serial-pos="${serialPos}"
+                        data-nro-ticket="${nroTicket}">
+                        <i class="fas fa-hand-holding-box"></i> Recibido
+                      </button>`;
+                    }else{
+                      actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
+                        data-id-ticket="${idTicket}"
+                        data-serial-pos="${serialPos}"
+                        data-nro-ticket="${nroTicket}">
+                        <i class="fas fa-truck"></i> Entregar A cliente
+                      </button>`;
                     }
-                   
-                    return actionButton;
+                  return actionButton;
                 },
             });
 
@@ -296,27 +301,27 @@ function getTicketDataFinaljs() {
                     // Obtener la ruta del documento, si existe.
                     const documentUrl = row.file_paths || row.document_path || '';
                     const documentType = getDocumentType(documentUrl);
-                    const documentName = row.original_filename || row.file_name || 'Documento';
+                    const documentName = row.original_filenames || row.file_name || 'Documento';
 
                     if (hasEnvioDestinoDocument) {
-                        // Se asume que el estatus "En la región" significa que el documento ya fue subido y puede ser visto
-                        if(row.name_accion_ticket === "En la región"){
-                            // CORRECCIÓN: Agregar los atributos data-url-document y data-document-type al botón
-                            return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
-                                data-id-ticket="${idTicket}"
-                                data-nro-ticket="${nroTicket}"
-                                data-url-document="${documentUrl}"
-                                data-document-type="${documentType}"
-                                data-document-name="${documentName}"
-                                data-bs-toggle="modal"
-                                data-bs-target="#viewDocumentModal">Ver Documento Cargados
-                            </button>`;
-                        } else {
-                            return `<button type="button" class="btn btn-secondary btn-sm disabled">Confirme Recibido</button>`; 
-                        }
+                      // Se asume que el estatus "En la región" significa que el documento ya fue subido y puede ser visto
+                      if(row.name_accion_ticket === "En la región" || row.name_accion_ticket === "Entregado a Cliente"){
+                        // CORRECCIÓN: Agregar los atributos data-url-document y data-document-type al botón
+                        return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
+                          data-id-ticket="${idTicket}"
+                          data-nro-ticket="${nroTicket}"
+                          data-url-document="${documentUrl}"
+                          data-document-type="${documentType}"
+                          data-document-name="${documentName}"
+                          data-bs-toggle="modal"
+                          data-bs-target="#viewDocumentModal">Ver Documento Cargados
+                        </button>`;
+                      } else {
+                        return `<button type="button" class="btn btn-secondary btn-sm disabled">Confirme Recibido</button>`; 
+                      }
                     } else {
-                        return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Documentos Cargados</button>`;
-                    }
+                      return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Documentos Cargados</button>`;
+                  }
                 },
             });
 
@@ -355,8 +360,92 @@ function getTicketDataFinaljs() {
                 buttons: {
                   colvis: "Visibilidad de Columna",
                 },
-              },   
+              },
+              
+              dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+            initComplete: function (settings, json) {
+              // Dentro de initComplete, 'this' se refiere a la tabla jQuery
+              // y 'this.api()' devuelve la instancia de la API de DataTables.
+              const api = this.api(); // <--- Correcto: Obtener la instancia de la API aquí
+
+            // Esto es parte de tu inicialización de DataTables, probablemente dentro de 'initComplete'
+            // o en un script que se ejecuta después de que la tabla está lista.
+            const buttonsHtml = `
+                                <button id="btn-por-asignar" class="btn btn-primary me-2" title="Pendiente por confirmar recibido en la Región">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                                  </svg>
+                                </button>
+
+                                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets en la Región">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house-door" viewBox="0 0 16 16">
+                                    <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z"/>
+                                  </svg>
+                                </button>
+
+                                <button id="btn-asignados" class="btn btn-secondary me-2" title="Entregados al Cliente">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                    </svg>
+                                </button>`;
+            $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+
+            function setActiveButton(activeButtonId) {
+                $("#btn-por-asignar")
+                    .removeClass("btn-primary")
+                    .addClass("btn-secondary");
+                $("#btn-asignados")
+                    .removeClass("btn-primary")
+                    .addClass("btn-secondary");
+                $("#btn-recibidos")
+                    .removeClass("btn-primary")
+                    .addClass("btn-secondary");
+                $("#btn-reasignado")
+                    .removeClass("btn-primary")
+                    .addClass("btn-secondary");
+                $(`#${activeButtonId}`)
+                    .removeClass("btn-secondary")
+                    .addClass("btn-primary");
+            }
+
+            api.columns().search('').draw(false);
+            api // <--- Usar 'api' en lugar de 'dataTableInstance'
+              .column(8)
+              .search("^En espera de confirmar recibido en Región$", true) // CAMBIO AQUÍ
+              .draw();
+            setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
+
+            $("#btn-por-asignar").on("click", function () {
+              api.columns().search('').draw(false);
+              api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                .column(8)
+                .search("^En espera de confirmar recibido en Región$", true) // <-- Cambio aquí
+                .draw();
+              setActiveButton("btn-por-asignar");
             });
+
+            
+            $("#btn-recibidos").on("click", function () {
+              api.columns().search('').draw(false);
+              api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                .column(8)
+                .search("^En la región$")
+                .draw();
+              setActiveButton("btn-recibidos");
+            });
+
+            $("#btn-asignados").on("click", function () {
+                api.columns().search('').draw(false);
+                api.column(14).visible(false);
+                api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                    .column(8)
+                    .search("^Entregado a Cliente$") // <-- Cambio aquí
+                    .draw();
+                setActiveButton("btn-asignados");
+            });
+          },
+        });
 
                   $(document).on("click", ".deliver-ticket-btn", function () {
                     const idTicket = $(this).data("id-ticket");
@@ -377,10 +466,10 @@ function getTicketDataFinaljs() {
                         <p class="h4 mb-3" style="color: black;">¿Desea marcar el dispositivo con serial <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> del Ticket Nro: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> como "Entregado al Cliente"?</p> 
                         <p class="h5" style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">Esta acción registrará la fecha de entrega al cliente.</p>
                       </div>`,
-                      confirmButtonText: "Sí, Confirmar Entrega",
+                      confirmButtonText: " Confirmar Entrega",
                       color: "black",
                       confirmButtonColor: "#28a745", // Un color verde para la confirmación
-                      cancelButtonText: "No, cancelar",
+                      cancelButtonText: "Cancelar",
                       focusConfirm: false,
                       allowOutsideClick: false,
                       showCancelButton: true,
@@ -684,7 +773,6 @@ function getDocumentType(filePath) {
 
 // Event listener para manejar los clics en los botones
 document.addEventListener("click", function (event) {
-    // Maneja el botón para subir, si existe
     const openUploadBtn = event.target.closest("#openModalButton");
     if (openUploadBtn) {
         event.preventDefault();
@@ -700,6 +788,7 @@ document.addEventListener("click", function (event) {
         const idTicket = openViewBtn.dataset.idTicket;
         const nroTicket = openViewBtn.dataset.nroTicket;
         const documentUrl = openViewBtn.dataset.urlDocument;
+        const documentName = openViewBtn.dataset.documentName;
         
         // CORRECCIÓN: Obtenemos el tipo de documento de la función
         const documentType = getDocumentType(documentUrl);
@@ -708,9 +797,9 @@ document.addEventListener("click", function (event) {
         // Reemplaza '/uploads_tickets/' con la ruta real en tu servidor web
         
         if (documentType === 'image') {
-            showViewModal(idTicket, nroTicket, documentUrl, null);
+            showViewModal(idTicket, nroTicket, documentUrl, null, documentName);
         } else if (documentType === 'pdf') {
-            showViewModal(idTicket, nroTicket, null, fullDocumentUrl);
+            showViewModal(idTicket, nroTicket, null, documentUrl, documentName);
         } else {
             console.warn("Tipo de documento no especificado para la visualización.");
             showViewModal(idTicket, nroTicket, null, null);
@@ -719,7 +808,7 @@ document.addEventListener("click", function (event) {
 });
 
 // Función para mostrar el modal de visualización
-function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl) {
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     const modalElementView = document.getElementById("viewDocumentModal");
     const modalTicketIdSpanView = modalElementView ? modalElementView.querySelector("#viewModalTicketId") : null;
 
@@ -737,6 +826,9 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl) {
     const imageViewPreview = document.getElementById("imageViewPreview");
     const pdfViewViewer = document.getElementById("pdfViewViewer");
     const messageContainer = document.getElementById("viewDocumentMessage");
+    const nameDocumento = document.getElementById("NombreImage");
+    const cerrarBotonModal = document.getElementById("modalCerrarshow");
+
 
     // Limpiar vistas y mensajes
     if (imageViewPreview) imageViewPreview.style.display = "none";
@@ -746,20 +838,21 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl) {
         messageContainer.classList.add("hidden");
     }
 
-    const fullUrl = `C:/${imageUrl}`;
+  const fullUrl = `http://localhost/SoportePost/${imageUrl}`;
 
-console.log("URL de imagen:", fullUrl);
     if (imageUrl) {
         // CORRECCIÓN: Asigna la URL construida
         if (imageViewPreview) {
              imageViewPreview.src = fullUrl;
              imageViewPreview.style.display = "block";
+             nameDocumento.textContent = documentName;
         }
     } else if (pdfUrl) {
         // CORRECCIÓN: Asigna la URL construida
         if (pdfViewViewer) {
             pdfViewViewer.innerHTML = `<iframe src="${pdfUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
             pdfViewViewer.style.display = "block";
+            nameDocumento.textContent = documentName;
         }
     } else {
         if (messageContainer) {
@@ -773,6 +866,14 @@ console.log("URL de imagen:", fullUrl);
     } else {
         console.error("Error: Instancia de Bootstrap Modal para 'viewDocumentModal' no creada.");
     }
+
+    if (cerrarBotonModal) {
+      cerrarBotonModal.addEventListener("click", function (event) {
+        event.preventDefault();
+        bsViewModal.hide();
+      });
+    }
+
 }
 
 // Tu función showUploadModal permanece sin cambios ya que el problema está en la visualización
@@ -863,7 +964,7 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Usuario Gestión:</div></strong>
-                          ${d.full_name_tecnico1}
+                          ${d.full_name_tecnico}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Dirección Instalación:</div></strong>

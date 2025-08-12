@@ -338,7 +338,6 @@ function inicializeModal() {
           if (InputRifModal2) 
             InputRifModal2.value = globalRif;
             InputRazon2.value = globalRazon;
-            console.log(globalRazon);
           if (serialSelectModal2) {
             serialSelectModal2.innerHTML = `<input value="${globalSerial}">${globalSerial}</input>`;
             // Puedes seleccionar la opción si lo deseas:
@@ -1647,33 +1646,36 @@ function SendDataFailure2(idStatusPayment) {
                  `<div style="text-align: left; padding: 15px;">
                     <h3 style="color: #0056b3; margin-bottom: 15px; text-align: center;">🔧 ¡Ticket Generado! 🔧</h3>
                     <p style="font-size: 1.1em; margin-bottom: 10px;">
-                      <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.Nr_ticket}</span>
+                        <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.Nr_ticket}</span>
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>⚙️ Serial del Equipo:</strong> ${ticketData.serial}
+                        <strong>⚙️ Serial del Equipo:</strong> ${ticketData.serial}
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>�� Falla Reportada:</strong> ${ticketData.falla_text}
+                        <strong>❌ Falla Reportada:</strong> ${ticketData.falla_text}
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>📊 Nivel de Falla:</strong> ${ticketData.nivelFalla_text}
+                        <strong>📊 Nivel de Falla:</strong> ${ticketData.nivelFalla_text}
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>🏢 RIF Cliente:</strong> ${ticketData.rif || "N/A"}
+                        <strong>🏢 RIF Cliente:</strong> ${ticketData.rif || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>�� Usuario Gestión:</strong> ${ticketData.user_gestion || "N/A"}
+                      <strong>🏢Razon Social:</strong> ${globalRazon || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.coordinador || "N/A"}
+                        <strong>👥 Usuario Gestión:</strong> ${ticketData.user_gestion || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>�� Estado de Documentos:</strong> <span style="color: darkblue; font-weight: bold;">${ticketData.status_payment || "N/A"}</span>
+                        <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.coordinador || "N/A"}
+                    </p>
+                    <p style="margin-bottom: 8px;">
+                        <strong>📄 Estado de Documentos:</strong> <span style="color: darkblue; font-weight: bold;">${ticketData.status_payment || "N/A"}</span>
                     </p>
                     <strong>
                       <p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
                         Se ha enviado una notificación por correo electrónico.<br>
-                        <h7>El Estatus del Ticket es: <span style = "color: #28a745"; font-weight: bold;">${ticketData.status_text}</span></h7>
+                        <h7><strong>El Estatus del Ticket es:</strong> <span style = "color: #28a745"; font-weight: bold;">${ticketData.status_text}</span></h7>
                       </p>
                     </strong>
                   </div>`;
@@ -2065,6 +2067,10 @@ function SendDataFailure1() {
                                         <strong>🏢 RIF Cliente:</strong> ${
                                           ticketData.rif || "N/A"
                                         }
+                                    </p>
+                                   <p style="margin-bottom: 8px;">
+                                      <strong>🏢Razon Social:</strong> ${globalRazon || "N/A"}
+                                    </p>
                                     </p>
                                     <strong><p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
                                         Se ha enviado una notificación por correo electrónico.<br>
