@@ -1626,28 +1626,44 @@ document.addEventListener("DOMContentLoaded", function () {
     const nameDocumento = document.getElementById("NombreImage");
 
     // Función auxiliar para mostrar el documento en el MODAL
-    function displayDocumentInViewModal(filePath, mimeType, originalName) {
-        imageViewPreview.style.display = "none";
-        pdfViewViewer.style.display = "none";
-        viewDocumentMessage.classList.add("hidden");
-        viewDocumentMessage.textContent = "";
-        nameDocumento.textContent = originalName;
-        
-       // La ruta que recibes del backend ya debería ser 'uploads_tickets/...'
-      const documentPathFromBackend = filePath; 
+function displayDocumentInViewModal(filePath, mimeType, originalName) {
+    imageViewPreview.style.display = "none";
+    pdfViewViewer.style.display = "none";
+    viewDocumentMessage.classList.add("hidden");
+    viewDocumentMessage.textContent = "";
+    nameDocumento.textContent = originalName;
 
-      // AQUI ESTA LA CORRECCIÓN: Concatena la ruta de tu servidor con la ruta del backend
-      const fullUrl = `http://localhost/SoportePost/${documentPathFromBackend}`;
+    // 1. Limpiar la ruta: Eliminar el prefijo 'D:/' y las barras invertidas
+    // `filePath` sigue llegando con la ruta completa del disco.
+    let documentPathFromBackend = filePath;
+    
+    // Primero, reemplaza las barras invertidas con barras normales para estandarizar
+    documentPathFromBackend = documentPathFromBackend.replace(/\\/g, '/');
 
-      if (mimeType.startsWith("image/")) {
-          imageViewPreview.src = fullUrl; // Usa la URL completa aquí
-          imageViewPreview.style.display = "block";
-      } else if (mimeType === "application/pdf") {
-          // Para PDF, también debes usar la URL completa
-          pdfViewViewer.innerHTML = `<embed src="${fullUrl}" type="application/pdf" width="100%" height="100%">`;
-          pdfViewViewer.style.display = "block";
-      }
+    // Después, elimina el prefijo `D:/uploads_tickets/` para que solo quede el resto de la ruta.
+    // Esto asume que el Alias de Apache es `/uploads` y el archivo está en `D:/uploads_tickets/`.
+    // La parte `uploads_tickets/` no se debe incluir en la URL si el `Alias` ya lo hace.
+    const pathSegments = documentPathFromBackend.split('uploads_tickets/');
+    if (pathSegments.length > 1) {
+        documentPathFromBackend = pathSegments[1];
     }
+
+    // 2. Construir la URL con la ruta limpia
+    // El Alias de Apache `/uploads` ya apunta a `D:/uploads_tickets/`, por lo que la URL final no debe repetir la carpeta.
+    const fullUrl = `http://localhost:8080/uploads/${documentPathFromBackend}`;
+
+    if (mimeType.startsWith("image/")) {
+        // Asegúrate de que `verImage` se haya declarado correctamente, ya sea con `let` o `const`
+        const verImage = document.getElementById("verImage");
+        imageViewPreview.src = fullUrl;
+        //verImage.href = fullUrl;
+        imageViewPreview.style.display = "block";
+    } else if (mimeType === "application/pdf") {
+        pdfViewViewer.innerHTML = `<embed src="${fullUrl}" type="application/pdf" width="100%" height="100%">`;
+        pdfViewViewer.style.display = "block";
+    }
+}
+
 
     // --- Listener para el evento 'click' en el botón 'Ver Imagen' ---
     document.body.addEventListener("click", function (event) {
