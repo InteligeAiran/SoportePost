@@ -85,9 +85,65 @@ function mi_navbar() {}
             border-radius: 0.5rem;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
+
         .hidden {
             display: none !important;
         }
+
+        #BotonCerrarSelectDocument:hover{
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #btnConfirmarVisualizacion{
+            color: white;
+            background-color: #003594;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #btnConfirmarVisualizacion:hover{
+            background-color: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #CerrarModalVizualizar:hover{
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #botonMostarImage{
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #botonMostarNoImage{
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #RechazoDocumento{
+            color: white;
+            background-color: #FF0000;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
     </style>
 </head>
 
@@ -320,7 +376,6 @@ function mi_navbar() {}
                 <div class="modal-content">
                     <div class="modal-header bg-gradient-primary">
                         <h5 class="modal-title" id="visualizarImagenModalLabel">Seleccione la imagen que desea visualizar:</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                     </div>
                     <div class="modal-body">
                         <div class="form-check">
@@ -357,7 +412,6 @@ function mi_navbar() {}
                 <div class="modal-content">
                     <div class="modal-header bg-gradient-primary">
                         <h5 class="modal-title" id="viewDocumentModalLabel">Visualizando Documento - Ticket: <span id="viewModalTicketId"></span></h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                     </div>
                     <div class="modal-body text-center">
                         <h6 id="NombreImage" class="mb-3" style="color: black;"></h6>
@@ -367,6 +421,7 @@ function mi_navbar() {}
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="CerrarModalVizualizar">Cerrar</button>
+                        <button type="button" class="btn btn-secondary" id="RechazoDocumento">Rechazar Documento</button>
                     </div>
                 </div>
             </div>
