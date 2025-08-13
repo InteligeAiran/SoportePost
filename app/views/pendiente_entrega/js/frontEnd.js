@@ -1610,7 +1610,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const pdfViewViewer = document.getElementById("pdfViewViewer");
     const viewDocumentMessage = document.getElementById("viewDocumentMessage");
     const nameDocumento = document.getElementById("NombreImage");
-
     // Función auxiliar para mostrar el documento en el MODAL
     function displayDocumentInViewModal(filePath, mimeType, originalName) {
       imageViewPreview.style.display = "none";

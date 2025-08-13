@@ -41,7 +41,7 @@ define('tituloPagina', value: 'Soporte Post Venta');
 //define('UPLOAD_BASE_DIR', 'C:/Users/Airan Bracamonte/Documents/uploads_tickets/'); 
 //define(constant_name: 'UPLOAD_BASE_DIR', 'D:\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
 //define('UPLOAD_BASE_DIR', '..\\..\\Documents\\uploads_tickets/'); // O 'C:\\uploads_tickets\\' si es tu unidad C
-define('UPLOAD_BASE_DIR', '/uploads_tickets/');
+define('UPLOAD_BASE_DIR', 'C:\Documentos_SoportePost\\');
 
 //Envio Correo 
 define('SMTP_HOST', 'smtp.gmail.com');

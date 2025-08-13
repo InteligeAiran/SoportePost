@@ -148,6 +148,21 @@ function mi_navbar() {}
                 cursor: pointer;
                 padding: 10px 20px;
             }
+
+            /* Estilos para la palabra de bienvenida */
+            #welcomeMessage h1 {
+                font-size: 2.8rem; /* Tamaño de letra más grande */
+                color: transparent; 
+                font-family: 'Poppins', sans-serif; /* Un tipo de letra moderno y limpio */
+                font-weight: 600; /* Texto más audaz */
+                /*text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil para la letra */
+                text-shadow: 2px 35px 0px rgba(0, 0, 0, 0.1);
+                letter-spacing: 1px; /* Espaciado entre letras para un mejor look */
+                line-height: 1.4; /* Espaciado de línea para que las palabras no se amontonen */
+                margin-top: 46%;
+                margin-left: 35%;
+                position: absolute;
+            }
         </style>
     </head>
 
@@ -178,6 +193,9 @@ function mi_navbar() {}
                             <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
                         </div>
                         <div id="SearchRif" class="mb-3 d-flex align-items-center">
+                            <div id="welcomeMessage" class="d-flex justify-content-center align-items-center">
+                                <h1 class="text-center">Ingrese los datos del Cliente</h1>
+                            </div>
                             <div class="d-flex align-items-center">
                                 <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none;">
                                     <option value="J">J</option>

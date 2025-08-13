@@ -202,9 +202,21 @@ function mi_navbar() {}
         }
 
         #inputsDate{
-                margin-left: -190%;
-    margin-top: -18%;
+            margin-left: -190%;
+            margin-top: -18%;
+        }
 
+        /* Estilos para la palabra de bienvenida */
+        #welcomeMessage h1 {
+            font-size: 2.8rem; /* Tamaño de letra más grande */
+            color: transparent; 
+            font-family: 'Poppins', sans-serif; /* Un tipo de letra moderno y limpio */
+            font-weight: 600; /* Texto más audaz */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil para la letra */
+            text-shadow: 2px 35px 0px rgba(0, 0, 0, 0.1);
+            letter-spacing: 1px; /* Espaciado entre letras para un mejor look */
+            line-height: 1.4; /* Espaciado de línea para que las palabras no se amontonen */
+            margin-top: 46%;
         }
     </style>
     </head>
@@ -225,7 +237,8 @@ function mi_navbar() {}
         </div>
         <?php require_once 'app/core/components/navbar/index.php';
         mi_navbar(); ?>
-        <main class="main-content position-relative border-radius-lg ">
+         <div class="min-height-300 bg-dark position-absolute w-100"></div>
+        <main class="main-content position-relative border-radius-lg">
             <div class="container-fluid py-4">
                 <div id="Row" class="row mt-4">
                     <div class="cord">
@@ -236,7 +249,9 @@ function mi_navbar() {}
                             <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRegionsBtn">Buscar Por Region</button>
                         </div>
                         <div id="SearchRif" class="mb-3 d-flex align-items-center">
-
+                            <div id="welcomeMessage" class="d-flex justify-content-center align-items-center">
+                                <h1 class="text-center">Ingrese los datos del Cliente</h1>
+                            </div>
                             <div class="d-flex align-items-center">
                                 <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none; margin-left: -39%;">
                                     <option value="J">J</option>
@@ -246,6 +261,7 @@ function mi_navbar() {}
                                 </select>
                                 <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
                                 <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;  margin-top: 5px;">Buscar</button><br>
+                                 
                             </div>
 
                             <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none; margin-left: -107%;" maxlength="24">

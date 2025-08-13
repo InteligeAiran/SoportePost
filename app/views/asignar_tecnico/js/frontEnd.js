@@ -6,6 +6,10 @@ let confirmReassignModalInstance = null;
 let selectTechnicianModalInstance = null;
 let inputTecnicoActual = null;
 
+let EnvioInput = null;
+let ExoInput = null;
+let PagoInput = null; 
+
 
 // --- Función para obtener el técnico actual y la lista de técnicos ---
 // --- DOMContentLoaded para inicializar los modales y eventos ---
@@ -208,7 +212,7 @@ function getTicketDataCoordinator() {
             "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
 
           const dataForDataTable = [];
-
+          
           TicketData.forEach((data) => {
             let actionButtonsHtml = ""; // Variable para construir los botones de acción
 
@@ -216,63 +220,94 @@ function getTicketDataCoordinator() {
             if (data.name_accion_ticket === "Asignado al Coordinador") {
               // Acción 4
               actionButtonsHtml += `
-                                <button id = "confirmreceived" class="btn btn-sm btn-info btn-received-coord mr-2"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
-                                    title="Marcar como Recibido por Coordinador"
-                                    data-ticket-id="${data.id_ticket}"
-                                    data-nro-ticket="${data.nro_ticket}"
-                                    data-serial-pos="${data.serial_pos}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16"><path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/></svg>                                </button>
-                                <button id="myUniqueAssingmentButton"
-                                    class="btn btn-sm btn-assign-tech"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
-                                    title="Asignar Técnico"
-                                    data-ticket-id="${data.id_ticket}"
-                                    data-nro-ticket="${data.nro_ticket}"
-                                    data-serial-pos="${data.serial_pos}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/></svg>                                
-                                  </button>
-                            `;
+                <button id = "confirmreceived" class="btn btn-sm btn-info btn-received-coord mr-2"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Marcar como Recibido por Coordinador"
+                  data-ticket-id="${data.id_ticket}"
+                  data-nro-ticket="${data.nro_ticket}"
+                  data-serial-pos="${data.serial_pos}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16"><path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/></svg>
+                </button>
+                <button id="myUniqueAssingmentButton"
+                  class="btn btn-sm btn-assign-tech"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Asignar Técnico"
+                  data-ticket-id="${data.id_ticket}"
+                  data-nro-ticket="${data.nro_ticket}"
+                  data-serial-pos="${data.serial_pos}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/></svg>
+                </button>
+              `;
             } else if (
               data.name_accion_ticket === "Recibido por el Coordinador"
             ) {
               // Acción 3
               actionButtonsHtml += `
-                                <button style="display: none;" class="btn btn-sm btn-info btn-received-coord mr-2"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
-                                    title="Ticket ya Recibido por Coordinador"
-                                    data-ticket-id="${data.id_ticket}"
-                                    data-nro-ticket="${data.nro_ticket}"
-                                    Recibido
-                                </button>
-                                <button id="myUniqueAssingmentButton"
-                                    class="btn btn-sm btn-assign-tech"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
-                                    title="Asignar Técnico"
-                                    data-ticket-id="${data.id_ticket}"
-                                    data-nro-ticket="${data.nro_ticket}"
-                                    data-serial-pos="${data.serial_pos}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/></svg>                               
-                                  </button>
-                            `;
+                <button style="display: none;" class="btn btn-sm btn-info btn-received-coord mr-2"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Ticket ya Recibido por Coordinador"
+                  data-ticket-id="${data.id_ticket}"
+                  data-nro-ticket="${data.nro_ticket}"
+                  data-serial-pos="${data.serial_pos}">
+                  Recibido
+                </button>
+                <button id="myUniqueAssingmentButton"
+                  class="btn btn-sm btn-assign-tech"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Asignar Técnico"
+                  data-ticket-id="${data.id_ticket}"
+                  data-nro-ticket="${data.nro_ticket}"
+                  data-serial-pos="${data.serial_pos}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/></svg>
+                </button>
+              `;
             } else if (data.name_accion_ticket === "Asignado al Técnico") {
               actionButtonsHtml += `
-                                <button id="reasingButton" class="btn btn-sm btn-primary btn-reassign-tech"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
-                                    title="Reasignar Técnico"
-                                    data-ticket-id="${data.id_ticket}"
-                                    data-nro-ticket="${data.nro_ticket}"
-                                    data-serial-pos="${data.serial_pos}">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16"><path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/></svg>
-                                </button>
-                            `;
+                <button id="reasingButton" class="btn btn-sm btn-primary btn-reassign-tech"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Reasignar Técnico"
+                  data-ticket-id="${data.id_ticket}"
+                  data-nro-ticket="${data.nro_ticket}"
+                  data-serial-pos="${data.serial_pos}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16"><path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/></svg>
+                </button>
+              `;
             }
-            // Puedes añadir más condiciones para otros estados si es necesario
+
+            // Nuevo botón para visualizar imagen
+            if (data.envio === 'Sí' || data.exoneracion === 'Sí' || data.pago === 'Sí') {
+              actionButtonsHtml += `
+                  <button class="btn btn-sm btn-secondary btn-view-image" 
+                      data-bs-placement="top"
+                      title="Visualizar Documentos"
+                      data-ticket-id="${data.id_ticket}"
+                      data-nro-ticket="${data.nro_ticket}"
+                      data-envio="${data.envio}"
+                      data-exoneracion="${data.exoneracion}"
+                      data-pago="${data.pago}">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                          <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                          <path d="M.046 8.5C.138 7.042 1.517 5.0 8 5.0s7.862 2.042 7.954 3.5c-.092 1.458-1.472 3.5-7.954 3.5S.138 9.958.046 8.5M13 8a5 5 0 1 0-10 0 5 5 0 0 0 10 0"/>
+                      </svg>
+                  </button>
+              `;
+            } else {
+              // Si no hay ningún documento ('Sí'), muestra el botón deshabilitado
+              actionButtonsHtml += `
+                  <button type="button" class="btn btn-secondary btn-sm disabled" title="No hay Documentos a vizualizar">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-x" viewBox="0 0 16 16">
+                          <path d="M6.146 8.146a.5.5 0 0 1 .708 0L8 9.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 10l1.147 1.146a.5.5 0 0 1-.708.708L8 10.707l-1.146 1.147a.5.5 0 0 1-.708-.708L7.293 10 6.146 8.854a.5.5 0 0 1 0-.708"/>
+                          <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                      </svg>
+                  </button>
+              `;
+          }
+            
             dataForDataTable.push([
               data.id_ticket,
               data.rif,
@@ -298,10 +333,13 @@ function getTicketDataCoordinator() {
             autoWidth: true,
             autoheight: true,
             columns: [
-              { title: "N°", orderable: false, searchable: false,
+              {
+                title: "N°",
+                orderable: false,
+                searchable: false,
                 render: function (data, type, row, meta) {
                   return meta.row + meta.settings._iDisplayStart + 1;
-                }
+                },
               },
               { title: "Rif" },
               { title: "Serial POS" },
@@ -320,19 +358,19 @@ function getTicketDataCoordinator() {
             ],
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
-            emptyTable: "No hay datos disponibles en la tabla",
-            zeroRecords: "No se encontraron resultados para la búsqueda",
-            info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
-            infoEmpty: "No hay datos disponibles",
-            infoFiltered: " de _MAX_ Disponibles",
-            search: "Buscar:",
-            loadingRecords: "Cargando...",
-            processing: "Procesando...",
-            paginate: {
-              first: "Primero",
-              last: "Último",
-              next: "Siguiente",
-              previous: "Anterior",
+              emptyTable: "No hay datos disponibles en la tabla",
+              zeroRecords: "No se encontraron resultados para la búsqueda",
+              info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+              infoEmpty: "No hay datos disponibles",
+              infoFiltered: " de _MAX_ Disponibles",
+              search: "Buscar:",
+              loadingRecords: "Cargando...",
+              processing: "Procesando...",
+              paginate: {
+                first: "Primero",
+                last: "Último",
+                next: "Siguiente",
+                previous: "Anterior",
               },
             },
             dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
@@ -341,118 +379,118 @@ function getTicketDataCoordinator() {
               // y 'this.api()' devuelve la instancia de la API de DataTables.
               const api = this.api(); // <--- Correcto: Obtener la instancia de la API aquí
 
-            // Esto es parte de tu inicialización de DataTables, probablemente dentro de 'initComplete'
-            // o en un script que se ejecuta después de que la tabla está lista.
-            const buttonsHtml = `
-                                <button id="btn-por-asignar" class="btn btn-primary me-2" title="Tickets por Asignar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/>
-                                    </svg>
-                                </button>
+              // Esto es parte de tu inicialización de DataTables, probablemente dentro de 'initComplete'
+              // o en un script que se ejecuta después de que la tabla está lista.
+              const buttonsHtml = `
+                <button id="btn-por-asignar" class="btn btn-primary me-2" title="Tickets por Asignar">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/>
+                  </svg>
+                </button>
 
-                                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Coordinador">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                                        <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                                    </svg>
-                                </button>
+                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Coordinador">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                  </svg>
+                </button>
 
-                                <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets ya Asignados">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                                    </svg>
-                                </button>
+                <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets ya Asignados">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                    <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                  </svg>
+                </button>
 
-                                <button id="btn-reasignado" class="btn btn-secondary me-2" title="Tickets Reasignados">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16">
-                                        <path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/>
-                                    </svg>
-                                </button>`;
-            $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+                <button id="btn-reasignado" class="btn btn-secondary me-2" title="Tickets Reasignados">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16">
+                    <path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/>
+                  </svg>
+                </button>`;
+              $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
-            function setActiveButton(activeButtonId) {
+              function setActiveButton(activeButtonId) {
                 $("#btn-por-asignar")
-                    .removeClass("btn-primary")
-                    .addClass("btn-secondary");
+                  .removeClass("btn-primary")
+                  .addClass("btn-secondary");
                 $("#btn-asignados")
-                    .removeClass("btn-primary")
-                    .addClass("btn-secondary");
+                  .removeClass("btn-primary")
+                  .addClass("btn-secondary");
                 $("#btn-recibidos")
-                    .removeClass("btn-primary")
-                    .addClass("btn-secondary");
+                  .removeClass("btn-primary")
+                  .addClass("btn-secondary");
                 $("#btn-reasignado")
-                    .removeClass("btn-primary")
-                    .addClass("btn-secondary");
+                  .removeClass("btn-primary")
+                  .addClass("btn-secondary");
                 $(`#${activeButtonId}`)
-                    .removeClass("btn-secondary")
-                    .addClass("btn-primary");
-            }
+                  .removeClass("btn-secondary")
+                  .addClass("btn-primary");
+              }
 
-            api.columns().search('').draw(false);
-            api.column(5).visible(false); // Oculta Técnico Asignado
-            api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
-            api // <--- Usar 'api' en lugar de 'dataTableInstance'
+              api.columns().search('').draw(false);
+              api.column(5).visible(false); // Oculta Técnico Asignado
+              api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
+              api // <--- Usar 'api' en lugar de 'dataTableInstance'
                 .column(4)
                 .search("Asignado al Coordinador") // CAMBIO AQUÍ
                 .draw();
-            setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
+              setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
 
-            $("#btn-asignados").on("click", function () {
+              $("#btn-asignados").on("click", function () {
                 api.columns().search('').draw(false);
                 api.column(5).visible(true); // Oculta Técnico Asignado
                 api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(4)
-                    .search("^Asignado al Técnico$", true, false) // <-- Cambio aquí
-                    .draw();
+                  .column(4)
+                  .search("^Asignado al Técnico$", true, false) // <-- Cambio aquí
+                  .draw();
                 setActiveButton("btn-asignados");
-            });
+              });
 
-            $("#btn-por-asignar").on("click", function () {
+              $("#btn-por-asignar").on("click", function () {
                 api.columns().search('').draw(false);
                 api.column(5).visible(false); // Índice 6 para "Técnico Asignado
                 api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(4)
-                    .search("Asignado al Coordinador")
-                    .draw();
+                  .column(4)
+                  .search("Asignado al Coordinador")
+                  .draw();
                 setActiveButton("btn-por-asignar");
-            });
+              });
 
-            $("#btn-recibidos").on("click", function () {
+              $("#btn-recibidos").on("click", function () {
                 api.columns().search('').draw(false);
                 api.column(5).visible(false); // Índice 6 para "Técnico Asignado
                 api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(4)
-                    .search("Recibido por el Coordinador")
-                    .draw();
+                  .column(4)
+                  .search("Recibido por el Coordinador")
+                  .draw();
                 setActiveButton("btn-recibidos");
-            });
+              });
 
-            $("#btn-reasignado").on("click", function () {
+              $("#btn-reasignado").on("click", function () {
                 api.columns().search('').draw(false);
                 api.column(5).visible(true); // Índice 6 para "Técnico Asignado
                 api.column(6).visible(false); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(4)
-                    .search("Reasignado al Técnico")
-                    .draw();
+                  .column(4)
+                  .search("Reasignado al Técnico")
+                  .draw();
                 setActiveButton("btn-reasignado");
-            });
+              });
             },
           });
 
           $("#tabla-ticket").resizableColumns();
 
           $("#tabla-ticket tbody")
-          .off("click", "tr") // Desvincula handlers anteriores para evitar duplicados
-          .on("click", "tr", function () {
+            .off("click", "tr") // Desvincula handlers anteriores para evitar duplicados
+            .on("click", "tr", function () {
               const tr = $(this);
               const rowData = dataTableInstance.row(tr).data(); // Aquí 'dataTableInstance' sí está disponible
 
               if (!rowData) {
-                  return;
+                return;
               }
 
               // **Estas dos líneas son las que hacen el resaltado**
@@ -462,61 +500,61 @@ function getTicketDataCoordinator() {
               const ticketId = rowData[0]; // Asume que el ID del ticket está en la primera columna
 
               const selectedTicketDetails = TicketData.find(
-                  (t) => t.id_ticket == ticketId
+                (t) => t.id_ticket == ticketId
               );
 
               if (selectedTicketDetails) {
-                  // ... (resto de tu lógica para mostrar el panel de detalles)
-                  detailsPanel.innerHTML = formatTicketDetailsPanel(
-                      selectedTicketDetails
+                // ... (resto de tu lógica para mostrar el panel de detalles)
+                detailsPanel.innerHTML = formatTicketDetailsPanel(
+                  selectedTicketDetails
+                );
+                loadTicketHistory(ticketId);
+                if (selectedTicketDetails.serial_pos) {
+                  downloadImageModal(selectedTicketDetails.serial_pos);
+                } else {
+                  const imgElement = document.getElementById(
+                    "device-ticket-image"
                   );
-                  loadTicketHistory(ticketId);
-                  if (selectedTicketDetails.serial_pos) {
-                      downloadImageModal(selectedTicketDetails.serial_pos);
-                  } else {
-                      const imgElement = document.getElementById(
-                          "device-ticket-image"
-                      );
-                      if (imgElement) {
-                          // Corrección de la ruta de la imagen estática
-                          imgElement.src = '/public/img/consulta_rif/POS/mantainment.png'; // Ruta relativa o absoluta accesible desde el navegador
-                          imgElement.alt = "Serial no disponible";
-                      }
+                  if (imgElement) {
+                    // Corrección de la ruta de la imagen estática
+                    imgElement.src = '/public/img/consulta_rif/POS/mantainment.png'; // Ruta relativa o absoluta accesible desde el navegador
+                    imgElement.alt = "Serial no disponible";
                   }
+                }
               } else {
-                  detailsPanel.innerHTML =
-                      "<p>No se encontraron detalles para este ticket.</p>";
+                detailsPanel.innerHTML =
+                  "<p>No se encontraron detalles para este ticket.</p>";
               }
-          });
+            });
 
           $("#tabla-ticket tbody")
-          .off("click", ".truncated-cell, .expanded-cell") // <--- Importante: Ahora escucha clics en AMBAS clases
-          .on("click", ".truncated-cell, .expanded-cell", function (e) {
+            .off("click", ".truncated-cell, .expanded-cell") // <--- Importante: Ahora escucha clics en AMBAS clases
+            .on("click", ".truncated-cell, .expanded-cell", function (e) {
               e.stopPropagation();
               const $cellSpan = $(this);
               const fullText = $cellSpan.data("full-text");
               const displayLength = 25; // Define displayLength aquí para que esté disponible en ambos casos
 
               if ($cellSpan.hasClass("truncated-cell")) {
-                  // Si está truncado, expandirlo
-                  $cellSpan
-                      .removeClass("truncated-cell")
-                      .addClass("expanded-cell");
-                  $cellSpan.text(fullText);
+                // Si está truncado, expandirlo
+                $cellSpan
+                  .removeClass("truncated-cell")
+                  .addClass("expanded-cell");
+                $cellSpan.text(fullText);
               } else if ($cellSpan.hasClass("expanded-cell")) { // <--- Añadimos esta condición para ser explícitos
-                  // Si está expandido, truncarlo (si es necesario)
-                  $cellSpan
-                      .removeClass("expanded-cell")
-                      .addClass("truncated-cell");
-                  
-                  if (fullText.length > displayLength) {
-                      $cellSpan.text(fullText.substring(0, displayLength) + "...");
-                  } else {
-                      $cellSpan.text(fullText); // Si no necesita truncarse, mostrar el texto completo
-                  }
+                // Si está expandido, truncarlo (si es necesario)
+                $cellSpan
+                  .removeClass("expanded-cell")
+                  .addClass("truncated-cell");
+                
+                if (fullText.length > displayLength) {
+                  $cellSpan.text(fullText.substring(0, displayLength) + "...");
+                } else {
+                  $cellSpan.text(fullText); // Si no necesita truncarse, mostrar el texto completo
+                }
               }
               // Si por alguna razón la celda no tiene ninguna de las dos clases, no hará nada.
-          });
+            });
 
           // Evento click para el botón "POS Recibido"
           $("#tabla-ticket tbody")
@@ -561,6 +599,120 @@ function getTicketDataCoordinator() {
               ticketserialPos.textContent = currentserialPos; // Muestra el serial en el modal de confirmación
               confirmReassignModalInstance.show(); // Muestra el modal de confirmación
             });
+            
+         // Evento click para el nuevo botón "Visualizar Imagen"
+      // Evento click para el nuevo botón "Visualizar Imagen"
+$("#tabla-ticket tbody")
+    .off("click", ".btn-view-image")
+    .on("click", ".btn-view-image", function (e) {
+        e.stopPropagation();
+        
+        // Obtener datos del botón
+        const ticketId = $(this).data("ticket-id");
+        const nroTicket = $(this).data("nro-ticket");
+        const envioValor = $(this).data("envio");
+        const exoValor = $(this).data("exoneracion");
+        const pagoValor = $(this).data("pago");
+
+        // Guardar en variables globales
+        currentTicketIdForImage = ticketId;
+        currentTicketNroForImage = nroTicket;
+
+        const VizualizarImage = document.getElementById('visualizarImagenModal');
+        const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
+
+        const EnvioInputModal = document.getElementById('imagenEnvio');
+        const EnvioLabelModal = document.getElementById('labelEnvio');
+        const ExoInputModal = document.getElementById('imagenExoneracion');
+        const ExoLabelModal = document.getElementById('labelExo');
+        const PagoInputModal = document.getElementById('imagenPago');
+        const PagoLabelModal = document.getElementById('labelPago');
+
+        // Muestra u oculta los radio buttons basándose en los valores del botón
+        if (envioValor === 'Sí') {
+            EnvioLabelModal.style.display = 'block';
+            EnvioInputModal.style.display = 'block';
+        } else {
+            EnvioLabelModal.style.display = 'none';
+            EnvioInputModal.style.display = 'none';
+        }
+
+        if (exoValor === 'Sí') {
+            ExoInputModal.style.display = 'block';
+            ExoLabelModal.style.display = 'block';
+        } else {
+            ExoInputModal.style.display = 'none';
+            ExoLabelModal.style.display = 'none';
+        }
+
+        if (pagoValor === 'Sí') {
+            PagoInputModal.style.display = 'block';
+            PagoLabelModal.style.display = 'block';
+        } else {
+            PagoInputModal.style.display = 'none';
+            PagoLabelModal.style.display = 'none';
+        }
+
+        // REMOVER event listeners anteriores para evitar duplicados
+        const btnCerrar = document.getElementById('BotonCerrarSelectDocument');
+        const btnConfirmar = document.getElementById('btnConfirmarVisualizacion');
+        
+        // Clonar elementos para remover event listeners
+        const btnCerrarClone = btnCerrar.cloneNode(true);
+        const btnConfirmarClone = btnConfirmar.cloneNode(true);
+        
+        btnCerrar.parentNode.replaceChild(btnCerrarClone, btnCerrar);
+        btnConfirmar.parentNode.replaceChild(btnConfirmarClone, btnConfirmar);
+
+        // Botón para cerrar el modal de visualización
+        btnCerrarClone.addEventListener('click', function() {
+            visualizarImagenModal.hide();
+        });
+
+        // Evento para el botón confirmar visualización
+        btnConfirmarClone.addEventListener('click', function() {
+            const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
+            
+            // Llamar a la API para obtener el documento
+            fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=GetDocumentByType&ticketId=${currentTicketNroForImage}&documentType=${selectedOption}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const document = data.document;
+                    const filePath = document.file_path;
+                    const mimeType = document.mime_type;
+                    const fileName = document.original_filename;
+                    
+                    // Determinar si es imagen o PDF
+                    if (mimeType.startsWith('image/')) {
+                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, filePath, null, fileName);
+                    } else if (mimeType === 'application/pdf') {
+                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, filePath, fileName);
+                    } else {
+                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, null, "Tipo de documento no soportado");
+                    }
+                    
+                    // Ocultar el modal de selección
+                    visualizarImagenModal.hide();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al obtener el documento');
+            });
+        });
+
+        // MOSTRAR el modal
+        visualizarImagenModal.show();
+    });
         } else {
           tbody.innerHTML = '<tr><td>Error al cargar</td></tr>';
           console.error("Error:", response.message);
@@ -924,7 +1076,6 @@ function loadTicketHistory(ticketId) {
         dataType: "json",
         success: function (response) {
             // Revisa la consola del navegador para ver la respuesta completa del servidor.
-            console.log("Respuesta del servidor:", response);
 
             // Verifica si la respuesta es exitosa y contiene datos de historial.
             if (response.success && response.history && response.history.length > 0) {
@@ -1683,7 +1834,6 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
 }
 
 // Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
-// Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
 document.addEventListener('DOMContentLoaded', function () {
     const modalComponentesEl = document.getElementById('modalComponentes');
     const modalComponentes = new bootstrap.Modal(modalComponentesEl, { keyboard: false });
@@ -1805,4 +1955,91 @@ function abrirModalComponentes(boton) {
       });
     }
     showSelectComponentsModal(ticketId, regionName, serialPos);
+}
+
+    // Función auxiliar para determinar el tipo de documento
+    function getDocumentType(url) {
+        if (!url) {
+            return null;
+        }
+        const lowerUrl = url.toLowerCase();
+        if (lowerUrl.endsWith('.jpg') || lowerUrl.endsWith('.jpeg') || lowerUrl.endsWith('.png') || lowerUrl.endsWith('.gif')) {
+            return 'image';
+        } else if (lowerUrl.endsWith('.pdf')) {
+            return 'pdf';
+        } else {
+            return null;
+        }
+    }
+
+    // Función para mostrar el modal de visualización (modificada para usar los elementos del DOM)
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
+    const modalElementView = document.getElementById("viewDocumentModal");
+    const modalTicketIdSpanView = modalElementView.querySelector("#viewModalTicketId");
+    const imageViewPreview = document.getElementById("imageViewPreview");
+    const pdfViewViewer = document.getElementById("pdfViewViewer");
+    const messageContainer = document.getElementById("viewDocumentMessage");
+    const nameDocumento = document.getElementById("NombreImage");
+    const BotonCerrarModal = document.getElementById("CerrarModalVizualizar");
+
+    currentTicketId = ticketId;
+    currentNroTicket = nroTicket;
+    modalTicketIdSpanView.textContent = currentNroTicket;
+
+    // Limpiar vistas y mensajes
+    imageViewPreview.style.display = "none";
+    pdfViewViewer.style.display = "none";
+    messageContainer.textContent = "";
+    messageContainer.classList.add("hidden");
+
+    // Función para limpiar la ruta del archivo
+    function cleanFilePath(filePath) {
+        if (!filePath) return null;
+        
+        // Reemplazar barras invertidas con barras normales
+        let cleanPath = filePath.replace(/\\/g, '/');
+        
+        // Extraer la parte después de 'Documentos_SoportePost/'
+        const pathSegments = cleanPath.split('Documentos_SoportePost/');
+        if (pathSegments.length > 1) {
+            cleanPath = pathSegments[1];
+        }
+        
+        // Construir la URL completa
+        return `http://localhost/Documentos/${cleanPath}`;
+    }
+
+    if (imageUrl) {
+        // Es una imagen
+        const fullUrl = cleanFilePath(imageUrl);
+        
+        imageViewPreview.src = fullUrl;
+        imageViewPreview.style.display = "block";
+        nameDocumento.textContent = documentName;
+        
+    } else if (pdfUrl) {
+        // Es un PDF
+        const fullUrl = cleanFilePath(pdfUrl);
+        
+        pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
+        pdfViewViewer.style.display = "block";
+        nameDocumento.textContent = documentName;
+        
+    } else {
+        // No hay documento
+        messageContainer.textContent = "No hay documento disponible para este ticket.";
+        messageContainer.classList.remove("hidden");
+        nameDocumento.textContent = "";
+    }
+    
+    const viewDocumentModal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
+    const VizualizarImage = document.getElementById('visualizarImagenModal');
+    const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
+
+    viewDocumentModal.show();
+    visualizarImagenModal.hide();
+
+    BotonCerrarModal.addEventListener('click', function() {
+        viewDocumentModal.hide();
+    });
 }

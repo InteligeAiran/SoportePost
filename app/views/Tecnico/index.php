@@ -245,6 +245,10 @@ function mi_navbar()
             cursor: pointer;
             padding: 10px 20px;
         }
+
+        #modalViewcontent{
+            width: none  !important;
+        }
         </style>
     </head>
 
@@ -373,18 +377,16 @@ function mi_navbar()
             </div>
         <!--MODAL PARA SELECCIONAR TECNICO-->
 
-        <!--MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
-            <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel"
-                aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
+         <!--MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
+            <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
-                        <div class="modal-header">
+                        <div class="modal-header bg-gradient-primary">
                             <strong>
                                 <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
-                                    Documento para Ticket: <span id="modalTicketId"></span></h5>
+                                    Documento para el Nro Ticket: <span id="modalTicketId"></span></h5>
+                                <input type="hidden" id="id_ticket"></input>
                             </strong>
-                            <button type="button" id="icon-close" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <form id="uploadForm">
@@ -394,15 +396,14 @@ function mi_navbar()
                                         style="display:block">
                                     <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
                                 </div>
-                                <div class="mb-3 text-center">
-                                    <img id="imagePreview" class="img-preview" src="#" alt="Previsualización de Imagen">
+                                <div class="mb-3 text-center" style="max-height: 50vh; overflow-y: auto;">
+                                    <img id="imagePreview" class="img-fluid img-preview" src="#" alt="Previsualización de Imagen" style="display: none;">
                                 </div>
                                 <div id="uploadMessage" class="message-box hidden"></div>
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" id="CerrarBoton"
-                                data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-secondary" id="CerrarBoton" data-bs-dismiss="modal">Cerrar</button>
                             <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
                         </div>
                     </div>
@@ -411,28 +412,28 @@ function mi_navbar()
         <!-- END MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
 
         <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
-            <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel"
-                aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); z-index: 1055px;">
+            <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog modal-dialog-centered modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
+                    <div class="modal-content" id="modalViewcontent" style=" width: 2%;">
+                        <div class="modal-header bg-gradient-primary">
                             <strong>
                                 <h5 class="modal-title text-lg font-semibold text-gray-800" id="viewDocumentModalLabel">
-                                    Documento para Ticket: <span id="viewModalTicketId"></span></h5>
+                                    Documento para Nro Ticket: <span id="viewModalTicketId"></span></h5>
                             </strong>
-                            <button type="button" class="btn-close" id="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <div class="mb-3 text-center">
-                                <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen"
-                                    style="max-width: 100%; height: auto; display: none;">
-                                <div id="pdfViewViewer"
-                                    style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
+                            <div class="mb-3">
+                                <label>Nombre de la imagen: <span id="NombreImage"></span></label>
+                            </div>
+                            <div class="mb-3 text-center" style="max-height: 80vh; overflow-y: auto;">
+                                <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen" style="height: auto; display: none; object-fit: contain;">
+                                <div id="pdfViewViewer" style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
                             </div>
                             <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary"  data-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-secondary" id="modalCerrarshow"
+                                data-bs-dismiss="modal">Cerrar</button>
                         </div>
                     </div>
                 </div>
@@ -525,7 +526,7 @@ function mi_navbar()
             </div>
         <!-- END PARA SELECCIONAR LOS COMPONENTES ASOCIADOS AL SERIAL DEL POS -->
 
-    <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
+        <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">

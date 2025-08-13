@@ -269,26 +269,28 @@ function mi_navbar()
             </div>
         <!--END MODAL PARA SELECCIONAR LAS ACCIONES PARA VIZUALIZAR LA IMAGEN-->
 
-        <div class="modal fade" id="imageApprovalModal" tabindex="-1" aria-labelledby="imageApprovalModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="imageApprovalModalLabel" style="color: black;">Revisar y Aprobar Imagen</h5>
-                    </div>
-                    <div class="modal-body text-center">
-                        <div id="mediaViewerContainer" style="width: 100%; height: 500px; display: flex; justify-content: center; align-items: center; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 4px;">
-                            <img id="ticketImagePreview" src="" alt="Vista previa del documento" class="img-fluid" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
-                            </div>
-                        <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Ticket ID: <span id="currentTicketIdDisplay"></span></p>
-                        <p style="color: black;">Tipo de Documento: <span id="currentImageTypeDisplay"></span></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" id="closeImageApprovalModalBtn">Cerrar</button>
-                        <button type="button" class="btn btn-success" id="approveTicketFromImage">Aprobar Ticket</button>
+        <!-- MODAL PARA VIZUALIZAR LOS DOCUMENTOS -->
+            <div class="modal fade" id="imageApprovalModal" tabindex="-1" aria-labelledby="imageApprovalModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="imageApprovalModalLabel" style="color: black;">Revisar y Aprobar Imagen</h5>
+                        </div>
+                        <div class="modal-body text-center">
+                            <div id="mediaViewerContainer" style="width: 100%; height: 500px; display: flex; justify-content: center; align-items: center; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 4px;">
+                                <img id="ticketImagePreview" src="" alt="Vista previa del documento" class="img-fluid" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
+                                </div>
+                            <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Ticket ID: <span id="currentTicketIdDisplay"></span></p>
+                            <p style="color: black;">Tipo de Documento: <span id="currentImageTypeDisplay"></span></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" id="closeImageApprovalModalBtn">Cerrar</button>
+                            <button type="button" class="btn btn-success" id="approveTicketFromImage">Aprobar Ticket</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        <!--END MODAL PARA VIZUALIZAR LOS DOCUMENTOS -->
 
         <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 

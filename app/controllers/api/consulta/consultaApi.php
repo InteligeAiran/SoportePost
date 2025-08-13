@@ -250,6 +250,14 @@ class Consulta extends Controller
                     $this->handleHasComponents();
                     break;
 
+                case 'uploadDocument': 
+                    $this->handleuploadDocument();
+                    break;
+                
+                case 'GetDocumentByType':
+                    $this->handleGetDocumentByType();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -619,7 +627,7 @@ class Consulta extends Controller
     );
 
     if (isset($result['success']) && $result['success']) {
-        $idTicketCreado = $result['id_ticket_creado'];
+        $idTicketCreado = $Nr_ticket;
         $ticket_status_info = $result['status_info']; // Directamente del modelo/repositorio
         $ticket_status_info_payment = $result['status_payment_info'] ?? null; // Información del estado de pago, si está disponible
 
@@ -1576,33 +1584,92 @@ class Consulta extends Controller
 
    
     public function handleHasComponents(){
-    $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
-    $repository = new technicalConsultionRepository();
-    
-    // Llamamos al repositorio, que devuelve el array de componentes
-    $components = $repository->HasComponents($ticketId);
+        $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
+        $repository = new technicalConsultionRepository();
+        
+        // Llamamos al repositorio, que devuelve el array de componentes
+        $components = $repository->HasComponents($ticketId);
 
-    // Inicializamos una bandera para verificar si al menos un componente está seleccionado
-    $anyComponentSelected = false;
+        // Inicializamos una bandera para verificar si al menos un componente está seleccionado
+        $anyComponentSelected = false;
 
-    // Solo si se encontraron componentes, los recorremos para validar si alguno está seleccionado
-    if (is_array($components) && !empty($components)) {
-        foreach ($components as $component) {
-            // El valor 't' de PostgreSQL se lee como un string en PHP
-            if (isset($component['is_selected']) && $component['is_selected'] === 't') {
-                $anyComponentSelected = true;
-                // Salimos del bucle una vez que encontramos un componente seleccionado para optimizar
-                break;
+        // Solo si se encontraron componentes, los recorremos para validar si alguno está seleccionado
+        if (is_array($components) && !empty($components)) {
+            foreach ($components as $component) {
+                // El valor 't' de PostgreSQL se lee como un string en PHP
+                if (isset($component['is_selected']) && $component['is_selected'] === 't') {
+                    $anyComponentSelected = true;
+                    // Salimos del bucle una vez que encontramos un componente seleccionado para optimizar
+                    break;
+                }
             }
+        }
+
+        // Usamos la bandera para determinar la respuesta final de la API
+        if ($anyComponentSelected) {
+            $this->response(['success' => true, 'hasComponents' => true, 'message' => 'El ticket tiene componentes asociados.', 'components' => $components], 200);
+        } else {
+            $this->response(['success' => true, 'hasComponents' => false, 'message' => 'El ticket no tiene componentes asociados.'], 200);
         }
     }
 
-    // Usamos la bandera para determinar la respuesta final de la API
-    if ($anyComponentSelected) {
-        $this->response(['success' => true, 'hasComponents' => true, 'message' => 'El ticket tiene componentes asociados.', 'components' => $components], 200);
-    } else {
-        $this->response(['success' => true, 'hasComponents' => false, 'message' => 'El ticket no tiene componentes asociados.'], 200);
+    function handleuploadDocument(){
+        // 1. Obtener los datos de POST
+        $ticketId = isset($_POST['ticket_id']) ? $_POST['ticket_id'] : null;
+        $userId = isset($_POST['id_user']) ? $_POST['id_user'] : null;
+        $documentType = isset($_POST['document_type']) ? $_POST['document_type'] : null;
+        
+        // 2. Obtener el archivo subido de $_FILES
+        $documentFile = isset($_FILES['document_file']) ? $_FILES['document_file'] : null;
+
+        if (!$ticketId || !$userId || !$documentType || !$documentFile) {
+            $this->response(['success' => false, 'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+
+        // 3. Obtener el contenido binario del archivo
+        $fileContent = file_get_contents($documentFile['tmp_name']);
+        $originalFilename = $documentFile['name'];
+        $fileMimeType = $documentFile['type'];
+        $fileSize = $documentFile['size'];
+        
+        // 4. Llamar al repositorio
+        $repository = new technicalConsultionRepository();
+        $result = $repository->uploadDocument($ticketId, $userId, $documentType, $originalFilename, $fileMimeType, $fileSize, $fileContent);
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'El documento se ha subido correctamente.'], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al subir el documento.'], 500);
+        }
     }
-}
+
+    public function handleGetDocumentByType() {
+        $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
+        $documentType = isset($_POST['documentType']) ? $_POST['documentType'] : '';
+
+        if (!$ticketId || !$documentType) {
+            $this->response(['success' => false, 'message' => 'ID de ticket y tipo de documento requeridos.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $attachment = $repository->getDocumentByType($ticketId, $documentType);
+
+        if ($attachment === false || empty($attachment)) {
+            $this->response(['success' => false, 'message' => 'No se encontró el documento solicitado.'], 404);
+            return;
+        }
+
+        $this->response([
+            'success' => true,
+            'document' => [
+                'file_path' => $attachment['file_path'],
+                'mime_type' => $attachment['mime_type'],
+                'original_filename' => $attachment['original_filename'],
+                'document_type' => $attachment['document_type']
+            ]
+        ], 200);
+    }
 }
 ?>

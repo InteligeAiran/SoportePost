@@ -70,6 +70,24 @@ function mi_navbar() {}
             cursor: pointer;
             padding: 10px 20px;
         }
+
+        .btn-secondary {
+            border-radius: 0.5rem;
+        }
+        .form-check-label {
+            font-weight: 500;
+        }
+       
+    
+        #imageViewPreview, #pdfViewViewer {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -295,6 +313,65 @@ function mi_navbar() {}
                 </div>
         </div>
     <!-- END PARA SELECCIONAR LOS COMPONENTES ASOCIADOS AL SERIAL DEL POS -->
+
+    <!--MODAL PARA SELECCIONAR LAS ACCIONES PARA VIZUALIZAR LA IMAGEN-->
+        <div class="modal fade" id="visualizarImagenModal" tabindex="-1" aria-labelledby="visualizarImagenModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-gradient-primary">
+                        <h5 class="modal-title" id="visualizarImagenModalLabel">Seleccione la imagen que desea visualizar:</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="opcionImagen" id="imagenEnvio" value="Envio" checked>
+                            <label class="form-check-label" for="imagenEnvio" id = "labelEnvio">
+                                Imagen del Envío
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="opcionImagen" id="imagenExoneracion" value="Exoneracion">
+                            <label class="form-check-label" for="imagenExoneracion" id = "labelExo">
+                                Imagen de Exoneración
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="opcionImagen" id="imagenPago" value="Anticipo">
+                            <label class="form-check-label" for="imagenPago" id="labelPago">
+                                Imagen de Pago
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="BotonCerrarSelectDocument">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="btnConfirmarVisualizacion">Visualizar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <!--END MODAL PARA SELECCIONAR LAS ACCIONES PARA VIZUALIZAR LA IMAGEN-->
+
+    <!-- MODAL PARA VIZUALIZAR EL MODAL -->
+        <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-gradient-primary">
+                        <h5 class="modal-title" id="viewDocumentModalLabel">Visualizando Documento - Ticket: <span id="viewModalTicketId"></span></h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <h6 id="NombreImage" class="mb-3" style="color: black;"></h6>
+                        <div id="viewDocumentMessage" class="alert alert-warning hidden" role="alert"></div>
+                        <img id="imageViewPreview" class="img-fluid" alt="Previsualización de la imagen" style="display: none;">
+                        <div id="pdfViewViewer" style="width: 100%; height: 70vh; display: none;"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="CerrarModalVizualizar">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <!-- END MODAL PARA VIZUALIZAR EL MODAL -->
 
     <button type="button" class="btn btn-primary" id="reassignTicketBtn" data-ticket-id="2">
         <i class="bi bi-person-gear"></i> Reasignar Ticket

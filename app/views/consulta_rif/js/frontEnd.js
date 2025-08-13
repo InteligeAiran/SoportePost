@@ -1438,6 +1438,7 @@ function SendDataFailure2(idStatusPayment) {
   const inputAnticipo = document.getElementById("AnticipoInput");
 
   const archivoEnvio = inputEnvio.files[0];
+  console.log("Archivo de envío:", archivoEnvio); // <-- Corregido
   const archivoExoneracion = inputExoneracion.files[0]; // <-- Corregido
   const archivoAnticipo = inputAnticipo.files[0]; // <-- Corregido
 
@@ -1503,6 +1504,7 @@ function SendDataFailure2(idStatusPayment) {
   verificarTicketEnProceso(serial)
     .then((response) => {
       if (response.ticket_en_proceso) {
+        console.log(response.ticket_en_proceso);
         // Si ya existe un ticket en proceso, mostrar alerta y no permitir crear
         Swal.fire({
           icon: "warning",
@@ -1527,7 +1529,6 @@ function SendDataFailure2(idStatusPayment) {
         });
         return; // Detener la ejecución
       }
-      // Si no hay ticket en proceso, continuar con la creación
       continuarCreacionTicket();
     })
     .catch((error) => {

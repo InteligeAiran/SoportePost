@@ -713,5 +713,14 @@ class TechnicalConsultionRepository
             return false;
         }
     }
+
+    public function uploadDocument($ticketId, $userId, $documentType, $originalFilename, $fileMimeType, $fileSize, $fileContent){
+        $result = $this->model->uploadDocument($ticketId, $userId, $documentType, $originalFilename, $fileMimeType, $fileSize, $fileContent);
+        return $result;
+    }
+
+    public function getDocumentByType($ticketId, $documentType) {
+        return $this->model->getDocumentByType($ticketId, $documentType);
+    }
 }
 ?>
