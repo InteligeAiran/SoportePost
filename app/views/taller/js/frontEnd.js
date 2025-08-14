@@ -834,7 +834,7 @@ function updateTicketStatusInTaller(ticketId) {
             title: "¡Éxito!",
             text: "El POS se encontrará en el taller como 'En Proceso de reparación'.",
             icon: "success",
-            confirmButtonText: "¡Entendido!", // SweetAlert2 uses confirmButtonText
+            confirmButtonText: "Ok", // SweetAlert2 uses confirmButtonText
             customClass: {
               confirmButton: "BtnConfirmacion", // For custom button styling
             },
@@ -1366,7 +1366,7 @@ $(document).ready(function () {
               title: "¡Registrado!",
               html: `La fecha de recepción de llave del Pos asociado el Nro de ticket: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> ha sido guardada.`,
               icon: "success",
-              confirmButtonText: "Entendido",
+              confirmButtonText: "Ok",
               color: "black",
               confirmButtonColor: "#003594",
             }).then(() => {
@@ -1573,7 +1573,7 @@ $(document).ready(function () {
         title: "Notificación",
         text: 'No se puede tener un campo de estatus vacío. Por favor, selecciona un "Nuevo Estatus".',
         icon: "warning",
-        confirmButtonText: "Entendido",
+        confirmButtonText: "Ok",
         confirmButtonColor: "#003594", // Color del botón
         color: "black", // Color del texto
       });
@@ -1604,7 +1604,7 @@ $(document).ready(function () {
                 title: "¡Éxito!",
                 text: "Estatus del ticket actualizado correctamente.",
                 icon: "success",
-                confirmButtonText: "Entendido",
+                confirmButtonText: "Ok",
                 confirmButtonColor: "#28a745",
                 color: "black",
                 timer: 3500,

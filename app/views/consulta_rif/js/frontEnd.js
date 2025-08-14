@@ -338,7 +338,6 @@ function inicializeModal() {
           if (InputRifModal2) 
             InputRifModal2.value = globalRif;
             InputRazon2.value = globalRazon;
-            console.log(globalRazon);
           if (serialSelectModal2) {
             serialSelectModal2.innerHTML = `<input value="${globalSerial}">${globalSerial}</input>`;
             // Puedes seleccionar la opción si lo deseas:
@@ -1439,6 +1438,7 @@ function SendDataFailure2(idStatusPayment) {
   const inputAnticipo = document.getElementById("AnticipoInput");
 
   const archivoEnvio = inputEnvio.files[0];
+  console.log("Archivo de envío:", archivoEnvio); // <-- Corregido
   const archivoExoneracion = inputExoneracion.files[0]; // <-- Corregido
   const archivoAnticipo = inputAnticipo.files[0]; // <-- Corregido
 
@@ -1504,6 +1504,7 @@ function SendDataFailure2(idStatusPayment) {
   verificarTicketEnProceso(serial)
     .then((response) => {
       if (response.ticket_en_proceso) {
+        console.log(response.ticket_en_proceso);
         // Si ya existe un ticket en proceso, mostrar alerta y no permitir crear
         Swal.fire({
           icon: "warning",
@@ -1521,14 +1522,13 @@ function SendDataFailure2(idStatusPayment) {
               <p style="color: #d9534f; font-weight: bold;">Debe esperar a que este ticket se complete antes de crear uno nuevo.</p>
             </div>
           `,
-          confirmButtonText: "Entendido",
+          confirmButtonText: "Ok",
           confirmButtonColor: "#003594",
           allowOutsideClick: false,
           allowEscapeKey: false,
         });
         return; // Detener la ejecución
       }
-      // Si no hay ticket en proceso, continuar con la creación
       continuarCreacionTicket();
     })
     .catch((error) => {
@@ -1663,33 +1663,36 @@ function SendDataFailure2(idStatusPayment) {
                  `<div style="text-align: left; padding: 15px;">
                     <h3 style="color: #0056b3; margin-bottom: 15px; text-align: center;">🔧 ¡Ticket Generado! 🔧</h3>
                     <p style="font-size: 1.1em; margin-bottom: 10px;">
-                      <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.Nr_ticket}</span>
+                        <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.Nr_ticket}</span>
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>⚙️ Serial del Equipo:</strong> ${ticketData.serial}
+                        <strong>⚙️ Serial del Equipo:</strong> ${ticketData.serial}
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>�� Falla Reportada:</strong> ${ticketData.falla_text}
+                        <strong>❌ Falla Reportada:</strong> ${ticketData.falla_text}
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>📊 Nivel de Falla:</strong> ${ticketData.nivelFalla_text}
+                        <strong>📊 Nivel de Falla:</strong> ${ticketData.nivelFalla_text}
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>🏢 RIF Cliente:</strong> ${ticketData.rif || "N/A"}
+                        <strong>🏢 RIF Cliente:</strong> ${ticketData.rif || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>�� Usuario Gestión:</strong> ${ticketData.user_gestion || "N/A"}
+                      <strong>🏢Razon Social:</strong> ${globalRazon || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.coordinador || "N/A"}
+                        <strong>👥 Usuario Gestión:</strong> ${ticketData.user_gestion || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
-                      <strong>�� Estado de Documentos:</strong> <span style="color: darkblue; font-weight: bold;">${ticketData.status_payment || "N/A"}</span>
+                        <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.coordinador || "N/A"}
+                    </p>
+                    <p style="margin-bottom: 8px;">
+                        <strong>📄 Estado de Documentos:</strong> <span style="color: darkblue; font-weight: bold;">${ticketData.status_payment || "N/A"}</span>
                     </p>
                     <strong>
                       <p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
                         Se ha enviado una notificación por correo electrónico.<br>
-                        <h7>El Estatus del Ticket es: <span style = "color: #28a745"; font-weight: bold;">${ticketData.status_text}</span></h7>
+                        <h7><strong>El Estatus del Ticket es:</strong> <span style = "color: #28a745"; font-weight: bold;">${ticketData.status_text}</span></h7>
                       </p>
                     </strong>
                   </div>`;
@@ -1789,7 +1792,7 @@ function SendDataFailure2(idStatusPayment) {
               title: "Demasiadas Solicitudes",
               text: response.message,
               color: "black",
-              confirmButtonText: "Entendido",
+              confirmButtonText: "Ok",
               confirmButtonColor: "#003594",
             });
           } catch (error) {
@@ -2083,6 +2086,10 @@ function SendDataFailure1() {
                                           ticketData.rif || "N/A"
                                         }
                                     </p>
+                                   <p style="margin-bottom: 8px;">
+                                      <strong>🏢Razon Social:</strong> ${globalRazon || "N/A"}
+                                    </p>
+                                    </p>
                                     <strong><p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
                                         Se ha enviado una notificación por correo electrónico.<br>
                                         <h7>El Estatus del Ticket es: <span style = "color: red";>${ticketData.status_text}</h7></span>
@@ -2159,7 +2166,7 @@ function SendDataFailure1() {
           title: "Demasiadas Solicitudes",
           text: response.message, // Muestra el mensaje específico del backend (ej. "Debes esperar X minutos...")
           color: "black",
-          confirmButtonText: "Entendido",
+          confirmButtonText: "Ok",
           confirmButtonColor: "#003594", // Botón de confirmación AZUL
         });
       } catch (error) {
@@ -3561,7 +3568,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     title: 'Atención',
                     text: 'Debes seleccionar al menos un componente nuevo para guardar.',
                     icon: 'warning',
-                    confirmButtonText: 'Entendido',
+                    confirmButtonText: 'Ok',
                     color: 'black',
                     confirmButtonColor: '#003594',
                 });
@@ -3607,7 +3614,7 @@ function abrirModalComponentes(boton) {
             title: 'Atención',
             text: 'No se pudo obtener el ID del ticket.',
             icon: 'warning',
-            confirmButtonText: 'Entendido',
+            confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594',
         });
@@ -3619,7 +3626,7 @@ function abrirModalComponentes(boton) {
             title: 'Atención',
             text: 'No hay serial disponible para este ticket.',
             icon: 'warning',
-            confirmButtonText: 'Entendido',
+            confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594',
         });

@@ -491,7 +491,7 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "info",
             title: "Sin Tickets",
             html: `No hay tickets ${status.toLowerCase()}s en la fecha <strong>${month}</strong>.`,
-            confirmButtonText: "Entendido",
+            confirmButtonText: "Ok",
             confirmButtonColor: "#003594",
           });
         }
@@ -517,7 +517,7 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "info",
             title: "Sin Tickets",
             html: `No hay tickets para la región de <strong>${region}</strong>.`,
-            confirmButtonText: "Entendido",
+            confirmButtonText: "Ok",
             confirmButtonColor: "#003594",
           });
         }

@@ -413,7 +413,7 @@ class consulta_rifModel extends Model
             // pero no es estrictamente necesario para la relación.
 
             $sql = sprintf(
-                "INSERT INTO public.archivos_adjuntos (ticket_id, original_filename, stored_filename, file_path, mime_type, file_size_bytes, uploaded_by_user_id, document_type) VALUES (%d, %s, %s, %s, %s, %d, %d, %s);",
+                "INSERT INTO public.archivos_adjuntos (nro_ticket, original_filename, stored_filename, file_path, mime_type, file_size_bytes, uploaded_by_user_id, document_type) VALUES (%d, %s, %s, %s, %s, %d, %d, %s);",
                 (int) $ticket_id,
                 $escaped_original_filename,
                 $escaped_stored_filename,
@@ -2182,5 +2182,62 @@ class consulta_rifModel extends Model
             return false;
         }
     }
+
+    public function getDocumentByType($ticketId, $documentType) {
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            $escaped_ticket_id = pg_escape_literal($db_conn, $ticketId);
+            $escaped_document_type = pg_escape_literal($db_conn, $documentType);
+
+            $sql = "SELECT file_path, mime_type, original_filename, document_type 
+                    FROM archivos_adjuntos 
+                    WHERE nro_ticket = $escaped_ticket_id 
+                    AND document_type = $escaped_document_type 
+                    ORDER BY uploaded_at DESC 
+                    LIMIT 1";
+
+            $result = $this->db->pgquery($sql);
+
+            if ($result === false) {
+                error_log("Error al consultar documento: " . pg_last_error($db_conn));
+                return false;
+            }
+
+            if (pg_num_rows($result) === 0) {
+                return false;
+            }
+
+            return pg_fetch_assoc($result);
+
+        } catch (Throwable $e) {
+            error_log("Excepción en getDocumentByType: " . $e->getMessage());
+            return false;
+        }
+    }
+
+
+    public function GetMotivos($documentType) {
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            $escaped_document_type = pg_escape_literal($db_conn, $documentType);
+            $sql = "SELECT id_motivo_rechazo, name_motivo_rechazo 
+                  FROM motivos_rechazo 
+                  WHERE document_type_motivo_rechazo = ".$escaped_document_type."  OR document_type_motivo_rechazo = 'General' 
+                  ORDER BY id_motivo_rechazo";
+            $result = Model::getResult($sql, $this->db);
+
+            if ($result === false) {
+                error_log("Error al consultar motivos: ". pg_last_error($db_conn));
+                return false;
+            }
+
+            return $result;
+        } catch (Throwable $e) {
+        error_log("Excepción en GetMotivos: ". $e->getMessage());
+        return false;
+        }
+    } 
 }
 ?>

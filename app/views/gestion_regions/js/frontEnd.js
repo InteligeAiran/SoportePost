@@ -1,6 +1,7 @@
 let currentTicketIdForConfirmTaller = null;
 let currentNroTicketForConfirmTaller = null; // <--- NUEVA VARIABLE PARA EL NÚMERO DE TICKET
 let confirmInTallerModalInstance = null;
+let currentSerialPos = null; // <--- NUEVA VARIABLE PARA EL SERIAL POS
 
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -29,10 +30,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 $("#confirmTallerBtn").on("click", function () {
     const ticketIdToConfirm = currentTicketIdForConfirmTaller;
-    // const nroTicketToConfirm = currentNroTicketForConfirmTaller; // Si necesitas el nro_ticket aquí
+    const nroTicketToConfirm = currentNroTicketForConfirmTaller; // Si necesitas el nro_ticket aquí
+    const serialPosToConfirm = currentSerialPos; // Si necesitas el serial_pos aquí
+    
 
     if (ticketIdToConfirm) {
-      updateTicketStatusInRegion(ticketIdToConfirm);
+      updateTicketStatusInRegion(ticketIdToConfirm, nroTicketToConfirm, serialPosToConfirm);
       if (confirmInTallerModalInstance) {
         confirmInTallerModalInstance.hide();
       }
@@ -142,7 +145,6 @@ function getTicketDataFinaljs() {
   const tableContainer = document.querySelector(".table-responsive");
 
    const columnTitles = {
-        nro_ticket: "Nro Ticket",
         serial_pos: "Serial POS",
         rif: "Rif",
         name_failure: "Falla",
@@ -257,25 +259,28 @@ function getTicketDataFinaljs() {
                     const name_status_payment = row.name_status_payment;
                     const currentStatusLab = row.status_taller;
                     const name_accion_ticket = (row.name_accion_ticket || "").trim();
-                    
                     const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
                     const nombre_estado_cliente = row.nombre_estado_cliente;
-                    
                     const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
-
                     let actionButton = '';
 
                     // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
                     if (name_accion_ticket === "En espera de confirmar recibido en Región") {
-                        actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
-                                            data-id-ticket="${idTicket}"
-                                            data-serial-pos="${serialPos}"
-                                            data-nro-ticket="${nroTicket}">
-                                            <i class="fas fa-hand-holding-box"></i> Recibido
-                                        </button>`;
+                      actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
+                        data-id-ticket="${idTicket}"
+                        data-serial-pos="${serialPos}"
+                        data-nro-ticket="${nroTicket}">
+                        <i class="fas fa-hand-holding-box"></i> Recibido
+                      </button>`;
+                    }else{
+                      actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
+                        data-id-ticket="${idTicket}"
+                        data-serial-pos="${serialPos}"
+                        data-nro-ticket="${nroTicket}">
+                        <i class="fas fa-truck"></i> Entregar A cliente
+                      </button>`;
                     }
-                   
-                    return actionButton;
+                  return actionButton;
                 },
             });
 
@@ -289,19 +294,34 @@ function getTicketDataFinaljs() {
                 width: "8%",
                 render: function (data, type, row) {
                     const idTicket = row.id_ticket;
-                    const accionllaves = row.name_accion_ticket; // Necesitas esta variable para la condición
+                    const nroTicket = row.nro_ticket;
+                    const accionllaves = row.name_accion_ticket;
+                    const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
+                    
+                    // Obtener la ruta del documento, si existe.
+                    const documentUrl = row.file_paths || row.document_path || '';
+                    const documentType = getDocumentType(documentUrl);
+                    const documentName = row.original_filenames || row.file_name || 'Documento';
 
-                    // "cuando el status de name_accion_ticket sea: Llaves Cargadas me tiene que aparecer un boton para subir una imagen"
-                    if (accionllaves === "Llaves Cargadas") {
+                    if (hasEnvioDestinoDocument) {
+                      // Se asume que el estatus "En la región" significa que el documento ya fue subido y puede ser visto
+                      if(row.name_accion_ticket === "En la región" || row.name_accion_ticket === "Entregado a Cliente"){
+                        // CORRECCIÓN: Agregar los atributos data-url-document y data-document-type al botón
                         return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
-                                data-id-ticket="${idTicket}"
-                                data-bs-toggle="modal"
-                                data-bs-target="#viewDocumentModal"> Ver Documento Cargados
-                            </button>`;
+                          data-id-ticket="${idTicket}"
+                          data-nro-ticket="${nroTicket}"
+                          data-url-document="${documentUrl}"
+                          data-document-type="${documentType}"
+                          data-document-name="${documentName}"
+                          data-bs-toggle="modal"
+                          data-bs-target="#viewDocumentModal">Ver Documento Cargados
+                        </button>`;
+                      } else {
+                        return `<button type="button" class="btn btn-secondary btn-sm disabled">Confirme Recibido</button>`; 
+                      }
                     } else {
-                        // Si el estatus no es "Llaves Cargadas", muestra "No hay imagen"
-                        return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Docuemntos Cargados</button>`;
-                    }
+                      return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Documentos Cargados</button>`;
+                  }
                 },
             });
 
@@ -341,9 +361,91 @@ function getTicketDataFinaljs() {
                   colvis: "Visibilidad de Columna",
                 },
               },
+              
+              dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+            initComplete: function (settings, json) {
+              // Dentro de initComplete, 'this' se refiere a la tabla jQuery
+              // y 'this.api()' devuelve la instancia de la API de DataTables.
+              const api = this.api(); // <--- Correcto: Obtener la instancia de la API aquí
 
-               
-                      });
+            // Esto es parte de tu inicialización de DataTables, probablemente dentro de 'initComplete'
+            // o en un script que se ejecuta después de que la tabla está lista.
+            const buttonsHtml = `
+                                <button id="btn-por-asignar" class="btn btn-primary me-2" title="Pendiente por confirmar recibido en la Región">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                                  </svg>
+                                </button>
+
+                                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets en la Región">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house-door" viewBox="0 0 16 16">
+                                    <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z"/>
+                                  </svg>
+                                </button>
+
+                                <button id="btn-asignados" class="btn btn-secondary me-2" title="Entregados al Cliente">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                    </svg>
+                                </button>`;
+            $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+
+            function setActiveButton(activeButtonId) {
+                $("#btn-por-asignar")
+                    .removeClass("btn-primary")
+                    .addClass("btn-secondary");
+                $("#btn-asignados")
+                    .removeClass("btn-primary")
+                    .addClass("btn-secondary");
+                $("#btn-recibidos")
+                    .removeClass("btn-primary")
+                    .addClass("btn-secondary");
+                $("#btn-reasignado")
+                    .removeClass("btn-primary")
+                    .addClass("btn-secondary");
+                $(`#${activeButtonId}`)
+                    .removeClass("btn-secondary")
+                    .addClass("btn-primary");
+            }
+
+            api.columns().search('').draw(false);
+            api // <--- Usar 'api' en lugar de 'dataTableInstance'
+              .column(8)
+              .search("^En espera de confirmar recibido en Región$", true) // CAMBIO AQUÍ
+              .draw();
+            setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
+
+            $("#btn-por-asignar").on("click", function () {
+              api.columns().search('').draw(false);
+              api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                .column(8)
+                .search("^En espera de confirmar recibido en Región$", true) // <-- Cambio aquí
+                .draw();
+              setActiveButton("btn-por-asignar");
+            });
+
+            
+            $("#btn-recibidos").on("click", function () {
+              api.columns().search('').draw(false);
+              api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                .column(8)
+                .search("^En la región$")
+                .draw();
+              setActiveButton("btn-recibidos");
+            });
+
+            $("#btn-asignados").on("click", function () {
+                api.columns().search('').draw(false);
+                api.column(14).visible(false);
+                api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                    .column(8)
+                    .search("^Entregado a Cliente$") // <-- Cambio aquí
+                    .draw();
+                setActiveButton("btn-asignados");
+            });
+          },
+        });
 
                   $(document).on("click", ".deliver-ticket-btn", function () {
                     const idTicket = $(this).data("id-ticket");
@@ -364,10 +466,10 @@ function getTicketDataFinaljs() {
                         <p class="h4 mb-3" style="color: black;">¿Desea marcar el dispositivo con serial <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> del Ticket Nro: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> como "Entregado al Cliente"?</p> 
                         <p class="h5" style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">Esta acción registrará la fecha de entrega al cliente.</p>
                       </div>`,
-                      confirmButtonText: "Sí, Confirmar Entrega",
+                      confirmButtonText: " Confirmar Entrega",
                       color: "black",
                       confirmButtonColor: "#28a745", // Un color verde para la confirmación
-                      cancelButtonText: "No, cancelar",
+                      cancelButtonText: "Cancelar",
                       focusConfirm: false,
                       allowOutsideClick: false,
                       showCancelButton: true,
@@ -516,6 +618,7 @@ function getTicketDataFinaljs() {
 
                                 currentTicketIdForConfirmTaller = ticketId;
                                 currentNroTicketForConfirmTaller = nroTicket;
+                                currentSerialPos = serialPos; // Asegúrate de que serial_pos esté definido
 
                                 $("#modalTicketIdConfirmTaller").val(ticketId);
                                 $("#modalHiddenNroTicketConfirmTaller").val(nroTicket);
@@ -556,14 +659,14 @@ function getTicketDataFinaljs() {
                 .on("click", "tr", function (e) {
                     // Asegúrate de que el clic no proviene de una celda truncable/expandible o de un botón.
                     if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('full-text-cell') || $(e.target).is('button') || $(e.target).is('input[type="checkbox"]')) {
-                        return; // Si el clic fue en la celda del checkbox o el botón, no activar el evento de la fila.
+                      return; // Si el clic fue en la celda del checkbox o el botón, no activar el evento de la fila.
                     }
 
                     const tr = $(this);
                     const rowData = dataTableInstance.row(tr).data();
 
                     if (!rowData) {
-                        return;
+                      return;
                     }
 
                     $("#tabla-ticket tbody tr").removeClass("table-active");
@@ -650,6 +753,160 @@ function getTicketDataFinaljs() {
 
 document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
 
+// Función para determinar el tipo de documento basado en la extensión
+// Función para determinar el tipo de documento
+function getDocumentType(filePath) {
+    if (!filePath) return 'unknown';
+    
+    // Si tienes múltiples archivos separados por '|', toma el primero
+    const singleFilePath = filePath.split('|')[0];
+    const extension = singleFilePath.split('.').pop().toLowerCase();
+    
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension)) {
+        return 'image';
+    } else if (['pdf'].includes(extension)) {
+        return 'pdf';
+    } else {
+        return 'unknown';
+    }
+}
+
+// Event listener para manejar los clics en los botones
+document.addEventListener("click", function (event) {
+    const openUploadBtn = event.target.closest("#openModalButton");
+    if (openUploadBtn) {
+        event.preventDefault();
+        const idTicket = openUploadBtn.dataset.idTicket;
+        showUploadModal(idTicket);
+        return;
+    }
+
+    // Maneja el botón para ver la imagen
+    const openViewBtn = event.target.closest("#viewimage");
+    if (openViewBtn) {
+        event.preventDefault();
+        const idTicket = openViewBtn.dataset.idTicket;
+        const nroTicket = openViewBtn.dataset.nroTicket;
+        const documentUrl = openViewBtn.dataset.urlDocument;
+        const documentName = openViewBtn.dataset.documentName;
+        
+        // CORRECCIÓN: Obtenemos el tipo de documento de la función
+        const documentType = getDocumentType(documentUrl);
+        
+        // IMPORTANTE: Aquí se debe construir la URL completa y accesible por el navegador
+        // Reemplaza '/uploads_tickets/' con la ruta real en tu servidor web
+        
+        if (documentType === 'image') {
+            showViewModal(idTicket, nroTicket, documentUrl, null, documentName);
+        } else if (documentType === 'pdf') {
+            showViewModal(idTicket, nroTicket, null, documentUrl, documentName);
+        } else {
+            console.warn("Tipo de documento no especificado para la visualización.");
+            showViewModal(idTicket, nroTicket, null, null);
+        }
+    }
+});
+
+// Función para mostrar el modal de visualización
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
+    const modalElementView = document.getElementById("viewDocumentModal");
+    const modalTicketIdSpanView = modalElementView ? modalElementView.querySelector("#viewModalTicketId") : null;
+
+    let bsViewModal = null;
+    if (modalElementView) {
+        bsViewModal = new bootstrap.Modal(modalElementView, { keyboard: false });
+    }
+
+    currentTicketId = ticketId;
+    currentNroTicket = nroTicket;
+    if (modalTicketIdSpanView) {
+        modalTicketIdSpanView.textContent = currentNroTicket;
+    }
+
+    const imageViewPreview = document.getElementById("imageViewPreview");
+    const pdfViewViewer = document.getElementById("pdfViewViewer");
+    const messageContainer = document.getElementById("viewDocumentMessage");
+    const nameDocumento = document.getElementById("NombreImage");
+    const cerrarBotonModal = document.getElementById("modalCerrarshow");
+
+
+    // Limpiar vistas y mensajes
+    if (imageViewPreview) imageViewPreview.style.display = "none";
+    if (pdfViewViewer) pdfViewViewer.style.display = "none";
+    if (messageContainer) {
+        messageContainer.textContent = "";
+        messageContainer.classList.add("hidden");
+    }
+
+  const fullUrl = `http://localhost/SoportePost/${imageUrl}`;
+
+    if (imageUrl) {
+        // CORRECCIÓN: Asigna la URL construida
+        if (imageViewPreview) {
+             imageViewPreview.src = fullUrl;
+             imageViewPreview.style.display = "block";
+             nameDocumento.textContent = documentName;
+        }
+    } else if (pdfUrl) {
+        // CORRECCIÓN: Asigna la URL construida
+        if (pdfViewViewer) {
+            pdfViewViewer.innerHTML = `<iframe src="${pdfUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
+            pdfViewViewer.style.display = "block";
+            nameDocumento.textContent = documentName;
+        }
+    } else {
+        if (messageContainer) {
+            messageContainer.textContent = "No hay documento disponible para este ticket.";
+            messageContainer.classList.remove("hidden");
+        }
+    }
+
+    if (bsViewModal) {
+        bsViewModal.show();
+    } else {
+        console.error("Error: Instancia de Bootstrap Modal para 'viewDocumentModal' no creada.");
+    }
+
+    if (cerrarBotonModal) {
+      cerrarBotonModal.addEventListener("click", function (event) {
+        event.preventDefault();
+        bsViewModal.hide();
+      });
+    }
+
+}
+
+// Tu función showUploadModal permanece sin cambios ya que el problema está en la visualización
+function showUploadModal(ticketId) {
+    const modalElementUpload = document.getElementById("uploadDocumentModal");
+    const modalTicketIdSpanUpload = modalElementUpload ? modalElementUpload.querySelector("#uploadModalTicketId") : null;
+    const inputFile = modalElementUpload ? modalElementUpload.querySelector("#documentFile") : null;
+    let bsUploadModal = null;
+
+    if (modalElementUpload) {
+        bsUploadModal = new bootstrap.Modal(modalElementUpload, { keyboard: false });
+    }
+
+    currentTicketId = ticketId;
+    if (modalTicketIdSpanUpload) {
+        modalTicketIdSpanUpload.textContent = currentTicketId;
+    }
+
+    if (inputFile) {
+        inputFile.value = "";
+        const imagePreview = document.getElementById("imagePreview");
+        if (imagePreview) {
+            imagePreview.src = "#";
+            imagePreview.style.display = "none";
+        }
+    }
+
+    if (bsUploadModal) {
+        bsUploadModal.show();
+    } else {
+        console.error("Error: Instancia de Bootstrap Modal para 'uploadDocumentModal' no creada.");
+    }
+}
 
 function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
@@ -707,7 +964,7 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Usuario Gestión:</div></strong>
-                          ${d.full_name_tecnico1}
+                          ${d.full_name_tecnico}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Dirección Instalación:</div></strong>
@@ -852,52 +1109,75 @@ function loadTicketHistory(ticketId) {
         },
         dataType: "json",
         success: function (response) {
+            // Revisa la consola del navegador para ver la respuesta completa del servidor.
+            console.log("Respuesta del servidor:", response);
+
+            // Verifica si la respuesta es exitosa y contiene datos de historial.
             if (response.success && response.history && response.history.length > 0) {
                 let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
                 response.history.forEach((item, index) => {
                     const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
                     const headingId = `headingHistoryItem_${ticketId}_${index}`;
-                    
-                    // Lógica para el estilo del elemento actual (el primero en el historial)
-                    const isCurrent = index === 0;
+
+                    const isLatest = index === 0;
+                    const isExpanded = false;
 
                     const prevItem = response.history[index + 1] || {};
 
-                    const accionChanged = prevItem.name_accion_ticket && item.name_accion_ticket !== prevItem.name_accion_ticket;
-                    const tecnicoChanged = prevItem.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history !== prevItem.full_name_tecnico_n2_history;
-                    const statusLabChanged = prevItem.name_status_lab && item.name_status_lab !== prevItem.name_status_lab;
-                    const statusDomChanged = prevItem.name_status_domiciliacion && item.name_status_domiciliacion !== prevItem.name_status_domiciliacion;
-                    const statusPaymentChanged = prevItem.name_status_payment && item.name_status_payment !== prevItem.name_status_payment;
-                    const estatusTicketChanged = prevItem.name_status_ticket && item.name_status_ticket !== prevItem.name_status_ticket;
+                    // -- CORRECCIÓN PARA ESPACIOS EN BLANCO Y ESPACIOS DE NO SEPARACIÓN --
+                    // Reemplazamos todos los caracteres de espacio en blanco, incluyendo los de no separación,
+                    // con un espacio normal, y luego usamos trim() para asegurar una comparación precisa.
+                    const cleanString = (str) => str ? str.replace(/\s/g, ' ').trim() : null;
 
-                    // Lógica para los estilos del encabezado
-                    let headerStyle = isCurrent ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-                    let textColor = isCurrent ? "color: #343a40;" : "color: #ffffff;";
+                    const itemAccion = cleanString(item.name_accion_ticket);
+                    const prevAccion = cleanString(prevItem.name_accion_ticket);
+                    const accionChanged = prevAccion && itemAccion !== prevAccion;
 
-                    // Lógica para mostrar el estatus correcto según la acción del ticket
-                    let statusDisplayText;
-                    if (item.name_accion_ticket === "Enviado a taller" || item.name_accion_ticket === "En Taller") {
-                        statusDisplayText = item.name_status_lab || "Desconocido";
-                    } else {
-                        statusDisplayText = item.name_status_ticket || "Desconocido";
-                    }
-                    const statusHeaderText = ` (${statusDisplayText})`;
+                    const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
+                    const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
+                    const tecnicoChanged = prevTecnico && itemTecnico !== prevTecnico;
+
+                    const itemStatusLab = cleanString(item.name_status_lab);
+                    const prevStatusLab = cleanString(prevItem.name_status_lab);
+                    const statusLabChanged = prevStatusLab && itemStatusLab !== prevStatusLab;
+
+                    const itemStatusDom = cleanString(item.name_status_domiciliacion);
+                    const prevStatusDom = cleanString(prevItem.name_status_domiciliacion);
+                    const statusDomChanged = prevStatusDom && itemStatusDom !== prevStatusDom;
+
+                    const itemStatusPayment = cleanString(item.name_status_payment);
+                    const prevStatusPayment = cleanString(prevItem.name_status_payment);
+                    const statusPaymentChanged = prevStatusPayment && itemStatusPayment !== prevStatusPayment;
+
+                    const itemStatusTicket = cleanString(item.name_status_ticket);
+                    const prevStatusTicket = cleanString(prevItem.name_status_ticket);
+                    const estatusTicketChanged = prevStatusTicket && itemStatusTicket !== prevStatusTicket;
+
+                    const itemComponents = cleanString(item.components_list);
+                    const prevComponents = cleanString(prevItem.components_list);
+                    const componentsChanged = prevComponents && itemComponents !== prevComponents;
+
+                    const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
+
+                    let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
 
                     historyHtml += `
                         <div class="card mb-3 custom-history-card">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
-                                    <button class="btn btn-link w-100 text-left py-2 px-3 collapsed" type="button"
-                                            data-toggle="collapse" data-target="#${collapseId}"
-                                            aria-expanded="false" aria-controls="${collapseId}"
-                                            style="${textColor}">
+                                    <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
+                                        data-toggle="collapse" data-target="#${collapseId}"
+                                        aria-expanded="${isExpanded}" aria-controls="${collapseId}"
+                                        style="${textColor}">
                                         ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
                                     </button>
                                 </h2>
                             </div>
                             <div id="${collapseId}" class="collapse"
-                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <table class="table table-sm table-borderless mb-0">
@@ -919,7 +1199,7 @@ function loadTicketHistory(ticketId) {
                                                     <td>${item.full_name_coordinador || "N/A"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-start">Técnico Asignado:</th>
+                                                    <th class="text-start">Tecnico Asignado:</th>
                                                     <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
                                                 </tr>
                                                 <tr>
@@ -938,6 +1218,12 @@ function loadTicketHistory(ticketId) {
                                                     <th class="text-start">Estatus Pago:</th>
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
                                                 </tr>
+                                                ${showComponents ? `
+                                                    <tr>
+                                                        <th class="text-start">Componentes Asociados:</th>
+                                                        <td class="${componentsChanged ? "highlighted-change" : ""}">${item.components_list}</td>
+                                                    </tr>
+                                                ` : ''}
                                             </tbody>
                                         </table>
                                     </div>
@@ -949,10 +1235,17 @@ function loadTicketHistory(ticketId) {
                 historyHtml += "</div>";
                 historyPanel.html(historyHtml);
             } else {
+                // Si la respuesta es exitosa pero no hay historial, muestra este mensaje.
                 historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
+            // Revisa la consola para obtener detalles sobre por qué falló la llamada AJAX.
+            console.error("Error completo de AJAX:", {
+                jqXHR: jqXHR,
+                textStatus: textStatus,
+                errorThrown: errorThrown,
+            });
             let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
             if (jqXHR.status === 0) {
                 errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
@@ -969,11 +1262,11 @@ function loadTicketHistory(ticketId) {
             }
             historyPanel.html(errorMessage);
             console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-        }
+        },
     });
 }
 
-function updateTicketStatusInRegion(ticketId) {
+function updateTicketStatusInRegion(ticketId, nroTicketToConfirm, serialPosToConfirm) {
   const id_user = document.getElementById("userId").value;
 
   const dataToSendString = `action=UpdateStatusToReceiveInRegion&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(ticketId)}`;
@@ -994,11 +1287,11 @@ function updateTicketStatusInRegion(ticketId) {
         if (response.success === true) {
           // Or `response.success == "true"` if your backend sends a string
           Swal.fire({
-            // Changed from swal(...) to Swal.fire(...)
             title: "¡Éxito!",
-            text: "El POS se encontrará en el taller como 'En Proceso de reparación'.",
+            html: `El Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPosToConfirm}</span> asociado al Nro de Ticket <span  style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicketToConfirm}</span> fue recibido en la región.`,
             icon: "success",
-            confirmButtonText: "¡Entendido!", // SweetAlert2 uses confirmButtonText
+            confirmButtonText: "Ok", // SweetAlert2 uses confirmButtonText
+            confirmButtonColor: "#003594", // SweetAlert2 uses confirmButtonColor
             customClass: {
               confirmButton: "BtnConfirmacion", // For custom button styling
             },

@@ -650,39 +650,39 @@ function mi_navbar()
     </div>
 
     <!--MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
-    <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel"
-        aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-gradient-primary">
-                    <strong>
-                        <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
-                            Documento para el Nro Ticket: <span id="modalTicketId"></span></h5>
-                            <input type="hidden" id="id_ticket"></input>
-                    </strong>
-                </div>
-                <div class="modal-body">
-                    <form id="uploadForm">
-                        <div class="mb-3">
-                            <label for="documentFile" class="form-label text-gray-700">Seleccionar Archivo:</label>
-                            <input class="form-control" type="file" id="documentFile" accept="image/*,application/pdf"
-                                style="display:block">
-                            <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
-                        </div>
-                        <div class="mb-3 text-center">
-                            <img id="imagePreview" class="img-preview" src="#" alt="Previsualización de Imagen">
-                        </div>
-                        <div id="uploadMessage" class="message-box hidden"></div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="CerrarBoton"
-                        data-bs-dismiss="modal">Cerrar</button>
-                    <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
+        <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel"
+            aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-gradient-primary">
+                        <strong>
+                            <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
+                                Documento para el Nro Ticket: <span id="modalTicketId"></span></h5>
+                                <input type="hidden" id="id_ticket"></input>
+                        </strong>
+                    </div>
+                    <div class="modal-body">
+                        <form id="uploadForm">
+                            <div class="mb-3">
+                                <label for="documentFile" class="form-label text-gray-700">Seleccionar Archivo:</label>
+                                <input class="form-control" type="file" id="documentFile" accept="image/*,application/pdf"
+                                    style="display:block">
+                                <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
+                            </div>
+                            <div class="mb-3 text-center">
+                                <img id="imagePreview" class="img-preview" src="#" alt="Previsualización de Imagen">
+                            </div>
+                            <div id="uploadMessage" class="message-box hidden"></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="CerrarBoton"
+                            data-bs-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     <!-- END MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
 
     <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->

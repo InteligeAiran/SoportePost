@@ -977,9 +977,6 @@ function EditarUsuarios() {
 //   xhr.send(datos);
 // }
 
-
-
-
 function VerModulos(idusuario) {
   const id_usuario  = idusuario;
   const id_usuario1 = document.getElementById('id_user').value;

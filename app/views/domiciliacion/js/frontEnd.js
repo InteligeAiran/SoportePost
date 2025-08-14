@@ -752,7 +752,7 @@ function updateDomiciliacionStatus(idTicket, newStatusId, id_user) {
                         title: "¡Éxito!",
                         text: "Estatus del ticket actualizado correctamente.",
                         icon: "success",
-                        confirmButtonText: "Entendido",
+                        confirmButtonText: "Ok",
                         confirmButtonColor: "#003594",
                         color: "black",
                         // willClose ya no tiene location.reload() si quieres un flujo más suave

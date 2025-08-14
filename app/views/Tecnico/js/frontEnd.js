@@ -500,13 +500,13 @@ function getTicketData() {
 
             const id_document=currentDocument;
 
-            if(id_document==9){ 
+            if(id_document!=9 || id_document==10){ 
 
                 Swal.fire({
                 icon: 'warning',
                 title: '¡Advertencia!',
                 text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
-                confirmButtonText: 'Entendido', 
+                confirmButtonText: 'Ok', 
                 confirmButtonColor: '#003594', // Color del botón
                 color: 'black',
             });
@@ -876,37 +876,49 @@ function getTicketData() {
     });
 
     // 4. Manejador de eventos para los botones de "Ver Documento" (desde el modal de acciones)
-    $(document).on('click', '.btn-view-document', function() {
-        documentActionsModal.hide(); // Oculta el modal de acciones
+    // This is the correct handler from your second JS snippet.
+  // Manejador de eventos para los botones de "Ver Documento" (desde el modal de acciones)
+$(document).on('click', '.btn-view-document', function() {
+    documentActionsModal.hide();
 
-        const ticketId = $(this).data('ticket-id');
-        const fileUrl = $(this).data('file-url');
-        const viewModalTicketId = $('#viewModalTicketId');
+    const ticketId = $(this).data('ticket-id');
+    const fileUrl = $(this).data('file-url');
+    const viewModalTicketId = $('#viewModalTicketId');
 
-        pdfViewViewer.style.display = 'none';
-        imageViewPreview.style.display = 'none';
-        viewModalTicketId.text(ticketId);
+    $('#pdfViewViewer').empty().hide();
+    $('#imageViewPreview').attr('src', '').hide(); // Clear src attribute
+    $('#viewDocumentMessage').addClass('hidden').text('');
+    viewModalTicketId.text(ticketId);
 
-        if (!fileUrl) {
-            $('#viewDocumentMessage').removeClass('hidden').text('No hay documento disponible para este ticket.');
-        } else {
-            $('#viewDocumentMessage').addClass('hidden').text('');
-            const isPdf = fileUrl.toLowerCase().endsWith('.pdf');
-
-            if (isPdf) {
-                pdfViewViewer.src = fileUrl;
-                pdfViewViewer.style.display = 'block';
-            } else {
-                imageViewPreview.src = fileUrl;
-                imageViewPreview.style.display = 'block';
-            }
-        }
-
-        setTimeout(() => {
-            viewDocumentModal.show();
-        }, 300);
-    });
+    if (!fileUrl) {
+        $('#viewDocumentMessage').removeClass('hidden').text('No hay documento disponible para este ticket.');
+        viewDocumentModal.show();
+        return;
+    }
     
+    // Check file extension
+    const isPdf = fileUrl.toLowerCase().endsWith('.pdf');
+
+    if (isPdf) {
+        // Create an iframe to display the PDF
+        const iframe = $('<iframe>', {
+            src: fileUrl,
+            height: '100%',
+            css: { border: 'none' }
+        });
+        $('#pdfViewViewer').append(iframe).show();
+    } else {
+        // Create an img tag for the image and handle its load
+        const img = $('#imageViewPreview');
+        img.on('load', function() {
+            $(this).show();
+        }).attr('src', fileUrl);
+    }
+
+    setTimeout(() => {
+        viewDocumentModal.show();
+    }, 300);
+});
     // 5. Previsualización de la imagen
     $('#documentFile').on('change', function(event) {
         const [file] = event.target.files;
@@ -923,28 +935,25 @@ function getTicketData() {
 
 // 6. Manejador de eventos para el botón de "Subir" dentro del modal de subida
 $(document).on('click', '#uploadFileBtn', function() {
-    const fileInput = $('#documentFile')[0];
-    const documentType = $('#uploadForm').data('document-type');
-    const ticketId = $('#uploadForm').data('ticket-id');
+  const fileInput = $('#documentFile')[0];
+  const documentType = $('#uploadForm').data('document-type');
+  const ticketId = $('#uploadForm').data('ticket-id');
+  const uploadDocumentModalElement = document.getElementById("uploadDocumentModal");
 
-    if (!fileInput.files || fileInput.files.length === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: '¡Advertencia!',
-            text: 'Por favor, selecciona un archivo antes de continuar.',
-            confirmButtonText: 'Entendido', 
-            confirmButtonColor: '#003594', // Color del botón
-            color: 'black',
-        });
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('documentFile', fileInput.files[0]);
-    formData.append('ticketId', ticketId);
-    formData.append('documentType', documentType);
-
-    // ... Tu lógica de AJAX para enviar el formulario al servidor ...
+  if (!fileInput.files || fileInput.files.length === 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: '¡Advertencia!',
+      text: 'Por favor, selecciona un archivo antes de continuar.',
+      confirmButtonText: 'Ok', 
+      confirmButtonColor: '#003594',
+      color: 'black',
+    });
+    return;
+  }
+  const uploadModalBootstrap = new bootstrap.Modal(uploadDocumentModalElement,{ backdrop: "static" });
+  // Llamar directamente a la función sin crear otro listener
+  handleUploadButtonClick(ticketId, documentType, uploadModalBootstrap);
 });
 
 $(document).on('click', '#CerrarBoton', function() {
@@ -1161,62 +1170,87 @@ function handleFileSelectForUpload(event) {
   }
 }
 
-async function handleUploadButtonClick(
-  ticketId,
-  documentType,
-  uploadModalBootstrap
-) {
-  const documentFileInput = document.getElementById("documentFile");
-  const uploadMessage = document.getElementById("uploadMessage");
-  const file = documentFileInput.files[0];
+async function handleUploadButtonClick(ticketId, documentType, uploadModalBootstrap) {
+    const id_user = document.getElementById("userId").value;
+    const documentFileInput = document.getElementById("documentFile");
+    const uploadMessage = document.getElementById("uploadMessage");
+    const file = documentFileInput.files[0];
 
-  uploadMessage.classList.add("hidden");
-  uploadMessage.textContent = "";
+    // Clear previous messages and check for file
+    uploadMessage.classList.add("hidden");
+    uploadMessage.textContent = "";
 
-  if (!file) {
-    uploadMessage.textContent = "Por favor, seleccione un archivo para subir.";
-    uploadMessage.classList.remove("hidden");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("ticket_id", ticketId);
-  formData.append("document_type", documentType); // 'zoom', 'exoneracion', 'pago'
-  formData.append("document_file", file);
-
-  try {
-    const response = await fetch(
-      `${ENDPOINT_BASE}${APP_PATH}api/uploadDocument`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
-    const result = await response.json();
-
-    if (response.ok && result.success) {
-      uploadMessage.textContent = result.message;
-      uploadMessage.classList.remove("hidden");
-      uploadMessage.style.color = "green";
-      // Opcional: Cerrar el modal después de un tiempo o recargar la tabla
-      setTimeout(() => {
-        uploadModalBootstrap.hide();
-        getTicketData(); // Recargar la tabla para reflejar los cambios
-      }, 1500);
-    } else {
-      uploadMessage.textContent =
-        result.message || "Error al subir el documento.";
-      uploadMessage.classList.remove("hidden");
-      uploadMessage.style.color = "red";
+    if (!file) {
+        Swal.fire({
+            icon: 'warning',
+            title: '¡Advertencia!',
+            text: 'Por favor, selecciona un archivo antes de continuar.',
+            confirmButtonText: 'Ok',
+            confirmButtonColor: '#003594',
+            color: 'black',
+        });
+        return;
     }
-  } catch (error) {
-    console.error("Error al subir el documento:", error);
-    uploadMessage.textContent =
-      "Error de red o del servidor al subir el documento.";
-    uploadMessage.classList.remove("hidden");
-    uploadMessage.style.color = "red";
-  }
+
+    // 1. Create a FormData object to handle the file upload.
+    const formData = new FormData();
+    formData.append("action", "uploadDocument");
+    formData.append("ticket_id", ticketId);
+    formData.append("document_type", documentType);
+    
+    // 2. Append the file object directly. Do NOT use encodeURIComponent().
+    formData.append("document_file", file); 
+    formData.append("id_user", id_user);
+
+    const xhr = new XMLHttpRequest();
+    const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/uploadDocument`;
+
+    xhr.open("POST", url);
+
+    // 3. Remove the Content-Type header. The browser will set the correct one (multipart/form-data) automatically.
+    // xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded"); // <-- REMOVE THIS LINE
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            let result;
+            try {
+                result = JSON.parse(xhr.responseText);
+            } catch (e) {
+                result = { success: false, message: 'Error de respuesta del servidor.' };
+            }
+
+            if (xhr.status === 200 && result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: result.message,
+                    confirmButtonColor: '#003594',
+                });
+                setTimeout(() => {
+                    uploadModalBootstrap.hide();
+                    // getTicketData(); 
+                }, 1500);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.message || 'Error al subir el documento.',
+                    confirmButtonColor: '#003594',
+                });
+            }
+        }
+    };
+    
+    xhr.onerror = function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de red',
+            text: 'Error de red o del servidor al subir el documento.',
+            confirmButtonColor: '#003594',
+        });
+    }
+    // 4. Send the FormData object.
+    xhr.send(formData);
 }
 
 // ===============================================
@@ -1413,7 +1447,6 @@ function formatTicketDetailsPanel(d) {
         </div>
     `;
 }
-
 
 function downloadImageModal(serial) {
   // Considera renombrar a loadDeviceImage(serial) para mayor claridad
@@ -1801,7 +1834,7 @@ function SendToDevolution(ticketId, currentnroTicket) {
             icon: 'warning',
             title: '¡Advertencia!',
             text: 'El campo no puede estar en blanco.',
-            confirmButtonText: 'Entendido', 
+            confirmButtonText: 'Ok', 
             confirmButtonColor: '#003594', // Color del botón
             color: 'black',
         });
@@ -1848,7 +1881,7 @@ function SendToDevolution(ticketId, currentnroTicket) {
                                 icon: 'success',
                                 title: '¡Devolución Exitosa!',
                                 text: response.message || 'El ticket ha sido devuelto al cliente exitosamente.',
-                                confirmButtonText: 'Entendido',
+                                confirmButtonText: 'Ok',
                                 color: 'black',
                                 confirmButtonColor: '#3085d6',
                             }).then(() => {
@@ -1939,44 +1972,43 @@ const ModalBotonCerrar = document.getElementById('BotonCerrarModal');
 
 // Inicializa el modal de Bootstrap una sola vez.
 const modalComponentes = new bootstrap.Modal(modalComponentesEl, {
-    keyboard: false,
-    backdrop:'static'
+  keyboard: false, backdrop:'static'
 });
 
 // Escuchar el evento 'show.bs.modal' para resetear el estado del modal cada vez que se abre
 modalComponentesEl.addEventListener('show.bs.modal', function () {
-    // Limpiar el contador y el checkbox de "seleccionar todos" cada vez que se abra el modal
-    document.getElementById('selectAllComponents').checked = false;
-    contadorComponentes.textContent = '0';
+  // Limpiar el contador y el checkbox de "seleccionar todos" cada vez que se abra el modal
+  document.getElementById('selectAllComponents').checked = false;
+  contadorComponentes.textContent = '0';
 });
 
 // Función para actualizar el contador de componentes seleccionados
 function actualizarContador() {
-    // Solo cuenta los checkboxes que están checked y que NO están deshabilitados
-    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
-    const selectAllCheckbox = document.getElementById('selectAllComponents');
+  // Solo cuenta los checkboxes que están checked y que NO están deshabilitados
+  const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
+  const selectAllCheckbox = document.getElementById('selectAllComponents');
     
-    // Actualizar contador
-    contadorComponentes.textContent = checkboxes.length;
+  // Actualizar contador
+  contadorComponentes.textContent = checkboxes.length;
     
-    // Actualizar estado del checkbox "seleccionar todos"
-    // Solo consideramos los checkboxes que NO están deshabilitados para esta lógica
-    const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
-    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
-    const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+  // Actualizar estado del checkbox "seleccionar todos"
+  // Solo consideramos los checkboxes que NO están deshabilitados para esta lógica
+  const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+  const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+  const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
     
-    selectAllCheckbox.checked = allChecked;
-    selectAllCheckbox.indeterminate = someChecked && !allChecked;
+  selectAllCheckbox.checked = allChecked;
+  selectAllCheckbox.indeterminate = someChecked && !allChecked;
 }
 
 // Función para limpiar la selección de componentes
 function limpiarSeleccion() {
-    // Solo desmarca los checkboxes que NO están deshabilitados
-    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
-    checkboxes.forEach(cb => cb.checked = false);
+  // Solo desmarca los checkboxes que NO están deshabilitados
+  const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+  checkboxes.forEach(cb => cb.checked = false);
     
-    document.getElementById('selectAllComponents').checked = false;
-    contadorComponentes.textContent = '0';
+  document.getElementById('selectAllComponents').checked = false;
+  contadorComponentes.textContent = '0';
 }
 
 // CORRECCIÓN PRINCIPAL: Se modificó la función para que reciba los componentes seleccionados
@@ -2015,7 +2047,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                     });
                 }
             } catch (error) {
-                Swal.fire({
+              Swal.fire({
                     title: 'Error',
                     text: 'Error al procesar la respuesta del servidor.',
                     icon: 'error',
@@ -2023,40 +2055,38 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                 });
             }
         } else {
-            Swal.fire({
-                title: 'Error del Servidor',
-                text: `Error al comunicarse con el servidor. Código: ${xhr.status}`,
-                icon: 'error',
-                confirmButtonText: 'Aceptar'
-            });
-        }
-    };
-    
-    xhr.onerror = function() {
-        Swal.fire({
-            title: 'Error de Red',
-            text: 'No se pudo conectar con el servidor.',
+          Swal.fire({
+            title: 'Error del Servidor',
+            text: `Error al comunicarse con el servidor. Código: ${xhr.status}`,
             icon: 'error',
             confirmButtonText: 'Aceptar'
-        });
+          });
+        }
     };
-    
-    const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}`;
-    xhr.send(dataToSend);
+    xhr.onerror = function() {
+      Swal.fire({
+        title: 'Error de Red',
+        text: 'No se pudo conectar con el servidor.',
+        icon: 'error',
+        confirmButtonText: 'Aceptar'
+      });
+    };
+  const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}`;
+  xhr.send(dataToSend);
 }
 
 // Función para obtener el ticket ID (ajusta según tu estructura)
 function obtenerTicketId() {
-    return currentTicketId;
+  return currentTicketId;
 }
 
 // Función para obtener el nombre de la región (ajusta según tu estructura)
 function obtenerRegionName() {
-    const regionSelect = document.getElementById('AsiganrCoordinador');
-    if (regionSelect && regionSelect.selectedOptions.length > 0) {
-        return regionSelect.selectedOptions[0].text;
-    }
-    return 'Sin región asignada';
+  const regionSelect = document.getElementById('AsiganrCoordinador');
+  if (regionSelect && regionSelect.selectedOptions.length > 0) {
+    return regionSelect.selectedOptions[0].text;
+  }
+  return 'Sin región asignada';
 }
 
 // FUNCIÓN PRINCIPAL PARA CARGAR Y MOSTRAR EL MODAL
@@ -2128,9 +2158,8 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
 
     xhr.onerror = function() {
         Swal.fire('Error de red', 'No se pudo conectar con el servidor para obtener los componentes.', 'error');
-    };
-    
-    xhr.send(dataToSendString);
+    };  
+  xhr.send(dataToSendString);
 }
 
 // Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
@@ -2185,7 +2214,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     title: 'Atención',
                     text: 'Debes seleccionar al menos un componente nuevo para guardar.',
                     icon: 'warning',
-                    confirmButtonText: 'Entendido',
+                    confirmButtonText: 'Ok',
                     color: 'black',
                     confirmButtonColor: '#003594',
                 });
@@ -2216,7 +2245,7 @@ document.addEventListener('DOMContentLoaded', function () {
             actualizarContador();
         }
     });
-  });
+});
 
 function abrirModalComponentes(boton) {
 
@@ -2231,7 +2260,7 @@ function abrirModalComponentes(boton) {
             title: 'Atención',
             text: 'No se pudo obtener el ID del ticket.',
             icon: 'warning',
-            confirmButtonText: 'Entendido',
+            confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594',
         });
@@ -2243,7 +2272,7 @@ function abrirModalComponentes(boton) {
             title: 'Atención',
             text: 'No hay serial disponible para este ticket.',
             icon: 'warning',
-            confirmButtonText: 'Entendido',
+            confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594',
         });

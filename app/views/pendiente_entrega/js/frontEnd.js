@@ -308,11 +308,21 @@ function closeUploadModalAndClean() {
 function checkTicketComponents(ticketId, serialPos, regionName) {
     const xhr = new XMLHttpRequest();
     const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/HasComponents`;
+    
+    // Debug: Log the constructed URL
+    console.log('API URL:', apiUrl);
+    console.log('ENDPOINT_BASE:', ENDPOINT_BASE);
+    console.log('APP_PATH:', APP_PATH);
 
     xhr.open("POST", apiUrl, true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
     xhr.onload = function() {
+        // Debug: Log the response details
+        console.log('Response status:', xhr.status);
+        console.log('Response headers:', xhr.getAllResponseHeaders());
+        console.log('Response text (first 200 chars):', xhr.responseText.substring(0, 200));
+        
         if (xhr.status >= 200 && xhr.status < 300) {
             try {
                 const validationResponse = JSON.parse(xhr.responseText);
@@ -695,7 +705,7 @@ function getTicketDataFinaljs() {
                           initComplete: function (settings, json) {
                               const dataTableInstance = this.api(); // Obtén la instancia de la API de DataTables
                               const buttonsHtml = `
-                                  <button id="btn-por-asignar" class="btn btn-secondary me-2" title="Tickets en espera de confirmar recibido en el Rosal">
+                                  <button id="btn-por-asignar" class="btn btn-secondary me-2" title="Pendiente por Confirmar Recibido en el Rosal">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
                                       <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
                                       <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
@@ -712,14 +722,7 @@ function getTicketDataFinaljs() {
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
                                       <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
                                     </svg>
-                                  </button>
-
-                                  <button id="btn-devuelto" class="btn btn-secondary me-2" title="Tickets Enviados al Rosal">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house-door" viewBox="0 0 16 16">
-                                      <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z"/>
-                                    </svg>
-                                  </button>
-                              `;
+                                  </button>`;
                               $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
                               // Tu función setActiveButton es correcta.
@@ -771,23 +774,6 @@ function getTicketDataFinaljs() {
                               dataTableInstance.column(19).visible(false);
                               dataTableInstance.column(20).visible(false);
                               setActiveButton("btn-recibidos");
-                            });
-                              
-
-                           $("#btn-devuelto").on("click", function () {
-                              dataTableInstance.columns().search('').draw(false);
-                              dataTableInstance.column(8).search("Enviado devuelta al Rosal").draw();
-
-                              // Obtener todos los botones de carga de llave y ocultarlos
-                              document.querySelectorAll(".load-key-button").forEach(button => {
-                                  button.style.display = "none";
-                              });
-
-                              document.querySelectorAll(".receive-key-checkbox").forEach(checkbox => {
-                                  checkbox.style.display = "none"; // Ocultar checkboxes
-                              });
-
-                              setActiveButton("btn-devuelto");
                             });
                           },
                       });
@@ -1273,7 +1259,7 @@ function updateTicketStatusInRosal(ticketId, nroTicketToConfirm, serialPosToConf
             title: "¡Éxito!",
             html:  `El Pos con el serial <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serial_pos}</span> asociado al Nro de ticket: <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> ha sido marcado como recibido en Gestión Rosal correctamente.`,
             icon: "success",
-            confirmButtonText: "¡Entendido!", // SweetAlert2 uses confirmButtonText
+            confirmButtonText: "Ok", // SweetAlert2 uses confirmButtonText
             confirmButtonColor: "#003594", // SweetAlert2 uses confirmButtonColor
             customClass: {
               confirmButton: "BtnConfirmacion", // For custom button styling
@@ -1624,46 +1610,28 @@ document.addEventListener("DOMContentLoaded", function () {
     const pdfViewViewer = document.getElementById("pdfViewViewer");
     const viewDocumentMessage = document.getElementById("viewDocumentMessage");
     const nameDocumento = document.getElementById("NombreImage");
-
     // Función auxiliar para mostrar el documento en el MODAL
-function displayDocumentInViewModal(filePath, mimeType, originalName) {
-    imageViewPreview.style.display = "none";
-    pdfViewViewer.style.display = "none";
-    viewDocumentMessage.classList.add("hidden");
-    viewDocumentMessage.textContent = "";
-    nameDocumento.textContent = originalName;
+    function displayDocumentInViewModal(filePath, mimeType, originalName) {
+      imageViewPreview.style.display = "none";
+      pdfViewViewer.style.display = "none";
+      viewDocumentMessage.classList.add("hidden");
+      viewDocumentMessage.textContent = "";
+      nameDocumento.textContent = originalName;
+        
+      // La ruta que recibes del backend ya debería ser 'uploads_tickets/...'
+      const documentPathFromBackend = filePath; 
+      // AQUI ESTA LA CORRECCIÓN: Concatena la ruta de tu servidor con la ruta del backend
+      const fullUrl = `http://localhost/SoportePost/${documentPathFromBackend}`;
 
-    // 1. Limpiar la ruta: Eliminar el prefijo 'D:/' y las barras invertidas
-    // `filePath` sigue llegando con la ruta completa del disco.
-    let documentPathFromBackend = filePath;
-    
-    // Primero, reemplaza las barras invertidas con barras normales para estandarizar
-    documentPathFromBackend = documentPathFromBackend.replace(/\\/g, '/');
-
-    // Después, elimina el prefijo `D:/uploads_tickets/` para que solo quede el resto de la ruta.
-    // Esto asume que el Alias de Apache es `/uploads` y el archivo está en `D:/uploads_tickets/`.
-    // La parte `uploads_tickets/` no se debe incluir en la URL si el `Alias` ya lo hace.
-    const pathSegments = documentPathFromBackend.split('uploads_tickets/');
-    if (pathSegments.length > 1) {
-        documentPathFromBackend = pathSegments[1];
-    }
-
-    // 2. Construir la URL con la ruta limpia
-    // El Alias de Apache `/uploads` ya apunta a `D:/uploads_tickets/`, por lo que la URL final no debe repetir la carpeta.
-    const fullUrl = `http://localhost:8080/uploads/${documentPathFromBackend}`;
-
-    if (mimeType.startsWith("image/")) {
-        // Asegúrate de que `verImage` se haya declarado correctamente, ya sea con `let` o `const`
-        const verImage = document.getElementById("verImage");
-        imageViewPreview.src = fullUrl;
-        //verImage.href = fullUrl;
+      if (mimeType.startsWith("image/")) {
+        imageViewPreview.src = fullUrl; // Usa la URL completa aquí
         imageViewPreview.style.display = "block";
-    } else if (mimeType === "application/pdf") {
+      } else if (mimeType === "application/pdf") {
+        // Para PDF, también debes usar la URL completa
         pdfViewViewer.innerHTML = `<embed src="${fullUrl}" type="application/pdf" width="100%" height="100%">`;
         pdfViewViewer.style.display = "block";
+      }
     }
-}
-
 
     // --- Listener para el evento 'click' en el botón 'Ver Imagen' ---
     document.body.addEventListener("click", function (event) {
@@ -1775,7 +1743,7 @@ function sendToRegion(ticketId, selectedComponents, serial_Pos) {
                     title: "¡Éxito!",
                     html: `El Pos: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serial_Pos}</span> Fue enviado a la región con el componente seleccionado.`,
                     icon: "success",
-                    confirmButtonText: "Entendido",
+                    confirmButtonText: "Ok",
                     color: "black",
                     confirmButtonColor: "#003594",
                   }).then((result) => {
@@ -1822,7 +1790,7 @@ function sendToRegionWithoutComponent(ticketId, serial_Pos) {
                     title: "¡Éxito!",
                     html: `El Pos: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serial_Pos}</span> Fue enviado a la región sin componentes.`,
                     icon: "success",
-                    confirmButtonText: "Entendido",
+                    confirmButtonText: "Ok",
                     color: "black",
                     confirmButtonColor: "#003594",
                   }).then((result) => {
@@ -1863,7 +1831,6 @@ function formatTicketDetailsPanel(d) {
   } else {
     garantiaMessage = 'No aplica Garantía'; // O simplemente dejarlo vacío si no hay garantía
   }
-
 
   return `
         <div class="container-fluid">
@@ -2032,6 +1999,90 @@ function downloadImageModal(serial) {
   };
 
   const datos = `action=GetPhoto&serial=${encodeURIComponent(serial)}`;
+  xhr.send(datos);
+}
+
+/**
+ * Carga imágenes de tickets de manera segura usando la API
+ * @param {string} ticketId - ID del ticket
+ * @param {string} documentType - Tipo de documento (ej: 'Envio_Destino')
+ * @param {string} targetElementId - ID del elemento img donde mostrar la imagen
+ */
+function loadTicketImage(ticketId, documentType, targetElementId) {
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketImage`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        const imgElement = document.getElementById(targetElementId);
+
+        if (imgElement) {
+          if (response.success && response.rutaImagen) {
+            imgElement.src = response.rutaImagen;
+            imgElement.alt = `Imagen del documento ${documentType} del ticket ${ticketId}`;
+            imgElement.style.display = "block";
+          } else {
+            // Imagen no disponible
+            imgElement.src = `${APP}app/public/img/consulta_rif/POS/mantainment.png`;
+            imgElement.alt = `Imagen no disponible para ${documentType}`;
+            imgElement.style.display = "block";
+            console.warn(
+              "No se obtuvo imagen para el documento:",
+              documentType,
+              "del ticket:",
+              ticketId,
+              response.message
+            );
+          }
+        } else {
+          console.error(
+            `Error: No se encontró el elemento <img> con ID "${targetElementId}" en el DOM.`
+          );
+        }
+      } catch (error) {
+        console.error("Error parsing JSON response for ticket image:", error);
+        const imgElement = document.getElementById(targetElementId);
+        if (imgElement) {
+          imgElement.src = `${APP}app/public/img/consulta_rif/POS/mantainment.png`;
+          imgElement.alt = "Error al cargar imagen";
+          imgElement.style.display = "block";
+        }
+      }
+    } else {
+      console.error(
+        "Error al obtener la imagen del ticket (HTTP):",
+        ticketId,
+        "documento:",
+        documentType
+      );
+      const imgElement = document.getElementById(targetElementId);
+      if (imgElement) {
+        imgElement.src = `${APP}app/public/img/consulta_rif/POS/mantainment.png`;
+        imgElement.alt = "Error de red";
+        imgElement.style.display = "block";
+      }
+    }
+  };
+
+  xhr.onerror = function () {
+    console.error(
+      "Error de red al intentar obtener la imagen del ticket:",
+      ticketId,
+      "documento:",
+      documentType
+    );
+    const imgElement = document.getElementById(targetElementId);
+    if (imgElement) {
+      imgElement.src = `${APP}app/public/img/consulta_rif/POS/mantainment.png`;
+      imgElement.alt = "Error de red";
+      imgElement.style.display = "block";
+    }
+  };
+
+  const datos = `action=GetTicketImage&ticket_id=${encodeURIComponent(ticketId)}&document_type=${encodeURIComponent(documentType)}`;
   xhr.send(datos);
 }
 
