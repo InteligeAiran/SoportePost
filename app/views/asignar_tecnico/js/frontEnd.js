@@ -8,12 +8,93 @@ let inputTecnicoActual = null;
 
 let EnvioInput = null;
 let ExoInput = null;
-let PagoInput = null; 
+let PagoInput = null;
 
 
-// --- Función para obtener el técnico actual y la lista de técnicos ---
-// --- DOMContentLoaded para inicializar los modales y eventos ---
 document.addEventListener("DOMContentLoaded", function () {
+
+  // Inicializar las instancias de los modales de Bootstrap para poder controlarlos con JS
+  const viewDocumentModalInstance = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
+  const modalRechazoInstance = new bootstrap.Modal(document.getElementById('modalRechazo'));
+  const botonCerrarmotivo = document.getElementById('CerrarModalMotivoRechazo');
+
+  // Obtener el botón de rechazo del DOM
+  const rechazoDocumentoBtn = document.getElementById('RechazoDocumento');
+
+  // 1. Manejar el evento de clic en el botón "Rechazar Documento"
+  // La lógica es: cerrar el modal actual y luego abrir el nuevo.
+  if (rechazoDocumentoBtn) {
+    rechazoDocumentoBtn.addEventListener('click', function () {
+      // Cierra el modal de visualización
+      viewDocumentModalInstance.hide();
+
+      // Abre el modal de rechazo
+      modalRechazoInstance.show();
+    });
+  }
+
+  if (botonCerrarmotivo) {
+    botonCerrarmotivo.addEventListener('click', function(){
+      // Ocultar el modal de rechazo
+      modalRechazoInstance.hide();
+    })
+  }
+
+  // 2. Lógica para el modal de rechazo
+  const motivoRechazoSelect = document.getElementById('motivoRechazoSelect');
+  const otroMotivoContainer = document.getElementById('otroMotivoContainer');
+  const confirmarRechazoBtn = document.getElementById('confirmarRechazoBtn');
+
+  // Mostrar u ocultar el campo de texto "Otro" según la selección
+  if (motivoRechazoSelect) {
+    motivoRechazoSelect.addEventListener('change', function () {
+      if (motivoRechazoSelect.value === '4') {
+        otroMotivoContainer.style.display = 'block';
+      } else {
+        otroMotivoContainer.style.display = 'none';
+      }
+    });
+  }
+
+  // Manejar el evento de clic en el botón "Confirmar Rechazo"
+  if (confirmarRechazoBtn) {
+    confirmarRechazoBtn.addEventListener('click', function () {
+      const motivoSeleccionado = motivoRechazoSelect.options[motivoRechazoSelect.selectedIndex].text;
+      let mensajeRechazo = '';
+
+      if (motivoRechazoSelect.value === '4') {
+        const otroMotivo = document.getElementById('otroMotivoInput').value;
+        mensajeRechazo = `Motivo: ${otroMotivo}`;
+      } else {
+        mensajeRechazo = `Motivo: ${motivoSeleccionado}`;
+      }
+
+      // Aquí podrías enviar el motivo de rechazo a un servidor o realizar otra acción
+      console.log('Documento rechazado. ' + mensajeRechazo);
+
+      // Ocultar el modal después de la acción
+      modalRechazoInstance.hide();
+    });
+  }
+
+  // Lógica para los otros modales que tienes
+  const confirmReassignModalInstance = new bootstrap.Modal(
+    document.getElementById("confirmReassignModal"),
+    {
+      backdrop: "static",
+      keyboard: false,
+    }
+  );
+  const selectTechnicianModalInstance = new bootstrap.Modal(
+    document.getElementById("selectTechnicianModal"),
+    {
+      backdrop: "static",
+      keyboard: false,
+    }
+  );
+
+
+  // El resto de tus event listeners...
   // Inicializar instancias de los modales de Bootstrap
   confirmReassignModalInstance = new bootstrap.Modal(
     document.getElementById("confirmReassignModal"),
@@ -118,7 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
       try {
         const success = await reassignTicket(currentTicketId, newTechnicianId);
 
-       if (success) {
+        if (success) {
           Swal.fire({
             icon: 'success',
             title: '¡Reasignación Exitosa!',
@@ -127,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
             color: 'black',
             confirmButtonColor: '#003594'
           }).then(() => { // El .then() se ejecuta cuando el usuario hace clic en el botón
-              location.reload(); // Recarga la página inmediatamente
+            location.reload(); // Recarga la página inmediatamente
           });
         } else {
           alert(
@@ -153,6 +234,27 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
   });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  getTicketDataCoordinator(); // Llama a la función para cargar los datos
+
+  // Obtén la referencia al botón cerrar FUERA de la función getTicketData y del bucle
+  const cerrar = document.getElementById("close-button");
+  const assignButton = document.getElementById("assingment-button"); // Obtén el botón "Asignar"
+  const inputRegion = document.getElementById("InputRegion"); // Obtén el input de región
+
+  // Agrega el event listener al botón cerrar
+  cerrar.addEventListener("click", function () {
+    if (modalInstance) {
+      modalInstance.hide();
+      currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
+      inputRegion.value = ""; // Limpia el campo de región al cerrar el modal
+    }
+    document.getElementById("idSelectionTec").value = "";
+  });
+  // Agrega el event listener al botón "Asignar"
+  assignButton.addEventListener("click", AssignTicket);
 });
 
 function getTicketDataCoordinator() {
@@ -212,7 +314,7 @@ function getTicketDataCoordinator() {
             "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
 
           const dataForDataTable = [];
-          
+
           TicketData.forEach((data) => {
             let actionButtonsHtml = ""; // Variable para construir los botones de acción
 
@@ -304,7 +406,7 @@ function getTicketDataCoordinator() {
                 </button>
               `;
             }
-            
+
             dataForDataTable.push([
               data.id_ticket,
               data.rif,
@@ -543,7 +645,7 @@ function getTicketDataCoordinator() {
                 $cellSpan
                   .removeClass("expanded-cell")
                   .addClass("truncated-cell");
-                
+
                 if (fullText.length > displayLength) {
                   $cellSpan.text(fullText.substring(0, displayLength) + "...");
                 } else {
@@ -596,120 +698,120 @@ function getTicketDataCoordinator() {
               ticketserialPos.textContent = currentserialPos; // Muestra el serial en el modal de confirmación
               confirmReassignModalInstance.show(); // Muestra el modal de confirmación
             });
-            
-         // Evento click para el nuevo botón "Visualizar Imagen"
-      // Evento click para el nuevo botón "Visualizar Imagen"
-$("#tabla-ticket tbody")
-    .off("click", ".btn-view-image")
-    .on("click", ".btn-view-image", function (e) {
-        e.stopPropagation();
-        
-        // Obtener datos del botón
-        const ticketId = $(this).data("ticket-id");
-        const nroTicket = $(this).data("nro-ticket");
-        const envioValor = $(this).data("envio");
-        const exoValor = $(this).data("exoneracion");
-        const pagoValor = $(this).data("pago");
 
-        // Guardar en variables globales
-        currentTicketIdForImage = ticketId;
-        currentTicketNroForImage = nroTicket;
+          // Evento click para el nuevo botón "Visualizar Imagen"
+          // Evento click para el nuevo botón "Visualizar Imagen"
+          $("#tabla-ticket tbody")
+            .off("click", ".btn-view-image")
+            .on("click", ".btn-view-image", function (e) {
+              e.stopPropagation();
 
-        const VizualizarImage = document.getElementById('visualizarImagenModal');
-        const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
+              // Obtener datos del botón
+              const ticketId = $(this).data("ticket-id");
+              const nroTicket = $(this).data("nro-ticket");
+              const envioValor = $(this).data("envio");
+              const exoValor = $(this).data("exoneracion");
+              const pagoValor = $(this).data("pago");
 
-        const EnvioInputModal = document.getElementById('imagenEnvio');
-        const EnvioLabelModal = document.getElementById('labelEnvio');
-        const ExoInputModal = document.getElementById('imagenExoneracion');
-        const ExoLabelModal = document.getElementById('labelExo');
-        const PagoInputModal = document.getElementById('imagenPago');
-        const PagoLabelModal = document.getElementById('labelPago');
+              // Guardar en variables globales
+              currentTicketIdForImage = ticketId;
+              currentTicketNroForImage = nroTicket;
 
-        // Muestra u oculta los radio buttons basándose en los valores del botón
-        if (envioValor === 'Sí') {
-            EnvioLabelModal.style.display = 'block';
-            EnvioInputModal.style.display = 'block';
-        } else {
-            EnvioLabelModal.style.display = 'none';
-            EnvioInputModal.style.display = 'none';
-        }
+              const VizualizarImage = document.getElementById('visualizarImagenModal');
+              const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
 
-        if (exoValor === 'Sí') {
-            ExoInputModal.style.display = 'block';
-            ExoLabelModal.style.display = 'block';
-        } else {
-            ExoInputModal.style.display = 'none';
-            ExoLabelModal.style.display = 'none';
-        }
+              const EnvioInputModal = document.getElementById('imagenEnvio');
+              const EnvioLabelModal = document.getElementById('labelEnvio');
+              const ExoInputModal = document.getElementById('imagenExoneracion');
+              const ExoLabelModal = document.getElementById('labelExo');
+              const PagoInputModal = document.getElementById('imagenPago');
+              const PagoLabelModal = document.getElementById('labelPago');
 
-        if (pagoValor === 'Sí') {
-            PagoInputModal.style.display = 'block';
-            PagoLabelModal.style.display = 'block';
-        } else {
-            PagoInputModal.style.display = 'none';
-            PagoLabelModal.style.display = 'none';
-        }
+              // Muestra u oculta los radio buttons basándose en los valores del botón
+              if (envioValor === 'Sí') {
+                EnvioLabelModal.style.display = 'block';
+                EnvioInputModal.style.display = 'block';
+              } else {
+                EnvioLabelModal.style.display = 'none';
+                EnvioInputModal.style.display = 'none';
+              }
 
-        // REMOVER event listeners anteriores para evitar duplicados
-        const btnCerrar = document.getElementById('BotonCerrarSelectDocument');
-        const btnConfirmar = document.getElementById('btnConfirmarVisualizacion');
-        
-        // Clonar elementos para remover event listeners
-        const btnCerrarClone = btnCerrar.cloneNode(true);
-        const btnConfirmarClone = btnConfirmar.cloneNode(true);
-        
-        btnCerrar.parentNode.replaceChild(btnCerrarClone, btnCerrar);
-        btnConfirmar.parentNode.replaceChild(btnConfirmarClone, btnConfirmar);
+              if (exoValor === 'Sí') {
+                ExoInputModal.style.display = 'block';
+                ExoLabelModal.style.display = 'block';
+              } else {
+                ExoInputModal.style.display = 'none';
+                ExoLabelModal.style.display = 'none';
+              }
 
-        // Botón para cerrar el modal de visualización
-        btnCerrarClone.addEventListener('click', function() {
-            visualizarImagenModal.hide();
-        });
+              if (pagoValor === 'Sí') {
+                PagoInputModal.style.display = 'block';
+                PagoLabelModal.style.display = 'block';
+              } else {
+                PagoInputModal.style.display = 'none';
+                PagoLabelModal.style.display = 'none';
+              }
 
-        // Evento para el botón confirmar visualización
-        btnConfirmarClone.addEventListener('click', function() {
-            const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
-            
-            // Llamar a la API para obtener el documento
-            fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
-                method: 'POST',
-                headers: {
+              // REMOVER event listeners anteriores para evitar duplicados
+              const btnCerrar = document.getElementById('BotonCerrarSelectDocument');
+              const btnConfirmar = document.getElementById('btnConfirmarVisualizacion');
+
+              // Clonar elementos para remover event listeners
+              const btnCerrarClone = btnCerrar.cloneNode(true);
+              const btnConfirmarClone = btnConfirmar.cloneNode(true);
+
+              btnCerrar.parentNode.replaceChild(btnCerrarClone, btnCerrar);
+              btnConfirmar.parentNode.replaceChild(btnConfirmarClone, btnConfirmar);
+
+              // Botón para cerrar el modal de visualización
+              btnCerrarClone.addEventListener('click', function () {
+                visualizarImagenModal.hide();
+              });
+
+              // Evento para el botón confirmar visualización
+              btnConfirmarClone.addEventListener('click', function () {
+                const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
+                getMotivos(selectedOption);
+
+                // Llamar a la API para obtener el documento
+                fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
+                  method: 'POST',
+                  headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `action=GetDocumentByType&ticketId=${currentTicketNroForImage}&documentType=${selectedOption}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const document = data.document;
-                    const filePath = document.file_path;
-                    const mimeType = document.mime_type;
-                    const fileName = document.original_filename;
-                    
-                    // Determinar si es imagen o PDF
-                    if (mimeType.startsWith('image/')) {
-                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, filePath, null, fileName);
-                    } else if (mimeType === 'application/pdf') {
-                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, filePath, fileName);
-                    } else {
-                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, null, "Tipo de documento no soportado");
-                    }
-                    
-                    // Ocultar el modal de selección
-                    visualizarImagenModal.hide();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al obtener el documento');
-            });
-        });
+                  },
+                  body: `action=GetDocumentByType&ticketId=${currentTicketNroForImage}&documentType=${selectedOption}`
+                })
+                  .then(response => response.json())
+                  .then(data => {
+                    if (data.success) {
+                      const document = data.document;
+                      const filePath = document.file_path;
+                      const mimeType = document.mime_type;
+                      const fileName = document.original_filename;
 
-        // MOSTRAR el modal
-        visualizarImagenModal.show();
-    });
+                      // Determinar si es imagen o PDF
+                      if (mimeType.startsWith('image/')) {
+                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, filePath, null, fileName);
+                      } else if (mimeType === 'application/pdf') {
+                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, filePath, fileName);
+                      } else {
+                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, null, "Tipo de documento no soportado");
+                      }
+
+                      // Ocultar el modal de selección
+                      visualizarImagenModal.hide();
+                    } else {
+                      alert('Error: ' + data.message);
+                    }
+                  })
+                  .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al obtener el documento');
+                  });
+              });
+              // MOSTRAR el modal
+              visualizarImagenModal.show();
+            });
         } else {
           tbody.innerHTML = '<tr><td>Error al cargar</td></tr>';
           console.error("Error:", response.message);
@@ -789,12 +891,12 @@ function getTechnicianData(ticketIdToFetch) {
             // Si la respuesta no es exitosa, asegúrate de que inputTecnicoActual también se maneje
             inputTecnicoActual = "No Asignado"; // Establece un valor predeterminado
             if (inputNtecnico) {
-                inputNtecnico.innerHTML = "No Asignado";
+              inputNtecnico.innerHTML = "No Asignado";
             }
             inputFecha.innerHTML = "N/A";
             inputRegion.innerHTML = "N/A";
             if (technicianSelect) { // Asegúrate de que technicianSelect existe antes de intentar acceder a .value
-                technicianSelect.value = "";
+              technicianSelect.value = "";
             }
             console.error("Error en la respuesta de la API:", response.message);
           }
@@ -1056,77 +1158,75 @@ function downloadImageModal(serial) {
   xhr.send(datos);
 }
 
-// Opcional: Función para cargar historial si tienes una API separada para ello
-
 // Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
 function loadTicketHistory(ticketId) {
-    const historyPanel = $("#ticket-history-content");
-    historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
+  const historyPanel = $("#ticket-history-content");
+  historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
 
-    $.ajax({
-        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
-        type: "POST",
-        data: {
-            action: "GetTicketHistory",
-            id_ticket: ticketId,
-        },
-        dataType: "json",
-        success: function (response) {
-            // Revisa la consola del navegador para ver la respuesta completa del servidor.
+  $.ajax({
+    url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
+    type: "POST",
+    data: {
+      action: "GetTicketHistory",
+      id_ticket: ticketId,
+    },
+    dataType: "json",
+    success: function (response) {
+      // Revisa la consola del navegador para ver la respuesta completa del servidor.
 
-            // Verifica si la respuesta es exitosa y contiene datos de historial.
-            if (response.success && response.history && response.history.length > 0) {
-                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
+      // Verifica si la respuesta es exitosa y contiene datos de historial.
+      if (response.success && response.history && response.history.length > 0) {
+        let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
-                response.history.forEach((item, index) => {
-                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
-                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
+        response.history.forEach((item, index) => {
+          const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+          const headingId = `headingHistoryItem_${ticketId}_${index}`;
 
-                    const isLatest = index === 0;
-                    const isExpanded = false;
+          const isLatest = index === 0;
+          const isExpanded = false;
 
-                    const prevItem = response.history[index + 1] || {};
+          const prevItem = response.history[index + 1] || {};
 
-                    // -- CORRECCIÓN PARA ESPACIOS EN BLANCO Y ESPACIOS DE NO SEPARACIÓN --
-                    // Reemplazamos todos los caracteres de espacio en blanco, incluyendo los de no separación,
-                    // con un espacio normal, y luego usamos trim() para asegurar una comparación precisa.
-                    const cleanString = (str) => str ? str.replace(/\s/g, ' ').trim() : null;
+          // -- CORRECCIÓN PARA ESPACIOS EN BLANCO Y ESPACIOS DE NO SEPARACIÓN --
+          // Reemplazamos todos los caracteres de espacio en blanco, incluyendo los de no separación,
+          // con un espacio normal, y luego usamos trim() para asegurar una comparación precisa.
+          const cleanString = (str) => str ? str.replace(/\s/g, ' ').trim() : null;
 
-                    const itemAccion = cleanString(item.name_accion_ticket);
-                    const prevAccion = cleanString(prevItem.name_accion_ticket);
-                    const accionChanged = prevAccion && itemAccion !== prevAccion;
+          const itemAccion = cleanString(item.name_accion_ticket);
+          const prevAccion = cleanString(prevItem.name_accion_ticket);
+          const accionChanged = prevAccion && itemAccion !== prevAccion;
 
-                    const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
-                    const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
-                    const tecnicoChanged = prevTecnico && itemTecnico !== prevTecnico;
+          const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
+          const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
+          const tecnicoChanged = prevTecnico && itemTecnico !== prevTecnico;
 
-                    const itemStatusLab = cleanString(item.name_status_lab);
-                    const prevStatusLab = cleanString(prevItem.name_status_lab);
-                    const statusLabChanged = prevStatusLab && itemStatusLab !== prevStatusLab;
+          const itemStatusLab = cleanString(item.name_status_lab);
+          const prevStatusLab = cleanString(prevItem.name_status_lab);
+          const statusLabChanged = prevStatusLab && itemStatusLab !== prevStatusLab;
 
-                    const itemStatusDom = cleanString(item.name_status_domiciliacion);
-                    const prevStatusDom = cleanString(prevItem.name_status_domiciliacion);
-                    const statusDomChanged = prevStatusDom && itemStatusDom !== prevStatusDom;
+          const itemStatusDom = cleanString(item.name_status_domiciliacion);
+          const prevStatusDom = cleanString(prevItem.name_status_domiciliacion);
+          const statusDomChanged = prevStatusDom && itemStatusDom !== prevStatusDom;
 
-                    const itemStatusPayment = cleanString(item.name_status_payment);
-                    const prevStatusPayment = cleanString(prevItem.name_status_payment);
-                    const statusPaymentChanged = prevStatusPayment && itemStatusPayment !== prevStatusPayment;
+          const itemStatusPayment = cleanString(item.name_status_payment);
+          const prevStatusPayment = cleanString(prevItem.name_status_payment);
+          const statusPaymentChanged = prevStatusPayment && itemStatusPayment !== prevStatusPayment;
 
-                    const itemStatusTicket = cleanString(item.name_status_ticket);
-                    const prevStatusTicket = cleanString(prevItem.name_status_ticket);
-                    const estatusTicketChanged = prevStatusTicket && itemStatusTicket !== prevStatusTicket;
+          const itemStatusTicket = cleanString(item.name_status_ticket);
+          const prevStatusTicket = cleanString(prevItem.name_status_ticket);
+          const estatusTicketChanged = prevStatusTicket && itemStatusTicket !== prevStatusTicket;
 
-                    const itemComponents = cleanString(item.components_list);
-                    const prevComponents = cleanString(prevItem.components_list);
-                    const componentsChanged = prevComponents && itemComponents !== prevComponents;
+          const itemComponents = cleanString(item.components_list);
+          const prevComponents = cleanString(prevItem.components_list);
+          const componentsChanged = prevComponents && itemComponents !== prevComponents;
 
-                    const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
+          const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
 
-                    let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-                    let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
-                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
+          let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+          let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+          const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
 
-                    historyHtml += `
+          historyHtml += `
                         <div class="card mb-3 custom-history-card">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
@@ -1192,63 +1292,43 @@ function loadTicketHistory(ticketId) {
                                 </div>
                             </div>
                         </div>`;
-                });
+        });
 
-                historyHtml += "</div>";
-                historyPanel.html(historyHtml);
-            } else {
-                // Si la respuesta es exitosa pero no hay historial, muestra este mensaje.
-                historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
-            }
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            // Revisa la consola para obtener detalles sobre por qué falló la llamada AJAX.
-            console.error("Error completo de AJAX:", {
-                jqXHR: jqXHR,
-                textStatus: textStatus,
-                errorThrown: errorThrown,
-            });
-            let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
-            if (jqXHR.status === 0) {
-                errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
-            } else if (jqXHR.status == 404) {
-                errorMessage = '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
-            } else if (jqXHR.status == 500) {
-                errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
-            } else if (textStatus === "parsererror") {
-                errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
-            } else if (textStatus === "timeout") {
-                errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
-            } else if (textStatus === "abort") {
-                errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
-            }
-            historyPanel.html(errorMessage);
-            console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-        },
-    });
+        historyHtml += "</div>";
+        historyPanel.html(historyHtml);
+      } else {
+        // Si la respuesta es exitosa pero no hay historial, muestra este mensaje.
+        historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
+      }
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      // Revisa la consola para obtener detalles sobre por qué falló la llamada AJAX.
+      console.error("Error completo de AJAX:", {
+        jqXHR: jqXHR,
+        textStatus: textStatus,
+        errorThrown: errorThrown,
+      });
+      let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
+      if (jqXHR.status === 0) {
+        errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+      } else if (jqXHR.status == 404) {
+        errorMessage = '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
+      } else if (jqXHR.status == 500) {
+        errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+      } else if (textStatus === "parsererror") {
+        errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+      } else if (textStatus === "timeout") {
+        errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+      } else if (textStatus === "abort") {
+        errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+      }
+      historyPanel.html(errorMessage);
+      console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+    },
+  });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  getTicketDataCoordinator(); // Llama a la función para cargar los datos
 
-  // Obtén la referencia al botón cerrar FUERA de la función getTicketData y del bucle
-  const cerrar = document.getElementById("close-button");
-  const assignButton = document.getElementById("assingment-button"); // Obtén el botón "Asignar"
-  const inputRegion = document.getElementById("InputRegion"); // Obtén el input de región
-
-  // Agrega el event listener al botón cerrar
-  cerrar.addEventListener("click", function () {
-    if (modalInstance) {
-      modalInstance.hide();
-      currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
-      inputRegion.value = ""; // Limpia el campo de región al cerrar el modal
-    }
-    document.getElementById("idSelectionTec").value = "";
-  });
-  // Agrega el event listener al botón "Asignar"
-  assignButton.addEventListener("click", AssignTicket);
-});
-//console.log('FrontEnd.js loaded successfully!');
 
 function markTicketAsReceived(ticketId, nroTicket, serialPos) {
   // Asegúrate de que nroTicket esté como parámetro
@@ -1323,7 +1403,7 @@ function markTicketAsReceived(ticketId, nroTicket, serialPos) {
               Swal.fire(
                 "Error",
                 response.message ||
-                  "Hubo un error al marcar el ticket como recibido.",
+                "Hubo un error al marcar el ticket como recibido.",
                 "error"
               );
             }
@@ -1441,141 +1521,136 @@ function AssignTicket() {
   xhr.send(datos);
 }
 
-// Asegúrate de que esta variable sea global y esté definida antes de llamar a getTecnico2()
-// Por ejemplo:
-// let inputTecnicoActual = null; // Inicialízala a null o a una cadena vacía al principio
-// Y luego, cuando obtengas la información del ticket, la actualizas:
-// inputTecnicoActual = response.technicians.full_tecnicoassig1 || "No Asignado";
 
 function getTecnico21(tecnicoActualParaFiltrar) { // Nuevo parámetro
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                    const select2 = document.getElementById("technicianSelect");
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          const select2 = document.getElementById("technicianSelect");
 
-                    select2.innerHTML = '<option value="">Seleccione</option>';
+          select2.innerHTML = '<option value="">Seleccione</option>';
 
-                    if (
-                        Array.isArray(response.tecnicos) &&
-                        response.tecnicos.length > 0
-                    ) {
-                        response.tecnicos.forEach((tecnico) => {
-                            if (tecnico.full_name !== tecnicoActualParaFiltrar) {
-                                const option2 = document.createElement("option");
-                                option2.value = tecnico.id_user;
-                                option2.textContent = tecnico.full_name;
-                                select2.appendChild(option2);
-                            } else {
-                            }
-                        });
+          if (
+            Array.isArray(response.tecnicos) &&
+            response.tecnicos.length > 0
+          ) {
+            response.tecnicos.forEach((tecnico) => {
+              if (tecnico.full_name !== tecnicoActualParaFiltrar) {
+                const option2 = document.createElement("option");
+                option2.value = tecnico.id_user;
+                option2.textContent = tecnico.full_name;
+                select2.appendChild(option2);
+              } else {
+              }
+            });
 
-                        select2.addEventListener("change", function () {
-                            const selectedTecnicoId = this.value;
-                            if (selectedTecnicoId) {
-                                GetRegionUser(selectedTecnicoId);
-                            } else {
-                                document.getElementById("InputRegionUser2").value = "";
-                            }
-                        });
+            select2.addEventListener("change", function () {
+              const selectedTecnicoId = this.value;
+              if (selectedTecnicoId) {
+                GetRegionUser(selectedTecnicoId);
+              } else {
+                document.getElementById("InputRegionUser2").value = "";
+              }
+            });
 
-                    } else {
-                        const option = document.createElement("option");
-                        option.value = "";
-                        option.textContent = "No hay Técnicos Disponibles";
-                        select.appendChild(option);
-                        select2.appendChild(option.cloneNode(true));
-                    }
-                } else {
-                    document.getElementById("rifMensaje").innerHTML +=
-                        "<br>Error al obtener los Técnicos.";
-                    console.error("Error al obtener los técnicos:", response.message);
-                }
-            } catch (error) {
-                console.error("Error parsing JSON:", error);
-                document.getElementById("rifMensaje").innerHTML +=
-                    "<br>Error al procesar la respuesta de los Técnicos.";
-            }
+          } else {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No hay Técnicos Disponibles";
+            select.appendChild(option);
+            select2.appendChild(option.cloneNode(true));
+          }
         } else {
-            console.error("Error:", xhr.status, xhr.statusText);
-            document.getElementById("rifMensaje").innerHTML +=
-                "<br>Error de conexión con el servidor para los Técnicos.";
+          document.getElementById("rifMensaje").innerHTML +=
+            "<br>Error al obtener los Técnicos.";
+          console.error("Error al obtener los técnicos:", response.message);
         }
-    };
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        document.getElementById("rifMensaje").innerHTML +=
+          "<br>Error al procesar la respuesta de los Técnicos.";
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+      document.getElementById("rifMensaje").innerHTML +=
+        "<br>Error de conexión con el servidor para los Técnicos.";
+    }
+  };
 
-    const datos = `action=GetTecnico2`;
-    xhr.send(datos);
+  const datos = `action=GetTecnico2`;
+  xhr.send(datos);
 }
 
 function getTecnico2() { // Nuevo parámetro
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                    const select = document.getElementById("idSelectionTec");
-                    const select2 = document.getElementById("technicianSelect");
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          const select = document.getElementById("idSelectionTec");
+          const select2 = document.getElementById("technicianSelect");
 
-                    select.innerHTML = '<option value="">Seleccione</option>';
+          select.innerHTML = '<option value="">Seleccione</option>';
 
-                    if (
-                        Array.isArray(response.tecnicos) &&
-                        response.tecnicos.length > 0
-                    ) {
-                        response.tecnicos.forEach((tecnico) => {
-                            const option = document.createElement("option");
-                            option.value = tecnico.id_user;
-                            option.textContent = tecnico.full_name;
-                            select.appendChild(option);
+          if (
+            Array.isArray(response.tecnicos) &&
+            response.tecnicos.length > 0
+          ) {
+            response.tecnicos.forEach((tecnico) => {
+              const option = document.createElement("option");
+              option.value = tecnico.id_user;
+              option.textContent = tecnico.full_name;
+              select.appendChild(option);
 
-                            
-                        });
 
-                        // Event Listeners (no cambian)
-                        select.addEventListener("change", function () {
-                            const selectedTecnicoId = this.value;
-                            if (selectedTecnicoId) {
-                                GetRegionUser(selectedTecnicoId);
-                            } else {
-                                document.getElementById("InputRegion").value = "";
-                            }
-                        }); 
+            });
 
-                    } else {
-                        const option = document.createElement("option");
-                        option.value = "";
-                        option.textContent = "No hay Técnicos Disponibles";
-                        select.appendChild(option);
-                        select2.appendChild(option.cloneNode(true));
-                    }
-                } else {
-                    document.getElementById("rifMensaje").innerHTML +=
-                        "<br>Error al obtener los Técnicos.";
-                    console.error("Error al obtener los técnicos:", response.message);
-                }
-            } catch (error) {
-                console.error("Error parsing JSON:", error);
-                document.getElementById("rifMensaje").innerHTML +=
-                    "<br>Error al procesar la respuesta de los Técnicos.";
-            }
+            // Event Listeners (no cambian)
+            select.addEventListener("change", function () {
+              const selectedTecnicoId = this.value;
+              if (selectedTecnicoId) {
+                GetRegionUser(selectedTecnicoId);
+              } else {
+                document.getElementById("InputRegion").value = "";
+              }
+            });
+
+          } else {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No hay Técnicos Disponibles";
+            select.appendChild(option);
+            select2.appendChild(option.cloneNode(true));
+          }
         } else {
-            console.error("Error:", xhr.status, xhr.statusText);
-            document.getElementById("rifMensaje").innerHTML +=
-                "<br>Error de conexión con el servidor para los Técnicos.";
+          document.getElementById("rifMensaje").innerHTML +=
+            "<br>Error al obtener los Técnicos.";
+          console.error("Error al obtener los técnicos:", response.message);
         }
-    };
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        document.getElementById("rifMensaje").innerHTML +=
+          "<br>Error al procesar la respuesta de los Técnicos.";
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+      document.getElementById("rifMensaje").innerHTML +=
+        "<br>Error de conexión con el servidor para los Técnicos.";
+    }
+  };
 
-    const datos = `action=GetTecnico2`;
-    xhr.send(datos);
+  const datos = `action=GetTecnico2`;
+  xhr.send(datos);
 }
 
 document.addEventListener("DOMContentLoaded", getTecnico2);
@@ -1627,6 +1702,66 @@ function GetRegionUser(id_user) {
   xhr.send(datos);
 }
 
+// Función adaptada para cargar los motivos
+function getMotivos(documentType) {
+    const xhr = new XMLHttpRequest();
+
+    // Muestra un mensaje de carga en el select
+    const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
+    motivoRechazoSelect.innerHTML = '<option value="">Cargando...</option>';
+
+    // Aquí cambiamos el endpoint para apuntar a la API de motivos
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetMotivos`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    // Apuntamos al select de motivos
+                    const select = document.getElementById("motivoRechazoSelect");
+
+                    // Limpiamos el select antes de agregar nuevas opciones
+                    select.innerHTML = '<option value="">Seleccione</option>';
+
+                    // La respuesta debe tener un array llamado 'motivos'
+                    if (Array.isArray(response.motivos) && response.motivos.length > 0) {
+                        response.motivos.forEach((motivo) => {
+                            const option = document.createElement("option");
+                            option.value = motivo.id_motivo_rechazo;
+                            option.textContent = motivo.name_motivo_rechazo;
+                            select.appendChild(option);
+                        });
+                    } else {
+                        const option = document.createElement("option");
+                        option.value = "";
+                        option.textContent = "No hay Motivos Disponibles";
+                        select.appendChild(option);
+                    }
+                } else {
+                    console.error("Error al obtener los motivos:", response.message);
+                }
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+            }
+        } else {
+            console.error("Error:", xhr.status, xhr.statusText);
+        }
+    };
+
+    // ¡Aquí se envía el documentType!
+    const datos = `action=GetMotivos&documentType=${documentType}`;
+    xhr.send(datos);
+}
+
+// Event listener para el botón que abre el modal y carga los datos
+openModalButton.addEventListener('click', () => {
+  getMotivos();
+  showModal();
+});
+
+
 // Obtén una referencia al modal y al tbody de la tabla
 const modalComponentesEl = document.getElementById('modalComponentes');
 const tbodyComponentes = document.getElementById('tbodyComponentes');
@@ -1636,155 +1771,155 @@ const ModalBotonCerrar = document.getElementById('BotonCerrarModal');
 
 // Inicializa el modal de Bootstrap una sola vez.
 const modalComponentes = new bootstrap.Modal(modalComponentesEl, {
-    keyboard: false,
-    backdrop:'static'
+  keyboard: false,
+  backdrop: 'static'
 });
 
 // Escuchar el evento 'show.bs.modal' para resetear el estado del modal cada vez que se abre
 modalComponentesEl.addEventListener('show.bs.modal', function () {
-    // Limpiar el contador y el checkbox de "seleccionar todos" cada vez que se abra el modal
-    document.getElementById('selectAllComponents').checked = false;
-    contadorComponentes.textContent = '0';
+  // Limpiar el contador y el checkbox de "seleccionar todos" cada vez que se abra el modal
+  document.getElementById('selectAllComponents').checked = false;
+  contadorComponentes.textContent = '0';
 });
 
 // Función para actualizar el contador de componentes seleccionados
 function actualizarContador() {
-    // Solo cuenta los checkboxes que están checked y que NO están deshabilitados
-    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
-    const selectAllCheckbox = document.getElementById('selectAllComponents');
-    
-    // Actualizar contador
-    contadorComponentes.textContent = checkboxes.length;
-    
-    // Actualizar estado del checkbox "seleccionar todos"
-    // Solo consideramos los checkboxes que NO están deshabilitados para esta lógica
-    const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
-    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
-    const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
-    
-    selectAllCheckbox.checked = allChecked;
-    selectAllCheckbox.indeterminate = someChecked && !allChecked;
+  // Solo cuenta los checkboxes que están checked y que NO están deshabilitados
+  const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
+  const selectAllCheckbox = document.getElementById('selectAllComponents');
+
+  // Actualizar contador
+  contadorComponentes.textContent = checkboxes.length;
+
+  // Actualizar estado del checkbox "seleccionar todos"
+  // Solo consideramos los checkboxes que NO están deshabilitados para esta lógica
+  const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+  const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+  const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+
+  selectAllCheckbox.checked = allChecked;
+  selectAllCheckbox.indeterminate = someChecked && !allChecked;
 }
 
 // Función para limpiar la selección de componentes
 function limpiarSeleccion() {
-    // Solo desmarca los checkboxes que NO están deshabilitados
-    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
-    checkboxes.forEach(cb => cb.checked = false);
-    
-    document.getElementById('selectAllComponents').checked = false;
-    contadorComponentes.textContent = '0';
+  // Solo desmarca los checkboxes que NO están deshabilitados
+  const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+  checkboxes.forEach(cb => cb.checked = false);
+
+  document.getElementById('selectAllComponents').checked = false;
+  contadorComponentes.textContent = '0';
 }
 
 // CORRECCIÓN PRINCIPAL: Se modificó la función para que reciba los componentes seleccionados
 function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos) {
-    const id_user = document.getElementById('id_user').value;
-    
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                
-                if (response.success) {
-                    Swal.fire({
-                        title: '¡Éxito!',
-                        html: `Los componentes del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
-                        icon: 'success',
-                        confirmButtonText: 'Aceptar',
-                        color: 'black',
-                        confirmButtonColor: '#003594',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        keydownListenerCapture: true
-                    }).then(() => {
-                        modalComponentes.hide();
-                        window.location.reload(); 
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'Error',
-                        text: response.message || 'Error al guardar los componentes.',
-                        icon: 'error',
-                        confirmButtonText: 'Aceptar'
-                    });
-                }
-            } catch (error) {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Error al procesar la respuesta del servidor.',
-                    icon: 'error',
-                    confirmButtonText: 'Aceptar'
-                });
-            }
+  const id_user = document.getElementById('id_user').value;
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+
+        if (response.success) {
+          Swal.fire({
+            title: '¡Éxito!',
+            html: `Los componentes del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
+            icon: 'success',
+            confirmButtonText: 'Aceptar',
+            color: 'black',
+            confirmButtonColor: '#003594',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            keydownListenerCapture: true
+          }).then(() => {
+            modalComponentes.hide();
+            window.location.reload();
+          });
         } else {
-            Swal.fire({
-                title: 'Error del Servidor',
-                text: `Error al comunicarse con el servidor. Código: ${xhr.status}`,
-                icon: 'error',
-                confirmButtonText: 'Aceptar'
-            });
-        }
-    };
-    
-    xhr.onerror = function() {
-        Swal.fire({
-            title: 'Error de Red',
-            text: 'No se pudo conectar con el servidor.',
+          Swal.fire({
+            title: 'Error',
+            text: response.message || 'Error al guardar los componentes.',
             icon: 'error',
             confirmButtonText: 'Aceptar'
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          title: 'Error',
+          text: 'Error al procesar la respuesta del servidor.',
+          icon: 'error',
+          confirmButtonText: 'Aceptar'
         });
-    };
-    
-    const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}`;
-    xhr.send(dataToSend);
+      }
+    } else {
+      Swal.fire({
+        title: 'Error del Servidor',
+        text: `Error al comunicarse con el servidor. Código: ${xhr.status}`,
+        icon: 'error',
+        confirmButtonText: 'Aceptar'
+      });
+    }
+  };
+
+  xhr.onerror = function () {
+    Swal.fire({
+      title: 'Error de Red',
+      text: 'No se pudo conectar con el servidor.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar'
+    });
+  };
+
+  const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}`;
+  xhr.send(dataToSend);
 }
 
 // Función para obtener el ticket ID (ajusta según tu estructura)
 function obtenerTicketId() {
-    return currentTicketId;
+  return currentTicketId;
 }
 
 // Función para obtener el nombre de la región (ajusta según tu estructura)
 function obtenerRegionName() {
-    const regionSelect = document.getElementById('AsiganrCoordinador');
-    if (regionSelect && regionSelect.selectedOptions.length > 0) {
-        return regionSelect.selectedOptions[0].text;
-    }
-    return 'Sin región asignada';
+  const regionSelect = document.getElementById('AsiganrCoordinador');
+  if (regionSelect && regionSelect.selectedOptions.length > 0) {
+    return regionSelect.selectedOptions[0].text;
+  }
+  return 'Sin región asignada';
 }
 
 // FUNCIÓN PRINCIPAL PARA CARGAR Y MOSTRAR EL MODAL
 function showSelectComponentsModal(ticketId, regionName, serialPos) {
-    const xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
 
-    // Limpia el contenido previo y muestra un mensaje de carga
-    tbodyComponentes.innerHTML = `<tr><td colspan="2" class="text-center text-muted">Cargando componentes...</td></tr>`;
-    
-    const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetComponents`;
-    const dataToSendString = `action=GetComponents&ticketId=${ticketId}`;
+  // Limpia el contenido previo y muestra un mensaje de carga
+  tbodyComponentes.innerHTML = `<tr><td colspan="2" class="text-center text-muted">Cargando componentes...</td></tr>`;
 
-    xhr.open('POST', apiUrl, true);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetComponents`;
+  const dataToSendString = `action=GetComponents&ticketId=${ticketId}`;
 
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-                const response = JSON.parse(xhr.responseText);
+  xhr.open('POST', apiUrl, true);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-                if (response.success && response.components) {
-                    const components = response.components;
-                    let componentsHtml = '';
-                    
-                    if (components.length > 0) {
-                        components.forEach(comp => {
-                            // Ahora verificamos si `comp.is_selected` es 't' para marcar y deshabilitar
-                            const isChecked = comp.is_selected === 't' ? 'checked' : '';
-                            const isDisabled = comp.is_selected === 't' ? 'disabled' : '';
-                            
-                            componentsHtml += `
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+
+        if (response.success && response.components) {
+          const components = response.components;
+          let componentsHtml = '';
+
+          if (components.length > 0) {
+            components.forEach(comp => {
+              // Ahora verificamos si `comp.is_selected` es 't' para marcar y deshabilitar
+              const isChecked = comp.is_selected === 't' ? 'checked' : '';
+              const isDisabled = comp.is_selected === 't' ? 'disabled' : '';
+
+              componentsHtml += `
                                 <tr>
                                   <td>
                                     <input type="checkbox" class="form-check-input" value="${comp.id_component}" ${isChecked} ${isDisabled}>
@@ -1792,251 +1927,252 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                                   <td>${comp.name_component}</td>
                                 </tr>
                             `;
-                        });
-                        
-                        document.getElementById('btnGuardarComponentes').dataset.ticketId = ticketId;
-                        document.getElementById('btnGuardarComponentes').dataset.serialPos = serialPos;
+            });
 
-                    } else {
-                        componentsHtml = `<tr><td colspan="2" class="text-center text-muted">No se encontraron componentes.</td></tr>`;
-                    }
-                    
-                    tbodyComponentes.innerHTML = componentsHtml;
-                    document.getElementById('modalComponentesLabel').innerHTML = `
+            document.getElementById('btnGuardarComponentes').dataset.ticketId = ticketId;
+            document.getElementById('btnGuardarComponentes').dataset.serialPos = serialPos;
+
+          } else {
+            componentsHtml = `<tr><td colspan="2" class="text-center text-muted">No se encontraron componentes.</td></tr>`;
+          }
+
+          tbodyComponentes.innerHTML = componentsHtml;
+          document.getElementById('modalComponentesLabel').innerHTML = `
                         <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
                     `;
 
-                    // Finalmente, muestra el modal de Bootstrap
-                    modalComponentes.show();
+          // Finalmente, muestra el modal de Bootstrap
+          modalComponentes.show();
 
-                    // Llama a actualizar contador después de cargar los componentes
-                    actualizarContador();
+          // Llama a actualizar contador después de cargar los componentes
+          actualizarContador();
 
-                } else {
-                    Swal.fire('Error', response.message || 'No se pudieron obtener los componentes.', 'error');
-                }
-            } catch (e) {
-                Swal.fire('Error de Procesamiento', 'Hubo un problema al procesar la respuesta del servidor.', 'error');
-            }
         } else {
-            Swal.fire('Error del Servidor', `No se pudo comunicar con el servidor. Código: ${xhr.status}`, 'error');
+          Swal.fire('Error', response.message || 'No se pudieron obtener los componentes.', 'error');
         }
-    };
+      } catch (e) {
+        Swal.fire('Error de Procesamiento', 'Hubo un problema al procesar la respuesta del servidor.', 'error');
+      }
+    } else {
+      Swal.fire('Error del Servidor', `No se pudo comunicar con el servidor. Código: ${xhr.status}`, 'error');
+    }
+  };
 
-    xhr.onerror = function() {
-        Swal.fire('Error de red', 'No se pudo conectar con el servidor para obtener los componentes.', 'error');
-    };
-    
-    xhr.send(dataToSendString);
+  xhr.onerror = function () {
+    Swal.fire('Error de red', 'No se pudo conectar con el servidor para obtener los componentes.', 'error');
+  };
+
+  xhr.send(dataToSendString);
 }
 
 // Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
 document.addEventListener('DOMContentLoaded', function () {
-    const modalComponentesEl = document.getElementById('modalComponentes');
-    const modalComponentes = new bootstrap.Modal(modalComponentesEl, { keyboard: false });
+  const modalComponentesEl = document.getElementById('modalComponentes');
+  const modalComponentes = new bootstrap.Modal(modalComponentesEl, { keyboard: false });
 
-    // Escucha el evento `click` en el documento y usa delegación.
-    document.addEventListener('click', function (e) {
-        // Verifica si el clic proviene del botón con el ID 'hiperbinComponents'
-        if (e.target && e.target.id === 'hiperbinComponents' || e.target.closest('#hiperbinComponents')) {
-            const botonClicado = e.target.closest('#hiperbinComponents');
-            if (botonClicado) {
-                // Llama a la función que abre el modal, pasándole el botón como argumento
-                abrirModalComponentes(botonClicado);
-            }
-        }
+  // Escucha el evento `click` en el documento y usa delegación.
+  document.addEventListener('click', function (e) {
+    // Verifica si el clic proviene del botón con el ID 'hiperbinComponents'
+    if (e.target && e.target.id === 'hiperbinComponents' || e.target.closest('#hiperbinComponents')) {
+      const botonClicado = e.target.closest('#hiperbinComponents');
+      if (botonClicado) {
+        // Llama a la función que abre el modal, pasándole el botón como argumento
+        abrirModalComponentes(botonClicado);
+      }
+    }
 
-        // Event listener para el botón "Limpiar Selección" (usando delegación)
-        if (e.target && e.target.closest('.btn-outline-secondary.btn-sm') && e.target.closest('.modal-body')) {
-            limpiarSeleccion();
-        }
+    // Event listener para el botón "Limpiar Selección" (usando delegación)
+    if (e.target && e.target.closest('.btn-outline-secondary.btn-sm') && e.target.closest('.modal-body')) {
+      limpiarSeleccion();
+    }
 
-        // Event listener para el botón "Guardar Componentes"
-        if (e.target && e.target.id === 'btnGuardarComponentes') {
-            const ticketId = e.target.dataset.ticketId;
-            const serialPos = e.target.dataset.serialPos;
+    // Event listener para el botón "Guardar Componentes"
+    if (e.target && e.target.id === 'btnGuardarComponentes') {
+      const ticketId = e.target.dataset.ticketId;
+      const serialPos = e.target.dataset.serialPos;
 
-            // --- INICIO DE LA LÓGICA AGREGADA ---
-            const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
-            const allDisabledAndChecked = Array.from(allCheckboxes).every(cb => cb.checked && cb.disabled);
+      // --- INICIO DE LA LÓGICA AGREGADA ---
+      const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
+      const allDisabledAndChecked = Array.from(allCheckboxes).every(cb => cb.checked && cb.disabled);
 
-            if (allCheckboxes.length > 0 && allDisabledAndChecked) {
-                Swal.fire({
-                    title: '¡Información!',
-                    html: `Todos los componentes del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
-                    icon: 'info',
-                    confirmButtonText: 'Aceptar',
-                    color: 'black',
-                    confirmButtonColor: '#003594'
-                });
-                return; // Detiene la ejecución para no intentar guardar
-            }
-            // --- FIN DE LA LÓGICA AGREGADA ---
+      if (allCheckboxes.length > 0 && allDisabledAndChecked) {
+        Swal.fire({
+          title: '¡Información!',
+          html: `Todos los componentes del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
+          icon: 'info',
+          confirmButtonText: 'Aceptar',
+          color: 'black',
+          confirmButtonColor: '#003594'
+        });
+        return; // Detiene la ejecución para no intentar guardar
+      }
+      // --- FIN DE LA LÓGICA AGREGADA ---
 
-            const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
-            const selectedComponents = Array.from(checkboxes).map(cb => cb.value);
+      const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
+      const selectedComponents = Array.from(checkboxes).map(cb => cb.value);
 
-            if (selectedComponents.length === 0) {
-                Swal.fire({
-                    title: 'Atención',
-                    text: 'Debes seleccionar al menos un componente nuevo para guardar.',
-                    icon: 'warning',
-                    confirmButtonText: 'Ok',
-                    color: 'black',
-                    confirmButtonColor: '#003594',
-                });
-                return;
-            }
-            guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos);
-        }
+      if (selectedComponents.length === 0) {
+        Swal.fire({
+          title: 'Atención',
+          text: 'Debes seleccionar al menos un componente nuevo para guardar.',
+          icon: 'warning',
+          confirmButtonText: 'Ok',
+          color: 'black',
+          confirmButtonColor: '#003594',
+        });
+        return;
+      }
+      guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos);
+    }
 
-        // Event listener para el botón de cerrar el modal
-        if (e.target && e.target.id === 'BotonCerrarModal') {
-            modalComponentes.hide();
-        }
+    // Event listener para el botón de cerrar el modal
+    if (e.target && e.target.id === 'BotonCerrarModal') {
+      modalComponentes.hide();
+    }
 
-        // Event listener para el checkbox "Seleccionar Todos"
-        if (e.target && e.target.id === 'selectAllComponents') {
-            const isChecked = e.target.checked;
-            const enabledCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
-            
-            enabledCheckboxes.forEach(checkbox => {
-                checkbox.checked = isChecked;
-            });
-            
-            actualizarContador();
-        }
+    // Event listener para el checkbox "Seleccionar Todos"
+    if (e.target && e.target.id === 'selectAllComponents') {
+      const isChecked = e.target.checked;
+      const enabledCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
 
-        // Event listener para checkboxes individuales de componentes
-        if (e.target && e.target.type === 'checkbox' && e.target.closest('#tbodyComponentes')) {
-            actualizarContador();
-        }
-    });
+      enabledCheckboxes.forEach(checkbox => {
+        checkbox.checked = isChecked;
+      });
+
+      actualizarContador();
+    }
+
+    // Event listener para checkboxes individuales de componentes
+    if (e.target && e.target.type === 'checkbox' && e.target.closest('#tbodyComponentes')) {
+      actualizarContador();
+    }
   });
+});
 
 function abrirModalComponentes(boton) {
 
-    const modalCerrarComponnets = document.getElementById('BotonCerrarModal');
-    const ticketId = boton.dataset.idTicket;
-    const serialPos = boton.dataset.serialPos;
+  const modalCerrarComponnets = document.getElementById('BotonCerrarModal');
+  const ticketId = boton.dataset.idTicket;
+  const serialPos = boton.dataset.serialPos;
 
-    const regionName = obtenerRegionName();
+  const regionName = obtenerRegionName();
 
-    if (!ticketId) {
-        Swal.fire({
-            title: 'Atención',
-            text: 'No se pudo obtener el ID del ticket.',
-            icon: 'warning',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#003594',
-        });
-        return;
-    }
+  if (!ticketId) {
+    Swal.fire({
+      title: 'Atención',
+      text: 'No se pudo obtener el ID del ticket.',
+      icon: 'warning',
+      confirmButtonText: 'Ok',
+      color: 'black',
+      confirmButtonColor: '#003594',
+    });
+    return;
+  }
 
-    if (!serialPos) {
-        Swal.fire({
-            title: 'Atención',
-            text: 'No hay serial disponible para este ticket.',
-            icon: 'warning',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#003594',
-        });
-        return;
-    }
+  if (!serialPos) {
+    Swal.fire({
+      title: 'Atención',
+      text: 'No hay serial disponible para este ticket.',
+      icon: 'warning',
+      confirmButtonText: 'Ok',
+      color: 'black',
+      confirmButtonColor: '#003594',
+    });
+    return;
+  }
 
-    if(modalCerrarComponnets){
-      modalCerrarComponnets.addEventListener('click', function() {
-        modalComponentes.hide();
-      });
-    }
-    showSelectComponentsModal(ticketId, regionName, serialPos);
+  if (modalCerrarComponnets) {
+    modalCerrarComponnets.addEventListener('click', function () {
+      modalComponentes.hide();
+    });
+  }
+  showSelectComponentsModal(ticketId, regionName, serialPos);
 }
 
-    // Función auxiliar para determinar el tipo de documento
-    function getDocumentType(url) {
-        if (!url) {
-            return null;
-        }
-        const lowerUrl = url.toLowerCase();
-        if (lowerUrl.endsWith('.jpg') || lowerUrl.endsWith('.jpeg') || lowerUrl.endsWith('.png') || lowerUrl.endsWith('.gif')) {
-            return 'image';
-        } else if (lowerUrl.endsWith('.pdf')) {
-            return 'pdf';
-        } else {
-            return null;
-        }
-    }
+// Función auxiliar para determinar el tipo de documento
+function getDocumentType(url) {
+  if (!url) {
+    return null;
+  }
 
-    // Función para mostrar el modal de visualización (modificada para usar los elementos del DOM)
+  const lowerUrl = url.toLowerCase();
+  if (lowerUrl.endsWith('.jpg') || lowerUrl.endsWith('.jpeg') || lowerUrl.endsWith('.png') || lowerUrl.endsWith('.gif')) {
+    return 'image';
+  } else if (lowerUrl.endsWith('.pdf')) {
+    return 'pdf';
+  } else {
+    return null;
+  }
+}
+
+// Función para mostrar el modal de visualización (modificada para usar los elementos del DOM)
 function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
-    const modalElementView = document.getElementById("viewDocumentModal");
-    const modalTicketIdSpanView = modalElementView.querySelector("#viewModalTicketId");
-    const imageViewPreview = document.getElementById("imageViewPreview");
-    const pdfViewViewer = document.getElementById("pdfViewViewer");
-    const messageContainer = document.getElementById("viewDocumentMessage");
-    const nameDocumento = document.getElementById("NombreImage");
-    const BotonCerrarModal = document.getElementById("CerrarModalVizualizar");
+  const modalElementView = document.getElementById("viewDocumentModal");
+  const modalTicketIdSpanView = modalElementView.querySelector("#viewModalTicketId");
+  const imageViewPreview = document.getElementById("imageViewPreview");
+  const pdfViewViewer = document.getElementById("pdfViewViewer");
+  const messageContainer = document.getElementById("viewDocumentMessage");
+  const nameDocumento = document.getElementById("NombreImage");
+  const BotonCerrarModal = document.getElementById("CerrarModalVizualizar");
 
-    currentTicketId = ticketId;
-    currentNroTicket = nroTicket;
-    modalTicketIdSpanView.textContent = currentNroTicket;
+  currentTicketId = ticketId;
+  currentNroTicket = nroTicket;
+  modalTicketIdSpanView.textContent = currentNroTicket;
 
-    // Limpiar vistas y mensajes
-    imageViewPreview.style.display = "none";
-    pdfViewViewer.style.display = "none";
-    messageContainer.textContent = "";
-    messageContainer.classList.add("hidden");
+  // Limpiar vistas y mensajes
+  imageViewPreview.style.display = "none";
+  pdfViewViewer.style.display = "none";
+  messageContainer.textContent = "";
+  messageContainer.classList.add("hidden");
 
-    // Función para limpiar la ruta del archivo
-    function cleanFilePath(filePath) {
-        if (!filePath) return null;
-        
-        // Reemplazar barras invertidas con barras normales
-        let cleanPath = filePath.replace(/\\/g, '/');
-        
-        // Extraer la parte después de 'Documentos_SoportePost/'
-        const pathSegments = cleanPath.split('Documentos_SoportePost/');
-        if (pathSegments.length > 1) {
-            cleanPath = pathSegments[1];
-        }
-        
-        // Construir la URL completa
-        return `http://localhost/Documentos/${cleanPath}`;
+  // Función para limpiar la ruta del archivo
+  function cleanFilePath(filePath) {
+    if (!filePath) return null;
+
+    // Reemplazar barras invertidas con barras normales
+    let cleanPath = filePath.replace(/\\/g, '/');
+
+    // Extraer la parte después de 'Documentos_SoportePost/'
+    const pathSegments = cleanPath.split('Documentos_SoportePost/');
+    if (pathSegments.length > 1) {
+      cleanPath = pathSegments[1];
     }
 
-    if (imageUrl) {
-        // Es una imagen
-        const fullUrl = cleanFilePath(imageUrl);
-        
-        imageViewPreview.src = fullUrl;
-        imageViewPreview.style.display = "block";
-        nameDocumento.textContent = documentName;
-        
-    } else if (pdfUrl) {
-        // Es un PDF
-        const fullUrl = cleanFilePath(pdfUrl);
-        
-        pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
-        pdfViewViewer.style.display = "block";
-        nameDocumento.textContent = documentName;
-        
-    } else {
-        // No hay documento
-        messageContainer.textContent = "No hay documento disponible para este ticket.";
-        messageContainer.classList.remove("hidden");
-        nameDocumento.textContent = "";
-    }
+    // Construir la URL completa
+    return `http://localhost/Documentos/${cleanPath}`;
+  }
 
-    const viewDocumentModal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
-    const VizualizarImage = document.getElementById('visualizarImagenModal');
-    const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
+  if (imageUrl) {
+    // Es una imagen
+    const fullUrl = cleanFilePath(imageUrl);
 
-    viewDocumentModal.show();
-    visualizarImagenModal.hide();
+    imageViewPreview.src = fullUrl;
+    imageViewPreview.style.display = "block";
+    nameDocumento.textContent = documentName;
 
-    BotonCerrarModal.addEventListener('click', function() {
-        viewDocumentModal.hide();
-    });
+  } else if (pdfUrl) {
+    // Es un PDF
+    const fullUrl = cleanFilePath(pdfUrl);
+
+    pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
+    pdfViewViewer.style.display = "block";
+    nameDocumento.textContent = documentName;
+
+  } else {
+    // No hay documento
+    messageContainer.textContent = "No hay documento disponible para este ticket.";
+    messageContainer.classList.remove("hidden");
+    nameDocumento.textContent = "";
+  }
+
+  const viewDocumentModal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
+  const VizualizarImage = document.getElementById('visualizarImagenModal');
+  const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
+
+  viewDocumentModal.show();
+  visualizarImagenModal.hide();
+
+  BotonCerrarModal.addEventListener('click', function () {
+    viewDocumentModal.hide();
+  });
 }

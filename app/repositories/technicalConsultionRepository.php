@@ -714,13 +714,24 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function uploadDocument($ticketId, $userId, $documentType, $originalFilename, $fileMimeType, $fileSize, $fileContent){
-        $result = $this->model->uploadDocument($ticketId, $userId, $documentType, $originalFilename, $fileMimeType, $fileSize, $fileContent);
-        return $result;
-    }
-
     public function getDocumentByType($ticketId, $documentType) {
         return $this->model->getDocumentByType($ticketId, $documentType);
     }
+
+    public function GetMotivos($documentId) {
+        $result = $this->model->GetMotivos($documentId);
+
+        if ($result) {
+            $motivos = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $motivo = pg_fetch_assoc($result['query'], $i);
+                $motivos[] = $motivo;
+            }
+            return $motivos;
+        } else {
+            return false;
+        }
+    }
+
 }
 ?>

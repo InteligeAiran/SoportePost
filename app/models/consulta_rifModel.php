@@ -2183,44 +2183,6 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function uploadDocument($ticketId, $userId, $documentType, $originalFilename, $fileMimeType, $fileSize, $fileContent){
-        try {
-            // Sentencia SQL con parámetros
-            $sql = "INSERT INTO public.archivos_adjuntos (
-                        ticket_id, 
-                        original_filename, 
-                        mime_type, 
-                        file_size_bytes, 
-                        uploaded_by_user_id, 
-                        document_type, 
-                        image,
-                        file_path
-                    ) VALUES (".$ticketId.", '".$originalFilename."', '".$fileMimeType."', '".$fileSize."', ".$userId.", .'".$documentType."', '".$fileContent."', 'database'  -- Aquí se pasa la ruta del archivo)";
-            
-            // Parámetros para la sentencia
-            $params = [
-                $ticketId, 
-                $originalFilename, 
-                $fileMimeType, 
-                $fileSize, 
-                $userId, 
-                $documentType, 
-                $fileContent, // Aquí se pasa el contenido binario
-                'database' // Como ya no usas una ruta, puedes poner un placeholder
-            ];
-
-            // Ejecutar la sentencia usando un método de tu clase Model
-            // Asumiendo que Model::execute($sql, $params) existe y maneja la ejecución
-            $this->db->execute($sql, $params); 
-            return true;
-
-        } catch (Throwable $e) {
-            // Log the error
-            error_log("Error en el modelo uploadDocument: ". $e->getMessage());
-            return false;
-        }
-    }
-
     public function getDocumentByType($ticketId, $documentType) {
         try {
             $db_conn = $this->db->getConnection();
@@ -2253,5 +2215,29 @@ class consulta_rifModel extends Model
             return false;
         }
     }
+
+
+    public function GetMotivos($documentType) {
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            $escaped_document_type = pg_escape_literal($db_conn, $documentType);
+            $sql = "SELECT id_motivo_rechazo, name_motivo_rechazo 
+                  FROM motivos_rechazo 
+                  WHERE document_type_motivo_rechazo = ".$escaped_document_type."  OR document_type_motivo_rechazo = 'General' 
+                  ORDER BY id_motivo_rechazo";
+            $result = Model::getResult($sql, $this->db);
+
+            if ($result === false) {
+                error_log("Error al consultar motivos: ". pg_last_error($db_conn));
+                return false;
+            }
+
+            return $result;
+        } catch (Throwable $e) {
+        error_log("Excepción en GetMotivos: ". $e->getMessage());
+        return false;
+        }
+    } 
 }
 ?>

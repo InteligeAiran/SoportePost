@@ -249,13 +249,13 @@ class Consulta extends Controller
                 case 'HasComponents':
                     $this->handleHasComponents();
                     break;
-
-                case 'uploadDocument': 
-                    $this->handleuploadDocument();
-                    break;
                 
                 case 'GetDocumentByType':
                     $this->handleGetDocumentByType();
+                    break;
+
+                case 'GetMotivos':
+                    $this->handleGetMotivos();
                     break;
 
                 default:
@@ -1613,37 +1613,6 @@ class Consulta extends Controller
         }
     }
 
-    function handleuploadDocument(){
-        // 1. Obtener los datos de POST
-        $ticketId = isset($_POST['ticket_id']) ? $_POST['ticket_id'] : null;
-        $userId = isset($_POST['id_user']) ? $_POST['id_user'] : null;
-        $documentType = isset($_POST['document_type']) ? $_POST['document_type'] : null;
-        
-        // 2. Obtener el archivo subido de $_FILES
-        $documentFile = isset($_FILES['document_file']) ? $_FILES['document_file'] : null;
-
-        if (!$ticketId || !$userId || !$documentType || !$documentFile) {
-            $this->response(['success' => false, 'message' => 'Hay un campo vacío.'], 400);
-            return;
-        }
-
-        // 3. Obtener el contenido binario del archivo
-        $fileContent = file_get_contents($documentFile['tmp_name']);
-        $originalFilename = $documentFile['name'];
-        $fileMimeType = $documentFile['type'];
-        $fileSize = $documentFile['size'];
-        
-        // 4. Llamar al repositorio
-        $repository = new technicalConsultionRepository();
-        $result = $repository->uploadDocument($ticketId, $userId, $documentType, $originalFilename, $fileMimeType, $fileSize, $fileContent);
-
-        if ($result) {
-            $this->response(['success' => true, 'message' => 'El documento se ha subido correctamente.'], 200);
-        } else {
-            $this->response(['success' => false, 'message' => 'Error al subir el documento.'], 500);
-        }
-    }
-
     public function handleGetDocumentByType() {
         $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
         $documentType = isset($_POST['documentType']) ? $_POST['documentType'] : '';
@@ -1670,6 +1639,24 @@ class Consulta extends Controller
                 'document_type' => $attachment['document_type']
             ]
         ], 200);
+    }
+
+    public function handleGetMotivos(){
+        $documentType = isset($_POST['documentType']) ? $_POST['documentType'] : '';
+
+        if (!$documentType) {
+            $this->response(['success' => false, 'message' => 'Tipo de documento requerido.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetMotivos($documentType);
+
+        if ($result) {
+            $this->response(['success' => true,'motivos' => $result], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
     }
 }
 ?>

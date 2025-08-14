@@ -421,16 +421,47 @@ function mi_navbar() {}
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="CerrarModalVizualizar">Cerrar</button>
-                        <button type="button" class="btn btn-secondary" id="RechazoDocumento">Rechazar Documento</button>
+                        <button type="button" class="btn btn-danger" id="RechazoDocumento">Rechazar Documento</button>
                     </div>
                 </div>
             </div>
         </div>
     <!-- END MODAL PARA VIZUALIZAR EL MODAL -->
 
-    <button type="button" class="btn btn-primary" id="reassignTicketBtn" data-ticket-id="2">
+    <!-- MODAL PARA SELECCIONAR EL MOTIVO DE RECHAZO -->
+        <div class="modal fade" id="modalRechazo" tabindex="-1" aria-labelledby="modalRechazoLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-gradient-primary">
+                        <h5 class="modal-title" id="modalRechazoLabel">Motivo de Rechazo</h5>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="motivoRechazoSelect" class="form-label">Selecciona el motivo del rechazo:</label>
+                                <select class="form-select" id="motivoRechazoSelect" aria-label="Motivo de Rechazo">
+                                   
+                                </select>
+                            </div>
+                            <div class="mb-3" id="otroMotivoContainer" style="display: none;">
+                                <label for="otroMotivoInput" class="form-label">Especifica el motivo:</label>
+                                <input type="text" class="form-control" id="otroMotivoInput" placeholder = "Especifique el Motivo">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="CerrarModalMotivoRechazo">Cancelar</button>
+                        <button type="button" class="btn btn-danger" id="confirmarRechazoBtn">Confirmar Rechazo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <!-- END MODAL PARA SELECCIONAR EL MOTIVO DE RECHAZO -->
+
+
+    <!--button type="button" class="btn btn-primary" id="reassignTicketBtn" data-ticket-id="2">
         <i class="bi bi-person-gear"></i> Reasignar Ticket
-    </button>
+    </button-->
 
     <input type="hidden" id="id_user" value="<?php echo $_SESSION['id_user'] ?? ''; ?>"/>
 
