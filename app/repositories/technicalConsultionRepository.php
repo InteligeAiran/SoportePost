@@ -733,5 +733,10 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type){
+        $result = $this->model->RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type);
+        return $result;
+    }
+
 }
 ?>

@@ -452,101 +452,96 @@ function downloadImageModal(serial) {
 }
 
 function loadTicketHistory(ticketId) {
-    // 1. Obtener el contenedor del historial y mostrar mensaje de carga (usando jQuery)
-    const historyPanel = $("#ticket-history-content");
-    historyPanel.html(
-        '<p class="text-center text-muted">Cargando historial...</p>'
-    ); // Usar .html() de jQuery
+  const historyPanel = $("#ticket-history-content");
+  historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
 
-    // 2. Crear y configurar la solicitud AJAX (usando jQuery.ajax)
-    $.ajax({
-        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory1`,
-        type: "POST",
-        data: {
-            // jQuery formatea esto automáticamente a 'application/x-www-form-urlencoded'
-            action: "GetTicketHistory",
-            id_ticket: ticketId,
-        },
-        dataType: "json", // Le decimos a jQuery que esperamos una respuesta JSON
-        success: function (response) {
-            // Verificar si la respuesta es exitosa y contiene historial
-            if (response.success && response.history && response.history.length > 0) {
-                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">'; // Contenedor del acordeón
+  $.ajax({
+    url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
+    type: "POST",
+    data: {
+      action: "GetTicketHistory",
+      id_ticket: ticketId,
+    },
+    dataType: "json",
+    success: function (response) {
+      if (response.success && response.history && response.history.length > 0) {
+        let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
-                // Iterar sobre cada item del historial para construir el HTML
-                response.history.forEach((item, index) => {
-                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
-                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
+        response.history.forEach((item, index) => {
+          const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+          const headingId = `headingHistoryItem_${ticketId}_${index}`;
 
-                    let statusHeaderClass = "";
-                    let statusHeaderText = "";
+          const isLatest = index === 0;
+          const isExpanded = false;
 
-                    // **Colores por defecto si no hay coincidencia o si el estado es nulo/vacío**
-                    let headerStyle = "background-color: #212529;"; // Gris oscuro (cambiado de "Gris claro" a #212529 para contrastar)
-                    let textColor = "color: #212529;"; // Texto oscuro 
-                    statusHeaderText = ""; // Sin texto extra por defecto
+          const prevItem = response.history[index + 1] || {};
 
-                    if (item.name_status_ticket) {
-                        const statusLower = item.name_status_ticket.toLowerCase();
-                        if (statusLower.includes("abierto")) {
-                            headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-                            textColor = "color: #ffffff;"; // Texto blanco
-                            statusHeaderText = " (Abierto)";
-                        } else if (
-                            statusLower.includes("cerrado") ||
-                            statusLower.includes("resuelto")
-                        ) {
-                            headerStyle = "background-color: #28a745;"; // Verde
-                            textColor = "color: #ffffff;"; // Texto blanco
-                            statusHeaderText = " (Cerrado)";
-                        } else if (
-                            statusLower.includes("pendiente") ||
-                            statusLower.includes("en proceso")
-                        ) {
-                            headerStyle = "background-color: #ffc107;"; // Amarillo
-                            textColor = "color: #343a40;"; // Texto oscuro
-                            statusHeaderText = " (En Proceso)";
-                        } else if (
-                            statusLower.includes("cancelado") ||
-                            statusLower.includes("rechazado")
-                        ) {
-                            headerStyle = "background-color: #dc3545;"; // Rojo
-                            textColor = "color: #ffffff;"; // Texto blanco
-                            statusHeaderText = " (Cancelado)";
-                        } else if (statusLower.includes("espera")) {
-                            headerStyle = "background-color: #6c757d;"; // Gris
-                            textColor = "color: #ffffff;"; // Texto blanco
-                            statusHeaderText = " (En Espera)";
-                        }
-                    }
+          const cleanString = (str) => str ? str.replace(/\s/g, ' ').trim() : null;
 
-                    // Esta lógica sobrescribe el color y texto de la última gestión (index === 0)
-                    if (index === 0) {
-                        // Es la última gestión (la "actual")
-                        headerStyle = "background-color: #ffc107;"; // Amarillo
-                        textColor = "color: #343a40;"; // Texto oscuro
-                        statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`; // Agrega el estatus actual o 'Desconocido' si no existe. 
-                    } else {
-                        // Son gestiones pasadas
-                        headerStyle = "background-color: #5d9cec;"; // Azul claro/celeste
-                        textColor = "color: #ffffff;"; // Texto blanco
-                        // Se mantiene el statusHeaderText determinado anteriormente, o se deja vacío.
-                    }
+          const itemAccion = cleanString(item.name_accion_ticket);
+          const itempago = cleanString(item.name_status_payment);
+          const prevAccion = cleanString(prevItem.name_accion_ticket);
+          const accionChanged = prevAccion && itemAccion !== prevAccion;
 
-                    historyHtml += `
-                        <div class="card mb-3 custom-history-card"> 
+          const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
+          const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
+          const tecnicoChanged = prevTecnico && itemTecnico !== prevTecnico;
+
+          const itemStatusLab = cleanString(item.name_status_lab);
+          const prevStatusLab = cleanString(prevItem.name_status_lab);
+          const statusLabChanged = prevStatusLab && itemStatusLab !== prevStatusLab;
+
+          const itemStatusDom = cleanString(item.name_status_domiciliacion);
+          const prevStatusDom = cleanString(prevItem.name_status_domiciliacion);
+          const statusDomChanged = prevStatusDom && itemStatusDom !== prevStatusDom;
+
+          const itemStatusPayment = cleanString(item.name_status_payment);
+          const prevStatusPayment = cleanString(prevItem.name_status_payment);
+          const statusPaymentChanged = prevStatusPayment && itemStatusPayment !== prevStatusPayment;
+
+          const itemStatusTicket = cleanString(item.name_status_ticket);
+          const prevStatusTicket = cleanString(prevItem.name_status_ticket);
+          const estatusTicketChanged = prevStatusTicket && itemStatusTicket !== prevStatusTicket;
+
+          const itemComponents = cleanString(item.components_list);
+          const prevComponents = cleanString(prevItem.components_list);
+          const componentsChanged = prevComponents && itemComponents !== prevComponents;
+
+          // --- NUEVO CÓDIGO PARA COMPARAR EL MOTIVO DE RECHAZO ---
+          const itemMotivoRechazo = cleanString(item.name_motivo_rechazo);
+          const prevMotivoRechazo = cleanString(prevItem.name_motivo_rechazo);
+          const motivoRechazoChanged = prevMotivoRechazo && itemMotivoRechazo !== prevMotivoRechazo;
+
+          const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
+          
+          // --- LÓGICA CORREGIDA PARA MOSTRAR EL MOTIVO DE RECHAZO ---
+          // Define los tipos de rechazo que activan la visualización del motivo.
+          const rejectedActions = [
+            'Documento de Exoneracion Rechazado',
+            'Documento de Anticipo Rechazado',
+            'Documento de Envio Rechazado'
+          ];
+
+          // La fila se mostrará solo si la acción del ticket coincide con una de las acciones de rechazo definidas.
+          const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
+
+          let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+          let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+          const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
+
+          historyHtml += `
+                        <div class="card mb-3 custom-history-card">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
                                         data-toggle="collapse" data-target="#${collapseId}"
-                                        aria-expanded="${index === 0 ? "true" : "false"}" 
-                                        aria-controls="${collapseId}"
+                                        aria-expanded="${isExpanded}" aria-controls="${collapseId}"
                                         style="${textColor}">
                                         ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
                                     </button>
                                 </h2>
                             </div>
-                            <div id="${collapseId}" class="collapse ${index === 0 ? "show" : ""}"
+                            <div id="${collapseId}" class="collapse"
                                 aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
@@ -558,7 +553,7 @@ function loadTicketHistory(ticketId) {
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Acción:</th>
-                                                    <td>${item.name_accion_ticket || "N/A"}</td>
+                                                    <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Operador de Gestión:</th>
@@ -569,76 +564,75 @@ function loadTicketHistory(ticketId) {
                                                     <td>${item.full_name_coordinador || "N/A"}</td>
                                                 </tr>
                                                 <tr>
+                                                    <th class="text-start">Tecnico Asignado:</th>
+                                                    <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
+                                                </tr>
+                                                <tr>
                                                     <th class="text-start">Estatus Ticket:</th>
-                                                    <td>${item.name_status_ticket || "N/A"}</td>
+                                                    <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${item.name_status_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Laboratorio:</th>
-                                                    <td>${item.name_status_lab || "N/A"}</td>
+                                                    <td class="${statusLabChanged ? "highlighted-change" : ""}">${item.name_status_lab || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
-                                                    <td>${item.name_status_domiciliacion || "N/A"}</td>
+                                                    <td class="${statusDomChanged ? "highlighted-change" : ""}">${item.name_status_domiciliacion || "N/A"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-start" style="word-wrap: break-word; overflow-wrap: break-word;">Estatus Pago:</th>
-                                                    <td>${item.name_status_payment || "N/A"}</td>
+                                                    <th class="text-start">Estatus Pago:</th>
+                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
                                                 </tr>
-                                                
-                                                ${item.name_status_lab === "Pendiente por repuesto" ? `
+                                                ${showComponents ? `
                                                     <tr>
-                                                        <th class="text-start" style="word-wrap: break-word; overflow-wrap: break-word; font-size: 80%">Fecha Estimada de la Llegada de repuesto:</th>
-                                                        <td>${item.new_repuesto_date || "N/A"}</td>
+                                                        <th class="text-start">Componentes Asociados:</th>
+                                                        <td class="${componentsChanged ? "highlighted-change" : ""}">${item.components_list}</td>
                                                     </tr>
                                                 ` : ''}
-                                                </tbody>
+                                                ${showMotivoRechazo ? `
+                                                  <tr>
+                                                    <th class="text-start">Motivo Rechazo Documento:</th>
+                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
+                                                  </tr>
+                                             ` : ''}
+                                            </tbody>
                                         </table>
                                     </div>
                                 </div>
                             </div>
                         </div>`;
-                });
+        });
 
-                historyHtml += "</div>"; // Cierre del acordeón principal
-                historyPanel.html(historyHtml); // Insertar el HTML generado (con jQuery)
-
-                // Reiniciar tooltips (si usas Bootstrap 4)
-                if ($.fn && $.fn.tooltip) {
-                    $('[data-toggle="tooltip"]').tooltip("dispose"); 
-                    $('[data-toggle="tooltip"]').tooltip(); 
-                }
-            } else {
-                historyPanel.html(
-                    '<p class="text-center text-muted">No hay historial disponible para este ticket.</p>'
-                );
-            }
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            let errorMessage =
-                '<p class="text-center text-danger">Error al cargar el historial.</p>';
-            if (jqXHR.status === 0) {
-                errorMessage =
-                    '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
-            } else if (jqXHR.status == 404) {
-                errorMessage =
-                    '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
-            } else if (jqXHR.status == 500) {
-                errorMessage =
-                    '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
-            } else if (textStatus === "parsererror") {
-                errorMessage =
-                    '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
-            } else if (textStatus === "timeout") {
-                errorMessage =
-                    '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
-            } else if (textStatus === "abort") {
-                errorMessage =
-                    '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
-            }
-            historyPanel.html(errorMessage);
-            console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-        },
-    });
+        historyHtml += "</div>";
+        historyPanel.html(historyHtml);
+      } else {
+        historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
+      }
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      console.error("Error completo de AJAX:", {
+        jqXHR: jqXHR,
+        textStatus: textStatus,
+        errorThrown: errorThrown,
+      });
+      let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
+      if (jqXHR.status === 0) {
+        errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+      } else if (jqXHR.status == 404) {
+        errorMessage = '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
+      } else if (jqXHR.status == 500) {
+        errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+      } else if (textStatus === "parsererror") {
+        errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+      } else if (textStatus === "timeout") {
+        errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+      } else if (textStatus === "abort") {
+        errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+      }
+      historyPanel.html(errorMessage);
+      console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+    },
+  });
 }
 
 $(document).ready(function () {

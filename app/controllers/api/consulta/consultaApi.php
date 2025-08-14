@@ -258,6 +258,10 @@ class Consulta extends Controller
                     $this->handleGetMotivos();
                     break;
 
+                case 'rechazarDocumento':
+                    $this->handlerechazarDocumentos();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -1654,6 +1658,29 @@ class Consulta extends Controller
 
         if ($result) {
             $this->response(['success' => true,'motivos' => $result], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handlerechazarDocumentos(){
+        $id_ticket = isset($_POST['ticketId'])? $_POST['ticketId'] : '';
+        $id_motivo = isset($_POST['motivoId'])? $_POST['motivoId'] : '';
+        $nro_ticket = isset($_POST['nroTicket'])? $_POST['nroTicket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+        $document_type = isset($_POST['documentType'])? $_POST['documentType'] : '';
+
+
+        if (!$id_ticket || !$id_motivo || !$nro_ticket || !$id_user || !$document_type) {
+            $this->response(['success' => false, 'message' => 'Faltan los datos necesarios.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type);
+
+        if ($result) {
+            $this->response(['success' => true,'message' => 'El Documento ha sido rechazados correctamente.'], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }

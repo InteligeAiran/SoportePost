@@ -2190,13 +2190,7 @@ class consulta_rifModel extends Model
             $escaped_ticket_id = pg_escape_literal($db_conn, $ticketId);
             $escaped_document_type = pg_escape_literal($db_conn, $documentType);
 
-            $sql = "SELECT file_path, mime_type, original_filename, document_type 
-                    FROM archivos_adjuntos 
-                    WHERE nro_ticket = $escaped_ticket_id 
-                    AND document_type = $escaped_document_type 
-                    ORDER BY uploaded_at DESC 
-                    LIMIT 1";
-
+            $sql = "SELECT * FROM get_latest_archivo_adjunto(".$escaped_ticket_id.", ".$escaped_document_type.");";
             $result = $this->db->pgquery($sql);
 
             if ($result === false) {
@@ -2222,10 +2216,7 @@ class consulta_rifModel extends Model
             $db_conn = $this->db->getConnection();
             
             $escaped_document_type = pg_escape_literal($db_conn, $documentType);
-            $sql = "SELECT id_motivo_rechazo, name_motivo_rechazo 
-                  FROM motivos_rechazo 
-                  WHERE document_type_motivo_rechazo = ".$escaped_document_type."  OR document_type_motivo_rechazo = 'General' 
-                  ORDER BY id_motivo_rechazo";
+            $sql = "SELECT * FROM get_motivos_rechazo(".$escaped_document_type.")";
             $result = Model::getResult($sql, $this->db);
 
             if ($result === false) {
@@ -2238,6 +2229,84 @@ class consulta_rifModel extends Model
         error_log("Excepción en GetMotivos: ". $e->getMessage());
         return false;
         }
-    } 
+    }
+
+    public function RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type) {
+        try {
+            $db_conn = $this->db->getConnection();
+
+            if ($document_type === 'Envio')
+                $id_new_status_payment = 14;
+            else if ($document_type === 'Anticipo')
+                $id_new_status_payment = 13;
+            else{
+                $id_new_status_payment = 12;
+            }
+            
+            $escaped_id_ticket = pg_escape_literal($db_conn, $id_ticket);
+            $escaped_id_motivo = pg_escape_literal($db_conn, $id_motivo);
+            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+            $escaped_document_type = pg_escape_literal($db_conn, $document_type);
+
+            $sql = "UPDATE archivos_adjuntos SET id_motivo_rechazo = ".$escaped_id_motivo." WHERE nro_ticket = ".$escaped_nro_ticket.";";
+            $result = Model::getResult($sql, $this->db);
+
+            if($result){
+                $sql1 = "UPDATE tickets SET id_status_payment = ".$id_new_status_payment." WHERE id_ticket = ".$escaped_id_ticket.";";
+                $result1 = Model::getResult($sql1, $this->db);
+            
+                
+                if ($result1 === false) {
+                    error_log("Error al rechazar documentos: ". pg_last_error($db_conn));
+                    return false;
+                }else{
+                    $id_status_lab = 0;
+                $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". (int)$id_ticket. ";";
+                $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+                if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                    $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab')?? 0;
+                }
+
+                $new_status_domiciliacion = 'NULL';
+                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = ". (int)$id_ticket. ";";
+                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                    $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion')!== null? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
+                }
+
+                $id_status_ticket = 'NULL';
+                $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
+                $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
+                if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
+                    $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket')!== null? (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') : 'NULL';
+                }
+
+                $id_accion_ticket = 'NULL';
+                $accion_ticket_sql = "SELECT id_accion_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
+                $accion_ticket_result = pg_query($this->db->getConnection(), $accion_ticket_sql);
+                if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
+                    $id_accion_ticket = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket')!== null? (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') : 'NULL';
+                }
+
+                $sqlInsertHistory = sprintf(
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                    (int)$id_ticket,
+                    (int)$id_user,
+                    (int)$id_status_ticket,
+                    (int)$id_accion_ticket,
+                    $id_status_lab,
+                    $id_new_status_payment,
+                    $new_status_domiciliacion
+                );
+               $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
+                }
+            }
+            return true;
+            } catch (Throwable $e) {
+            error_log("Excepción en RechazarDocumentos: ". $e->getMessage());
+            return false;
+        
+        }
+    }
 }
 ?>

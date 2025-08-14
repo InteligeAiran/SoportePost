@@ -5,6 +5,9 @@ let modalInstanceCoordinator;
 let confirmReassignModalInstance = null;
 let selectTechnicianModalInstance = null;
 let inputTecnicoActual = null;
+let currentTicketIdForImage = null;
+let currentTicketNroForImage = null;
+let DocumentType = null;
 
 let EnvioInput = null;
 let ExoInput = null;
@@ -18,6 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const modalRechazoInstance = new bootstrap.Modal(document.getElementById('modalRechazo'));
   const botonCerrarmotivo = document.getElementById('CerrarModalMotivoRechazo');
   const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'), {keyboard: false});
+  const modalConfirmacionRechazoBtn = document.getElementById('modalConfirmacionRechazoBtn');
 
   // Obtener el botón de rechazo del DOM
   const rechazoDocumentoBtn = document.getElementById('RechazoDocumento');
@@ -34,15 +38,19 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  if(modalConfirmacionRechazoBtn){
+    modalConfirmacionRechazoBtn.addEventListener('click', function () {
+      confirmarRechazoModal.hide();
+    });
+  }
+
   document.getElementById("confirmarRechazoBtn").addEventListener("click", function() {
     // Opcional: Obtén el texto del motivo seleccionado para mostrarlo en el modal
     const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
     const motivoSeleccionadoTexto = motivoRechazoSelect.options[motivoRechazoSelect.selectedIndex].text;
 
-    document.getElementById("motivoSeleccionadoTexto").textContent = motivoSeleccionadoTexto;
 
-    // Muestra el modal de confirmación
-    confirmarRechazoModal.show();
+    document.getElementById("motivoSeleccionadoTexto").textContent = motivoSeleccionadoTexto;
   });
 
   if (botonCerrarmotivo) {
@@ -58,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const confirmarRechazoBtn = document.getElementById('confirmarRechazoBtn');
 
   // Mostrar u ocultar el campo de texto "Otro" según la selección
-  if (motivoRechazoSelect) {
+  /*if (motivoRechazoSelect) {
     motivoRechazoSelect.addEventListener('change', function () {
       if (motivoRechazoSelect.value === '4') {
         otroMotivoContainer.style.display = 'block';
@@ -66,37 +74,29 @@ document.addEventListener("DOMContentLoaded", function () {
         otroMotivoContainer.style.display = 'none';
       }
     });
-  }
+  }*/
 
-  // Manejar el evento de clic en el botón "Confirmar Rechazo"
-  if (confirmarRechazoBtn) {
-    confirmarRechazoBtn.addEventListener('click', function () {
-      const motivoSeleccionado = motivoRechazoSelect.options[motivoRechazoSelect.selectedIndex].text;
-      let mensajeRechazo = '';
+  // Evento click para el botón "Confirmar Rechazo"
+  $("#confirmarRechazoBtn").off("click").on("click", function() {
+    const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
 
-      if (motivoRechazoSelect.value === '4') {
-        const otroMotivo = document.getElementById('otroMotivoInput').value;
-        mensajeRechazo = `Motivo: ${otroMotivo}`;
-      } else {
-        mensajeRechazo = `Motivo: ${motivoSeleccionado}`;
-      }
-
-      // Aquí podrías enviar el motivo de rechazo a un servidor o realizar otra acción
-      console.log('Documento rechazado. ' + mensajeRechazo);
-
-      // Ocultar el modal después de la acción
-      modalRechazoInstance.hide();
-    });
-  }
-
-  // Lógica para los otros modales que tienes
-  const confirmReassignModalInstance = new bootstrap.Modal(
-    document.getElementById("confirmReassignModal"),
-    {
-      backdrop: "static",
-      keyboard: false,
+    if (!motivoRechazoSelect.value) {
+      // Si no hay motivo seleccionado, muestra una alerta de SweetAlert2
+      Swal.fire({
+        icon: 'warning',
+        title: 'No puede haber campos vacíos.',
+        text: `Seleccione un motivo de rechazo.`,
+        confirmButtonText: 'Ok',
+        color: 'black',
+        confirmButtonColor: '#003594'
+      });
+    } else {
+      const motivoSeleccionadoTexto = motivoRechazoSelect.options[motivoRechazoSelect.selectedIndex].text;
+      document.getElementById("motivoSeleccionadoTexto").textContent = motivoSeleccionadoTexto;
+      confirmarRechazoModal.show();
     }
-  );
+  });
+
   const selectTechnicianModalInstance = new bootstrap.Modal(
     document.getElementById("selectTechnicianModal"),
     {
@@ -110,13 +110,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // Inicializar instancias de los modales de Bootstrap
   confirmReassignModalInstance = new bootstrap.Modal(
     document.getElementById("confirmReassignModal"),
-    {
-      backdrop: "static",
-      keyboard: false,
-    }
-  );
-  selectTechnicianModalInstance = new bootstrap.Modal(
-    document.getElementById("selectTechnicianModal"),
     {
       backdrop: "static",
       keyboard: false,
@@ -421,6 +414,7 @@ function getTicketDataCoordinator() {
 
             dataForDataTable.push([
               data.id_ticket,
+              data.nro_ticket,
               data.rif,
               data.serial_pos,
               data.razonsocial_cliente,
@@ -452,6 +446,7 @@ function getTicketDataCoordinator() {
                   return meta.row + meta.settings._iDisplayStart + 1;
                 },
               },
+              { title: "Nro Ticket" },
               { title: "Rif" },
               { title: "Serial POS" },
               {
@@ -538,20 +533,20 @@ function getTicketDataCoordinator() {
               }
 
               api.columns().search('').draw(false);
-              api.column(5).visible(false); // Oculta Técnico Asignado
-              api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
+              api.column(6).visible(false); // Oculta Técnico Asignado
+              api.column(7).visible(true); // Limpia el filtro de Técnico Asignado
               api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                .column(4)
+                .column(5)
                 .search("Asignado al Coordinador") // CAMBIO AQUÍ
                 .draw();
               setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
 
               $("#btn-asignados").on("click", function () {
                 api.columns().search('').draw(false);
-                api.column(5).visible(true); // Oculta Técnico Asignado
-                api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
+                api.column(6).visible(true); // Oculta Técnico Asignado
+                api.column(7).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                  .column(4)
+                  .column(5)
                   .search("^Asignado al Técnico$", true, false) // <-- Cambio aquí
                   .draw();
                 setActiveButton("btn-asignados");
@@ -559,10 +554,10 @@ function getTicketDataCoordinator() {
 
               $("#btn-por-asignar").on("click", function () {
                 api.columns().search('').draw(false);
-                api.column(5).visible(false); // Índice 6 para "Técnico Asignado
-                api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
+                api.column(6).visible(false); // Índice 6 para "Técnico Asignado
+                api.column(7).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                  .column(4)
+                  .column(5)
                   .search("Asignado al Coordinador")
                   .draw();
                 setActiveButton("btn-por-asignar");
@@ -570,10 +565,10 @@ function getTicketDataCoordinator() {
 
               $("#btn-recibidos").on("click", function () {
                 api.columns().search('').draw(false);
-                api.column(5).visible(false); // Índice 6 para "Técnico Asignado
-                api.column(6).visible(true); // Limpia el filtro de Técnico Asignado
+                api.column(6).visible(false); // Índice 6 para "Técnico Asignado
+                api.column(7).visible(true); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                  .column(4)
+                  .column(5)
                   .search("Recibido por el Coordinador")
                   .draw();
                 setActiveButton("btn-recibidos");
@@ -581,10 +576,10 @@ function getTicketDataCoordinator() {
 
               $("#btn-reasignado").on("click", function () {
                 api.columns().search('').draw(false);
-                api.column(5).visible(true); // Índice 6 para "Técnico Asignado
-                api.column(6).visible(false); // Limpia el filtro de Técnico Asignado
+                api.column(6).visible(true); // Índice 6 para "Técnico Asignado
+                api.column(7).visible(false); // Limpia el filtro de Técnico Asignado
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                  .column(4)
+                  .column(5)
                   .search("Reasignado al Técnico")
                   .draw();
                 setActiveButton("btn-reasignado");
@@ -727,7 +722,7 @@ function getTicketDataCoordinator() {
 
               // Guardar en variables globales
               currentTicketIdForImage = ticketId;
-              currentTicketNroForImage = nroTicket;
+              currentTicketNroForImage = nroTicket; // Asigna el valor a la variable global
 
               const VizualizarImage = document.getElementById('visualizarImagenModal');
               const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
@@ -783,6 +778,19 @@ function getTicketDataCoordinator() {
               // Evento para el botón confirmar visualización
               btnConfirmarClone.addEventListener('click', function () {
                 const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
+
+                if (!selectedOption) {
+                  Swal.fire({
+                    icon: 'warning',
+                    title: 'Selección Requerida',
+                    text: `Por favor, elija un tipo de documento para visualizar.`,
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#003594'
+                  });
+                  return; // Detiene la ejecución si no hay una opción seleccionada
+                }
+
                 getMotivos(selectedOption);
 
                 // Llamar a la API para obtener el documento
@@ -813,7 +821,14 @@ function getTicketDataCoordinator() {
                       // Ocultar el modal de selección
                       visualizarImagenModal.hide();
                     } else {
-                      alert('Error: ' + data.message);
+                      Swal.fire({
+                        icon: 'warning',
+                        title: 'Selección Requerida',
+                        text: `Por favor, elija un tipo de documento para visualizar.`,
+                        confirmButtonText: 'Ok',
+                        color: 'black',
+                        confirmButtonColor: '#003594'
+                      });
                     }
                   })
                   .catch(error => {
@@ -1184,9 +1199,6 @@ function loadTicketHistory(ticketId) {
     },
     dataType: "json",
     success: function (response) {
-      // Revisa la consola del navegador para ver la respuesta completa del servidor.
-
-      // Verifica si la respuesta es exitosa y contiene datos de historial.
       if (response.success && response.history && response.history.length > 0) {
         let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
@@ -1199,12 +1211,10 @@ function loadTicketHistory(ticketId) {
 
           const prevItem = response.history[index + 1] || {};
 
-          // -- CORRECCIÓN PARA ESPACIOS EN BLANCO Y ESPACIOS DE NO SEPARACIÓN --
-          // Reemplazamos todos los caracteres de espacio en blanco, incluyendo los de no separación,
-          // con un espacio normal, y luego usamos trim() para asegurar una comparación precisa.
           const cleanString = (str) => str ? str.replace(/\s/g, ' ').trim() : null;
 
           const itemAccion = cleanString(item.name_accion_ticket);
+          const itempago = cleanString(item.name_status_payment);
           const prevAccion = cleanString(prevItem.name_accion_ticket);
           const accionChanged = prevAccion && itemAccion !== prevAccion;
 
@@ -1232,7 +1242,23 @@ function loadTicketHistory(ticketId) {
           const prevComponents = cleanString(prevItem.components_list);
           const componentsChanged = prevComponents && itemComponents !== prevComponents;
 
+          // --- NUEVO CÓDIGO PARA COMPARAR EL MOTIVO DE RECHAZO ---
+          const itemMotivoRechazo = cleanString(item.name_motivo_rechazo);
+          const prevMotivoRechazo = cleanString(prevItem.name_motivo_rechazo);
+          const motivoRechazoChanged = prevMotivoRechazo && itemMotivoRechazo !== prevMotivoRechazo;
+
           const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
+          
+          // --- LÓGICA CORREGIDA PARA MOSTRAR EL MOTIVO DE RECHAZO ---
+          // Define los tipos de rechazo que activan la visualización del motivo.
+          const rejectedActions = [
+            'Documento de Exoneracion Rechazado',
+            'Documento de Anticipo Rechazado',
+            'Documento de Envio Rechazado'
+          ];
+
+          // La fila se mostrará solo si la acción del ticket coincide con una de las acciones de rechazo definidas.
+          const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
           let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
           let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
@@ -1298,6 +1324,12 @@ function loadTicketHistory(ticketId) {
                                                         <td class="${componentsChanged ? "highlighted-change" : ""}">${item.components_list}</td>
                                                     </tr>
                                                 ` : ''}
+                                                ${showMotivoRechazo ? `
+                                                  <tr>
+                                                    <th class="text-start">Motivo Rechazo Documento:</th>
+                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
+                                                  </tr>
+                                             ` : ''}
                                             </tbody>
                                         </table>
                                     </div>
@@ -1309,12 +1341,10 @@ function loadTicketHistory(ticketId) {
         historyHtml += "</div>";
         historyPanel.html(historyHtml);
       } else {
-        // Si la respuesta es exitosa pero no hay historial, muestra este mensaje.
         historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
       }
     },
     error: function (jqXHR, textStatus, errorThrown) {
-      // Revisa la consola para obtener detalles sobre por qué falló la llamada AJAX.
       console.error("Error completo de AJAX:", {
         jqXHR: jqXHR,
         textStatus: textStatus,
@@ -1339,8 +1369,6 @@ function loadTicketHistory(ticketId) {
     },
   });
 }
-
-
 
 function markTicketAsReceived(ticketId, nroTicket, serialPos) {
   // Asegúrate de que nroTicket esté como parámetro
@@ -1533,7 +1561,6 @@ function AssignTicket() {
   xhr.send(datos);
 }
 
-
 function getTecnico21(tecnicoActualParaFiltrar) { // Nuevo parámetro
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
@@ -1722,6 +1749,8 @@ function getMotivos(documentType) {
   const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
   motivoRechazoSelect.innerHTML = '<option value="">Cargando...</option>';
 
+  DocumentType = documentType;
+
   // Aquí cambiamos el endpoint para apuntar a la API de motivos
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetMotivos`);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -1766,13 +1795,6 @@ function getMotivos(documentType) {
   const datos = `action=GetMotivos&documentType=${documentType}`;
   xhr.send(datos);
 }
-
-// Event listener para el botón que abre el modal y carga los datos
-openModalButton.addEventListener('click', () => {
-  getMotivos();
-  showModal();
-});
-
 
 // Obtén una referencia al modal y al tbody de la tabla
 const modalComponentesEl = document.getElementById('modalComponentes');
@@ -2188,3 +2210,94 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     viewDocumentModal.hide();
   });
 }
+
+const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
+
+// Crea una instancia del modal de confirmación de rechazo (si no lo has hecho ya)
+const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'));
+
+// Evento para el botón de confirmar la acción de rechazo dentro del modal
+document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', function () {
+    const ticketId = currentTicketIdForImage; // Usamos el ID del ticket actual
+    const nroticket = currentTicketNroForImage; // Usamos el número de ticket actual
+    const motivoId = motivoRechazoSelect.value; // Obtenemos el ID del motivo seleccionado
+    const id_user = document.getElementById('id_user').value; // Obtenemos el ID del usuario
+    const documentType = DocumentType; // Aquí usamos la variable global
+
+
+    // Opcional: Cerrar el modal de confirmación mientras se procesa la solicitud
+    confirmarRechazoModal.hide();
+
+    // Verificación final para asegurar que tenemos los datos necesarios
+    if (!ticketId || !motivoId || !nroticket || !id_user || !documentType) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Datos incompletos para el rechazo.',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    const xhr = new XMLHttpRequest();
+    const datos = `action=rechazarDocumento&ticketId=${encodeURIComponent(ticketId)}&motivoId=${encodeURIComponent(motivoId)}&nroTicket=${encodeURIComponent(nroticket)}&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`; // Ajusta los datos a tu script de backend
+    console.log('Datos enviados:', datos);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/rechazarDocumento`); // Ajusta la URL a tu script de backend
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Rechazado!',
+                        text: response.message,
+                        confirmButtonColor: '#003594',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        keydownListenerCapture: true,
+                        color: 'black'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message,
+                        confirmButtonColor: '#003594'
+                    });
+                }
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Respuesta del servidor no válida.',
+                    confirmButtonColor: '#003594'
+                });
+            }
+        } else {
+            console.error("Error:", xhr.status, xhr.statusText);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'Hubo un problema al conectar con el servidor.',
+                confirmButtonColor: '#003594'
+            });
+        }
+    };
+
+    xhr.onerror = function () {
+        console.error("Error de red");
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de red',
+            text: 'Verifique su conexión a internet.',
+            confirmButtonColor: '#003594'
+        });
+    };
+    xhr.send(datos);
+});

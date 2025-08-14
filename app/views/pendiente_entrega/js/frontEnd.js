@@ -2087,74 +2087,84 @@ function loadTicketImage(ticketId, documentType, targetElementId) {
 }
 
 function loadTicketHistory(ticketId) {
-    const historyPanel = $("#ticket-history-content");
-    historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
+  const historyPanel = $("#ticket-history-content");
+  historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
 
-    $.ajax({
-        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
-        type: "POST",
-        data: {
-            action: "GetTicketHistory",
-            id_ticket: ticketId,
-        },
-        dataType: "json",
-        success: function (response) {
-            // Revisa la consola del navegador para ver la respuesta completa del servidor.
-            console.log("Respuesta del servidor:", response);
+  $.ajax({
+    url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
+    type: "POST",
+    data: {
+      action: "GetTicketHistory",
+      id_ticket: ticketId,
+    },
+    dataType: "json",
+    success: function (response) {
+      if (response.success && response.history && response.history.length > 0) {
+        let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
 
-            // Verifica si la respuesta es exitosa y contiene datos de historial.
-            if (response.success && response.history && response.history.length > 0) {
-                let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
+        response.history.forEach((item, index) => {
+          const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+          const headingId = `headingHistoryItem_${ticketId}_${index}`;
 
-                response.history.forEach((item, index) => {
-                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
-                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
+          const isLatest = index === 0;
+          const isExpanded = false;
 
-                    const isLatest = index === 0;
-                    const isExpanded = false;
+          const prevItem = response.history[index + 1] || {};
 
-                    const prevItem = response.history[index + 1] || {};
+          const cleanString = (str) => str ? str.replace(/\s/g, ' ').trim() : null;
 
-                    // -- CORRECCIÓN PARA ESPACIOS EN BLANCO Y ESPACIOS DE NO SEPARACIÓN --
-                    // Reemplazamos todos los caracteres de espacio en blanco, incluyendo los de no separación,
-                    // con un espacio normal, y luego usamos trim() para asegurar una comparación precisa.
-                    const cleanString = (str) => str ? str.replace(/\s/g, ' ').trim() : null;
+          const itemAccion = cleanString(item.name_accion_ticket);
+          const itempago = cleanString(item.name_status_payment);
+          const prevAccion = cleanString(prevItem.name_accion_ticket);
+          const accionChanged = prevAccion && itemAccion !== prevAccion;
 
-                    const itemAccion = cleanString(item.name_accion_ticket);
-                    const prevAccion = cleanString(prevItem.name_accion_ticket);
-                    const accionChanged = prevAccion && itemAccion !== prevAccion;
+          const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
+          const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
+          const tecnicoChanged = prevTecnico && itemTecnico !== prevTecnico;
 
-                    const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
-                    const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
-                    const tecnicoChanged = prevTecnico && itemTecnico !== prevTecnico;
+          const itemStatusLab = cleanString(item.name_status_lab);
+          const prevStatusLab = cleanString(prevItem.name_status_lab);
+          const statusLabChanged = prevStatusLab && itemStatusLab !== prevStatusLab;
 
-                    const itemStatusLab = cleanString(item.name_status_lab);
-                    const prevStatusLab = cleanString(prevItem.name_status_lab);
-                    const statusLabChanged = prevStatusLab && itemStatusLab !== prevStatusLab;
+          const itemStatusDom = cleanString(item.name_status_domiciliacion);
+          const prevStatusDom = cleanString(prevItem.name_status_domiciliacion);
+          const statusDomChanged = prevStatusDom && itemStatusDom !== prevStatusDom;
 
-                    const itemStatusDom = cleanString(item.name_status_domiciliacion);
-                    const prevStatusDom = cleanString(prevItem.name_status_domiciliacion);
-                    const statusDomChanged = prevStatusDom && itemStatusDom !== prevStatusDom;
+          const itemStatusPayment = cleanString(item.name_status_payment);
+          const prevStatusPayment = cleanString(prevItem.name_status_payment);
+          const statusPaymentChanged = prevStatusPayment && itemStatusPayment !== prevStatusPayment;
 
-                    const itemStatusPayment = cleanString(item.name_status_payment);
-                    const prevStatusPayment = cleanString(prevItem.name_status_payment);
-                    const statusPaymentChanged = prevStatusPayment && itemStatusPayment !== prevStatusPayment;
+          const itemStatusTicket = cleanString(item.name_status_ticket);
+          const prevStatusTicket = cleanString(prevItem.name_status_ticket);
+          const estatusTicketChanged = prevStatusTicket && itemStatusTicket !== prevStatusTicket;
 
-                    const itemStatusTicket = cleanString(item.name_status_ticket);
-                    const prevStatusTicket = cleanString(prevItem.name_status_ticket);
-                    const estatusTicketChanged = prevStatusTicket && itemStatusTicket !== prevStatusTicket;
+          const itemComponents = cleanString(item.components_list);
+          const prevComponents = cleanString(prevItem.components_list);
+          const componentsChanged = prevComponents && itemComponents !== prevComponents;
 
-                    const itemComponents = cleanString(item.components_list);
-                    const prevComponents = cleanString(prevItem.components_list);
-                    const componentsChanged = prevComponents && itemComponents !== prevComponents;
+          // --- NUEVO CÓDIGO PARA COMPARAR EL MOTIVO DE RECHAZO ---
+          const itemMotivoRechazo = cleanString(item.name_motivo_rechazo);
+          const prevMotivoRechazo = cleanString(prevItem.name_motivo_rechazo);
+          const motivoRechazoChanged = prevMotivoRechazo && itemMotivoRechazo !== prevMotivoRechazo;
 
-                    const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
+          const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
+          
+          // --- LÓGICA CORREGIDA PARA MOSTRAR EL MOTIVO DE RECHAZO ---
+          // Define los tipos de rechazo que activan la visualización del motivo.
+          const rejectedActions = [
+            'Documento de Exoneracion Rechazado',
+            'Documento de Anticipo Rechazado',
+            'Documento de Envio Rechazado'
+          ];
 
-                    let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-                    let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
-                    const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
+          // La fila se mostrará solo si la acción del ticket coincide con una de las acciones de rechazo definidas.
+          const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
-                    historyHtml += `
+          let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+          let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+          const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
+
+          historyHtml += `
                         <div class="card mb-3 custom-history-card">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 <h2 class="mb-0">
@@ -2214,44 +2224,48 @@ function loadTicketHistory(ticketId) {
                                                         <td class="${componentsChanged ? "highlighted-change" : ""}">${item.components_list}</td>
                                                     </tr>
                                                 ` : ''}
+                                                ${showMotivoRechazo ? `
+                                                  <tr>
+                                                    <th class="text-start">Motivo Rechazo Documento:</th>
+                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
+                                                  </tr>
+                                             ` : ''}
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
                             </div>
                         </div>`;
-                });
+        });
 
-                historyHtml += "</div>";
-                historyPanel.html(historyHtml);
-            } else {
-                // Si la respuesta es exitosa pero no hay historial, muestra este mensaje.
-                historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
-            }
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            // Revisa la consola para obtener detalles sobre por qué falló la llamada AJAX.
-            console.error("Error completo de AJAX:", {
-                jqXHR: jqXHR,
-                textStatus: textStatus,
-                errorThrown: errorThrown,
-            });
-            let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
-            if (jqXHR.status === 0) {
-                errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
-            } else if (jqXHR.status == 404) {
-                errorMessage = '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
-            } else if (jqXHR.status == 500) {
-                errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
-            } else if (textStatus === "parsererror") {
-                errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
-            } else if (textStatus === "timeout") {
-                errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
-            } else if (textStatus === "abort") {
-                errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
-            }
-            historyPanel.html(errorMessage);
-            console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-        },
-    });
+        historyHtml += "</div>";
+        historyPanel.html(historyHtml);
+      } else {
+        historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
+      }
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      console.error("Error completo de AJAX:", {
+        jqXHR: jqXHR,
+        textStatus: textStatus,
+        errorThrown: errorThrown,
+      });
+      let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
+      if (jqXHR.status === 0) {
+        errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+      } else if (jqXHR.status == 404) {
+        errorMessage = '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
+      } else if (jqXHR.status == 500) {
+        errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+      } else if (textStatus === "parsererror") {
+        errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+      } else if (textStatus === "timeout") {
+        errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+      } else if (textStatus === "abort") {
+        errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+      }
+      historyPanel.html(errorMessage);
+      console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+    },
+  });
 }
