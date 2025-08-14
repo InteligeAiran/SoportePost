@@ -370,7 +370,8 @@ function getTicketData() {
                               $("#btn-asignados").on("click", function () {
                                   dataTableInstance.columns().search('').draw(false);
                                   dataTableInstance.column(8).search("En Taller", true).draw();
-                                  dataTableInstance.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto",  true, false, false).draw();
+                                  //ESTA LA TENIA, Y LA CAMBIE POR LA DE ABAJO: dataTableInstance.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto",  true, false, false).draw();
+                                  dataTableInstance.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto",  true, false, true).draw();
                                   dataTableInstance.column('carga_de_llave:name').visible(true);
                                   dataTableInstance.column('Enviar_AlRosal:name').visible(true); // Asegúrate de que esta columna esté visible
                                   dataTableInstance.column(11).visible(false); 

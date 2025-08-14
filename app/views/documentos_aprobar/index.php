@@ -27,6 +27,14 @@ function mi_navbar()
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
     <style>
+
+        .highlighted-change {
+            font-weight: bold;
+            color: #000; /* Color de texto más oscuro para mayor contraste */
+            background-color: #ffeb3b; /* Amarillo claro */
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
       
         #ticket-details-panel table td, table th {
             white-space: normal !important;
@@ -171,6 +179,107 @@ function mi_navbar()
             border-color: #B0B0B0;
             box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
         }
+
+        #btn-asignados,
+        #btn-por-asignar,
+        #btn-recibidos,
+        #btn-devuelto {
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 13px;
+        }
+
+        #btn-recibidos {
+            background-color: #a0a0a0;
+            color: #ffffff;
+            border: 1px solid #a0a0a0;
+            transition: background-color 0.3s ease, border-color 0.3s ease,
+            box-shadow 0.3s ease;
+        }
+
+        /* Estilo base para el botón Recibidos cuando es el activo */
+        #btn-recibidos.btn-primary {
+            background-color: #003594;
+            /* Tu azul fuerte */
+            border-color: #003594;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease,
+             box-shadow 0.3s ease;
+        }
+
+            /* Estilo hover/focus para el botón Recibidos cuando es el activo */
+        #btn-recibidos.btn-primary:hover,
+        #btn-recibidos.btn-primary:focus {
+            background-color: #0045b4;
+            /* Un tono un poco más oscuro o claro al hover */
+            border-color: #0045b4;
+            box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+            /* Sombra de enfoque/hover */
+        }
+
+            /* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
+        #btn-recibidos.btn-secondary {
+            background-color: #a0a0a0;
+            /* Tu gris sutil */
+            border-color: #a0a0a0;
+            color: #ffffff;
+            /* O un gris oscuro si el fondo es claro */
+            transition: background-color 0.3s ease, border-color 0.3s ease,
+            box-shadow 0.3s ease;
+        }
+
+        #closeImagevisualizarModalBtn:hover{
+            background-color: red;
+            color: white;
+        }
+        
+        #closeImagevisualizarModalBtn{
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 13px;
+        }
+
+        #btnVisualizarImagen{
+            color: white;
+            background-color: #003594;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 13px;
+        }
+
+        #btnVisualizarImagen:hover{
+            background-color: green;
+            color: white;
+        }
+
+        #closeImageApprovalModalBtn{
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 13px;
+        }
+
+        #closeImageApprovalModalBtn:hover{
+            background-color: red;
+            color: white;
+        }
+
+        #approveTicketFromImage{
+            color: white;
+            background-color: #003594;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 13px;
+        }
+
+        #approveTicketFromImage:hover{
+            background-color: green;
+            color: white;
+        }
+
     </style>
     </head>
 
@@ -237,25 +346,25 @@ function mi_navbar()
             <div class="modal fade" id="visualizarImagenModal" tabindex="-1" aria-labelledby="visualizarImagenModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="visualizarImagenModalLabel" style="color: black;">Seleccione la imagen que desea visualizar:</h5>
+                    <div class="modal-header bg-gradient-primary">
+                        <h5 class="modal-title" id="visualizarImagenModalLabel">Seleccione la imagen que desea visualizar:</h5>
                     </div>
                     <div class="modal-body">
                         <div class="form-check">
                         <input class="form-check-input" type="radio" name="opcionImagen" id="imagenEnvio" value="Envio" checked>
-                        <label class="form-check-label" for="imagenEnvio">
+                        <label class="form-check-label" for="imagenEnvio" id = "labelEnvio">
                             Imagen del Envío
                         </label>
                         </div>
                         <div class="form-check">
                         <input class="form-check-input" type="radio" name="opcionImagen" id="imagenExoneracion" value="Exoneracion">
-                        <label class="form-check-label" for="imagenExoneracion">
+                        <label class="form-check-label" for="imagenExoneracion" id = "labelExo">
                             Imagen de Exoneración
                         </label>
                         </div>
                         <div class="form-check">
-                        <input class="form-check-input" type="radio" name="opcionImagen" id="imagenPago" value="Pago">
-                        <label class="form-check-label" for="imagenPago">
+                        <input class="form-check-input" type="radio" name="opcionImagen" id="imagenPago" value="Anticipo">
+                        <label class="form-check-label" for="imagenPago" id="labelPago">
                             Imagen de Pago
                         </label>
                         </div>
@@ -270,17 +379,19 @@ function mi_navbar()
         <!--END MODAL PARA SELECCIONAR LAS ACCIONES PARA VIZUALIZAR LA IMAGEN-->
 
         <!-- MODAL PARA VIZUALIZAR LOS DOCUMENTOS -->
-            <div class="modal fade" id="imageApprovalModal" tabindex="-1" aria-labelledby="imageApprovalModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                       <div class="modal fade" id="imageApprovalModal" tabindex="-1" aria-labelledby="imageApprovalModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="imageApprovalModalLabel" style="color: black;">Revisar y Aprobar Imagen</h5>
+                        <div class="modal-header bg-gradient-primary">
+                            <h5 class="modal-title" id="imageApprovalModalLabel">Revisar y Aprobar Imagen</h5>
                         </div>
+                        <p class="mt-3 mb-1" style="color: black; font-weight: bold; text-align: center;">Nombre Documento: <span id="currentNombreDocumento"></span></p>
+
                         <div class="modal-body text-center">
                             <div id="mediaViewerContainer" style="width: 100%; height: 500px; display: flex; justify-content: center; align-items: center; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 4px;">
                                 <img id="ticketImagePreview" src="" alt="Vista previa del documento" class="img-fluid" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
                                 </div>
-                            <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Ticket ID: <span id="currentTicketIdDisplay"></span></p>
+                            <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Nro Ticket: <span id="currentTicketIdDisplay"></span></p>
                             <p style="color: black;">Tipo de Documento: <span id="currentImageTypeDisplay"></span></p>
                         </div>
                         <div class="modal-footer">

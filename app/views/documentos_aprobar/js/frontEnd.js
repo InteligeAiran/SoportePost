@@ -29,7 +29,6 @@ function getTicketAprovalDocument() {
         name_status_payment: "Estatus Pago",
     };
 
-
     xhr.onload = function () {
         if (xhr.status >= 200 && xhr.status < 300) {
             try {
@@ -76,8 +75,12 @@ function getTicketAprovalDocument() {
                             orderable: false, // No permitir ordenar por esta columna
                             render: function (data, type, row) {
                                 const idTicket = row.id_ticket;
+                                const envio = row.envio;
+                                const exoneracion = row.exoneracion;
+                                const pago = row.pago;
+                                const nro_ticket = row.nro_ticket;
                                 return `
-                                    <button class="btn btn-info btn-sm view-image-btn" data-id="${idTicket}" data-bs-toggle="modal" data-bs-target="#visualizarImagenModal" title="Visualizar Imágenes">
+                                    <button class="btn btn-info btn-sm view-image-btn" data-nro-ticket="${nro_ticket}" data-id="${idTicket}" data-envio="${envio}" data-exoneracion="${exoneracion}" data-anticipo="${pago}" data-bs-toggle="modal" data-bs-target="#visualizarImagenModal" title="Visualizar Imágenes">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
                                             <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
                                             <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
@@ -114,6 +117,89 @@ function getTicketAprovalDocument() {
                                     next: "Siguiente",
                                     previous: "Anterior",
                                 },
+                            },
+                            dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+                                initComplete: function (settings, json) {
+                                // Dentro de initComplete, 'this' se refiere a la tabla jQuery
+                                // y 'this.api()' devuelve la instancia de la API de DataTables.
+                                const api = this.api(); // <--- Correcto: Obtener la instancia de la API aquí
+
+                                // Esto es parte de tu inicialización de DataTables, probablemente dentro de 'initComplete'
+                                // o en un script que se ejecuta después de que la tabla está lista.
+                                const buttonsHtml = `
+                                    <button id="btn-por-asignar" class="btn btn-primary me-2" title="Pendientes por revisión Documentos">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/>
+                                    </svg>
+                                    </button>
+
+                                    <button id="btn-recibidos" class="btn btn-secondary me-2" title="Pendiente por cargar Documentos">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                                        <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                                    </svg>
+                                    </button>
+
+                                    <button id="btn-asignados" class="btn btn-secondary me-2" title="Documentos Rechazados">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                    </svg>
+                                    </button>
+                                `;
+                                $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+
+                                function setActiveButton(activeButtonId) {
+                                    $("#btn-por-asignar")
+                                    .removeClass("btn-primary")
+                                    .addClass("btn-secondary");
+                                    $("#btn-asignados")
+                                    .removeClass("btn-primary")
+                                    .addClass("btn-secondary");
+                                    $("#btn-recibidos")
+                                    .removeClass("btn-primary")
+                                    .addClass("btn-secondary");
+                                    $("#btn-reasignado")
+                                    .removeClass("btn-primary")
+                                    .addClass("btn-secondary");
+                                    $(`#${activeButtonId}`)
+                                    .removeClass("btn-secondary")
+                                    .addClass("btn-primary");
+                                }
+
+                                api.columns().search('').draw(false);
+                                api // <--- Usar 'api' en lugar de 'dataTableInstance'
+                                    .column(3)
+                                    .search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, true) // CAMBIO AQUÍ
+                                    .draw();
+                                setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
+
+                                $("#btn-por-asignar").on("click", function () {
+                                    api.columns().search('').draw(false);
+                                    api
+                                    .column(3)
+                                    .search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, true) // CAMBIO AQUÍ
+                                    .draw();
+                                    setActiveButton("btn-por-asignar");
+                                });
+
+                                
+                                $("#btn-recibidos").on("click", function () {
+                                    api.columns().search('').draw(false);
+                                    api
+                                        .column(3)
+                                        .search("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)", true, false, true)
+                                        .draw();
+                                    setActiveButton("btn-recibidos");
+                                });
+
+                                $("#btn-asignados").on("click", function () {
+                                    api.columns().search('').draw(false);
+                                    api
+                                        .column(3)
+                                        .search("Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado", true, false, true)
+                                        .draw();
+                                    setActiveButton("btn-asignados");
+                                });    
                             },
                         });
 
@@ -171,20 +257,89 @@ function getTicketAprovalDocument() {
                                 }
                             });
 
-                        // Evento para el botón "Visualizar Imágenes" en la tabla
                         $("#tabla-ticket tbody").on("click", ".view-image-btn", function () {
                             const ticketId = $(this).data("id");
-                            const myModal = new bootstrap.Modal(document.getElementById('visualizarImagenModal'));
-                            visualizarImagenModal.setAttribute('data-ticket-id', ticketId); 
+                            const nroTicket = $(this).data("nro-ticket");
+                            
+                            // Asume que los valores 'Sí' o 'No' están en los data attributes del botón.
+                            const envioValor = $(this).data("envio");
+                            const exoValor = $(this).data("exoneracion");
+                            const pagoValor = $(this).data("anticipo");
 
-                            // Preseleccionar 'Imagen del Envío' por defecto
-                            document.getElementById('imagenEnvio').checked = true;
-                            document.getElementById('imagenExoneracion').checked = false;
-                            document.getElementById('imagenPago').checked = false;
+                            // Lógica de validación
+                            if (envioValor === 'No' && exoValor === 'No' && pagoValor === 'No') {
+                                Swal.fire({
+                                    title: 'No hay imagen disponible',
+                                    text: 'El ticket no posee imagen en el sistema.',
+                                    icon: 'info',
+                                    confirmButtonText: 'Aceptar',
+                                    confirmButtonColor: '#003594',
+                                    color: 'black'
+                                });
+                                // Detener la ejecución de la función aquí.
+                                return; 
+                            }
 
-                            myModal.show();                            
+                            // Si al menos una imagen existe, el código continúa aquí.
+                            currentTicketIdForImage = ticketId;
+                            currentTicketNroForImage = nroTicket;
+
+                            const VizualizarImage = document.getElementById('visualizarImagenModal');
+                            // Establecer el data-ticket-id en el modal para que esté disponible en el listener del botón
+                            VizualizarImage.setAttribute('data-ticket-id', nroTicket);
+                            const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
+
+                            const EnvioInputModal = document.getElementById('imagenEnvio');
+                            const EnvioLabelModal = document.getElementById('labelEnvio');
+                            const ExoInputModal = document.getElementById('imagenExoneracion');
+                            const ExoLabelModal = document.getElementById('labelExo');
+                            const PagoInputModal = document.getElementById('imagenPago');
+                            const PagoLabelModal = document.getElementById('labelPago');
+                            const botonCerrarVizualizacion = document.getElementById('closeImagevisualizarModalBtn');
+
+                            if(botonCerrarVizualizacion) {
+                                botonCerrarVizualizacion.addEventListener('click', function() {
+                                    visualizarImagenModal.hide(); // Oculta el modal de visualización de imagen
+                                });
+                            }
+
+                            // Muestra u oculta los radio buttons basándose en los valores del botón
+                            if (envioValor === 'Sí') {
+                                EnvioLabelModal.style.display = 'block';
+                                EnvioInputModal.style.display = 'block';
+                            } else {
+                                EnvioLabelModal.style.display = 'none';
+                                EnvioInputModal.style.display = 'none';
+                            }
+
+                            if (exoValor === 'Sí') {
+                                ExoInputModal.style.display = 'block';
+                                ExoLabelModal.style.display = 'block';
+                            } else {
+                                ExoInputModal.style.display = 'none';
+                                ExoLabelModal.style.display = 'none';
+                            }
+
+                            if (pagoValor === 'Sí') {
+                                PagoInputModal.style.display = 'block';
+                                PagoLabelModal.style.display = 'block';
+                            } else {
+                                PagoInputModal.style.display = 'none';
+                                PagoLabelModal.style.display = 'none';
+                            }
+                            
+                            // Set a sensible default checked radio button
+                            if (envioValor === 'Sí') {
+                                EnvioInputModal.checked = true;
+                            } else if (exoValor === 'Sí') {
+                                ExoInputModal.checked = true;
+                            } else if (pagoValor === 'Sí') {
+                                PagoInputModal.checked = true;
+                            }
+
+                            // Mostrar el modal
+                            visualizarImagenModal.show();
                         });
-
                         if (tableContainer) {
                             tableContainer.style.display = "";
                         }
@@ -239,7 +394,6 @@ function getTicketAprovalDocument() {
             }
         }
     };
-
     xhr.onerror = function () {
         if (tableContainer) {
             tableContainer.innerHTML = "<p>Error de red.</p>";
@@ -256,245 +410,106 @@ function getTicketAprovalDocument() {
 
 document.addEventListener("DOMContentLoaded", getTicketAprovalDocument);
 
+document.addEventListener('DOMContentLoaded', function () {
 
-  document.addEventListener('DOMContentLoaded', function () {
-      // Definiciones de constantes globales (ajusta estas rutas a tu configuración real)
-      const ENDPOINT_BASE = 'http://localhost/'; 
-      const APP_PATH = 'SoportePost/'; 
-
-      const visualizarImagenModalElement = document.getElementById('visualizarImagenModal');
-      const imageApprovalModalElement = document.getElementById('imageApprovalModal');
-      const closeImageApprovalModalBtn = document.getElementById('closeImageApprovalModalBtn');
-      const closeImagevisualizarModalBtn = document.getElementById('closeImagevisualizarModalBtn');
-      const btnVisualizarImagen = document.getElementById('btnVisualizarImagen');
+    const visualizarImagenModalElement = document.getElementById('visualizarImagenModal');
+    const closeImagevisualizarModalBtn = document.getElementById('closeImagevisualizarModalBtn');
+    const btnVisualizarImagen = document.getElementById('btnVisualizarImagen');
       
-      // Cambiamos 'ticketImagePreview' para que sea un contenedor flexible
-      // donde podamos insertar la imagen o el objeto PDF.
-      // En tu HTML, asegúrate de que 'ticketImagePreview' sea el <img> tag.
-      // Y necesitamos un contenedor padre para el <img> y el <embed>/<object>.
-      const ticketImagePreview = document.getElementById('ticketImagePreview'); // El elemento img
-      const mediaViewerContainer = document.getElementById('mediaViewerContainer'); // El div contenedor
+    const ticketImagePreview = document.getElementById('ticketImagePreview'); // El elemento img
+    const mediaViewerContainer = document.getElementById('mediaViewerContainer'); // El div contenedor
 
-      const currentTicketIdDisplay = document.getElementById('currentTicketIdDisplay');
-      const currentImageTypeDisplay = document.getElementById('currentImageTypeDisplay');
-      const approveTicketFromImage = document.getElementById('approveTicketFromImage');
+    const currentTicketIdDisplay = document.getElementById('currentTicketIdDisplay');
+    const currentImageTypeDisplay = document.getElementById('currentImageTypeDisplay');
+    const approveTicketFromImage = document.getElementById('approveTicketFromImage');
 
-      // Instancias de Bootstrap Modal
-      const visualizarImagenModal = new bootstrap.Modal(visualizarImagenModalElement);
-      const imageApprovalModal = new bootstrap.Modal(imageApprovalModalElement);
+    // Instancias de Bootstrap Modal
+    const visualizarImagenModal = new bootstrap.Modal(visualizarImagenModalElement);
 
-      // Listener para abrir el modal desde los botones de la tabla
-      $("#tabla-ticket tbody").on("click", ".view-image-btn", function () {
-          const ticketId = $(this).data("id"); 
-          visualizarImagenModalElement.setAttribute('data-ticket-id', ticketId); 
+    // Event listener para el botón "Aprobar Documento"
+    btnVisualizarImagen.addEventListener('click', function() {
+        const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
+        const ticketId = visualizarImagenModalElement.getAttribute('data-ticket-id');
 
-          // Preseleccionar 'Imagen del Envío' por defecto
-          document.getElementById('imagenEnvio').checked = true;
-          document.getElementById('imagenExoneracion').checked = false;
-          document.getElementById('imagenPago').checked = false;
+        if (!selectedOption) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Selección Requerida',
+                text: 'Por favor, elija un tipo de documento para aprobar.',
+                confirmButtonText: 'Ok',
+                color: 'black',
+                confirmButtonColor: '#003594'
+            });
+            return;
+        }
 
-          visualizarImagenModal.show(); 
-      });
+        // Llamar a la API usando XMLHttpRequest
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    if (data.success) {
+                        const document = data.document;
+                        const filePath = document.file_path;
+                        const mimeType = document.mime_type;
+                        const fileName = document.original_filename;
 
-      // Listener para el botón "Visualizar Imagen" dentro del primer modal
-      btnVisualizarImagen.addEventListener('click', function() {
-          const selectedRadio = document.querySelector('input[name="opcionImagen"]:checked');
-          const ticketId = visualizarImagenModalElement.getAttribute('data-ticket-id');
+                        // Mostrar el documento en el modal de aprobación
+                        showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName);
 
-          // Limpiar el contenido previo del visor antes de cargar nuevo contenido
-          mediaViewerContainer.innerHTML = ''; 
-          ticketImagePreview.style.display = 'none'; // Ocultar la img por defecto
-
-          if (selectedRadio && ticketId) {
-              const selectedImageType = selectedRadio.value;
-              
-              const imageUrlEndpoint = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetImageToAproval`; 
-              const data = `action=GetImageToAproval&ticketId=${ticketId}&imageType=${selectedImageType}`; 
-
-              const xhr = new XMLHttpRequest();
-              xhr.open('POST', imageUrlEndpoint, true);
-              xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-              xhr.responseType = 'blob'; // Es crucial para recibir el archivo binario
-
-              xhr.onload = function() {
-                  if (xhr.status >= 200 && xhr.status < 300) {
-                      const response = xhr.response; 
-                      
-                      if (response instanceof Blob) {
-                          const fileType = response.type;
-                          const objectUrl = URL.createObjectURL(response);
-                          
-                          // Guardar el objectUrl para revocarlo más tarde
-                          imageApprovalModalElement.dataset.currentObjectUrl = objectUrl;
-
-                          if (fileType.startsWith('image/')) {
-
-                            console.log('Blob de imagen recibido:', response);
-                            ticketImagePreview.src = objectUrl;
-                            ticketImagePreview.alt = `Imagen de ${selectedImageType} para Ticket ID: ${ticketId}`;
-                            ticketImagePreview.style.display = 'block'; // Mostrar la imagen
-                            mediaViewerContainer.appendChild(ticketImagePreview); // Asegurarse de que el img esté en el contenedor
-
-                          } else if (fileType === 'application/pdf') {
-
-                          ticketImagePreview.style.display = 'none'; // Ocultar la imagen si es PDF
-                          const pdfViewer = document.createElement('embed');
-                          pdfViewer.src = objectUrl;
-                          pdfViewer.type = 'application/pdf';
-                          pdfViewer.style.width = '100%';
-                          pdfViewer.style.height = '100%';
-                          pdfViewer.alt = `Documento PDF para Ticket ID: ${ticketId}`;
-                          mediaViewerContainer.appendChild(pdfViewer); // Añadir el visor de PDF al contenedor
-
-                          } else if (fileType === 'application/json' || fileType === 'text/plain') {
-                              // Manejar respuestas de error que vienen como JSON o texto
-                              const reader = new FileReader();
-                              reader.onload = function() {
-                                  let errorMessage = 'Error desconocido al obtener el documento.';
-                                  try {
-                                      if (fileType === 'application/json') {
-                                          const errorJson = JSON.parse(reader.result);
-                                          errorMessage = errorJson.message || errorMessage;
-                                          console.error('Error del servidor (JSON parseado desde Blob):', errorMessage, errorJson);
-                                      } else {
-                                          errorMessage = reader.result || errorMessage;
-                                          console.error('Error del servidor (mensaje desde Blob texto):', errorMessage);
-                                      }
-                                  } catch (e) {
-                                      console.error('Error al parsear el contenido del Blob:', e, reader.result);
-                                      errorMessage = `Error al procesar la respuesta del servidor: ${reader.result.substring(0, 100)}...`;
-                                  }
-                                  ticketImagePreview.src = '/public/img/imagen_no_disponible.png';
-                                  ticketImagePreview.alt = `Error: ${errorMessage}`;
-                                  ticketImagePreview.style.display = 'block';
-                                  mediaViewerContainer.appendChild(ticketImagePreview);
-                                  // Eliminar cualquier <embed> previo si existía
-                                  const existingEmbed = mediaViewerContainer.querySelector('embed');
-                                  if (existingEmbed) existingEmbed.remove();
-                              };
-                              reader.onerror = function() {
-                                  console.error('Error al leer el Blob de respuesta.');
-                                  ticketImagePreview.src = '/public/img/imagen_no_disponible.png';
-                                  ticketImagePreview.alt = 'Error al procesar la respuesta del servidor.';
-                                  ticketImagePreview.style.display = 'block';
-                                  mediaViewerContainer.appendChild(ticketImagePreview);
-                              };
-                              reader.readAsText(response); 
-                          } else {
-                              console.error('Tipo de respuesta inesperado del servidor:', fileType, response);
-                              ticketImagePreview.src = '/public/img/imagen_no_disponible.png';
-                              ticketImagePreview.alt = 'Error: Tipo de documento no soportado.';
-                              ticketImagePreview.style.display = 'block';
-                              mediaViewerContainer.appendChild(ticketImagePreview);
-                          }
-                      } else {
-                          console.error('La respuesta no es un Blob:', response);
-                          ticketImagePreview.src = '/public/img/imagen_no_disponible.png';
-                          ticketImagePreview.alt = 'Error: Respuesta inesperada del servidor.';
-                          ticketImagePreview.style.display = 'block';
-                          mediaViewerContainer.appendChild(ticketImagePreview);
-                      }
-                  } else {
-                      console.error(`Error al cargar el documento: HTTP ${xhr.status} ${xhr.statusText}`);
-                      const errorResponseBlob = xhr.response; 
-                      if (errorResponseBlob instanceof Blob) {
-                          const reader = new FileReader();
-                          reader.onload = function() {
-                              let errorMessage = `Error HTTP ${xhr.status}: ${xhr.statusText}`;
-                              try {
-                                  const parsedError = JSON.parse(reader.result);
-                                  if (parsedError && parsedError.message) {
-                                      errorMessage = parsedError.message;
-                                      console.error('Mensaje de error del servidor (JSON de error):', errorMessage);
-                                  } else {
-                                      errorMessage = reader.result; 
-                                      console.error('Mensaje de error del servidor (texto):', errorMessage);
-                                  }
-                              } catch (e) {
-                                  errorMessage = reader.result; 
-                                  console.error('Mensaje de error del servidor (texto crudo):', errorMessage);
-                              }
-                              ticketImagePreview.src = '/public/img/imagen_no_disponible.png';
-                              ticketImagePreview.alt = `Error: ${errorMessage}`;
-                              ticketImagePreview.style.display = 'block';
-                              mediaViewerContainer.appendChild(ticketImagePreview);
-                          };
-                          reader.onerror = function() {
-                              console.error('Error al leer el Blob de error como texto.');
-                              ticketImagePreview.src = '/public/img/imagen_no_disponible.png';
-                              ticketImagePreview.alt = 'Error en la comunicación con el servidor.';
-                              ticketImagePreview.style.display = 'block';
-                              mediaViewerContainer.appendChild(ticketImagePreview);
-                          };
-                          reader.readAsText(errorResponseBlob);
-                      } else {
-                          ticketImagePreview.src = '/public/img/imagen_no_disponible.png';
-                          ticketImagePreview.alt = `Error HTTP ${xhr.status}: ${xhr.statusText}`;
-                          ticketImagePreview.style.display = 'block';
-                          mediaViewerContainer.appendChild(ticketImagePreview);
-                      }
-                  }
-              };
-
-              xhr.onerror = function() {
-                  console.error('Error de red al intentar cargar el documento.');
-                  ticketImagePreview.src = '/public/img/imagen_no_disponible.png';
-                  ticketImagePreview.alt = 'Error de red.';
-                  ticketImagePreview.style.display = 'block';
-                  mediaViewerContainer.appendChild(ticketImagePreview);
-              };
-
-              xhr.send(data);
-
-              currentTicketIdDisplay.textContent = ticketId;
-              currentImageTypeDisplay.textContent = selectedImageType.charAt(0).toUpperCase() + selectedImageType.slice(1);
-              approveTicketFromImage.setAttribute('data-ticket-id', ticketId);
-
-              imageApprovalModal.show(); 
-
-          } else {
-              alert('Por favor, seleccione una opción de imagen y asegúrese de que el ID del ticket esté disponible.');
-          }
-      });
-
-      // Listener para revocar Object URL cuando el modal de aprobación se cierra
-      imageApprovalModalElement.addEventListener('hidden.bs.modal', function () {
-          const currentObjectUrl = imageApprovalModalElement.dataset.currentObjectUrl; // Usamos el nuevo atributo data
-          if (currentObjectUrl) {
-              URL.revokeObjectURL(currentObjectUrl);
-              console.log('Object URL revocada:', currentObjectUrl);
-              delete imageApprovalModalElement.dataset.currentObjectUrl; // Limpiar el atributo data
-
-              // Limpiar el contenido del contenedor del visor
-              mediaViewerContainer.innerHTML = ''; 
-              ticketImagePreview.src = ''; // Asegurar que la imagen también se limpia
-              ticketImagePreview.alt = 'Vista previa del documento'; 
-              ticketImagePreview.style.display = 'none'; // Ocultar el img después de limpiar
-              mediaViewerContainer.appendChild(ticketImagePreview); // Volver a añadir el img para la próxima vez
-          }
-      });
-
-      // Listeners para los botones "Cerrar" (sin cambios significativos aquí)
-      if (closeImageApprovalModalBtn) {
-          closeImageApprovalModalBtn.addEventListener('click', function() {
-              imageApprovalModal.hide();
-          });
-      }
-
-      if (closeImagevisualizarModalBtn) {
-          closeImagevisualizarModalBtn.addEventListener('click', function() {
-              visualizarImagenModal.hide(); 
-
-              // Limpia los radios al cerrar el modal de selección de imagen
-              const radioEnvio = document.getElementById('imagenEnvio');
-              if (radioEnvio) {
-                  radioEnvio.checked = true; 
-                  document.getElementById('imagenExoneracion').checked = false;
-                  document.getElementById('imagenPago').checked = false;
-              }
-          });
-      }
+                        // Ocultar el modal de selección
+                        visualizarImagenModal.hide();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Error al obtener el documento.',
+                            confirmButtonText: 'Ok',
+                            color: 'black',
+                            confirmButtonColor: '#003594'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error al parsear la respuesta JSON:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de Respuesta',
+                        text: 'Error al procesar la respuesta del servidor.',
+                        confirmButtonText: 'Ok',
+                        color: 'black',
+                        confirmButtonColor: '#003594'
+                    });
+                }
+            } else {
+                console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Conexión',
+                    text: `Error HTTP ${xhr.status}: ${xhr.statusText}`,
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#003594'
+                });
+            }
+        };
+        xhr.onerror = function() {
+            console.error('Error de red al intentar cargar el documento.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Red',
+                text: 'Error de conexión con el servidor.',
+                confirmButtonText: 'Ok',
+                color: 'black',
+                confirmButtonColor: '#003594'
+            });
+        };
+        const data = `action=GetDocumentByType&ticketId=${ticketId}&documentType=${selectedOption}`;
+        xhr.send(data);
+    });
 
     // Listener para el botón 'Aprobar Ticket' (si es necesario)
     if (approveTicketFromImage) { 
@@ -508,104 +523,16 @@ document.addEventListener("DOMContentLoaded", getTicketAprovalDocument);
             }
         });
     }
-
-
-    // Listener para limpiar la imagen al cerrar el modal de aprobación
-    imageApprovalModalElement.addEventListener('hidden.bs.modal', function () {
-        ticketImagePreview.src = ''; 
-        ticketImagePreview.alt = 'Imagen de consulta'; 
-    });
 });
 
-// Nota importante: Asegúrate de que el HTML del botón en la tabla use `data-id`
-// como lo estás usando en `$(this).data("id")`.
-// Y el modal debe ser `data-bs-target="#visualizarImagenModal"`
 
-    // Listeners para los botones "Cerrar" de ambos modales
-    // Asegúrate de que los IDs 'closeImageApprovalModalBtn' y 'closeImagevisualizarModalBtn' existan en tu HTML
-    if (closeImageApprovalModalBtn) {
-        closeImageApprovalModalBtn.addEventListener('click', function() {
-            imageApprovalModal.hide();
-        });
-    }
-
-   
-
-    // Aquí irían otros event listeners o funciones relacionados con el frontend.
-    // Por ejemplo, el listener para el botón 'Aprobar Ticket' si lo tienes.
-    approveTicketFromImage.addEventListener('click', function() {
-        const ticketIdToApprove = approveTicketFromImage.getAttribute('data-ticket-id');
-        if (ticketIdToApprove) {
-            // Lógica para aprobar el ticket
-            console.log('Aprobar ticket:', ticketIdToApprove);
-            // Aquí puedes hacer otra llamada AJAX para enviar el estado de aprobación al backend
-            // imageApprovalModal.hide(); // Ocultar el modal después de la aprobación
-        } else {
-            console.error('No se pudo obtener el Ticket ID para aprobar.');
-        }
-    });
-
-
-    // Listener para revocar Object URL cuando el modal de imagen se cierra
-    imageApprovalModalElement.addEventListener('hidden.bs.modal', function () {
-        const currentObjectUrl = ticketImagePreview.dataset.objectUrl;
-        if (currentObjectUrl) {
-            URL.revokeObjectURL(currentObjectUrl);
-            console.log('Object URL revocada:', currentObjectUrl);
-            delete ticketImagePreview.dataset.objectUrl; // Limpiar el atributo data
-            ticketImagePreview.src = ''; // Opcional: limpiar la imagen
-        }
-    });
-
-    // Listeners para los botones "Cerrar" (sin cambios, pero asegúrate de que los IDs existan)
-    if (closeImageApprovalModalBtn) {
-        closeImageApprovalModalBtn.addEventListener('click', function() {
-            imageApprovalModal.hide();
-        });
-    }
-
-
-
-
-    // Opcional: Puedes añadir más lógica aquí para el botón 'Aprobar Ticket' si lo necesitas
-    // approveTicketFromImage.addEventListener('click', function() {
-    //     const ticketIdToApprove = this.getAttribute('data-id');
-    //     // Lógica para aprobar el ticket...
-    //     console.log('Aprobar ticket con ID:', ticketIdToApprove);
-    //     imageApprovalModal.hide(); // Cerrar el modal después de la acción
-    // });
-
-
-    // Puedes añadir más lógica aquí para el botón 'Aprobar Ticket' si lo necesitas
-    // approveTicketFromImage.addEventListener('click', function() {
-    //     const ticketIdToApprove = this.getAttribute('data-id');
-    //     // Lógica para aprobar el ticket...
-    //     console.log('Aprobar ticket con ID:', ticketIdToApprove);
-    //     imageApprovalModal.hide(); // Cerrar el modal después de la acción
-    // });
-
-    approveTicketFromImage.addEventListener('click', function() {
-        const ticketIdToApprove = this.getAttribute('data-id'); 
-
-        if (ticketIdToApprove) {
-            handleTicketApproval(ticketIdToApprove, true); 
-
-            let approvalModalInstance = bootstrap.Modal.getInstance(imageApprovalModal);
-            if (!approvalModalInstance) {
-                approvalModalInstance = new bootstrap.Modal(imageApprovalModal);
-            }
-            approvalModalInstance.hide();
-        } else {
-            console.log('Error: No se pudo obtener el ID del ticket para aprobar.');
-        }
-    });
 
     /**
      * handleTicketApproval(id, approve)
      * Implementación para enviar la solicitud de aprobación/rechazo al servidor.
      */
-    window.handleTicketApproval = function(id, approve) {
-        console.log(`Ticket ${id} ha sido ${approve ? 'APROBADO' : 'RECHAZADO'}.`);
+window.handleTicketApproval = function(id, approve) {
+    console.log(`Ticket ${id} ha sido ${approve ? 'APROBADO' : 'RECHAZADO'}.`);
         
         fetch(`${ENDPOINT_BASE}${APP_PATH}api/tickets/update-status`, {
             method: 'POST', 
@@ -884,9 +811,20 @@ $(document).ready(function () {
 
 function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
+  // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
 
   const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
   const initialImageAlt = "Cargando imagen del dispositivo...";
+
+  // Determina el mensaje de garantía
+  let garantiaMessage = '';
+  if (d.garantia_instalacion !== null && d.garantia_instalacion !== '' && d.garantia_instalacion !== false && d.garantia_instalacion !== 'f') {
+    garantiaMessage = 'Aplica Garantía de Instalación';
+  } else if (d.garantia_reingreso !== null && d.garantia_reingreso !== '' && d.garantia_reingreso !== false && d.garantia_reingreso !== 'f') {
+    garantiaMessage = 'Aplica Garantía por Reingreso';
+  } else {
+    garantiaMessage = 'No aplica Garantía'; // O simplemente dejarlo vacío si no hay garantía
+  }
 
   return `
         <div class="container-fluid">
@@ -901,44 +839,56 @@ function formatTicketDetailsPanel(d) {
                     <hr class="mt-2 mb-3">
                     <div class="row">
                         <div class="col-sm-6 mb-2">
-                            <strong><div>Serial POS:</div></strong>
-                            ${d.serial_pos}
+                          <strong><div>Serial POS:</div></strong>
+                          ${d.serial_pos}
                         </div>
                         <div class="col-sm-6 mb-2">
-                            <strong><div>Estatus POS:</div></strong>
-                            ${d.estatus_inteliservices}
+                          <strong><div>Estatus POS:</div></strong>
+                          ${d.estatus_inteliservices}
                         </div><br>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Fecha Instalación:</div></strong>
-                            ${d.fecha_instalacion}
+                          <br><strong><div>Fecha Instalación:</div></strong>
+                          ${d.fecha_instalacion || 'Sin datos'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Creación ticket:</div></strong>
-                            ${d.create_ticket}
+                          <br><strong><div  style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
+                          ${d.fecha_cierre_anterior || 'Sin datos'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Usuario Gestión:</div></strong>
-                            ${d.full_name_tecnico}
+                          <br><strong><div>Garantía:</div></strong>
+                          <span style="font-weight: bold; color: ${garantiaMessage.includes('Aplica') ? 'red' : 'green'};">${garantiaMessage}</span>
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Creación ticket:</div></strong>
+                          ${d.create_ticket}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Usuario Gestión:</div></strong>
+                          ${d.full_name_tecnico}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Dirección Instalación:</div></strong>
+                          ${d.nombre_estado_cliente || 'Sin datos'}
+                        </div><br>
+                         <div class="col-sm-6 mb-2">
+                            <br><strong><div>Estatus Ticket:</div></strong>
+                            ${d.name_status_ticket}
+                        </div><br>
+                        <br><div class="col-sm-6 mb-2">
+                              <br><strong><div>Falla Reportada:</div></strong>
+                             <span class="falla-reportada-texto">${d.name_failure}</span>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="row mb-3">
+            <div class="row mb-3" style="margin-top: -7%; positipn: relative;">
                 <div class="col-12">
                     <div class="row">
                         <div class="col-sm-4 mb-2">
                             <strong><div>Acción:</div></strong>
                             <span class = "Accion-ticket">${d.name_accion_ticket}</span>
                         </div>
-                         <div class="col-sm-8 mb-2" style = "margin-left: -7%;">
-                          <strong><div>Falla Reportada:</div></strong>
-                          <span class="falla-reportada-texto">${d.name_failure}</span>
-                        </div>
-                        <div class="col-sm-8 mb-2">
-                             <br><strong><div>Estatus Ticket:</div></strong>
-                            ${d.name_status_ticket}
-                        </div>
+                           
                     </div>
                 </div>
             </div>
@@ -1226,4 +1176,113 @@ function loadTicketHistory(ticketId) {
       console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
     },
   });
+}
+
+function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName) {
+  // Obtener elementos del modal de aprobación
+  const imageApprovalModalElement = document.getElementById("imageApprovalModal");
+  const currentTicketIdDisplay = document.getElementById("currentTicketIdDisplay");
+  const currentImageTypeDisplay = document.getElementById("currentImageTypeDisplay");
+  const currentDocumentNameDisplay = document.getElementById("currentNombreDocumento");
+  const ticketImagePreview = document.getElementById("ticketImagePreview");
+  const mediaViewerContainer = document.getElementById("mediaViewerContainer");
+  const closeImageApprovalModalBtn = document.getElementById("closeImageApprovalModalBtn");
+
+
+
+  // Establecer información del ticket
+  currentTicketIdDisplay.textContent = ticketId;
+  currentImageTypeDisplay.textContent = documentType;
+  currentDocumentNameDisplay.textContent = fileName || 'Sin nombre';
+
+  // Función para limpiar la ruta del archivo
+  function cleanFilePath(filePath) {
+    if (!filePath) return null;
+
+    // Reemplazar barras invertidas con barras normales
+    let cleanPath = filePath.replace(/\\/g, '/');
+
+    // Extraer la parte después de 'Documentos_SoportePost/'
+    const pathSegments = cleanPath.split('Documentos_SoportePost/');
+    if (pathSegments.length > 1) {
+      cleanPath = pathSegments[1];
+    }
+
+    // Construir la URL completa
+    return `http://localhost/Documentos/${cleanPath}`;
+  }
+
+  // Limpiar contenedor y mostrar imagen
+  mediaViewerContainer.innerHTML = '';
+  
+  // Asegurarse de que la imagen esté disponible
+  if (ticketImagePreview) {
+    ticketImagePreview.style.display = "none";
+    ticketImagePreview.src = "";
+    ticketImagePreview.alt = "Vista previa del documento";
+  }
+  
+  if (mimeType && mimeType.startsWith('image/')) {
+    // Es una imagen
+    const fullUrl = cleanFilePath(filePath);
+    
+    if (ticketImagePreview) {
+      ticketImagePreview.src = fullUrl;
+      ticketImagePreview.style.display = "block";
+      mediaViewerContainer.appendChild(ticketImagePreview);
+    }
+  } else if (mimeType === 'application/pdf') {
+    // Es un PDF
+    if (ticketImagePreview) {
+      ticketImagePreview.style.display = "none";
+    }
+    const pdfViewer = document.createElement('iframe');
+    pdfViewer.src = cleanFilePath(filePath);
+    pdfViewer.style.width = '100%';
+    pdfViewer.style.height = '100%';
+    pdfViewer.style.border = 'none';
+    mediaViewerContainer.appendChild(pdfViewer);
+  } else {
+    // Tipo de archivo no soportado
+    if (ticketImagePreview) {
+      ticketImagePreview.style.display = "none";
+    }
+    const messageDiv = document.createElement('div');
+    messageDiv.textContent = `Tipo de archivo no soportado: ${mimeType}`;
+    messageDiv.style.color = 'red';
+    messageDiv.style.textAlign = 'center';
+    messageDiv.style.padding = '20px';
+    mediaViewerContainer.appendChild(messageDiv);
+  }
+
+  // Mostrar el modal de aprobación
+  const imageApprovalModal = new bootstrap.Modal(imageApprovalModalElement);
+  
+  // Agregar event listener para el botón de cerrar
+  if (closeImageApprovalModalBtn) {
+    // Remover listeners previos para evitar duplicados
+    closeImageApprovalModalBtn.removeEventListener('click', closeModalHandler);
+    closeImageApprovalModalBtn.addEventListener('click', closeModalHandler);
+  }
+
+  imageApprovalModal.show();
+
+  // Función para cerrar el modal
+  function closeModalHandler() {
+    imageApprovalModal.hide();
+  }
+
+  // Agregar listener para cuando el modal se cierre
+  imageApprovalModalElement.addEventListener('hidden.bs.modal', function() {
+    // Limpiar el contenedor cuando se cierre el modal
+    if (mediaViewerContainer) {
+      mediaViewerContainer.innerHTML = '';
+    }
+    // Restaurar la imagen original
+    if (ticketImagePreview) {
+      ticketImagePreview.style.display = "none";
+      ticketImagePreview.src = "";
+      ticketImagePreview.alt = "Vista previa del documento";
+    }
+  }, { once: true }); // El { once: true } asegura que el listener se ejecute solo una vez
 }
