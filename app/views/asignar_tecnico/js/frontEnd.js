@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const viewDocumentModalInstance = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
   const modalRechazoInstance = new bootstrap.Modal(document.getElementById('modalRechazo'));
   const botonCerrarmotivo = document.getElementById('CerrarModalMotivoRechazo');
+  const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'), {keyboard: false});
 
   // Obtener el botón de rechazo del DOM
   const rechazoDocumentoBtn = document.getElementById('RechazoDocumento');
@@ -33,8 +34,19 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  document.getElementById("confirmarRechazoBtn").addEventListener("click", function() {
+    // Opcional: Obtén el texto del motivo seleccionado para mostrarlo en el modal
+    const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
+    const motivoSeleccionadoTexto = motivoRechazoSelect.options[motivoRechazoSelect.selectedIndex].text;
+
+    document.getElementById("motivoSeleccionadoTexto").textContent = motivoSeleccionadoTexto;
+
+    // Muestra el modal de confirmación
+    confirmarRechazoModal.show();
+  });
+
   if (botonCerrarmotivo) {
-    botonCerrarmotivo.addEventListener('click', function(){
+    botonCerrarmotivo.addEventListener('click', function () {
       // Ocultar el modal de rechazo
       modalRechazoInstance.hide();
     })
@@ -1704,55 +1716,55 @@ function GetRegionUser(id_user) {
 
 // Función adaptada para cargar los motivos
 function getMotivos(documentType) {
-    const xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
 
-    // Muestra un mensaje de carga en el select
-    const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
-    motivoRechazoSelect.innerHTML = '<option value="">Cargando...</option>';
+  // Muestra un mensaje de carga en el select
+  const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
+  motivoRechazoSelect.innerHTML = '<option value="">Cargando...</option>';
 
-    // Aquí cambiamos el endpoint para apuntar a la API de motivos
-    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetMotivos`);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  // Aquí cambiamos el endpoint para apuntar a la API de motivos
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetMotivos`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                    // Apuntamos al select de motivos
-                    const select = document.getElementById("motivoRechazoSelect");
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          // Apuntamos al select de motivos
+          const select = document.getElementById("motivoRechazoSelect");
 
-                    // Limpiamos el select antes de agregar nuevas opciones
-                    select.innerHTML = '<option value="">Seleccione</option>';
+          // Limpiamos el select antes de agregar nuevas opciones
+          select.innerHTML = '<option value="">Seleccione</option>';
 
-                    // La respuesta debe tener un array llamado 'motivos'
-                    if (Array.isArray(response.motivos) && response.motivos.length > 0) {
-                        response.motivos.forEach((motivo) => {
-                            const option = document.createElement("option");
-                            option.value = motivo.id_motivo_rechazo;
-                            option.textContent = motivo.name_motivo_rechazo;
-                            select.appendChild(option);
-                        });
-                    } else {
-                        const option = document.createElement("option");
-                        option.value = "";
-                        option.textContent = "No hay Motivos Disponibles";
-                        select.appendChild(option);
-                    }
-                } else {
-                    console.error("Error al obtener los motivos:", response.message);
-                }
-            } catch (error) {
-                console.error("Error parsing JSON:", error);
-            }
+          // La respuesta debe tener un array llamado 'motivos'
+          if (Array.isArray(response.motivos) && response.motivos.length > 0) {
+            response.motivos.forEach((motivo) => {
+              const option = document.createElement("option");
+              option.value = motivo.id_motivo_rechazo;
+              option.textContent = motivo.name_motivo_rechazo;
+              select.appendChild(option);
+            });
+          } else {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No hay Motivos Disponibles";
+            select.appendChild(option);
+          }
         } else {
-            console.error("Error:", xhr.status, xhr.statusText);
+          console.error("Error al obtener los motivos:", response.message);
         }
-    };
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
 
-    // ¡Aquí se envía el documentType!
-    const datos = `action=GetMotivos&documentType=${documentType}`;
-    xhr.send(datos);
+  // ¡Aquí se envía el documentType!
+  const datos = `action=GetMotivos&documentType=${documentType}`;
+  xhr.send(datos);
 }
 
 // Event listener para el botón que abre el modal y carga los datos

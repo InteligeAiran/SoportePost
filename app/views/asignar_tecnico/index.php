@@ -144,6 +144,29 @@ function mi_navbar() {}
             padding: 10px 20px;
         }
 
+        #CerrarModalMotivoRechazo:hover{
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #confirmarRechazoBtn{
+            color: white;
+            background-color: blue;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #confirmarRechazoBtn:hover{
+            color: white;
+            background-color: red;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
     </style>
 </head>
 
@@ -457,6 +480,27 @@ function mi_navbar() {}
             </div>
         </div>
     <!-- END MODAL PARA SELECCIONAR EL MOTIVO DE RECHAZO -->
+
+    <!-- CONFIRMACION MOTIVO DE RECHAZO -->
+        <div class="modal fade" id="modalConfirmacionRechazo" tabindex="-1" aria-labelledby="modalConfirmacionRechazoLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header bg-gradient-primary">
+                    <h5 class="modal-title" id="modalConfirmacionRechazoLabel">Confirmar Rechazo de Documento</h5>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que deseas **rechazar** el documento?</p>
+                    <p>Esta acción no se puede deshacer.</p>
+                    <p>Motivo seleccionado: <strong id="motivoSeleccionadoTexto"></strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarAccionRechazo">Rechazar</button>
+                </div>
+                </div>
+            </div>
+        </div>
+    <!--END CONFIRMACION MOTIVO DE RECHAZO -->
 
 
     <!--button type="button" class="btn btn-primary" id="reassignTicketBtn" data-ticket-id="2">
