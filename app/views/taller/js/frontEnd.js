@@ -1135,6 +1135,12 @@ function loadTicketHistory(ticketId) {
           // La fila se mostrará solo si la acción del ticket coincide con una de las acciones de rechazo definidas.
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
+          // --- NUEVA LÓGICA PARA COMPONENTES ---
+          // El componente se mostrará en negrita si:
+          // 1. La acción cambió Y es "Actualización de Componentes" Y hay componentes
+          // 2. Los componentes cambiaron Y hay componentes
+          const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
+
           let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
           let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
           const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
@@ -1196,7 +1202,7 @@ function loadTicketHistory(ticketId) {
                                                 ${showComponents ? `
                                                     <tr>
                                                         <th class="text-start">Componentes Asociados:</th>
-                                                        <td class="${componentsChanged ? "highlighted-change" : ""}">${item.components_list}</td>
+                                                        <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${item.components_list}</td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `

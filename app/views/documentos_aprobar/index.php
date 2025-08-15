@@ -280,6 +280,17 @@ function mi_navbar()
             color: white;
         }
 
+        .custom-swal-backdrop {
+            background-color: rgba(0, 0, 0, 0.4) !important;
+            backdrop-filter: blur(8px) !important;
+        }
+
+        .custom-swal-popup {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+        }
     </style>
     </head>
 
@@ -379,7 +390,7 @@ function mi_navbar()
         <!--END MODAL PARA SELECCIONAR LAS ACCIONES PARA VIZUALIZAR LA IMAGEN-->
 
         <!-- MODAL PARA VIZUALIZAR LOS DOCUMENTOS -->
-                       <div class="modal fade" id="imageApprovalModal" tabindex="-1" aria-labelledby="imageApprovalModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal fade" id="imageApprovalModal" tabindex="-1" aria-labelledby="imageApprovalModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header bg-gradient-primary">
@@ -392,7 +403,8 @@ function mi_navbar()
                                 <img id="ticketImagePreview" src="" alt="Vista previa del documento" class="img-fluid" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
                                 </div>
                             <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Nro Ticket: <span id="currentTicketIdDisplay"></span></p>
-                            <p style="color: black;">Tipo de Documento: <span id="currentImageTypeDisplay"></span></p>
+                            <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Tipo de Documento: <span id="currentImageTypeDisplay"></span></p>
+                            <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Serial POS: <span id="currentSerialDisplay"></span></p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" id="closeImageApprovalModalBtn">Cerrar</button>

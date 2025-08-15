@@ -738,5 +738,9 @@ class TechnicalConsultionRepository
         return $result;
     }
 
+    public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type){
+        $result = $this->model->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type);
+        return $result;
+    }
 }
 ?>

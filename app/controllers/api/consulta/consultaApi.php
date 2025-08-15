@@ -262,6 +262,10 @@ class Consulta extends Controller
                     $this->handlerechazarDocumentos();
                     break;
 
+                case 'approve-document':
+                    $this->handleapprovedocument();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -1681,6 +1685,33 @@ class Consulta extends Controller
 
         if ($result) {
             $this->response(['success' => true,'message' => 'El Documento ha sido rechazados correctamente.'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleapprovedocument(){
+        $nro_ticket = isset($_POST['nro_ticket'])? $_POST['nro_ticket'] : '';
+        $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+        $document_type = isset($_POST['document_type'])? $_POST['document_type'] : '';
+        
+        // Log para debug
+        error_log("Datos recibidos - nro_ticket: $nro_ticket, id_ticket: $id_ticket, id_user: $id_user, document_type: $document_type");
+        
+        if (!$id_ticket || !$nro_ticket || !$id_user || !$document_type) {
+            $this->response(['success' => false, 'message' => 'Faltan los datos necesarios.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type);
+
+        // Log del resultado
+        error_log("Resultado de AprobarDocumento: " . ($result ? 'true' : 'false'));
+
+        if ($result) {
+            $this->response(['success' => true,'message' => 'El Documento ha sido aprobado correctamente.'], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }

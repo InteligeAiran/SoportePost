@@ -1,5 +1,200 @@
 let currentSelectedTicket = null;
 
+document.addEventListener('DOMContentLoaded', function() {
+    const approveTicketFromImageBtn = document.getElementById('approveTicketFromImage');
+    
+    if (approveTicketFromImageBtn) {
+        approveTicketFromImageBtn.addEventListener('click', handleTicketApprovalFromImage);
+    }
+});
+
+function handleTicketApprovalFromImage() {
+    const nro_ticket = document.getElementById('currentTicketIdDisplay').textContent;
+    const documentType = document.getElementById('currentImageTypeDisplay').textContent;
+    const serial = document.getElementById('currentSerialDisplay').textContent;
+    const id_ticket = currentTicketIdForImage;
+
+    
+    if (!id_ticket ) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo obtener el ID del ticket.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    if (!documentType) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo obtener el tipo de documento.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    if (!serial) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo obtener el serial del documento.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    if(!nro_ticket) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo obtener el número de ticket.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+
+    Swal.fire({
+        title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+            <div class="custom-modal-header-content">Confirmar Aprobación</div>
+            </div>`,
+        html: `${customWarningSvg}<p class="mt-3" id="textConfirm">¿Está seguro que desea aprobar el Nro ticket <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> asociado al serial <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serial}</span>?`,
+        showCancelButton: true,
+        confirmButtonColor: '#003594',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Aprobar',
+        cancelButtonText: 'Cancelar',
+        color: 'black',
+        focusConfirm: false,
+        allowOutsideClick: false, 
+        allowEscapeKey: false,
+        keydownListenerCapture: true,
+        didOpen: () => {
+            // Aplicar estilos personalizados después de que se abra el modal
+            const backdrop = document.querySelector('.swal2-backdrop-show');
+            const popup = document.querySelector('.swal2-popup');
+            
+            if (backdrop) {
+                backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
+                backdrop.style.backdropFilter = 'blur(8px)';
+            }
+            
+            if (popup) {
+                popup.style.background = 'rgba(255, 255, 255, 0.95)';
+                popup.style.backdropFilter = 'blur(10px)';
+                popup.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+                popup.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3)';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Realizar la aprobación
+            approveTicket(nro_ticket, documentType, id_ticket);
+        }
+    });
+}
+
+// Función para enviar la solicitud de aprobación
+function approveTicket(nro_ticket, documentType, id_ticket) {
+    const id_user = document.getElementById('userId').value;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/approve-document`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    // Mostrar indicador de carga
+    Swal.fire({
+        title: 'Procesando...',
+        text: 'Aprobando documento del ticket',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Aprobado!',
+                        html: `El documento ${documentType} asociado al Nro Ticket <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> ha sido aprobado correctamente.`,
+                        confirmButtonText: 'Ok',
+                        confirmButtonColor: '#003594',
+                        color: 'black'
+                    }).then(() => {
+                       window.location.reload();
+                        
+                        // Recargar la tabla de tickets
+                        if (typeof getTicketAprovalDocument === 'function') {
+                            getTicketAprovalDocument();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message || 'Error al aprobar el documento',
+                        confirmButtonText: 'Ok',
+                        color: 'black',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            } catch (error) {
+                console.error('Error al parsear la respuesta JSON:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Respuesta',
+                    text: 'Error al procesar la respuesta del servidor',
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        } else {
+            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Conexión',
+                text: `Error HTTP ${xhr.status}: ${xhr.statusText}`,
+                confirmButtonText: 'Ok',
+                color: 'black',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error('Error de red al intentar aprobar el ticket');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de Red',
+            text: 'Error de conexión con el servidor',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#dc3545'
+        });
+    };
+
+    // Enviar los datos
+    const data = `action=approve-document&nro_ticket=${encodeURIComponent(nro_ticket)}&document_type=${encodeURIComponent(documentType)}&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}`;
+    xhr.send(data);
+}
+
+
 function getTicketAprovalDocument() {
     const id_user = document.getElementById("userId").value; // Obtener el ID del usuario
 
@@ -79,8 +274,9 @@ function getTicketAprovalDocument() {
                                 const exoneracion = row.exoneracion;
                                 const pago = row.pago;
                                 const nro_ticket = row.nro_ticket;
+                                const serial_pos = row.serial_pos;
                                 return `
-                                    <button class="btn btn-info btn-sm view-image-btn" data-nro-ticket="${nro_ticket}" data-id="${idTicket}" data-envio="${envio}" data-exoneracion="${exoneracion}" data-anticipo="${pago}" data-bs-toggle="modal" data-bs-target="#visualizarImagenModal" title="Visualizar Imágenes">
+                                    <button class="btn btn-info btn-sm view-image-btn" data-serial-pos="${serial_pos}" data-nro-ticket="${nro_ticket}" data-id="${idTicket}" data-envio="${envio}" data-exoneracion="${exoneracion}" data-anticipo="${pago}" data-bs-toggle="modal" data-bs-target="#visualizarImagenModal" title="Visualizar Imágenes">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
                                             <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
                                             <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
@@ -260,6 +456,7 @@ function getTicketAprovalDocument() {
                         $("#tabla-ticket tbody").on("click", ".view-image-btn", function () {
                             const ticketId = $(this).data("id");
                             const nroTicket = $(this).data("nro-ticket");
+                            const serialPos = $(this).data("serial-pos");
                             
                             // Asume que los valores 'Sí' o 'No' están en los data attributes del botón.
                             const envioValor = $(this).data("envio");
@@ -283,10 +480,12 @@ function getTicketAprovalDocument() {
                             // Si al menos una imagen existe, el código continúa aquí.
                             currentTicketIdForImage = ticketId;
                             currentTicketNroForImage = nroTicket;
+                            currentTicketSerialForImage = serialPos;
 
                             const VizualizarImage = document.getElementById('visualizarImagenModal');
                             // Establecer el data-ticket-id en el modal para que esté disponible en el listener del botón
                             VizualizarImage.setAttribute('data-ticket-id', nroTicket);
+                            VizualizarImage.setAttribute('data-serial-pos', serialPos);
                             const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
 
                             const EnvioInputModal = document.getElementById('imagenEnvio');
@@ -411,7 +610,6 @@ function getTicketAprovalDocument() {
 document.addEventListener("DOMContentLoaded", getTicketAprovalDocument);
 
 document.addEventListener('DOMContentLoaded', function () {
-
     const visualizarImagenModalElement = document.getElementById('visualizarImagenModal');
     const closeImagevisualizarModalBtn = document.getElementById('closeImagevisualizarModalBtn');
     const btnVisualizarImagen = document.getElementById('btnVisualizarImagen');
@@ -430,7 +628,8 @@ document.addEventListener('DOMContentLoaded', function () {
     btnVisualizarImagen.addEventListener('click', function() {
         const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
         const ticketId = visualizarImagenModalElement.getAttribute('data-ticket-id');
-
+        const serialPos = visualizarImagenModalElement.getAttribute('data-serial-pos');
+        
         if (!selectedOption) {
             Swal.fire({
                 icon: 'warning',
@@ -459,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         const fileName = document.original_filename;
 
                         // Mostrar el documento en el modal de aprobación
-                        showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName);
+                        showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName, serialPos);
 
                         // Ocultar el modal de selección
                         visualizarImagenModal.hide();
@@ -510,64 +709,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const data = `action=GetDocumentByType&ticketId=${ticketId}&documentType=${selectedOption}`;
         xhr.send(data);
     });
-
-    // Listener para el botón 'Aprobar Ticket' (si es necesario)
-    if (approveTicketFromImage) { 
-        approveTicketFromImage.addEventListener('click', function() {
-            const ticketIdToApprove = this.getAttribute('data-ticket-id'); 
-            if (ticketIdToApprove) {
-                console.log('Aprobar ticket:', ticketIdToApprove);
-                // Implementa aquí la lógica para aprobar el ticket
-            } else {
-                console.error('No se pudo obtener el Ticket ID para aprobar.');
-            }
-        });
-    }
 });
-
-
-
-    /**
-     * handleTicketApproval(id, approve)
-     * Implementación para enviar la solicitud de aprobación/rechazo al servidor.
-     */
-window.handleTicketApproval = function(id, approve) {
-    console.log(`Ticket ${id} ha sido ${approve ? 'APROBADO' : 'RECHAZADO'}.`);
-        
-        fetch(`${ENDPOINT_BASE}${APP_PATH}api/tickets/update-status`, {
-            method: 'POST', 
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-                ticket_id: id, 
-                status: approve ? 'aprobado' : 'rechazado' 
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                alert('Ticket procesado con éxito: ' + data.message);
-                getTicketAprovalDocument(); 
-            } else {
-                alert('Error al procesar ticket: ' + (data.message || 'Mensaje desconocido.'));
-                console.error('Error del servidor:', data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error al enviar la solicitud de aprobación/rechazo:', error);
-            alert('Ocurrió un error al procesar el ticket. Por favor, inténtelo de nuevo.');
-        });
-    };
-
-    // Asegúrate de que 'ENDPOINT_BASE' y 'APP_PATH' estén definidos globalmente.
-    // const ENDPOINT_BASE = "http://localhost/";
-    // const APP_PATH = "my_app/";
 
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -1068,6 +1210,12 @@ function loadTicketHistory(ticketId) {
           // La fila se mostrará solo si la acción del ticket coincide con una de las acciones de rechazo definidas.
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
+          // --- NUEVA LÓGICA PARA COMPONENTES ---
+          // El componente se mostrará en negrita si:
+          // 1. La acción cambió Y es "Actualización de Componentes" Y hay componentes
+          // 2. Los componentes cambiaron Y hay componentes
+          const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
+
           let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
           let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
           const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
@@ -1129,7 +1277,7 @@ function loadTicketHistory(ticketId) {
                                                 ${showComponents ? `
                                                     <tr>
                                                         <th class="text-start">Componentes Asociados:</th>
-                                                        <td class="${componentsChanged ? "highlighted-change" : ""}">${item.components_list}</td>
+                                                        <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${item.components_list}</td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
@@ -1177,8 +1325,7 @@ function loadTicketHistory(ticketId) {
     },
   });
 }
-
-function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName) {
+function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos) {
   // Obtener elementos del modal de aprobación
   const imageApprovalModalElement = document.getElementById("imageApprovalModal");
   const currentTicketIdDisplay = document.getElementById("currentTicketIdDisplay");
@@ -1187,13 +1334,24 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName)
   const ticketImagePreview = document.getElementById("ticketImagePreview");
   const mediaViewerContainer = document.getElementById("mediaViewerContainer");
   const closeImageApprovalModalBtn = document.getElementById("closeImageApprovalModalBtn");
-
-
+  const currentSerialDisplay = document.getElementById("currentSerialDisplay");
+  const approveTicketFromImageBtn = document.getElementById("approveTicketFromImage");
 
   // Establecer información del ticket
   currentTicketIdDisplay.textContent = ticketId;
   currentImageTypeDisplay.textContent = documentType;
   currentDocumentNameDisplay.textContent = fileName || 'Sin nombre';
+  currentSerialDisplay.textContent = serialPos || 'Sin posición';
+
+  // Controlar la visibilidad del botón de aprobar basado en el tipo de documento
+  if (approveTicketFromImageBtn) {
+    const allowedTypes = ['Exoneracion', 'Anticipo']; // Tipos que permiten aprobación
+    if (allowedTypes.includes(documentType)) {
+      approveTicketFromImageBtn.style.display = 'block';
+    } else {
+      approveTicketFromImageBtn.style.display = 'none';
+    }
+  }
 
   // Función para limpiar la ruta del archivo
   function cleanFilePath(filePath) {
