@@ -606,22 +606,22 @@ function mi_navbar() {}
                         <h5 class="modal-title" id="visualizarImagenModalLabel">Seleccione la imagen que desea visualizar:</h5>
                     </div>
                     <div class="modal-body">
-                        <div class="form-check">
+                        <div class="form-check"><br>
                             <input class="form-check-input" type="radio" name="opcionImagen" id="imagenEnvio" value="Envio" checked>
                             <label class="form-check-label" for="imagenEnvio" id = "labelEnvio">
-                                Imagen del Envío
+                                Documento de Envío
                             </label>
                         </div>
-                        <div class="form-check">
+                        <div class="form-check"><br>
                             <input class="form-check-input" type="radio" name="opcionImagen" id="imagenExoneracion" value="Exoneracion">
                             <label class="form-check-label" for="imagenExoneracion" id = "labelExo">
-                                Imagen de Exoneración
+                                Documento de Exoneración
                             </label>
                         </div>
-                        <div class="form-check">
+                        <div class="form-check"><br>
                             <input class="form-check-input" type="radio" name="opcionImagen" id="imagenPago" value="Anticipo">
                             <label class="form-check-label" for="imagenPago" id="labelPago">
-                                Imagen de Pago
+                                Documento de Pago
                             </label>
                         </div>
                     </div>

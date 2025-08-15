@@ -291,6 +291,52 @@ function mi_navbar()
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
         }
+
+       #CartWrong {
+            background-image: linear-gradient(310deg, #2b6cb0 0%, #805ad5 100%);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #CartWrong strong {
+            font-weight: bold;
+        }
+
+        .alert-heading{
+            font-size: 144%;
+            text-align: center;
+        }
+
+        #CerrarBoton{
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 13px;
+            margin-left: 1rem;
+        }
+
+        #CerrarBoton:hover{
+            background-color: red;
+            color: white;
+        }
+
+        #uploadFileBtn{
+            background-color: #003594;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 13px;
+        }
+
+        #uploadFileBtn:hover{
+            background-color: green;
+            color: white;
+        }
     </style>
     </head>
 
@@ -353,6 +399,44 @@ function mi_navbar()
             </div>
         </main>
 
+        <!--MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
+            <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-gradient-primary">
+                            <strong>
+                                <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
+                                    Documento para el Nro Ticket: <span id="modalTicketId"></span></h5>
+                                <input type="hidden" id="id_ticket"></input>
+                            </strong>
+                        </div>
+                        <div class="modal-body">
+                            <form id="uploadForm">
+                                <div class="mb-3">
+                                    <label for="documentFile" class="form-label text-gray-700">Seleccionar Archivo:</label>
+                                    <input class="form-control" type="file" id="documentFile" accept="image/*,application/pdf"
+                                        style="display:block">
+                                    <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
+                                </div>
+                                <div class="mb-3 text-center" style="max-height: 50vh; overflow-y: auto;">
+                                    <img id="imagePreview" class="img-fluid img-preview" src="#" alt="Previsualización de Imagen" style="display: none;">
+                                </div>
+                                <div id="uploadMessage" class="message-box hidden"></div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" id="CerrarBoton" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
+                            <!-- INPUT DONDE GUARDO VARIABLES -->
+                            <input type="hidden" id="id_ticket" value=""></div>
+                            <input type="hidden" id="document_type" value=""></div>
+                            <input type="hidden" id="nro_ticket" value=""></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <!-- END MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
+
         <!--MODAL PARA SELECCIONAR LAS ACCIONES PARA VIZUALIZAR LA IMAGEN-->
             <div class="modal fade" id="visualizarImagenModal" tabindex="-1" aria-labelledby="visualizarImagenModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog">
@@ -364,19 +448,19 @@ function mi_navbar()
                         <div class="form-check">
                         <input class="form-check-input" type="radio" name="opcionImagen" id="imagenEnvio" value="Envio" checked>
                         <label class="form-check-label" for="imagenEnvio" id = "labelEnvio">
-                            Imagen del Envío
+                            Documento de Envío
                         </label>
                         </div>
                         <div class="form-check">
                         <input class="form-check-input" type="radio" name="opcionImagen" id="imagenExoneracion" value="Exoneracion">
                         <label class="form-check-label" for="imagenExoneracion" id = "labelExo">
-                            Imagen de Exoneración
+                            Documento de Exoneración
                         </label>
                         </div>
                         <div class="form-check">
                         <input class="form-check-input" type="radio" name="opcionImagen" id="imagenPago" value="Anticipo">
                         <label class="form-check-label" for="imagenPago" id="labelPago">
-                            Imagen de Pago
+                            Documento de Pago
                         </label>
                         </div>
                     </div>

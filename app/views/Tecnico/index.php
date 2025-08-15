@@ -377,7 +377,7 @@ function mi_navbar()
             </div>
         <!--MODAL PARA SELECCIONAR TECNICO-->
 
-         <!--MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
+        <!--MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
             <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">

@@ -194,7 +194,6 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
     xhr.send(data);
 }
 
-
 function getTicketAprovalDocument() {
     const id_user = document.getElementById("userId").value; // Obtener el ID del usuario
 
@@ -216,12 +215,16 @@ function getTicketAprovalDocument() {
     // Asumiendo que 'viewDocumentsBtn' es un botón fuera de la tabla si lo usas
     const viewDocumentsBtn = document.getElementById("viewDocumentsBtn"); 
 
-    // Actualiza columnTitles con las nuevas columnas
+    // Actualiza columnTitles con las nuevas columnas disponibles
     const columnTitles = {
-        id_ticket: "ID Ticket",
         nro_ticket: "Nro Ticket",
         serial_pos: "Serial POS",
         name_status_payment: "Estatus Pago",
+        // NUEVAS COLUMNAS DISPONIBLES
+        document_type: "Tipo Documento",
+        original_filename: "Nombre Archivo",
+        motivo_rechazo: "Motivo Rechazo",
+        uploaded_at: "Fecha Subida"
     };
 
     xhr.onload = function () {
@@ -241,6 +244,17 @@ function getTicketAprovalDocument() {
 
                         const allDataKeys = Object.keys(TicketData[0] || {});
                         const columnsConfig = [];
+
+                        // --- AGREGAR COLUMNA DE NUMERACIÓN AL PRINCIPIO ---
+                        columnsConfig.push({
+                            title: "N°",
+                            orderable: false,
+                            searchable: false,
+                            render: function (data, type, row, meta) {
+                                return meta.row + meta.settings._iDisplayStart + 1;
+                            },
+                        });
+                        // --- FIN DE COLUMNA DE NUMERACIÓN ---
 
                         for (const key in columnTitles) {
                             if (allDataKeys.includes(key)) {
@@ -275,15 +289,58 @@ function getTicketAprovalDocument() {
                                 const pago = row.pago;
                                 const nro_ticket = row.nro_ticket;
                                 const serial_pos = row.serial_pos;
-                                return `
-                                    <button class="btn btn-info btn-sm view-image-btn" data-serial-pos="${serial_pos}" data-nro-ticket="${nro_ticket}" data-id="${idTicket}" data-envio="${envio}" data-exoneracion="${exoneracion}" data-anticipo="${pago}" data-bs-toggle="modal" data-bs-target="#visualizarImagenModal" title="Visualizar Imágenes">
+                                
+                                // NUEVAS COLUMNAS DISPONIBLES
+                                const documentType = row.document_type;
+                                const originalFilename = row.original_filename;
+                                const motivoRechazo = row.motivo_rechazo;
+                                const uploadedAt = row.uploaded_at;
+                                const idMotivoRechazo = row.id_motivo_rechazo;
+                                
+                                // Determinar si es un documento rechazado
+                                const isRejected = idMotivoRechazo !== null && motivoRechazo !== null;
+                                
+                                let actionButtons = `
+                                    <button class="btn btn-info btn-sm view-image-btn" 
+                                            data-serial-pos="${serial_pos}" 
+                                            data-nro-ticket="${nro_ticket}" 
+                                            data-id="${idTicket}" 
+                                            data-envio="${envio}" 
+                                            data-exoneracion="${exoneracion}" 
+                                            data-anticipo="${pago}"
+                                            data-document-type="${documentType || ''}"
+                                            data-original-filename="${originalFilename || ''}"
+                                            data-motivo-rechazo="${motivoRechazo || ''}"
+                                            data-uploaded-at="${uploadedAt || ''}"
+                                            data-id-motivo-rechazo="${idMotivoRechazo || ''}"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#visualizarImagenModal" 
+                                            title="Visualizar Imágenes">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
                                             <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
                                             <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
                                         </svg>
                                     </button>
                                 `;
-                                // El botón de aprobación estará en el modal de visualización de imagen
+                                
+                                // Si es un documento rechazado, agregar botón para subir nuevo documento
+                                if (isRejected) {
+                                    actionButtons += `
+                                        <button class="btn btn-warning btn-sm upload-new-doc-btn ms-1" 
+                                                data-id="${idTicket}" 
+                                                data-nro-ticket="${nro_ticket}" 
+                                                data-serial-pos="${serial_pos}"
+                                                data-document-type="${documentType || ''}"
+                                                data-motivo-rechazo="${motivoRechazo || ''}"
+                                                title="Subir Nuevo Documento">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
+                                                <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
+                                            </svg>
+                                        </button>
+                                    `;
+                                }
+                                
+                                return actionButtons;
                             },
                         });
                         // --- FIN DE AÑADIR COLUMNA ---
@@ -293,7 +350,7 @@ function getTicketAprovalDocument() {
                             scrollX: "200px",
                             data: TicketData,
                             columns: columnsConfig,
-                            order: [[0, 'desc']], // Ordenar por ID del ticket descendente (más nuevo primero)
+                            order: [[1, 'desc']], // Cambiar a [1, 'desc'] porque ahora la columna 0 es N°
                             pagingType: "simple_numbers",
                             lengthMenu: [5, 10, 25, 50, 100],
                             autoWidth: false,
@@ -315,7 +372,7 @@ function getTicketAprovalDocument() {
                                 },
                             },
                             dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-                                initComplete: function (settings, json) {
+                            initComplete: function (settings, json) {
                                 // Dentro de initComplete, 'this' se refiere a la tabla jQuery
                                 // y 'this.api()' devuelve la instancia de la API de DataTables.
                                 const api = this.api(); // <--- Correcto: Obtener la instancia de la API aquí
@@ -324,22 +381,21 @@ function getTicketAprovalDocument() {
                                 // o en un script que se ejecuta después de que la tabla está lista.
                                 const buttonsHtml = `
                                     <button id="btn-por-asignar" class="btn btn-primary me-2" title="Pendientes por revisión Documentos">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/>
-                                    </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                        </svg>
                                     </button>
 
                                     <button id="btn-recibidos" class="btn btn-secondary me-2" title="Pendiente por cargar Documentos">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                                        <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                                    </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
+                                            <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
+                                        </svg>
                                     </button>
 
                                     <button id="btn-asignados" class="btn btn-secondary me-2" title="Documentos Rechazados">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                                    </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                                        </svg>
                                     </button>
                                 `;
                                 $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
@@ -397,6 +453,17 @@ function getTicketAprovalDocument() {
                                     setActiveButton("btn-asignados");
                                 });    
                             },
+                        });
+
+                        // Event listener para subir nuevo documento (NUEVO)
+                        $("#tabla-ticket tbody").on("click", ".upload-new-doc-btn", function () {
+                            const ticketId = $(this).data("id");
+                            const nroTicket = $(this).data("nro-ticket");
+                            const serialPos = $(this).data("serial-pos");
+                            const documentType = $(this).data("document-type");
+                            const motivoRechazo = $(this).data("motivo-rechazo");
+                            
+                            showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType, motivoRechazo);
                         });
 
                         $("#tabla-ticket tbody")
@@ -551,6 +618,16 @@ function getTicketAprovalDocument() {
                             viewDocumentsBtn.style.display = "none";
                         }
                     }
+
+                    $("#tabla-ticket tbody").on("click", ".upload-new-doc-btn", function () {
+                        const ticketId = $(this).data("id");
+                        const nroTicket = $(this).data("nro-ticket");
+                        const serialPos = $(this).data("serial-pos");
+                        const documentType = $(this).data("document-type");
+                        const motivoRechazo = $(this).data("motivo-rechazo");
+                        
+                        showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType, motivoRechazo);
+                    });
                 } else {
                     if (tableContainer) {
                         tableContainer.innerHTML =
@@ -608,6 +685,188 @@ function getTicketAprovalDocument() {
 }
 
 document.addEventListener("DOMContentLoaded", getTicketAprovalDocument);
+
+function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType, motivoRechazo) {
+    // Obtener elementos del modal
+    const modal = document.getElementById('uploadDocumentModal');
+    const modalTicketIdSpan = document.getElementById('modalTicketId');
+    const idTicketInput = document.getElementById('id_ticket');
+    const documentFileInput = document.getElementById('documentFile');
+    const imagePreview = document.getElementById('imagePreview');
+    const uploadMessage = document.getElementById('uploadMessage');
+    const uploadFileBtn = document.getElementById('uploadFileBtn');
+    const cerrarBoton = document.getElementById('CerrarBoton');
+    const uploadForm = document.getElementById('uploadForm');
+    const DocumentTypeInput = document.getElementById('document_type');
+    const nro_ticket = document.getElementById('nro_ticket');
+
+    // Verificar que todos los elementos necesarios existan
+    if (!modal || !modalTicketIdSpan || !idTicketInput || !documentFileInput || 
+        !imagePreview || !uploadMessage || !uploadFileBtn || !cerrarBoton || !uploadForm) {
+        console.error('Elementos del modal no encontrados:', {
+            modal: !!modal,
+            modalTicketIdSpan: !!modalTicketIdSpan,
+            idTicketInput: !!idTicketInput,
+            documentFileInput: !!documentFileInput,
+            imagePreview: !!imagePreview,
+            uploadMessage: !!uploadMessage,
+            uploadFileBtn: !!uploadFileBtn,
+            cerrarBoton: !!cerrarBoton,
+            uploadForm: !!uploadForm
+        });
+        
+        Swal.fire({
+            icon: 'error',
+            title: 'Error del Modal',
+            text: 'No se pudo cargar el modal de subida de documentos. Verifique que todos los elementos estén disponibles.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#dc3545'
+        });
+        return;
+    }
+
+    // Limpiar formulario anterior
+    uploadForm.reset();
+    imagePreview.style.display = 'none';
+    uploadMessage.innerHTML = '';
+    uploadMessage.classList.add('hidden');
+
+    // Establecer información del ticket
+    modalTicketIdSpan.textContent = nroTicket;
+    idTicketInput.value = ticketId;
+    DocumentTypeInput.value = documentType;
+
+
+    // Mostrar información del documento rechazado
+    const infoHtml = `
+        <div class="alert mb-3" id = "CartWrong" role="alert">
+            <h6 class="alert-heading">Documento Rechazado</h6>
+            <p class="mb-1"><strong>Serial POS:</strong> ${serialPos}</p>
+            <p class="mb-1"><strong>Tipo de Documento:</strong> ${documentType || 'No especificado'}</p>
+            <p class="mb-0"><strong>Motivo de Rechazo:</strong> <span class="motivo-rechazo-highlight">${motivoRechazo || 'No especificado'}</span></p>
+        </div>
+    `;
+    
+    // Insertar la información antes del formulario
+    const existingInfo = uploadForm.querySelector('#CartWrong');
+    if (existingInfo) {
+        existingInfo.remove();
+    }
+    uploadForm.insertAdjacentHTML('afterbegin', infoHtml);
+
+    // Mostrar el modal
+    const bootstrapModal = new bootstrap.Modal(modal);
+    bootstrapModal.show();
+
+    // Event listener para previsualización de imagen
+    const handleFileChange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Validar tipo de archivo
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
+            if (!allowedTypes.includes(file.type)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Tipo de archivo no permitido',
+                    text: 'Solo se permiten imágenes (JPG, PNG, GIF) o PDF.',
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#003594'
+                });
+                this.value = '';
+                imagePreview.style.display = 'none';
+                return;
+            }
+
+            // Validar tamaño del archivo (10MB máximo)
+            const maxSize = 10 * 1024 * 1024; // 10MB en bytes
+            if (file.size > maxSize) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Archivo demasiado grande',
+                    text: 'El archivo excede el tamaño máximo permitido de 10MB.',
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#003594'
+                });
+                this.value = '';
+                imagePreview.style.display = 'none';
+                return;
+            }
+
+            // Mostrar previsualización si es imagen
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // Si es PDF, ocultar previsualización
+                imagePreview.style.display = 'none';
+            }
+
+            // Habilitar botón de subida
+            uploadFileBtn.disabled = false;
+        } else {
+            imagePreview.style.display = 'none';
+            uploadFileBtn.disabled = true;
+        }
+    };
+
+    // Event listener para el botón de subida
+    const handleUploadClick = function() {
+        const file = documentFileInput.files[0];
+        if (!file) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Archivo requerido',
+                text: 'Por favor seleccione un archivo para subir.',
+                confirmButtonText: 'Ok',
+                color: 'black',
+                confirmButtonColor: '#003594'
+            });
+            return;
+        }
+
+        // Mostrar indicador de carga
+        Swal.fire({
+            title: 'Subiendo documento...',
+            text: 'Por favor espere mientras se procesa el archivo.',
+            allowOutsideClick: false,
+            color: 'black',
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+    }
+    // Event listener para cerrar modal
+    const handleCerrarClick = function() {
+        bootstrapModal.hide();
+    };
+
+    // Agregar event listeners
+    documentFileInput.addEventListener('change', handleFileChange);
+    uploadFileBtn.addEventListener('click', handleUploadClick);
+    cerrarBoton.addEventListener('click', handleCerrarClick);
+
+    // Limpiar al cerrar el modal
+    modal.addEventListener('hidden.bs.modal', function() {
+        // Remover event listeners
+        documentFileInput.removeEventListener('change', handleFileChange);
+        uploadFileBtn.removeEventListener('click', handleUploadClick);
+        cerrarBoton.removeEventListener('click', handleCerrarClick);
+        
+        // Limpiar formulario
+        uploadForm.reset();
+        imagePreview.style.display = 'none';
+        uploadMessage.innerHTML = '';
+        uploadMessage.classList.add('hidden');
+    });
+}
 
 document.addEventListener('DOMContentLoaded', function () {
     const visualizarImagenModalElement = document.getElementById('visualizarImagenModal');
@@ -711,7 +970,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-
 document.addEventListener("DOMContentLoaded", function () {
   // Obtén las referencias a los elementos del DOM que SÍ ESTÁN PRESENTES AL CARGAR LA PÁGINA
   const cerrarBoton = document.getElementById("CerrarBoton");
@@ -778,178 +1036,238 @@ $(document).ready(function () {
   const $uploadMessage = $("#uploadMessage");
 
 
-  // Función para mostrar mensajes
-  function showMessage(message, type) {
-    // Asegúrate de que el elemento existe antes de manipularlo
-    if ($uploadMessage.length) {
-      $uploadMessage.text(message);
-      $uploadMessage
-        .removeClass()
-        .addClass(
-          `message-box mt-2 p-2 rounded text-sm ${
-            type === "success"
-              ? "bg-green-100 text-green-700"
-              : type === "error"
-              ? "bg-red-100 text-red-700"
-              : "bg-blue-100 text-blue-700"
-          }`
+    // Función para mostrar mensajes
+    function showMessage(message, type) {
+        // Asegúrate de que el elemento existe antes de manipularlo
+        if ($uploadMessage.length) {
+        $uploadMessage.text(message);
+        $uploadMessage
+            .removeClass()
+            .addClass(
+            `message-box mt-2 p-2 rounded text-sm ${
+                type === "success"
+                ? "bg-green-100 text-green-700"
+                : type === "error"
+                ? "bg-red-100 text-red-700"
+                : "bg-blue-100 text-blue-700"
+            }`
+            );
+        $uploadMessage.show(); // Asegúrate de que el mensaje sea visible
+        }
+    }
+
+    // 2. Comprobar si el elemento del modal existe antes de crear la instancia
+    // Esta instancia del modal debe crearse UNA VEZ, fuera del listener de clic,
+    // pero dentro del $(document).ready
+    let uploadDocumentModalInstance; // Declara la variable para la instancia del modal
+
+    if ($uploadDocumentModalElement.length) {
+        uploadDocumentModalInstance = new bootstrap.Modal(
+            $uploadDocumentModalElement[0]
+        ); // Crea la instancia de Bootstrap Modal
+    }
+
+    // 3. Listener para el clic en los botones "Subir Documento" en la tabla
+    // Usamos delegación de eventos con $(document).on('click', ...)
+    // para los botones generados dinámicamente por DataTables.
+    $(document).on("click", ".upload-document-btn", function () {
+        // Verifica si la instancia del modal se creó correctamente
+        if (uploadDocumentModalInstance) {
+        const idTicket = $(this).data("id-ticket"); // Obtiene data-id-ticket del botón clicado
+
+        // Rellena el modal con los datos del ticket
+        if ($modalTicketIdSpan.length) $modalTicketIdSpan.text(idTicket);
+
+        // Limpia campos del modal
+        if ($documentFileInput.length) $documentFileInput.val("");
+        if ($imagePreview.length) {
+            $imagePreview.hide();
+            $imagePreview.attr("src", "#"); // Limpiar src de la imagen
+        }
+        if ($uploadMessage.length) {
+            $uploadMessage.text("");
+            $uploadMessage.hide(); // Ocultar mensaje
+        }
+
+        // ABRIR EL MODAL EXPLICITAMENTE
+        uploadDocumentModalInstance.show();
+        } else {
+        console.error(
+            "Error: Instancia de modal 'uploadDocumentModal' no encontrada. Asegúrate de que el elemento HTML del modal existe y Bootstrap JS está cargado."
         );
-      $uploadMessage.show(); // Asegúrate de que el mensaje sea visible
-    }
-  }
+        }
+    });
 
-  // 2. Comprobar si el elemento del modal existe antes de crear la instancia
-  // Esta instancia del modal debe crearse UNA VEZ, fuera del listener de clic,
-  // pero dentro del $(document).ready
-  let uploadDocumentModalInstance; // Declara la variable para la instancia del modal
+    // 4. Previsualización de la imagen seleccionada (ya estaba bien estructurado)
+    if ($documentFileInput.length) {
+        $documentFileInput.on("change", function () {
+        const file = this.files[0];
 
-  if ($uploadDocumentModalElement.length) {
-    uploadDocumentModalInstance = new bootstrap.Modal(
-      $uploadDocumentModalElement[0]
-    ); // Crea la instancia de Bootstrap Modal
-  }
-
-  // 3. Listener para el clic en los botones "Subir Documento" en la tabla
-  // Usamos delegación de eventos con $(document).on('click', ...)
-  // para los botones generados dinámicamente por DataTables.
-  $(document).on("click", ".upload-document-btn", function () {
-    // Verifica si la instancia del modal se creó correctamente
-    if (uploadDocumentModalInstance) {
-      const idTicket = $(this).data("id-ticket"); // Obtiene data-id-ticket del botón clicado
-
-      // Rellena el modal con los datos del ticket
-      if ($modalTicketIdSpan.length) $modalTicketIdSpan.text(idTicket);
-
-      // Limpia campos del modal
-      if ($documentFileInput.length) $documentFileInput.val("");
-      if ($imagePreview.length) {
-        $imagePreview.hide();
-        $imagePreview.attr("src", "#"); // Limpiar src de la imagen
-      }
-      if ($uploadMessage.length) {
-        $uploadMessage.text("");
-        $uploadMessage.hide(); // Ocultar mensaje
-      }
-
-      // ABRIR EL MODAL EXPLICITAMENTE
-      uploadDocumentModalInstance.show();
-    } else {
-      console.error(
-        "Error: Instancia de modal 'uploadDocumentModal' no encontrada. Asegúrate de que el elemento HTML del modal existe y Bootstrap JS está cargado."
-      );
-    }
-  });
-
-  // 4. Previsualización de la imagen seleccionada (ya estaba bien estructurado)
-  if ($documentFileInput.length) {
-    $documentFileInput.on("change", function () {
-      const file = this.files[0];
-
-      if (file) {
-        if (file.type.startsWith("image/") || file.type === "application/pdf") {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            if (file.type.startsWith("image/")) {
-              $imagePreview.attr("src", e.target.result);
-              $imagePreview.show();
+        if (file) {
+            if (file.type.startsWith("image/") || file.type === "application/pdf") {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    if (file.type.startsWith("image/")) {
+                    $imagePreview.attr("src", e.target.result);
+                    $imagePreview.show();
+                    } else {
+                    $imagePreview.hide();
+                    $imagePreview.attr("src", "#");
+                    showMessage(
+                        "Archivo PDF seleccionado. No se muestra previsualización.",
+                        "info"
+                    );
+                    }
+                };
+                reader.readAsDataURL(file);
+                $uploadMessage.hide(); // Limpiar mensajes si el archivo es válido
+                } else {
+                $documentFileInput.val("");
+                $imagePreview.attr("src", "#");
+                showMessage(
+                    "Tipo de archivo no permitido. Solo imágenes (JPG, PNG, GIF) o PDF.",
+                    "error"
+                );
+                }
             } else {
-              $imagePreview.hide();
-              $imagePreview.attr("src", "#");
-              showMessage(
-                "Archivo PDF seleccionado. No se muestra previsualización.",
-                "info"
-              );
+                $imagePreview.hide();
+                $imagePreview.attr("src", "#");
+                $uploadMessage.hide();
             }
-          };
-          reader.readAsDataURL(file);
-          $uploadMessage.hide(); // Limpiar mensajes si el archivo es válido
-        } else {
-          $documentFileInput.val("");
-          $imagePreview.attr("src", "#");
-          showMessage(
-            "Tipo de archivo no permitido. Solo imágenes (JPG, PNG, GIF) o PDF.",
-            "error"
-          );
-        }
-      } else {
-        $imagePreview.hide();
-        $imagePreview.attr("src", "#");
-        $uploadMessage.hide();
-      }
-    });
-  }
-
-  // 5. Evento para el botón de subir archivo (dentro del modal)
-  if ($uploadFileBtn.length) {
-    $uploadFileBtn.on("click", async function () {
-      const file = $documentFileInput[0].files[0];
-      const idTicket = $modalTicketIdSpan.text();
-
-      if (!file) {
-        showMessage("Por favor, seleccione un archivo para subir.", "error");
-        return;
-      }
-
-      showMessage("Subiendo documento...", "info");
-
-      const formData = new FormData();
-      formData.append("ticket_id", idTicket);
-      formData.append("document_file", file);
-      // *** AÑADIR EL MIME TYPE DEL ARCHIVO AL formData ***
-      formData.append("mime_type", file.type);
-      formData.append("action", "uploadDocument"); // Ya estaba aquí, pero se mantiene para la claridad
-
-      try {
-        const uploadUrl = `${ENDPOINT_BASE}${APP_PATH}api/reportes/uploadDocument`;
-
-        const response = await fetch(uploadUrl, {
-          method: "POST",
-          body: formData,
         });
+    }
 
-        const result = await response.json();
+    if ($uploadFileBtn.length) {
+        $uploadFileBtn.on("click", function () {
+            const id_user = document.getElementById("userId").value;
+            const documentFileInput = document.getElementById("documentFile");
+            const uploadMessage = document.getElementById("uploadMessage");
+            const file = documentFileInput.files[0];
+            const id_ticket = document.getElementById("id_ticket").value;
+            const documentType = document.getElementById("document_type").value;
 
-        if (response.ok && result.success) {
-          showMessage("Documento subido exitosamente!", "success");
-          if (uploadDocumentModalInstance) {
-            // Usar la instancia creada previamente
-            uploadDocumentModalInstance.hide();
-          }
-          // Opcional: $('#tuTablaID').DataTable().ajax.reload();
-        } else {
-          showMessage(
-            `Error al subir documento: ${
-              result.message || "Error desconocido."
-            }`,
-            "error"
-          );
+            // Clear previous messages and check for file
+            uploadMessage.classList.add("hidden");
+            uploadMessage.textContent = "";
+
+            if (!file) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '¡Advertencia!',
+                    text: 'Por favor, selecciona un archivo antes de continuar.',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#003594',
+                    color: 'black',
+                });
+                return;
+            }
+
+            // 1. Create a FormData object to handle the file upload.
+            const formData = new FormData();
+            formData.append("action", "uploadDocument");
+            formData.append("ticket_id", id_ticket);           // Tu API espera "ticket_id"
+            formData.append("document_type", documentType);    // Tu API espera "document_type"
+            formData.append("document_file", file);            // Tu API espera "document_file"
+            formData.append("id_user", id_user);               // Tu API espera "id_user"
+            formData.append("nro_ticket", $modalTicketIdSpan.text());
+
+            const xhr = new XMLHttpRequest();
+            const url = `${ENDPOINT_BASE}${APP_PATH}api/reportes/uploadDocumentnNew`;
+
+            xhr.open("POST", url);
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    let result;
+                    try {
+                        result = JSON.parse(xhr.responseText);
+                    } catch (e) {
+                        result = { success: false, message: 'Error de respuesta del servidor.' };
+                    }
+
+                    if (xhr.status === 200 && result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: result.message,
+                            confirmButtonColor: '#003594',
+                            confirmButtonText: 'OK',
+                            color: 'black',
+                        }).then(() => {
+                        location.reload();
+                    });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: result.message || 'Error al subir el documento.',
+                            confirmButtonColor: '#003594',
+                        });
+                    }
+                }
+            };
+            
+            xhr.onerror = function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de red',
+                    text: 'Error de red o del servidor al subir el documento.',
+                    confirmButtonColor: '#003594',
+                });
+            }
+
+            // 4. Send the FormData object.
+            xhr.send(formData);
+        });
+    }
+
+    // Función para obtener el ID del usuario actual
+    function getCurrentUserId() {
+        // Opción 1: Si tienes un elemento hidden en el HTML
+        const userIdElement = document.getElementById('userId');
+        if (userIdElement) {
+            return userIdElement.value;
         }
-      } catch (error) {
-        console.error("Error en la subida:", error);
-        showMessage("Error de conexión al subir el documento.", "error");
-      }
-    });
-  }
+        
+        // Opción 2: Si tienes una variable global
+        if (typeof currentUserId !== 'undefined') {
+            return currentUserId;
+        }
+        
+        // Opción 3: Si tienes un atributo data en algún elemento
+        const userElement = document.querySelector('[data-user-id]');
+        if (userElement) {
+            return userElement.getAttribute('data-user-id');
+        }
+        
+        // Opción 4: Si tienes localStorage
+        if (localStorage.getItem('userId')) {
+            return localStorage.getItem('userId');
+        }
+        
+        // Si no se encuentra, mostrar error
+        console.error("No se pudo obtener el ID del usuario");
+        showMessage("Error: No se pudo identificar al usuario.", "error");
+        return null;
+    }
 
-  // 6. Evento que se dispara cuando el modal se ha ocultado completamente
-  if ($uploadDocumentModalElement.length) {
-    $uploadDocumentModalElement.on("hidden.bs.modal", function () {
-      // Limpiar todo después de que el modal se oculta
-      if ($modalTicketIdSpan.length) $modalTicketIdSpan.text("");
-      if ($documentFileInput.length) $documentFileInput.val("");
-      if ($imagePreview.length) {
-        $imagePreview.hide();
-        $imagePreview.attr("src", "#");
-      }
-      if ($uploadMessage.length) {
-        $uploadMessage.text("");
-        $uploadMessage.hide();
-      }
-    });
-  }
-}); // Cierre correcto de $(document).ready
-
-
+    // 6. Evento que se dispara cuando el modal se ha ocultado completamente
+    if ($uploadDocumentModalElement.length) {
+        $uploadDocumentModalElement.on("hidden.bs.modal", function () {
+        // Limpiar todo después de que el modal se oculta
+        if ($modalTicketIdSpan.length) $modalTicketIdSpan.text("");
+        if ($documentFileInput.length) $documentFileInput.val("");
+        if ($imagePreview.length) {
+            $imagePreview.hide();
+            $imagePreview.attr("src", "#");
+        }
+        if ($uploadMessage.length) {
+            $uploadMessage.text("");
+            $uploadMessage.hide();
+        }
+        });
+    }
+});
 
 function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
@@ -1325,6 +1643,7 @@ function loadTicketHistory(ticketId) {
     },
   });
 }
+
 function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos) {
   // Obtener elementos del modal de aprobación
   const imageApprovalModalElement = document.getElementById("imageApprovalModal");
