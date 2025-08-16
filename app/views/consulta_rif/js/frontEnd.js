@@ -1308,24 +1308,13 @@ let cargaSeleccionada = null; // Puede ser 'exoneracion', 'anticipo' o null
 document
   .getElementById("DownloadExo")
   .addEventListener("click", function (event) {
-    document.getElementById("DownloadAntici").style.display = "none";
-    document.getElementById("AnticipoInput").style.display = "none";
     event.stopPropagation(); // Detener la propagación del evento
     cargaSeleccionada = "exoneracion";
+    
     // Validación de exoneración AL HACER CLIC en "Cargar Exoneracion"
     const inputExoneracion = document.getElementById("ExoneracionInput");
     const archivoExoneracion = inputExoneracion.files[0];
     const inputExoneracion1 = document.getElementById("DownloadExo"); // El botón
-
-    // if (inputExoneracion1.style.display !== 'none' && !archivoExoneracion) {
-    //     Swal.fire({
-    //         icon: 'warning',
-    //         title: 'Campo requerido',
-    //         text: 'Por favor, seleccione el PDF de exoneración después de hacer click en \"Cargar Exoneración\".',
-    //         color: 'black'
-    //     });
-    //     return; // Importante: Detener la ejecución si la validación falla
-    // }
 
     if (archivoExoneracion.size > 5 * 1024 * 1024) {
       Swal.fire({
@@ -1334,12 +1323,68 @@ document
         text: "El archivo de exoneración no debe superar los 5MB.",
         color: "black",
       });
-      return; // Importante: Detener la ejecución si la validación falla
+      return;
     }
-
-    // Si la validación pasa, puedes continuar con alguna otra lógica aquí si es necesario
-    //console.log("Validación de exoneración pasada.");
   });
+
+document.getElementById("DownloadAntici").addEventListener("click", function (event) {
+  event.stopPropagation(); // Detener la propagación del evento
+  cargaSeleccionada = "anticipo";
+    
+  // Validación de anticipo AL HACER CLIC en "Cargar PDF Anticipo"
+  const inputAnticipo = document.getElementById("AnticipoInput");
+  const archivoAnticipo = inputAnticipo.files[0];
+  const inputAnticipo1 = document.getElementById("DownloadAntici"); // El botón
+
+  // NUEVA VALIDACIÓN: Verificar tamaño del archivo de anticipo
+  if (archivoAnticipo.size > 5 * 1024 * 1024) {
+    Swal.fire({
+      icon: "warning",
+      title: "Archivo muy grande",
+      text: "El archivo de anticipo no debe superar los 5MB.",
+      color: "black",
+    });
+    return;
+  }
+});
+
+// NUEVA VALIDACIÓN: Para el botón de envío (checkbox)
+document.getElementById("DownloadEnvi").addEventListener("click", function (event) {
+  event.stopPropagation(); // Detener la propagación del evento
+  cargaSeleccionada = "envio";
+    
+  // Validación de envío AL HACER CLIC en "Cargar PDF Envío"
+  const inputEnvio = document.getElementById("EnvioInput");
+  const archivoEnvio = inputEnvio.files[0];
+  const inputEnvio1 = document.getElementById("DownloadEnvi"); // El botón
+
+  // NUEVA VALIDACIÓN: Verificar tamaño del archivo de envío
+  if (archivoEnvio.size > 5 * 1024 * 1024) {
+    Swal.fire({
+      icon: "warning",
+      title: "Archivo muy grande",
+      text: "El archivo de envío no debe superar los 5MB.",
+      color: "black",
+    });
+    return;
+  }
+});
+
+document.getElementById("DownloadAntici").addEventListener("click", function (event) {
+  // ELIMINAR ESTAS LÍNEAS - Ya no son necesarias con radio buttons
+  // document.getElementById("DownloadExo").style.display = "none";
+  // document.getElementById("ExoneracionInput").style.display = "none";
+    
+  event.stopPropagation(); // Detener la propagación del evento
+  cargaSeleccionada = "anticipo";
+    
+  // Validación de anticipo AL HACER CLIC en "Cargar PDF Anticipo"
+  const inputAnticipo = document.getElementById("AnticipoInput");
+  const archivoAnticipo = inputAnticipo.files[0];
+  const inputAnticipo1 = document.getElementById("DownloadAntici"); // El botón
+
+  // Puedes agregar aquí validación de tamaño para el archivo de anticipo si es necesario
+});
 
 document.getElementById("DownloadAntici").addEventListener("click", function (event) {
     document.getElementById("DownloadExo").style.display = "none";
@@ -1367,7 +1412,7 @@ document.getElementById("DownloadAntici").addEventListener("click", function (ev
 
     // Si la validación pasa, puedes continuar con alguna otra lógica aquí si es necesario
     //console.log("Validación de anticipo pasada.");
-  });
+});
 
 // Función para verificar si ya existe un ticket en proceso para el serial
 
@@ -1912,15 +1957,78 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Función para actualizar la visibilidad de los botones individuales de carga de archivos
-  function updateFileUploadButtonVisibility() {
-    // Solo mostrar el botón si 'uploadNow' está marcado Y el radio button está marcado
+  // Función para actualizar la visibilidad de los botones individuales de carga de archivos
+  // Función para actualizar la visibilidad de los botones individuales de carga de archivos
+function updateFileUploadButtonVisibility() {
+    // Solo mostrar el botón si 'uploadNow' está marcado Y el checkbox/radio está marcado
     botonCargaPDFEnv.style.display =
-    uploadNowRadio.checked && checkEnvio.checked ? "flex" : "none";
+        uploadNowRadio.checked && checkEnvio.checked ? "flex" : "none";
     botonCargaExoneracion.style.display =
-    uploadNowRadio.checked && checkExoneracion.checked ? "flex" : "none";
+        uploadNowRadio.checked && checkExoneracion.checked ? "flex" : "none";
     botonCargaAnticipo.style.display =
-    uploadNowRadio.checked && checkAnticipo.checked ? "flex" : "none";
-  }
+        uploadNowRadio.checked && checkAnticipo.checked ? "flex" : "none";
+    
+    // NUEVA FUNCIONALIDAD: Limpiar archivos cuando se deselecciona un checkbox/radio
+    if (!checkEnvio.checked) {
+        clearFileInput("EnvioInput");
+        clearFileSpan(fileChosenSpanEnvio);
+    }
+    if (!checkExoneracion.checked) {
+        clearFileInput("ExoneracionInput");
+        clearFileSpan(fileChosenSpanExo);
+    }
+    if (!checkAnticipo.checked) {
+        clearFileInput("AnticipoInput");
+        clearFileSpan(fileChosenSpanAntici);
+    }
+}
+
+// NUEVA FUNCIÓN: Limpiar input de archivo
+function clearFileInput(inputId) {
+    const fileInput = document.getElementById(inputId);
+    if (fileInput) {
+        fileInput.value = "";
+    }
+}
+
+// NUEVA FUNCIÓN: Limpiar span que muestra el nombre del archivo
+function clearFileSpan(fileSpan) {
+    if (fileSpan) {
+        fileSpan.textContent = "";
+        fileSpan.style.cssText = "color: gray; font-style: italic; margin-left: 5px;";
+    }
+}
+
+// Event listeners actualizados
+checkEnvio.addEventListener("change", function() {
+    updateFileUploadButtonVisibility();
+    
+    // Si se deselecciona, limpiar inmediatamente el archivo
+    if (!this.checked) {
+        clearFileInput("EnvioInput");
+        clearFileSpan(fileChosenSpanEnvio);
+    }
+});
+
+checkExoneracion.addEventListener("change", function() {
+    updateFileUploadButtonVisibility();
+    
+    // Si se deselecciona, limpiar inmediatamente el archivo
+    if (!this.checked) {
+        clearFileInput("ExoneracionInput");
+        clearFileSpan(fileChosenSpanExo);
+    }
+});
+
+checkAnticipo.addEventListener("change", function() {
+    updateFileUploadButtonVisibility();
+    
+    // Si se deselecciona, limpiar inmediatamente el archivo
+    if (!this.checked) {
+        clearFileInput("AnticipoInput");
+        clearFileSpan(fileChosenSpanAntici);
+    }
+});
 
   // --- Event Listeners ---
 
@@ -1928,11 +2036,35 @@ document.addEventListener("DOMContentLoaded", function () {
   uploadNowRadio.addEventListener("change", updateDocumentUploadVisibility);
   uploadLaterRadio.addEventListener("change", updateDocumentUploadVisibility);
 
-  // Event listeners para los checkboxes
-  checkEnvio.addEventListener("change", updateFileUploadButtonVisibility);
-  checkExoneracion.addEventListener("change", updateFileUploadButtonVisibility);
-  checkAnticipo.addEventListener("change", updateFileUploadButtonVisibility);
+  checkEnvio.addEventListener("change", function() {
+    updateFileUploadButtonVisibility();
+      
+    // Si se deselecciona, limpiar inmediatamente el archivo
+    if (!this.checked) {
+      clearFileInput("EnvioInput");
+      clearFileSpan(fileChosenSpanEnvio);
+    }
+  });
 
+  checkExoneracion.addEventListener("change", function() {
+    updateFileUploadButtonVisibility();
+      
+    // Si se deselecciona, limpiar inmediatamente el archivo
+    if (!this.checked) {
+      clearFileInput("ExoneracionInput");
+      clearFileSpan(fileChosenSpanExo);
+    }
+  });
+
+  checkAnticipo.addEventListener("change", function() {
+    updateFileUploadButtonVisibility();
+      
+    // Si se deselecciona, limpiar inmediatamente el archivo
+    if (!this.checked) {
+      clearFileInput("AnticipoInput");
+      clearFileSpan(fileChosenSpanAntici);
+    }
+  });
 
   // Handle button clicks to trigger file input click (simula un clic en el input de tipo file oculto)
   downloadEnvioBtn.addEventListener("click", () => envioInput.click());
@@ -2244,6 +2376,16 @@ function clearFormFields() {
     checkAnticipo.checked = false;
   }
 
+  // --- Limpiar los input type="file" usando la nueva función ---
+  clearFileInput("EnvioInput");
+  clearFileInput("ExoneracionInput");
+  clearFileInput("AnticipoInput");
+
+  // --- Limpiar los elementos DIV que muestran el nombre del archivo usando la nueva función ---
+  clearFileSpan(fileChosenSpanEnvio);
+  clearFileSpan(fileChosenSpanExo);
+  clearFileSpan(fileChosenSpanAntici);
+
   // Limpiar campos de Modal Nivel 2 (miModal)
   const fallaSelect2 = document.getElementById("FallaSelect2");
   if (fallaSelect2) fallaSelect2.value = "";
@@ -2277,11 +2419,6 @@ function clearFormFields() {
       oldFileInput.parentNode.replaceChild(newFileInput, oldFileInput);
     }
   }
-
-  // --- Limpiar los input type="file" ---
-  clearFileInput("EnvioInput");
-  clearFileInput("ExoneracionInput");
-  clearFileInput("AnticipoInput");
 
   // --- Limpiar los elementos DIV que muestran el nombre del archivo ---
   const envioStatusDiv = document.getElementById("envioStatus");
