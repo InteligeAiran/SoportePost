@@ -372,7 +372,7 @@ function getTicketAprovalDocument() {
                                 },
                             },
                             dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-                            initComplete: function (settings, json) {
+                                initComplete: function (settings, json) {
                                 // Dentro de initComplete, 'this' se refiere a la tabla jQuery
                                 // y 'this.api()' devuelve la instancia de la API de DataTables.
                                 const api = this.api(); // <--- Correcto: Obtener la instancia de la API aquí
@@ -383,19 +383,19 @@ function getTicketAprovalDocument() {
                                     <button id="btn-por-asignar" class="btn btn-primary me-2" title="Pendientes por revisión Documentos">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
                                             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                                        </svg>
+                                    </svg>
                                     </button>
 
                                     <button id="btn-recibidos" class="btn btn-secondary me-2" title="Pendiente por cargar Documentos">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
                                             <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
-                                        </svg>
+                                    </svg>
                                     </button>
 
                                     <button id="btn-asignados" class="btn btn-secondary me-2" title="Documentos Rechazados">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
-                                        </svg>
+                                    </svg>
                                     </button>
                                 `;
                                 $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
@@ -888,7 +888,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
         const ticketId = visualizarImagenModalElement.getAttribute('data-ticket-id');
         const serialPos = visualizarImagenModalElement.getAttribute('data-serial-pos');
-        
+
         if (!selectedOption) {
             Swal.fire({
                 icon: 'warning',
@@ -1036,108 +1036,108 @@ $(document).ready(function () {
   const $uploadMessage = $("#uploadMessage");
 
 
-    // Función para mostrar mensajes
-    function showMessage(message, type) {
-        // Asegúrate de que el elemento existe antes de manipularlo
-        if ($uploadMessage.length) {
-        $uploadMessage.text(message);
-        $uploadMessage
-            .removeClass()
-            .addClass(
-            `message-box mt-2 p-2 rounded text-sm ${
-                type === "success"
-                ? "bg-green-100 text-green-700"
-                : type === "error"
-                ? "bg-red-100 text-red-700"
-                : "bg-blue-100 text-blue-700"
-            }`
-            );
-        $uploadMessage.show(); // Asegúrate de que el mensaje sea visible
-        }
-    }
-
-    // 2. Comprobar si el elemento del modal existe antes de crear la instancia
-    // Esta instancia del modal debe crearse UNA VEZ, fuera del listener de clic,
-    // pero dentro del $(document).ready
-    let uploadDocumentModalInstance; // Declara la variable para la instancia del modal
-
-    if ($uploadDocumentModalElement.length) {
-        uploadDocumentModalInstance = new bootstrap.Modal(
-            $uploadDocumentModalElement[0]
-        ); // Crea la instancia de Bootstrap Modal
-    }
-
-    // 3. Listener para el clic en los botones "Subir Documento" en la tabla
-    // Usamos delegación de eventos con $(document).on('click', ...)
-    // para los botones generados dinámicamente por DataTables.
-    $(document).on("click", ".upload-document-btn", function () {
-        // Verifica si la instancia del modal se creó correctamente
-        if (uploadDocumentModalInstance) {
-        const idTicket = $(this).data("id-ticket"); // Obtiene data-id-ticket del botón clicado
-
-        // Rellena el modal con los datos del ticket
-        if ($modalTicketIdSpan.length) $modalTicketIdSpan.text(idTicket);
-
-        // Limpia campos del modal
-        if ($documentFileInput.length) $documentFileInput.val("");
-        if ($imagePreview.length) {
-            $imagePreview.hide();
-            $imagePreview.attr("src", "#"); // Limpiar src de la imagen
-        }
-        if ($uploadMessage.length) {
-            $uploadMessage.text("");
-            $uploadMessage.hide(); // Ocultar mensaje
-        }
-
-        // ABRIR EL MODAL EXPLICITAMENTE
-        uploadDocumentModalInstance.show();
-        } else {
-        console.error(
-            "Error: Instancia de modal 'uploadDocumentModal' no encontrada. Asegúrate de que el elemento HTML del modal existe y Bootstrap JS está cargado."
+  // Función para mostrar mensajes
+  function showMessage(message, type) {
+    // Asegúrate de que el elemento existe antes de manipularlo
+    if ($uploadMessage.length) {
+      $uploadMessage.text(message);
+      $uploadMessage
+        .removeClass()
+        .addClass(
+          `message-box mt-2 p-2 rounded text-sm ${
+            type === "success"
+              ? "bg-green-100 text-green-700"
+              : type === "error"
+              ? "bg-red-100 text-red-700"
+              : "bg-blue-100 text-blue-700"
+          }`
         );
-        }
-    });
-
-    // 4. Previsualización de la imagen seleccionada (ya estaba bien estructurado)
-    if ($documentFileInput.length) {
-        $documentFileInput.on("change", function () {
-        const file = this.files[0];
-
-        if (file) {
-            if (file.type.startsWith("image/") || file.type === "application/pdf") {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    if (file.type.startsWith("image/")) {
-                    $imagePreview.attr("src", e.target.result);
-                    $imagePreview.show();
-                    } else {
-                    $imagePreview.hide();
-                    $imagePreview.attr("src", "#");
-                    showMessage(
-                        "Archivo PDF seleccionado. No se muestra previsualización.",
-                        "info"
-                    );
-                    }
-                };
-                reader.readAsDataURL(file);
-                $uploadMessage.hide(); // Limpiar mensajes si el archivo es válido
-                } else {
-                $documentFileInput.val("");
-                $imagePreview.attr("src", "#");
-                showMessage(
-                    "Tipo de archivo no permitido. Solo imágenes (JPG, PNG, GIF) o PDF.",
-                    "error"
-                );
-                }
-            } else {
-                $imagePreview.hide();
-                $imagePreview.attr("src", "#");
-                $uploadMessage.hide();
-            }
-        });
+      $uploadMessage.show(); // Asegúrate de que el mensaje sea visible
     }
+  }
 
-    if ($uploadFileBtn.length) {
+  // 2. Comprobar si el elemento del modal existe antes de crear la instancia
+  // Esta instancia del modal debe crearse UNA VEZ, fuera del listener de clic,
+  // pero dentro del $(document).ready
+  let uploadDocumentModalInstance; // Declara la variable para la instancia del modal
+
+  if ($uploadDocumentModalElement.length) {
+    uploadDocumentModalInstance = new bootstrap.Modal(
+      $uploadDocumentModalElement[0]
+    ); // Crea la instancia de Bootstrap Modal
+  }
+
+  // 3. Listener para el clic en los botones "Subir Documento" en la tabla
+  // Usamos delegación de eventos con $(document).on('click', ...)
+  // para los botones generados dinámicamente por DataTables.
+  $(document).on("click", ".upload-document-btn", function () {
+    // Verifica si la instancia del modal se creó correctamente
+    if (uploadDocumentModalInstance) {
+      const idTicket = $(this).data("id-ticket"); // Obtiene data-id-ticket del botón clicado
+
+      // Rellena el modal con los datos del ticket
+      if ($modalTicketIdSpan.length) $modalTicketIdSpan.text(idTicket);
+
+      // Limpia campos del modal
+      if ($documentFileInput.length) $documentFileInput.val("");
+      if ($imagePreview.length) {
+        $imagePreview.hide();
+        $imagePreview.attr("src", "#"); // Limpiar src de la imagen
+      }
+      if ($uploadMessage.length) {
+        $uploadMessage.text("");
+        $uploadMessage.hide(); // Ocultar mensaje
+      }
+
+      // ABRIR EL MODAL EXPLICITAMENTE
+      uploadDocumentModalInstance.show();
+    } else {
+      console.error(
+        "Error: Instancia de modal 'uploadDocumentModal' no encontrada. Asegúrate de que el elemento HTML del modal existe y Bootstrap JS está cargado."
+      );
+    }
+  });
+
+  // 4. Previsualización de la imagen seleccionada (ya estaba bien estructurado)
+  if ($documentFileInput.length) {
+    $documentFileInput.on("change", function () {
+      const file = this.files[0];
+
+      if (file) {
+        if (file.type.startsWith("image/") || file.type === "application/pdf") {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            if (file.type.startsWith("image/")) {
+              $imagePreview.attr("src", e.target.result);
+              $imagePreview.show();
+            } else {
+              $imagePreview.hide();
+              $imagePreview.attr("src", "#");
+              showMessage(
+                "Archivo PDF seleccionado. No se muestra previsualización.",
+                "info"
+              );
+            }
+          };
+          reader.readAsDataURL(file);
+          $uploadMessage.hide(); // Limpiar mensajes si el archivo es válido
+        } else {
+          $documentFileInput.val("");
+          $imagePreview.attr("src", "#");
+          showMessage(
+            "Tipo de archivo no permitido. Solo imágenes (JPG, PNG, GIF) o PDF.",
+            "error"
+          );
+        }
+      } else {
+        $imagePreview.hide();
+        $imagePreview.attr("src", "#");
+        $uploadMessage.hide();
+      }
+    });
+  }
+
+  if ($uploadFileBtn.length) {
         $uploadFileBtn.on("click", function () {
             const id_user = document.getElementById("userId").value;
             const documentFileInput = document.getElementById("documentFile");
@@ -1150,7 +1150,7 @@ $(document).ready(function () {
             uploadMessage.classList.add("hidden");
             uploadMessage.textContent = "";
 
-            if (!file) {
+      if (!file) {
                 Swal.fire({
                     icon: 'warning',
                     title: '¡Advertencia!',
@@ -1159,11 +1159,11 @@ $(document).ready(function () {
                     confirmButtonColor: '#003594',
                     color: 'black',
                 });
-                return;
-            }
+        return;
+      }
 
             // 1. Create a FormData object to handle the file upload.
-            const formData = new FormData();
+      const formData = new FormData();
             formData.append("action", "uploadDocument");
             formData.append("ticket_id", id_ticket);           // Tu API espera "ticket_id"
             formData.append("document_type", documentType);    // Tu API espera "document_type"
@@ -1249,24 +1249,24 @@ $(document).ready(function () {
         console.error("No se pudo obtener el ID del usuario");
         showMessage("Error: No se pudo identificar al usuario.", "error");
         return null;
-    }
+  }
 
-    // 6. Evento que se dispara cuando el modal se ha ocultado completamente
-    if ($uploadDocumentModalElement.length) {
-        $uploadDocumentModalElement.on("hidden.bs.modal", function () {
-        // Limpiar todo después de que el modal se oculta
-        if ($modalTicketIdSpan.length) $modalTicketIdSpan.text("");
-        if ($documentFileInput.length) $documentFileInput.val("");
-        if ($imagePreview.length) {
-            $imagePreview.hide();
-            $imagePreview.attr("src", "#");
-        }
-        if ($uploadMessage.length) {
-            $uploadMessage.text("");
-            $uploadMessage.hide();
-        }
-        });
-    }
+  // 6. Evento que se dispara cuando el modal se ha ocultado completamente
+  if ($uploadDocumentModalElement.length) {
+    $uploadDocumentModalElement.on("hidden.bs.modal", function () {
+      // Limpiar todo después de que el modal se oculta
+      if ($modalTicketIdSpan.length) $modalTicketIdSpan.text("");
+      if ($documentFileInput.length) $documentFileInput.val("");
+      if ($imagePreview.length) {
+        $imagePreview.hide();
+        $imagePreview.attr("src", "#");
+      }
+      if ($uploadMessage.length) {
+        $uploadMessage.text("");
+        $uploadMessage.hide();
+      }
+    });
+  }
 });
 
 function formatTicketDetailsPanel(d) {

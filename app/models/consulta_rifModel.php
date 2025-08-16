@@ -45,7 +45,6 @@ class consulta_rifModel extends Model
         try {
             $escaped_razonsocial = pg_escape_literal($this->db->getConnection(), $razonsocial); // Assuming '$this->db' is now a valid PgSql\Connection
             $sql = "SELECT * FROM getdataclientbyrazon('%" . substr($escaped_razonsocial, 1, -1) . "%')";
-            //var_dump($sql);
             $result = Model::getResult($sql, $this->db);
             $this->db->closeConnection(); // Close the connection if needed
             return $result;
@@ -283,7 +282,7 @@ class consulta_rifModel extends Model
     // También asegúrate de que Model::getResult esté correctamente definido si lo usas.
 
 
-     public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket)
+    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket)
     {
         try {
             $db_conn = $this->db->getConnection();

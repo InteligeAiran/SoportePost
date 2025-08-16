@@ -989,18 +989,21 @@ class reportes extends Controller {
     }
 
     public function SaveComponents(){
-        $id_ticket = isset($_POST['ticketId'])? $_POST['ticketId'] : null;
-        $components_json = isset($_POST['selectedComponents'])? $_POST['selectedComponents'] : null;
-        $serial_pos = isset($_POST['serialPos'])? $_POST['serialPos'] : null;
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_ticket = isset($_POST['ticketId']) ? trim($_POST['ticketId']) : null;
+        $components_json = isset($_POST['selectedComponents']) ? trim($_POST['selectedComponents']) : null;
+        $serial_pos = isset($_POST['serialPos']) ? trim($_POST['serialPos']) : null;
+        $id_user = isset($_POST['id_user']) ? trim($_POST['id_user']) : null;
 
         // --- CORRECCIÓN AQUÍ ---
-        // Decodifica la cadena JSON que se espera desde el cliente
-        $componentes_array = json_decode($components_json, true);
+        // Inicializa array de componentes
+        $componentes_array = [];
         
-        // Si la cadena está vacía o el decodificado falla, usa un array vacío
-        if ($componentes_array === null) {
-            $componentes_array = [];
+        // Solo procesa JSON si hay datos válidos
+        if (!empty($components_json) && $components_json !== 'null' && $components_json !== 'undefined') {
+            $decoded = json_decode($components_json, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $componentes_array = $decoded;
+            }
         }
 
         if (!$id_ticket || !$id_user || !$serial_pos) {
@@ -1008,18 +1011,12 @@ class reportes extends Controller {
             return;
         }
 
-        // Verifica que $componentes_array sea un array
-        if (!is_array($componentes_array)) {
-            $this->response(['success' => false, 'message' => 'Los datos de los componentes no son válidos.'], 400);
-            return;
-        }
-
         $repository = new ReportRepository();
         $result = $repository->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user);
-        if ($result!== false) { // Verifica si se guardó correctamente
-            $this->response(['success' => true,'message' => 'Componentes guardados correctamente'], 200);
+        if ($result !== false) {
+            $this->response(['success' => true, 'message' => 'Componentes guardados correctamente'], 200);
         } else {
-            $this->response(['success' => false,'message' => 'Error al guardar los componentes'], 500); // Código 500 Internal Server Error
+            $this->response(['success' => false, 'message' => 'Error al guardar los componentes'], 500);
         }
     }
 }
