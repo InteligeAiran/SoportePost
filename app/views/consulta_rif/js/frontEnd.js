@@ -1117,6 +1117,10 @@ function UpdateGuarantees() {
   const checkExoneracion = document.getElementById("checkExoneracion");
   const checkAnticipo = document.getElementById("checkAnticipo");
 
+  // NUEVO: Verificar si es Caracas o Miranda (región 1)
+  const checkEnvioContainer = document.getElementById("checkEnvioContainer");
+  const isCaracasMiranda = checkEnvioContainer && checkEnvioContainer.style.display === "none";
+
   let idStatusPayment;
 
   // Primero, verifica las garantías principales
@@ -1128,16 +1132,29 @@ function UpdateGuarantees() {
     if (uploadPendingRadio && uploadPendingRadio.checked) {
       idStatusPayment = 9;
     } else if (uploadNowRadio && uploadNowRadio.checked) {
-      if (checkExoneracion && checkExoneracion.checked && archivoExoneracion && checkEnvio && checkEnvio.checked && archivoEnvio) {
-        idStatusPayment = 5;
-      } else if (checkAnticipo && checkAnticipo.checked && archivoAnticipo && checkEnvio && checkEnvio.checked && archivoEnvio) {
-        idStatusPayment = 7;
-      } else if (checkExoneracion && checkExoneracion.checked && archivoExoneracion && (!checkAnticipo || !checkAnticipo.checked) && !archivoAnticipo && (!checkEnvio || !checkEnvio.checked) && !archivoEnvio) {
-        idStatusPayment = 11;
-      } else if ((!checkEnvio || !checkEnvio.checked) && archivoAnticipo && (!checkExoneracion || !checkExoneracion.checked) && !archivoExoneracion && checkAnticipo && checkAnticipo.checked && !archivoEnvio) {
-        idStatusPayment = 11;
+      
+      // NUEVA LÓGICA: Si es Caracas o Miranda (no necesita envío)
+      if (isCaracasMiranda) {
+        if (checkExoneracion && checkExoneracion.checked && archivoExoneracion) {
+          idStatusPayment = 5; // Exoneración pendiente por revisión
+        } else if (checkAnticipo && checkAnticipo.checked && archivoAnticipo) {
+          idStatusPayment = 7; // Pago anticipo pendiente por revisión
+        } else {
+          idStatusPayment = 10; // Pendiente por cargar documento (exoneración o anticipo)
+        }
       } else {
-        idStatusPayment = 10;
+        // LÓGICA ORIGINAL: Para otras regiones que sí necesitan envío
+        if (checkExoneracion && checkExoneracion.checked && archivoExoneracion && checkEnvio && checkEnvio.checked && archivoEnvio) {
+          idStatusPayment = 5; // Exoneración + Envío = Pendiente por revisión
+        } else if (checkAnticipo && checkAnticipo.checked && archivoAnticipo && checkEnvio && checkEnvio.checked && archivoEnvio) {
+          idStatusPayment = 7; // Anticipo + Envío = Pago anticipo pendiente por revisión
+        } else if (checkExoneracion && checkExoneracion.checked && archivoExoneracion && (!checkAnticipo || !checkAnticipo.checked) && !archivoAnticipo && (!checkEnvio || !checkEnvio.checked) && !archivoEnvio) {
+          idStatusPayment = 11; // Solo exoneración = Pendiente por cargar envío
+        } else if ((!checkEnvio || !checkEnvio.checked) && archivoAnticipo && (!checkExoneracion || !checkExoneracion.checked) && !archivoExoneracion && checkAnticipo && checkAnticipo.checked && !archivoEnvio) {
+          idStatusPayment = 11; // Solo anticipo = Pendiente por cargar envío
+        } else {
+          idStatusPayment = 10; // Solo envío = Pendiente por cargar documento (exoneración o anticipo)
+        }
       }
     } else {
       idStatusPayment = 9;
@@ -1505,6 +1522,8 @@ function SendDataFailure2(idStatusPayment) {
       title: "Campos requeridos",
       text: "Por favor, complete todos los campos obligatorios (Falla, RIF, Serial, Coordinador, Nivel de Falla).",
       color: "black",
+      confirmButtonText: "Ok",
+      confirmButtonColor: "#003594",
     });
     return;
   }
