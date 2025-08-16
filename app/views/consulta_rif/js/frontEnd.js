@@ -2297,6 +2297,8 @@ function SendDataFailure1() {
           title: "Error",
           text: response.message, // Mostrar el mensaje "Hay un campo vacio." del backend
           color: "black",
+          confirmButtonText: "Ok",
+          confirmButtonColor: "#003594", // Botón de confirmación AZULs
         });
       } catch (error) {
         Swal.fire({

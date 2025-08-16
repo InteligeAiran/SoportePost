@@ -355,8 +355,6 @@ function mi_navbar() {}
                     <div class="modal-content">
                         <div class="modal-header">
                             <h1 class="modal-title fs-5" id="exampleModalToggleLabel" style = "color: grey;">Falla Nivel 2</h1>
-                            <button id="cerraModal2" type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
                         </div>
                         <div class="modal-body" style="margin-left: 0; max-height: 70vh; overflow-y: auto;">
                             <form id="miFormulario" class="row g-3">
@@ -494,11 +492,9 @@ function mi_navbar() {}
             <div class="modal" id="miModal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"
                 data-bs-backdrop="static" data-bs-keyboard="false">
                 <div id="Modal2-div" class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content">
+                    <div class="modal-content" style="    max-width: 66%;">
                         <div class="modal-header">
                             <h1 class="modal-title fs-5" id="exampleModalToggleLabel" style = "color: grey;">Falla Nivel 1</h1>
-                            <button id="cerrar-iconNivel1" type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <div>
@@ -526,7 +522,7 @@ function mi_navbar() {}
                                 </table>
                             </div>
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer" style = "margin-bottom: 10%">
                             <button id="SendForm1" onclick="SendDataFailure1();" style="display: block;" class="btn btn-primary">Guardar</button>
 
                             <button id="buttonCerrar" type="button" class="btn btn-secondary"
