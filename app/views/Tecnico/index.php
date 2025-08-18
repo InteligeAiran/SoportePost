@@ -95,19 +95,6 @@ function mi_navbar()
                 border-color: white; /* Borde un poco más visible al hacer hover */
             }
 
-            #btn-asignados{
-                background-color: #003594;
-                color: #ffffff;
-                border: 1px solid #003594;
-                transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-            }
-
-            #btn-por-asignar{
-                color: #ffffff;
-                transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-            }
-
-            /* CSS para los botones de Asignados/Por Asignar */
             /* Estilo base para el botón Asignados cuando es el activo */
             #btn-asignados.btn-primary {
                 background-color: #003594; /* Tu azul fuerte */
@@ -128,7 +115,7 @@ function mi_navbar()
             #btn-asignados.btn-secondary {
                 background-color: #A0A0A0; /* Tu gris sutil */
                 border-color: #A0A0A0;
-                color: #ffffff; /* O un gris oscuro si el fondo es claro */
+                color: #ffffff;
                 transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
             }
 
@@ -139,7 +126,6 @@ function mi_navbar()
                 border-color: #B0B0B0;
                 box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
             }
-
 
             /* Estilo base para el botón Por Asignar cuando es el activo */
             #btn-por-asignar.btn-primary {
@@ -168,6 +154,70 @@ function mi_navbar()
             /* Estilo hover/focus para el botón Por Asignar cuando NO es el activo */
             #btn-por-asignar.btn-secondary:hover,
             #btn-por-asignar.btn-secondary:focus {
+                background-color: #B0B0B0;
+                border-color: #B0B0B0;
+                box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+            }
+
+            /* Estilo base para el botón Recibidos cuando es el activo */
+            #btn-recibidos.btn-primary {
+                background-color: #003594; /* Tu azul fuerte */
+                border-color: #003594;
+                color: #ffffff;
+                transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            /* Estilo hover/focus para el botón Recibidos cuando es el activo */
+            #btn-recibidos.btn-primary:hover,
+            #btn-recibidos.btn-primary:focus {
+                background-color: #0045B4;
+                border-color: #0045B4;
+                box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+            }
+
+            /* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
+            #btn-recibidos.btn-secondary {
+                background-color: #A0A0A0; /* Tu gris sutil */
+                border-color: #A0A0A0;
+                color: #ffffff;
+                transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            /* Estilo hover/focus para el botón Recibidos cuando NO es el activo */
+            #btn-recibidos.btn-secondary:hover,
+            #btn-recibidos.btn-secondary:focus {
+                background-color: #B0B0B0;
+                border-color: #B0B0B0;
+                box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+            }
+
+            /* Estilo base para el botón Devuelto cuando es el activo */
+            #btn-devuelto.btn-primary {
+                background-color: #003594; /* Tu azul fuerte */
+                border-color: #003594;
+                color: #ffffff;
+                transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            /* Estilo hover/focus para el botón Devuelto cuando es el activo */
+            #btn-devuelto.btn-primary:hover,
+            #btn-devuelto.btn-primary:focus {
+                background-color: #0045B4;
+                border-color: #0045B4;
+                box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+            }
+
+            /* Estilo para el botón Devuelto cuando NO es el activo (es gris) */
+            #btn-devuelto.btn-secondary {
+                background-color: #A0A0A0; /* Tu gris sutil */
+                border-color: #A0A0A0;
+                color: #ffffff;
+                transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            /* Estilo hover/focus para el botón Devuelto cuando NO es el activo */
+            #btn-devuelto.btn-secondary:hover,
+            #btn-devuelto.btn-secondary:focus {
                 background-color: #B0B0B0;
                 border-color: #B0B0B0;
                 box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
@@ -228,7 +278,7 @@ function mi_navbar()
              #btnGuardarComponentes{
             color: white;
             background-color: #003594;
-        }
+            }
 
         #btnGuardarComponentes:hover{
             background-color: green;
@@ -249,7 +299,15 @@ function mi_navbar()
         #modalViewcontent{
             width: none  !important;
         }
-        </style>
+
+        #RecibirTec{
+            color: white;
+            background-color: green;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+    </style>
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -351,7 +409,6 @@ function mi_navbar()
             </div>
         <!-- MODAL DE DEVOLUCION AL CLIENTE-->
 
-
         <!-- MODAL PARA SELECCIONAR TECNICO -->
            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
@@ -414,11 +471,12 @@ function mi_navbar()
         <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
             <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog modal-dialog-centered modal-xl">
-                    <div class="modal-content" id="modalViewcontent" style=" width: 2%;">
+                    <div class="modal-content" id="modalViewcontent">
                         <div class="modal-header bg-gradient-primary">
                             <strong>
                                 <h5 class="modal-title text-lg font-semibold text-gray-800" id="viewDocumentModalLabel">
-                                    Documento para Nro Ticket: <span id="viewModalTicketId"></span></h5>
+                                    Documento para Nro Ticket: <span id="viewModalTicketId"></span>
+                                </h5>
                             </strong>
                         </div>
                         <div class="modal-body">
@@ -432,31 +490,32 @@ function mi_navbar()
                             <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" id="modalCerrarshow"
-                                data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-secondary" id="CerrarModalVizualizar" data-bs-dismiss="modal">Cerrar</button>
                         </div>
                     </div>
                 </div>
             </div>
         <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
-
-        <div class="modal fade" id="documentActionsModal" tabindex="-1" role="dialog" aria-labelledby="documentActionsModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="documentActionsModalLabel" style="color: #000;">Acciones de Documentos</h5>                  
-                </div>
-                <div class="modal-body">
-                    <p>Selecciona una opción para guardar documento del ticket <strong id="modalTicketId"></strong>:</p>
-                    <div id="modal-buttons-container" class="d-grid gap-2">
+        
+        <!-- MODAL PARA ACCIONES DE DOCUMENTOS -->
+            <div class="modal fade" id="documentActionsModal" tabindex="-1" role="dialog" aria-labelledby="documentActionsModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="documentActionsModalLabel" style="color: #000;">Acciones de Documentos</h5>                  
+                    </div>
+                    <div class="modal-body">
+                        <p>Selecciona una opción para guardar documento del ticket <strong id="modalTicketId"></strong>:</p>
+                        <div id="modal-buttons-container" class="d-grid gap-2">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                </div>
-                </div>
             </div>
-        </div>
+        <!-- MODAL PARA ACCIONES DE DOCUMENTOS -->
 
         <!-- PARA SELECCIONAR LOS COMPONENTES ASOCIADOS AL SERIAL DEL POS -->
             <div class="modal fade" id="modalComponentes" tabindex="-1" aria-labelledby="modalComponentesLabel" aria-hidden="true">

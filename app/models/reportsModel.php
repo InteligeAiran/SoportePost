@@ -165,7 +165,7 @@ class reportsModel extends Model
                 " . $escapedMimeType . ",
                 " . ((int) $documentSize) . ",
                 " . ((int) $id_user) . ",
-                " . $escapedDocumentType . ",
+                " . $escapedDocumentType . "
             )";
             
             $result = Model::getResult($sql, $this->db);

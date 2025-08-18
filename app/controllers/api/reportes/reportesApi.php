@@ -376,6 +376,8 @@ class reportes extends Controller {
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
         $nro_ticket = isset($_POST['nro_ticket'])? $_POST['nro_ticket'] : null;
 
+        //var_dump($id_ticket, $file, $document_type, $id_user, $nro_ticket);
+
 
         // 3. Validación inicial de la solicitud
         if (!$id_ticket || !$file || $file['error'] !== UPLOAD_ERR_OK || !$document_type || !$id_user) {
