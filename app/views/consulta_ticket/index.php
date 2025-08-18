@@ -217,6 +217,7 @@ function mi_navbar() {}
             letter-spacing: 1px; /* Espaciado entre letras para un mejor look */
             line-height: 1.4; /* Espaciado de línea para que las palabras no se amontonen */
             margin-top: 46%;
+            position: absolute;
         }
     </style>
     </head>

@@ -54,8 +54,9 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentTicketId = null;
 
     // Función para mostrar el modal de subida
-function showUploadModal(ticketId) {
-        currentTicketId = ticketId; // Guarda el ID del ticket
+function showUploadModal(ticketId, nroTicket) {
+        currentTicketId = nroTicket; // Guarda el ID del ticket
+
         if (modalTicketIdSpanUpload) {
             modalTicketIdSpanUpload.textContent = currentTicketId;
         }
@@ -94,54 +95,87 @@ function showUploadModal(ticketId) {
 }
 
 // Función para mostrar el modal de visualización
-function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl) {
-        currentTicketId = ticketId; // Guarda el ID del ticket
-        currentNroTicket = nroTicket; // Guarda el número de ticket
-        if (modalTicketIdSpanView) {
-            modalTicketIdSpanView.textContent = currentNroTicket;
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
+    const modalElementView = document.getElementById("viewDocumentModal");
+    const modalTicketIdSpanView = modalElementView.querySelector("#viewModalTicketId");
+    const imageViewPreview = document.getElementById("imageViewPreview");
+    const pdfViewViewer = document.getElementById("pdfViewViewer");
+    const messageContainer = document.getElementById("viewDocumentMessage");
+    const nameDocumento = document.getElementById("NombreImage");
+    const BotonCerrarModal = document.getElementById("modalCerrarshow");
+
+    currentTicketId = ticketId;
+    currentNroTicket = nroTicket;
+    modalTicketIdSpanView.textContent = currentNroTicket;
+
+    // Limpiar vistas y mensajes
+    imageViewPreview.style.display = "none";
+    pdfViewViewer.style.display = "none";
+    messageContainer.textContent = "";
+    messageContainer.classList.add("hidden");
+
+    // Función para limpiar la ruta del archivo
+    function cleanFilePath(filePath) {
+        if (!filePath) return null;
+
+        // Reemplazar barras invertidas con barras normales
+        let cleanPath = filePath.replace(/\\/g, '/');
+
+        // Extraer la parte después de 'Documentos_SoportePost/'
+        const pathSegments = cleanPath.split('Documentos_SoportePost/');
+        if (pathSegments.length > 1) {
+            cleanPath = pathSegments[1];
         }
 
-        const imageViewPreview = document.getElementById("imageViewPreview");
-        const pdfViewViewer = document.getElementById("pdfViewViewer");
+        // Construir la URL completa
+        return `http://localhost/Documentos/${cleanPath}`;
+    }
 
-        if (imageUrl) {
-            imageViewPreview.src = imageUrl;
-            imageViewPreview.style.display = "block";
-            pdfViewViewer.style.display = "none";
-        } else if (pdfUrl) {
-            // Aquí puedes usar una librería como PDF.js o simplemente un <iframe>
-            pdfViewViewer.innerHTML = `<iframe src="${pdfUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
-            pdfViewViewer.style.display = "block";
-            imageViewPreview.style.display = "none";
-        } else {
-            // No hay URL, mostrar un mensaje o limpiar
-            imageViewPreview.style.display = "none";
-            pdfViewViewer.style.display = "none";
-            document.getElementById("viewDocumentMessage").textContent = "No hay documento disponible para este ticket.";
-            document.getElementById("viewDocumentMessage").classList.remove("hidden");
-        }
+    if (imageUrl) {
+        // Es una imagen
+        const fullUrl = cleanFilePath(imageUrl);
 
-        if (bsViewModal) {
-            bsViewModal.show(); // Usa el método de Bootstrap para mostrar el modal
-        } else {
-            console.error("Error: Instancia de Bootstrap Modal para 'viewDocumentModal' no creada.");
-            // Lógica manual si no usas Bootstrap JS
-            modalElementView.style.display = "block";
-            setTimeout(() => {
-                modalElementView.classList.add("show");
-            }, 10);
-            let backdrop = document.querySelector(".manual-modal-backdrop");
-            if (!backdrop) {
-                backdrop = document.createElement("div");
-                backdrop.classList.add("manual-modal-backdrop", "fade");
-                document.body.appendChild(backdrop);
+        imageViewPreview.src = fullUrl;
+        imageViewPreview.style.display = "block";
+        nameDocumento.textContent = documentName;
+
+    } else if (pdfUrl) {
+        // Es un PDF
+        const fullUrl = cleanFilePath(pdfUrl);
+
+        pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
+        pdfViewViewer.style.display = "block";
+        nameDocumento.textContent = documentName;
+
+    } else {
+        // No hay documento
+        messageContainer.textContent = "No hay documento disponible para este ticket.";
+        messageContainer.classList.remove("hidden");
+        nameDocumento.textContent = "";
+    }
+
+    // Usar la instancia de Bootstrap Modal existente o crear una nueva
+    if (bsViewModal) {
+        bsViewModal.show();
+    } else {
+        // Crear nueva instancia si no existe
+        const viewDocumentModal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
+        viewDocumentModal.show();
+    }
+
+    // Event listener para el botón de cerrar
+    if (BotonCerrarModal) {
+        BotonCerrarModal.addEventListener('click', function () {
+            if (bsViewModal) {
+                bsViewModal.hide();
+            } else {
+                const viewDocumentModal = bootstrap.Modal.getInstance(document.getElementById('viewDocumentModal'));
+                if (viewDocumentModal) {
+                    viewDocumentModal.hide();
+                }
             }
-            setTimeout(() => {
-                backdrop.classList.add("show");
-            }, 10);
-            document.body.classList.add("modal-open");
-            modalElementView.setAttribute("aria-hidden", "false");
-        }
+        });
+    }
 }
 
 // Función para cerrar el modal de subida
@@ -245,7 +279,8 @@ function closeUploadModalAndClean() {
         if (openUploadBtn) {
             event.preventDefault(); // Previene el comportamiento por defecto del botón
             const idTicket = openUploadBtn.dataset.idTicket;
-            showUploadModal(idTicket);
+            const nroTicket = openUploadBtn.dataset.nroTicket; // Asegúrate de que este atributo exista en tu botón dinámico
+            showUploadModal(idTicket, nroTicket); // Llama a la función para mostrar el modal de subida
             return; // Detiene la ejecución para no procesar otros botones
         }
 
@@ -258,14 +293,15 @@ function closeUploadModalAndClean() {
             const nroTicket = openViewBtn.dataset.nroTicket; // Asegúrate de que este atributo exista en tu botón dinámico
             const documentUrl = openViewBtn.dataset.urlDocument; // Asegúrate de que este atributo exista en tu botón dinámico
             const documentType = openViewBtn.dataset.documentType; // 'image' o 'pdf'
+            const fileName = openViewBtn.dataset.filename; // AGREGAR ESTA LÍNEA
 
             if (documentType === 'image') {
-                showViewModal(idTicket, nroTicket, documentUrl, null);
+                showViewModal(idTicket, nroTicket, documentUrl, null, fileName); // PASAR fileName AQUÍ
             } else if (documentType === 'pdf') {
-                showViewModal(idTicket, nroTicket, null, documentUrl);
+                showViewModal(idTicket, nroTicket, null, documentUrl, fileName); // PASAR fileName AQUÍ
             } else {
                 console.warn("Tipo de documento no especificado para la visualización.");
-                showViewModal(idTicket, nroTicket, null, null); // Abre el modal sin contenido
+                showViewModal(idTicket, nroTicket, null, null, fileName); // Abre el modal sin contenido
             }
             return;
         }
@@ -309,11 +345,6 @@ function checkTicketComponents(ticketId, serialPos, regionName) {
     const xhr = new XMLHttpRequest();
     const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/HasComponents`;
     
-    // Debug: Log the constructed URL
-    console.log('API URL:', apiUrl);
-    console.log('ENDPOINT_BASE:', ENDPOINT_BASE);
-    console.log('APP_PATH:', APP_PATH);
-
     xhr.open("POST", apiUrl, true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
@@ -350,6 +381,9 @@ function checkTicketComponents(ticketId, serialPos, regionName) {
                     }).then((warningResult) => {
                         if (warningResult.isConfirmed) {
                             sendToRegionWithoutComponent(ticketId, serialPos);
+                          } else if (warningResult.dismiss === Swal.DismissReason.cancel) {
+                            // Si presiona "Seleccionar Componentes", abre el modal de componentes
+                            showSelectComponentsModal(ticketId, regionName, serialPos);
                         }
                     });
                 }
@@ -644,21 +678,32 @@ function getTicketDataFinaljs() {
                 render: function (data, type, row) {
                     const idTicket = row.id_ticket;
                     const nroTicket = row.nro_ticket;
-                    const accionllaves = row.name_accion_ticket; // Necesitas esta variable para la condición
                     const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
+                    const url_documento = row.document_url;
+                    const documentType = row.document_type;
+                    const filename = row.original_filename;
 
-
-                    // "cuando el status de name_accion_ticket sea: Llaves Cargadas me tiene que aparecer un boton para subir una imagen"
-                    if (hasEnvioDestinoDocument) {
-                        return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
-                                data-id-ticket="${idTicket}"
-                                data-nro-ticket="${nroTicket}"
-                                data-bs-toggle="modal"
-                                data-bs-target="#viewDocumentModal"> Ver Documento Cargados
-                            </button>`;
+                    if (hasEnvioDestinoDocument && url_documento) {
+                        // Si ya existe el documento, mostrar botón para verlo
+                        const fileExtension = url_documento.split('.').pop().toLowerCase();
+                        const isPdf = fileExtension === 'pdf';
+                        
+                        return `<button type="button" id="viewimage" 
+                            class="btn btn-info btn-sm" 
+                            data-id-ticket="${idTicket}"
+                            data-nro-ticket="${nroTicket}"
+                            data-url-document="${url_documento}"
+                            data-document-type="${isPdf ? 'pdf' : 'image'}"
+                            data-filename="${filename || 'Documento'}">
+                            Ver Documento
+                        </button>`;
                     } else {
-                        // Si el estatus no es "Llaves Cargadas", muestra "No hay imagen"
-                        return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Docuemntos Cargados</button>`;
+                        // Si no existe el documento, mostrar botón para subir
+                        return `<button type="button" class="btn btn-warning btn-sm" id="openModalButton"
+                            data-id-ticket="${idTicket}"
+                            data-nro-ticket="${nroTicket}">
+                            Subir Documento
+                        </button>`;
                     }
                 },
             });
@@ -1453,10 +1498,15 @@ $(document).ready(function () {
     // Verifica si la instancia del modal se creó correctamente
     if (uploadDocumentModalInstance) {
       const idTicket = $(this).data("id-ticket"); // Obtiene data-id-ticket del botón clicado
+      const nroTicket = $(this).data('nro-ticket');
+
+      $('#uploadDocumentModal').attr('data-id-ticket', idTicket);
+
+
 
       // Rellena el modal con los datos del ticket
-      if ($modalTicketIdSpan.length) $modalTicketIdSpan.text(idTicket);
-
+      if ($modalTicketIdSpan.length) 
+        $modalTicketIdSpan.text(nroTicket);
       // Limpia campos del modal
       if ($documentFileInput.length) $documentFileInput.val("");
       if ($imagePreview.length) {
@@ -1520,7 +1570,9 @@ $(document).ready(function () {
   if ($uploadFileBtn.length) {
     $uploadFileBtn.on("click", async function () {
       const file = $documentFileInput[0].files[0];
-      const idTicket = $modalTicketIdSpan.text();
+      const nro_ticket = $modalTicketIdSpan.text();
+      const id_ticket = $('#uploadDocumentModal').data('id-ticket'); // OBTENER EL ID_TICKET
+
       const id_user = document.getElementById("userId").value; // Aquí se debe obtener el id_user del usuario logueado
       if (!file) {
         showMessage("Por favor, seleccione un archivo para subir.", "error");
@@ -1530,13 +1582,14 @@ $(document).ready(function () {
       showMessage("Subiendo documento...", "info");
 
       const formData = new FormData();
-      formData.append("ticket_id", idTicket);
+      formData.append("nro_ticket", nro_ticket);
       formData.append("document_file", file);
       // *** AÑADIR EL MIME TYPE DEL ARCHIVO AL formData ***
       formData.append("mime_type", file.type);
       formData.append("action", "uploadDocument"); // Ya estaba aquí, pero se mantiene para la claridad
       formData.append("id_user", id_user); // Aquí se debe obtener el id_user del usuario logueado
       formData.append("document_type", "Envio_Destino");
+      formData.append("ticket_id", id_ticket); // AÑADIR EL ID_TICKET AL formData
 
 
       try {
@@ -1882,9 +1935,7 @@ function formatTicketDetailsPanel(d) {
                         <br><div class="col-sm-6 mb-2">
                               <br><strong><div>Falla Reportada:</div></strong>
                              <span class="falla-reportada-texto">${d.name_failure}</span>
-                            
-                        </div>
-                       
+                        </div>  
                     </div>
                 </div>
             </div>
@@ -1913,6 +1964,7 @@ function formatTicketDetailsPanel(d) {
         </div>
     `;
 }
+
 
 function downloadImageModal(serial) {
   // Considera renombrar a loadDeviceImage(serial) para mayor claridad
@@ -2274,3 +2326,13 @@ function loadTicketHistory(ticketId) {
     },
   });
 }
+
+// Función para obtener el nombre de la región (ajusta según tu estructura)
+function obtenerRegionName() {
+  const regionSelect = document.getElementById('AsiganrCoordinador');
+  if (regionSelect && regionSelect.selectedOptions.length > 0) {
+    return regionSelect.selectedOptions[0].text;
+  }
+  return 'Sin región asignada';
+}
+
