@@ -137,7 +137,10 @@ function getTicketData() {
                         data-status-payment="${ticket.id_status_payment}"
                         data-pdf-zoom-url="${ticket.pdf_zoom_url || ""}"
                         data-img-exoneracion-url="${ticket.img_exoneracion_url || ""}"
-                        data-pdf-pago-url="${ticket.pdf_pago_url || ""}">
+                        data-pdf-pago-url="${ticket.pdf_pago_url || ""}"
+                        data-exo-file="${ticket.img_exoneracion_filename || ""}"
+                        data-pago-file="${ticket.pdf_pago_filename || ""}"
+                        data-zoom-file="${ticket.pdf_zoom_filename || ""}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
                     </button>
                 `;
@@ -500,8 +503,7 @@ function getTicketData() {
 
             const id_document=currentDocument;
 
-            if(id_document!=9 || id_document==10){ 
-
+            if(id_document == 9 || id_document == 10 || id_document == 11) { 
                 Swal.fire({
                 icon: 'warning',
                 title: '¡Advertencia!',
@@ -509,9 +511,18 @@ function getTicketData() {
                 confirmButtonText: 'Ok', 
                 confirmButtonColor: '#003594', // Color del botón
                 color: 'black',
-            });
-            return;
-
+              });
+              return;
+            }else if (id_document == 5 || id_document == 7) {
+              Swal.fire({
+                icon: 'warning',
+                title: '¡Advertencia!',
+                text: 'Tiene documentos pendientes por revisar.',
+                confirmButtonText: 'Ok', 
+                confirmButtonColor: '#003594', // Color del botón
+                color: 'black',
+              });
+              return;
             } else { 
 
                 const modalTicketNrSpan = document.getElementById("modalTicketNr");
@@ -777,13 +788,11 @@ function getTicketData() {
     });
 }
 
-// Espera a que el DOM esté completamente cargado
-// Espera a que el DOM esté completamente cargado$(document).ready(function() {
     // 1. Instanciar todos los modales al inicio
     const documentActionsModal = new bootstrap.Modal(document.getElementById('documentActionsModal'));
     const uploadDocumentModal = new bootstrap.Modal(document.getElementById('uploadDocumentModal'));
     const viewDocumentModal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
-    
+
     // Variables y referencias a elementos que se usarán en múltiples funciones
     const uploadForm = $('#uploadForm');
     const pdfViewViewer = document.getElementById('pdfViewViewer');
@@ -797,256 +806,59 @@ function getTicketData() {
     const imgExoneracionUrl = $(this).data('img-exoneracion-url');
     const pdfPagoUrl = $(this).data('pdf-pago-url');
     const nro_ticket = $(this).data('nro-ticket');
+    const ExoneracionFile_name = $(this).data('exo-file');
+    const PagoFile_name = $(this).data('pago-file');
+    const ZoomFile_name = $(this).data('zoom-file');
+
 
     const modalTitle = $('#modalTicketId');
     const buttonsContainer = $('#modal-buttons-container');
 
     $('#uploadForm').attr('data-nro-ticket', nro_ticket);
+    $('#uploadForm').attr('data-ticket-id', ticketId);
 
     buttonsContainer.empty();
     modalTitle.text(nro_ticket);
 
     let modalButtonsHTML = '';
 
-    // Lógica para crear los botones dinámicamente
-    if (statusPayment == 11 || statusPayment == 6) {
-        // Solo maneja documento de envío
-        if (pdfZoomUrl) {
-            modalButtonsHTML = `
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}">
-                    Ver Documento de Envio
-                </button>
-            `;
-        } else {
-            modalButtonsHTML = `
-                <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                    Cargar Documento de Envio
-                </button>
-            `;
-        }
-    } else if (statusPayment == 10) {
-        // Maneja exoneración y pago (sin envío)
-        if (imgExoneracionUrl && pdfPagoUrl) {
-            // Ambos documentos disponibles
-            modalButtonsHTML = `
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}">
-                    Ver Documento de Exoneración
-                </button>
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}">
-                    Ver Documento de Pago
-                </button>
-            `;
-        } else if (imgExoneracionUrl) {
-            // Solo exoneración disponible
-            modalButtonsHTML = `
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}">
-                    Ver Documento de Exoneración
-                </button>
-                <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
-                    Cargar Documento de Pago
-                </button>
-            `;
-        } else if (pdfPagoUrl) {
-            // Solo pago disponible
-            modalButtonsHTML = `
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}">
-                    Ver Documento de Pago
-                </button>
-                <button class="btn btn-primary btn-block btn-exoneracion-img" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
-                    Cargar Documento de Exoneración
-                </button>
-            `;
-        } else {
-            // Ningún documento disponible
-            modalButtonsHTML = `
-                <button class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
-                    Cargar Documento de Exoneración
-                </button>
-                <button class="btn btn-success btn-block btn-pago-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
-                    Cargar Documento de Pago
-                </button>
-                <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                    Cargar Documento de Envio
-                </button>
-            `;
-        }
-    } else if (statusPayment == 9) {
-        // Maneja envío, exoneración y pago
-        if (pdfZoomUrl && imgExoneracionUrl && pdfPagoUrl) {
-            // Los tres documentos disponibles
-            modalButtonsHTML = `
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}">
-                    Ver Documento de Envio
-                </button>
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}">
-                    Ver Documento de Exoneración
-                </button>
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}">
-                    Ver Documento de Pago
-                </button>
-            `;
-        } else if (pdfZoomUrl && imgExoneracionUrl) {
-            // Solo envío y exoneración
-            modalButtonsHTML = `
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}">
-                    Ver Documento de Envio
-                </button>
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}">
-                    Ver Documento de Exoneración
-                </button>
-            `;
-        } else if (pdfZoomUrl && pdfPagoUrl) {
-            // Solo envío y pago
-            modalButtonsHTML = `
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}">
-                    Ver Documento de Envio
-                </button>
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}">
-                    Ver Documento de Pago
-                </button>
-            `;
-        } else if (imgExoneracionUrl && pdfPagoUrl) {
-            // Solo exoneración y pago (sin envío)
-            modalButtonsHTML = `
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}">
-                    Ver Documento de Exoneración
-                </button>
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}">
-                    Ver Documento de Pago
-                </button>
-            `;
-        } else if (pdfZoomUrl) {
-            // Solo envío disponible - AMBAS OPCIONES DE CARGA (exoneración Y pago)
-            modalButtonsHTML = `
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}">
-                    Ver Documento de Envio
-                </button>
-                <button class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
-                    Cargar Documento de Exoneración
-                </button>
-                <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
-                    Cargar Documento de Pago
-                </button>
-            `;
-        } else if (imgExoneracionUrl) {
-            // Solo exoneración disponible
-            modalButtonsHTML = `
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}">
-                    Ver Documento de Exoneración
-                </button>
-                <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                    Cargar Documento de Envio
-                </button>
-            `;
-        } else if (pdfPagoUrl) {
-            // Solo pago disponible
-            modalButtonsHTML = `
-                <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}">
-                    Ver Documento de Pago
-                </button>
-                <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                    Cargar Documento de Envio
-                </button>
-            `;
-        } else {
-            // Ningún documento disponible
-            modalButtonsHTML = `
-                <button class="btn btn-info btn-block btn-zoom-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                    Cargar Documento de Envio
-                </button>
-                <button class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
-                    Cargar Documento de Exoneración
-                </button>
-                <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
-                    Cargar Documento de Pago
-                </button>
-            `;
-        }
-    } else if (statusPayment == 6 || statusPayment == 4) {
-        // Solo ver documentos (estados aprobados)
-        if (imgExoneracionUrl || pdfPagoUrl || pdfZoomUrl) {
-            if (pdfZoomUrl) {
-                modalButtonsHTML += `
-                    <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}">
-                        Ver Documento de Envio
-                    </button>
-                `;
-            }
-            if (imgExoneracionUrl) {
-                modalButtonsHTML += `
-                    <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}">
-                        Ver Documento de Exoneración
-                    </button>
-                `;
-            }
-            if (pdfPagoUrl) {
-                modalButtonsHTML += `
-                    <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}">
-                        Ver Documento de Pago
-                    </button>
-                `;
-            }
-        }
-    }
-
-    buttonsContainer.html(modalButtonsHTML);
-    documentActionsModal.show();
-    });$(document).on('click', '.btn-document-actions-modal', function() {
-    const ticketId = $(this).data('ticket-id');
-    const statusPayment = $(this).data('status-payment');
-    const pdfZoomUrl = $(this).data('pdf-zoom-url');
-    const imgExoneracionUrl = $(this).data('img-exoneracion-url');
-    const pdfPagoUrl = $(this).data('pdf-pago-url');
-    const nro_ticket = $(this).data('nro-ticket');
-
-    const modalTitle = $('#modalTicketId');
-    const buttonsContainer = $('#modal-buttons-container');
-
-    $('#uploadForm').attr('data-nro-ticket', nro_ticket);
-
-    buttonsContainer.empty();
-    modalTitle.text(nro_ticket);
-
-    let modalButtonsHTML = '';
-
-   
     if (pdfZoomUrl && imgExoneracionUrl) {
         // Solo envío y exoneración
         modalButtonsHTML = `
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}">
+            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Envio
             </button>
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}">
+            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Exoneración
             </button>
         `;
     } else if (pdfZoomUrl && pdfPagoUrl) {
         // Solo envío y pago
         modalButtonsHTML = `
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}">
+            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Envio
             </button>
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}">
+            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Pago
             </button>
         `;
     } else if (pdfZoomUrl) {
         // Solo envío disponible - SOLO UNA OPCIÓN DE CARGA
         modalButtonsHTML = `
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}">
+            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Envio
             </button>
             <button class="btn btn-primary btn-block btn-exoneracion-img" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
                 Cargar Documento de Exoneración
             </button>
-             <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
-                Cargar Documento de Pago
+            <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
+              Cargar Documento de Pago
             </button>
         `;
     } else if (imgExoneracionUrl) {
         // Solo exoneración disponible (sin envío)
         modalButtonsHTML = `
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}">
+            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Exoneración
             </button>
             <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
@@ -1056,7 +868,7 @@ function getTicketData() {
     } else if (pdfPagoUrl) {
         // Solo pago disponible (sin envío)
         modalButtonsHTML = `
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}">
+            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Pago
             </button>
             <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
@@ -1080,7 +892,7 @@ function getTicketData() {
 
     buttonsContainer.html(modalButtonsHTML);
     documentActionsModal.show();
-});
+  });
 
     // 3. Manejador de eventos para los botones de "Cargar Documento" (desde el modal de acciones)
     $(document).on('click', '.btn-zoom-pdf, .btn-exoneracion-img, .btn-pago-pdf', function() {
@@ -1088,6 +900,8 @@ function getTicketData() {
         
         const ticketId = $(this).data('ticket-id');
         const documentType = $(this).data('document-type');
+        const nro_ticket = $(this).data('nro-ticket');
+        const fileName = $(this).data('file-name') || '';
 
         uploadForm[0].reset();
         $('#imagePreview').attr('src', '#').hide();
@@ -1096,6 +910,8 @@ function getTicketData() {
         $('#uploadDocumentModal .modal-title h5').html(`Subir Documento para Ticket: <span id="modalTicketId">${ticketId}</span>`);
         
         $('#uploadForm').data('document-type', documentType);
+        $('#uploadForm').data('nro_ticket', nro_ticket);
+        $('#uploadForm').data('file-name', fileName);
         $('#uploadForm').data('ticket-id', ticketId);
 
         setTimeout(() => {
@@ -1103,109 +919,116 @@ function getTicketData() {
         }, 300);
     });
 
-    $(document).on('click', '.btn-view-document', function() {
-        documentActionsModal.hide();
+   $(document).on('click', '.btn-view-document', function() {
+    documentActionsModal.hide();
 
-        const ticketId = $(this).data('ticket-id');
-        const nroTicket = $(this).data('nro-ticket');
-        const documentType = $(this).data('document-type');
-        const fileUrl = $(this).data('file-url');
+    const ticketId = $(this).data('ticket-id');
+    const nroTicket = $(this).data('nro-ticket');
+    const documentType = $(this).data('document-type');
+    const fileUrl = $(this).data('file-url');
+    const documentName = $(this).data('file-name');
 
-        // Guardar en variables globales para usar en la API
-        currentTicketIdForImage = ticketId;
-        currentTicketNroForImage = nroTicket;
+    // Guardar en variables globales para usar en la API
+    currentTicketIdForImage = ticketId;
+    currentTicketNroForImage = nroTicket;
 
-        // Si ya tenemos la URL del archivo y NO es múltiple, mostrar directamente
-        if (fileUrl && documentType !== 'multiple') {
-            showViewModal(ticketId, nroTicket, fileUrl, null, 'Documento');
-            return;
+    // Si ya tenemos la URL del archivo y NO es múltiple, mostrar directamente
+    if (fileUrl && documentType !== 'multiple') {
+        // DETERMINAR SI ES PDF O IMAGEN BASÁNDOSE EN LA EXTENSIÓN
+        const isPdf = fileUrl.toLowerCase().endsWith('.pdf');
+        if (isPdf) {
+            showViewModal(ticketId, nroTicket, null, fileUrl, documentName);
+        } else {
+            showViewModal(ticketId, nroTicket, fileUrl, null, documentName);
+        }
+        return;
+    }
+
+    // Si es selección múltiple, mostrar modal de selección
+    if (documentType === 'multiple') {
+        showDocumentSelectionModal(ticketId, nroTicket);
+        return;
+    }
+
+    // Si no tenemos la URL, obtener el documento desde la API
+    if (documentType && nroTicket) {
+        // Determinar el tipo de documento para la API
+        let apiDocumentType = '';
+        switch(documentType) {
+            case 'zoom':
+                apiDocumentType = 'Envio';
+                break;
+            case 'exoneracion':
+                apiDocumentType = 'Exoneracion';
+                break;
+            case 'pago':
+                apiDocumentType = 'Anticipo';
+                break;
+            case 'exoneracion_pago':
+                // Para este caso, mostrar un modal de selección
+                showDocumentSelectionModal(ticketId, nroTicket);
+                return;
+            default:
+                apiDocumentType = documentType;
         }
 
-        // Si es selección múltiple, mostrar modal de selección
-        if (documentType === 'multiple') {
-            showDocumentSelectionModal(ticketId, nroTicket);
-            return;
-        }
+        // Llamar a la API para obtener el documento
+        fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `action=GetDocumentByType&ticketId=${nroTicket}&documentType=${apiDocumentType}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.document) {
+                const document = data.document;
+                const filePath = document.file_path;
+                const mimeType = document.mime_type;
+                const fileName = document.original_filename;
 
-        // Si no tenemos la URL, obtener el documento desde la API
-        if (documentType && nroTicket) {
-            // Determinar el tipo de documento para la API
-            let apiDocumentType = '';
-            switch(documentType) {
-                case 'zoom':
-                    apiDocumentType = 'Envio';
-                    break;
-                case 'exoneracion':
-                    apiDocumentType = 'Exoneracion';
-                    break;
-                case 'pago':
-                    apiDocumentType = 'Anticipo';
-                    break;
-                case 'exoneracion_pago':
-                    // Para este caso, mostrar un modal de selección
-                    showDocumentSelectionModal(ticketId, nroTicket);
-                    return;
-                default:
-                    apiDocumentType = documentType;
-            }
-
-            // Llamar a la API para obtener el documento
-            fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `action=GetDocumentByType&ticketId=${nroTicket}&documentType=${apiDocumentType}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.document) {
-                    const document = data.document;
-                    const filePath = document.file_path;
-                    const mimeType = document.mime_type;
-                    const fileName = document.original_filename;
-
-                    // Determinar si es imagen o PDF
-                    if (mimeType.startsWith('image/')) {
-                        showViewModal(ticketId, nroTicket, filePath, null, fileName);
-                    } else if (mimeType === 'application/pdf') {
-                        showViewModal(ticketId, nroTicket, null, filePath, fileName);
-                    } else {
-                        showViewModal(ticketId, nroTicket, null, null, "Tipo de documento no soportado");
-                    }
+                // Determinar si es imagen o PDF
+                if (mimeType.startsWith('image/')) {
+                    showViewModal(ticketId, nroTicket, filePath, null, fileName);
+                } else if (mimeType === 'application/pdf') {
+                    showViewModal(ticketId, nroTicket, null, filePath, fileName);
                 } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Documento no encontrado',
-                        text: 'No se pudo obtener el documento solicitado.',
-                        confirmButtonText: 'Ok',
-                        color: 'black',
-                        confirmButtonColor: '#003594'
-                    });
+                    showViewModal(ticketId, nroTicket, null, null, "Tipo de documento no soportado");
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+            } else {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Error al obtener el documento del servidor.',
+                    icon: 'warning',
+                    title: 'Documento no encontrado',
+                    text: 'No se pudo obtener el documento solicitado.',
                     confirmButtonText: 'Ok',
                     color: 'black',
                     confirmButtonColor: '#003594'
                 });
-            });
-        } else {
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
             Swal.fire({
-                icon: 'warning',
-                title: 'Información incompleta',
-                text: 'No se pudo determinar qué documento mostrar.',
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al obtener el documento del servidor.',
                 confirmButtonText: 'Ok',
                 color: 'black',
                 confirmButtonColor: '#003594'
             });
-        }
-    });
+        });
+    } else {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Información incompleta',
+            text: 'No se pudo determinar qué documento mostrar.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+    }
+   });
 
 // Función para mostrar el modal de selección de documento
 function showDocumentSelectionModal(ticketId, nroTicket) {
@@ -1293,7 +1116,6 @@ function showDocumentSelectionModal(ticketId, nroTicket) {
     });
 }
 
-
 // Función corregida para mostrar el modal de visualización
 function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     // Verificar que el modal existe antes de continuar
@@ -1317,7 +1139,6 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     const pdfViewViewer = document.getElementById("pdfViewViewer");
     const messageContainer = document.getElementById("viewDocumentMessage");
     const nameDocumento = document.getElementById("NombreImage");
-    const BotonCerrarModal = document.getElementById("CerrarModalVizualizar");
 
     // Verificar que los elementos críticos existen
     if (!modalTicketIdSpanView || !imageViewPreview || !pdfViewViewer || !messageContainer || !nameDocumento) {
@@ -1346,21 +1167,22 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
 
     // Función para limpiar la ruta del archivo
     function cleanFilePath(filePath) {
-      if (!filePath) return null;
+        if (!filePath) return null;
 
-      // Reemplazar barras invertidas con barras normales
-      let cleanPath = filePath.replace(/\\/g, '/');
+        // Reemplazar barras invertidas con barras normales
+        let cleanPath = filePath.replace(/\\/g, '/');
 
-      // Extraer la parte después de 'Documentos_SoportePost/'
-      const pathSegments = cleanPath.split('Documentos_SoportePost/');
-      if (pathSegments.length > 1) {
-        cleanPath = pathSegments[1];
-      }
+        // Extraer la parte después de 'Documentos_SoportePost/'
+        const pathSegments = cleanPath.split('Documentos_SoportePost/');
+        if (pathSegments.length > 1) {
+            cleanPath = pathSegments[1];
+        }
 
-      // Construir la URL completa
-      return `http://localhost/Documentos/${cleanPath}`;
+        // Construir la URL completa
+        return `http://localhost/Documentos/${cleanPath}`;
     }
 
+    // DETERMINAR QUÉ MOSTRAR BASÁNDOSE EN LOS PARÁMETROS
     if (imageUrl) {
         // Es una imagen
         const fullUrl = cleanFilePath(imageUrl);
@@ -1380,6 +1202,16 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
         pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
         pdfViewViewer.style.display = "block";
         
+        // Manejar errores de carga de PDF
+        const iframe = pdfViewViewer.querySelector('iframe');
+        if (iframe) {
+            iframe.onerror = function() {
+                messageContainer.textContent = "Error al cargar el PDF.";
+                messageContainer.classList.remove("hidden");
+                pdfViewViewer.style.display = "none";
+            };
+        }
+        
     } else {
         // No hay documento
         messageContainer.textContent = "No hay documento disponible para este ticket.";
@@ -1391,16 +1223,14 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
         const viewDocumentModal = new bootstrap.Modal(modalElementView);
         viewDocumentModal.show();
 
-        // Event listener para cerrar (evitar duplicados)
-        if (BotonCerrarModal) {
-            // Remover listeners anteriores
-            BotonCerrarModal.removeEventListener('click', closeModalHandler);
-            BotonCerrarModal.addEventListener('click', closeModalHandler);
+        const buttonCerrarModal = document.getElementById("CerrarModalVizualizar");
+        if (buttonCerrarModal) {
+            buttonCerrarModal.addEventListener("click", function() {
+                viewDocumentModal.hide();
+            });
         }
+        
 
-        function closeModalHandler() {
-            viewDocumentModal.hide();
-        }
 
     } catch (error) {
         console.error("Error al mostrar el modal:", error);
@@ -1415,27 +1245,25 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     }
 }
 
-    // 5. Previsualización de la imagen
-    $('#documentFile').on('change', function(event) {
-        const [file] = event.target.files;
-        const preview = $('#imagePreview');
-        if (file) {
-            preview.attr('src', URL.createObjectURL(file)).show();
-        } else {
-            preview.hide();
-        }
-    });
-    
-    // 6. Manejador de eventos para el botón de "Subir" dentro del modal de subida
-    // ... Todo el código anterior del document.ready ...
+// 5. Previsualización de la imagen
+$('#documentFile').on('change', function(event) {
+  const [file] = event.target.files;
+  const preview = $('#imagePreview');
+  if (file) {
+    preview.attr('src', URL.createObjectURL(file)).show();
+  } else {
+    preview.hide();
+ }
+});
 
 // 6. Manejador de eventos para el botón de "Subir" dentro del modal de subida
 $(document).on('click', '#uploadFileBtn', function() {
   const fileInput = $('#documentFile')[0];
   const documentType = $('#uploadForm').data('document-type');
   const ticketId = $('#uploadForm').data('ticket-id');
-    const ticketNumber = $('#uploadForm').data('nro-ticket');
+  const ticketNumber = $('#uploadForm').data('nro-ticket');
   const uploadDocumentModalElement = document.getElementById("uploadDocumentModal");
+  const id_ticket = $('#uploadForm').data('ticket-id');
 
   if (!fileInput.files || fileInput.files.length === 0) {
     Swal.fire({
@@ -1701,7 +1529,7 @@ async function handleUploadButtonClick(ticketId, documentType, uploadModalBootst
     formData.append("id_user", id_user);
 
     const xhr = new XMLHttpRequest();
-    const url = `${ENDPOINT_BASE}${APP_PATH}api/reportes/uploadDocument`;
+    const url = `${ENDPOINT_BASE}${APP_PATH}api/reportes/uploadDocumentTec`;
 
     xhr.open("POST", url);
 
@@ -1718,23 +1546,21 @@ async function handleUploadButtonClick(ticketId, documentType, uploadModalBootst
             }
 
             if (xhr.status === 200 && result.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Éxito!',
-                    text: result.message,
-                    confirmButtonColor: '#003594',
-                });
-                setTimeout(() => {
-                    uploadModalBootstrap.hide();
-                    // getTicketData(); 
-                }, 1500);
+              Swal.fire({
+                icon: 'success',
+                title: '¡Éxito!',
+                text: result.message,
+                confirmButtonColor: '#003594',
+              }).then((result) => {
+                window.location.reload();
+              });
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: result.message || 'Error al subir el documento.',
-                    confirmButtonColor: '#003594',
-                });
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: result.message || 'Error al subir el documento.',
+                confirmButtonColor: '#003594',
+              });
             }
         }
     };
@@ -1755,7 +1581,7 @@ async function handleUploadButtonClick(ticketId, documentType, uploadModalBootst
 // Lógica para el Modal de Visualización de Documentos (viewDocumentModal)
 // ===============================================
 
-function openViewModal(ticketId, fileUrl, documentType) {
+/*function openViewModal(ticketId, fileUrl, documentType) {
   const viewDocumentModalElement = document.getElementById("viewDocumentModal");
   const viewModalTicketIdSpan = document.getElementById("viewModalTicketId");
   const imageViewPreview = document.getElementById("imageViewPreview");
@@ -1791,35 +1617,6 @@ function openViewModal(ticketId, fileUrl, documentType) {
         // Para un iframe simple:
         pdfViewViewer.innerHTML = `<iframe src="${fileUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
         pdfViewViewer.style.display = "block";
-
-        // Si necesitas algo más robusto como pdf.js, tendrías que integrarlo
-        // Ejemplo con pdf.js (requiere la librería):
-        /*
-                pdfViewViewer.innerHTML = ''; // Asegúrate de que esté vacío
-                const loadingTask = pdfjsLib.getDocument(fileUrl);
-                loadingTask.promise.then(function(pdf) {
-                    pdf.getPage(1).then(function(page) {
-                        const scale = 1.5;
-                        const viewport = page.getViewport({ scale: scale });
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        pdfViewViewer.appendChild(canvas);
-
-                        const renderContext = {
-                            canvasContext: context,
-                            viewport: viewport
-                        };
-                        page.render(renderContext);
-                        pdfViewViewer.style.display = 'block';
-                    });
-                }).catch(function(error) {
-                    console.error('Error al cargar el PDF:', error);
-                    viewDocumentMessage.textContent = 'Error al cargar el PDF.';
-                    viewDocumentMessage.classList.remove('hidden');
-                });
-                */
       } else {
         viewDocumentMessage.textContent =
           "Formato de archivo no soportado para previsualización.";
@@ -1838,7 +1635,7 @@ function openViewModal(ticketId, fileUrl, documentType) {
       "No se pudo inicializar el modal de visualización: viewDocumentModalElement o Bootstrap Modal no están disponibles."
     );
   }
-}
+}*/
 
 // Llama a la función para cargar los datos cuando el DOM esté completamente cargado
 document.addEventListener("DOMContentLoaded", getTicketData);
@@ -2226,7 +2023,6 @@ function loadTicketHistory(ticketId) {
 document.addEventListener("DOMContentLoaded", function () {
 
   const cerrar = document.getElementById("close-button");
-  const icon = document.getElementById("Close-icon");
 
   // CAMBIO AQUI: Usa un nombre diferente para la variable del botón, por ejemplo, `sendToTallerButton`
   const sendToTallerButton = document.getElementById("SendToTaller-button");
@@ -2243,18 +2039,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   } else {
     console.error("Elemento con ID 'close-button' no encontrado.");
-  }
-
-  if (icon) {
-    icon.addEventListener("click", function () {
-      if (modalInstance) {
-        modalInstance.hide();
-        currentTicketId = null;
-      }
-      document.getElementById("idSelectionTec").value = "";
-    });
-  } else {
-    console.error("Elemento con ID 'Close-icon' no encontrado.");
   }
 
   // Agrega el event listener al botón "Enviar a Taller"

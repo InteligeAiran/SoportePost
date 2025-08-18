@@ -373,7 +373,6 @@ function checkTicketComponents(ticketId, serialPos, regionName) {
     xhr.send(dataToSend);
 }
 
-
 function getTicketDataFinaljs() {
   const xhr = new XMLHttpRequest();
   xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketDataFinal`);

@@ -2373,7 +2373,8 @@ class consulta_rifModel extends Model
                 if ($resultsqlInsertHistory === false) {
                     error_log("Error al insertar en ticket_status_history para ticket ID: {$id_ticket}. PG Error: ". pg_last_error($db_conn));
                     return false;
-                }      
+                }
+                return true;  
             }
         } catch (Throwable $e) {
             error_log("Error al aprobar documentos: " . $e->getMessage());

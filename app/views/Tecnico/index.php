@@ -95,20 +95,21 @@ function mi_navbar()
                 border-color: white; /* Borde un poco más visible al hacer hover */
             }
 
-            /* Estilo base para el botón Asignados cuando es el activo */
-            #btn-asignados.btn-primary {
-                background-color: #003594; /* Tu azul fuerte */
-                border-color: #003594;
-                color: #ffffff;
-                transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+             #btn-asignados.btn-primary {
+                background-color: #ffc107; /* Amarillo warning */
+                border-color: #ffc107;
+                color: #ffffff; /* Texto oscuro para contraste */
+                transition: background-color 0.3s ease, border-color 0.3s ease,
+                box-shadow 0.3s ease;
             }
 
-            /* Estilo hover/focus para el botón Asignados cuando es el activo */
+            /* Estilo hover/focus para el botón Por Asignar cuando es el activo */
             #btn-asignados.btn-primary:hover,
             #btn-asignados.btn-primary:focus {
-                background-color: #0045B4; /* Un tono un poco más oscuro o claro al hover */
-                border-color: #0045B4;
-                box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25); /* Sombra de enfoque/hover */
+                background-color: #ffc107; /* Amarillo warning */
+                border-color: #ffc107;
+                color: #ffffff; /* Texto oscuro para contraste */
+                box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
             }
 
             /* Estilo para el botón Asignados cuando NO es el activo (es gris) */
@@ -129,17 +130,21 @@ function mi_navbar()
 
             /* Estilo base para el botón Por Asignar cuando es el activo */
             #btn-por-asignar.btn-primary {
-                background-color: #003594; /* Tu azul fuerte */
-                border-color: #003594;
+                background-color: #17a2b8; /* Azul info */
+                border-color: #17a2b8;
                 color: #ffffff;
-                transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+                transition: background-color 0.3s ease, border-color 0.3s ease,
+                box-shadow 0.3s ease;
             }
+
+            
 
             /* Estilo hover/focus para el botón Por Asignar cuando es el activo */
             #btn-por-asignar.btn-primary:hover,
             #btn-por-asignar.btn-primary:focus {
-                background-color: #0045B4;
-                border-color: #0045B4;
+                background-color: #17a2b8; /* Azul info */
+                border-color: #17a2b8;
+                color: #ffffff;
                 box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
             }
 
@@ -160,20 +165,25 @@ function mi_navbar()
             }
 
             /* Estilo base para el botón Recibidos cuando es el activo */
+          /* Estilo base para el botón Recibidos cuando es el activo */
             #btn-recibidos.btn-primary {
-                background-color: #003594; /* Tu azul fuerte */
-                border-color: #003594;
+                background-color: #28a745; /* Verde éxito */
+                border-color: #28a745;
                 color: #ffffff;
-                transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+                transition: background-color 0.3s ease, border-color 0.3s ease,
+                box-shadow 0.3s ease;
             }
 
             /* Estilo hover/focus para el botón Recibidos cuando es el activo */
             #btn-recibidos.btn-primary:hover,
             #btn-recibidos.btn-primary:focus {
-                background-color: #0045B4;
-                border-color: #0045B4;
+                background-color: #28a745; /* Verde éxito */
+                border-color: #28a745;
+                color: #ffffff;
                 box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+                /* Sombra de enfoque/hover */
             }
+
 
             /* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
             #btn-recibidos.btn-secondary {
@@ -193,17 +203,18 @@ function mi_navbar()
 
             /* Estilo base para el botón Devuelto cuando es el activo */
             #btn-devuelto.btn-primary {
-                background-color: #003594; /* Tu azul fuerte */
-                border-color: #003594;
                 color: #ffffff;
-                transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+                background-color: #dc3545; /* Rojo danger */
+                border-color: #dc3545;
+                transition: background-color 0.3s ease, border-color 0.3s ease,
+                box-shadow 0.3s ease;
             }
 
             /* Estilo hover/focus para el botón Devuelto cuando es el activo */
             #btn-devuelto.btn-primary:hover,
             #btn-devuelto.btn-primary:focus {
-                background-color: #0045B4;
-                border-color: #0045B4;
+                background-color: #dc3545; /* Rojo danger */
+                border-color: #dc3545;
                 box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
             }
 
@@ -485,7 +496,7 @@ function mi_navbar()
                             </div>
                             <div class="mb-3 text-center" style="max-height: 80vh; overflow-y: auto;">
                                 <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen" style="height: auto; display: none; object-fit: contain;">
-                                <div id="pdfViewViewer" style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
+                                <div id="pdfViewViewer" style="width: 100%; height: 70vh; display: none;"></div>
                             </div>
                             <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
                         </div>

@@ -131,7 +131,7 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
                     Swal.fire({
                         icon: 'success',
                         title: '¡Aprobado!',
-                        html: `El documento ${documentType} asociado al Nro Ticket <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> ha sido aprobado correctamente.`,
+                        html: `El documento de  <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${documentType}</span> asociado al Nro Ticket <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> ha sido aprobado correctamente.`,
                         confirmButtonText: 'Ok',
                         confirmButtonColor: '#003594',
                         color: 'black'
@@ -296,6 +296,7 @@ function getTicketAprovalDocument() {
                                 const motivoRechazo = row.motivo_rechazo;
                                 const uploadedAt = row.uploaded_at;
                                 const idMotivoRechazo = row.id_motivo_rechazo;
+                                const rechazado = row.documento_rechazado;
                                 
                                 // Determinar si es un documento rechazado
                                 const isRejected = idMotivoRechazo !== null && motivoRechazo !== null;
@@ -313,6 +314,7 @@ function getTicketAprovalDocument() {
                                             data-motivo-rechazo="${motivoRechazo || ''}"
                                             data-uploaded-at="${uploadedAt || ''}"
                                             data-id-motivo-rechazo="${idMotivoRechazo || ''}"
+                                            data-rechazado="${rechazado || ''}"
                                             data-bs-toggle="modal" 
                                             data-bs-target="#visualizarImagenModal" 
                                             title="Visualizar Imágenes">
@@ -421,7 +423,7 @@ function getTicketAprovalDocument() {
                                 api.columns().search('').draw(false);
                                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
                                     .column(3)
-                                    .search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, true) // CAMBIO AQUÍ
+                                    .search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true) // CAMBIO AQUÍ
                                     .draw();
                                 setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
 
@@ -429,7 +431,7 @@ function getTicketAprovalDocument() {
                                     api.columns().search('').draw(false);
                                     api
                                     .column(3)
-                                    .search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, true) // CAMBIO AQUÍ
+                                    .search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true) // CAMBIO AQUÍ
                                     .draw();
                                     setActiveButton("btn-por-asignar");
                                 });
@@ -524,6 +526,7 @@ function getTicketAprovalDocument() {
                             const ticketId = $(this).data("id");
                             const nroTicket = $(this).data("nro-ticket");
                             const serialPos = $(this).data("serial-pos");
+                            const documentoRechazado = $(this).data("rechazado"); // AGREGAR ESTA LÍNEA
                             
                             // Asume que los valores 'Sí' o 'No' están en los data attributes del botón.
                             const envioValor = $(this).data("envio");
@@ -553,6 +556,7 @@ function getTicketAprovalDocument() {
                             // Establecer el data-ticket-id en el modal para que esté disponible en el listener del botón
                             VizualizarImage.setAttribute('data-ticket-id', nroTicket);
                             VizualizarImage.setAttribute('data-serial-pos', serialPos);
+                            VizualizarImage.setAttribute('data-rechazado', documentoRechazado); // AGREGAR ESTA LÍNEA
                             const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
 
                             const EnvioInputModal = document.getElementById('imagenEnvio');
@@ -888,6 +892,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
         const ticketId = visualizarImagenModalElement.getAttribute('data-ticket-id');
         const serialPos = visualizarImagenModalElement.getAttribute('data-serial-pos');
+        const documentoRechazado = visualizarImagenModalElement.getAttribute('data-rechazado'); // AGREGAR ESTA LÍNEA
 
         if (!selectedOption) {
             Swal.fire({
@@ -917,7 +922,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         const fileName = document.original_filename;
 
                         // Mostrar el documento en el modal de aprobación
-                        showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName, serialPos);
+                        showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName, serialPos, documentoRechazado);
 
                         // Ocultar el modal de selección
                         visualizarImagenModal.hide();
@@ -1644,122 +1649,149 @@ function loadTicketHistory(ticketId) {
   });
 }
 
-function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos) {
-  // Obtener elementos del modal de aprobación
-  const imageApprovalModalElement = document.getElementById("imageApprovalModal");
-  const currentTicketIdDisplay = document.getElementById("currentTicketIdDisplay");
-  const currentImageTypeDisplay = document.getElementById("currentImageTypeDisplay");
-  const currentDocumentNameDisplay = document.getElementById("currentNombreDocumento");
-  const ticketImagePreview = document.getElementById("ticketImagePreview");
-  const mediaViewerContainer = document.getElementById("mediaViewerContainer");
-  const closeImageApprovalModalBtn = document.getElementById("closeImageApprovalModalBtn");
-  const currentSerialDisplay = document.getElementById("currentSerialDisplay");
-  const approveTicketFromImageBtn = document.getElementById("approveTicketFromImage");
+function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos, documentoRechazado) {
+    // Obtener elementos del modal de aprobación
+    const imageApprovalModalElement = document.getElementById("imageApprovalModal");
+    const currentTicketIdDisplay = document.getElementById("currentTicketIdDisplay");
+    const currentImageTypeDisplay = document.getElementById("currentImageTypeDisplay");
+    const currentDocumentNameDisplay = document.getElementById("currentNombreDocumento");
+    const ticketImagePreview = document.getElementById("ticketImagePreview");
+  const pdfViewViewer = document.getElementById("pdfViewViewer");
+    const mediaViewerContainer = document.getElementById("mediaViewerContainer");
+    const closeImageApprovalModalBtn = document.getElementById("closeImageApprovalModalBtn");
+    const currentSerialDisplay = document.getElementById("currentSerialDisplay");
+    const approveTicketFromImageBtn = document.getElementById("approveTicketFromImage");
 
-  // Establecer información del ticket
-  currentTicketIdDisplay.textContent = ticketId;
-  currentImageTypeDisplay.textContent = documentType;
-  currentDocumentNameDisplay.textContent = fileName || 'Sin nombre';
-  currentSerialDisplay.textContent = serialPos || 'Sin posición';
-
-  // Controlar la visibilidad del botón de aprobar basado en el tipo de documento
-  if (approveTicketFromImageBtn) {
-    const allowedTypes = ['Exoneracion', 'Anticipo']; // Tipos que permiten aprobación
-    if (allowedTypes.includes(documentType)) {
-      approveTicketFromImageBtn.style.display = 'block';
-    } else {
-      approveTicketFromImageBtn.style.display = 'none';
+    // LIMPIEZA COMPLETA Y FORZADA
+    if (mediaViewerContainer) {
+        // Remover todos los elementos hijos excepto los elementos fijos
+        const elementsToKeep = [ticketImagePreview, pdfViewViewer];
+        const elementsToRemove = [];
+        
+        for (let child of mediaViewerContainer.children) {
+            if (!elementsToKeep.includes(child)) {
+                elementsToRemove.push(child);
+            }
+        }
+        
+        elementsToRemove.forEach(element => {
+            mediaViewerContainer.removeChild(element);
+        });
     }
-  }
+    
+    // Resetear completamente la imagen y el PDF viewer
+    if (ticketImagePreview) {
+        ticketImagePreview.style.display = "none";
+        ticketImagePreview.src = "";
+        ticketImagePreview.alt = "Vista previa del documento";
+    }
+    
+    if (pdfViewViewer) {
+  pdfViewViewer.style.display = "none";
+        pdfViewViewer.innerHTML = "";
+    }
+
+    // Establecer información del ticket
+    currentTicketIdDisplay.textContent = ticketId;
+    currentImageTypeDisplay.textContent = documentType;
+    currentDocumentNameDisplay.textContent = fileName || 'Sin nombre';
+    currentSerialDisplay.textContent = serialPos || 'Sin posición';
+
+    // Controlar la visibilidad del botón de aprobar
+    if (approveTicketFromImageBtn) {
+        const allowedTypes = ['Exoneracion', 'Anticipo'];
+        const isRejected = documentoRechazado === 'Sí';
+
+        if (allowedTypes.includes(documentType) && !isRejected) {
+            approveTicketFromImageBtn.style.display = 'block';
+        } else {
+            approveTicketFromImageBtn.style.display = 'none';
+        }
+    }
 
   // Función para limpiar la ruta del archivo
   function cleanFilePath(filePath) {
     if (!filePath) return null;
-
-    // Reemplazar barras invertidas con barras normales
     let cleanPath = filePath.replace(/\\/g, '/');
-
-    // Extraer la parte después de 'Documentos_SoportePost/'
     const pathSegments = cleanPath.split('Documentos_SoportePost/');
     if (pathSegments.length > 1) {
       cleanPath = pathSegments[1];
     }
-
-    // Construir la URL completa
     return `http://localhost/Documentos/${cleanPath}`;
   }
 
-  // Limpiar contenedor y mostrar imagen
-  mediaViewerContainer.innerHTML = '';
-  
-  // Asegurarse de que la imagen esté disponible
-  if (ticketImagePreview) {
-    ticketImagePreview.style.display = "none";
-    ticketImagePreview.src = "";
-    ticketImagePreview.alt = "Vista previa del documento";
-  }
-  
-  if (mimeType && mimeType.startsWith('image/')) {
-    // Es una imagen
+    // CONFIGURAR EL CONTENIDO CON MANEJO DE ERRORES
     const fullUrl = cleanFilePath(filePath);
     
-    if (ticketImagePreview) {
-      ticketImagePreview.src = fullUrl;
-      ticketImagePreview.style.display = "block";
-      mediaViewerContainer.appendChild(ticketImagePreview);
-    }
-  } else if (mimeType === 'application/pdf') {
+    if (mimeType && mimeType.startsWith('image/')) {
+    // Es una imagen
+        if (ticketImagePreview) {
+            ticketImagePreview.src = fullUrl;
+            ticketImagePreview.style.display = "block";
+            ticketImagePreview.alt = `Vista previa de ${fileName || 'documento'}`;
+        }
+        
+        if (pdfViewViewer) {
+            pdfViewViewer.style.display = "none";
+        }
+    } else if (mimeType === 'application/pdf') {
     // Es un PDF
-    if (ticketImagePreview) {
-      ticketImagePreview.style.display = "none";
-    }
-    const pdfViewer = document.createElement('iframe');
-    pdfViewer.src = cleanFilePath(filePath);
-    pdfViewer.style.width = '100%';
-    pdfViewer.style.height = '100%';
-    pdfViewer.style.border = 'none';
-    mediaViewerContainer.appendChild(pdfViewer);
+        if (ticketImagePreview) {
+            ticketImagePreview.style.display = "none";
+        }
+
+        if (pdfViewViewer) {
+    pdfViewViewer.style.display = "block";
+            pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;" title="PDF: ${fileName || 'documento'}"></iframe>`;
+        }
   } else {
-    // Tipo de archivo no soportado
-    if (ticketImagePreview) {
-      ticketImagePreview.style.display = "none";
+        // Tipo de archivo no soportado
+        if (ticketImagePreview) {
+            ticketImagePreview.style.display = "none";
+        }
+        
+        if (pdfViewViewer) {
+            pdfViewViewer.style.display = "block";
+            pdfViewViewer.innerHTML = `
+                <div class="text-center p-4">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Tipo de archivo no soportado: ${mimeType}
+                    </div>
+                </div>
+            `;
+        }
     }
-    const messageDiv = document.createElement('div');
-    messageDiv.textContent = `Tipo de archivo no soportado: ${mimeType}`;
-    messageDiv.style.color = 'red';
-    messageDiv.style.textAlign = 'center';
-    messageDiv.style.padding = '20px';
-    mediaViewerContainer.appendChild(messageDiv);
-  }
 
-  // Mostrar el modal de aprobación
-  const imageApprovalModal = new bootstrap.Modal(imageApprovalModalElement);
-  
-  // Agregar event listener para el botón de cerrar
-  if (closeImageApprovalModalBtn) {
-    // Remover listeners previos para evitar duplicados
-    closeImageApprovalModalBtn.removeEventListener('click', closeModalHandler);
-    closeImageApprovalModalBtn.addEventListener('click', closeModalHandler);
-  }
-
-  imageApprovalModal.show();
-
-  // Función para cerrar el modal
-  function closeModalHandler() {
-    imageApprovalModal.hide();
-  }
-
-  // Agregar listener para cuando el modal se cierre
-  imageApprovalModalElement.addEventListener('hidden.bs.modal', function() {
-    // Limpiar el contenedor cuando se cierre el modal
-    if (mediaViewerContainer) {
-      mediaViewerContainer.innerHTML = '';
+    // Mostrar el modal de aprobación
+    const imageApprovalModal = new bootstrap.Modal(imageApprovalModalElement);
+    
+    // LIMPIAR Y AGREGAR EVENT LISTENERS
+    if (closeImageApprovalModalBtn) {
+        // Remover listeners previos
+        const newCloseBtn = closeImageApprovalModalBtn.cloneNode(true);
+        closeImageApprovalModalBtn.parentNode.replaceChild(newCloseBtn, closeImageApprovalModalBtn);
+        
+        newCloseBtn.addEventListener('click', function() {
+            imageApprovalModal.hide();
+        });
     }
-    // Restaurar la imagen original
-    if (ticketImagePreview) {
-      ticketImagePreview.style.display = "none";
-      ticketImagePreview.src = "";
-      ticketImagePreview.alt = "Vista previa del documento";
-    }
-  }, { once: true }); // El { once: true } asegura que el listener se ejecute solo una vez
+
+    imageApprovalModal.show();
+
+    // LIMPIAR CUANDO SE CIERRE EL MODAL
+    const cleanupHandler = function() {
+        if (ticketImagePreview) {
+            ticketImagePreview.style.display = "none";
+            ticketImagePreview.src = "";
+            ticketImagePreview.alt = "Vista previa del documento";
+        }
+        
+        if (pdfViewViewer) {
+            pdfViewViewer.style.display = "none";
+            pdfViewViewer.innerHTML = "";
+        }
+        imageApprovalModalElement.removeEventListener('hidden.bs.modal', cleanupHandler);
+    };
+    imageApprovalModalElement.addEventListener('hidden.bs.modal', cleanupHandler);
 }

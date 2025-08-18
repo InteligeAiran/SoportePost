@@ -102,14 +102,14 @@ function mi_navbar()
             border-color: white; /* Borde un poco más visible al hacer hover */
         }
 
-          #btn-asignados{
-            background-color: #003594;
+        #btn-asignados{
+            background-color: #dc3545; /* Rojo danger */
+            border-color: #dc3545;
             color: #ffffff;
-            border: 1px solid #003594;
             transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-         #btn-por-asignar{
+        #btn-por-asignar{
             color: #ffffff;
             transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
@@ -117,8 +117,8 @@ function mi_navbar()
         /* CSS para los botones de Asignados/Por Asignar */
         /* Estilo base para el botón Asignados cuando es el activo */
         #btn-asignados.btn-primary {
-            background-color: #003594; /* Tu azul fuerte */
-            border-color: #003594;
+            background-color: #dc3545; /* Rojo danger */
+            border-color: #dc3545;
             color: #ffffff;
             transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
@@ -126,8 +126,8 @@ function mi_navbar()
         /* Estilo hover/focus para el botón Asignados cuando es el activo */
         #btn-asignados.btn-primary:hover,
         #btn-asignados.btn-primary:focus {
-            background-color: #0045B4; /* Un tono un poco más oscuro o claro al hover */
-            border-color: #0045B4;
+            background-color: #dc3545; /* Rojo danger */
+            border-color: #dc3545;
             box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25); /* Sombra de enfoque/hover */
         }
 
@@ -150,8 +150,8 @@ function mi_navbar()
 
         /* Estilo base para el botón Por Asignar cuando es el activo */
         #btn-por-asignar.btn-primary {
-            background-color: #003594; /* Tu azul fuerte */
-            border-color: #003594;
+            background-color: #17a2b8; /* Azul info */
+            border-color: #17a2b8;
             color: #ffffff;
             transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
@@ -159,8 +159,8 @@ function mi_navbar()
         /* Estilo hover/focus para el botón Por Asignar cuando es el activo */
         #btn-por-asignar.btn-primary:hover,
         #btn-por-asignar.btn-primary:focus {
-            background-color: #0045B4;
-            border-color: #0045B4;
+            background-color: #17a2b8; /* Azul info */
+            border-color: #17a2b8;
             box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
         }
 
@@ -199,25 +199,23 @@ function mi_navbar()
 
         /* Estilo base para el botón Recibidos cuando es el activo */
         #btn-recibidos.btn-primary {
-            background-color: #003594;
-            /* Tu azul fuerte */
-            border-color: #003594;
+            background-color: #28a745; /* Verde éxito */
+            border-color: #28a745;
             color: #ffffff;
             transition: background-color 0.3s ease, border-color 0.3s ease,
-             box-shadow 0.3s ease;
+            box-shadow 0.3s ease;
         }
 
             /* Estilo hover/focus para el botón Recibidos cuando es el activo */
         #btn-recibidos.btn-primary:hover,
         #btn-recibidos.btn-primary:focus {
-            background-color: #0045b4;
-            /* Un tono un poco más oscuro o claro al hover */
-            border-color: #0045b4;
+            background-color: #28a745; /* Verde éxito */
+            border-color: #28a745;
             box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
             /* Sombra de enfoque/hover */
         }
 
-            /* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
+        /* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
         #btn-recibidos.btn-secondary {
             background-color: #a0a0a0;
             /* Tu gris sutil */
@@ -485,7 +483,8 @@ function mi_navbar()
                         <div class="modal-body text-center">
                             <div id="mediaViewerContainer" style="width: 100%; height: 500px; display: flex; justify-content: center; align-items: center; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 4px;">
                                 <img id="ticketImagePreview" src="" alt="Vista previa del documento" class="img-fluid" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
-                                </div>
+                                <div id="pdfViewViewer" style="width: 100%; height: 100%; display: none;"></div>
+                            </div>
                             <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Nro Ticket: <span id="currentTicketIdDisplay"></span></p>
                             <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Tipo de Documento: <span id="currentImageTypeDisplay"></span></p>
                             <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Serial POS: <span id="currentSerialDisplay"></span></p>

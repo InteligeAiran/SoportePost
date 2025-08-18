@@ -409,7 +409,7 @@ $(document).ready(function () {
   inicializeModal();
 });
 
-// Obtener los elementos del DOM una sola v
+  // Obtener los elementos del DOM una sola v
 
 const inputEnvio1 = document.getElementById("DownloadEnvi");
 const inputEnvio = document.getElementById("EnvioInput");
@@ -1144,15 +1144,15 @@ function UpdateGuarantees() {
         }
       } else {
         // LÓGICA ORIGINAL: Para otras regiones que sí necesitan envío
-        if (checkExoneracion && checkExoneracion.checked && archivoExoneracion && checkEnvio && checkEnvio.checked && archivoEnvio) {
+      if (checkExoneracion && checkExoneracion.checked && archivoExoneracion && checkEnvio && checkEnvio.checked && archivoEnvio) {
           idStatusPayment = 5; // Exoneración + Envío = Pendiente por revisión
-        } else if (checkAnticipo && checkAnticipo.checked && archivoAnticipo && checkEnvio && checkEnvio.checked && archivoEnvio) {
+      } else if (checkAnticipo && checkAnticipo.checked && archivoAnticipo && checkEnvio && checkEnvio.checked && archivoEnvio) {
           idStatusPayment = 7; // Anticipo + Envío = Pago anticipo pendiente por revisión
-        } else if (checkExoneracion && checkExoneracion.checked && archivoExoneracion && (!checkAnticipo || !checkAnticipo.checked) && !archivoAnticipo && (!checkEnvio || !checkEnvio.checked) && !archivoEnvio) {
+      } else if (checkExoneracion && checkExoneracion.checked && archivoExoneracion && (!checkAnticipo || !checkAnticipo.checked) && !archivoAnticipo && (!checkEnvio || !checkEnvio.checked) && !archivoEnvio) {
           idStatusPayment = 11; // Solo exoneración = Pendiente por cargar envío
-        } else if ((!checkEnvio || !checkEnvio.checked) && archivoAnticipo && (!checkExoneracion || !checkExoneracion.checked) && !archivoExoneracion && checkAnticipo && checkAnticipo.checked && !archivoEnvio) {
+      } else if ((!checkEnvio || !checkEnvio.checked) && archivoAnticipo && (!checkExoneracion || !checkExoneracion.checked) && !archivoExoneracion && checkAnticipo && checkAnticipo.checked && !archivoEnvio) {
           idStatusPayment = 11; // Solo anticipo = Pendiente por cargar envío
-        } else {
+      } else {
           idStatusPayment = 10; // Solo envío = Pendiente por cargar documento (exoneración o anticipo)
         }
       }
@@ -1221,22 +1221,22 @@ function showGarantiaAlert() {
   const idStatusPaymentInstalacion = validarGarantiaInstalacion(fechaInstalacionGlobal);
   
   if (idStatusPaymentReingreso === 3) {
-    Swal.fire({
-      title: "¡Notificación!",
-      text: "Tiene Garantía Por Reingreso.",
-      icon: "warning",
-      confirmButtonText: "OK",
-      color: "black",
-    });
+      Swal.fire({
+        title: "¡Notificación!",
+        text: "Tiene Garantía Por Reingreso.",
+        icon: "warning",
+        confirmButtonText: "OK",
+        color: "black",
+      });
   } else if (idStatusPaymentInstalacion === 1) {
-    Swal.fire({
-      title: "¡Notificación!",
-      text: "Tiene Garantía Por Instalacion.",
-      icon: "warning",
-      confirmButtonText: "OK",
-      color: "black",
-    });
-  }
+      Swal.fire({
+        title: "¡Notificación!",
+        text: "Tiene Garantía Por Instalacion.",
+        icon: "warning",
+        confirmButtonText: "OK",
+        color: "black",
+      });
+    }
 }
 
 // NUEVO: Función para forzar la verificación de garantía al cargar la página
@@ -1401,7 +1401,7 @@ document.getElementById("DownloadAntici").addEventListener("click", function (ev
   const inputAnticipo1 = document.getElementById("DownloadAntici"); // El botón
 
   // Puedes agregar aquí validación de tamaño para el archivo de anticipo si es necesario
-});
+  });
 
 document.getElementById("DownloadAntici").addEventListener("click", function (event) {
     document.getElementById("DownloadExo").style.display = "none";
@@ -1429,7 +1429,7 @@ document.getElementById("DownloadAntici").addEventListener("click", function (ev
 
     // Si la validación pasa, puedes continuar con alguna otra lógica aquí si es necesario
     //console.log("Validación de anticipo pasada.");
-});
+  });
 
 // Función para verificar si ya existe un ticket en proceso para el serial
 
@@ -1978,14 +1978,14 @@ document.addEventListener("DOMContentLoaded", function () {
   // Función para actualizar la visibilidad de los botones individuales de carga de archivos
   // Función para actualizar la visibilidad de los botones individuales de carga de archivos
   // Función para actualizar la visibilidad de los botones individuales de carga de archivos
-function updateFileUploadButtonVisibility() {
+  function updateFileUploadButtonVisibility() {
     // Solo mostrar el botón si 'uploadNow' está marcado Y el checkbox/radio está marcado
     botonCargaPDFEnv.style.display =
-        uploadNowRadio.checked && checkEnvio.checked ? "flex" : "none";
+      uploadNowRadio.checked && checkEnvio.checked ? "flex" : "none";
     botonCargaExoneracion.style.display =
-        uploadNowRadio.checked && checkExoneracion.checked ? "flex" : "none";
+      uploadNowRadio.checked && checkExoneracion.checked ? "flex" : "none";
     botonCargaAnticipo.style.display =
-        uploadNowRadio.checked && checkAnticipo.checked ? "flex" : "none";
+      uploadNowRadio.checked && checkAnticipo.checked ? "flex" : "none";
     
     // NUEVA FUNCIONALIDAD: Limpiar archivos cuando se deselecciona un checkbox/radio
     if (!checkEnvio.checked) {
