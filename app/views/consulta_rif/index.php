@@ -447,7 +447,7 @@ function mi_navbar() {}
 
                                     <div id="DownloadsBotons">
                                         <div id="botonCargaPDFEnv" style="display: none;">
-                                            <button id="DownloadEnvi" class="btn btn-outline-secondary btn-sm" type="button">Cargar PDF Envio</button>
+                                            <button id="DownloadEnvi" class="btn btn-outline-secondary btn-sm" type="button">Cargar Documento Envio</button>
                                             <input class="form-control" id="EnvioInput" type="file"
                                                 style="display: none; margin-left: 10px;"
                                                 accept="application/pdf, image/jpeg, image/jpg">
@@ -457,7 +457,7 @@ function mi_navbar() {}
                                         <div style="display: flex; align-items: center; margin-bottom: 6%; display: none;"
                                             id="botonCargaExoneracion">
                                             <button id="DownloadExo" class="btn btn-outline-secondary btn-sm"
-                                                type="button">Cargar Exoneracion</button>
+                                                type="button">Cargar Documento Exoneracion</button>
                                             <input class="form-control" id="ExoneracionInput" type="file"
                                                 style="display: none; margin-left: 10px;"
                                                 accept="application/pdf, image/jpeg, image/jpg">
@@ -466,8 +466,7 @@ function mi_navbar() {}
 
                                         <div style="display: flex; align-items: center; margin-bottom: 2%; display: none;"
                                             id="botonCargaAnticipo">
-                                            <button class="form-control" id="DownloadAntici" class="btn btn-outline-secondary btn-sm"
-                                                type="button">Cargar PDF Anticipo</button>
+                                            <button id="DownloadAntici" class="btn btn-outline-secondary btn-sm" type="button">Cargar Documento Anticipo</button>
                                             <input id="AnticipoInput" type="file" style="display: none; margin-left: 10px;"
                                                 accept="application/pdf, image/jpeg, image/jpg">
                                             <div id="anticipoStatus"></div>
