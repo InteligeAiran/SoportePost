@@ -659,7 +659,7 @@ function getTicketDataFinaljs() {
                             </button>`;
                     } else {
                         // Si el estatus no es "Llaves Cargadas", muestra "No hay imagen"
-                        return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Docuemntos Cargados</button>`;
+                        return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Documentos Cargados</button>`;
                     }
                 },
             });

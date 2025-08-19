@@ -500,8 +500,9 @@ function mi_navbar() {
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="icon-close"><span aria-hidden="true">&times;</span>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="icon-close" onclick="reloadPag()"><span aria-hidden="true">&times;</span>
                 </button>
+                
                 <div class="panel-heading" style="text-align: center;color:#ffffff;">
                     <h4 style="color: grey;">Asignación de Módulos</h4>
                 </div>
