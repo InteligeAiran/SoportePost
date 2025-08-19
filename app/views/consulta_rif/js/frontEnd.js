@@ -2856,9 +2856,9 @@ function SendSerial() {
   }
 
   const serialInput = document.getElementById("serialInput");
-  const serialInputValue = serialInput.value.trim(); // Se obtiene el valor y se eliminan espacios en blanco
+  const serialInputValue = serialInput.value.trim();
 
-  // **Verificación para campo vacío**
+  // 1. Validar la entrada de usuario al principio
   if (!serialInputValue) {
     Swal.fire({
       title: "Atención",
@@ -2871,120 +2871,110 @@ function SendSerial() {
       color: "black",
       confirmButtonColor: "#003594",
     });
-    return; // Detiene la ejecución de la función
+    // Volver a mostrar el mensaje de bienvenida si la validación falla
+    if (welcomeMessage) {
+      welcomeMessage.style.display = "block";
+    }
+    return;
   }
 
-  // Si el campo no está vacío, el resto de la función se ejecuta
-  const razonCountTableCard = document.querySelector(".card");
-  razonCountTableCard.style.display = "block"; // Muestra la tabla
+  const mainTableCard = document.querySelector(".card");
+  if (!mainTableCard) {
+    console.error("Error: El contenedor principal de tablas (.card) no se encontró.");
+    return;
+  }
+
+  // 2. Limpiar la tabla existente (si la hay) y mensajes antes de la nueva petición
+  let rifCountTable = document.getElementById("rifCountTable");
+  if (rifCountTable) {
+    // Si ya es una instancia de DataTables, destrúyela primero
+    if ($.fn.DataTable.isDataTable(rifCountTable)) {
+      $(rifCountTable).DataTable().destroy();
+    }
+    rifCountTable.remove(); // Elimina la tabla del DOM
+  }
+  mainTableCard.querySelectorAll("p").forEach((p) => p.remove()); // Limpia mensajes de error/estado
+
+  // Opcional: mostrar un mensaje de "cargando..."
+  const loadingMessage = document.createElement("p");
+  loadingMessage.textContent = "Buscando datos...";
+  loadingMessage.className = "text-center text-muted";
+  mainTableCard.appendChild(loadingMessage);
+
+  // **ATENCIÓN:** Se ha eliminado la línea para hacer la tarjeta visible aquí
+  // mainTableCard.style.display = "block";
 
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchSerialData`);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-  const tbody = document.getElementById("rifCountTable").getElementsByTagName("tbody")[0];
-
-  // Destruye DataTables si ya está inicializado
-  if ($.fn.DataTable.isDataTable("#rifCountTable")) {
-    $("#rifCountTable").DataTable().destroy();
-  }
-
-  // Limpia la tabla ANTES de la nueva búsqueda
-  tbody.innerHTML = "";
-
   xhr.onload = function () {
+    // Eliminar el mensaje de carga
+    if (loadingMessage) {
+      loadingMessage.remove();
+    }
+    
+    // **Añadir la lógica para limpiar la tabla existente y los mensajes aquí**
+    // **Es más seguro hacerlo dentro del onload para evitar duplicación**
+    let existingTable = document.getElementById("rifCountTable");
+    if (existingTable) {
+      if ($.fn.DataTable.isDataTable(existingTable)) {
+        $(existingTable).DataTable().destroy();
+      }
+      existingTable.remove();
+    }
+    mainTableCard.querySelectorAll("p").forEach((p) => p.remove());
+
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
 
         if (response.success && response.serialData && response.serialData.length > 0) {
-          response.serialData.forEach((item) => {
-            const row = tbody.insertRow();
-            // ... (resto de la lógica para poblar la tabla, sin cambios)
-            const id_clienteCell = row.insertCell();
-            const razonsocialCell = row.insertCell();
-            const rifCell = row.insertCell();
-            const name_modeloposCell = row.insertCell();
-            const serial_posCell = row.insertCell();
-            const afiliacionCell = row.insertCell();
-            const fechainstallCell = row.insertCell();
-            const bancoCell = row.insertCell();
-            const directionCell = row.insertCell();
-            const estadoCell = row.insertCell();
-            const municipioCell = row.insertCell();
+          // **ATENCIÓN:** Mover la línea para hacer la tarjeta visible a este bloque
+          mainTableCard.style.display = "block";
 
-            id_clienteCell.textContent = item.id_cliente;
-            razonsocialCell.textContent = item.razonsocial;
-            rifCell.textContent = item.rif;
-            name_modeloposCell.textContent = item.name_modelopos;
-            
-            // Crear el enlace para el número de serie
-            const enlaceSerial = document.createElement("a");
-            enlaceSerial.textContent = item.serial_pos;
-            enlaceSerial.style.color = "blue";
-            enlaceSerial.style.textDecoration = "underline";
-            enlaceSerial.style.cursor = "pointer";
-            serial_posCell.appendChild(enlaceSerial);
+          // 3. Crear la tabla y poblar los datos
+          const newTable = document.createElement("table");
+          newTable.id = "rifCountTable";
+          newTable.className = "table table-striped table-bordered table-hover table-sm";
+          mainTableCard.appendChild(newTable);
 
-            // Modal de detalles del serial (tu código existente)
-            const modalSerial = document.getElementById("ModalSerial");
-            const spanSerialClose = document.getElementById("ModalSerial-close");
-            enlaceSerial.onclick = function () {
-              modalSerial.style.display = "block";
-              fetchSerialData(item.serial_pos, item.rif, item.razonsocial);
-            };
-            spanSerialClose.onclick = function () {
-              modalSerial.style.display = "none";
-            };
-            window.onclick = function (event) {
-              if (event.target == modalSerial) {
-                modalSerial.style.display = "none";
+          const data = response.serialData;
+          const columnsConfig = [
+            { data: "id_cliente", title: "ID Cliente" },
+            { data: "razonsocial", title: "Razón Social" },
+            { data: "rif", title: "RIF" },
+            { data: "name_modelopos", title: "Modelo POS" },
+            {
+              data: "serial_pos",
+              title: "Serial POS",
+              render: function (data, type, row) {
+                return `<a href="#" class="serial-link">${data}</a>`;
+              },
+            },
+            { data: "afiliacion", title: "N° Afiliación" },
+            { 
+              data: "fechainstalacion", 
+              title: "Fecha Instalación",
+              render: function(data, type, row) {
+                const fechaInstalacion = new Date(data);
+                const ahora = new Date();
+                const diffEnMeses = (ahora.getFullYear() - fechaInstalacion.getFullYear()) * 12 + (ahora.getMonth() - fechaInstalacion.getMonth());
+                const garantiaTexto = (diffEnMeses <= 6) ? "Garantía Instalación (6 meses)" : "Sin garantía";
+                const garantiaClase = (diffEnMeses <= 6) ? "garantia-activa" : "sin-garantia";
+                return `<span>${data}</span><br><span class="${garantiaClase}" style="font-size: 10px; font-weight: bold; display: block; margin-top: 5px;">${garantiaTexto}</span>`;
               }
-            };
+            },
+            { data: "banco", title: "Banco" },
+            { data: "direccion_instalacion", title: "Dirección Instalación" },
+            { data: "estado", title: "Estado" },
+            { data: "municipio", title: "Municipio" },
+          ];
 
-            afiliacionCell.textContent = item.afiliacion;
-            fechainstallCell.textContent = item.fechainstalacion;
-
-            // Lógica de la garantía
-            const fechaInstalacion = new Date(item.fechainstalacion);
-            const ahora = new Date();
-            const diffEnMilisegundos = ahora.getTime() - fechaInstalacion.getTime();
-            const diffEnMeses = diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
-
-            const garantiaLabel = document.createElement("span");
-            garantiaLabel.style.fontSize = "10px";
-            garantiaLabel.style.fontWeight = "bold";
-            garantiaLabel.style.display = "block";
-            garantiaLabel.style.marginTop = "5px";
-            garantiaLabel.style.width = "173px";
-            let garantiaTexto = "";
-            let garantiaClase = "";
-
-            if (diffEnMeses <= 6 && diffEnMeses >= 0) {
-              garantiaTexto = "Garantía Instalación (6 meses)";
-              garantiaClase = "garantia-activa";
-            } else {
-              garantiaTexto = "Sin garantía";
-              garantiaClase = "sin-garantia";
-            }
-
-            garantiaLabel.textContent = garantiaTexto;
-            garantiaLabel.className = garantiaClase;
-            fechainstallCell.appendChild(document.createElement("br"));
-            fechainstallCell.appendChild(garantiaLabel);
-
-            bancoCell.textContent = item.banco;
-            directionCell.textContent = item.direccion_instalacion;
-            estadoCell.textContent = item.estado;
-            municipioCell.textContent = item.municipio;
-          });
-
-          // Inicialización de DataTables
-          if ($.fn.DataTable.isDataTable("#rifCountTable")) {
-            $("#rifCountTable").DataTable().destroy();
-          }
-          $("#rifCountTable").DataTable({
+          $(newTable).DataTable({
             responsive: false,
+            data: data,
+            columns: columnsConfig,
             pagingType: "simple_numbers",
             lengthMenu: [5],
             autoWidth: false,
@@ -3006,31 +2996,76 @@ function SendSerial() {
               },
             },
           });
-          $("#rifCountTable").resizableColumns();
+          $(newTable).resizableColumns();
+
+          // 4. Delegar el evento de clic del enlace del serial
+          $(newTable).on("click", "a.serial-link", function (e) {
+            e.preventDefault();
+            const rowData = $(newTable).DataTable().row($(this).parents("tr")).data();
+            const modalSerial = document.getElementById("ModalSerial");
+            modalSerial.style.display = "block";
+            fetchSerialData(rowData.serial_pos, rowData.rif, rowData.razonsocial);
+          });
         } else {
-          // Si no hay datos, muestra un mensaje de "no encontrado"
-          tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron datos para el serial ingresado.</td></tr>';
+          // Si no hay datos, mostrar un mensaje y la imagen de bienvenida
+          const noDataMessage = document.createElement("p");
+          noDataMessage.textContent = "No se encontraron datos para el serial ingresado.";
+          mainTableCard.appendChild(noDataMessage);
+          if (welcomeMessage) {
+            welcomeMessage.style.display = "block";
+          }
         }
       } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta.</td></tr>';
+        const errorMessage = document.createElement("p");
+        errorMessage.textContent = "Error al procesar la respuesta.";
+        mainTableCard.appendChild(errorMessage);
         console.error("Error parsing JSON:", error);
+        if (welcomeMessage) {
+          welcomeMessage.style.display = "block";
+        }
       }
-    } else if (xhr.status === 404) {
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron usuarios.</td></tr>';
     } else {
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de conexión.</td></tr>';
+      // Manejar errores HTTP
+      const errorMessage = document.createElement("p");
+      errorMessage.textContent = "Error de conexión con el servidor.";
+      mainTableCard.appendChild(errorMessage);
       console.error("Error:", xhr.status, xhr.statusText);
+      if (welcomeMessage) {
+        welcomeMessage.style.display = "block";
+      }
     }
   };
 
   xhr.onerror = function () {
-    tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de red.</td></tr>';
+    if (loadingMessage) {
+      loadingMessage.remove();
+    }
+    const errorMessage = document.createElement("p");
+    errorMessage.textContent = "Error de red. Verifique su conexión.";
+    mainTableCard.appendChild(errorMessage);
     console.error("Error de red");
+    if (welcomeMessage) {
+      welcomeMessage.style.display = "block";
+    }
   };
 
   const datos = `action=SearchSerialData&serial=${encodeURIComponent(serialInputValue)}`;
   xhr.send(datos);
 }
+
+// Lógica para cerrar el modal de serial fuera de la función principal
+const modalSerial = document.getElementById("ModalSerial");
+const spanSerialClose = document.getElementById("ModalSerial-close");
+if (spanSerialClose) {
+  spanSerialClose.onclick = function () {
+    modalSerial.style.display = "none";
+  };
+}
+window.onclick = function (event) {
+  if (event.target == modalSerial) {
+    modalSerial.style.display = "none";
+  }
+};
 
 function SendRazon() {
   const razonInput = document.getElementById("RazonInput");

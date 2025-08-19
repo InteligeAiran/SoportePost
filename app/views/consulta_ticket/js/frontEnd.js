@@ -301,11 +301,6 @@ function getRegionUsuarios() {
 document.addEventListener("DOMContentLoaded", getRegionUsuarios);
 
 function SendRegions() {
-  const welcomeMessage = document.getElementById("welcomeMessage");
-  if (welcomeMessage) {
-    welcomeMessage.style.display = "none";
-  }
-
   const RegionSelectValue = document.getElementById("SelectRgions").value;
 
   // Mover la validación al principio para detener la ejecución si no hay región
