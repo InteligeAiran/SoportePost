@@ -195,32 +195,25 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
 }
 
 function getTicketAprovalDocument() {
-    const id_user = document.getElementById("userId").value; // Obtener el ID del usuario
+    const id_user = document.getElementById("userId").value;
 
     const xhr = new XMLHttpRequest();
-    // Pasa el id_user como parámetro de consulta a tu endpoint
     xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/reportes/tickets-pending-document-approval`);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
     const detailsPanel = document.getElementById("ticket-details-panel");
-
     const tableElement = document.getElementById("tabla-ticket");
-    const theadElement = tableElement
-        ? tableElement.getElementsByTagName("thead")[0]
-        : null;
-    const tbodyElement = tableElement
-        ? tableElement.getElementsByTagName("tbody")[0]
-        : null;
+    const theadElement = tableElement ? tableElement.getElementsByTagName("thead")[0] : null;
+    const tbodyElement = tableElement ? tableElement.getElementsByTagName("tbody")[0] : null;
     const tableContainer = document.querySelector(".table-responsive");
-    // Asumiendo que 'viewDocumentsBtn' es un botón fuera de la tabla si lo usas
-    const viewDocumentsBtn = document.getElementById("viewDocumentsBtn"); 
+    const viewDocumentsBtn = document.getElementById("viewDocumentsBtn");
 
-    // Actualiza columnTitles con las nuevas columnas disponibles
     const columnTitles = {
         nro_ticket: "Nro Ticket",
+        rif: "RIF",
+        razonsocial_cliente: "Razón Social",
         serial_pos: "Serial POS",
         name_status_payment: "Estatus Pago",
-        // NUEVAS COLUMNAS DISPONIBLES
         document_type: "Tipo Documento",
         original_filename: "Nombre Archivo",
         motivo_rechazo: "Motivo Rechazo",
@@ -254,7 +247,6 @@ function getTicketAprovalDocument() {
                                 return meta.row + meta.settings._iDisplayStart + 1;
                             },
                         });
-                        // --- FIN DE COLUMNA DE NUMERACIÓN ---
 
                         for (const key in columnTitles) {
                             if (allDataKeys.includes(key)) {
@@ -272,6 +264,20 @@ function getTicketAprovalDocument() {
                                     title: columnTitles[key],
                                     defaultContent: "",
                                     visible: isVisible,
+                                    // --- NUEVO: AGREGAR RENDER PARA TRUNCAMIENTO ---
+                                    render: function (data, type, row) {
+                                        if (type === 'display' && data) {
+                                            const displayLength = 25;
+                                            const fullText = String(data);
+                                            
+                                            if (fullText.length > displayLength) {
+                                                return `<span class="truncated-cell" data-full-text="${fullText.replace(/"/g, '&quot;')}">${fullText.substring(0, displayLength)}...</span>`;
+                                            } else {
+                                                return `<span class="expanded-cell" data-full-text="${fullText.replace(/"/g, '&quot;')}">${fullText}</span>`;
+                                            }
+                                        }
+                                        return data || '';
+                                    }
                                 };
                                 columnsConfig.push(columnDef);
                             }
@@ -279,9 +285,9 @@ function getTicketAprovalDocument() {
 
                         // --- AÑADIR COLUMNA DE ACCIONES ---
                         columnsConfig.push({
-                            data: null, // No se asocia a una columna de datos directa
+                            data: null,
                             title: "Acciones",
-                            orderable: false, // No permitir ordenar por esta columna
+                            orderable: false,
                             render: function (data, type, row) {
                                 const idTicket = row.id_ticket;
                                 const envio = row.envio;
@@ -290,7 +296,6 @@ function getTicketAprovalDocument() {
                                 const nro_ticket = row.nro_ticket;
                                 const serial_pos = row.serial_pos;
                                 
-                                // NUEVAS COLUMNAS DISPONIBLES
                                 const documentType = row.document_type;
                                 const originalFilename = row.original_filename;
                                 const motivoRechazo = row.motivo_rechazo;
@@ -298,7 +303,6 @@ function getTicketAprovalDocument() {
                                 const idMotivoRechazo = row.id_motivo_rechazo;
                                 const rechazado = row.documento_rechazado;
                                 
-                                // Determinar si es un documento rechazado
                                 const isRejected = idMotivoRechazo !== null && motivoRechazo !== null;
                                 
                                 let actionButtons = `
@@ -325,7 +329,6 @@ function getTicketAprovalDocument() {
                                     </button>
                                 `;
                                 
-                                // Si es un documento rechazado, agregar botón para subir nuevo documento
                                 if (isRejected) {
                                     actionButtons += `
                                         <button class="btn btn-warning btn-sm upload-new-doc-btn ms-1" 
@@ -345,14 +348,13 @@ function getTicketAprovalDocument() {
                                 return actionButtons;
                             },
                         });
-                        // --- FIN DE AÑADIR COLUMNA ---
 
                         const dataTableInstance = $(tableElement).DataTable({
                             responsive: false,
                             scrollX: "200px",
                             data: TicketData,
                             columns: columnsConfig,
-                            order: [[1, 'desc']], // Cambiar a [1, 'desc'] porque ahora la columna 0 es N°
+                            order: [[1, 'desc']],
                             pagingType: "simple_numbers",
                             lengthMenu: [5, 10, 25, 50, 100],
                             autoWidth: false,
@@ -374,90 +376,92 @@ function getTicketAprovalDocument() {
                                 },
                             },
                             dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-                                initComplete: function (settings, json) {
-                                // Dentro de initComplete, 'this' se refiere a la tabla jQuery
-                                // y 'this.api()' devuelve la instancia de la API de DataTables.
-                                const api = this.api(); // <--- Correcto: Obtener la instancia de la API aquí
+                            initComplete: function (settings, json) {
+                                const api = this.api();
 
-                                // Esto es parte de tu inicialización de DataTables, probablemente dentro de 'initComplete'
-                                // o en un script que se ejecuta después de que la tabla está lista.
                                 const buttonsHtml = `
                                     <button id="btn-por-asignar" class="btn btn-primary me-2" title="Pendientes por revisión Documentos">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
                                             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                                    </svg>
+                                        </svg>
                                     </button>
 
                                     <button id="btn-recibidos" class="btn btn-secondary me-2" title="Pendiente por cargar Documentos">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
                                             <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
-                                    </svg>
+                                        </svg>
                                     </button>
 
                                     <button id="btn-asignados" class="btn btn-secondary me-2" title="Documentos Rechazados">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
-                                    </svg>
+                                        </svg>
                                     </button>
                                 `;
                                 $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
                                 function setActiveButton(activeButtonId) {
-                                    $("#btn-por-asignar")
-                                    .removeClass("btn-primary")
-                                    .addClass("btn-secondary");
-                                    $("#btn-asignados")
-                                    .removeClass("btn-primary")
-                                    .addClass("btn-secondary");
-                                    $("#btn-recibidos")
-                                    .removeClass("btn-primary")
-                                    .addClass("btn-secondary");
-                                    $("#btn-reasignado")
-                                    .removeClass("btn-primary")
-                                    .addClass("btn-secondary");
-                                    $(`#${activeButtonId}`)
-                                    .removeClass("btn-secondary")
-                                    .addClass("btn-primary");
+                                    $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
+                                    $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
+                                    $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
+                                    $("#btn-reasignado").removeClass("btn-primary").addClass("btn-secondary");
+                                    $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
                                 }
 
                                 api.columns().search('').draw(false);
-                                api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                                    .column(3)
-                                    .search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true) // CAMBIO AQUÍ
-                                    .draw();
-                                setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
+                                api.column(5).search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true).draw();
+                                setActiveButton("btn-por-asignar");
 
                                 $("#btn-por-asignar").on("click", function () {
                                     api.columns().search('').draw(false);
-                                    api
-                                    .column(3)
-                                    .search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true) // CAMBIO AQUÍ
-                                    .draw();
+                                    api.column(5).search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true).draw();
                                     setActiveButton("btn-por-asignar");
                                 });
 
-                                
                                 $("#btn-recibidos").on("click", function () {
                                     api.columns().search('').draw(false);
-                                    api
-                                        .column(3)
-                                        .search("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)", true, false, true)
-                                        .draw();
+                                    api.column(5).search("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)", true, false, true).draw();
                                     setActiveButton("btn-recibidos");
                                 });
 
                                 $("#btn-asignados").on("click", function () {
                                     api.columns().search('').draw(false);
-                                    api
-                                        .column(3)
-                                        .search("Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado", true, false, true)
-                                        .draw();
+                                    api.column(5).search("Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado", true, false, true).draw();
                                     setActiveButton("btn-asignados");
-                                });    
+                                });
                             },
                         });
 
-                        // Event listener para subir nuevo documento (NUEVO)
+                        // --- NUEVO: EVENT LISTENER PARA TRUNCAMIENTO DE CELDAS ---
+                        $("#tabla-ticket tbody")
+                            .off("click", ".truncated-cell, .expanded-cell")
+                            .on("click", ".truncated-cell, .expanded-cell", function (e) {
+                                e.stopPropagation();
+                                const $cellSpan = $(this);
+                                const fullText = $cellSpan.data("full-text");
+                                const displayLength = 25;
+
+                                if ($cellSpan.hasClass("truncated-cell")) {
+                                    // Si está truncado, expandirlo
+                                    $cellSpan
+                                        .removeClass("truncated-cell")
+                                        .addClass("expanded-cell");
+                                    $cellSpan.text(fullText);
+                                } else if ($cellSpan.hasClass("expanded-cell")) {
+                                    // Si está expandido, truncarlo (si es necesario)
+                                    $cellSpan
+                                        .removeClass("expanded-cell")
+                                        .addClass("truncated-cell");
+
+                                    if (fullText.length > displayLength) {
+                                        $cellSpan.text(fullText.substring(0, displayLength) + "...");
+                                    } else {
+                                        $cellSpan.text(fullText);
+                                    }
+                                }
+                            });
+
+                        // Event listener para subir nuevo documento
                         $("#tabla-ticket tbody").on("click", ".upload-new-doc-btn", function () {
                             const ticketId = $(this).data("id");
                             const nroTicket = $(this).data("nro-ticket");
@@ -468,11 +472,11 @@ function getTicketAprovalDocument() {
                             showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType, motivoRechazo);
                         });
 
+                        // Event listener para filas de la tabla
                         $("#tabla-ticket tbody")
-                            .off("click", "tr") // .off() para prevenir múltiples enlaces si se llama varias veces
+                            .off("click", "tr")
                             .on("click", "tr", function (e) {
-                                // Asegúrate de que el clic no proviene de una celda de acción (botones, SVG, etc.)
-                                if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('full-text-cell') || $(e.target).is('button') || $(e.target).is('svg') || $(e.target).is('path') || $(e.target).is('input[type="checkbox"]')) {
+                                if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('expanded-cell') || $(e.target).is('button') || $(e.target).is('svg') || $(e.target).is('path') || $(e.target).is('input[type="checkbox"]')) {
                                     return;
                                 }
 
@@ -526,14 +530,12 @@ function getTicketAprovalDocument() {
                             const ticketId = $(this).data("id");
                             const nroTicket = $(this).data("nro-ticket");
                             const serialPos = $(this).data("serial-pos");
-                            const documentoRechazado = $(this).data("rechazado"); // AGREGAR ESTA LÍNEA
+                            const documentoRechazado = $(this).data("rechazado");
                             
-                            // Asume que los valores 'Sí' o 'No' están en los data attributes del botón.
                             const envioValor = $(this).data("envio");
                             const exoValor = $(this).data("exoneracion");
                             const pagoValor = $(this).data("anticipo");
 
-                            // Lógica de validación
                             if (envioValor === 'No' && exoValor === 'No' && pagoValor === 'No') {
                                 Swal.fire({
                                     title: 'No hay imagen disponible',
@@ -543,20 +545,17 @@ function getTicketAprovalDocument() {
                                     confirmButtonColor: '#003594',
                                     color: 'black'
                                 });
-                                // Detener la ejecución de la función aquí.
                                 return; 
                             }
 
-                            // Si al menos una imagen existe, el código continúa aquí.
                             currentTicketIdForImage = ticketId;
                             currentTicketNroForImage = nroTicket;
                             currentTicketSerialForImage = serialPos;
 
                             const VizualizarImage = document.getElementById('visualizarImagenModal');
-                            // Establecer el data-ticket-id en el modal para que esté disponible en el listener del botón
                             VizualizarImage.setAttribute('data-ticket-id', nroTicket);
                             VizualizarImage.setAttribute('data-serial-pos', serialPos);
-                            VizualizarImage.setAttribute('data-rechazado', documentoRechazado); // AGREGAR ESTA LÍNEA
+                            VizualizarImage.setAttribute('data-rechazado', documentoRechazado);
                             const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
 
                             const EnvioInputModal = document.getElementById('imagenEnvio');
@@ -569,11 +568,10 @@ function getTicketAprovalDocument() {
 
                             if(botonCerrarVizualizacion) {
                                 botonCerrarVizualizacion.addEventListener('click', function() {
-                                    visualizarImagenModal.hide(); // Oculta el modal de visualización de imagen
+                                    visualizarImagenModal.hide();
                                 });
                             }
 
-                            // Muestra u oculta los radio buttons basándose en los valores del botón
                             if (envioValor === 'Sí') {
                                 EnvioLabelModal.style.display = 'block';
                                 EnvioInputModal.style.display = 'block';
@@ -598,7 +596,6 @@ function getTicketAprovalDocument() {
                                 PagoLabelModal.style.display = 'none';
                             }
                             
-                            // Set a sensible default checked radio button
                             if (envioValor === 'Sí') {
                                 EnvioInputModal.checked = true;
                             } else if (exoValor === 'Sí') {
@@ -607,9 +604,9 @@ function getTicketAprovalDocument() {
                                 PagoInputModal.checked = true;
                             }
 
-                            // Mostrar el modal
                             visualizarImagenModal.show();
                         });
+
                         if (tableContainer) {
                             tableContainer.style.display = "";
                         }
@@ -622,16 +619,6 @@ function getTicketAprovalDocument() {
                             viewDocumentsBtn.style.display = "none";
                         }
                     }
-
-                    $("#tabla-ticket tbody").on("click", ".upload-new-doc-btn", function () {
-                        const ticketId = $(this).data("id");
-                        const nroTicket = $(this).data("nro-ticket");
-                        const serialPos = $(this).data("serial-pos");
-                        const documentType = $(this).data("document-type");
-                        const motivoRechazo = $(this).data("motivo-rechazo");
-                        
-                        showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType, motivoRechazo);
-                    });
                 } else {
                     if (tableContainer) {
                         tableContainer.innerHTML =
@@ -1313,11 +1300,11 @@ function formatTicketDetailsPanel(d) {
                         </div><br>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Fecha Instalación:</div></strong>
-                          ${d.fecha_instalacion || 'Sin datos'}
+                          ${d.fecha_instalacion ||  'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div  style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
-                          ${d.fecha_cierre_anterior || 'Sin datos'}
+                          ${d.fecha_cierre_anterior ||  'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Garantía:</div></strong>
@@ -1333,7 +1320,7 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Dirección Instalación:</div></strong>
-                          ${d.nombre_estado_cliente || 'Sin datos'}
+                          ${d.nombre_estado_cliente ||  'No posee'}
                         </div><br>
                          <div class="col-sm-6 mb-2">
                             <br><strong><div>Estatus Ticket:</div></strong>

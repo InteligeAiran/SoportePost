@@ -251,14 +251,14 @@ function getTicketData() {
                                     const dataSent = hasSendKeyDate ? 'true' : 'false';
 
                                                           return `<button class="btn btn-info btn-sm load-key-button" 
-                                                                          title="Enviar Al Rosal" 
-                                                                          data-id-ticket="${row.id_ticket}" 
-                                                                          data-nro-ticket="${row.nro_ticket}" 
-                                                                          data-has-send-key-date="${dataSent}"
-                                                                          data-serial-pos="${row.serial_pos}">
-                                                                      <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-headset" viewBox="0 0 16 16">
-                                                                        <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5"/>
-                                                                      </svg>
+                                                                    title="Enviar Al Rosal" 
+                                                                    data-id-ticket="${row.id_ticket}" 
+                                                                    data-nro-ticket="${row.nro_ticket}" 
+                                                                    data-has-send-key-date="${dataSent}"
+                                                                    data-serial-pos="${row.serial_pos}">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
+                                                                      <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>
+                                                                    </svg>
                                                                   </button>`;
                                                       } else {
                                                           return ""; // No mostrar nada si no es "Reparado"
@@ -938,11 +938,11 @@ function formatTicketDetailsPanel(d) {
                         </div><br>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Fecha Instalación:</div></strong>
-                          ${d.fecha_instalacion || 'Sin datos'}
+                          ${d.fecha_instalacion ||  'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div  style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
-                          ${d.fecha_cierre_anterior || 'Sin datos'}
+                          ${d.fecha_cierre_anterior ||  'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Garantía:</div></strong>
@@ -958,7 +958,7 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Dirección Instalación:</div></strong>
-                          ${d.nombre_estado_cliente || 'Sin datos'}
+                          ${d.nombre_estado_cliente ||  'No posee'}
                         </div><br>
                          <div class="col-sm-6 mb-2">
                             <br><strong><div>Estatus Ticket:</div></strong>
@@ -2673,7 +2673,6 @@ document.addEventListener("DOMContentLoaded", () => {
   modalNewStatusSelect.addEventListener("change", function () {
     const selectedOptionText =
       this.options[this.selectedIndex].textContent.trim();
-    console.log("Opción seleccionada:", selectedOptionText);
 
     if (selectedOptionText === "Pendiente por repuesto") {
       // Asegúrate de la ortografía

@@ -1033,11 +1033,11 @@ function formatTicketDetailsPanel(d) {
                         </div><br>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Fecha Instalación:</div></strong>
-                          ${d.fecha_instalacion || 'Sin datos'}
+                          ${d.fecha_instalacion || 'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div  style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
-                          ${d.fecha_cierre_anterior || 'Sin datos'}
+                          ${d.fecha_cierre_anterior || 'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Garantía:</div></strong>
@@ -1053,7 +1053,7 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Dirección Instalación:</div></strong>
-                          ${d.nombre_estado_cliente || 'Sin datos'}
+                          ${d.nombre_estado_cliente ||  'No posee'}
                         </div><br>
                          <div class="col-sm-6 mb-2">
                             <br><strong><div>Estatus Ticket:</div></strong>

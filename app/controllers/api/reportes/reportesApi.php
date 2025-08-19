@@ -415,7 +415,7 @@ class reportes extends Controller {
         $cleanSerial = preg_replace("/[^a-zA-Z0-9_-]/", "_", $serial);
         $baseUploadDir = UPLOAD_BASE_DIR;
         $serialUploadDir = $baseUploadDir . $cleanSerial . DIRECTORY_SEPARATOR;
-        $ticketUploadDir = $serialUploadDir . $id_ticket . DIRECTORY_SEPARATOR;
+        $ticketUploadDir = $serialUploadDir . $nro_ticket . DIRECTORY_SEPARATOR;
         if (!is_dir($baseUploadDir)) {
             if (!mkdir($baseUploadDir, 0755, true)) {
                 error_log("Error al crear el directorio base: " . $baseUploadDir);
@@ -460,7 +460,7 @@ class reportes extends Controller {
         $uploadPath = $documentTypeDir . $uniqueFileName;
         
         // RUTA RELATIVA para la base de datos y la web
-        $filePathForDatabase = UPLOAD_BASE_DIR . $cleanSerial . '/' . $id_ticket . '/' . $document_type . '/' . $uniqueFileName;
+        $filePathForDatabase = UPLOAD_BASE_DIR . $cleanSerial . '/' . $nro_ticket . '/' . $document_type . '/' . $uniqueFileName;
         
         // 8. Mueve el archivo temporal al destino final
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
@@ -686,7 +686,7 @@ class reportes extends Controller {
         $cleanSerial = preg_replace("/[^a-zA-Z0-9_-]/", "_", $serial);
         $baseUploadDir = UPLOAD_BASE_DIR;
         $serialUploadDir = $baseUploadDir . $cleanSerial . DIRECTORY_SEPARATOR;
-        $ticketUploadDir = $serialUploadDir . $id_ticket . DIRECTORY_SEPARATOR;
+        $ticketUploadDir = $serialUploadDir . $nro_ticket . DIRECTORY_SEPARATOR;
         if (!is_dir($baseUploadDir)) {
             if (!mkdir($baseUploadDir, 0755, true)) {
                 error_log("Error al crear el directorio base: " . $baseUploadDir);
@@ -731,7 +731,7 @@ class reportes extends Controller {
         $uploadPath = $documentTypeDir . $uniqueFileName;
         
         // RUTA RELATIVA para la base de datos y la web
-        $filePathForDatabase = UPLOAD_BASE_DIR . $cleanSerial . '/' . $id_ticket . '/' . $document_type . '/' . $uniqueFileName;
+        $filePathForDatabase = UPLOAD_BASE_DIR . $cleanSerial . '/' . $nro_ticket . '/' . $document_type . '/' . $uniqueFileName;
         
         // 8. Mueve el archivo temporal al destino final
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {

@@ -683,29 +683,41 @@ function getTicketDataFinaljs() {
                     const documentType = row.document_type;
                     const filename = row.original_filename;
 
-                    if (hasEnvioDestinoDocument && url_documento) {
-                        // Si ya existe el documento, mostrar botón para verlo
-                        const fileExtension = url_documento.split('.').pop().toLowerCase();
-                        const isPdf = fileExtension === 'pdf';
-                        
-                        return `<button type="button" id="viewimage" 
-                            class="btn btn-info btn-sm" 
-                            data-id-ticket="${idTicket}"
-                            data-nro-ticket="${nroTicket}"
-                            data-url-document="${url_documento}"
-                            data-document-type="${isPdf ? 'pdf' : 'image'}"
-                            data-filename="${filename || 'Documento'}">
-                            Ver Documento
-                        </button>`;
-                    } else {
-                        // Si no existe el documento, mostrar botón para subir
-                        return `<button type="button" class="btn btn-warning btn-sm" id="openModalButton"
-                            data-id-ticket="${idTicket}"
-                            data-nro-ticket="${nroTicket}">
-                            Subir Documento
-                        </button>`;
-                    }
-                },
+                 if (hasEnvioDestinoDocument && url_documento) {
+    if (row.name_accion_ticket === "En espera de confirmar recibido en el Rosal") {
+        // Si está en espera de confirmar, mostrar botón para ver imagen (modal)
+        const fileExtension = url_documento.split('.').pop().toLowerCase();
+        const isPdf = fileExtension === 'pdf';
+        
+        return `<button type="button" id="viewimage" 
+            class="btn btn-info btn-sm" 
+            data-id-ticket="${idTicket}"
+            data-nro-ticket="${nroTicket}"
+            data-url-document="${url_documento}"
+            data-document-type="${isPdf ? 'pdf' : 'image'}"
+            data-filename="${filename || 'Documento'}"
+            onclick="showImageModal('${url_documento}', '${isPdf ? 'pdf' : 'image'}', '${filename || 'Documento'}')">
+            Ver Imagen
+        </button>`;
+    } else {
+        // Si ya existe el documento y NO está en espera, mostrar botón para verlo
+        const fileExtension = url_documento.split('.').pop().toLowerCase();
+        const isPdf = fileExtension === 'pdf';
+        
+        return `<button type="button" id="viewimage" 
+            class="btn btn-info btn-sm" 
+            data-id-ticket="${idTicket}"
+            data-nro-ticket="${nroTicket}"
+            data-url-document="${url_documento}"
+            data-document-type="${isPdf ? 'pdf' : 'image'}"
+            data-filename="${filename || 'Documento'}">
+            Ver Documento
+        </button>`;
+    }
+ } else {
+    return `<button type="button" disabled class="btn btn-secondary btn-sm" title="No hay documento disponible">`;
+ }
+             },
             });
 
             // Initialize DataTables
@@ -785,7 +797,7 @@ function getTicketDataFinaljs() {
                                   dataTableInstance.column(17).visible(true);
                                   dataTableInstance.column(18).visible(true);
                                   dataTableInstance.column(19).visible(true);
-                                  dataTableInstance.column(20).visible(true);
+                                  dataTableInstance.column(20).visible(false);
                                   setActiveButton("btn-por-asignar");
 
 
@@ -795,7 +807,7 @@ function getTicketDataFinaljs() {
                                   dataTableInstance.column(17).visible(true);
                                   dataTableInstance.column(18).visible(true);
                                   dataTableInstance.column(19).visible(true);
-                                  dataTableInstance.column(20).visible(true);
+                                  dataTableInstance.column(20).visible(false);
                                   setActiveButton("btn-por-asignar");
                               });
 
@@ -1906,11 +1918,11 @@ function formatTicketDetailsPanel(d) {
                         </div><br>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Fecha Instalación:</div></strong>
-                          ${d.fecha_instalacion || 'Sin datos'}
+                          ${d.fecha_instalacion ||  'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div  style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
-                          ${d.fecha_cierre_anterior || 'Sin datos'}
+                          ${d.fecha_cierre_anterior ||  'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Garantía:</div></strong>
@@ -1926,7 +1938,7 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Dirección Instalación:</div></strong>
-                          ${d.nombre_estado_cliente || 'Sin datos'}
+                          ${d.nombre_estado_cliente ||  'No posee'}
                         </div><br>
                          <div class="col-sm-6 mb-2">
                             <br><strong><div>Estatus Ticket:</div></strong>

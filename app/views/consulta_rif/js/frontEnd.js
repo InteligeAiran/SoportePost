@@ -1243,7 +1243,6 @@ function showGarantiaAlert() {
 function checkGarantiaOnLoad() {
   // Ejecutar UpdateGuarantees para mostrar el alerta inicial
   const idStatusPayment = UpdateGuarantees();
-    console.log("ID Status Payment:", idStatusPayment);
 }
 
 // NUEVO: Ejecutar la verificación cuando se carga la página
@@ -1257,10 +1256,7 @@ $(document).ready(function() {
 function VerificarSucursales(rif) {
     const xhrSucursales = new XMLHttpRequest();
     xhrSucursales.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/VerifingBranches`);
-    xhrSucursales.setRequestHeader(
-        "Content-Type",
-        "application/x-www-form-urlencoded"
-    );
+    xhrSucursales.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
     xhrSucursales.onload = function () {
         if (xhrSucursales.status === 200) {
@@ -1272,7 +1268,6 @@ function VerificarSucursales(rif) {
 
                     // Referencia al div que contiene el botón de carga de PDF
                     const botonCargaPDFEnvDiv = document.getElementById("botonCargaPDFEnv");
-                    
 
                     const checkEnvioContainer = document.getElementById("checkEnvioContainer"); // Usando el ID sugerido
                     const checkExoneracionContainer = document.getElementById("checkExoneracionContainer");
