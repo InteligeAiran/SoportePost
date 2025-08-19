@@ -2535,9 +2535,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
 
                 } else if (result.dismiss === Swal.DismissReason.cancel || result.dismiss === Swal.DismissReason.backdrop) {
-                    // --- Lógica para "Cerrar" (si se usa la X o se hace clic fuera si allowOutsideClick está habilitado) ---
-                    console.log("Modal cerrado.");
-                    
+                    window.location.reload();
                     // Después de cerrar, procesamos el siguiente ticket
                     overdueTicketsQueue.shift();
                     processNextOverdueTicket();

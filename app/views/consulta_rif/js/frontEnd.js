@@ -4,6 +4,7 @@ let globalRazon = "";
 let globalEstatusPos = ""; // O null, dependiendo de cómo quieras inicializarla
 // Variable global para controlar que el alerta de garantía se muestre solo una vez
 let garantiaAlertShown = false;
+
 document.addEventListener("DOMContentLoaded", function () {
   // Estilo para el span "No file chosen"
   const noFileChosenStyle =
@@ -2375,9 +2376,6 @@ function SendDataFailure1() {
   xhr.send(datos);
 }
 
-// Asegúrate de que las funciones updateDocumentUploadVisibility y updateFileUploadButtonVisibility
-// estén definidas en el ámbito global o accesibles desde clearFormFields, como en el ejemplo que te di antes.
-
 function clearFormFields() {
 
   if (checkEnvio) {
@@ -2666,41 +2664,52 @@ $("#rifInput").keyup(function () {
 });
 
 function SendRif() {
+  const tipoRif = document.getElementById("rifTipo").value;
+  const numeroRif = document.getElementById("rifInput").value.trim();
+  const rifCompleto = tipoRif + numeroRif;
+
+  // **Verificación para campos vacíos**
+  if (!numeroRif) {
+    Swal.fire({
+      title: "Atención",
+      text: "Debes ingresar un número de RIF.",
+      icon: "warning",
+      confirmButtonText: "Aceptar",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      keydownListenerCapture: true,
+      color: "black",
+      confirmButtonColor: "#003594",
+    });
+    return; // Detiene la ejecución de la función
+  }
+
+  // Si el campo no está vacío, el resto de la función se ejecuta
   const razonCountTableCard = document.querySelector(".card");
   razonCountTableCard.style.display = "block"; // Muestra la tabla
 
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchRif`);
-
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-  const tbody = document
-    .getElementById("rifCountTable")
-    .getElementsByTagName("tbody")[0];
-
-  // Limpia la tabla ANTES de la nueva búsqueda
-  tbody.innerHTML = "";
+  const tbody = document .getElementById("rifCountTable").getElementsByTagName("tbody")[0];
 
   // Destruye DataTables si ya está inicializado
   if ($.fn.DataTable.isDataTable("#rifCountTable")) {
     $("#rifCountTable").DataTable().destroy();
   }
 
-  // Limpia la tabla usando removeChild
-  while (tbody.firstChild) {
-    tbody.removeChild(tbody.firstChild);
-  }
+  // Limpia la tabla ANTES de la nueva búsqueda
+  tbody.innerHTML = "";
 
   xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
 
-        if (response.success) {
-          const rifData = response.rif; // Cambia el nombre de la variable aquí
-
+        if (response.success && response.rif && response.rif.length > 0) {
+          const rifData = response.rif;
           rifData.forEach((item) => {
-            // Usa un nombre diferente para el elemento individual
             const row = tbody.insertRow();
             const id_clienteCell = row.insertCell();
             const razonsocialCell = row.insertCell();
@@ -2714,11 +2723,11 @@ function SendRif() {
             const estadoCell = row.insertCell();
             const municipioCell = row.insertCell();
 
-            id_clienteCell.textContent = item.id_cliente; // Accede a las propiedades del 'item'
+            id_clienteCell.textContent = item.id_cliente;
             razonsocialCell.textContent = item.razonsocial;
             rifCell.textContent = item.rif;
             name_modeloposCell.textContent = item.name_modelopos;
-
+            
             // Crear el enlace para el número de serie
             const enlaceSerial = document.createElement("a");
             enlaceSerial.textContent = item.serial_pos;
@@ -2729,8 +2738,7 @@ function SendRif() {
 
             // Modal de detalles del serial (tu código existente)
             const modalSerial = document.getElementById("ModalSerial");
-            const spanSerialClose =
-              document.getElementById("ModalSerial-close");
+            const spanSerialClose = document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
               modalSerial.style.display = "block";
               fetchSerialData(item.serial_pos, item.rif, item.razonsocial);
@@ -2743,17 +2751,15 @@ function SendRif() {
                 modalSerial.style.display = "none";
               }
             };
-
+            
             fechainstallCell.textContent = item.fechainstalacion;
             afiliacionCell.textContent = item.afiliacion;
 
-            //TEXTO EN LA VISTA
+            // Lógica de la garantía
             const fechaInstalacion = new Date(item.fechainstalacion);
             const ahora = new Date();
-            const diffEnMilisegundos =
-              ahora.getTime() - fechaInstalacion.getTime();
-            const diffEnMeses =
-              diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
+            const diffEnMilisegundos = ahora.getTime() - fechaInstalacion.getTime();
+            const diffEnMeses = diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
 
             const garantiaLabel = document.createElement("span");
             garantiaLabel.style.fontSize = "10px";
@@ -2767,7 +2773,6 @@ function SendRif() {
             if (diffEnMeses <= 6 && diffEnMeses >= 0) {
               garantiaTexto = "Garantía Instalación (6 meses)";
               garantiaClase = "garantia-activa";
-              garantiaDetectada = true;
             } else {
               garantiaTexto = "Sin garantía";
               garantiaClase = "sin-garantia";
@@ -2777,7 +2782,6 @@ function SendRif() {
             garantiaLabel.className = garantiaClase;
             fechainstallCell.appendChild(document.createElement("br"));
             fechainstallCell.appendChild(garantiaLabel);
-            //END TEXTO EN LA VISTA
 
             bancoCell.textContent = item.banco;
             directionCell.textContent = item.direccion_instalacion;
@@ -2795,7 +2799,7 @@ function SendRif() {
             lengthMenu: [5],
             autoWidth: false,
             language: {
-              lengthMenu: "Mostrar _MENU_ Registros", // Esta línea es la clave
+              lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
               info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ Registro(s) )",
@@ -2814,75 +2818,89 @@ function SendRif() {
           });
           $("#rifCountTable").resizableColumns();
         } else {
-          tbody.innerHTML =
-            '<tr><td colspan="11">No se ha encontrado resultados</td></tr>';
-          console.error("Error:", response.message);
+          // Si no hay datos, muestra un mensaje de "no encontrado"
+          tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron datos para el RIF ingresado.</td></tr>';
         }
       } catch (error) {
-        tbody.innerHTML =
-          '<tr><td colspan="11">Error al procesar la respuesta</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta.</td></tr>';
         console.error("Error parsing JSON:", error);
       }
     } else if (xhr.status === 404) {
-      tbody.innerHTML =
-        '<tr><td colspan="11">No se encontraron usuarios</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron usuarios.</td></tr>';
     } else {
-      tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de conexión.</td></tr>';
       console.error("Error:", xhr.status, xhr.statusText);
     }
   };
+
   xhr.onerror = function () {
-    tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de red.</td></tr>';
     console.error("Error de red");
   };
-  const rifInputValue = obtenerRifCompleto();
-  const datos = `action=SearchRif&rif=${encodeURIComponent(rifInputValue)}`;
+  
+  const datos = `action=SearchRif&rif=${encodeURIComponent(rifCompleto)}`;
   xhr.send(datos);
 }
 
-function SendSerial() {
-  const razonCountTableCard = document.querySelector(".card");
+// **Función para obtener el RIF completo**
+function obtenerRifCompleto() {
+  const tipoRif = document.getElementById("rifTipo").value;
+  const numeroRif = document.getElementById("rifInput").value.trim();
+  return tipoRif + numeroRif;
+}
 
+function SendSerial() {
+  const welcomeMessage = document.getElementById("welcomeMessage");
+  if (welcomeMessage) {
+    welcomeMessage.style.display = "none";
+  }
+
+  const serialInput = document.getElementById("serialInput");
+  const serialInputValue = serialInput.value.trim(); // Se obtiene el valor y se eliminan espacios en blanco
+
+  // **Verificación para campo vacío**
+  if (!serialInputValue) {
+    Swal.fire({
+      title: "Atención",
+      text: "Debes ingresar un número de serie",
+      icon: "warning",
+      confirmButtonText: "Aceptar",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      keydownListenerCapture: true,
+      color: "black",
+      confirmButtonColor: "#003594",
+    });
+    return; // Detiene la ejecución de la función
+  }
+
+  // Si el campo no está vacío, el resto de la función se ejecuta
+  const razonCountTableCard = document.querySelector(".card");
   razonCountTableCard.style.display = "block"; // Muestra la tabla
 
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchSerialData`);
-
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-  const tbody = document
-    .getElementById("rifCountTable")
-    .getElementsByTagName("tbody")[0];
-
-  const tipoRif = $("#rifTipo").val();
-  const numeroRif = $("#rifInput").val();
-  const rifCompleto = tipoRif + numeroRif;
-  console.log("Buscar RIF:", rifCompleto);
-
-  // Limpia la tabla ANTES de la nueva búsqueda
-  tbody.innerHTML = "";
+  const tbody = document.getElementById("rifCountTable").getElementsByTagName("tbody")[0];
 
   // Destruye DataTables si ya está inicializado
   if ($.fn.DataTable.isDataTable("#rifCountTable")) {
     $("#rifCountTable").DataTable().destroy();
   }
 
-  // Limpia la tabla usando removeChild
-  while (tbody.firstChild) {
-    tbody.removeChild(tbody.firstChild);
-  }
+  // Limpia la tabla ANTES de la nueva búsqueda
+  tbody.innerHTML = "";
 
   xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
 
-        if (response.success) {
-          const serialData = response.serialData; // Cambia el nombre de la variable aquí
-
-          serialData.forEach((item) => {
-            // Usa un nombre diferente para el elemento individual
+        if (response.success && response.serialData && response.serialData.length > 0) {
+          response.serialData.forEach((item) => {
             const row = tbody.insertRow();
+            // ... (resto de la lógica para poblar la tabla, sin cambios)
             const id_clienteCell = row.insertCell();
             const razonsocialCell = row.insertCell();
             const rifCell = row.insertCell();
@@ -2895,11 +2913,11 @@ function SendSerial() {
             const estadoCell = row.insertCell();
             const municipioCell = row.insertCell();
 
-            id_clienteCell.textContent = item.id_cliente; // Accede a las propiedades del 'item'
+            id_clienteCell.textContent = item.id_cliente;
             razonsocialCell.textContent = item.razonsocial;
             rifCell.textContent = item.rif;
             name_modeloposCell.textContent = item.name_modelopos;
-
+            
             // Crear el enlace para el número de serie
             const enlaceSerial = document.createElement("a");
             enlaceSerial.textContent = item.serial_pos;
@@ -2910,8 +2928,7 @@ function SendSerial() {
 
             // Modal de detalles del serial (tu código existente)
             const modalSerial = document.getElementById("ModalSerial");
-            const spanSerialClose =
-              document.getElementById("ModalSerial-close");
+            const spanSerialClose = document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
               modalSerial.style.display = "block";
               fetchSerialData(item.serial_pos, item.rif, item.razonsocial);
@@ -2925,16 +2942,14 @@ function SendSerial() {
               }
             };
 
-            fechainstallCell.textContent = item.fechainstalacion;
             afiliacionCell.textContent = item.afiliacion;
+            fechainstallCell.textContent = item.fechainstalacion;
 
-            //TEXTO EN LA VISTA
+            // Lógica de la garantía
             const fechaInstalacion = new Date(item.fechainstalacion);
             const ahora = new Date();
-            const diffEnMilisegundos =
-              ahora.getTime() - fechaInstalacion.getTime();
-            const diffEnMeses =
-              diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
+            const diffEnMilisegundos = ahora.getTime() - fechaInstalacion.getTime();
+            const diffEnMeses = diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
 
             const garantiaLabel = document.createElement("span");
             garantiaLabel.style.fontSize = "10px";
@@ -2948,7 +2963,6 @@ function SendSerial() {
             if (diffEnMeses <= 6 && diffEnMeses >= 0) {
               garantiaTexto = "Garantía Instalación (6 meses)";
               garantiaClase = "garantia-activa";
-              garantiaDetectada = true;
             } else {
               garantiaTexto = "Sin garantía";
               garantiaClase = "sin-garantia";
@@ -2958,7 +2972,6 @@ function SendSerial() {
             garantiaLabel.className = garantiaClase;
             fechainstallCell.appendChild(document.createElement("br"));
             fechainstallCell.appendChild(garantiaLabel);
-            //END TEXTO EN LA VISTA
 
             bancoCell.textContent = item.banco;
             directionCell.textContent = item.direccion_instalacion;
@@ -2976,7 +2989,7 @@ function SendSerial() {
             lengthMenu: [5],
             autoWidth: false,
             language: {
-              lengthMenu: "Mostrar _MENU_ Registros", // Esta línea es la clave
+              lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
               info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ Registro(s) )",
@@ -2995,70 +3008,75 @@ function SendSerial() {
           });
           $("#rifCountTable").resizableColumns();
         } else {
-          tbody.innerHTML = '<tr><td colspan="11">Error al cargar</td></tr>';
-          console.error("Error:", response.message);
+          // Si no hay datos, muestra un mensaje de "no encontrado"
+          tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron datos para el serial ingresado.</td></tr>';
         }
       } catch (error) {
-        tbody.innerHTML =
-          '<tr><td colspan="11">Error al procesar la respuesta</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta.</td></tr>';
         console.error("Error parsing JSON:", error);
       }
     } else if (xhr.status === 404) {
-      tbody.innerHTML =
-        '<tr><td colspan="11">No se encontraron usuarios</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron usuarios.</td></tr>';
     } else {
-      tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de conexión.</td></tr>';
       console.error("Error:", xhr.status, xhr.statusText);
     }
   };
+
   xhr.onerror = function () {
-    tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de red.</td></tr>';
     console.error("Error de red");
   };
-  const serialInputValue = document.getElementById("serialInput").value;
-  const datos = `action=SearchSerialData&serial=${encodeURIComponent(
-    serialInputValue
-  )}`;
+
+  const datos = `action=SearchSerialData&serial=${encodeURIComponent(serialInputValue)}`;
   xhr.send(datos);
 }
 
 function SendRazon() {
-  const razonCountTableCard = document.querySelector(".card");
+  const razonInput = document.getElementById("RazonInput");
+  const razonInputValue = razonInput.value.trim(); // Obtiene el valor y elimina espacios en blanco
 
+  // **Verificación para campo vacío**
+  if (!razonInputValue) {
+    Swal.fire({
+      title: "Atención",
+      text: "Debes ingresar una Razón Social",
+      icon: "warning",
+      confirmButtonText: "Aceptar",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      keydownListenerCapture: true,
+      color: "black",
+      confirmButtonColor: "#003594",
+    });
+    return; // Detiene la ejecución de la función
+  }
+
+  // Si el campo no está vacío, el resto de la función se ejecuta
+  const razonCountTableCard = document.querySelector(".card");
   razonCountTableCard.style.display = "block"; // Muestra la tabla
 
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchRazonData`);
-
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-  const tbody = document
-    .getElementById("rifCountTable")
-    .getElementsByTagName("tbody")[0];
-
-  // Limpia la tabla ANTES de la nueva búsqueda
-  tbody.innerHTML = "";
+  const tbody = document.getElementById("rifCountTable").getElementsByTagName("tbody")[0];
 
   // Destruye DataTables si ya está inicializado
   if ($.fn.DataTable.isDataTable("#rifCountTable")) {
     $("#rifCountTable").DataTable().destroy();
   }
 
-  // Limpia la tabla usando removeChild
-  while (tbody.firstChild) {
-    tbody.removeChild(tbody.firstChild);
-  }
-
+  // Limpia la tabla ANTES de la nueva búsqueda
+  tbody.innerHTML = "";
+  
   xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
 
-        if (response.success) {
-          const RazonData = response.RazonData; // Cambia el nombre de la variable aquí
-
-          RazonData.forEach((item) => {
-            // Usa un nombre diferente para el elemento individual
+        if (response.success && response.RazonData && response.RazonData.length > 0) {
+          response.RazonData.forEach((item) => {
             const row = tbody.insertRow();
             const id_clienteCell = row.insertCell();
             const razonsocialCell = row.insertCell();
@@ -3072,7 +3090,7 @@ function SendRazon() {
             const estadoCell = row.insertCell();
             const municipioCell = row.insertCell();
 
-            id_clienteCell.textContent = item.id_cliente; // Accede a las propiedades del 'item'
+            id_clienteCell.textContent = item.id_cliente;
             razonsocialCell.textContent = item.razonsocial;
             rifCell.textContent = item.rif;
             name_modeloposCell.textContent = item.name_modelopos;
@@ -3087,8 +3105,7 @@ function SendRazon() {
 
             // Modal de detalles del serial (tu código existente)
             const modalSerial = document.getElementById("ModalSerial");
-            const spanSerialClose =
-              document.getElementById("ModalSerial-close");
+            const spanSerialClose = document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
               modalSerial.style.display = "block";
               fetchSerialData(item.serial_pos, item.rif, item.razonsocial);
@@ -3101,17 +3118,15 @@ function SendRazon() {
                 modalSerial.style.display = "none";
               }
             };
-
+            
             fechainstallCell.textContent = item.fechainstalacion;
             afiliacionCell.textContent = item.afiliacion;
 
-            //TEXTO EN LA VISTA
+            // Lógica de la garantía
             const fechaInstalacion = new Date(item.fechainstalacion);
             const ahora = new Date();
-            const diffEnMilisegundos =
-              ahora.getTime() - fechaInstalacion.getTime();
-            const diffEnMeses =
-              diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
+            const diffEnMilisegundos = ahora.getTime() - fechaInstalacion.getTime();
+            const diffEnMeses = diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
 
             const garantiaLabel = document.createElement("span");
             garantiaLabel.style.fontSize = "10px";
@@ -3125,7 +3140,6 @@ function SendRazon() {
             if (diffEnMeses <= 6 && diffEnMeses >= 0) {
               garantiaTexto = "Garantía Instalación (6 meses)";
               garantiaClase = "garantia-activa";
-              garantiaDetectada = true;
             } else {
               garantiaTexto = "Sin garantía";
               garantiaClase = "sin-garantia";
@@ -3135,7 +3149,6 @@ function SendRazon() {
             garantiaLabel.className = garantiaClase;
             fechainstallCell.appendChild(document.createElement("br"));
             fechainstallCell.appendChild(garantiaLabel);
-            //END TEXTO EN LA VISTA
 
             bancoCell.textContent = item.banco;
             directionCell.textContent = item.direccion_instalacion;
@@ -3147,23 +3160,19 @@ function SendRazon() {
           if ($.fn.DataTable.isDataTable("#rifCountTable")) {
             $("#rifCountTable").DataTable().destroy();
           }
-
           $("#rifCountTable").DataTable({
             dom: "Bfrtip",
-            buttons: [
-              {
-                extend: "excelHtml5",
-                footer: true,
-                text: "Excel",
-              },
-            ],
-
+            buttons: [{
+              extend: "excelHtml5",
+              footer: true,
+              text: "Excel",
+            }, ],
             responsive: false,
             pagingType: "simple_numbers",
             lengthMenu: [5],
             autoWidth: false,
             language: {
-              lengthMenu: "Mostrar _MENU_ Registros", // Esta línea es la clave
+              lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
               info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
@@ -3182,30 +3191,27 @@ function SendRazon() {
           });
           $("#rifCountTable").resizableColumns();
         } else {
-          tbody.innerHTML = '<tr><td colspan="11">Error al cargar</td></tr>';
-          console.error("Error:", response.message);
+          // Si no hay datos, muestra un mensaje de "no encontrado"
+          tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron datos para la razón social ingresada.</td></tr>';
         }
       } catch (error) {
-        tbody.innerHTML =
-          '<tr><td colspan="11">Error al procesar la respuesta</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta.</td></tr>';
         console.error("Error parsing JSON:", error);
       }
     } else if (xhr.status === 404) {
-      tbody.innerHTML =
-        '<tr><td colspan="11">No se encontraron usuarios</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron usuarios.</td></tr>';
     } else {
-      tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de conexión.</td></tr>';
       console.error("Error:", xhr.status, xhr.statusText);
     }
   };
+
   xhr.onerror = function () {
-    tbody.innerHTML = '<tr><td colspan="11">Error de conexión</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de red.</td></tr>';
     console.error("Error de red");
   };
-  const RazonInputValue = document.getElementById("RazonInput").value;
-  const datos = `action=SearchRazonData&RazonSocial=${encodeURIComponent(
-    RazonInputValue
-  )}`;
+
+  const datos = `action=SearchRazonData&RazonSocial=${encodeURIComponent(razonInputValue)}`;
   xhr.send(datos);
 }
 
