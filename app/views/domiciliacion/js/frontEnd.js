@@ -542,14 +542,32 @@ function loadTicketHistory(ticketId) {
           const motivoRechazoChanged = prevMotivoRechazo && itemMotivoRechazo !== prevMotivoRechazo;
 
           const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
+
+          // --- NUEVO CÓDIGO PARA DOCUMENTOS CARGADOS ---
+          const itemPago = cleanString(item.pago);
+          const itemExoneracion = cleanString(item.exoneracion);
+          const itemEnvio = cleanString(item.envio);
+          const itemEnvioDestino = cleanString(item.envio_destino);
+          const itemDocumentoRechazado = cleanString(item.documento_rechazado);
+
+          const prevPago = cleanString(prevItem.pago);
+          const prevExoneracion = cleanString(prevItem.exoneracion);
+          const prevEnvio = cleanString(prevItem.envio);
+          const prevEnvioDestino = cleanString(prevItem.envio_destino);
+          const prevDocumentoRechazado = cleanString(prevItem.documento_rechazado);
+
+          const pagoChanged = prevPago && itemPago !== prevPago;
+          const exoneracionChanged = prevExoneracion && itemExoneracion !== prevExoneracion;
+          const envioChanged = prevEnvio && itemEnvio !== prevEnvio;
+          const envioDestinoChanged = prevEnvioDestino && itemEnvioDestino !== prevEnvioDestino;
+          const documentoRechazadoChanged = prevDocumentoRechazado && itemDocumentoRechazado !== prevDocumentoRechazado;
           
           // --- LÓGICA CORREGIDA PARA MOSTRAR EL MOTIVO DE RECHAZO ---
           // Define los tipos de rechazo que activan la visualización del motivo.
           const rejectedActions = [
             'Documento de Exoneracion Rechazado',
-            'Documento de Anticipo Rechazado',
-            'Documento de Envio Rechazado'
-          ];
+            'Documento de Anticipo Rechazado'         
+         ];
 
           // La fila se mostrará solo si la acción del ticket coincide con una de las acciones de rechazo definidas.
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
@@ -564,6 +582,7 @@ function loadTicketHistory(ticketId) {
           let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
           const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
 
+         
           historyHtml += `
                         <div class="card mb-3 custom-history-card">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
@@ -628,6 +647,36 @@ function loadTicketHistory(ticketId) {
                                                   <tr>
                                                     <th class="text-start">Motivo Rechazo Documento:</th>
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
+                                                  </tr>
+                                             ` : ''}
+                                                ${itemPago === 'Sí' ? `
+                                                  <tr>
+                                                    <th class="text-start">Documento de Pago:</th>
+                                                    <td class="${pagoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                  </tr>
+                                             ` : ''}
+                                                ${itemExoneracion === 'Sí' ? `
+                                                  <tr>
+                                                    <th class="text-start">Documento de Exoneración:</th>
+                                                    <td class="${exoneracionChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                  </tr>
+                                             ` : ''}
+                                                ${itemEnvio === 'Sí' ? `
+                                                  <tr>
+                                                    <th class="text-start">Documento de Envío:</th>
+                                                    <td class="${envioChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                  </tr>
+                                             ` : ''}
+                                                ${itemEnvioDestino === 'Sí' ? `
+                                                  <tr>
+                                                    <th class="text-start">Documento de Envío a Destino:</th>
+                                                    <td class="${envioDestinoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                  </tr>
+                                             ` : ''}
+                                                ${itemDocumentoRechazado === 'Sí' ? `
+                                                  <tr>
+                                                    <th class="text-start">Documento Rechazado:</th>
+                                                    <td class="${documentoRechazadoChanged ? "highlighted-change" : ""}">⚠ Rechazado</td>
                                                   </tr>
                                              ` : ''}
                                             </tbody>

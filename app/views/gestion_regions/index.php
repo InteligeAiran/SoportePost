@@ -3,7 +3,6 @@ function mi_navbar() {}
 ?>
 <!DOCTYPE html>
 <lang="en">
-
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -27,6 +26,14 @@ function mi_navbar() {}
 
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
         <style>
+            .highlighted-change {
+                font-weight: bold;
+                color: #000; /* Color de texto más oscuro para mayor contraste */
+                background-color: #ffeb3b; /* Amarillo claro */
+                padding: 2px 5px;
+                border-radius: 3px;
+            }
+
             #ticket-details-panel table td,
             table th {
                 white-space: normal !important;
