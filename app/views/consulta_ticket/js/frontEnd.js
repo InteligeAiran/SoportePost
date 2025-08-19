@@ -345,8 +345,7 @@ function SendRegions() {
           // Crear la tabla si no existe (o después de haber sido removida)
           rifCountTable = document.createElement("table");
           rifCountTable.id = "rifCountTable";
-          rifCountTable.className =
-            "table table-striped table-bordered table-hover table-sm"; // Clases de Bootstrap
+          rifCountTable.className = "table table-striped table-bordered table-hover table-sm"; // Clases de Bootstrap
           mainTableCard.appendChild(rifCountTable); // Añadir la tabla al contenedor principal
 
           const thead = document.createElement("thead");
@@ -359,6 +358,8 @@ function SendRegions() {
             create_ticket: "Create Ticket",
             name_status_ticket: "Status Ticket",
             rif_empresa: "Rif Empresa",
+            serial_pos: "Serial POS",
+            name_failure: "Failure",
             name_process_ticket: "Process Ticket",
             name_status_payment: "Estatus Pago",
             full_name_tecnico: "Tecnico",
@@ -366,8 +367,6 @@ function SendRegions() {
             full_name_coordinador: "Coordinador",
             id_level_failure: "Level Failure",
             full_name_tecnicoassignado: "Tecnico Asignado",
-            serial_pos: "Serial POS",
-            name_failure: "Failure",
             downl_exoneration: "Exoneración",
             downl_payment: "Pago Anticipo",
             downl_send_to_rosal: "Enviado a Rosal",
@@ -430,13 +429,15 @@ function SendRegions() {
 
           $("rifCountTable").DataTable({
             scrollCollapse: true,
-            scrollX: "300px",
+            scrollX: true,
             responsive: false,
+            scrollY: '60vh', // Altura fija para el cuerpo de la tabla
+            fixedHeader: true, // Fijar el encabezado
+            autoWidth: false, // Deshabilitar autoWidth para mejor control
             data: TicketData,
             columns: columnsConfig,
             pagingType: "simple_numbers",
             lengthMenu: [5],
-            autoWidth: false,
             language: {
               lengthMenu: "Mostrar _MENU_ registros",
               emptyTable: "No hay datos disponibles en la tabla",
@@ -1129,8 +1130,12 @@ function SendRango() {
           // });
 
           $(rifCountTable).DataTable({
-            scrollY: "200px",
+            scrollCollapse: true,
+            scrollX: true,
             responsive: false,
+            scrollY: '60vh', // Altura fija para el cuerpo de la tabla
+            fixedHeader: true, // Fijar el encabezado
+            autoWidth: false, // Deshabilitar autoWidth para mejor control
             data: TicketData,
             columns: columnsConfig,
             pagingType: "simple_numbers",

@@ -335,6 +335,31 @@ function mi_navbar()
             background-color: green;
             color: white;
         }
+
+        .falla-reportada-texto {
+            color: #dc3545;
+            /* Rojo de Bootstrap 'danger' */
+            /* O un color naranja: */
+            /* color: #FD7E14; */
+            /* Naranja de Bootstrap 'warning' */
+            /* O un color personalizado: */
+            /* color: #C0392B; */
+            /* Un rojo ladrillo */
+            /* color: #E67E22; */
+            /* Un naranja más suave */
+            font-weight: bold;
+            /* Opcional: para que resalte más */
+        }
+
+        @media (max-width: 1550px) {
+            .falla-reportada-texto {
+                margin-top: 10%;
+            }
+
+            .falla-reportada {
+                margin-left: 11%;
+            }
+        }
     </style>
     </head>
 

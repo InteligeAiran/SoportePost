@@ -280,6 +280,14 @@ function mi_navbar()
             color: #0c4a6e;
             /* dark blue */
         }
+
+        .highlighted-change {
+            font-weight: bold;
+            color: #000; /* Color de texto más oscuro para mayor contraste */
+            background-color: #ffeb3b; /* Amarillo claro */
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
     </style>
     <!-- CSS Files -->
     <link id="pagestyle" rel="stylesheet"
@@ -315,7 +323,7 @@ function mi_navbar()
                                     <div class="col-lg-12 col-md-12 mt-4 mb-4">
                                         <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
                                             <strong>
-                                                <h5 class="text-black text-capitalize ps-3" style = "color: black">Verificación de Domiciliación</h5>
+                                                <h5 class="text-black text-capitalize ps-3" style = "color: black">Verificación de Solvencia</h5>
                                             </strong>
                                         </div>
                                     </div>
