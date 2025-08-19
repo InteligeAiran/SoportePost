@@ -3,6 +3,7 @@ namespace App\Repositories; // Usar namespaces para organizar tus clases
 require_once __DIR__. '/../models/consulta_rifModel.php'; // Asegúrate de que el modelo de usuario esté incluido
 use consulta_rifModel; // Asegúrate de que tu modelo de usuario exista
 use \DateTime;
+use Exception;
 session_start(); // Inicia la sesión
 class TechnicalConsultionRepository
 {
@@ -197,18 +198,33 @@ class TechnicalConsultionRepository
 
     
     public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket){
-        // El modelo SaveDataFalla2 ahora devuelve un array con 'success', 'id_ticket_creado', y 'status_info'.
-        $result = $this->model->SaveDataFalla2(
-            $serial,
-            $descripcion,
-            $nivelFalla,
-            $coordinador,
-            $id_status_payment,
-            $id_user,
-            $rif,
-            $Nr_ticket
-        );
-        return $result;
+        try {
+            // El modelo SaveDataFalla2 ahora devuelve un array con 'success', 'id_ticket_creado', y 'status_info'.
+            $result = $this->model->SaveDataFalla2(
+                $serial,
+                $descripcion,
+                $nivelFalla,
+                $coordinador,
+                $id_status_payment,
+                $id_user,
+                $rif,
+                $Nr_ticket
+            );
+            
+            // CORRECCIÓN: Asegurar que se retorne el ID real de la BD
+            if (isset($result['success']) && $result['success']) {
+                // Si el modelo no retorna id_ticket_db, usar el que viene del modelo
+                if (!isset($result['id_ticket_db'])) {
+                    $result['id_ticket_db'] = $result['id_ticket_creado'] ?? null;
+                }
+            }
+            return $result;
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
     }
 
     // Nueva función para guardar archivos adjuntos
@@ -738,5 +754,9 @@ class TechnicalConsultionRepository
         return $result;
     }
 
+    public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type){
+        $result = $this->model->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type);
+        return $result;
+    }
 }
 ?>

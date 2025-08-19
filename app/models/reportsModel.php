@@ -141,7 +141,7 @@ class reportsModel extends Model
     }
     
     public function saveDocument(
-        $id_ticket,
+        $nro_ticket,
         $originalDocumentName,
         $stored_filename,
         $filePathForDatabase,
@@ -158,7 +158,7 @@ class reportsModel extends Model
             $escapedDocumentType = pg_escape_literal($this->db->getConnection(), $document_type);
 
             $sql = "SELECT save_document_to_db(
-                " . ((int) $id_ticket) . ",
+                " . ((int) $nro_ticket) . ",
                 " . $escapedOriginalFilename . ",
                 " . $escapedStoredFilename . ",
                 " . $escapedFilePath . ",
@@ -182,6 +182,266 @@ class reportsModel extends Model
             return false;
         }
     }
+
+    public function saveDocument1(
+        $nro_ticket,
+        $originalDocumentName,
+        $stored_filename,
+        $filePathForDatabase,
+        $mimeTypeFromFrontend,
+        $documentSize,
+        $id_user,
+        $document_type,
+        $id_ticket
+    ){
+        try {
+            $db_conn = $this->db->getConnection();
+
+            $escapedOriginalFilename = pg_escape_literal($this->db->getConnection(), $originalDocumentName);
+            $escapedStoredFilename = pg_escape_literal($this->db->getConnection(), $stored_filename);
+            $escapedFilePath = pg_escape_literal($this->db->getConnection(), $filePathForDatabase);
+            $escapedMimeType = pg_escape_literal($this->db->getConnection(), $mimeTypeFromFrontend);
+            $escapedDocumentType = pg_escape_literal($this->db->getConnection(), $document_type);
+
+            $sql = "SELECT save_document_to_db(
+                " . ((int) $nro_ticket) . ",
+                " . $escapedOriginalFilename . ",
+                " . $escapedStoredFilename . ",
+                " . $escapedFilePath . ",
+                " . $escapedMimeType . ",
+                " . ((int) $documentSize) . ",
+                " . ((int) $id_user) . ",
+                " . $escapedDocumentType . "
+            )";
+            
+            $result = Model::getResult($sql, $this->db);
+
+            if($result){
+
+                if($document_type === 'Exoneracion'){
+                    $id_status_payment = 5;
+                }else{
+                    $id_status_payment = 7;
+                }
+
+                $sql1 = "UPDATE tickets SET id_status_payment = ".$id_status_payment." WHERE id_ticket = ".(int)$id_ticket.";";
+                $result1 = Model::getResult($sql1, $this->db);
+
+                if($result1){
+                    $id_status_lab = 0;
+                    $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". (int)$id_ticket. ";";
+                    $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+
+                    if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                        $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab')?? 0;
+                    }
+
+                    $new_status_domiciliacion = 'NULL';
+                    $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = ". (int)$id_ticket. ";";
+                    $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+
+                    if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                        $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion')!== null? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
+                    }
+
+                    $id_status_ticket = 'NULL';
+                    $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
+                    $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
+
+                    if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
+                        $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket')!== null? (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') : 'NULL';
+                    }
+
+                    $id_accion_ticket = 'NULL';
+                    $accion_ticket_sql = "SELECT id_accion_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
+                    $accion_ticket_result = pg_query($this->db->getConnection(), $accion_ticket_sql);
+
+                    if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
+                        $id_accion_ticket = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket')!== null? (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') : 'NULL';
+                    }
+
+                    $sqlInsertHistory = sprintf(
+                        "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                        (int)$id_ticket,
+                        (int)$id_user,
+                        (int)$id_status_ticket,
+                        (int)$id_accion_ticket,
+                        $id_status_lab,
+                        $id_status_payment,
+                        $new_status_domiciliacion
+                    );
+
+                    $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
+
+                    if ($resultsqlInsertHistory === false) {
+                        error_log("Error al insertar en ticket_status_history para ticket ID: {$id_ticket}. PG Error: ". pg_last_error($db_conn));
+                        return false;
+                    }      
+                }
+            }
+
+            if ($result && isset($result['query'])) {
+                return pg_fetch_result($result['query'], 0, 0) === 't';
+            } else {
+                error_log("Error: La consulta SQL no devolvió un resultado válido.");
+                return false;
+            }
+
+        } catch (Throwable $e) {
+            error_log("Error al llamar a la función SQL 'save_document_to_db': " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function saveDocument2($nro_ticket,
+        $originalDocumentName,
+        $stored_filename,
+        $filePathForDatabase,
+        $mimeTypeFromFrontend,
+        $documentSize,
+        $id_user,
+        $document_type,
+        $id_ticket
+    ){
+        try {
+            $escapedOriginalFilename = pg_escape_literal($this->db->getConnection(), $originalDocumentName);
+            $escapedStoredFilename = pg_escape_literal($this->db->getConnection(), $stored_filename);
+            $escapedFilePath = pg_escape_literal($this->db->getConnection(), $filePathForDatabase);
+            $escapedMimeType = pg_escape_literal($this->db->getConnection(), $mimeTypeFromFrontend);
+            $escapedDocumentType = pg_escape_literal($this->db->getConnection(), $document_type);
+
+            $sql = "SELECT save_document_to_db(
+                " . ((int) $nro_ticket) . ",
+                " . $escapedOriginalFilename . ",
+                " . $escapedStoredFilename . ",
+                " . $escapedFilePath . ",
+                " . $escapedMimeType . ",
+                " . ((int) $documentSize) . ",
+                " . ((int) $id_user) . ",
+                " . $escapedDocumentType . "
+            )";
+            
+            $result = Model::getResult($sql, $this->db);
+
+            if($result){
+                // DETERMINAR EL id_status_payment BASÁNDOSE EN LOS DOCUMENTOS EXISTENTES
+                $id_status_payment = $this->determineStatusPayment($nro_ticket, $document_type);
+
+                $sqlticket = "UPDATE tickets SET id_status_payment = ".$id_status_payment." WHERE nro_ticket = '".$nro_ticket."';";
+                $resultticket = Model::getResult($sqlticket, $this->db);
+        
+            }else{
+                error_log("Error: La consulta SQL no devolvió un resultado válido.");
+                return false;
+            }
+
+            if ($resultticket) {
+                $id_status_lab = 0;
+                $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". (int)$id_ticket. ";";
+                $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+
+                if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                    $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab')?? 0;
+                }
+
+                $new_status_domiciliacion = 'NULL';
+                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = ". (int)$id_ticket. ";";
+                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+
+                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                    $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion')!== null? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
+                }
+
+                $id_status_ticket = 'NULL';
+                $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
+                $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
+
+                if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
+                    $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket')!== null? (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') : 'NULL';
+                }
+
+                $id_accion_ticket = 'NULL';
+                $accion_ticket_sql = "SELECT id_accion_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
+                $accion_ticket_result = pg_query($this->db->getConnection(), $accion_ticket_sql);
+
+                if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
+                    $id_accion_ticket = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket')!== null? (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') : 'NULL';
+                }
+
+                // USAR EL id_status_payment CALCULADO ANTERIORMENTE
+                $sqlInsertHistory = sprintf(
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %d::integer, %s::integer);",
+                    (int)$id_ticket,
+                    (int)$id_user,
+                    (int)$id_status_ticket,
+                    (int)$id_accion_ticket,
+                    $id_status_lab,
+                    $id_status_payment, // AQUÍ USAS EL VALOR CALCULADO
+                    $new_status_domiciliacion
+                );
+
+                $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
+
+                if ($resultsqlInsertHistory === false) {
+                    error_log("Error al insertar en ticket_status_history para ticket ID: {$id_ticket}. PG Error: ". pg_last_error($this->db->getConnection()));
+                    return false;
+                }      
+            }
+
+            if ($result && isset($result['query'])) {
+                return pg_fetch_result($result['query'], 0, 0) === 't';
+            } else {
+                error_log("Error: La consulta SQL no devolvió un resultado válido.");
+                return false;
+            }
+
+        } catch (Throwable $e) {
+            error_log("Error al llamar a la función SQL 'save_document_to_db': " . $e->getMessage());
+            return false;
+        }
+    }
+
+// NUEVA FUNCIÓN PARA DETERMINAR EL STATUS PAYMENT
+   private function determineStatusPayment($nro_ticket, $document_type_being_uploaded) {
+    // Verificar qué documentos ya existen para este ticket
+    $sql = "SELECT document_type FROM archivos_adjuntos WHERE nro_ticket = '".$nro_ticket."'";
+    $result = Model::getResult($sql, $this->db);
+    
+    $existing_documents = [];
+    if ($result && isset($result['query'])) {
+        while ($row = pg_fetch_assoc($result['query'])) {
+            $existing_documents[] = $row['document_type'];
+        }
+    }
+    
+    // LÓGICA CORREGIDA PARA DETERMINAR EL STATUS PAYMENT
+    if ($document_type_being_uploaded === 'Envio') {
+        // Si se está subiendo envío
+        if (in_array('Exoneracion', $existing_documents)) {
+            return 5; // Exoneracion Pendiente por Revision
+        } elseif (in_array('Anticipo', $existing_documents)) {
+            return 7; // Pago Anticipo Pendiente por Revision
+        } else {
+            return 10; // Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)
+        }
+    } elseif ($document_type_being_uploaded === 'Exoneracion') {
+        // Si se está subiendo exoneración
+        if (in_array('Envio', $existing_documents)) {
+            return 11; // Exoneracion Pendiente por Revision
+        } else {
+            return 5; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
+        }
+    } elseif ($document_type_being_uploaded === 'Anticipo') {
+        // Si se está subiendo anticipo
+        if (in_array('Envio', $existing_documents)) {
+            return 11; // Pago Anticipo Pendiente por Revision
+        } else {
+            return 7; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
+        }
+    }   
+    // Por defecto
+    return 11;
+}
 
     public function getDocument($id_ticket, $document_type){
         try{

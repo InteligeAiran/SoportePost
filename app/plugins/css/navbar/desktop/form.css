@@ -482,11 +482,18 @@
     }
 
     #SendForm1 {
-        margin-right: 76%;
-        margin-top: 2%;
+        margin-right:67%;
+        margin-top: 16%;
         position: absolute;
         background-color: #003594;
         width: -15%;
+    }
+
+    #buttonCerrar{
+        margin-right: -1%;
+        margin-top: 16%;
+        width: -15%;
+        position: absolute;
     }
 
     button:hover,

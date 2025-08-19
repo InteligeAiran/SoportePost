@@ -102,14 +102,14 @@ function mi_navbar()
             border-color: white; /* Borde un poco más visible al hacer hover */
         }
 
-          #btn-asignados{
-            background-color: #003594;
+        #btn-asignados{
+            background-color: #dc3545; /* Rojo danger */
+            border-color: #dc3545;
             color: #ffffff;
-            border: 1px solid #003594;
             transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-         #btn-por-asignar{
+        #btn-por-asignar{
             color: #ffffff;
             transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
@@ -117,8 +117,8 @@ function mi_navbar()
         /* CSS para los botones de Asignados/Por Asignar */
         /* Estilo base para el botón Asignados cuando es el activo */
         #btn-asignados.btn-primary {
-            background-color: #003594; /* Tu azul fuerte */
-            border-color: #003594;
+            background-color: #dc3545; /* Rojo danger */
+            border-color: #dc3545;
             color: #ffffff;
             transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
@@ -126,8 +126,8 @@ function mi_navbar()
         /* Estilo hover/focus para el botón Asignados cuando es el activo */
         #btn-asignados.btn-primary:hover,
         #btn-asignados.btn-primary:focus {
-            background-color: #0045B4; /* Un tono un poco más oscuro o claro al hover */
-            border-color: #0045B4;
+            background-color: #dc3545; /* Rojo danger */
+            border-color: #dc3545;
             box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25); /* Sombra de enfoque/hover */
         }
 
@@ -150,8 +150,8 @@ function mi_navbar()
 
         /* Estilo base para el botón Por Asignar cuando es el activo */
         #btn-por-asignar.btn-primary {
-            background-color: #003594; /* Tu azul fuerte */
-            border-color: #003594;
+            background-color: #17a2b8; /* Azul info */
+            border-color: #17a2b8;
             color: #ffffff;
             transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
@@ -159,8 +159,8 @@ function mi_navbar()
         /* Estilo hover/focus para el botón Por Asignar cuando es el activo */
         #btn-por-asignar.btn-primary:hover,
         #btn-por-asignar.btn-primary:focus {
-            background-color: #0045B4;
-            border-color: #0045B4;
+            background-color: #17a2b8; /* Azul info */
+            border-color: #17a2b8;
             box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
         }
 
@@ -199,25 +199,23 @@ function mi_navbar()
 
         /* Estilo base para el botón Recibidos cuando es el activo */
         #btn-recibidos.btn-primary {
-            background-color: #003594;
-            /* Tu azul fuerte */
-            border-color: #003594;
+            background-color: #28a745; /* Verde éxito */
+            border-color: #28a745;
             color: #ffffff;
             transition: background-color 0.3s ease, border-color 0.3s ease,
-             box-shadow 0.3s ease;
+            box-shadow 0.3s ease;
         }
 
             /* Estilo hover/focus para el botón Recibidos cuando es el activo */
         #btn-recibidos.btn-primary:hover,
         #btn-recibidos.btn-primary:focus {
-            background-color: #0045b4;
-            /* Un tono un poco más oscuro o claro al hover */
-            border-color: #0045b4;
+            background-color: #28a745; /* Verde éxito */
+            border-color: #28a745;
             box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
             /* Sombra de enfoque/hover */
         }
 
-            /* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
+        /* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
         #btn-recibidos.btn-secondary {
             background-color: #a0a0a0;
             /* Tu gris sutil */
@@ -280,6 +278,63 @@ function mi_navbar()
             color: white;
         }
 
+        .custom-swal-backdrop {
+            background-color: rgba(0, 0, 0, 0.4) !important;
+            backdrop-filter: blur(8px) !important;
+        }
+
+        .custom-swal-popup {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+        }
+
+       #CartWrong {
+            background-image: linear-gradient(310deg, #2b6cb0 0%, #805ad5 100%);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #CartWrong strong {
+            font-weight: bold;
+        }
+
+        .alert-heading{
+            font-size: 144%;
+            text-align: center;
+        }
+
+        #CerrarBoton{
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 13px;
+            margin-left: 1rem;
+        }
+
+        #CerrarBoton:hover{
+            background-color: red;
+            color: white;
+        }
+
+        #uploadFileBtn{
+            background-color: #003594;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 13px;
+        }
+
+        #uploadFileBtn:hover{
+            background-color: green;
+            color: white;
+        }
     </style>
     </head>
 
@@ -342,6 +397,44 @@ function mi_navbar()
             </div>
         </main>
 
+        <!--MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
+            <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-gradient-primary">
+                            <strong>
+                                <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
+                                    Documento para el Nro Ticket: <span id="modalTicketId"></span></h5>
+                                <input type="hidden" id="id_ticket"></input>
+                            </strong>
+                        </div>
+                        <div class="modal-body">
+                            <form id="uploadForm">
+                                <div class="mb-3">
+                                    <label for="documentFile" class="form-label text-gray-700">Seleccionar Archivo:</label>
+                                    <input class="form-control" type="file" id="documentFile" accept="image/*,application/pdf"
+                                        style="display:block">
+                                    <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
+                                </div>
+                                <div class="mb-3 text-center" style="max-height: 50vh; overflow-y: auto;">
+                                    <img id="imagePreview" class="img-fluid img-preview" src="#" alt="Previsualización de Imagen" style="display: none;">
+                                </div>
+                                <div id="uploadMessage" class="message-box hidden"></div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" id="CerrarBoton" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
+                            <!-- INPUT DONDE GUARDO VARIABLES -->
+                            <input type="hidden" id="id_ticket" value=""></div>
+                            <input type="hidden" id="document_type" value=""></div>
+                            <input type="hidden" id="nro_ticket" value=""></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <!-- END MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
+
         <!--MODAL PARA SELECCIONAR LAS ACCIONES PARA VIZUALIZAR LA IMAGEN-->
             <div class="modal fade" id="visualizarImagenModal" tabindex="-1" aria-labelledby="visualizarImagenModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog">
@@ -353,19 +446,19 @@ function mi_navbar()
                         <div class="form-check">
                         <input class="form-check-input" type="radio" name="opcionImagen" id="imagenEnvio" value="Envio" checked>
                         <label class="form-check-label" for="imagenEnvio" id = "labelEnvio">
-                            Imagen del Envío
+                            Documento de Envío
                         </label>
                         </div>
                         <div class="form-check">
                         <input class="form-check-input" type="radio" name="opcionImagen" id="imagenExoneracion" value="Exoneracion">
                         <label class="form-check-label" for="imagenExoneracion" id = "labelExo">
-                            Imagen de Exoneración
+                            Documento de Exoneración
                         </label>
                         </div>
                         <div class="form-check">
                         <input class="form-check-input" type="radio" name="opcionImagen" id="imagenPago" value="Anticipo">
                         <label class="form-check-label" for="imagenPago" id="labelPago">
-                            Imagen de Pago
+                            Documento de Pago
                         </label>
                         </div>
                     </div>
@@ -379,7 +472,7 @@ function mi_navbar()
         <!--END MODAL PARA SELECCIONAR LAS ACCIONES PARA VIZUALIZAR LA IMAGEN-->
 
         <!-- MODAL PARA VIZUALIZAR LOS DOCUMENTOS -->
-                       <div class="modal fade" id="imageApprovalModal" tabindex="-1" aria-labelledby="imageApprovalModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal fade" id="imageApprovalModal" tabindex="-1" aria-labelledby="imageApprovalModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header bg-gradient-primary">
@@ -390,9 +483,11 @@ function mi_navbar()
                         <div class="modal-body text-center">
                             <div id="mediaViewerContainer" style="width: 100%; height: 500px; display: flex; justify-content: center; align-items: center; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 4px;">
                                 <img id="ticketImagePreview" src="" alt="Vista previa del documento" class="img-fluid" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
-                                </div>
+                                <div id="pdfViewViewer" style="width: 100%; height: 100%; display: none;"></div>
+                            </div>
                             <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Nro Ticket: <span id="currentTicketIdDisplay"></span></p>
-                            <p style="color: black;">Tipo de Documento: <span id="currentImageTypeDisplay"></span></p>
+                            <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Tipo de Documento: <span id="currentImageTypeDisplay"></span></p>
+                            <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Serial POS: <span id="currentSerialDisplay"></span></p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" id="closeImageApprovalModalBtn">Cerrar</button>

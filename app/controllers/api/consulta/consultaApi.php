@@ -262,6 +262,10 @@ class Consulta extends Controller
                     $this->handlerechazarDocumentos();
                     break;
 
+                case 'approve-document':
+                    $this->handleapprovedocument();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -314,7 +318,6 @@ class Consulta extends Controller
         $razonsocial = isset($_POST['RazonSocial']) ? $_POST['RazonSocial'] : '';
         $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
         $result = $repository->SearchRazonData($razonsocial);
-        //var_dump($serial);
         if ($result != "") {
             $this->response(['success' => true, 'RazonData' => $result], status: 200);
         } else {
@@ -618,7 +621,6 @@ class Consulta extends Controller
     $Nr_ticket = $hoy . $paddedTicketNumber;
 
     // ** Paso 1: Guardar el ticket principal para obtener el ID y el estado **
-    // $result ahora contiene ['success', 'id_ticket_creado', 'status_info'] o ['error']
     $result = $repository->SaveDataFalla2(
         $serial,
         $falla_id, // Usamos $falla_id aquí ya que es lo que pasas
@@ -627,11 +629,13 @@ class Consulta extends Controller
         $id_status_payment,
         $id_user,
         $rif,
-        $Nr_ticket
+        $Nr_ticket,
     );
 
     if (isset($result['success']) && $result['success']) {
-        $idTicketCreado = $Nr_ticket;
+        // CORRECCIÓN: Obtener el ID real de la base de datos
+        $idTicketReal = $result['id_ticket_db'] ?? null; // ID real de la base de datos
+        $idTicketCreado = $Nr_ticket; // Número del ticket (para compatibilidad)
         $ticket_status_info = $result['status_info']; // Directamente del modelo/repositorio
         $ticket_status_info_payment = $result['status_payment_info'] ?? null; // Información del estado de pago, si está disponible
 
@@ -725,7 +729,7 @@ class Consulta extends Controller
 
         // 8. Procesar cada tipo de archivo adjunto
         $envioOk = $processFile('archivoEnvio', 'Envio', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoEnvioInfo);
-        $exoneracionOk = $processFile('archivoExoneracion', 'Exoneracion', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoExoneracionInfo);
+        $exoneracionOk = $processFile('archivoExoneracion', 'Exoneracion', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo);
         $anticipoOk = $processFile('archivoAnticipo', 'Anticipo', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo);
 
         if (!$envioOk || !$exoneracionOk || !$anticipoOk) {
@@ -737,7 +741,7 @@ class Consulta extends Controller
             'success' => true,
             'message' => 'Datos guardados con éxito. El ticket de nivel 2 ha sido creado.',
             'ticket_data' => [
-                'Nr_ticket' => $Nr_ticket,
+                'Nr_ticket' => $Nr_ticket,                    // Número del ticket (ej: "1608250003")
                 'serial' => $serial,
                 'falla_text' => $falla_text,
                 'nivelFalla_text' => $nivelFalla_text,
@@ -745,9 +749,9 @@ class Consulta extends Controller
                 'razonsocial' => $razonsocial,
                 'user_gestion' => $_SESSION['nombres'] . ' ' . $_SESSION['apellidos'],
                 'coordinador' => $coordinador_nombre,
-                'id_ticket_creado' => $idTicketCreado, // Incluye el ID del ticket
-                'status_id' => $status_id,             // Incluye el ID del estado
-                'status_text' => $status_text,          // **¡El nombre del estado aquí!**
+                'id_ticket_creado' => $idTicketReal,          // ID real de la BD (ej: 12345)
+                'status_id' => $status_id,                    // Incluye el ID del estado
+                'status_text' => $status_text,                // **¡El nombre del estado aquí!**
                 'status_payment' => $status_payment_text
             ]
         ], 200);
@@ -758,7 +762,7 @@ class Consulta extends Controller
         $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla en la base de datos: ' . ($result['error'] ?? 'Desconocido')], 500);
         return;
     }
-}
+   }
     
     public function handlePosSerials()
     {
@@ -1681,6 +1685,33 @@ class Consulta extends Controller
 
         if ($result) {
             $this->response(['success' => true,'message' => 'El Documento ha sido rechazados correctamente.'], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleapprovedocument(){
+        $nro_ticket = isset($_POST['nro_ticket'])? $_POST['nro_ticket'] : '';
+        $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+        $document_type = isset($_POST['document_type'])? $_POST['document_type'] : '';
+        
+        // Log para debug
+        error_log("Datos recibidos - nro_ticket: $nro_ticket, id_ticket: $id_ticket, id_user: $id_user, document_type: $document_type");
+        
+        if (!$id_ticket || !$nro_ticket || !$id_user || !$document_type) {
+            $this->response(['success' => false, 'message' => 'Faltan los datos necesarios.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type);
+
+        // Log del resultado
+        error_log("Resultado de AprobarDocumento: " . ($result ? 'true' : 'false'));
+
+        if ($result) {
+            $this->response(['success' => true,'message' => 'El Documento ha sido aprobado correctamente.'], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }

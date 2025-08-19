@@ -15,7 +15,7 @@ define("bd_usuario", 'postgres');
 /*define("bd_clave", '1234');*/
 define("bd_clave", 'Int3l1g3ns@.');
 
-/*define ("bd_hostname", 'localhost');
+/*define ("bd_hostname", '127.0.0.1');
 define("mvc_port", '5432');
 define("bd_usuario", 'postgres');
 define("bd_clave", 'Airan1234');*/
@@ -34,13 +34,7 @@ $host = $_SERVER['HTTP_HOST'];
 define('ENDPOINT_BASE_DYNAMIC', $protocol . $host);
 define('APP_BASE_PATH', '/SoportePost/');
 define('tituloPagina', value: 'Soporte Post Venta');
-/* ENDPOINT*/ 
 
-// config/config.php (ejemplo)
-//define('UPLOAD_BASE_DIR', 'C:\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
-//define('UPLOAD_BASE_DIR', 'C:/Users/Airan Bracamonte/Documents/uploads_tickets/'); 
-//define(constant_name: 'UPLOAD_BASE_DIR', 'D:\\uploads_tickets\\'); // O 'C:\\uploads_tickets\\' si es tu unidad C
-//define('UPLOAD_BASE_DIR', '..\\..\\Documents\\uploads_tickets/'); // O 'C:\\uploads_tickets\\' si es tu unidad C
 define('UPLOAD_BASE_DIR', 'C:\Documentos_SoportePost\\');
 
 //Envio Correo 

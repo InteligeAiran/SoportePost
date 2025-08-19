@@ -351,16 +351,7 @@ function getTicketDataCoordinator() {
               data.name_accion_ticket === "Recibido por el Coordinador"
             ) {
               // Acción 3
-              actionButtonsHtml += `
-                <button style="display: none;" class="btn btn-sm btn-info btn-received-coord mr-2"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="top"
-                  title="Ticket ya Recibido por Coordinador"
-                  data-ticket-id="${data.id_ticket}"
-                  data-nro-ticket="${data.nro_ticket}"
-                  data-serial-pos="${data.serial_pos}">
-                  Recibido
-                </button>
+              actionButtonsHtml += `s
                 <button id="myUniqueAssingmentButton"
                   class="btn btn-sm btn-assign-tech"
                   data-bs-toggle="tooltip"
@@ -394,7 +385,8 @@ function getTicketDataCoordinator() {
                   data-nro-ticket="${data.nro_ticket}"
                   data-envio="${data.envio}"
                   data-exoneracion="${data.exoneracion}"
-                  data-pago="${data.pago}">
+                  data-pago="${data.pago}"
+                  data-rechazado="${data.documento_rechazado}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
                     <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
                     <path d="M.046 8.5C.138 7.042 1.517 5.0 8 5.0s7.862 2.042 7.954 3.5c-.092 1.458-1.472 3.5-7.954 3.5S.138 9.958.046 8.5M13 8a5 5 0 1 0-10 0 5 5 0 0 0 10 0"/>
@@ -719,6 +711,15 @@ function getTicketDataCoordinator() {
               const envioValor = $(this).data("envio");
               const exoValor = $(this).data("exoneracion");
               const pagoValor = $(this).data("pago");
+              const documentoRechazado = $(this).data("rechazado");
+
+              const BotonRechazo = document.getElementById('RechazoDocumento');
+
+              if (documentoRechazado === 'Sí') {
+                BotonRechazo.style.display = 'none'; // Muestra el botón de rechazo
+              } else {
+                BotonRechazo.style.display = 'block'; // Oculta el botón de rechazo
+              }
 
               // Guardar en variables globales
               currentTicketIdForImage = ticketId;
@@ -808,6 +809,8 @@ function getTicketDataCoordinator() {
                       const filePath = document.file_path;
                       const mimeType = document.mime_type;
                       const fileName = document.original_filename;
+
+                      console.log("documento rechazo:", document.documento_rechazado);
 
                       // Determinar si es imagen o PDF
                       if (mimeType.startsWith('image/')) {
@@ -1260,6 +1263,12 @@ function loadTicketHistory(ticketId) {
           // La fila se mostrará solo si la acción del ticket coincide con una de las acciones de rechazo definidas.
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
+          // --- NUEVA LÓGICA PARA COMPONENTES ---
+          // El componente se mostrará en negrita si:
+          // 1. La acción cambió Y es "Actualización de Componentes" Y hay componentes
+          // 2. Los componentes cambiaron Y hay componentes
+          const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
+
           let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
           let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
           const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
@@ -1321,7 +1330,7 @@ function loadTicketHistory(ticketId) {
                                                 ${showComponents ? `
                                                     <tr>
                                                         <th class="text-start">Componentes Asociados:</th>
-                                                        <td class="${componentsChanged ? "highlighted-change" : ""}">${item.components_list}</td>
+                                                        <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${item.components_list}</td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `

@@ -1,5 +1,199 @@
 let currentSelectedTicket = null;
 
+document.addEventListener('DOMContentLoaded', function() {
+    const approveTicketFromImageBtn = document.getElementById('approveTicketFromImage');
+    
+    if (approveTicketFromImageBtn) {
+        approveTicketFromImageBtn.addEventListener('click', handleTicketApprovalFromImage);
+    }
+});
+
+function handleTicketApprovalFromImage() {
+    const nro_ticket = document.getElementById('currentTicketIdDisplay').textContent;
+    const documentType = document.getElementById('currentImageTypeDisplay').textContent;
+    const serial = document.getElementById('currentSerialDisplay').textContent;
+    const id_ticket = currentTicketIdForImage;
+
+    
+    if (!id_ticket ) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo obtener el ID del ticket.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    if (!documentType) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo obtener el tipo de documento.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    if (!serial) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo obtener el serial del documento.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    if(!nro_ticket) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo obtener el número de ticket.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+
+    Swal.fire({
+        title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+            <div class="custom-modal-header-content">Confirmar Aprobación</div>
+            </div>`,
+        html: `${customWarningSvg}<p class="mt-3" id="textConfirm">¿Está seguro que desea aprobar el Nro ticket <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> asociado al serial <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serial}</span>?`,
+        showCancelButton: true,
+        confirmButtonColor: '#003594',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Aprobar',
+        cancelButtonText: 'Cancelar',
+        color: 'black',
+        focusConfirm: false,
+        allowOutsideClick: false, 
+        allowEscapeKey: false,
+        keydownListenerCapture: true,
+        didOpen: () => {
+            // Aplicar estilos personalizados después de que se abra el modal
+            const backdrop = document.querySelector('.swal2-backdrop-show');
+            const popup = document.querySelector('.swal2-popup');
+            
+            if (backdrop) {
+                backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
+                backdrop.style.backdropFilter = 'blur(8px)';
+            }
+            
+            if (popup) {
+                popup.style.background = 'rgba(255, 255, 255, 0.95)';
+                popup.style.backdropFilter = 'blur(10px)';
+                popup.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+                popup.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3)';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Realizar la aprobación
+            approveTicket(nro_ticket, documentType, id_ticket);
+        }
+    });
+}
+
+// Función para enviar la solicitud de aprobación
+function approveTicket(nro_ticket, documentType, id_ticket) {
+    const id_user = document.getElementById('userId').value;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/approve-document`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    // Mostrar indicador de carga
+    Swal.fire({
+        title: 'Procesando...',
+        text: 'Aprobando documento del ticket',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Aprobado!',
+                        html: `El documento de  <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${documentType}</span> asociado al Nro Ticket <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> ha sido aprobado correctamente.`,
+                        confirmButtonText: 'Ok',
+                        confirmButtonColor: '#003594',
+                        color: 'black'
+                    }).then(() => {
+                       window.location.reload();
+                        
+                        // Recargar la tabla de tickets
+                        if (typeof getTicketAprovalDocument === 'function') {
+                            getTicketAprovalDocument();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message || 'Error al aprobar el documento',
+                        confirmButtonText: 'Ok',
+                        color: 'black',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            } catch (error) {
+                console.error('Error al parsear la respuesta JSON:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Respuesta',
+                    text: 'Error al procesar la respuesta del servidor',
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        } else {
+            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Conexión',
+                text: `Error HTTP ${xhr.status}: ${xhr.statusText}`,
+                confirmButtonText: 'Ok',
+                color: 'black',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error('Error de red al intentar aprobar el ticket');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de Red',
+            text: 'Error de conexión con el servidor',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#dc3545'
+        });
+    };
+
+    // Enviar los datos
+    const data = `action=approve-document&nro_ticket=${encodeURIComponent(nro_ticket)}&document_type=${encodeURIComponent(documentType)}&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}`;
+    xhr.send(data);
+}
+
 function getTicketAprovalDocument() {
     const id_user = document.getElementById("userId").value; // Obtener el ID del usuario
 
@@ -21,12 +215,16 @@ function getTicketAprovalDocument() {
     // Asumiendo que 'viewDocumentsBtn' es un botón fuera de la tabla si lo usas
     const viewDocumentsBtn = document.getElementById("viewDocumentsBtn"); 
 
-    // Actualiza columnTitles con las nuevas columnas
+    // Actualiza columnTitles con las nuevas columnas disponibles
     const columnTitles = {
-        id_ticket: "ID Ticket",
         nro_ticket: "Nro Ticket",
         serial_pos: "Serial POS",
         name_status_payment: "Estatus Pago",
+        // NUEVAS COLUMNAS DISPONIBLES
+        document_type: "Tipo Documento",
+        original_filename: "Nombre Archivo",
+        motivo_rechazo: "Motivo Rechazo",
+        uploaded_at: "Fecha Subida"
     };
 
     xhr.onload = function () {
@@ -46,6 +244,17 @@ function getTicketAprovalDocument() {
 
                         const allDataKeys = Object.keys(TicketData[0] || {});
                         const columnsConfig = [];
+
+                        // --- AGREGAR COLUMNA DE NUMERACIÓN AL PRINCIPIO ---
+                        columnsConfig.push({
+                            title: "N°",
+                            orderable: false,
+                            searchable: false,
+                            render: function (data, type, row, meta) {
+                                return meta.row + meta.settings._iDisplayStart + 1;
+                            },
+                        });
+                        // --- FIN DE COLUMNA DE NUMERACIÓN ---
 
                         for (const key in columnTitles) {
                             if (allDataKeys.includes(key)) {
@@ -79,15 +288,61 @@ function getTicketAprovalDocument() {
                                 const exoneracion = row.exoneracion;
                                 const pago = row.pago;
                                 const nro_ticket = row.nro_ticket;
-                                return `
-                                    <button class="btn btn-info btn-sm view-image-btn" data-nro-ticket="${nro_ticket}" data-id="${idTicket}" data-envio="${envio}" data-exoneracion="${exoneracion}" data-anticipo="${pago}" data-bs-toggle="modal" data-bs-target="#visualizarImagenModal" title="Visualizar Imágenes">
+                                const serial_pos = row.serial_pos;
+                                
+                                // NUEVAS COLUMNAS DISPONIBLES
+                                const documentType = row.document_type;
+                                const originalFilename = row.original_filename;
+                                const motivoRechazo = row.motivo_rechazo;
+                                const uploadedAt = row.uploaded_at;
+                                const idMotivoRechazo = row.id_motivo_rechazo;
+                                const rechazado = row.documento_rechazado;
+                                
+                                // Determinar si es un documento rechazado
+                                const isRejected = idMotivoRechazo !== null && motivoRechazo !== null;
+                                
+                                let actionButtons = `
+                                    <button class="btn btn-info btn-sm view-image-btn" 
+                                            data-serial-pos="${serial_pos}" 
+                                            data-nro-ticket="${nro_ticket}" 
+                                            data-id="${idTicket}" 
+                                            data-envio="${envio}" 
+                                            data-exoneracion="${exoneracion}" 
+                                            data-anticipo="${pago}"
+                                            data-document-type="${documentType || ''}"
+                                            data-original-filename="${originalFilename || ''}"
+                                            data-motivo-rechazo="${motivoRechazo || ''}"
+                                            data-uploaded-at="${uploadedAt || ''}"
+                                            data-id-motivo-rechazo="${idMotivoRechazo || ''}"
+                                            data-rechazado="${rechazado || ''}"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#visualizarImagenModal" 
+                                            title="Visualizar Imágenes">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
                                             <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
                                             <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
                                         </svg>
                                     </button>
                                 `;
-                                // El botón de aprobación estará en el modal de visualización de imagen
+                                
+                                // Si es un documento rechazado, agregar botón para subir nuevo documento
+                                if (isRejected) {
+                                    actionButtons += `
+                                        <button class="btn btn-warning btn-sm upload-new-doc-btn ms-1" 
+                                                data-id="${idTicket}" 
+                                                data-nro-ticket="${nro_ticket}" 
+                                                data-serial-pos="${serial_pos}"
+                                                data-document-type="${documentType || ''}"
+                                                data-motivo-rechazo="${motivoRechazo || ''}"
+                                                title="Subir Nuevo Documento">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
+                                                <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
+                                            </svg>
+                                        </button>
+                                    `;
+                                }
+                                
+                                return actionButtons;
                             },
                         });
                         // --- FIN DE AÑADIR COLUMNA ---
@@ -97,7 +352,7 @@ function getTicketAprovalDocument() {
                             scrollX: "200px",
                             data: TicketData,
                             columns: columnsConfig,
-                            order: [[0, 'desc']], // Ordenar por ID del ticket descendente (más nuevo primero)
+                            order: [[1, 'desc']], // Cambiar a [1, 'desc'] porque ahora la columna 0 es N°
                             pagingType: "simple_numbers",
                             lengthMenu: [5, 10, 25, 50, 100],
                             autoWidth: false,
@@ -128,21 +383,20 @@ function getTicketAprovalDocument() {
                                 // o en un script que se ejecuta después de que la tabla está lista.
                                 const buttonsHtml = `
                                     <button id="btn-por-asignar" class="btn btn-primary me-2" title="Pendientes por revisión Documentos">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
                                     </svg>
                                     </button>
 
                                     <button id="btn-recibidos" class="btn btn-secondary me-2" title="Pendiente por cargar Documentos">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                                        <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
+                                            <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
                                     </svg>
                                     </button>
 
                                     <button id="btn-asignados" class="btn btn-secondary me-2" title="Documentos Rechazados">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
                                     </svg>
                                     </button>
                                 `;
@@ -169,7 +423,7 @@ function getTicketAprovalDocument() {
                                 api.columns().search('').draw(false);
                                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
                                     .column(3)
-                                    .search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, true) // CAMBIO AQUÍ
+                                    .search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true) // CAMBIO AQUÍ
                                     .draw();
                                 setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
 
@@ -177,7 +431,7 @@ function getTicketAprovalDocument() {
                                     api.columns().search('').draw(false);
                                     api
                                     .column(3)
-                                    .search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, true) // CAMBIO AQUÍ
+                                    .search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true) // CAMBIO AQUÍ
                                     .draw();
                                     setActiveButton("btn-por-asignar");
                                 });
@@ -201,6 +455,17 @@ function getTicketAprovalDocument() {
                                     setActiveButton("btn-asignados");
                                 });    
                             },
+                        });
+
+                        // Event listener para subir nuevo documento (NUEVO)
+                        $("#tabla-ticket tbody").on("click", ".upload-new-doc-btn", function () {
+                            const ticketId = $(this).data("id");
+                            const nroTicket = $(this).data("nro-ticket");
+                            const serialPos = $(this).data("serial-pos");
+                            const documentType = $(this).data("document-type");
+                            const motivoRechazo = $(this).data("motivo-rechazo");
+                            
+                            showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType, motivoRechazo);
                         });
 
                         $("#tabla-ticket tbody")
@@ -260,6 +525,8 @@ function getTicketAprovalDocument() {
                         $("#tabla-ticket tbody").on("click", ".view-image-btn", function () {
                             const ticketId = $(this).data("id");
                             const nroTicket = $(this).data("nro-ticket");
+                            const serialPos = $(this).data("serial-pos");
+                            const documentoRechazado = $(this).data("rechazado"); // AGREGAR ESTA LÍNEA
                             
                             // Asume que los valores 'Sí' o 'No' están en los data attributes del botón.
                             const envioValor = $(this).data("envio");
@@ -283,10 +550,13 @@ function getTicketAprovalDocument() {
                             // Si al menos una imagen existe, el código continúa aquí.
                             currentTicketIdForImage = ticketId;
                             currentTicketNroForImage = nroTicket;
+                            currentTicketSerialForImage = serialPos;
 
                             const VizualizarImage = document.getElementById('visualizarImagenModal');
                             // Establecer el data-ticket-id en el modal para que esté disponible en el listener del botón
                             VizualizarImage.setAttribute('data-ticket-id', nroTicket);
+                            VizualizarImage.setAttribute('data-serial-pos', serialPos);
+                            VizualizarImage.setAttribute('data-rechazado', documentoRechazado); // AGREGAR ESTA LÍNEA
                             const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
 
                             const EnvioInputModal = document.getElementById('imagenEnvio');
@@ -352,6 +622,16 @@ function getTicketAprovalDocument() {
                             viewDocumentsBtn.style.display = "none";
                         }
                     }
+
+                    $("#tabla-ticket tbody").on("click", ".upload-new-doc-btn", function () {
+                        const ticketId = $(this).data("id");
+                        const nroTicket = $(this).data("nro-ticket");
+                        const serialPos = $(this).data("serial-pos");
+                        const documentType = $(this).data("document-type");
+                        const motivoRechazo = $(this).data("motivo-rechazo");
+                        
+                        showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType, motivoRechazo);
+                    });
                 } else {
                     if (tableContainer) {
                         tableContainer.innerHTML =
@@ -410,8 +690,189 @@ function getTicketAprovalDocument() {
 
 document.addEventListener("DOMContentLoaded", getTicketAprovalDocument);
 
-document.addEventListener('DOMContentLoaded', function () {
+function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType, motivoRechazo) {
+    // Obtener elementos del modal
+    const modal = document.getElementById('uploadDocumentModal');
+    const modalTicketIdSpan = document.getElementById('modalTicketId');
+    const idTicketInput = document.getElementById('id_ticket');
+    const documentFileInput = document.getElementById('documentFile');
+    const imagePreview = document.getElementById('imagePreview');
+    const uploadMessage = document.getElementById('uploadMessage');
+    const uploadFileBtn = document.getElementById('uploadFileBtn');
+    const cerrarBoton = document.getElementById('CerrarBoton');
+    const uploadForm = document.getElementById('uploadForm');
+    const DocumentTypeInput = document.getElementById('document_type');
+    const nro_ticket = document.getElementById('nro_ticket');
 
+    // Verificar que todos los elementos necesarios existan
+    if (!modal || !modalTicketIdSpan || !idTicketInput || !documentFileInput || 
+        !imagePreview || !uploadMessage || !uploadFileBtn || !cerrarBoton || !uploadForm) {
+        console.error('Elementos del modal no encontrados:', {
+            modal: !!modal,
+            modalTicketIdSpan: !!modalTicketIdSpan,
+            idTicketInput: !!idTicketInput,
+            documentFileInput: !!documentFileInput,
+            imagePreview: !!imagePreview,
+            uploadMessage: !!uploadMessage,
+            uploadFileBtn: !!uploadFileBtn,
+            cerrarBoton: !!cerrarBoton,
+            uploadForm: !!uploadForm
+        });
+        
+        Swal.fire({
+            icon: 'error',
+            title: 'Error del Modal',
+            text: 'No se pudo cargar el modal de subida de documentos. Verifique que todos los elementos estén disponibles.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#dc3545'
+        });
+        return;
+    }
+
+    // Limpiar formulario anterior
+    uploadForm.reset();
+    imagePreview.style.display = 'none';
+    uploadMessage.innerHTML = '';
+    uploadMessage.classList.add('hidden');
+
+    // Establecer información del ticket
+    modalTicketIdSpan.textContent = nroTicket;
+    idTicketInput.value = ticketId;
+    DocumentTypeInput.value = documentType;
+
+
+    // Mostrar información del documento rechazado
+    const infoHtml = `
+        <div class="alert mb-3" id = "CartWrong" role="alert">
+            <h6 class="alert-heading">Documento Rechazado</h6>
+            <p class="mb-1"><strong>Serial POS:</strong> ${serialPos}</p>
+            <p class="mb-1"><strong>Tipo de Documento:</strong> ${documentType || 'No especificado'}</p>
+            <p class="mb-0"><strong>Motivo de Rechazo:</strong> <span class="motivo-rechazo-highlight">${motivoRechazo || 'No especificado'}</span></p>
+        </div>
+    `;
+    
+    // Insertar la información antes del formulario
+    const existingInfo = uploadForm.querySelector('#CartWrong');
+    if (existingInfo) {
+        existingInfo.remove();
+    }
+    uploadForm.insertAdjacentHTML('afterbegin', infoHtml);
+
+    // Mostrar el modal
+    const bootstrapModal = new bootstrap.Modal(modal);
+    bootstrapModal.show();
+
+    // Event listener para previsualización de imagen
+    const handleFileChange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Validar tipo de archivo
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
+            if (!allowedTypes.includes(file.type)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Tipo de archivo no permitido',
+                    text: 'Solo se permiten imágenes (JPG, PNG, GIF) o PDF.',
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#003594'
+                });
+                this.value = '';
+                imagePreview.style.display = 'none';
+                return;
+            }
+
+            // Validar tamaño del archivo (10MB máximo)
+            const maxSize = 10 * 1024 * 1024; // 10MB en bytes
+            if (file.size > maxSize) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Archivo demasiado grande',
+                    text: 'El archivo excede el tamaño máximo permitido de 10MB.',
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#003594'
+                });
+                this.value = '';
+                imagePreview.style.display = 'none';
+                return;
+            }
+
+            // Mostrar previsualización si es imagen
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // Si es PDF, ocultar previsualización
+                imagePreview.style.display = 'none';
+            }
+
+            // Habilitar botón de subida
+            uploadFileBtn.disabled = false;
+        } else {
+            imagePreview.style.display = 'none';
+            uploadFileBtn.disabled = true;
+        }
+    };
+
+    // Event listener para el botón de subida
+    const handleUploadClick = function() {
+        const file = documentFileInput.files[0];
+        if (!file) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Archivo requerido',
+                text: 'Por favor seleccione un archivo para subir.',
+                confirmButtonText: 'Ok',
+                color: 'black',
+                confirmButtonColor: '#003594'
+            });
+            return;
+        }
+
+        // Mostrar indicador de carga
+        Swal.fire({
+            title: 'Subiendo documento...',
+            text: 'Por favor espere mientras se procesa el archivo.',
+            allowOutsideClick: false,
+            color: 'black',
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+    }
+    // Event listener para cerrar modal
+    const handleCerrarClick = function() {
+        bootstrapModal.hide();
+    };
+
+    // Agregar event listeners
+    documentFileInput.addEventListener('change', handleFileChange);
+    uploadFileBtn.addEventListener('click', handleUploadClick);
+    cerrarBoton.addEventListener('click', handleCerrarClick);
+
+    // Limpiar al cerrar el modal
+    modal.addEventListener('hidden.bs.modal', function() {
+        // Remover event listeners
+        documentFileInput.removeEventListener('change', handleFileChange);
+        uploadFileBtn.removeEventListener('click', handleUploadClick);
+        cerrarBoton.removeEventListener('click', handleCerrarClick);
+        
+        // Limpiar formulario
+        uploadForm.reset();
+        imagePreview.style.display = 'none';
+        uploadMessage.innerHTML = '';
+        uploadMessage.classList.add('hidden');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
     const visualizarImagenModalElement = document.getElementById('visualizarImagenModal');
     const closeImagevisualizarModalBtn = document.getElementById('closeImagevisualizarModalBtn');
     const btnVisualizarImagen = document.getElementById('btnVisualizarImagen');
@@ -430,6 +891,8 @@ document.addEventListener('DOMContentLoaded', function () {
     btnVisualizarImagen.addEventListener('click', function() {
         const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
         const ticketId = visualizarImagenModalElement.getAttribute('data-ticket-id');
+        const serialPos = visualizarImagenModalElement.getAttribute('data-serial-pos');
+        const documentoRechazado = visualizarImagenModalElement.getAttribute('data-rechazado'); // AGREGAR ESTA LÍNEA
 
         if (!selectedOption) {
             Swal.fire({
@@ -459,7 +922,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         const fileName = document.original_filename;
 
                         // Mostrar el documento en el modal de aprobación
-                        showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName);
+                        showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName, serialPos, documentoRechazado);
 
                         // Ocultar el modal de selección
                         visualizarImagenModal.hide();
@@ -510,65 +973,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const data = `action=GetDocumentByType&ticketId=${ticketId}&documentType=${selectedOption}`;
         xhr.send(data);
     });
-
-    // Listener para el botón 'Aprobar Ticket' (si es necesario)
-    if (approveTicketFromImage) { 
-        approveTicketFromImage.addEventListener('click', function() {
-            const ticketIdToApprove = this.getAttribute('data-ticket-id'); 
-            if (ticketIdToApprove) {
-                console.log('Aprobar ticket:', ticketIdToApprove);
-                // Implementa aquí la lógica para aprobar el ticket
-            } else {
-                console.error('No se pudo obtener el Ticket ID para aprobar.');
-            }
-        });
-    }
 });
-
-
-
-    /**
-     * handleTicketApproval(id, approve)
-     * Implementación para enviar la solicitud de aprobación/rechazo al servidor.
-     */
-window.handleTicketApproval = function(id, approve) {
-    console.log(`Ticket ${id} ha sido ${approve ? 'APROBADO' : 'RECHAZADO'}.`);
-        
-        fetch(`${ENDPOINT_BASE}${APP_PATH}api/tickets/update-status`, {
-            method: 'POST', 
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-                ticket_id: id, 
-                status: approve ? 'aprobado' : 'rechazado' 
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                alert('Ticket procesado con éxito: ' + data.message);
-                getTicketAprovalDocument(); 
-            } else {
-                alert('Error al procesar ticket: ' + (data.message || 'Mensaje desconocido.'));
-                console.error('Error del servidor:', data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error al enviar la solicitud de aprobación/rechazo:', error);
-            alert('Ocurrió un error al procesar el ticket. Por favor, inténtelo de nuevo.');
-        });
-    };
-
-    // Asegúrate de que 'ENDPOINT_BASE' y 'APP_PATH' estén definidos globalmente.
-    // const ENDPOINT_BASE = "http://localhost/";
-    // const APP_PATH = "my_app/";
-
 
 document.addEventListener("DOMContentLoaded", function () {
   // Obtén las referencias a los elementos del DOM que SÍ ESTÁN PRESENTES AL CARGAR LA PÁGINA
@@ -737,56 +1142,118 @@ $(document).ready(function () {
     });
   }
 
-  // 5. Evento para el botón de subir archivo (dentro del modal)
   if ($uploadFileBtn.length) {
-    $uploadFileBtn.on("click", async function () {
-      const file = $documentFileInput[0].files[0];
-      const idTicket = $modalTicketIdSpan.text();
+        $uploadFileBtn.on("click", function () {
+            const id_user = document.getElementById("userId").value;
+            const documentFileInput = document.getElementById("documentFile");
+            const uploadMessage = document.getElementById("uploadMessage");
+            const file = documentFileInput.files[0];
+            const id_ticket = document.getElementById("id_ticket").value;
+            const documentType = document.getElementById("document_type").value;
+
+            // Clear previous messages and check for file
+            uploadMessage.classList.add("hidden");
+            uploadMessage.textContent = "";
 
       if (!file) {
-        showMessage("Por favor, seleccione un archivo para subir.", "error");
+                Swal.fire({
+                    icon: 'warning',
+                    title: '¡Advertencia!',
+                    text: 'Por favor, selecciona un archivo antes de continuar.',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#003594',
+                    color: 'black',
+                });
         return;
       }
 
-      showMessage("Subiendo documento...", "info");
-
+            // 1. Create a FormData object to handle the file upload.
       const formData = new FormData();
-      formData.append("ticket_id", idTicket);
-      formData.append("document_file", file);
-      // *** AÑADIR EL MIME TYPE DEL ARCHIVO AL formData ***
-      formData.append("mime_type", file.type);
-      formData.append("action", "uploadDocument"); // Ya estaba aquí, pero se mantiene para la claridad
+            formData.append("action", "uploadDocument");
+            formData.append("ticket_id", id_ticket);           // Tu API espera "ticket_id"
+            formData.append("document_type", documentType);    // Tu API espera "document_type"
+            formData.append("document_file", file);            // Tu API espera "document_file"
+            formData.append("id_user", id_user);               // Tu API espera "id_user"
+            formData.append("nro_ticket", $modalTicketIdSpan.text());
 
-      try {
-        const uploadUrl = `${ENDPOINT_BASE}${APP_PATH}api/reportes/uploadDocument`;
+            const xhr = new XMLHttpRequest();
+            const url = `${ENDPOINT_BASE}${APP_PATH}api/reportes/uploadDocumentnNew`;
 
-        const response = await fetch(uploadUrl, {
-          method: "POST",
-          body: formData,
+            xhr.open("POST", url);
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    let result;
+                    try {
+                        result = JSON.parse(xhr.responseText);
+                    } catch (e) {
+                        result = { success: false, message: 'Error de respuesta del servidor.' };
+                    }
+
+                    if (xhr.status === 200 && result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: result.message,
+                            confirmButtonColor: '#003594',
+                            confirmButtonText: 'OK',
+                            color: 'black',
+                        }).then(() => {
+                        location.reload();
+                    });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: result.message || 'Error al subir el documento.',
+                            confirmButtonColor: '#003594',
+                        });
+                    }
+                }
+            };
+            
+            xhr.onerror = function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de red',
+                    text: 'Error de red o del servidor al subir el documento.',
+                    confirmButtonColor: '#003594',
+                });
+            }
+
+            // 4. Send the FormData object.
+            xhr.send(formData);
         });
+    }
 
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-          showMessage("Documento subido exitosamente!", "success");
-          if (uploadDocumentModalInstance) {
-            // Usar la instancia creada previamente
-            uploadDocumentModalInstance.hide();
-          }
-          // Opcional: $('#tuTablaID').DataTable().ajax.reload();
-        } else {
-          showMessage(
-            `Error al subir documento: ${
-              result.message || "Error desconocido."
-            }`,
-            "error"
-          );
+    // Función para obtener el ID del usuario actual
+    function getCurrentUserId() {
+        // Opción 1: Si tienes un elemento hidden en el HTML
+        const userIdElement = document.getElementById('userId');
+        if (userIdElement) {
+            return userIdElement.value;
         }
-      } catch (error) {
-        console.error("Error en la subida:", error);
-        showMessage("Error de conexión al subir el documento.", "error");
-      }
-    });
+        
+        // Opción 2: Si tienes una variable global
+        if (typeof currentUserId !== 'undefined') {
+            return currentUserId;
+        }
+        
+        // Opción 3: Si tienes un atributo data en algún elemento
+        const userElement = document.querySelector('[data-user-id]');
+        if (userElement) {
+            return userElement.getAttribute('data-user-id');
+        }
+        
+        // Opción 4: Si tienes localStorage
+        if (localStorage.getItem('userId')) {
+            return localStorage.getItem('userId');
+        }
+        
+        // Si no se encuentra, mostrar error
+        console.error("No se pudo obtener el ID del usuario");
+        showMessage("Error: No se pudo identificar al usuario.", "error");
+        return null;
   }
 
   // 6. Evento que se dispara cuando el modal se ha ocultado completamente
@@ -805,9 +1272,7 @@ $(document).ready(function () {
       }
     });
   }
-}); // Cierre correcto de $(document).ready
-
-
+});
 
 function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
@@ -1068,6 +1533,12 @@ function loadTicketHistory(ticketId) {
           // La fila se mostrará solo si la acción del ticket coincide con una de las acciones de rechazo definidas.
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
+          // --- NUEVA LÓGICA PARA COMPONENTES ---
+          // El componente se mostrará en negrita si:
+          // 1. La acción cambió Y es "Actualización de Componentes" Y hay componentes
+          // 2. Los componentes cambiaron Y hay componentes
+          const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
+
           let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
           let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
           const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
@@ -1129,7 +1600,7 @@ function loadTicketHistory(ticketId) {
                                                 ${showComponents ? `
                                                     <tr>
                                                         <th class="text-start">Componentes Asociados:</th>
-                                                        <td class="${componentsChanged ? "highlighted-change" : ""}">${item.components_list}</td>
+                                                        <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${item.components_list}</td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
@@ -1178,111 +1649,149 @@ function loadTicketHistory(ticketId) {
   });
 }
 
-function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName) {
-  // Obtener elementos del modal de aprobación
-  const imageApprovalModalElement = document.getElementById("imageApprovalModal");
-  const currentTicketIdDisplay = document.getElementById("currentTicketIdDisplay");
-  const currentImageTypeDisplay = document.getElementById("currentImageTypeDisplay");
-  const currentDocumentNameDisplay = document.getElementById("currentNombreDocumento");
-  const ticketImagePreview = document.getElementById("ticketImagePreview");
-  const mediaViewerContainer = document.getElementById("mediaViewerContainer");
-  const closeImageApprovalModalBtn = document.getElementById("closeImageApprovalModalBtn");
+function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos, documentoRechazado) {
+    // Obtener elementos del modal de aprobación
+    const imageApprovalModalElement = document.getElementById("imageApprovalModal");
+    const currentTicketIdDisplay = document.getElementById("currentTicketIdDisplay");
+    const currentImageTypeDisplay = document.getElementById("currentImageTypeDisplay");
+    const currentDocumentNameDisplay = document.getElementById("currentNombreDocumento");
+    const ticketImagePreview = document.getElementById("ticketImagePreview");
+  const pdfViewViewer = document.getElementById("pdfViewViewer");
+    const mediaViewerContainer = document.getElementById("mediaViewerContainer");
+    const closeImageApprovalModalBtn = document.getElementById("closeImageApprovalModalBtn");
+    const currentSerialDisplay = document.getElementById("currentSerialDisplay");
+    const approveTicketFromImageBtn = document.getElementById("approveTicketFromImage");
 
+    // LIMPIEZA COMPLETA Y FORZADA
+    if (mediaViewerContainer) {
+        // Remover todos los elementos hijos excepto los elementos fijos
+        const elementsToKeep = [ticketImagePreview, pdfViewViewer];
+        const elementsToRemove = [];
+        
+        for (let child of mediaViewerContainer.children) {
+            if (!elementsToKeep.includes(child)) {
+                elementsToRemove.push(child);
+            }
+        }
+        
+        elementsToRemove.forEach(element => {
+            mediaViewerContainer.removeChild(element);
+        });
+    }
+    
+    // Resetear completamente la imagen y el PDF viewer
+    if (ticketImagePreview) {
+        ticketImagePreview.style.display = "none";
+        ticketImagePreview.src = "";
+        ticketImagePreview.alt = "Vista previa del documento";
+    }
+    
+    if (pdfViewViewer) {
+  pdfViewViewer.style.display = "none";
+        pdfViewViewer.innerHTML = "";
+    }
 
+    // Establecer información del ticket
+    currentTicketIdDisplay.textContent = ticketId;
+    currentImageTypeDisplay.textContent = documentType;
+    currentDocumentNameDisplay.textContent = fileName || 'Sin nombre';
+    currentSerialDisplay.textContent = serialPos || 'Sin posición';
 
-  // Establecer información del ticket
-  currentTicketIdDisplay.textContent = ticketId;
-  currentImageTypeDisplay.textContent = documentType;
-  currentDocumentNameDisplay.textContent = fileName || 'Sin nombre';
+    // Controlar la visibilidad del botón de aprobar
+    if (approveTicketFromImageBtn) {
+        const allowedTypes = ['Exoneracion', 'Anticipo'];
+        const isRejected = documentoRechazado === 'Sí';
+
+        if (allowedTypes.includes(documentType) && !isRejected) {
+            approveTicketFromImageBtn.style.display = 'block';
+        } else {
+            approveTicketFromImageBtn.style.display = 'none';
+        }
+    }
 
   // Función para limpiar la ruta del archivo
   function cleanFilePath(filePath) {
     if (!filePath) return null;
-
-    // Reemplazar barras invertidas con barras normales
     let cleanPath = filePath.replace(/\\/g, '/');
-
-    // Extraer la parte después de 'Documentos_SoportePost/'
     const pathSegments = cleanPath.split('Documentos_SoportePost/');
     if (pathSegments.length > 1) {
       cleanPath = pathSegments[1];
     }
-
-    // Construir la URL completa
     return `http://localhost/Documentos/${cleanPath}`;
   }
 
-  // Limpiar contenedor y mostrar imagen
-  mediaViewerContainer.innerHTML = '';
-  
-  // Asegurarse de que la imagen esté disponible
-  if (ticketImagePreview) {
-    ticketImagePreview.style.display = "none";
-    ticketImagePreview.src = "";
-    ticketImagePreview.alt = "Vista previa del documento";
-  }
-  
-  if (mimeType && mimeType.startsWith('image/')) {
-    // Es una imagen
+    // CONFIGURAR EL CONTENIDO CON MANEJO DE ERRORES
     const fullUrl = cleanFilePath(filePath);
     
-    if (ticketImagePreview) {
-      ticketImagePreview.src = fullUrl;
-      ticketImagePreview.style.display = "block";
-      mediaViewerContainer.appendChild(ticketImagePreview);
-    }
-  } else if (mimeType === 'application/pdf') {
+    if (mimeType && mimeType.startsWith('image/')) {
+    // Es una imagen
+        if (ticketImagePreview) {
+            ticketImagePreview.src = fullUrl;
+            ticketImagePreview.style.display = "block";
+            ticketImagePreview.alt = `Vista previa de ${fileName || 'documento'}`;
+        }
+        
+        if (pdfViewViewer) {
+            pdfViewViewer.style.display = "none";
+        }
+    } else if (mimeType === 'application/pdf') {
     // Es un PDF
-    if (ticketImagePreview) {
-      ticketImagePreview.style.display = "none";
-    }
-    const pdfViewer = document.createElement('iframe');
-    pdfViewer.src = cleanFilePath(filePath);
-    pdfViewer.style.width = '100%';
-    pdfViewer.style.height = '100%';
-    pdfViewer.style.border = 'none';
-    mediaViewerContainer.appendChild(pdfViewer);
+        if (ticketImagePreview) {
+            ticketImagePreview.style.display = "none";
+        }
+
+        if (pdfViewViewer) {
+    pdfViewViewer.style.display = "block";
+            pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;" title="PDF: ${fileName || 'documento'}"></iframe>`;
+        }
   } else {
-    // Tipo de archivo no soportado
-    if (ticketImagePreview) {
-      ticketImagePreview.style.display = "none";
+        // Tipo de archivo no soportado
+        if (ticketImagePreview) {
+            ticketImagePreview.style.display = "none";
+        }
+        
+        if (pdfViewViewer) {
+            pdfViewViewer.style.display = "block";
+            pdfViewViewer.innerHTML = `
+                <div class="text-center p-4">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Tipo de archivo no soportado: ${mimeType}
+                    </div>
+                </div>
+            `;
+        }
     }
-    const messageDiv = document.createElement('div');
-    messageDiv.textContent = `Tipo de archivo no soportado: ${mimeType}`;
-    messageDiv.style.color = 'red';
-    messageDiv.style.textAlign = 'center';
-    messageDiv.style.padding = '20px';
-    mediaViewerContainer.appendChild(messageDiv);
-  }
 
-  // Mostrar el modal de aprobación
-  const imageApprovalModal = new bootstrap.Modal(imageApprovalModalElement);
-  
-  // Agregar event listener para el botón de cerrar
-  if (closeImageApprovalModalBtn) {
-    // Remover listeners previos para evitar duplicados
-    closeImageApprovalModalBtn.removeEventListener('click', closeModalHandler);
-    closeImageApprovalModalBtn.addEventListener('click', closeModalHandler);
-  }
-
-  imageApprovalModal.show();
-
-  // Función para cerrar el modal
-  function closeModalHandler() {
-    imageApprovalModal.hide();
-  }
-
-  // Agregar listener para cuando el modal se cierre
-  imageApprovalModalElement.addEventListener('hidden.bs.modal', function() {
-    // Limpiar el contenedor cuando se cierre el modal
-    if (mediaViewerContainer) {
-      mediaViewerContainer.innerHTML = '';
+    // Mostrar el modal de aprobación
+    const imageApprovalModal = new bootstrap.Modal(imageApprovalModalElement);
+    
+    // LIMPIAR Y AGREGAR EVENT LISTENERS
+    if (closeImageApprovalModalBtn) {
+        // Remover listeners previos
+        const newCloseBtn = closeImageApprovalModalBtn.cloneNode(true);
+        closeImageApprovalModalBtn.parentNode.replaceChild(newCloseBtn, closeImageApprovalModalBtn);
+        
+        newCloseBtn.addEventListener('click', function() {
+            imageApprovalModal.hide();
+        });
     }
-    // Restaurar la imagen original
-    if (ticketImagePreview) {
-      ticketImagePreview.style.display = "none";
-      ticketImagePreview.src = "";
-      ticketImagePreview.alt = "Vista previa del documento";
-    }
-  }, { once: true }); // El { once: true } asegura que el listener se ejecute solo una vez
+
+    imageApprovalModal.show();
+
+    // LIMPIAR CUANDO SE CIERRE EL MODAL
+    const cleanupHandler = function() {
+        if (ticketImagePreview) {
+            ticketImagePreview.style.display = "none";
+            ticketImagePreview.src = "";
+            ticketImagePreview.alt = "Vista previa del documento";
+        }
+        
+        if (pdfViewViewer) {
+            pdfViewViewer.style.display = "none";
+            pdfViewViewer.innerHTML = "";
+        }
+        imageApprovalModalElement.removeEventListener('hidden.bs.modal', cleanupHandler);
+    };
+    imageApprovalModalElement.addEventListener('hidden.bs.modal', cleanupHandler);
 }

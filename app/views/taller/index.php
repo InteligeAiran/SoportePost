@@ -468,9 +468,8 @@
 
             /* Estilo base para el botón Recibidos cuando es el activo */
             #btn-recibidos.btn-primary {
-                background-color: #003594;
-                /* Tu azul fuerte */
-                border-color: #003594;
+                background-color: #28a745; /* Verde éxito */
+                border-color: #28a745;
                 color: #ffffff;
                 transition: background-color 0.3s ease, border-color 0.3s ease,
                 box-shadow 0.3s ease;
@@ -479,11 +478,9 @@
             /* Estilo hover/focus para el botón Recibidos cuando es el activo */
             #btn-recibidos.btn-primary:hover,
             #btn-recibidos.btn-primary:focus {
-                background-color: #0045b4;
-                /* Un tono un poco más oscuro o claro al hover */
-                border-color: #0045b4;
+                background-color: #28a745; /* Verde éxito */
+                border-color: #28a745;
                 box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
-                /* Sombra de enfoque/hover */
             }
 
             /* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
@@ -541,9 +538,9 @@
             }
 
             #btn-asignados {
-                background-color: #003594;
+                background-color: #17a2b8; /* Azul info */
+                border-color: #17a2b8;
                 color: #ffffff;
-                border: 1px solid #003594;
                 transition: background-color 0.3s ease, border-color 0.3s ease,
                 box-shadow 0.3s ease;
             }
@@ -557,9 +554,8 @@
             /* CSS para los botones de Asignados/Por Asignar */
             /* Estilo base para el botón Asignados cuando es el activo */
             #btn-asignados.btn-primary {
-                background-color: #003594;
-                /* Tu azul fuerte */
-                border-color: #003594;
+                background-color: #17a2b8; /* Azul info */
+                border-color: #17a2b8;
                 color: #ffffff;
                 transition: background-color 0.3s ease, border-color 0.3s ease,
                 box-shadow 0.3s ease;
@@ -568,9 +564,8 @@
             /* Estilo hover/focus para el botón Asignados cuando es el activo */
             #btn-asignados.btn-primary:hover,
             #btn-asignados.btn-primary:focus {
-                background-color: #0045b4;
-                /* Un tono un poco más oscuro o claro al hover */
-                border-color: #0045b4;
+                background-color: #17a2b8; /* Azul info */
+                border-color: #17a2b8;
                 box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
                 /* Sombra de enfoque/hover */
             }
@@ -645,9 +640,8 @@
 
             /* Estilo base para el botón Por Asignar cuando es el activo */
             #btn-por-asignar.btn-primary {
-                background-color: #003594;
-                /* Tu azul fuerte */
-                border-color: #003594;
+                background-color: #ffc107; /* Amarillo warning */
+                  border-color: #ffc107;
                 color: #ffffff;
                 transition: background-color 0.3s ease, border-color 0.3s ease,
                 box-shadow 0.3s ease;
@@ -656,8 +650,8 @@
             /* Estilo hover/focus para el botón Por Asignar cuando es el activo */
             #btn-por-asignar.btn-primary:hover,
             #btn-por-asignar.btn-primary:focus {
-                background-color: #0045b4;
-                border-color: #0045b4;
+                background-color: #ffc107; /* Amarillo warning */
+                border-color: #ffc107;
                 box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
             }
 

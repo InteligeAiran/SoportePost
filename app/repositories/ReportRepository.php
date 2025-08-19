@@ -148,28 +148,76 @@ class ReportRepository
     }
 
     public function saveDocument(
-        $id_ticket,
-        $originalDocumentName,
-        $stored_filename,
-        $filePathForDatabase,
-        $mimeTypeFromFrontend,
-        $documentSize,
-        $id_user,
-        $document_type
-    ) {
-    // Pasar los parámetros al modelo en el mismo orden
-    $result = $this->model->saveDocument(
-        $id_ticket,
-        $originalDocumentName,
-        $stored_filename,
-        $filePathForDatabase,
-        $mimeTypeFromFrontend,
-        $documentSize,
-        $id_user,
-        $document_type
-    );
-    return $result;
-}
+            $nro_ticket,
+            $originalDocumentName,
+            $stored_filename,
+            $filePathForDatabase,
+            $mimeTypeFromFrontend,
+            $documentSize,
+            $id_user,
+            $document_type
+        ) {
+        // Pasar los parámetros al modelo en el mismo orden
+        $result = $this->model->saveDocument(
+            $nro_ticket,
+            $originalDocumentName,
+            $stored_filename,
+            $filePathForDatabase,
+            $mimeTypeFromFrontend,
+            $documentSize,
+            $id_user,
+            $document_type
+        );
+        return $result;
+    }
+
+    public function saveDocument1($nro_ticket,
+            $originalDocumentName,
+            $stored_filename,
+            $filePathForDatabase,
+            $mimeTypeFromFrontend,
+            $documentSize,
+            $id_user,
+            $document_type,
+            $id_ticket) {
+        // Pasar los parámetros al modelo en el mismo orden
+        $result = $this->model->saveDocument1(
+            $nro_ticket,
+            $originalDocumentName,
+            $stored_filename,
+            $filePathForDatabase,
+            $mimeTypeFromFrontend,
+            $documentSize,
+            $id_user,
+            $document_type,
+            $id_ticket
+        );
+        return $result;
+    }
+
+    public function saveDocument2($nro_ticket,
+            $originalDocumentName,
+            $stored_filename,
+            $filePathForDatabase,
+            $mimeTypeFromFrontend,
+            $documentSize,
+            $id_user,
+            $document_type,
+            $id_ticket) {
+        // Pasar los parámetros al modelo en el mismo orden
+        $result = $this->model->saveDocument2(
+            $nro_ticket,
+            $originalDocumentName,
+            $stored_filename,
+            $filePathForDatabase,
+            $mimeTypeFromFrontend,
+            $documentSize,
+            $id_user,
+            $document_type,
+            $id_ticket
+        );
+        return $result;
+    }
 
     public function getDocument($id_ticket, $document_type)
     {

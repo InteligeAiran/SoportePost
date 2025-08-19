@@ -2,7 +2,8 @@ let globalSerial = "";
 let globalRif = "";
 let globalRazon = "";
 let globalEstatusPos = ""; // O null, dependiendo de cómo quieras inicializarla
-
+// Variable global para controlar que el alerta de garantía se muestre solo una vez
+let garantiaAlertShown = false;
 document.addEventListener("DOMContentLoaded", function () {
   // Estilo para el span "No file chosen"
   const noFileChosenStyle =
@@ -406,8 +407,6 @@ function inicializeModal() {
 
 $(document).ready(function () {
   inicializeModal();
-
-
 });
 
   // Obtener los elementos del DOM una sola v
@@ -1008,14 +1007,13 @@ function getInstalationDate(serial) {
   xhr.send(datos);
 }
 
+// Variable global para controlar que el alerta de garantía se muestre solo una vez
+let isInitialLoad = true;
+
 function validarGarantiaReingreso(fechaUltimoTicket) {
-  const resultadoElemento = document.getElementById(
-    "resultadoGarantiaReingreso"
-  );
-  // Controlar visibilidad de los botones
+  const resultadoElemento = document.getElementById("resultadoGarantiaReingreso");
   const botonExoneracion = document.getElementById("DownloadExo");
   const botonAnticipo = document.getElementById("DownloadAntici");
-  // const animation = document.getElementById('animation');
 
   if (fechaUltimoTicket === "No disponible") {
     resultadoElemento.textContent = "Sin Garantía Por Reingreso";
@@ -1028,14 +1026,6 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
     const meses = Math.ceil(diferencia / (1000 * 3600 * 24 * 30));
 
     if (meses <= 3) {
-      Swal.fire({
-        title: "¡Notificación!",
-        text: "Tiene Garantía Por Reingreso.",
-        icon: "warning",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#003594", // Color del botón (opcional, este es el azul predeterminado de SweetAlert)
-        color: "black",
-      });
       resultadoElemento.textContent = "Garantía por Reingreso aplica";
       resultadoElemento.style.color = "red";
 
@@ -1043,34 +1033,26 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
       const checkAnticipo = document.getElementById("checkAnticipoContainer");
       const checkEnvio = document.getElementById("checkEnvioContainer");
 
-      checkExoneracion.style.display = "none";
-      checkAnticipo.style.display = "none";
-      checkEnvio.style.display = "block";
-
+      if (checkExoneracion) checkExoneracion.style.display = "none";
+      if (checkAnticipo) checkAnticipo.style.display = "none";
+      if (checkEnvio) checkEnvio.style.display = "block";
       
       return 3;
     } else {
       resultadoElemento.textContent = "Sin Garantía Por Reingreso";
       resultadoElemento.style.color = "";
-      checkExoneracion.style.display = "block";
-      checkAnticipo.style.display = "block";
-      checkEnvio.style.display = "block"; // Ocultar el contenedor de envío si no aplica
-  
-      // animation.style.display = 'none';
-
+      if (checkExoneracion) checkExoneracion.style.display = "block";
+      if (checkAnticipo) checkAnticipo.style.display = "block";
+      if (checkEnvio) checkEnvio.style.display = "block";
       return null;
     }
   }
 }
 
 function validarGarantiaInstalacion(fechaInstalacion) {
-  const resultadoElemento = document.getElementById(
-    "resultadoGarantiaInstalacion"
-  );
-  // Controlar visibilidad de los botones
+  const resultadoElemento = document.getElementById("resultadoGarantiaInstalacion");
   const botonExoneracion = document.getElementById("DownloadExo");
   const botonAnticipo = document.getElementById("DownloadAntici");
-  //const animation = document.getElementById('animation');
 
   if (fechaInstalacion === "No disponible") {
     resultadoElemento.textContent = "Sin Garantía de Instalación";
@@ -1083,160 +1065,194 @@ function validarGarantiaInstalacion(fechaInstalacion) {
     const meses = Math.ceil(diferencia / (1000 * 3600 * 24 * 30));
 
     if (meses <= 6) {
-      Swal.fire({
-        title: "¡Notificación!",
-        text: "Tiene Garantía Por Instalación.",
-        icon: "warning",
-        confirmButtonText: "OK",
-        color: "black",
-      });
       resultadoElemento.textContent = "Garantía por Instalación aplica";
       resultadoElemento.style.color = "red";
-      botonExoneracion.style.display = "none";
-      botonAnticipo.style.display = "none";
-      document.getElementById("checkExoneracion").style.display = "none";
-      document.getElementById("checkExoneracionLabel").style.display = "none";
-      document.getElementById("checkAnticipo").style.display = "none";
-      document.getElementById("checkAnticipoLabel").style.display = "none";
-
-      // animation.style.display = 'block';
-
+      
+      if (botonExoneracion) botonExoneracion.style.display = "none";
+      if (botonAnticipo) botonAnticipo.style.display = "none";
+      
+      const checkExoneracion = document.getElementById("checkExoneracion");
+      const checkExoneracionLabel = document.getElementById("checkExoneracionLabel");
+      const checkAnticipo = document.getElementById("checkAnticipo");
+      const checkAnticipoLabel = document.getElementById("checkAnticipoLabel");
+      
+      if (checkExoneracion) checkExoneracion.style.display = "none";
+      if (checkExoneracionLabel) checkExoneracionLabel.style.display = "none";
+      if (checkAnticipo) checkAnticipo.style.display = "none";
+      if (checkAnticipoLabel) checkAnticipoLabel.style.display = "none";
+      
       return 1;
     } else {
       resultadoElemento.textContent = "Sin Garantía de Instalación";
       resultadoElemento.style.color = "";
-      botonExoneracion.style.display = "inline-block";
-      botonAnticipo.style.display = "inline-block";
-      //animation.style.display = 'none';
-
+      if (botonExoneracion) botonExoneracion.style.display = "inline-block";
+      if (botonAnticipo) botonAnticipo.style.display = "inline-block";
       return null;
     }
   }
 }
 
 function UpdateGuarantees() {
-  const idStatusPaymentReingreso = validarGarantiaReingreso(
-    fechaUltimoTicketGlobal
-  );
-  const idStatusPaymentInstalacion = validarGarantiaInstalacion(
-    fechaInstalacionGlobal
-  );
+  const idStatusPaymentReingreso = validarGarantiaReingreso(fechaUltimoTicketGlobal);
+  const idStatusPaymentInstalacion = validarGarantiaInstalacion(fechaInstalacionGlobal);
 
+  // Obtener elementos con validación de existencia
   const inputExoneracion = document.getElementById("ExoneracionInput");
   const inputAnticipo = document.getElementById("AnticipoInput");
-  const inputEnvio = document.getElementById("EnvioInput"); // Asegúrate de tener esta referencia
+  const inputEnvio = document.getElementById("EnvioInput");
 
-  const archivoExoneracion = inputExoneracion.files[0];
-  const archivoAnticipo = inputAnticipo.files[0];
-  const archivoEnvio = inputEnvio.files[0]; // Referencia al archivo de envío
+  // Validar que los elementos existan antes de acceder a .files
+  let archivoExoneracion = null;
+  let archivoAnticipo = null;
+  let archivoEnvio = null;
 
-  const uploadNowRadio = document.getElementById("uploadNow"); // Radio button "Sí"
-  const uploadPendingRadio = document.getElementById("uploadPending"); // Radio button "No"
+  if (inputExoneracion) archivoExoneracion = inputExoneracion.files[0];
+  if (inputAnticipo) archivoAnticipo = inputAnticipo.files[0];
+  if (inputEnvio) archivoEnvio = inputEnvio.files[0];
+
+  const uploadNowRadio = document.getElementById("uploadNow");
+  const uploadPendingRadio = document.getElementById("uploadPending");
 
   const checkEnvio = document.getElementById("checkEnvio");
   const checkExoneracion = document.getElementById("checkExoneracion");
   const checkAnticipo = document.getElementById("checkAnticipo");
 
+  // NUEVO: Verificar si es Caracas o Miranda (región 1)
+  const checkEnvioContainer = document.getElementById("checkEnvioContainer");
+  const isCaracasMiranda = checkEnvioContainer && checkEnvioContainer.style.display === "none";
+
   let idStatusPayment;
 
   // Primero, verifica las garantías principales
   if (idStatusPaymentReingreso === 3) {
-    // Garantia Reingreso Aplica
     idStatusPayment = 3;
   } else if (idStatusPaymentInstalacion === 1) {
-    // Garantia Instalacion Aplica
     idStatusPayment = 1;
   } else {
-    // No hay garantía principal, la lógica de ID_STATUS_PAYMENT dependerá de la carga de documentos
-
     if (uploadPendingRadio && uploadPendingRadio.checked) {
-      // Si se marcó "No (Pendiente por cargar documentos)"
-      idStatusPayment = 9; // Pendiente Por Cargar Documentos
+      idStatusPayment = 9;
     } else if (uploadNowRadio && uploadNowRadio.checked) {
-      // Si se marcó "Sí" para cargar documentos
-      // Evaluar combinaciones y prioridades según lo que FALTA o se CARGA
-
-      // Prioridad alta: Exoneración o Anticipo cargados (ID 5 o 7)
-      if (
-        checkExoneracion.checked &&
-        archivoExoneracion &&
-        checkEnvio.checked &&
-        archivoEnvio
-      ) {
-        idStatusPayment = 5; // Pago Exoneracion Pendiente por Revision
-      } else if (
-        checkAnticipo.checked &&
-        archivoAnticipo &&
-        checkEnvio.checked &&
-        archivoEnvio
-      ) {
-        idStatusPayment = 7; // Pago Anticipo Pendiente por Revision
-      }
-      // Si no se cargó Exoneración ni Anticipo, pero se marcaron sus checkboxes sin archivos
-      // O si se marcó "Sí" pero no se marcó ningún checkbox de doc.
-      else if (
-        checkExoneracion.checked &&
-        archivoExoneracion &&
-        !checkAnticipo.checked &&
-        !archivoAnticipo &&
-        !checkEnvio.checked &&
-        !archivoEnvio
-      ) {
-        idStatusPayment = 11; // Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)
-      }
-      // Si solo se marcó y/o cargó el PDF de Envío
-      else if (
-        !checkEnvio.checked &&
-        archivoAnticipo &&
-        !checkExoneracion.checked &&
-        !archivoExoneracion &&
-        checkAnticipo.checked &&
-        !archivoEnvio
-      ) {
-        idStatusPayment = 11; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
-      }
-      // Caso por defecto si se eligió "Sí" pero no se cumple ninguna de las condiciones anteriores
-      // Podría ser un escenario donde no se ha seleccionado ningún archivo después de marcar "Sí",
-      // o un archivo de envío que no tiene un ID específico.
-      else {
-        idStatusPayment = 10; // Predeterminado a pendiente de pago anticipo/exoneración si no hay otra clara
+      
+      // NUEVA LÓGICA: Si es Caracas o Miranda (no necesita envío)
+      if (isCaracasMiranda) {
+        if (checkExoneracion && checkExoneracion.checked && archivoExoneracion) {
+          idStatusPayment = 5; // Exoneración pendiente por revisión
+        } else if (checkAnticipo && checkAnticipo.checked && archivoAnticipo) {
+          idStatusPayment = 7; // Pago anticipo pendiente por revisión
+        } else {
+          idStatusPayment = 10; // Pendiente por cargar documento (exoneración o anticipo)
+        }
+      } else {
+        // LÓGICA ORIGINAL: Para otras regiones que sí necesitan envío
+      if (checkExoneracion && checkExoneracion.checked && archivoExoneracion && checkEnvio && checkEnvio.checked && archivoEnvio) {
+          idStatusPayment = 5; // Exoneración + Envío = Pendiente por revisión
+      } else if (checkAnticipo && checkAnticipo.checked && archivoAnticipo && checkEnvio && checkEnvio.checked && archivoEnvio) {
+          idStatusPayment = 7; // Anticipo + Envío = Pago anticipo pendiente por revisión
+      } else if (checkExoneracion && checkExoneracion.checked && archivoExoneracion && (!checkAnticipo || !checkAnticipo.checked) && !archivoAnticipo && (!checkEnvio || !checkEnvio.checked) && !archivoEnvio) {
+          idStatusPayment = 11; // Solo exoneración = Pendiente por cargar envío
+      } else if ((!checkEnvio || !checkEnvio.checked) && archivoAnticipo && (!checkExoneracion || !checkExoneracion.checked) && !archivoExoneracion && checkAnticipo && checkAnticipo.checked && !archivoEnvio) {
+          idStatusPayment = 11; // Solo anticipo = Pendiente por cargar envío
+      } else {
+          idStatusPayment = 10; // Solo envío = Pendiente por cargar documento (exoneración o anticipo)
+        }
       }
     } else {
-      // Esto es un caso por defecto, si no se ha seleccionado ninguna opción de radio button
-      // o un estado intermedio que no debería ocurrir si la UI está bien controlada.
-      // Podríamos asignar un valor predeterminado o lanzar un error si es un estado inválido.
-      idStatusPayment = 9; // O cualquier otro ID por defecto que consideres, ej: 10
+      idStatusPayment = 9;
     }
   }
 
-  // Mostrar alertas (este bloque se mantiene igual)
-  if (idStatusPayment === 3) {
-    // Garantia Reingreso Aplica
-    Swal.fire({
-      title: "¡Notificación!",
-      text: "Tiene Garantía Por Reingreso.",
-      icon: "warning",
-      confirmButtonText: "OK",
-      color: "black",
-    });
-  } else if (idStatusPayment === 1) {
-    // Garantia Instalacion Aplica
-    Swal.fire({
-      title: "¡Notificación!",
-      text: "Tiene Garantía Por Instalacion.",
-      icon: "warning",
-      confirmButtonText: "OK",
-      color: "black",
-    });
+  // MOSTRAR ALERTA SOLO EN LA CARGA INICIAL O CUANDO SE CAMBIA DE SERIAL
+  if (isInitialLoad && !garantiaAlertShown) {
+    if (idStatusPayment === 3) {
+      Swal.fire({
+        title: "¡Notificación!",
+        text: "Tiene Garantía Por Reingreso.",
+        icon: "warning",
+        confirmButtonText: "OK",
+        color: "black",
+      });
+      garantiaAlertShown = true;
+    } else if (idStatusPayment === 1) {
+      Swal.fire({
+        title: "¡Notificación!",
+        text: "Tiene Garantía Por Instalacion.",
+        icon: "warning",
+        confirmButtonText: "OK",
+        color: "black",
+      });
+      garantiaAlertShown = true;
+    }
   }
 
   return idStatusPayment;
 }
 
-/*document.getElementById("SendForm2").addEventListener("click", function () {
+// Función para resetear el flag cuando sea necesario
+function resetGarantiaAlert() {
+  garantiaAlertShown = false;
+  isInitialLoad = true;
+}
+
+// Resetear cuando se cambie de serial
+$(document).ready(function() {
+  $('#serialSelect').on('change', function() {
+    garantiaAlertShown = false;
+    isInitialLoad = true; // Permitir mostrar alerta en nuevo serial
+  });
+  
+  // Resetear al cargar la página
+  garantiaAlertShown = false;
+  isInitialLoad = true;
+  
+  // Marcar que ya no es la carga inicial después de un breve delay
+  setTimeout(() => {
+    isInitialLoad = false;
+  }, 1000);
+});
+
+// Función para marcar que ya no es la carga inicial
+function markAsNotInitialLoad() {
+  isInitialLoad = false;
+}
+
+// Función para mostrar alerta de garantía manualmente (opcional)
+function showGarantiaAlert() {
+  const idStatusPaymentReingreso = validarGarantiaReingreso(fechaUltimoTicketGlobal);
+  const idStatusPaymentInstalacion = validarGarantiaInstalacion(fechaInstalacionGlobal);
+  
+  if (idStatusPaymentReingreso === 3) {
+      Swal.fire({
+        title: "¡Notificación!",
+        text: "Tiene Garantía Por Reingreso.",
+        icon: "warning",
+        confirmButtonText: "OK",
+        color: "black",
+      });
+  } else if (idStatusPaymentInstalacion === 1) {
+      Swal.fire({
+        title: "¡Notificación!",
+        text: "Tiene Garantía Por Instalacion.",
+        icon: "warning",
+        confirmButtonText: "OK",
+        color: "black",
+      });
+    }
+}
+
+// NUEVO: Función para forzar la verificación de garantía al cargar la página
+function checkGarantiaOnLoad() {
+  // Ejecutar UpdateGuarantees para mostrar el alerta inicial
   const idStatusPayment = UpdateGuarantees();
-  SendDataFailure2(idStatusPayment);
-});*/
+    console.log("ID Status Payment:", idStatusPayment);
+}
+
+// NUEVO: Ejecutar la verificación cuando se carga la página
+$(document).ready(function() {
+  // Esperar un poco para que todos los elementos estén cargados
+  setTimeout(() => {
+    checkGarantiaOnLoad();
+  }, 500);
+});
 
 function VerificarSucursales(rif) {
     const xhrSucursales = new XMLHttpRequest();
@@ -1309,24 +1325,13 @@ let cargaSeleccionada = null; // Puede ser 'exoneracion', 'anticipo' o null
 document
   .getElementById("DownloadExo")
   .addEventListener("click", function (event) {
-    document.getElementById("DownloadAntici").style.display = "none";
-    document.getElementById("AnticipoInput").style.display = "none";
     event.stopPropagation(); // Detener la propagación del evento
     cargaSeleccionada = "exoneracion";
+    
     // Validación de exoneración AL HACER CLIC en "Cargar Exoneracion"
     const inputExoneracion = document.getElementById("ExoneracionInput");
     const archivoExoneracion = inputExoneracion.files[0];
     const inputExoneracion1 = document.getElementById("DownloadExo"); // El botón
-
-    // if (inputExoneracion1.style.display !== 'none' && !archivoExoneracion) {
-    //     Swal.fire({
-    //         icon: 'warning',
-    //         title: 'Campo requerido',
-    //         text: 'Por favor, seleccione el PDF de exoneración después de hacer click en \"Cargar Exoneración\".',
-    //         color: 'black'
-    //     });
-    //     return; // Importante: Detener la ejecución si la validación falla
-    // }
 
     if (archivoExoneracion.size > 5 * 1024 * 1024) {
       Swal.fire({
@@ -1335,11 +1340,67 @@ document
         text: "El archivo de exoneración no debe superar los 5MB.",
         color: "black",
       });
-      return; // Importante: Detener la ejecución si la validación falla
+      return;
     }
+  });
 
-    // Si la validación pasa, puedes continuar con alguna otra lógica aquí si es necesario
-    //console.log("Validación de exoneración pasada.");
+document.getElementById("DownloadAntici").addEventListener("click", function (event) {
+  event.stopPropagation(); // Detener la propagación del evento
+  cargaSeleccionada = "anticipo";
+    
+  // Validación de anticipo AL HACER CLIC en "Cargar PDF Anticipo"
+  const inputAnticipo = document.getElementById("AnticipoInput");
+  const archivoAnticipo = inputAnticipo.files[0];
+  const inputAnticipo1 = document.getElementById("DownloadAntici"); // El botón
+
+  // NUEVA VALIDACIÓN: Verificar tamaño del archivo de anticipo
+  if (archivoAnticipo.size > 5 * 1024 * 1024) {
+    Swal.fire({
+      icon: "warning",
+      title: "Archivo muy grande",
+      text: "El archivo de anticipo no debe superar los 5MB.",
+      color: "black",
+    });
+    return;
+  }
+});
+
+// NUEVA VALIDACIÓN: Para el botón de envío (checkbox)
+document.getElementById("DownloadEnvi").addEventListener("click", function (event) {
+  event.stopPropagation(); // Detener la propagación del evento
+  cargaSeleccionada = "envio";
+    
+  // Validación de envío AL HACER CLIC en "Cargar PDF Envío"
+  const inputEnvio = document.getElementById("EnvioInput");
+  const archivoEnvio = inputEnvio.files[0];
+  const inputEnvio1 = document.getElementById("DownloadEnvi"); // El botón
+
+  // NUEVA VALIDACIÓN: Verificar tamaño del archivo de envío
+  if (archivoEnvio.size > 5 * 1024 * 1024) {
+    Swal.fire({
+      icon: "warning",
+      title: "Archivo muy grande",
+      text: "El archivo de envío no debe superar los 5MB.",
+      color: "black",
+    });
+    return;
+  }
+});
+
+document.getElementById("DownloadAntici").addEventListener("click", function (event) {
+  // ELIMINAR ESTAS LÍNEAS - Ya no son necesarias con radio buttons
+  // document.getElementById("DownloadExo").style.display = "none";
+  // document.getElementById("ExoneracionInput").style.display = "none";
+    
+  event.stopPropagation(); // Detener la propagación del evento
+  cargaSeleccionada = "anticipo";
+    
+  // Validación de anticipo AL HACER CLIC en "Cargar PDF Anticipo"
+  const inputAnticipo = document.getElementById("AnticipoInput");
+  const archivoAnticipo = inputAnticipo.files[0];
+  const inputAnticipo1 = document.getElementById("DownloadAntici"); // El botón
+
+  // Puedes agregar aquí validación de tamaño para el archivo de anticipo si es necesario
   });
 
 document.getElementById("DownloadAntici").addEventListener("click", function (event) {
@@ -1461,6 +1522,8 @@ function SendDataFailure2(idStatusPayment) {
       title: "Campos requeridos",
       text: "Por favor, complete todos los campos obligatorios (Falla, RIF, Serial, Coordinador, Nivel de Falla).",
       color: "black",
+      confirmButtonText: "Ok",
+      confirmButtonColor: "#003594",
     });
     return;
   }
@@ -1471,6 +1534,20 @@ function SendDataFailure2(idStatusPayment) {
     const checkExoneracion = document.getElementById("checkExoneracion");
     const checkAnticipo = document.getElementById("checkAnticipo");
 
+    // NUEVA VALIDACIÓN: Verificar que al menos un radio button esté marcado
+    if (!checkEnvio.checked && !checkExoneracion.checked && !checkAnticipo.checked) {
+      Swal.fire({
+        title: "¡Notificación!",
+        text: "Debe cargar los documentos pendientes.",
+        icon: "warning",
+        confirmButtonText: "OK",
+        color: "black",
+        confirmButtonColor: "#003594",
+      });
+      return;
+    }
+
+    // Validaciones individuales de archivos
     if (checkEnvio.checked && !archivoEnvio) {
       Swal.fire({
         icon: "warning",
@@ -1541,7 +1618,7 @@ function SendDataFailure2(idStatusPayment) {
       });
     });
 
-  // Función que continúa con la creación del ticket (todo el código original)
+  // Función que continúa con la creación del ticket
   function continuarCreacionTicket() {
     // Crear FormData
     const formData = new FormData();
@@ -1625,22 +1702,6 @@ function SendDataFailure2(idStatusPayment) {
                 // Muestra un mensaje de error al usuario
               }
             };
-
-
-
-          if (uploadNowRadio.checked && (checkAnticipo.style.display === "block") && (checkAnticipo.style.display === "block") && (checkEnvio.style.display === "block")) { 
-
-              Swal.fire({
-              title: "¡Notificación!",
-              text: "Debe cargar los documentos pendientes.",
-              icon: "warning",
-              confirmButtonText: "OK",
-              color: "black",
-            });
-
-          } else { 
-
-
             const params = `id_coordinador=${encodeURIComponent(
               coordinador
             )}&id_user=${encodeURIComponent(id_user)}`;
@@ -1681,13 +1742,13 @@ function SendDataFailure2(idStatusPayment) {
                       <strong>🏢Razon Social:</strong> ${globalRazon || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
-                        <strong>👥 Usuario Gestión:</strong> ${ticketData.user_gestion || "N/A"}
+                        <strong>🧑‍💼 Usuario Gestión:</strong> ${ticketData.user_gestion || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
                         <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.coordinador || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
-                        <strong>📄 Estado de Documentos:</strong> <span style="color: darkblue; font-weight: bold;">${ticketData.status_payment || "N/A"}</span>
+                        <strong>📋 Estado de Documentos:</strong> <span style="color: darkblue; font-weight: bold;">${ticketData.status_payment || "N/A"}</span>
                     </p>
                     <strong>
                       <p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
@@ -1730,6 +1791,7 @@ function SendDataFailure2(idStatusPayment) {
               
               // Se extraen el ticketId y el serialPos del objeto ticketData para pasarlos a la función.
             const ticketId = ticketData.id_ticket_creado;
+            console.log(`Ticket ID: ${ticketId}`);
             const serialPos = ticketData.serial;
             
             // Se llama a la función que abre el modal de componentes
@@ -1744,7 +1806,7 @@ function SendDataFailure2(idStatusPayment) {
           });
                 },
               });
-         }  
+         
        } else {
               Swal.fire({
                 icon: "error",
@@ -1914,16 +1976,78 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Función para actualizar la visibilidad de los botones individuales de carga de archivos
+  // Función para actualizar la visibilidad de los botones individuales de carga de archivos
+  // Función para actualizar la visibilidad de los botones individuales de carga de archivos
   function updateFileUploadButtonVisibility() {
-    // Solo mostrar el botón si 'uploadNow' está marcado Y el checkbox está marcado
-    // Usamos 'flex' para mantener la alineación si usas display:flex en el padre del botón
+    // Solo mostrar el botón si 'uploadNow' está marcado Y el checkbox/radio está marcado
     botonCargaPDFEnv.style.display =
       uploadNowRadio.checked && checkEnvio.checked ? "flex" : "none";
     botonCargaExoneracion.style.display =
       uploadNowRadio.checked && checkExoneracion.checked ? "flex" : "none";
     botonCargaAnticipo.style.display =
       uploadNowRadio.checked && checkAnticipo.checked ? "flex" : "none";
-  }
+    
+    // NUEVA FUNCIONALIDAD: Limpiar archivos cuando se deselecciona un checkbox/radio
+    if (!checkEnvio.checked) {
+        clearFileInput("EnvioInput");
+        clearFileSpan(fileChosenSpanEnvio);
+    }
+    if (!checkExoneracion.checked) {
+        clearFileInput("ExoneracionInput");
+        clearFileSpan(fileChosenSpanExo);
+    }
+    if (!checkAnticipo.checked) {
+        clearFileInput("AnticipoInput");
+        clearFileSpan(fileChosenSpanAntici);
+    }
+}
+
+// NUEVA FUNCIÓN: Limpiar input de archivo
+function clearFileInput(inputId) {
+    const fileInput = document.getElementById(inputId);
+    if (fileInput) {
+        fileInput.value = "";
+    }
+}
+
+// NUEVA FUNCIÓN: Limpiar span que muestra el nombre del archivo
+function clearFileSpan(fileSpan) {
+    if (fileSpan) {
+        fileSpan.textContent = "";
+        fileSpan.style.cssText = "color: gray; font-style: italic; margin-left: 5px;";
+    }
+}
+
+// Event listeners actualizados
+checkEnvio.addEventListener("change", function() {
+    updateFileUploadButtonVisibility();
+    
+    // Si se deselecciona, limpiar inmediatamente el archivo
+    if (!this.checked) {
+        clearFileInput("EnvioInput");
+        clearFileSpan(fileChosenSpanEnvio);
+    }
+});
+
+checkExoneracion.addEventListener("change", function() {
+    updateFileUploadButtonVisibility();
+    
+    // Si se deselecciona, limpiar inmediatamente el archivo
+    if (!this.checked) {
+        clearFileInput("ExoneracionInput");
+        clearFileSpan(fileChosenSpanExo);
+    }
+});
+
+checkAnticipo.addEventListener("change", function() {
+    updateFileUploadButtonVisibility();
+    
+    // Si se deselecciona, limpiar inmediatamente el archivo
+    if (!this.checked) {
+        clearFileInput("AnticipoInput");
+        clearFileSpan(fileChosenSpanAntici);
+    }
+});
 
   // --- Event Listeners ---
 
@@ -1931,10 +2055,35 @@ document.addEventListener("DOMContentLoaded", function () {
   uploadNowRadio.addEventListener("change", updateDocumentUploadVisibility);
   uploadLaterRadio.addEventListener("change", updateDocumentUploadVisibility);
 
-  // Event listeners para los checkboxes
-  checkEnvio.addEventListener("change", updateFileUploadButtonVisibility);
-  checkExoneracion.addEventListener("change", updateFileUploadButtonVisibility);
-  checkAnticipo.addEventListener("change", updateFileUploadButtonVisibility);
+  checkEnvio.addEventListener("change", function() {
+    updateFileUploadButtonVisibility();
+      
+    // Si se deselecciona, limpiar inmediatamente el archivo
+    if (!this.checked) {
+      clearFileInput("EnvioInput");
+      clearFileSpan(fileChosenSpanEnvio);
+    }
+  });
+
+  checkExoneracion.addEventListener("change", function() {
+    updateFileUploadButtonVisibility();
+      
+    // Si se deselecciona, limpiar inmediatamente el archivo
+    if (!this.checked) {
+      clearFileInput("ExoneracionInput");
+      clearFileSpan(fileChosenSpanExo);
+    }
+  });
+
+  checkAnticipo.addEventListener("change", function() {
+    updateFileUploadButtonVisibility();
+      
+    // Si se deselecciona, limpiar inmediatamente el archivo
+    if (!this.checked) {
+      clearFileInput("AnticipoInput");
+      clearFileSpan(fileChosenSpanAntici);
+    }
+  });
 
   // Handle button clicks to trigger file input click (simula un clic en el input de tipo file oculto)
   downloadEnvioBtn.addEventListener("click", () => envioInput.click());
@@ -2148,6 +2297,8 @@ function SendDataFailure1() {
           title: "Error",
           text: response.message, // Mostrar el mensaje "Hay un campo vacio." del backend
           color: "black",
+          confirmButtonText: "Ok",
+          confirmButtonColor: "#003594", // Botón de confirmación AZULs
         });
       } catch (error) {
         Swal.fire({
@@ -2233,7 +2384,28 @@ function SendDataFailure1() {
 // estén definidas en el ámbito global o accesibles desde clearFormFields, como en el ejemplo que te di antes.
 
 function clearFormFields() {
-  console.log("clearFormFields() ha sido llamada para resetear el formulario.");
+
+  if (checkEnvio) {
+    checkEnvio.checked = false;
+  }
+
+  if (checkExoneracion) {
+    checkExoneracion.checked = false;
+  }
+
+  if (checkAnticipo) {
+    checkAnticipo.checked = false;
+  }
+
+  // --- Limpiar los input type="file" usando la nueva función ---
+  clearFileInput("EnvioInput");
+  clearFileInput("ExoneracionInput");
+  clearFileInput("AnticipoInput");
+
+  // --- Limpiar los elementos DIV que muestran el nombre del archivo usando la nueva función ---
+  clearFileSpan(fileChosenSpanEnvio);
+  clearFileSpan(fileChosenSpanExo);
+  clearFileSpan(fileChosenSpanAntici);
 
   // Limpiar campos de Modal Nivel 2 (miModal)
   const fallaSelect2 = document.getElementById("FallaSelect2");
@@ -2268,11 +2440,6 @@ function clearFormFields() {
       oldFileInput.parentNode.replaceChild(newFileInput, oldFileInput);
     }
   }
-
-  // --- Limpiar los input type="file" ---
-  clearFileInput("EnvioInput");
-  clearFileInput("ExoneracionInput");
-  clearFileInput("AnticipoInput");
 
   // --- Limpiar los elementos DIV que muestran el nombre del archivo ---
   const envioStatusDiv = document.getElementById("envioStatus");
@@ -3327,6 +3494,13 @@ const modalComponentes = new bootstrap.Modal(modalComponentesEl, {
     backdrop:'static'
 });
 
+if (ModalBotonCerrar) {
+  ModalBotonCerrar.addEventListener('click', function () {
+    limpiarSeleccion();
+    window.location.reload();
+  });
+}
+
 // Escuchar el evento 'show.bs.modal' para resetear el estado del modal cada vez que se abre
 modalComponentesEl.addEventListener('show.bs.modal', function () {
     // Limpiar el contador y el checkbox de "seleccionar todos" cada vez que se abra el modal
@@ -3640,6 +3814,3 @@ function abrirModalComponentes(boton) {
     }
     showSelectComponentsModal(ticketId, regionName, serialPos);
 }
-
-
-

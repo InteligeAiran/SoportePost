@@ -241,7 +241,7 @@ function mi_navbar() {}
                                 </div>
                             </div>
                             <div id="ModalSerial" class="modal">
-                                <div id="ModalSerial-content" class="modal-content">
+                                <div id="ModalSerial-content" class="modal-content" style="max-height: 80vh; overflow-y: auto;">
                                     <span id="ModalSerial-close" class="close">&times;</span>
                                     <div style="text-align: center; margin-bottom: 20px;">
                                         <h2>Detalles del POS</h2>
@@ -271,83 +271,83 @@ function mi_navbar() {}
             </div>
 
             <!-- AVISA LAS GARANTIAS --->
-            <div id="garantiaModal" class="modal">
-                <div id="garantiaModal-content" class="modal-content">
-                    <span id="garantiaModal-close" class="close">&times;</span>
-                    <h2 id="garantiaModal-titulo">¡Alerta de Garantía!</h2>
-                    <p id="garantiaModal-mensaje"></p>
+                <div id="garantiaModal" class="modal">
+                    <div id="garantiaModal-content" class="modal-content">
+                        <span id="garantiaModal-close" class="close">&times;</span>
+                        <h2 id="garantiaModal-titulo">¡Alerta de Garantía!</h2>
+                        <p id="garantiaModal-mensaje"></p>
+                    </div>
                 </div>
-            </div>
             <!-- AVISA LAS GARANTIAS --->
         </main>
 
         <!-- PARA SELECCIONAR LOS COMPONENTES ASOCIADOS AL SERIAL DEL POS -->
-        <div class="modal fade" id="modalComponentes" tabindex="-1" aria-labelledby="modalComponentesLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header bg-gradient-primary">
-                            <h5 class="modal-title text-white" id="modalComponentesLabel">
-                                <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="alert bg-gradient-primary text-white" role="alert">
-                                        <i class="bi bi-info-circle me-2"></i>
-                                        Selecciona los componentes que deseas cargar para este dispositivo.
-                                    </div>
-                                </div>
+            <div class="modal fade" id="modalComponentes" tabindex="-1" aria-labelledby="modalComponentesLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+                            <div class="modal-header bg-gradient-primary">
+                                <h5 class="modal-title text-white" id="modalComponentesLabel">
+                                    <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover" id="tablaComponentes">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th>
-                                                        <input type="checkbox" id="selectAllComponents" class="form-check-input">
-                                                    </th>
-                                                    <th>Componente</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="tbodyComponentes">
-                                                </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mt-3">
-                                <div class="col-12">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span class="text-muted">Componentes seleccionados: </span>
-                                            <span id="contadorComponentes" class="badge bg-primary">0</span>
-                                        </div>
-                                        <div>
-                                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="limpiarSeleccion()">
-                                                <i class="bi bi-arrow-clockwise me-1"></i>Limpiar Selección
-                                            </button>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="alert bg-gradient-primary text-white" role="alert">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            Selecciona los componentes que deseas cargar para este dispositivo.
                                         </div>
                                     </div>
                                 </div>
+                                
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="tablaComponentes">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>
+                                                            <input type="checkbox" id="selectAllComponents" class="form-check-input">
+                                                        </th>
+                                                        <th>Componente</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbodyComponentes">
+                                                    </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="text-muted">Componentes seleccionados: </span>
+                                                <span id="contadorComponentes" class="badge bg-primary">0</span>
+                                            </div>
+                                            <div>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="limpiarSeleccion()">
+                                                    <i class="bi bi-arrow-clockwise me-1"></i>Limpiar Selección
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" id="BotonCerrarModal">
-                                <i class="bi bi-x-circle me-1"></i>Cancelar
-                            </button>
-                            <button type="button" class="btn btn-primary" id="btnGuardarComponentes">
-                                <i class="bi bi-check-circle me-1"></i>Guardar Componentes Seleccionados
-                            </button>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" id="BotonCerrarModal">
+                                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                                </button>
+                                <button type="button" class="btn btn-primary" id="btnGuardarComponentes">
+                                    <i class="bi bi-check-circle me-1"></i>Guardar Componentes Seleccionados
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-        </div>
-    <!-- END PARA SELECCIONAR LOS COMPONENTES ASOCIADOS AL SERIAL DEL POS -->
+            </div>
+        <!-- END PARA SELECCIONAR LOS COMPONENTES ASOCIADOS AL SERIAL DEL POS -->
 
         <!--MODAL FALLA NIVEL 2-->
             <div class="modal" id="miModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"  style="background-color: rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px);">
@@ -355,10 +355,8 @@ function mi_navbar() {}
                     <div class="modal-content">
                         <div class="modal-header">
                             <h1 class="modal-title fs-5" id="exampleModalToggleLabel" style = "color: grey;">Falla Nivel 2</h1>
-                            <button id="cerraModal2" type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
                         </div>
-                        <div class="modal-body" style="margin-left: 0;">
+                        <div class="modal-body" style="margin-left: 0; max-height: 70vh; overflow-y: auto;">
                             <form id="miFormulario" class="row g-3">
                                 <div id="detalle1" class="col-md-6">
                                     <div><br>
@@ -437,20 +435,19 @@ function mi_navbar() {}
                                             <input class="form-check-input" type="checkbox" id="checkEnvio" value="envio">
                                             <label class="form-check-label" for="checkEnvio">Cargar PDF Envío</label>
                                         </div>
-                                        <div  id="checkExoneracionContainer" class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="checkExoneracion"
-                                                value="exoneracion">
+                                        <div id="checkExoneracionContainer" class="form-check">
+                                            <input class="form-check-input" type="radio" id="checkExoneracion" name="documentType" value="exoneracion">
                                             <label class="form-check-label" id="checkExoneracionLabel" for="checkExoneracion">Cargar Exoneración</label>
                                         </div>
-                                        <div id = "checkAnticipoContainer" class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="checkAnticipo" value="anticipo">
+                                        <div id="checkAnticipoContainer" class="form-check">
+                                            <input class="form-check-input" type="radio" id="checkAnticipo" name="documentType" value="anticipo">
                                             <label class="form-check-label" id="checkAnticipoLabel" for="checkAnticipo">Cargar PDF Anticipo</label>
                                         </div>
                                     </div>
 
                                     <div id="DownloadsBotons">
                                         <div id="botonCargaPDFEnv" style="display: none;">
-                                            <button id="DownloadEnvi" class="btn btn-outline-secondary btn-sm" type="button">Cargar PDF Envio</button>
+                                            <button id="DownloadEnvi" class="btn btn-outline-secondary btn-sm" type="button">Cargar Documento Envio</button>
                                             <input class="form-control" id="EnvioInput" type="file"
                                                 style="display: none; margin-left: 10px;"
                                                 accept="application/pdf, image/jpeg, image/jpg">
@@ -460,7 +457,7 @@ function mi_navbar() {}
                                         <div style="display: flex; align-items: center; margin-bottom: 6%; display: none;"
                                             id="botonCargaExoneracion">
                                             <button id="DownloadExo" class="btn btn-outline-secondary btn-sm"
-                                                type="button">Cargar Exoneracion</button>
+                                                type="button">Cargar Documento Exoneracion</button>
                                             <input class="form-control" id="ExoneracionInput" type="file"
                                                 style="display: none; margin-left: 10px;"
                                                 accept="application/pdf, image/jpeg, image/jpg">
@@ -469,8 +466,7 @@ function mi_navbar() {}
 
                                         <div style="display: flex; align-items: center; margin-bottom: 2%; display: none;"
                                             id="botonCargaAnticipo">
-                                            <button class="form-control" id="DownloadAntici" class="btn btn-outline-secondary btn-sm"
-                                                type="button">Cargar PDF Anticipo</button>
+                                            <button id="DownloadAntici" class="btn btn-outline-secondary btn-sm" type="button">Cargar Documento Anticipo</button>
                                             <input id="AnticipoInput" type="file" style="display: none; margin-left: 10px;"
                                                 accept="application/pdf, image/jpeg, image/jpg">
                                             <div id="anticipoStatus"></div>
@@ -495,11 +491,9 @@ function mi_navbar() {}
             <div class="modal" id="miModal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"
                 data-bs-backdrop="static" data-bs-keyboard="false">
                 <div id="Modal2-div" class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content">
+                    <div class="modal-content" style="    max-width: 66%;">
                         <div class="modal-header">
                             <h1 class="modal-title fs-5" id="exampleModalToggleLabel" style = "color: grey;">Falla Nivel 1</h1>
-                            <button id="cerrar-iconNivel1" type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <div>
@@ -527,7 +521,7 @@ function mi_navbar() {}
                                 </table>
                             </div>
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer" style = "margin-bottom: 10%">
                             <button id="SendForm1" onclick="SendDataFailure1();" style="display: block;" class="btn btn-primary">Guardar</button>
 
                             <button id="buttonCerrar" type="button" class="btn btn-secondary"
