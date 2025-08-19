@@ -351,7 +351,7 @@ function mi_navbar() {}
 
         <!--MODAL FALLA NIVEL 2-->
             <div class="modal" id="miModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"  style="background-color: rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px);">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h1 class="modal-title fs-5" id="exampleModalToggleLabel" style = "color: grey;">Falla Nivel 2</h1>

@@ -1424,3 +1424,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+
+function reloadPag() {
+
+  setTimeout(() => {
+        location.reload(); // Recarga la página después del temporizador
+     }, 800);
+}
