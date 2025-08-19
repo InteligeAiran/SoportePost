@@ -250,9 +250,6 @@ function mi_navbar() {}
                             <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRegionsBtn">Buscar Por Region</button>
                         </div>
                         <div id="SearchRif" class="mb-3 d-flex align-items-center">
-                            <div id="welcomeMessage" class="d-flex justify-content-center align-items-center">
-                                <h1 class="text-center">Ingrese los datos del Cliente</h1>
-                            </div>
                             <div class="d-flex align-items-center">
                                 <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none; margin-left: -39%;">
                                     <option value="J">J</option>

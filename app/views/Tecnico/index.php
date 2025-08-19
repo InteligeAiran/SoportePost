@@ -318,6 +318,47 @@ function mi_navbar()
             cursor: pointer;
             padding: 10px 20px;
         }
+
+        #uploadFileBtn{
+            color: white;
+            background-color: #003594;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #uploadFileBtn:hover{
+            background-color: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        /* PODEMOS APLICAR EN TODOS LOS BOTONES LA ANIMACION DE PULSACION */
+
+            /* #uploadFileBtn {
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.1);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }*/
+                
+        /* END ANIMACION DE PULSACION DE BOTONES*/ 
+
+        #CerrarBoton:hover{
+            background-color: red;
+            color: white;
+        }
     </style>
     </head>
 

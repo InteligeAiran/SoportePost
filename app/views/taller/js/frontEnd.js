@@ -901,9 +901,20 @@ function updateTicketStatusInTaller(ticketId) {
 
 function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
+  // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
 
   const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
   const initialImageAlt = "Cargando imagen del dispositivo...";
+
+  // Determina el mensaje de garantía
+  let garantiaMessage = '';
+  if (d.garantia_instalacion !== null && d.garantia_instalacion !== '' && d.garantia_instalacion !== false && d.garantia_instalacion !== 'f') {
+    garantiaMessage = 'Aplica Garantía de Instalación';
+  } else if (d.garantia_reingreso !== null && d.garantia_reingreso !== '' && d.garantia_reingreso !== false && d.garantia_reingreso !== 'f') {
+    garantiaMessage = 'Aplica Garantía por Reingreso';
+  } else {
+    garantiaMessage = 'No aplica Garantía'; // O simplemente dejarlo vacío si no hay garantía
+  }
 
   return `
         <div class="container-fluid">
@@ -918,44 +929,56 @@ function formatTicketDetailsPanel(d) {
                     <hr class="mt-2 mb-3">
                     <div class="row">
                         <div class="col-sm-6 mb-2">
-                            <strong><div>Serial POS:</div></strong>
-                            ${d.serial_pos}
+                          <strong><div>Serial POS:</div></strong>
+                          ${d.serial_pos}
                         </div>
                         <div class="col-sm-6 mb-2">
-                            <strong><div>Estatus POS:</div></strong>
-                            ${d.estatus_inteliservices}
+                          <strong><div>Estatus POS:</div></strong>
+                          ${d.estatus_inteliservices}
                         </div><br>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Fecha Instalación:</div></strong>
-                            ${d.fecha_instalacion}
+                          <br><strong><div>Fecha Instalación:</div></strong>
+                          ${d.fecha_instalacion || 'Sin datos'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Creación ticket:</div></strong>
-                            ${d.create_ticket}
+                          <br><strong><div  style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
+                          ${d.fecha_cierre_anterior || 'Sin datos'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                             <br><strong><div>Usuario Gestión:</div></strong>
-                            ${d.full_name_tecnico}
+                          <br><strong><div>Garantía:</div></strong>
+                          <span style="font-weight: bold; color: ${garantiaMessage.includes('Aplica') ? 'red' : 'green'};">${garantiaMessage}</span>
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Creación ticket:</div></strong>
+                          ${d.create_ticket}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Usuario Gestión:</div></strong>
+                          ${d.full_name_tecnico}
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                          <br><strong><div>Dirección Instalación:</div></strong>
+                          ${d.nombre_estado_cliente || 'Sin datos'}
+                        </div><br>
+                         <div class="col-sm-6 mb-2">
+                            <br><strong><div>Estatus Ticket:</div></strong>
+                            ${d.name_status_ticket}
+                        </div><br>
+                        <br><div class="col-sm-6 mb-2">
+                              <br><strong><div>Falla Reportada:</div></strong>
+                             <span class="falla-reportada-texto">${d.name_failure}</span>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="row mb-3">
+            <div class="row mb-3" style="margin-top: -7%; positipn: relative;">
                 <div class="col-12">
                     <div class="row">
                         <div class="col-sm-4 mb-2">
                             <strong><div>Acción:</div></strong>
                             <span class = "Accion-ticket">${d.name_accion_ticket}</span>
                         </div>
-                         <div class="col-sm-8 mb-2" style = "margin-left: -7%;">
-                          <strong><div>Falla Reportada:</div></strong>
-                          <span class="falla-reportada-texto">${d.name_failure}</span>
-                        </div>
-                        <div class="col-sm-8 mb-2">
-                             <br><strong><div>Estatus Ticket:</div></strong>
-                            ${d.name_status_ticket}
-                        </div>
+                           
                     </div>
                 </div>
             </div>
@@ -1123,14 +1146,32 @@ function loadTicketHistory(ticketId) {
           const motivoRechazoChanged = prevMotivoRechazo && itemMotivoRechazo !== prevMotivoRechazo;
 
           const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
+
+          // --- NUEVO CÓDIGO PARA DOCUMENTOS CARGADOS ---
+          const itemPago = cleanString(item.pago);
+          const itemExoneracion = cleanString(item.exoneracion);
+          const itemEnvio = cleanString(item.envio);
+          const itemEnvioDestino = cleanString(item.envio_destino);
+          const itemDocumentoRechazado = cleanString(item.documento_rechazado);
+
+          const prevPago = cleanString(prevItem.pago);
+          const prevExoneracion = cleanString(prevItem.exoneracion);
+          const prevEnvio = cleanString(prevItem.envio);
+          const prevEnvioDestino = cleanString(prevItem.envio_destino);
+          const prevDocumentoRechazado = cleanString(prevItem.documento_rechazado);
+
+          const pagoChanged = prevPago && itemPago !== prevPago;
+          const exoneracionChanged = prevExoneracion && itemExoneracion !== prevExoneracion;
+          const envioChanged = prevEnvio && itemEnvio !== prevEnvio;
+          const envioDestinoChanged = prevEnvioDestino && itemEnvioDestino !== prevEnvioDestino;
+          const documentoRechazadoChanged = prevDocumentoRechazado && itemDocumentoRechazado !== prevDocumentoRechazado;
           
           // --- LÓGICA CORREGIDA PARA MOSTRAR EL MOTIVO DE RECHAZO ---
           // Define los tipos de rechazo que activan la visualización del motivo.
           const rejectedActions = [
             'Documento de Exoneracion Rechazado',
-            'Documento de Anticipo Rechazado',
-            'Documento de Envio Rechazado'
-          ];
+            'Documento de Anticipo Rechazado'         
+         ];
 
           // La fila se mostrará solo si la acción del ticket coincide con una de las acciones de rechazo definidas.
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
@@ -1145,6 +1186,7 @@ function loadTicketHistory(ticketId) {
           let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
           const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
 
+         
           historyHtml += `
                         <div class="card mb-3 custom-history-card">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
@@ -1209,6 +1251,36 @@ function loadTicketHistory(ticketId) {
                                                   <tr>
                                                     <th class="text-start">Motivo Rechazo Documento:</th>
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
+                                                  </tr>
+                                             ` : ''}
+                                                ${itemPago === 'Sí' ? `
+                                                  <tr>
+                                                    <th class="text-start">Documento de Pago:</th>
+                                                    <td class="${pagoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                  </tr>
+                                             ` : ''}
+                                                ${itemExoneracion === 'Sí' ? `
+                                                  <tr>
+                                                    <th class="text-start">Documento de Exoneración:</th>
+                                                    <td class="${exoneracionChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                  </tr>
+                                             ` : ''}
+                                                ${itemEnvio === 'Sí' ? `
+                                                  <tr>
+                                                    <th class="text-start">Documento de Envío:</th>
+                                                    <td class="${envioChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                  </tr>
+                                             ` : ''}
+                                                ${itemEnvioDestino === 'Sí' ? `
+                                                  <tr>
+                                                    <th class="text-start">Documento de Envío a Destino:</th>
+                                                    <td class="${envioDestinoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                  </tr>
+                                             ` : ''}
+                                                ${itemDocumentoRechazado === 'Sí' ? `
+                                                  <tr>
+                                                    <th class="text-start">Documento Rechazado:</th>
+                                                    <td class="${documentoRechazadoChanged ? "highlighted-change" : ""}">⚠ Rechazado</td>
                                                   </tr>
                                              ` : ''}
                                             </tbody>
