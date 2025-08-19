@@ -1418,7 +1418,7 @@ $(document).ready(function () {
         confirmButtonClass: "swal2-confirm-hover-green", // Clase personalizada para el hover
         cancelButtonColor: "#6c757d", // Color inicial gris (ajusta si quieres otro color inicial)
         cancelButtonClass: "swal2-cancel-hover-red", // Clase personalizada para el hover
-        confirmButtonText: "Sí, cargar fecha",
+        confirmButtonText: "Cargar Llaves",
         cancelButtonText: "Cancelar",
         color: "#000000", // Color del texto general del modal
         focusConfirm: false,

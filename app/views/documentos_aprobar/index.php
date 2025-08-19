@@ -516,7 +516,7 @@ function mi_navbar()
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" id="closeImageApprovalModalBtn">Cerrar</button>
-                            <button type="button" class="btn btn-success" id="approveTicketFromImage">Aprobar Ticket</button>
+                            <button type="button" class="btn btn-success" id="approveTicketFromImage">Aprobar Documento</button>
                         </div>
                     </div>
                 </div>
