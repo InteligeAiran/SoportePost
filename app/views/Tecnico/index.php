@@ -352,7 +352,7 @@ function mi_navbar()
                     transform: scale(1);
                 }
             }*/
-                
+
         /* END ANIMACION DE PULSACION DE BOTONES*/ 
 
         #CerrarBoton:hover{
@@ -629,7 +629,7 @@ function mi_navbar()
                                     <i class="bi bi-x-circle me-1"></i>Cancelar
                                 </button>
                                 <button type="button" class="btn btn-primary" id="btnGuardarComponentes">
-                                    <i class="bi bi-check-circle me-1"></i>Guardar Componentes Seleccionados
+                                    <i class="bi bi-check-circle me-1"></i>Guardar
                                 </button>
                             </div>
                         </div>

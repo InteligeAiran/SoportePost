@@ -351,7 +351,7 @@ function getTicketDataCoordinator() {
               data.name_accion_ticket === "Recibido por el Coordinador"
             ) {
               // Acción 3
-              actionButtonsHtml += `s
+              actionButtonsHtml += `
                 <button id="myUniqueAssingmentButton"
                   class="btn btn-sm btn-assign-tech"
                   data-bs-toggle="tooltip"
