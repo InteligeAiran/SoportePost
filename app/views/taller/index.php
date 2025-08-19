@@ -404,7 +404,7 @@
                 color: white;
             }
 
-            #ButtonCancelarFecha:hover{
+            #CancelarFecha:hover{
                 background-color: red;
                 color: white;
             }
@@ -801,31 +801,33 @@
                 </div>
             </div>
         <!--END MODAL PARA SELECCIONAR EL STATUS DEL TALLER DEL TICKET-->
-
-        <div class="modal fade" id="rescheduleModal" tabindex="-1" aria-labelledby="rescheduleModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header bg-gradient-primary text-white">
-                        <h5 class="modal-title" id="rescheduleModalLabel">Fecha Estimada de Llegada de Repuesto</h5>
-                    </div>
-                    <div class="modal-body">
-                        <form id="rescheduleForm">
-                            <div class="mb-3">
-                                <label for="rescheduleDate" class="form-label">Selecciona la Fecha:</label>
-                                <input type="date" class="form-control" id="rescheduleDate" required />
-                            </div>
-                            <p class="text-danger" id="dateError" style="display: none;">
-                                La fecha no puede exceder 3 meses a partir del mes actual.
-                            </p>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" id="CancelarFecha" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary" id="saveRescheduleDate">Guardar Fecha</button>
+        
+        <!--MODAL PARA SELECCIONAR LA FECHA ESTIMADA DE LLEGADA DEL REPUESTO-->
+            <div class="modal fade" id="rescheduleModal" tabindex="-1" aria-labelledby="rescheduleModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-gradient-primary text-white">
+                            <h5 class="modal-title" id="rescheduleModalLabel">Fecha Estimada de Llegada de Repuesto</h5>
+                        </div>
+                        <div class="modal-body">
+                            <form id="rescheduleForm">
+                                <div class="mb-3">
+                                    <label for="rescheduleDate" class="form-label">Selecciona la Fecha:</label>
+                                    <input type="date" class="form-control" id="rescheduleDate" required />
+                                </div>
+                                <p class="text-danger" id="dateError" style="display: none;">
+                                    La fecha no puede exceder 3 meses a partir del mes actual.
+                                </p>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="CancelarFecha" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary" id="saveRescheduleDate">Guardar Fecha</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        <!--END MODAL PARA SELECCIONAR LA FECHA ESTIMADA DE LLEGADA DEL REPUESTO-->
 
         <div class="modal fade" id="confirmInTallerModal" tabindex="-1" aria-labelledby="confirmInTallerModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">

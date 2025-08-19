@@ -1930,6 +1930,14 @@ document.addEventListener("DOMContentLoaded", () => {
     "changeStatusFromRenewalBtn"
   ); // Nuevo botón
 
+  const buttonCerrarModal = document.getElementById("CancelarFecha");
+
+  if (buttonCerrarModal) {
+    buttonCerrarModal.addEventListener("click", function () {
+      rescheduleModal.hide(); // Oculta el modal de renovación
+    });
+  }
+
   // Cola de tickets vencidos para mostrar modales secuencialmente
   let overdueTicketsQueue = [];
   
@@ -2031,7 +2039,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             changeStatusModal.hide(); // Oculta el modal
                             location.reload(); // Recarga la página
                        
-                       
+          
                     });
                       }
                     },
@@ -2315,17 +2323,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                       if (cancelButton) {
                         cancelButton.id = 'ButtonCancelarFecha';
-
-                          const changeStatusModal = new bootstrap.Modal(document.getElementById("changeStatusModal"));
-
-
-
-                    cancelButton.addEventListener('click', function handler() {
-      
-                            changeStatusModal.hide(); // Oculta el modal
-                            location.reload(); // Recarga la página
-                    
-                    });
+                        const changeStatusModal = new bootstrap.Modal(document.getElementById("changeStatusModal"));
+                        cancelButton.addEventListener('click', function handler() {
+                          changeStatusModal.hide(); // Oculta el modal
+                          location.reload(); // Recarga la página
+                        });
                       }
                     },
 
