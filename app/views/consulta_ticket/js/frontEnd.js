@@ -134,7 +134,6 @@ document.addEventListener("DOMContentLoaded", function () {
         rifTipoSelect.style.display = "none";
         rifInput.style.display = "none";
         buscarRifBtn.style.display = "none";
-
         serialInput.style.display = "none";
         buscarSerialBtn.style.display = "none";
 
@@ -197,6 +196,8 @@ document.addEventListener("DOMContentLoaded", function () {
             buscarRegionsBtn.style.display = "block";
             resultsCard.style.display = "block"; // Muestra el card de resultados
             // Lógica para cargar regiones
+            resultsCard.style.marginTop = "0%"; // Asegúrate de que la fila sea visible
+
         });
     }
 
@@ -214,6 +215,8 @@ document.addEventListener("DOMContentLoaded", function () {
             dateIniInput.style.display = "block";
             dateEndInput.style.display = "block";
             buscarRangoBtn.style.display = "block";
+            resultsCard.style.marginTop = "-3%"; // Asegúrate de que la fila sea visible
+
             // No mostrar los mensajes de error inicialmente
             errorDateIni.style.display = "none"; 
             errorDateEnd.style.display = "none";
@@ -234,6 +237,7 @@ document.addEventListener("DOMContentLoaded", function () {
             razonInput.style.display = "block";
             buscarRazonBtn.style.display = "block";
             resultsCard.style.display = "block"; // Muestra el card de resultados
+            resultsCard.style.marginTop = "0%"; // Asegúrate de que la fila sea visible
         });
     }
 
@@ -251,6 +255,7 @@ document.addEventListener("DOMContentLoaded", function () {
             rifInput.style.display = "block";
             buscarRifBtn.style.display = "block";
             resultsCard.style.display = "block"; // Muestra el card de resultados
+            resultsCard.style.marginTop = "5%"; // Asegúrate de que la fila sea visible
 
             // Lógica para validación de input de RIF
             $("#rifInput").keyup(function () {
@@ -279,6 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
             serialInput.style.display = "block";
             buscarSerialBtn.style.display = "block";
             resultsCard.style.display = "block"; // Muestra el card de resultados
+            resultsCard.style.marginTop = "0%"; // Asegúrate de que la fila sea visible
         });
     }
     hideAllSearchInputs();
@@ -501,13 +507,14 @@ function SendRegions() {
             data: TicketData,
             columns: columnsConfig,
             pagingType: "simple_numbers",
-            lengthMenu: [5],
+            lengthMenu: [5, 10, 20, 50], // Opciones del length menu
+            pageLength: 5, // Página por defecto
             language: {
               lengthMenu: "Mostrar _MENU_ registros",
               emptyTable: "No hay datos disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
-              infoEmpty: "No hay datos disponibles",
+              info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+              infoEmpty: "No hay Registros disponibles",
               infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
               search: "Buscar:",
               loadingRecords: "Buscando...",
@@ -745,8 +752,8 @@ function SendRif() {
               lengthMenu: "Mostrar _MENU_ registros",
               emptyTable: "No hay datos disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
-              infoEmpty: "No hay datos disponibles",
+              info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+              infoEmpty: "No hay Registros disponibles",
               infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
               search: "Buscar:",
               loadingRecords: "Buscando...",
@@ -983,8 +990,8 @@ function SendSerial() {
               lengthMenu: "Mostrar _MENU_ registros",
               emptyTable: "No hay datos disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
-              infoEmpty: "No hay datos disponibles",
+              info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+              infoEmpty: "No hay Registros disponibles",
               infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
               search: "Buscar:",
               loadingRecords: "Buscando...",
@@ -1208,8 +1215,8 @@ function SendRango() {
               lengthMenu: "Mostrar _MENU_ registros",
               emptyTable: "No hay datos disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ dato(s) )",
-              infoEmpty: "No hay datos disponibles",
+              info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+              infoEmpty: "No hay Registros disponibles",
               infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
               search: "Buscar:",
               loadingRecords: "Buscando...",

@@ -410,8 +410,7 @@ $(document).ready(function () {
   inicializeModal();
 });
 
-  // Obtener los elementos del DOM una sola v
-
+// Obtener los elementos del DOM una sola v
 const inputEnvio1 = document.getElementById("DownloadEnvi");
 const inputEnvio = document.getElementById("EnvioInput");
 const inputExoneracion = document.getElementById("ExoneracionInput");
@@ -432,114 +431,6 @@ $(document).ready(function () {
   $("#InputRif1").mask("~9?99999999");
 });
 /* END CAMPO 2 FALLA*/
-
-// function checkRif() {
-//   const input = document.getElementById("InputRif");
-//   const mensajeDivt = document.getElementById("rifMensaje");
-//   mensajeDivt.innerHTML = "";
-//   mensajeDivt.style.color = ""; // Limpia el color anterior
-
-//   if (input.value === "") {
-//     mensajeDivt.innerHTML = "Campo vacío";
-//     mensajeDivt.style.color = "red";
-//   } else {
-//     const xhr = new XMLHttpRequest();
-//     xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/ValidateRif`);
-
-//     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-//     xhr.onload = function () {
-//       if (xhr.status === 200) {
-//         try {
-//           const response = JSON.parse(xhr.responseText);
-//           mensajeDivt.innerHTML = response.message;
-//           mensajeDivt.style.color = response.color;
-//           if (response.success) {
-//             getPosSerials(response.rif);
-//           }
-//         } catch (error) {
-//           console.error("Error parsing JSON:", error);
-//           mensajeDivt.innerHTML =
-//             "Error al procesar la respuesta del servidor.";
-//           mensajeDivt.style.color = "red";
-//         }
-//       } else if (xhr.status === 404) {
-//         mensajeDivt.innerHTML = "El RIF No Existe";
-//         mensajeDivt.style.color = "red";
-//       } else if (xhr.status === 400) {
-//         mensajeDivt.innerHTML = "Error: RIF no proporcionado";
-//         mensajeDivt.style.color = "red";
-//       } else {
-//         console.error("Error:", xhr.status, xhr.statusText);
-//         mensajeDivt.innerHTML = "Error de conexión con el servidor.";
-//         mensajeDivt.style.color = "red";
-//       }
-//     };
-
-//     xhr.onerror = function () {
-//       mensajeDivt.innerHTML = "Error de red al intentar verificar el RIF.";
-//       mensajeDivt.style.color = "red";
-//       console.error("Error de red");
-//     };
-
-//     const datos = `action=ValidateRif&rif=${encodeURIComponent(input.value)}`;
-//     xhr.send(datos);
-//   }
-// }
-
-// function checkRif1() {
-//   const input = document.getElementById("InputRif1");
-//   const mensajeDivt = document.getElementById("rifMensaje1");
-//   mensajeDivt.innerHTML = "";
-//   mensajeDivt.style.color = ""; // Limpia el color anterior
-
-//   if (input.value === "") {
-//     mensajeDivt.innerHTML = "Campo vacío";
-//     mensajeDivt.style.color = "red";
-//   } else {
-//     const xhr = new XMLHttpRequest();
-//     xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/ValidateRif1`);
-
-//     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-//     xhr.onload = function () {
-//       if (xhr.status === 200) {
-//         try {
-//           const response = JSON.parse(xhr.responseText);
-//           mensajeDivt.innerHTML = response.message;
-//           mensajeDivt.style.color = response.color;
-//           if (response.success) {
-//             getPosSerials1(response.rif);
-//           }
-//         } catch (error) {
-//           console.error("Error parsing JSON:", error);
-//           mensajeDivt.innerHTML =
-//             "Error al procesar la respuesta del servidor.";
-//           mensajeDivt.style.color = "red";
-//         }
-//       } else if (xhr.status === 404) {
-//         mensajeDivt.innerHTML = "El RIF No Existe";
-//         mensajeDivt.style.color = "red";
-//       } else if (xhr.status === 400) {
-//         mensajeDivt.innerHTML = "Error: RIF no proporcionado";
-//         mensajeDivt.style.color = "red";
-//       } else {
-//         console.error("Error:", xhr.status, xhr.statusText);
-//         mensajeDivt.innerHTML = "Error de conexión con el servidor.";
-//         mensajeDivt.style.color = "red";
-//       }
-//     };
-
-//     xhr.onerror = function () {
-//       mensajeDivt.innerHTML = "Error de red al intentar verificar el RIF.";
-//       mensajeDivt.style.color = "red";
-//       console.error("Error de red");
-//     };
-
-//     const datos = `action=ValidateRif1&rif=${encodeURIComponent(input.value)}`;
-//     xhr.send(datos);
-//   }
-// }
 
 function getPosSerials1(rif) {
   const xhr = new XMLHttpRequest();
@@ -586,7 +477,7 @@ function getPosSerials1(rif) {
 }
 
 /*function getFailure() {
-    const xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
     xhr.open('POST', 'app/views/Tecnico/consulta_rif/backEnd.php');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -2516,93 +2407,6 @@ function clearFormFields() {
   if (fallaSelectt1) fallaSelectt1.value = "1"; // Restablecer a Nivel 1 por defecto (o '')
 }
 
-/*function clearFormFields() {
-  // Limpiar campos de Modal Nivel 2 (miModal)
-  document.getElementById("FallaSelect2").value = "";
-  document.getElementById("InputRif").value = "";
-  document.getElementById("serialSelect").value = "";
-  document.getElementById("AsiganrCoordinador").value = "";
-  document.getElementById("FallaSelectt2").value = "2"; // Restablecer a Nivel 2 por defecto (o '')
-  document.getElementById("rifMensaje1").innerHTML = ""; // Limpiar mensaje de error
-  document.getElementById("rifMensaje").innerHTML = ""; // Limpiar mensaje de error
-
-  // --- Función auxiliar para limpiar un input de tipo file ---
-  function clearFileInput(fileInputId) {
-    const oldFileInput = document.getElementById(fileInputId);
-    if (oldFileInput) {
-      const newFileInput = oldFileInput.cloneNode(true);
-      oldFileInput.parentNode.replaceChild(newFileInput, oldFileInput);
-    }
-  }
-
-  // --- Limpiar los input type="file" ---
-  clearFileInput("EnvioInput");
-  clearFileInput("ExoneracionInput");
-  clearFileInput("AnticipoInput");
-
-  // --- ADICIONAL: Limpiar los SPAN dinámicamente creados que muestran el nombre del archivo ---
-  // Verifica si las variables globales están definidas antes de intentar acceder a ellas
-  if (fileChosenSpanEnvio) {
-    fileChosenSpanEnvio.textContent = "";
-    fileChosenSpanEnvio.style.cssText =
-      "color: gray; font-style: italic; margin-left: 5px;"; // Restablece el estilo si quieres
-  }
-  if (fileChosenSpanExo) {
-    fileChosenSpanExo.textContent = "";
-    fileChosenSpanExo.style.cssText =
-      "color: gray; font-style: italic; margin-left: 5px;";
-  }
-  if (fileChosenSpanAntici) {
-    fileChosenSpanAntici.textContent = "";
-    fileChosenSpanAntici.style.cssText =
-      "color: gray; font-style: italic; margin-left: 5px;";
-  }
-  // --- Fin de limpieza de spans de texto ---
-
-  // Limpiar campos de Modal Nivel 1 (miModal1)
-  document.getElementById("FallaSelect1").value = "";
-  document.getElementById("InputRif1").value = "";
-  document.getElementById("serialSelect1").value = "";
-  document.getElementById("FallaSelectt1").value = "1"; // Restablecer a Nivel 1 por defecto (o '')
-
-  // Si también tienes inputs de archivo en el Modal Nivel 1 y sus displays de texto, límpialos aquí
-  // clearFileInput("IdDeTuInputDeArchivoNivel1");
-  // if (fileChosenSpanNivel1) { fileChosenSpanNivel1.textContent = ''; }
-}
-
-
-fetch("/SoportePost/app/controllers/consulta_rif.php", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-})
-  .then((response) => response.json())
-  .then((data) => {
-    if (data.expired_sessions) {
-      //alert(data.message);
-      window.location.href = data.redirect;
-    }
-
-    // Agregar lógica de recarga automática con verificación
-    if (data.sessionLifetime) {
-      if (Number.isInteger(data.sessionLifetime)) {
-        setTimeout(function () {
-          location.reload(true); // Forzar recarga desde el servidor
-        }, data.sessionLifetime * 1000); // sessionLifetime está en segundos
-      } else {
-        console.error(
-          "sessionLifetime no es un entero válido:",
-          data.sessionLifetime
-        );
-      }
-    }
-  })
-  .catch((error) => {
-    console.error("Error:", error);
-  });
-//// END  SESSION EXPIRE DEL USER
-
 /* CAMPO RIF*/
 $(document).ready(function () {
   $("#rifInput").mask("9?99999999"); // Máscara solo para la parte numérica
@@ -2832,9 +2636,9 @@ function SendRif() {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ Registro(s) )",
+              info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
               infoEmpty: "No hay Registros disponibles",
-              infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
+              infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
               search: "Buscar:",
               loadingRecords: "Buscando...",
               processing: "Procesando...",
@@ -3027,9 +2831,9 @@ function SendSerial() {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "Mostrando pagina _PAGE_ de _PAGES_ ( _TOTAL_ Registro(s) )",
+              info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
               infoEmpty: "No hay Registros disponibles",
-              infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
+              infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
               search: "Buscar:",
               loadingRecords: "Buscando...",
               processing: "Procesando...",
@@ -3248,7 +3052,7 @@ function SendRazon() {
             $("#rifCountTable").DataTable().destroy();
           }
           $("#rifCountTable").DataTable({
-            dom: "Bfrtip",
+            dom: "Blfrtip",
             buttons: [{
               extend: "excelHtml5",
               footer: true,
@@ -3256,15 +3060,19 @@ function SendRazon() {
             }, ],
             responsive: false,
             pagingType: "simple_numbers",
-            lengthMenu: [5],
+            lengthMenu: [5, 10, 20, 50], // Opciones del length menu
+            pageLength: 5, // Página por defecto
+            scrollY: '400px', // Altura fija para el scroll vertical
+            scrollCollapse: true, // Permite que la tabla se ajuste si hay pocos datos
+            fixedHeader: true, // Fija el encabezado durante el scroll
             autoWidth: false,
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
               zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
+              info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
               infoEmpty: "No hay Registros disponibles",
-              infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
+              infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
               search: "Buscar:",
               loadingRecords: "Buscando...",
               processing: "Procesando...",
@@ -3330,6 +3138,7 @@ function SendRazon() {
 // Lógica para cerrar el modal de serial fuera de la función principal
 const modalSerial = document.getElementById("ModalSerial");
 const spanSerialClose = document.getElementById("ModalSerial-close");
+
 if (spanSerialClose) {
   spanSerialClose.onclick = function () {
     modalSerial.style.display = "none";
@@ -3560,70 +3369,70 @@ document.addEventListener("DOMContentLoaded", function () {
   const razonInput = document.getElementById("RazonInput");
   const buscarRazon = document.getElementById("buscarRazon");
   const razonCountTableCard = document.querySelector(".card");
-
+  
   if (rifInput) rifInput.value = "";
-if (serialInput) serialInput.value = "";
-if (razonInput) razonInput.value = "";
+  if (serialInput) serialInput.value = "";
+  if (razonInput) razonInput.value = "";
 
   if (buscarPorRazonBtn && razonCountTableCard) {
-
-    if (rifInput) rifInput.value = "";
-    if (serialInput) serialInput.value = "";
-    if (razonInput) razonInput.value = "";
-    
     buscarPorRazonBtn.addEventListener("click", function () {
-      razonCountTableCard.style.display = "none"; // Muestra la tabla
-      razonInput.style.display = "block"; // Muestra el input
-      buscarRazon.style.display = "block"; // Oculta el botón
-      selectInputRif.style.display = "none"; // Muestra el select
-      buscarRif.style.display = "none"; // Oculta el botón
-      rifInput.style.display = "none"; // Muestra el input*/
-      serialInput.style.display = "none"; // Oculta el botón
-      buscarSerial.style.display = "none"; // Oculta el botón
+      // Limpiar todos los inputs antes de mostrar los nuevos
+      if (rifInput) rifInput.value = "";
+      if (serialInput) serialInput.value = "";
+      if (razonInput) razonInput.value = "";
+      razonCountTableCard.style.marginTop = "0%"; // Asegúrate de que la fila sea visible
+      razonCountTableCard.style.display = "none";
+      razonInput.style.display = "block";
+      buscarRazon.style.display = "block";
+      selectInputRif.style.display = "none";
+      buscarRif.style.display = "none";
+      rifInput.style.display = "none";
+      serialInput.style.display = "none";
+      buscarSerial.style.display = "none";
     });
   } else {
-    console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
+    console.log("Error: No se encontraron el botón o la tabla.");
   }
 
   if (buscarPorRifBtn && rifCountTableCard) {
-
-    if (rifInput) rifInput.value = "";
-    if (serialInput) serialInput.value = "";
-    if (razonInput) razonInput.value = "";
-
     buscarPorRifBtn.addEventListener("click", function () {
-      rifCountTableCard.style.display = "none"; // Muestra la tabla
-      rifInput.style.display = "block"; // Muestra el input
-      selectInputRif.style.display = "block"; // Muestra el select
-      buscarRif.style.display = "block"; // Oculta el botón
-
-      buscarSerial.style.display = "none"; // Oculta el botón
+      // Limpiar todos los inputs antes de mostrar los nuevos
+      if (rifInput) rifInput.value = "";
+      if (serialInput) serialInput.value = "";
+      if (razonInput) razonInput.value = "";
+      
+      rifCountTableCard.style.display = "none";
+      razonCountTableCard.style.marginTop = "5%"; // Asegúrate de que la fila sea visible
+      rifInput.style.display = "block";
+      selectInputRif.style.display = "block";
+      buscarRif.style.display = "block";
+      buscarSerial.style.display = "none";
       serialInput.style.display = "none";
-      buscarRazon.style.display = "none"; // Oculta el botón
-      razonInput.style.display = "none"; // Oculta el botón
+      buscarRazon.style.display = "none";
+      razonInput.style.display = "none";
     });
   } else {
-    console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
+    console.log("Error: No se encontraron el botón o la tabla.");
   }
 
   if (buscarPorSerialBtn && serialCountTableCard) {
-
-    if (rifInput) rifInput.value = "";
-    if (serialInput) serialInput.value = "";
-    if (razonInput) razonInput.value = "";
-
     buscarPorSerialBtn.addEventListener("click", function () {
-      serialCountTableCard.style.display = "none"; // Muestra la tabla
-      serialInput.style.display = "block"; // Muestra el input
-      buscarSerial.style.display = "block"; // Oculta el botón
-      selectInputRif.style.display = "none"; // Muestra el select
-      rifInput.style.display = "none"; // Muestra el input
-      buscarRif.style.display = "none"; // Oculta el botón
-      buscarRazon.style.display = "none"; // Oculta el botón
-      razonInput.style.display = "none"; // Oculta el botón
+      // Limpiar todos los inputs antes de mostrar los nuevos
+      if (rifInput) rifInput.value = "";
+      if (serialInput) serialInput.value = "";
+      if (razonInput) razonInput.value = "";
+      razonCountTableCard.style.marginTop = "0%"; // Asegúrate de que la fila sea visible
+      serialCountTableCard.style.display = "none";
+      serialInput.style.display = "block";
+      buscarSerial.style.display = "block";
+      selectInputRif.style.display = "none";
+      rifInput.style.display = "none";
+      buscarRif.style.display = "none";
+      buscarRazon.style.display = "none";
+      razonInput.style.display = "none";
     });
   } else {
-    console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
+    console.log("Error: No se encontraron el botón o la tabla.");
   }
 });
 
@@ -3636,8 +3445,8 @@ const ModalBotonCerrar = document.getElementById('BotonCerrarModal');
 
 // Inicializa el modal de Bootstrap una sola vez.
 const modalComponentes = new bootstrap.Modal(modalComponentesEl, {
-    keyboard: false,
-    backdrop:'static'
+  keyboard: false,
+  backdrop:'static'
 });
 
 if (ModalBotonCerrar) {
@@ -3649,9 +3458,9 @@ if (ModalBotonCerrar) {
 
 // Escuchar el evento 'show.bs.modal' para resetear el estado del modal cada vez que se abre
 modalComponentesEl.addEventListener('show.bs.modal', function () {
-    // Limpiar el contador y el checkbox de "seleccionar todos" cada vez que se abra el modal
-    document.getElementById('selectAllComponents').checked = false;
-    contadorComponentes.textContent = '0';
+  // Limpiar el contador y el checkbox de "seleccionar todos" cada vez que se abra el modal
+  document.getElementById('selectAllComponents').checked = false;
+  contadorComponentes.textContent = '0';
 });
 
 // Función para actualizar el contador de componentes seleccionados
@@ -3659,27 +3468,27 @@ modalComponentesEl.addEventListener('show.bs.modal', function () {
 
 // Función para actualizar el contador de componentes seleccionados
 function actualizarContador() {
-    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
-    const selectAllCheckbox = document.getElementById('selectAllComponents');
+  const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
+  const selectAllCheckbox = document.getElementById('selectAllComponents');
 
-    contadorComponentes.textContent = checkboxes.length;
+  contadorComponentes.textContent = checkboxes.length;
 
-    const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
-    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
-    const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+  const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+  const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+  const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
 
-    selectAllCheckbox.checked = allChecked;
-    selectAllCheckbox.indeterminate = someChecked && !allChecked;
+  selectAllCheckbox.checked = allChecked;
+  selectAllCheckbox.indeterminate = someChecked && !allChecked;
 }
 
 // Función para limpiar la selección de componentes
 function limpiarSeleccion() {
-    // Solo desmarca los checkboxes que NO están deshabilitados
-    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
-    checkboxes.forEach(cb => cb.checked = false);
+  // Solo desmarca los checkboxes que NO están deshabilitados
+  const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+  checkboxes.forEach(cb => cb.checked = false);
     
-    document.getElementById('selectAllComponents').checked = false;
-    contadorComponentes.textContent = '0';
+  document.getElementById('selectAllComponents').checked = false;
+  contadorComponentes.textContent = '0';
 }
 
 // CORRECCIÓN PRINCIPAL: Se modificó la función para que reciba los componentes seleccionados
@@ -3750,16 +3559,16 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
 
 // Función para obtener el ticket ID (ajusta según tu estructura)
 function obtenerTicketId() {
-    return currentTicketId;
+  return currentTicketId;
 }
 
 // Función para obtener el nombre de la región (ajusta según tu estructura)
 function obtenerRegionName() {
-    const regionSelect = document.getElementById('AsiganrCoordinador');
-    if (regionSelect && regionSelect.selectedOptions.length > 0) {
-        return regionSelect.selectedOptions[0].text;
-    }
-    return 'Sin región asignada';
+  const regionSelect = document.getElementById('AsiganrCoordinador');
+  if (regionSelect && regionSelect.selectedOptions.length > 0) {
+    return regionSelect.selectedOptions[0].text;
+  }
+  return 'Sin región asignada';
 }
 
 // FUNCIÓN PRINCIPAL PARA CARGAR Y MOSTRAR EL MODAL
@@ -3919,7 +3728,7 @@ document.addEventListener('DOMContentLoaded', function () {
             actualizarContador();
         }
     });
-  });
+});
 
 function abrirModalComponentes(boton) {
 

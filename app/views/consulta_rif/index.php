@@ -166,7 +166,7 @@ function mi_navbar() {}
             }
 
             .serial-link {
-                color: #007bff; /* Un azul típico para enlaces */
+                color: blue; /* Un azul típico para enlaces */
                 text-decoration: underline;
                 cursor: pointer;
             }
