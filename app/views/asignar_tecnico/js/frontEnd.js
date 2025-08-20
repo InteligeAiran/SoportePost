@@ -792,6 +792,12 @@ function getTicketDataCoordinator() {
                   return; // Detiene la ejecución si no hay una opción seleccionada
                 }
 
+                if (selectedOption === 'Envio') {
+                  BotonRechazo.style.display = 'none'; // Muestra el botón de rechazo
+                } else {
+                  BotonRechazo.style.display = 'block'; // Oculta el botón de rechazo
+                }
+
                 getMotivos(selectedOption);
 
                 // Llamar a la API para obtener el documento
@@ -809,8 +815,6 @@ function getTicketDataCoordinator() {
                       const filePath = document.file_path;
                       const mimeType = document.mime_type;
                       const fileName = document.original_filename;
-
-                      console.log("documento rechazo:", document.documento_rechazado);
 
                       // Determinar si es imagen o PDF
                       if (mimeType.startsWith('image/')) {
