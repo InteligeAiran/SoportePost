@@ -159,13 +159,14 @@ function mi_navbar() {}
                 text-shadow: 2px 35px 0px rgba(0, 0, 0, 0.1);
                 letter-spacing: 1px; /* Espaciado entre letras para un mejor look */
                 line-height: 1.4; /* Espaciado de línea para que las palabras no se amontonen */
-                margin-top: 46%;
+                margin-top: 103%;
                 margin-left: 35%;
                 position: absolute;
+                width: 100%; /* Asegura que ocupe todo el ancho disponible */
             }
 
             .serial-link {
-                color: blue; /* Un azul típico para enlaces */
+                color: #007bff; /* Un azul típico para enlaces */
                 text-decoration: underline;
                 cursor: pointer;
             }
@@ -193,7 +194,7 @@ function mi_navbar() {}
             <div class="container-fluid py-4">
                 <div id="Row" class="row mt-4">
                     <div class="cord">
-                        <div class="d-flex justify-content-start mt-2 flex-wrap">
+                        <div class="d-flex justify-content-start mt-2 flex-wrap" style="margin-left: 10%;">
                             <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorNombreBtn">Buscar por Razón Social</button>
                             <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
                             <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
@@ -202,7 +203,7 @@ function mi_navbar() {}
                             <div id="welcomeMessage" class="d-flex justify-content-center align-items-center">
                                 <h1 class="text-center">Ingrese los datos del Cliente</h1>
                             </div>
-                            <div class="d-flex align-items-center">
+                            <div id="RifDiv" class="d-flex align-items-center" style="margin-top: 1%; position: fixed; margin-left: 6%;">
                                 <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none;">
                                     <option value="J">J</option>
                                     <option value="V" selected>V</option>
@@ -214,10 +215,10 @@ function mi_navbar() {}
                             </div>
 
                             <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none;" maxlength="24">
-                            <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none;">Buscar</button>
+                            <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none;  margin-top: -9%; margin-left: 45%;">Buscar</button>
 
                             <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
-                            <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
+                            <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none; margin-top: -9%; margin-left: 45%;">Buscar</button>
                         </div><br>
                         <div class="card" style="display: none;">
                             <div class="row">

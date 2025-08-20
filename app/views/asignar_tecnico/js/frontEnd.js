@@ -1053,7 +1053,7 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Dirección Instalación:</div></strong>
-                          ${d.nombre_estado_cliente ||  'No posee'}
+                          ${d.nombre_estado_cliente || 'Sin datos'}
                         </div><br>
                          <div class="col-sm-6 mb-2">
                             <br><strong><div>Estatus Ticket:</div></strong>

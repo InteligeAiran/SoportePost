@@ -216,9 +216,9 @@ function mi_navbar() {}
             text-shadow: 2px 35px 0px rgba(0, 0, 0, 0.1);
             letter-spacing: 1px; /* Espaciado entre letras para un mejor look */
             line-height: 1.4; /* Espaciado de línea para que las palabras no se amontonen */
-            margin-top: 40%;
+            margin-top: 42%;
             position: fixed;
-            margin-left: 10%;
+            margin-left: 15%;
         }
     </style>
     </head>
@@ -244,7 +244,7 @@ function mi_navbar() {}
             <div class="container-fluid py-4">
                 <div id="Row" class="row mt-4">
                     <div class="cord">
-                        <div class="d-flex justify-content-start mt-2">
+                        <div class="d-flex justify-content-start mt-2 flex-wrap" style="margin-left: 20%; margin-top: -2%;">
                             <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorRangoBtn">Buscar por Rango de Fecha</button>
                             <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
                             <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
@@ -271,7 +271,7 @@ function mi_navbar() {}
                             <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
                             <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
 
-                            <div id="inputsDate" class="date-input-container">
+                            <div id="inputsDate" class="date-input-container" style="display: none;">
                                 <div class="date-input-wrapper">
                                     <input type="date" id="date-ini" max="<?php  echo date("Y-m-d");?>">
                                     <div id="errorDateIni" class="error-message"></div>
