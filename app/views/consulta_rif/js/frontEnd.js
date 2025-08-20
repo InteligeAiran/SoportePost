@@ -2664,6 +2664,14 @@ $("#rifInput").keyup(function () {
 });
 
 function SendRif() {
+  // Get the welcome message element
+  const welcomeMessage = document.getElementById("welcomeMessage");
+  // Hide the welcome message at the start of the function
+  if (welcomeMessage) {
+    welcomeMessage.style.visibility = "visible";
+    welcomeMessage.style.opacity = "1";
+  }
+
   const tipoRif = document.getElementById("rifTipo").value;
   const numeroRif = document.getElementById("rifInput").value.trim();
   const rifCompleto = tipoRif + numeroRif;
@@ -2681,8 +2689,19 @@ function SendRif() {
       color: "black",
       confirmButtonColor: "#003594",
     });
+    // Show the welcome message if validation fails
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
     return; // Detiene la ejecución de la función
   }
+
+  if (welcomeMessage) {
+    welcomeMessage.style.visibility = "visible";
+    welcomeMessage.style.opacity = "1";
+  }
+
 
   // Si el campo no está vacío, el resto de la función se ejecuta
   const razonCountTableCard = document.querySelector(".card");
@@ -2694,16 +2713,27 @@ function SendRif() {
 
   const tbody = document .getElementById("rifCountTable").getElementsByTagName("tbody")[0];
 
+     if (welcomeMessage) {
+        welcomeMessage.style.visibility = "visible";
+        welcomeMessage.style.opacity = "1";
+      }
+
+
   // Destruye DataTables si ya está inicializado
   if ($.fn.DataTable.isDataTable("#rifCountTable")) {
     $("#rifCountTable").DataTable().destroy();
   }
+
 
   // Limpia la tabla ANTES de la nueva búsqueda
   tbody.innerHTML = "";
 
   xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status < 300) {
+      if (welcomeMessage) {
+        welcomeMessage.style.visibility = "hidden";
+        welcomeMessage.style.opacity = "0";
+      }
       try {
         const response = JSON.parse(xhr.responseText);
 
@@ -2820,10 +2850,20 @@ function SendRif() {
         } else {
           // Si no hay datos, muestra un mensaje de "no encontrado"
           tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron datos para el RIF ingresado.</td></tr>';
+          // Show the welcome message if no data found
+          if (welcomeMessage) {
+            welcomeMessage.style.visibility = "visible";
+            welcomeMessage.style.opacity = "1";
+          }
         }
       } catch (error) {
         tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta.</td></tr>';
         console.error("Error parsing JSON:", error);
+        // Show the welcome message if there's an error
+        if (welcomeMessage) {
+          welcomeMessage.style.visibility = "visible";
+          welcomeMessage.style.opacity = "1";
+        }
       }
     } else if (xhr.status === 404) {
       tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron usuarios.</td></tr>';
@@ -2852,7 +2892,8 @@ function obtenerRifCompleto() {
 function SendSerial() {
   const welcomeMessage = document.getElementById("welcomeMessage");
   if (welcomeMessage) {
-    welcomeMessage.style.display = "none";
+    welcomeMessage.style.visibility = "visible";
+    welcomeMessage.style.opacity = "1";
   }
 
   const serialInput = document.getElementById("serialInput");
@@ -2873,7 +2914,8 @@ function SendSerial() {
     });
     // Volver a mostrar el mensaje de bienvenida si la validación falla
     if (welcomeMessage) {
-      welcomeMessage.style.display = "block";
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
     }
     return;
   }
@@ -2926,9 +2968,12 @@ function SendSerial() {
     mainTableCard.querySelectorAll("p").forEach((p) => p.remove());
 
     if (xhr.status >= 200 && xhr.status < 300) {
+      if (welcomeMessage) {
+        welcomeMessage.style.visibility = "hidden";
+        welcomeMessage.style.opacity = "0";
+      }
       try {
         const response = JSON.parse(xhr.responseText);
-
         if (response.success && response.serialData && response.serialData.length > 0) {
           // **ATENCIÓN:** Mover la línea para hacer la tarjeta visible a este bloque
           mainTableCard.style.display = "block";
@@ -3012,7 +3057,8 @@ function SendSerial() {
           noDataMessage.textContent = "No se encontraron datos para el serial ingresado.";
           mainTableCard.appendChild(noDataMessage);
           if (welcomeMessage) {
-            welcomeMessage.style.display = "block";
+            welcomeMessage.style.visibility = "visible";
+            welcomeMessage.style.opacity = "1";
           }
         }
       } catch (error) {
@@ -3021,7 +3067,8 @@ function SendSerial() {
         mainTableCard.appendChild(errorMessage);
         console.error("Error parsing JSON:", error);
         if (welcomeMessage) {
-          welcomeMessage.style.display = "block";
+          welcomeMessage.style.visibility = "visible";
+          welcomeMessage.style.opacity = "1";
         }
       }
     } else {
@@ -3031,7 +3078,8 @@ function SendSerial() {
       mainTableCard.appendChild(errorMessage);
       console.error("Error:", xhr.status, xhr.statusText);
       if (welcomeMessage) {
-        welcomeMessage.style.display = "block";
+        welcomeMessage.style.visibility = "visible";
+        welcomeMessage.style.opacity = "1";
       }
     }
   };
@@ -3045,7 +3093,8 @@ function SendSerial() {
     mainTableCard.appendChild(errorMessage);
     console.error("Error de red");
     if (welcomeMessage) {
-      welcomeMessage.style.display = "block";
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
     }
   };
 
@@ -3053,21 +3102,15 @@ function SendSerial() {
   xhr.send(datos);
 }
 
-// Lógica para cerrar el modal de serial fuera de la función principal
-const modalSerial = document.getElementById("ModalSerial");
-const spanSerialClose = document.getElementById("ModalSerial-close");
-if (spanSerialClose) {
-  spanSerialClose.onclick = function () {
-    modalSerial.style.display = "none";
-  };
-}
-window.onclick = function (event) {
-  if (event.target == modalSerial) {
-    modalSerial.style.display = "none";
-  }
-};
-
 function SendRazon() {
+  // Get the welcome message element
+  const welcomeMessage = document.getElementById("welcomeMessage");
+  // Hide the welcome message at the start of the function
+  if (welcomeMessage) {
+    welcomeMessage.style.visibility = "visible";
+    welcomeMessage.style.opacity = "1";
+  }
+  
   const razonInput = document.getElementById("RazonInput");
   const razonInputValue = razonInput.value.trim(); // Obtiene el valor y elimina espacios en blanco
 
@@ -3084,6 +3127,11 @@ function SendRazon() {
       color: "black",
       confirmButtonColor: "#003594",
     });
+    // Show the welcome message if validation fails
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
     return; // Detiene la ejecución de la función
   }
 
@@ -3107,6 +3155,10 @@ function SendRazon() {
   
   xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status < 300) {
+        if (welcomeMessage) {
+          welcomeMessage.style.visibility = "hidden";
+          welcomeMessage.style.opacity = "0";
+        }
       try {
         const response = JSON.parse(xhr.responseText);
 
@@ -3228,27 +3280,66 @@ function SendRazon() {
         } else {
           // Si no hay datos, muestra un mensaje de "no encontrado"
           tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron datos para la razón social ingresada.</td></tr>';
+              // Show the welcome message if no data is found
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
         }
       } catch (error) {
         tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta.</td></tr>';
         console.error("Error parsing JSON:", error);
+        // Show the welcome message on parsing error
+        if (welcomeMessage) {
+          welcomeMessage.style.visibility = "visible";
+          welcomeMessage.style.opacity = "1";
+        }
       }
     } else if (xhr.status === 404) {
       tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron usuarios.</td></tr>';
+      // Show the welcome message on 404 error
+      if (welcomeMessage) {
+        welcomeMessage.style.visibility = "visible";
+        welcomeMessage.style.opacity = "1";
+      }
     } else {
       tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de conexión.</td></tr>';
       console.error("Error:", xhr.status, xhr.statusText);
+      // Show the welcome message on other HTTP errors
+      if (welcomeMessage) {
+        welcomeMessage.style.visibility = "visible";
+        welcomeMessage.style.opacity = "1";
+      }
     }
   };
 
   xhr.onerror = function () {
     tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de red.</td></tr>';
     console.error("Error de red");
+    // Show the welcome message on network error
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
   };
 
   const datos = `action=SearchRazonData&RazonSocial=${encodeURIComponent(razonInputValue)}`;
   xhr.send(datos);
 }
+
+// Lógica para cerrar el modal de serial fuera de la función principal
+const modalSerial = document.getElementById("ModalSerial");
+const spanSerialClose = document.getElementById("ModalSerial-close");
+if (spanSerialClose) {
+  spanSerialClose.onclick = function () {
+    modalSerial.style.display = "none";
+  };
+}
+window.onclick = function (event) {
+  if (event.target == modalSerial) {
+    modalSerial.style.display = "none";
+  }
+};
 
 function fetchSerialData(serial, rif,razonsocial) {
   const xhr = new XMLHttpRequest();
@@ -3472,6 +3563,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (buscarPorRazonBtn && razonCountTableCard) {
     buscarPorRazonBtn.addEventListener("click", function () {
+      // Clear all input fields when switching to this search type
+      if (rifInput) rifInput.value = "";
+      if (serialInput) serialInput.value = "";
+      if (razonInput) razonInput.value = "";
       razonCountTableCard.style.display = "none"; // Muestra la tabla
       razonInput.style.display = "block"; // Muestra el input
       buscarRazon.style.display = "block"; // Oculta el botón
@@ -3487,6 +3582,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (buscarPorRifBtn && rifCountTableCard) {
     buscarPorRifBtn.addEventListener("click", function () {
+      // Clear all input fields when switching to this search type
+      if (rifInput) rifInput.value = "";
+      if (serialInput) serialInput.value = "";
+      if (razonInput) razonInput.value = "";
       rifCountTableCard.style.display = "none"; // Muestra la tabla
       rifInput.style.display = "block"; // Muestra el input
       selectInputRif.style.display = "block"; // Muestra el select
@@ -3503,6 +3602,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (buscarPorSerialBtn && serialCountTableCard) {
     buscarPorSerialBtn.addEventListener("click", function () {
+      // Clear all input fields when switching to this search type
+      if (rifInput) rifInput.value = "";
+      if (serialInput) serialInput.value = "";
+      if (razonInput) razonInput.value = "";
       serialCountTableCard.style.display = "none"; // Muestra la tabla
       serialInput.style.display = "block"; // Muestra el input
       buscarSerial.style.display = "block"; // Oculta el botón

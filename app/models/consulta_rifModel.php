@@ -2170,7 +2170,6 @@ class consulta_rifModel extends Model
 
     public function HasComponents($ticketId){
         try {
-            // La función SQL está bien, la dejamos como está.
             // Nos retorna la lista de todos los componentes con el flag.
             $sql = "SELECT * FROM get_components_by_ticket(".$ticketId.");";
             $result = Model::getResult($sql, $this->db);

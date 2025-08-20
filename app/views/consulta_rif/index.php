@@ -163,6 +163,12 @@ function mi_navbar() {}
                 margin-left: 35%;
                 position: absolute;
             }
+
+            .serial-link {
+                color: blue; /* Un azul típico para enlaces */
+                text-decoration: underline;
+                cursor: pointer;
+            }
         </style>
     </head>
 
