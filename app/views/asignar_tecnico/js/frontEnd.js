@@ -1036,7 +1036,7 @@ function formatTicketDetailsPanel(d) {
                           ${d.fecha_instalacion || 'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div  style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
+                          <br><strong><div style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
                           ${d.fecha_cierre_anterior || 'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
@@ -1214,16 +1214,28 @@ function loadTicketHistory(ticketId) {
 
           const prevItem = response.history[index + 1] || {};
 
-          const cleanString = (str) => str ? str.replace(/\s/g, ' ').trim() : null;
+          // CORRECCIÓN: Mejorar la función cleanString para manejar espacios en blanco
+          const cleanString = (str) => {
+            if (!str) return null;
+            const trimmed = str.replace(/\s/g, ' ').trim();
+            return trimmed === '' ? null : trimmed;
+          };
 
           const itemAccion = cleanString(item.name_accion_ticket);
           const itempago = cleanString(item.name_status_payment);
           const prevAccion = cleanString(prevItem.name_accion_ticket);
           const accionChanged = prevAccion && itemAccion !== prevAccion;
 
+          // CORRECCIÓN: Mejorar el manejo del técnico asignado para detectar cambios
           const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
           const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
-          const tecnicoChanged = prevTecnico && itemTecnico !== prevTecnico;
+          
+          // Marcar como cambiado si:
+          // 1. Ambos valores existen y son diferentes, O
+          // 2. Uno de los dos valores existe y el otro no (asignación/desasignación)
+          const tecnicoChanged = (prevTecnico && itemTecnico && prevTecnico !== itemTecnico) || 
+                                (prevTecnico && !itemTecnico) || 
+                                (!prevTecnico && itemTecnico);
 
           const itemStatusLab = cleanString(item.name_status_lab);
           const prevStatusLab = cleanString(prevItem.name_status_lab);
@@ -1272,24 +1284,25 @@ function loadTicketHistory(ticketId) {
           const documentoRechazadoChanged = prevDocumentoRechazado && itemDocumentoRechazado !== prevDocumentoRechazado;
           
           // --- LÓGICA CORREGIDA PARA MOSTRAR EL MOTIVO DE RECHAZO ---
-          // Define los tipos de rechazo que activan la visualización del motivo.
           const rejectedActions = [
             'Documento de Exoneracion Rechazado',
             'Documento de Anticipo Rechazado'         
          ];
 
-          // La fila se mostrará solo si la acción del ticket coincide con una de las acciones de rechazo definidas.
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
-          // --- NUEVA LÓGICA PARA COMPONENTES ---
-          // El componente se mostrará en negrita si:
-          // 1. La acción cambió Y es "Actualización de Componentes" Y hay componentes
-          // 2. Los componentes cambiaron Y hay componentes
           const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
           let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
           let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
-          const statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
+          
+          // NUEVA LÓGICA: Mostrar el status del laboratorio cuando la acción es "En taller"
+          let statusHeaderText;
+          if (itemAccion === "Enviado a taller" || itemAccion === "En Taller") {
+            statusHeaderText = ` (${item.name_status_lab || "Desconocido"})`;
+          } else {
+            statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
+          }
 
          
           historyHtml += `
@@ -1328,7 +1341,9 @@ function loadTicketHistory(ticketId) {
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Tecnico Asignado:</th>
-                                                    <td class="${tecnicoChanged ? "highlighted-change" : ""}">${item.full_name_tecnico_n2_history || "N/A"}</td>
+                                                    <td class="${tecnicoChanged ? "highlighted-change" : ""}">
+                                                        ${item.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history.trim() !== "" ? item.full_name_tecnico_n2_history : "N/A"}
+                                                    </td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Ticket:</th>
