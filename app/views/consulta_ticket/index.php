@@ -202,8 +202,8 @@ function mi_navbar() {}
         }
 
         #inputsDate{
-            margin-left: -190%;
-            margin-top: -18%;
+            margin-left: 1%;
+            margin-top: -5%;
         }
 
         /* Estilos para la palabra de bienvenida */
@@ -216,8 +216,9 @@ function mi_navbar() {}
             text-shadow: 2px 35px 0px rgba(0, 0, 0, 0.1);
             letter-spacing: 1px; /* Espaciado entre letras para un mejor look */
             line-height: 1.4; /* Espaciado de línea para que las palabras no se amontonen */
-            margin-top: 46%;
-            position: absolute;
+            margin-top: 40%;
+            position: fixed;
+            margin-left: 10%;
         }
     </style>
     </head>
@@ -250,7 +251,10 @@ function mi_navbar() {}
                             <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRegionsBtn">Buscar Por Region</button>
                         </div>
                         <div id="SearchRif" class="mb-3 d-flex align-items-center">
-                            <div class="d-flex align-items-center">
+                            <div id="welcomeMessage" class="d-flex justify-content-center align-items-center">
+                                <h1 class="text-center">Ingrese los datos del Ticket</h1>
+                            </div>
+                            <div id = "SearchRifdiv" class="d-flex align-items-center" style="position: absolute; margin: 2%;">
                                 <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none; margin-left: -39%;">
                                     <option value="J">J</option>
                                     <option value="V" selected>V</option>
@@ -259,11 +263,10 @@ function mi_navbar() {}
                                 </select>
                                 <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
                                 <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;  margin-top: 5px;">Buscar</button><br>
-                                 
                             </div>
 
-                            <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none; margin-left: -107%;" maxlength="24">
-                            <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none; margin-top: 6px;">Buscar</button>
+                            <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none; margin-left: -36%; margin-top: -2%;" maxlength="24">
+                            <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none; margin-top: -9%; margin-left: 10%;">Buscar</button>
 
                             <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
                             <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
@@ -278,10 +281,10 @@ function mi_navbar() {}
                                     <input type="date" id="date-end"  max="<?php  echo date("Y-m-d");?>">
                                     <div id="errorDateEnd" class="error-message"></div>
                                 </div>
-                                <button type="button" class="btn btn-primary" onclick="SendRango()" id="buscarRango" style="height: 10%; margin-top: 1%;">Buscar</button>
+                                <button type="button" class="btn btn-primary" onclick="SendRango()" id="buscarRango" style="height: 10%;">Buscar</button>
                             </div>
 
-                            <div class="d-flex align-items-center">
+                            <div id="InputSearchReg" class="d-flex align-items-center" style="margin-left: -19%;">
                                 <select id="SelectRgions" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
                                 </select>
                                 <button type="button" class="btn btn-primary" onclick="SendRegions()" id="buscarRegions" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>

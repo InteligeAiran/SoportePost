@@ -139,6 +139,12 @@ document.addEventListener("DOMContentLoaded", function () {
         buscarSerialBtn.style.display = "none";
 
         razonInput.style.display = "none";
+        razonInput.value = ""; // Limpiar el valor del input de Razon Social
+        dateIniInput.value = ""; // Limpiar el valor del input de fecha inicio
+        dateEndInput.value = ""; // Limpiar el valor del input de fecha fin
+        selectRegions.value = ""; // Limpiar el valor del select de regiones
+        rifInput.value = ""; // Limpiar el valor del input de RIF
+        serialInput.value = ""; // Limpiar el valor del input de Serial
         buscarRazonBtn.style.display = "none";
 
         inputsDateDiv.style.display = "none"; // Oculta el contenedor completo de fecha
@@ -179,6 +185,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // Event Listeners para los botones de "Buscar por..."
     if (buscarPorRegionsBtn) {
         buscarPorRegionsBtn.addEventListener("click", function () {
+            // Show the welcome message when changing search type
+            const welcomeMessage = document.getElementById("welcomeMessage");
+            if (welcomeMessage) {
+                welcomeMessage.style.visibility = "visible";
+                welcomeMessage.style.opacity = "1";
+            }
+            
             hideAllSearchInputs(); // Oculta todos los demás
             selectRegions.style.display = "block";
             buscarRegionsBtn.style.display = "block";
@@ -189,6 +202,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (buscarPorRangoBtn) {
         buscarPorRangoBtn.addEventListener("click", function () {
+            // Show the welcome message when changing search type
+            const welcomeMessage = document.getElementById("welcomeMessage");
+            if (welcomeMessage) {
+                welcomeMessage.style.visibility = "visible";
+                welcomeMessage.style.opacity = "1";
+            }
+            
             hideAllSearchInputs(); // Oculta todos los demás
             inputsDateDiv.style.display = "flex"; // ¡IMPORTANTE! Vuelve a poner display: flex;
             dateIniInput.style.display = "block";
@@ -203,6 +223,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (buscarPorRazonBtn) { // Asumiendo que este es el botón correcto para buscar por Razon Social
         buscarPorRazonBtn.addEventListener("click", function () {
+            // Show the welcome message when changing search type
+            const welcomeMessage = document.getElementById("welcomeMessage");
+            if (welcomeMessage) {
+                welcomeMessage.style.visibility = "visible";
+                welcomeMessage.style.opacity = "1";
+            }
+            
             hideAllSearchInputs(); // Oculta todos los demás
             razonInput.style.display = "block";
             buscarRazonBtn.style.display = "block";
@@ -212,6 +239,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (buscarPorRifBtn) {
         buscarPorRifBtn.addEventListener("click", function () {
+            // Show the welcome message when changing search type
+            const welcomeMessage = document.getElementById("welcomeMessage");
+            if (welcomeMessage) {
+                welcomeMessage.style.visibility = "visible";
+                welcomeMessage.style.opacity = "1";
+            }
+            
             hideAllSearchInputs(); // Oculta todos los demás
             rifTipoSelect.style.display = "block";
             rifInput.style.display = "block";
@@ -234,6 +268,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (buscarPorSerialBtn) {
         buscarPorSerialBtn.addEventListener("click", function () {
+            // Show the welcome message when changing search type
+            const welcomeMessage = document.getElementById("welcomeMessage");
+            if (welcomeMessage) {
+                welcomeMessage.style.visibility = "visible";
+                welcomeMessage.style.opacity = "1";
+            }
+            
             hideAllSearchInputs(); // Oculta todos los demás
             serialInput.style.display = "block";
             buscarSerialBtn.style.display = "block";
@@ -301,6 +342,13 @@ function getRegionUsuarios() {
 document.addEventListener("DOMContentLoaded", getRegionUsuarios);
 
 function SendRegions() {
+  // Get the welcome message element and show it at the start
+  const welcomeMessage = document.getElementById("welcomeMessage");
+  if (welcomeMessage) {
+    welcomeMessage.style.visibility = "visible";
+    welcomeMessage.style.opacity = "1";
+  }
+
   const RegionSelectValue = document.getElementById("SelectRgions").value;
 
   // Mover la validación al principio para detener la ejecución si no hay región
@@ -313,6 +361,11 @@ function SendRegions() {
       confirmButtonText: "Aceptar",
       confirmButtonColor: "#003594",
     });
+    // Show the welcome message if validation fails
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
     return;
   }
 
@@ -364,6 +417,12 @@ function SendRegions() {
         const response = JSON.parse(xhr.responseText);
 
         if (response.success && response.ticket && response.ticket.length > 0) {
+          // Hide the welcome message when data is found successfully
+          if (welcomeMessage) {
+            welcomeMessage.style.visibility = "hidden";
+            welcomeMessage.style.opacity = "0";
+          }
+          
           const TicketData = response.ticket;
           
           // Crea la tabla y sus elementos
@@ -467,18 +526,33 @@ function SendRegions() {
           const noDataMessage = document.createElement("p");
           noDataMessage.textContent = "No se encontraron datos para la región seleccionada.";
           mainTableCard.appendChild(noDataMessage);
+          // Show the welcome message if no data found
+          if (welcomeMessage) {
+            welcomeMessage.style.visibility = "visible";
+            welcomeMessage.style.opacity = "1";
+          }
         }
       } catch (error) {
         const errorMessage = document.createElement("p");
-        errorMessage.textContent = "Error al procesar la respuesta.";
+        errorMessage.textContent = "Error al procesar la respuesta del servidor.";
         mainTableCard.appendChild(errorMessage);
         console.error("Error parsing JSON:", error);
+        // Show the welcome message if there's an error
+        if (welcomeMessage) {
+          welcomeMessage.style.visibility = "visible";
+          welcomeMessage.style.opacity = "1";
+        }
       }
     } else {
       const errorMessage = document.createElement("p");
-      errorMessage.textContent = "Error de conexión con el servidor.";
+      errorMessage.textContent = "No hay datos en su búsqueda.";
       mainTableCard.appendChild(errorMessage);
       console.error("Error:", xhr.status, xhr.statusText);
+      // Show the welcome message if there's a connection error
+      if (welcomeMessage) {
+        welcomeMessage.style.visibility = "visible";
+        welcomeMessage.style.opacity = "1";
+      }
     }
   };
 
@@ -492,9 +566,14 @@ function SendRegions() {
         existingTable.remove();
     }
     const errorMessage = document.createElement("p");
-    errorMessage.textContent = "Error de red. Verifica tu conexión.";
+    errorMessage.textContent = "Error de conexión de red. Verifique su conexión a internet.";
     mainTableCard.appendChild(errorMessage);
     console.error("Error de red");
+    // Show the welcome message if there's a network error
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
   };
 
   const datos = `action=SearchRegionData&id_region=${encodeURIComponent(RegionSelectValue)}`;
@@ -502,9 +581,11 @@ function SendRegions() {
 }
 
 function SendRif() {
+  // Get the welcome message element and show it at the start
   const welcomeMessage = document.getElementById("welcomeMessage");
   if (welcomeMessage) {
-    welcomeMessage.style.display = "none";
+    welcomeMessage.style.visibility = "visible";
+    welcomeMessage.style.opacity = "1";
   }
 
   const tipoRif = document.getElementById("rifTipo").value;
@@ -521,6 +602,11 @@ function SendRif() {
       confirmButtonText: "Aceptar",
       confirmButtonColor: "#003594",
     });
+    // Show the welcome message if validation fails
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
     return;
   }
 
@@ -573,6 +659,12 @@ function SendRif() {
         const response = JSON.parse(xhr.responseText);
 
         if (response.success && response.ticket && response.ticket.length > 0) {
+          // Hide the welcome message when data is found successfully
+          if (welcomeMessage) {
+            welcomeMessage.style.visibility = "hidden";
+            welcomeMessage.style.opacity = "0";
+          }
+          
           const TicketData = response.ticket;
           
           // Crea la tabla y sus elementos
@@ -673,18 +765,33 @@ function SendRif() {
           const noDataMessage = document.createElement("p");
           noDataMessage.textContent = "No se encontraron datos para el RIF ingresado.";
           razonCountTableCard.appendChild(noDataMessage);
+          // Show the welcome message if no data found
+          if (welcomeMessage) {
+            welcomeMessage.style.visibility = "visible";
+            welcomeMessage.style.opacity = "1";
+          }
         }
       } catch (error) {
         const errorMessage = document.createElement("p");
-        errorMessage.textContent = "Error al procesar la respuesta.";
+        errorMessage.textContent = "Error al procesar la respuesta del servidor.";
         razonCountTableCard.appendChild(errorMessage);
         console.error("Error parsing JSON:", error);
+        // Show the welcome message if there's an error
+        if (welcomeMessage) {
+          welcomeMessage.style.visibility = "visible";
+          welcomeMessage.style.opacity = "1";
+        }
       }
     } else {
       const errorMessage = document.createElement("p");
-      errorMessage.textContent = "Error de conexión con el servidor.";
+      errorMessage.textContent = "No hay datos en su búsqueda.";
       razonCountTableCard.appendChild(errorMessage);
       console.error("Error:", xhr.status, xhr.statusText);
+      // Show the welcome message if there's a connection error
+      if (welcomeMessage) {
+        welcomeMessage.style.visibility = "visible";
+        welcomeMessage.style.opacity = "1";
+      }
     }
   };
 
@@ -698,9 +805,14 @@ function SendRif() {
         existingTable.remove();
     }
     const errorMessage = document.createElement("p");
-    errorMessage.textContent = "Error de red. Verifica tu conexión.";
+    errorMessage.textContent = "Error de conexión de red. Verifique su conexión a internet.";
     razonCountTableCard.appendChild(errorMessage);
     console.error("Error de red");
+    // Show the welcome message if there's a network error
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
   };
 
   const datos = `action=SearchRifData&rif=${encodeURIComponent(rifCompleto)}`;
@@ -708,9 +820,11 @@ function SendRif() {
 }
 
 function SendSerial() {
+  // Get the welcome message element and show it at the start
   const welcomeMessage = document.getElementById("welcomeMessage");
   if (welcomeMessage) {
-    welcomeMessage.style.display = "none";
+    welcomeMessage.style.visibility = "visible";
+    welcomeMessage.style.opacity = "1";
   }
 
   const serialInput = document.getElementById("serialInput");
@@ -726,6 +840,11 @@ function SendSerial() {
       confirmButtonText: "Aceptar",
       confirmButtonColor: "#003594",
     });
+    // Show the welcome message if validation fails
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
     return;
   }
 
@@ -778,6 +897,12 @@ function SendSerial() {
         const response = JSON.parse(xhr.responseText);
 
         if (response.success && response.ticket && response.ticket.length > 0) {
+          // Hide the welcome message when data is found successfully
+          if (welcomeMessage) {
+            welcomeMessage.style.visibility = "hidden";
+            welcomeMessage.style.opacity = "0";
+          }
+          
           const TicketData = response.ticket;
 
           // Crea la tabla y sus elementos
@@ -878,18 +1003,33 @@ function SendSerial() {
           const noDataMessage = document.createElement("p");
           noDataMessage.textContent = "No se encontraron datos para el serial ingresado.";
           razonCountTableCard.appendChild(noDataMessage);
+          // Show the welcome message if no data found
+          if (welcomeMessage) {
+            welcomeMessage.style.visibility = "visible";
+            welcomeMessage.style.opacity = "1";
+          }
         }
       } catch (error) {
         const errorMessage = document.createElement("p");
-        errorMessage.textContent = "Error al procesar la respuesta.";
+        errorMessage.textContent = "Error al procesar la respuesta del servidor.";
         razonCountTableCard.appendChild(errorMessage);
         console.error("Error parsing JSON:", error);
+        // Show the welcome message if there's an error
+        if (welcomeMessage) {
+          welcomeMessage.style.visibility = "visible";
+          welcomeMessage.style.opacity = "1";
+        }
       }
     } else {
       const errorMessage = document.createElement("p");
-      errorMessage.textContent = "Error de conexión con el servidor.";
+      errorMessage.textContent = "No hay Datos en su búsqueda.";
       razonCountTableCard.appendChild(errorMessage);
       console.error("Error:", xhr.status, xhr.statusText);
+      // Show the welcome message if there's a connection error
+      if (welcomeMessage) {
+        welcomeMessage.style.visibility = "visible";
+        welcomeMessage.style.opacity = "1";
+      }
     }
   };
 
@@ -903,9 +1043,14 @@ function SendSerial() {
         existingTable.remove();
     }
     const errorMessage = document.createElement("p");
-    errorMessage.textContent = "Error de red. Verifica tu conexión.";
+    errorMessage.textContent = "Error de conexión de red. Verifique su conexión a internet.";
     razonCountTableCard.appendChild(errorMessage);
     console.error("Error de red");
+    // Show the welcome message if there's a network error
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
   };
 
   const datos = `action=SearchSerialData&serial=${encodeURIComponent(serialInputValue)}`;
@@ -913,6 +1058,13 @@ function SendSerial() {
 }
 
 function SendRango() {
+  // Get the welcome message element and show it at the start
+  const welcomeMessage = document.getElementById("welcomeMessage");
+  if (welcomeMessage) {
+    welcomeMessage.style.visibility = "visible";
+    welcomeMessage.style.opacity = "1";
+  }
+
   const initialDate = document.getElementById("date-ini").value;
   const endDate = document.getElementById("date-end").value;
 
@@ -925,6 +1077,11 @@ function SendRango() {
       confirmButtonColor: "#003594",
       color: "black",
     });
+    // Show the welcome message if validation fails
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
     return;
   }
 
@@ -961,6 +1118,12 @@ function SendRango() {
         const response = JSON.parse(xhr.responseText);
 
         if (response.success && response.ticket && response.ticket.length > 0) {
+          // Hide the welcome message when data is found successfully
+          if (welcomeMessage) {
+            welcomeMessage.style.visibility = "hidden";
+            welcomeMessage.style.opacity = "0";
+          }
+          
           const TicketData = response.ticket;
           
           // Crea la tabla y sus elementos
@@ -1065,27 +1228,47 @@ function SendRango() {
           const noDataMessage = document.createElement("p");
           noDataMessage.textContent = "No se encontraron datos para el rango de fechas seleccionado.";
           razonCountTableCard.appendChild(noDataMessage);
+          // Show the welcome message if no data found
+          if (welcomeMessage) {
+            welcomeMessage.style.visibility = "visible";
+            welcomeMessage.style.opacity = "1";
+          }
         }
       } catch (error) {
         const errorMessage = document.createElement("p");
-        errorMessage.textContent = "Error al procesar la respuesta.";
+        errorMessage.textContent = "Error al procesar la respuesta del servidor.";
         razonCountTableCard.appendChild(errorMessage);
         console.error("Error parsing JSON:", error);
+        // Show the welcome message if there's an error
+        if (welcomeMessage) {
+          welcomeMessage.style.visibility = "visible";
+          welcomeMessage.style.opacity = "1";
+        }
       }
     } else {
       const errorMessage = document.createElement("p");
-      errorMessage.textContent = "Error de conexión con el servidor.";
+      errorMessage.textContent = "No hay datos en su búsqueda.";
       razonCountTableCard.appendChild(errorMessage);
       console.error("Error:", xhr.status, xhr.statusText);
+      // Show the welcome message if there's a connection error
+      if (welcomeMessage) {
+        welcomeMessage.style.visibility = "visible";
+        welcomeMessage.style.opacity = "1";
+      }
     }
   };
 
   xhr.onerror = function () {
     razonCountTableCard.querySelectorAll("p").forEach((p) => p.remove());
     const errorMessage = document.createElement("p");
-    errorMessage.textContent = "Error de red. Verifica tu conexión.";
+    errorMessage.textContent = "Error de conexión de red. Verifique su conexión a internet.";
     razonCountTableCard.appendChild(errorMessage);
     console.error("Error de red");
+    // Show the welcome message if there's a network error
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
   };
 
   const datos = `action=SearchRangeDate&initial=${encodeURIComponent(initialDate)}&second=${encodeURIComponent(endDate)}`;

@@ -2664,9 +2664,8 @@ $("#rifInput").keyup(function () {
 });
 
 function SendRif() {
-  // Get the welcome message element
+  // Get the welcome message element and show it at the start
   const welcomeMessage = document.getElementById("welcomeMessage");
-  // Hide the welcome message at the start of the function
   if (welcomeMessage) {
     welcomeMessage.style.visibility = "visible";
     welcomeMessage.style.opacity = "1";
@@ -2730,14 +2729,15 @@ function SendRif() {
 
   xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status < 300) {
-      if (welcomeMessage) {
-        welcomeMessage.style.visibility = "hidden";
-        welcomeMessage.style.opacity = "0";
-      }
       try {
         const response = JSON.parse(xhr.responseText);
 
         if (response.success && response.rif && response.rif.length > 0) {
+          // Hide the welcome message when data is found successfully
+          if (welcomeMessage) {
+            welcomeMessage.style.visibility = "hidden";
+            welcomeMessage.style.opacity = "0";
+          }
           const rifData = response.rif;
           rifData.forEach((item) => {
             const row = tbody.insertRow();
@@ -2857,7 +2857,7 @@ function SendRif() {
           }
         }
       } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta del servidor.</td></tr>';
         console.error("Error parsing JSON:", error);
         // Show the welcome message if there's an error
         if (welcomeMessage) {
@@ -2866,16 +2866,31 @@ function SendRif() {
         }
       }
     } else if (xhr.status === 404) {
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron usuarios.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron datos para el RIF especificado.</td></tr>';
+      // Show the welcome message on 404 error
+      if (welcomeMessage) {
+        welcomeMessage.style.visibility = "visible";
+        welcomeMessage.style.opacity = "1";
+      }
     } else {
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de conexión.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error del servidor. Intente nuevamente.</td></tr>';
       console.error("Error:", xhr.status, xhr.statusText);
+      // Show the welcome message on other HTTP errors
+      if (welcomeMessage) {
+        welcomeMessage.style.visibility = "visible";
+        welcomeMessage.style.opacity = "1";
+      }
     }
   };
 
   xhr.onerror = function () {
-    tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de red.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de conexión de red. Verifique su conexión a internet.</td></tr>';
     console.error("Error de red");
+    // Show the welcome message on network error
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
   };
   
   const datos = `action=SearchRif&rif=${encodeURIComponent(rifCompleto)}`;
@@ -3063,7 +3078,7 @@ function SendSerial() {
         }
       } catch (error) {
         const errorMessage = document.createElement("p");
-        errorMessage.textContent = "Error al procesar la respuesta.";
+        errorMessage.textContent = "Error al procesar la respuesta del servidor.";
         mainTableCard.appendChild(errorMessage);
         console.error("Error parsing JSON:", error);
         if (welcomeMessage) {
@@ -3074,7 +3089,7 @@ function SendSerial() {
     } else {
       // Manejar errores HTTP
       const errorMessage = document.createElement("p");
-      errorMessage.textContent = "Error de conexión con el servidor.";
+      errorMessage.textContent = "Error del servidor. Intente nuevamente.";
       mainTableCard.appendChild(errorMessage);
       console.error("Error:", xhr.status, xhr.statusText);
       if (welcomeMessage) {
@@ -3089,7 +3104,7 @@ function SendSerial() {
       loadingMessage.remove();
     }
     const errorMessage = document.createElement("p");
-    errorMessage.textContent = "Error de red. Verifique su conexión.";
+    errorMessage.textContent = "Error de conexión de red. Verifique su conexión a internet.";
     mainTableCard.appendChild(errorMessage);
     console.error("Error de red");
     if (welcomeMessage) {
@@ -3287,7 +3302,7 @@ function SendRazon() {
     }
         }
       } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta del servidor.</td></tr>';
         console.error("Error parsing JSON:", error);
         // Show the welcome message on parsing error
         if (welcomeMessage) {
@@ -3296,14 +3311,14 @@ function SendRazon() {
         }
       }
     } else if (xhr.status === 404) {
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron usuarios.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron datos para la razón social especificada.</td></tr>';
       // Show the welcome message on 404 error
       if (welcomeMessage) {
         welcomeMessage.style.visibility = "visible";
         welcomeMessage.style.opacity = "1";
       }
     } else {
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de conexión.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error del servidor. Intente nuevamente.</td></tr>';
       console.error("Error:", xhr.status, xhr.statusText);
       // Show the welcome message on other HTTP errors
       if (welcomeMessage) {
@@ -3314,7 +3329,7 @@ function SendRazon() {
   };
 
   xhr.onerror = function () {
-    tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de red.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de conexión de red. Verifique su conexión a internet.</td></tr>';
     console.error("Error de red");
     // Show the welcome message on network error
     if (welcomeMessage) {
@@ -3545,79 +3560,172 @@ function downloadImageModal(serial) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  const buscarPorRifBtn = document.getElementById("buscarPorRifBtn");
-  const rifInput = document.getElementById("rifInput");
-  const buscarRif = document.getElementById("buscarRif");
-  const rifCountTableCard = document.querySelector(".card");
-  const selectInputRif = document.getElementById("rifTipo");
+    // Referencias a los elementos
+    const buscarPorRangoBtn = document.getElementById("buscarPorRangoBtn");
+    const buscarPorSerialBtn = document.getElementById("buscarPorSerialBtn");
+    const buscarPorRifBtn = document.getElementById("buscarPorRifBtn");
+    const buscarPorRegionsBtn = document.getElementById("buscarPorRegionsBtn");
+    const buscarPorRazonBtn = document.getElementById("buscarPorNombreBtn"); 
+    const searchRifDiv = document.getElementById("SearchRif"); // Contenedor principal de los inputs de búsqueda
+    const rifTipoSelect = document.getElementById("rifTipo");
+    const rifInput = document.getElementById("rifInput");
+    const buscarRifBtn = document.getElementById("buscarRif");
+    const serialInput = document.getElementById("serialInput");
+    const buscarSerialBtn = document.getElementById("buscarSerial");
+    const razonInput = document.getElementById("RazonInput");
+    const buscarRazonBtn = document.getElementById("buscarRazon");
+    const inputsDateDiv = document.getElementById("inputsDate"); // El div que contiene los inputs de fecha
+    const dateIniInput = document.getElementById("date-ini");
+    const dateEndInput = document.getElementById("date-end");
+    const buscarRangoBtn = document.getElementById("buscarRango");
+    const errorDateIni = document.getElementById("errorDateIni");
+    const errorDateEnd = document.getElementById("errorDateEnd");
+    const selectRegions = document.getElementById("SelectRgions");
+    const buscarRegionsBtn = document.getElementById("buscarRegions");
+    const resultsCard = document.querySelector(".card"); // El contenedor principal para los resultados (la tabla)
 
-  const buscarPorSerialBtn = document.getElementById("buscarPorSerialBtn");
-  const serialInput = document.getElementById("serialInput");
-  const buscarSerial = document.getElementById("buscarSerial");
-  const serialCountTableCard = document.querySelector(".card");
+    // Event Listeners para los botones de "Buscar por..."
+    if (buscarPorRegionsBtn) {
+        buscarPorRegionsBtn.addEventListener("click", function () {
+            // Show the welcome message when changing search type
+            const welcomeMessage = document.getElementById("welcomeMessage");
+            if (welcomeMessage) {
+                welcomeMessage.style.visibility = "visible";
+                welcomeMessage.style.opacity = "1";
+            }
+            
+            hideAllSearchInputs(); // Oculta todos los demás
+            // Limpiar valores de los inputs
+            if (rifInput) rifInput.value = "";
+            if (serialInput) serialInput.value = "";
+            if (razonInput) razonInput.value = "";
+            if (dateIniInput) dateIniInput.value = "";
+            if (dateEndInput) dateEndInput.value = "";
+            if (selectRegions) selectRegions.value = "";
+            
+            selectRegions.style.display = "block";
+            buscarRegionsBtn.style.display = "block";
+            resultsCard.style.display = "block"; // Muestra el card de resultados
+            // Lógica para cargar regiones
+        });
+    }
 
-  const buscarPorRazonBtn = document.getElementById("buscarPorNombreBtn");
-  const razonInput = document.getElementById("RazonInput");
-  const buscarRazon = document.getElementById("buscarRazon");
-  const razonCountTableCard = document.querySelector(".card");
+    if (buscarPorRangoBtn) {
+        buscarPorRangoBtn.addEventListener("click", function () {
+            // Show the welcome message when changing search type
+            const welcomeMessage = document.getElementById("welcomeMessage");
+            if (welcomeMessage) {
+                welcomeMessage.style.visibility = "visible";
+                welcomeMessage.style.opacity = "1";
+            }
+            
+            hideAllSearchInputs(); // Oculta todos los demás
+            // Limpiar valores de los inputs
+            if (rifInput) rifInput.value = "";
+            if (serialInput) serialInput.value = "";
+            if (razonInput) razonInput.value = "";
+            if (dateIniInput) dateIniInput.value = "";
+            if (dateEndInput) dateEndInput.value = "";
+            if (selectRegions) selectRegions.value = "";
+            
+            inputsDateDiv.style.display = "flex"; // ¡IMPORTANTE! Vuelve a poner display: flex;
+            dateIniInput.style.display = "block";
+            dateEndInput.style.display = "block";
+            buscarRangoBtn.style.display = "block";
+            // No mostrar los mensajes de error inicialmente
+            errorDateIni.style.display = "none"; 
+            errorDateEnd.style.display = "none";
+            resultsCard.style.display = "block"; // Muestra el card de resultados
+        });
+    }
 
-  if (buscarPorRazonBtn && razonCountTableCard) {
-    buscarPorRazonBtn.addEventListener("click", function () {
-      // Clear all input fields when switching to this search type
-      if (rifInput) rifInput.value = "";
-      if (serialInput) serialInput.value = "";
-      if (razonInput) razonInput.value = "";
-      razonCountTableCard.style.display = "none"; // Muestra la tabla
-      razonInput.style.display = "block"; // Muestra el input
-      buscarRazon.style.display = "block"; // Oculta el botón
-      selectInputRif.style.display = "none"; // Muestra el select
-      buscarRif.style.display = "none"; // Oculta el botón
-      rifInput.style.display = "none"; // Muestra el input*/
-      serialInput.style.display = "none"; // Oculta el botón
-      buscarSerial.style.display = "none"; // Oculta el botón
+    if (buscarPorRazonBtn) { // Asumiendo que este es el botón correcto para buscar por Razon Social
+        buscarPorRazonBtn.addEventListener("click", function () {
+            // Show the welcome message when changing search type
+            const welcomeMessage = document.getElementById("welcomeMessage");
+            if (welcomeMessage) {
+                welcomeMessage.style.visibility = "visible";
+                welcomeMessage.style.opacity = "1";
+            }
+            
+            hideAllSearchInputs(); // Oculta todos los demás
+            // Limpiar valores de los inputs
+            if (rifInput) rifInput.value = "";
+            if (serialInput) serialInput.value = "";
+            if (razonInput) razonInput.value = "";
+            if (dateIniInput) dateIniInput.value = "";
+            if (dateEndInput) dateEndInput.value = "";
+            if (selectRegions) selectRegions.value = "";
+            
+            razonInput.style.display = "block";
+            buscarRazonBtn.style.display = "block";
+            resultsCard.style.display = "block"; // Muestra el card de resultados
+        });
+    }
+
+    if (buscarPorRifBtn) {
+        buscarPorRifBtn.addEventListener("click", function () {
+            // Show the welcome message when changing search type
+            const welcomeMessage = document.getElementById("welcomeMessage");
+            if (welcomeMessage) {
+                welcomeMessage.style.visibility = "visible";
+                welcomeMessage.style.opacity = "1";
+            }
+            
+                  hideAllSearchInputs(); // Oculta todos los demás
+            // Limpiar valores de los inputs
+                  if (rifInput) rifInput.value = "";
+            if (serialInput) serialInput.value = "";
+            if (razonInput) rifInput.value = "";
+            if (dateIniInput) dateIniInput.value = "";
+            if (dateEndInput) dateEndInput.value = "";
+            if (selectRegions) selectRegions.value = "";
+            
+            rifTipoSelect.style.display = "block";
+            rifInput.style.display = "block";
+            buscarRifBtn.style.display = "block";
+            resultsCard.style.display = "block"; // Muestra el card de resultados
+
+            // Lógica para validación de input de RIF
+            $("#rifInput").keyup(function () {
+                let string = $("#rifInput").val();
+                $("#rifInput").val(string.replace(/ /g, ""));
+            });
+
+            if (rifInput) {
+                rifInput.addEventListener("input", function () {
+                    this.value = this.value.replace(/\D/g, "");
+                });
+            }
     });
   } else {
     console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
   }
 
-  if (buscarPorRifBtn && rifCountTableCard) {
-    buscarPorRifBtn.addEventListener("click", function () {
-      // Clear all input fields when switching to this search type
+    if (buscarPorSerialBtn) {
+        buscarPorSerialBtn.addEventListener("click", function () {
+            // Show the welcome message when changing search type
+            const welcomeMessage = document.getElementById("welcomeMessage");
+            if (welcomeMessage) {
+                welcomeMessage.style.visibility = "visible";
+                welcomeMessage.style.opacity = "1";
+            }
+            
+            hideAllSearchInputs(); // Oculta todos los demás
+            // Limpiar valores de los inputs
       if (rifInput) rifInput.value = "";
-      if (serialInput) serialInput.value = "";
-      if (razonInput) razonInput.value = "";
-      rifCountTableCard.style.display = "none"; // Muestra la tabla
-      rifInput.style.display = "block"; // Muestra el input
-      selectInputRif.style.display = "block"; // Muestra el select
-      buscarRif.style.display = "block"; // Oculta el botón
-
-      buscarSerial.style.display = "none"; // Oculta el botón
-      serialInput.style.display = "none";
-      buscarRazon.style.display = "none"; // Oculta el botón
-      razonInput.style.display = "none"; // Oculta el botón
-    });
-  } else {
-    console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
-  }
-
-  if (buscarPorSerialBtn && serialCountTableCard) {
-    buscarPorSerialBtn.addEventListener("click", function () {
-      // Clear all input fields when switching to this search type
-      if (rifInput) rifInput.value = "";
-      if (serialInput) serialInput.value = "";
-      if (razonInput) razonInput.value = "";
-      serialCountTableCard.style.display = "none"; // Muestra la tabla
-      serialInput.style.display = "block"; // Muestra el input
-      buscarSerial.style.display = "block"; // Oculta el botón
-      selectInputRif.style.display = "none"; // Muestra el select
-      rifInput.style.display = "none"; // Muestra el input
-      buscarRif.style.display = "none"; // Oculta el botón
-      buscarRazon.style.display = "none"; // Oculta el botón
-      razonInput.style.display = "none"; // Oculta el botón
-    });
-  } else {
-    console.log("Error: No se encontraron el botón o la tabla."); // Para verificar si los elementos se seleccionan
-  }
+            if (serialInput) serialInput.value = "";
+            if (razonInput) razonInput.value = "";
+            if (dateIniInput) dateIniInput.value = "";
+            if (dateEndInput) dateEndInput.value = "";
+            if (selectRegions) selectRegions.value = "";
+            
+            serialInput.style.display = "block";
+            buscarSerialBtn.style.display = "block";
+            resultsCard.style.display = "block"; // Muestra el card de resultados
+        });
+    }
+    hideAllSearchInputs();
 });
 
 // Obtén una referencia al modal y al tbody de la tabla
@@ -3952,4 +4060,60 @@ function abrirModalComponentes(boton) {
       });
     }
     showSelectComponentsModal(ticketId, regionName, serialPos);
+}
+
+// Función para ocultar todos los campos de búsqueda y limpiar mensajes de error
+function hideAllSearchInputs() {
+    // Ocultar todos los inputs y botones específicos de cada tipo de búsqueda
+    rifTipoSelect.style.display = "none";
+    rifInput.style.display = "none";
+    buscarRifBtn.style.display = "none";
+
+    serialInput.style.display = "none";
+    buscarSerialBtn.style.display = "none";
+
+    razonInput.style.display = "none";
+    buscarRazonBtn.style.display = "none";
+
+    inputsDateDiv.style.display = "none"; // Oculta el contenedor completo de fecha
+    dateIniInput.style.display = "none"; // Asegura que los inputs individuales también se oculten si no están dentro de inputsDateDiv
+    dateEndInput.style.display = "none";
+    buscarRangoBtn.style.display = "none";
+    errorDateIni.style.display = "none";
+    errorDateEnd.style.display = "none";
+
+    selectRegions.style.display = "none";
+    buscarRegionsBtn.style.display = "none";
+
+    // Limpiar valores de los inputs
+    if (rifInput) rifInput.value = "";
+    if (serialInput) serialInput.value = "";
+    if (razonInput) razonInput.value = "";
+    if (dateIniInput) dateIniInput.value = "";
+    if (dateEndInput) dateEndInput.value = "";
+    if (selectRegions) selectRegions.value = "";
+
+    // Limpiar el contenido del card de resultados
+    if (resultsCard) {
+        resultsCard.style.display = "none"; // Oculta el card de resultados
+        // Si la tabla DataTables está inicializada aquí, deberías destruirla antes de limpiar el HTML
+        // Por ejemplo: if ($.fn.DataTable.isDataTable('#rifCountTable')) { $('#rifCountTable').DataTable().destroy(); }
+        resultsCard.innerHTML = `
+            <div class="table-responsive">
+                <table id="rifCountTable" style="display: none;">
+                    <thead></thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="15">No hay datos</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        // Vuelve a ocultar la tabla rifCountTable dentro del card
+        const rifCountTable = resultsCard.querySelector("#rifCountTable");
+        if (rifCountTable) {
+            rifCountTable.style.display = "none";
+        }
+    }
 }
