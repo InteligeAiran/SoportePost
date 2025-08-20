@@ -45,6 +45,7 @@ function searchDomiciliacionTickets() {
                                 return meta.row + meta.settings._iDisplayStart + 1;
                             },
                         },
+                        { data: 'nro_ticket', title: 'N° Ticket' },
                         {
                             data: 'razonsocial_cliente',
                             title: 'Razon social',

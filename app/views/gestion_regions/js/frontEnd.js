@@ -145,6 +145,7 @@ function getTicketDataFinaljs() {
   const tableContainer = document.querySelector(".table-responsive");
 
    const columnTitles = {
+        nro_ticket: "N° Ticket",
         serial_pos: "Serial POS",
         rif: "Rif",
         name_failure: "Falla",
@@ -411,7 +412,7 @@ function getTicketDataFinaljs() {
 
             api.columns().search('').draw(false);
             api // <--- Usar 'api' en lugar de 'dataTableInstance'
-              .column(8)
+              .column(9)
               .search("^En espera de confirmar recibido en Región$", true) // CAMBIO AQUÍ
               .draw();
             setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
@@ -419,7 +420,7 @@ function getTicketDataFinaljs() {
             $("#btn-por-asignar").on("click", function () {
               api.columns().search('').draw(false);
               api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                .column(8)
+                .column(9)
                 .search("^En espera de confirmar recibido en Región$", true) // <-- Cambio aquí
                 .draw();
               setActiveButton("btn-por-asignar");
@@ -429,7 +430,7 @@ function getTicketDataFinaljs() {
             $("#btn-recibidos").on("click", function () {
               api.columns().search('').draw(false);
               api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                .column(8)
+                .column(9)
                 .search("^En la región$")
                 .draw();
               setActiveButton("btn-recibidos");
@@ -437,9 +438,9 @@ function getTicketDataFinaljs() {
 
             $("#btn-asignados").on("click", function () {
                 api.columns().search('').draw(false);
-                api.column(14).visible(false);
+                api.column(15).visible(false);
                 api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(8)
+                    .column(9)
                     .search("^Entregado a Cliente$") // <-- Cambio aquí
                     .draw();
                 setActiveButton("btn-asignados");
