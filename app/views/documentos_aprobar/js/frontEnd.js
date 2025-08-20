@@ -1597,9 +1597,9 @@ function loadTicketHistory(ticketId) {
                                                     <td>${item.full_name_coordinador || "N/A"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-start">Tecnico Asignado:</th>
+                                                    <th class="text-start">Técnico Asignado:</th>
                                                     <td class="${tecnicoChanged ? "highlighted-change" : ""}">
-                                                        ${item.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history.trim() !== "" ? item.full_name_tecnico_n2_history : "N/A"}
+                                                        ${item.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history.trim() !== "" ? item.full_name_tecnico_n2_history : "Pendiente por Asignar"}
                                                     </td>
                                                 </tr>
                                                 <tr>
@@ -1699,6 +1699,7 @@ function loadTicketHistory(ticketId) {
     },
   });
 }
+
 function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos, documentoRechazado) {
     // Obtener elementos del modal de aprobación
     const imageApprovalModalElement = document.getElementById("imageApprovalModal");
