@@ -2343,32 +2343,30 @@ function SendDataFailure1() {
 }
 
 function clearFormFields() {
+  // --- Limpiar checkboxes ---
+  const checkEnvio = document.getElementById("checkEnvio");
+  const checkExoneracion = document.getElementById("checkExoneracion");
+  const checkAnticipo = document.getElementById("checkAnticipo");
 
-  if (checkEnvio) {
-    checkEnvio.checked = false;
-  }
+  if (checkEnvio) checkEnvio.checked = false;
+  if (checkExoneracion) checkExoneracion.checked = false;
+  if (checkAnticipo) checkAnticipo.checked = false;
 
-  if (checkExoneracion) {
-    checkExoneracion.checked = false;
-  }
-
-  if (checkAnticipo) {
-    checkAnticipo.checked = false;
-  }
-
-  // --- Limpiar los input type="file" usando la nueva función ---
+  // --- Limpiar los input type="file" ---
   clearFileInput("EnvioInput");
   clearFileInput("ExoneracionInput");
   clearFileInput("AnticipoInput");
 
-  // --- Limpiar los elementos DIV que muestran el nombre del archivo usando la nueva función ---
+  // --- Limpiar los elementos DIV que muestran el nombre del archivo ---
   clearFileSpan(fileChosenSpanEnvio);
   clearFileSpan(fileChosenSpanExo);
   clearFileSpan(fileChosenSpanAntici);
 
-  // Limpiar campos de Modal Nivel 2 (miModal)
+  // --- Limpiar campos de Modal Nivel 2 (miModal) ---
   const fallaSelect2 = document.getElementById("FallaSelect2");
-  if (fallaSelect2) fallaSelect2.value = "";
+  if (fallaSelect2) {
+    fallaSelect2.value = "";
+  }
 
   const inputRif = document.getElementById("InputRif");
   if (inputRif) inputRif.value = "";
@@ -2377,10 +2375,12 @@ function clearFormFields() {
   if (serialSelect) serialSelect.value = "";
 
   const asignarCoordinador = document.getElementById("AsiganrCoordinador");
-  if (asignarCoordinador) asignarCoordinador.value = "";
+  if (asignarCoordinador) {
+    asignarCoordinador.value = "";
+  }
 
   const fallaSelectt2 = document.getElementById("FallaSelectt2");
-  if (fallaSelectt2) fallaSelectt2.value = "2"; // Restablecer a Nivel 2 por defecto (o '')
+  if (fallaSelectt2) fallaSelectt2.value = "2";
 
   const rifMensaje1 = document.getElementById("rifMensaje1");
   if (rifMensaje1) rifMensaje1.innerHTML = "";
@@ -2391,84 +2391,7 @@ function clearFormFields() {
   const inputRazon = document.getElementById("InputRazon");
   if (inputRazon) inputRazon.value = "";
 
-  // --- Función auxiliar para limpiar un input de tipo file ---
-  function clearFileInput(fileInputId) {
-    const oldFileInput = document.getElementById(fileInputId);
-    if (oldFileInput) {
-      const newFileInput = oldFileInput.cloneNode(true);
-      oldFileInput.parentNode.replaceChild(newFileInput, oldFileInput);
-    }
-  }
-
-  // --- Limpiar los elementos DIV que muestran el nombre del archivo ---
-  const envioStatusDiv = document.getElementById("envioStatus");
-  if (envioStatusDiv) {
-    envioStatusDiv.textContent = "";
-  }
-
-  const exoneracionStatusDiv = document.getElementById("exoneracionStatus");
-  if (exoneracionStatusDiv) {
-    exoneracionStatusDiv.textContent = "";
-  }
-
-  const anticipoStatusDiv = document.getElementById("anticipoStatus");
-  if (anticipoStatusDiv) {
-    anticipoStatusDiv.textContent = "";
-  }
-
-  // --- Restablecer los radio buttons y checkboxes de carga de documentos ---
-  const uploadNowRadio = document.getElementById("uploadNow");
-  const uploadLaterRadio = document.getElementById("uploadLater");
-  const checkEnvio = document.getElementById("checkEnvio");
-  const checkExoneracion = document.getElementById("checkExoneracion");
-  const checkAnticipo = document.getElementById("checkAnticipo");
-  const documentUploadOptions = document.getElementById(
-    "documentUploadOptions"
-  );
-
-  // 1. Marcar el radio button "No" (Pendiente por cargar documentos)
-  // ESTA ES LA CORRECCIÓN CLAVE
-  if (uploadLaterRadio) {
-    uploadLaterRadio.checked = true; // <-- ¡Ahora sí, marca "No"!
-  }
-  // Asegurarse de que "Sí" no esté marcado
-  if (uploadNowRadio) {
-    uploadNowRadio.checked = false; // <-- Asegura que "Sí" esté desmarcado
-  }
-
-  // 2. Desmarcar todos los checkboxes de documentos
-  if (checkEnvio) {
-    checkEnvio.checked = false;
-  }
-  if (checkExoneracion) {
-    checkExoneracion.checked = false;
-  }
-  if (checkAnticipo) {
-    checkAnticipo.checked = false;
-  }
-
-  // 3. Llamar a la función de visibilidad para que todo se oculte correctamente
-  // y los botones se reinicien.
-  // Es crucial que 'updateDocumentUploadVisibility' esté disponible globalmente.
-  if (typeof updateDocumentUploadVisibility === "function") {
-    updateFileUploadButtonVisibility();
-  } else {
-    // Fallback si la función no está disponible globalmente
-    // Esto debería ocultar la sección de opciones y los botones individuales
-    if (documentUploadOptions) {
-      documentUploadOptions.style.display = "none";
-    }
-    const botonCargaPDFEnv = document.getElementById("botonCargaPDFEnv");
-    const botonCargaExoneracion = document.getElementById(
-      "botonCargaExoneracion"
-    );
-    const botonCargaAnticipo = document.getElementById("botonCargaAnticipo");
-    if (botonCargaPDFEnv) botonCargaPDFEnv.style.display = "none";
-    if (botonCargaExoneracion) botonCargaExoneracion.style.display = "none";
-    if (botonCargaAnticipo) botonCargaAnticipo.style.display = "none";
-  }
-
-  // Limpiar campos de Modal Nivel 1 (miModal1)
+  // --- Limpiar campos de Modal Nivel 1 (miModal1) ---
   const fallaSelect1 = document.getElementById("FallaSelect1");
   if (fallaSelect1) fallaSelect1.value = "";
 
@@ -2479,7 +2402,55 @@ function clearFormFields() {
   if (serialSelect1) serialSelect1.value = "";
 
   const fallaSelectt1 = document.getElementById("FallaSelectt1");
-  if (fallaSelectt1) fallaSelectt1.value = "1"; // Restablecer a Nivel 1 por defecto (o '')
+  if (fallaSelectt1) fallaSelectt1.value = "1";
+
+  // --- Restablecer radio buttons y checkboxes ---
+  const uploadNowRadio = document.getElementById("uploadNow");
+  const uploadLaterRadio = document.getElementById("uploadLater");
+
+  if (uploadLaterRadio) uploadLaterRadio.checked = true;
+  if (uploadNowRadio) uploadNowRadio.checked = false;
+
+  // --- Actualizar visibilidad de documentos ---
+  if (typeof updateDocumentUploadVisibility === "function") {
+    updateFileUploadButtonVisibility();
+  } else {
+    // Fallback
+    const documentUploadOptions = document.getElementById("documentUploadOptions");
+    if (documentUploadOptions) documentUploadOptions.style.display = "none";
+    
+    const botonCargaPDFEnv = document.getElementById("botonCargaPDFEnv");
+    const botonCargaExoneracion = document.getElementById("botonCargaExoneracion");
+    const botonCargaAnticipo = document.getElementById("botonCargaAnticipo");
+    
+    if (botonCargaPDFEnv) botonCargaPDFEnv.style.display = "none";
+    if (botonCargaExoneracion) botonCargaExoneracion.style.display = "none";
+    if (botonCargaAnticipo) botonCargaAnticipo.style.display = "none";
+  }
+
+  // --- Limpiar status divs ---
+  const envioStatusDiv = document.getElementById("envioStatus");
+  const exoneracionStatusDiv = document.getElementById("exoneracionStatus");
+  const anticipoStatusDiv = document.getElementById("anticipoStatus");
+  
+  if (envioStatusDiv) envioStatusDiv.textContent = "";
+  if (exoneracionStatusDiv) exoneracionStatusDiv.textContent = "";
+  if (anticipoStatusDiv) anticipoStatusDiv.textContent = "";
+
+  console.log("Campos limpiados correctamente"); // Para debugging
+}
+
+// --- Funciones auxiliares ---
+function clearFileInput(fileInputId) {
+  const oldFileInput = document.getElementById(fileInputId);
+  if (oldFileInput) {
+    const newFileInput = oldFileInput.cloneNode(true);
+    oldFileInput.parentNode.replaceChild(newFileInput, oldFileInput);
+  }
+}
+
+function clearFileSpan(spanElement) {
+  if (spanElement) spanElement.textContent = "";
 }
 
 /* CAMPO RIF*/
