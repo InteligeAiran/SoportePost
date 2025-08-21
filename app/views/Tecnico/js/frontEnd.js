@@ -641,15 +641,40 @@ function getTicketData() {
         $("#devolver")
           .off("click")
           .on("click", function () {
-            // 1. Ocultar el primer modal (staticBackdrop)
-            if (actionSelectionModalInstance) {
-              actionSelectionModalInstance.hide();
-            }
+            const id_document=currentDocument;
+
+                    if(id_document == 9 || id_document == 10 || id_document == 11) { 
+                        Swal.fire({
+                        icon: 'warning',
+                        title: '¡Advertencia!',
+                        text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
+                        confirmButtonText: 'Ok', 
+                        confirmButtonColor: '#003594', // Color del botón
+                        color: 'black',
+                      });
+                      return;
+                    /*}else if (id_document == 5 || id_document == 7) {
+                      Swal.fire({
+                        icon: 'warning',
+                        title: '¡Advertencia!',
+                        text: 'Tiene documentos pendientes por revisar.',
+                        confirmButtonText: 'Ok', 
+                        confirmButtonColor: '#003594', // Color del botón
+                        color: 'black',
+                      });*/
+                      return;
+                    } else {
+                      if (actionSelectionModalInstance) {
+                        actionSelectionModalInstance.hide();
+                      }
+                    }
 
             // 2. Mostrar el tercer modal (staticBackdrop - el modal de "Ticket enviado al Taller.")
             if (modaldevolucion) {
               modaldevolucion.show();
             }
+
+        
 
             $("#BttonCloseModalDevolucion")
               .off("click")
@@ -663,11 +688,8 @@ function getTicketData() {
             $("#confirmDevolverCliente")
                 .off("click")
                 .on("click", function () {
-                    // Aquí no necesitas leer de data("ticket-id") en este botón,
-                    // ya tienes el ticketId almacenado en currentTicketId
-                    // Asegúrate de que 'currentTicketId' esté accesible en este ámbito.
                     if (modaldevolucion) {
-                        SendToDevolution(currentTicketId, currentnroTicket); // <--- Usa la variable ya asignada
+                        SendToDevolution(currentTicketId, currentnroTicket, currentSerial); // <--- Usa la variable ya asignada
                     }
                 });
                     
@@ -1292,9 +1314,6 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
                 viewDocumentModal.hide();
             });
         }
-        
-
-
     } catch (error) {
         console.error("Error al mostrar el modal:", error);
         Swal.fire({
@@ -1416,7 +1435,7 @@ function handleMarkTicketReceived(ticketId, currentnroTicket) {
         if (response.success) {
           Swal.fire({
                 title: "¡Recibido!",
-                text: "El Pos asociado al ticket N" + currentnroTicket + " ha sido marcado como recibido.", // <-- CAMBIO AQUÍ
+                html: `El Pos asociado al ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentnroTicket}</span> ha sido marcado como recibido.`, // <-- CAMBIO AQUÍ
                 icon: "success",
                 color: "black",
                 confirmButtonColor: "#003594",
@@ -1641,66 +1660,6 @@ async function handleUploadButtonClick(ticketId, documentType, uploadModalBootst
     // 4. Send the FormData object.
     xhr.send(formData);
 }
-
-// ===============================================
-// Lógica para el Modal de Visualización de Documentos (viewDocumentModal)
-// ===============================================
-
-/*function openViewModal(ticketId, fileUrl, documentType) {
-  const viewDocumentModalElement = document.getElementById("viewDocumentModal");
-  const viewModalTicketIdSpan = document.getElementById("viewModalTicketId");
-  const imageViewPreview = document.getElementById("imageViewPreview");
-  const pdfViewViewer = document.getElementById("pdfViewViewer");
-  const viewDocumentMessage = document.getElementById("viewDocumentMessage");
-
-  if (
-    viewDocumentModalElement &&
-    typeof bootstrap !== "undefined" &&
-    typeof bootstrap.Modal !== "undefined"
-  ) {
-    const viewModalBootstrap = new bootstrap.Modal(viewDocumentModalElement);
-
-    // Limpiar y ocultar elementos de previsualización
-    imageViewPreview.style.display = "none";
-    imageViewPreview.src = "#";
-    pdfViewViewer.style.display = "none";
-    pdfViewViewer.innerHTML = ""; // Limpiar contenido previo del visor de PDF
-    viewDocumentMessage.classList.add("hidden");
-    viewDocumentMessage.textContent = "";
-
-    // Establecer el ID del ticket en el modal
-    viewModalTicketIdSpan.textContent = ticketId;
-
-    if (fileUrl) {
-      const fileExtension = fileUrl.split(".").pop().toLowerCase();
-
-      if (["jpg", "jpeg", "png", "gif"].includes(fileExtension)) {
-        imageViewPreview.src = fileUrl;
-        imageViewPreview.style.display = "block";
-      } else if (fileExtension === "pdf") {
-        // Usar un visor de PDF (por ejemplo, pdf.js o un iframe simple)
-        // Para un iframe simple:
-        pdfViewViewer.innerHTML = `<iframe src="${fileUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
-        pdfViewViewer.style.display = "block";
-      } else {
-        viewDocumentMessage.textContent =
-          "Formato de archivo no soportado para previsualización.";
-        viewDocumentMessage.classList.remove("hidden");
-      }
-    } else {
-      viewDocumentMessage.textContent =
-        "No se ha subido ningún documento para este tipo.";
-      viewDocumentMessage.classList.remove("hidden");
-    }
-
-    // Mostrar el modal
-    viewModalBootstrap.show();
-  } else {
-    console.error(
-      "No se pudo inicializar el modal de visualización: viewDocumentModalElement o Bootstrap Modal no están disponibles."
-    );
-  }
-}*/
 
 // Llama a la función para cargar los datos cuando el DOM esté completamente cargado
 document.addEventListener("DOMContentLoaded", getTicketData);
@@ -2236,7 +2195,7 @@ function handleSendToTallerClick() {
   }
 }
 
-function SendToDevolution(ticketId, currentnroTicket) {
+function SendToDevolution(ticketId, currentnroTicket, currentSerial) {
     const id_user = document.getElementById('userId').value;
 
     if (!ticketId) {
@@ -2266,15 +2225,21 @@ function SendToDevolution(ticketId, currentnroTicket) {
         return;
 
     } else { 
-
-    Swal.fire({
-        title: '¿Estás seguro?',
-        text: `¿Realmente deseas devolver el ticket ${currentnroTicket ? currentnroTicket : ticketId} al cliente?`,
-        icon: 'warning',
+    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+    Swal.fire({ 
+        title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+          <div class="custom-modal-header-content">Confirmación Devolución</div>
+          </div>
+        `,
+         html: `<div class="custom-modal-body-content">
+                      <div class="mb-4">
+                        ${customWarningSvg}
+                      </div> 
+                      <p class="h4 mb-3" style="color: black;">Realmente deseas devolver el Pos: <span  style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentSerial}</span> asociado al Nro Ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentnroTicket}</span> al cliente?</p>`,
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
+        confirmButtonColor: '#003594',
         cancelButtonColor: '#FF0000',
-        confirmButtonText: 'Sí, devolver',
+        confirmButtonText: 'Devolver',
         cancelButtonText: 'Cancelar',
         color: 'black',
     }).then((result) => {
@@ -2305,19 +2270,12 @@ function SendToDevolution(ticketId, currentnroTicket) {
                             Swal.fire({
                                 icon: 'success',
                                 title: '¡Devolución Exitosa!',
-                                text: response.message || 'El ticket ha sido devuelto al cliente exitosamente.',
+                                text:'<span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">El ticket reposa en Gestion Rosal para poder ser entregado al cliente</span>.',
                                 confirmButtonText: 'Ok',
                                 color: 'black',
-                                confirmButtonColor: '#3085d6',
+                                confirmButtonColor: '#003594',
                             }).then(() => {
-                                const devolverClienteModal = bootstrap.Modal.getInstance(document.getElementById('devolverClienteModal'));
-                                if (devolverClienteModal) {
-                                    devolverClienteModal.hide();
-                                }
-                                $('#observacionesDevolver').val('');
-                                setTimeout(() => {
-                                    location.reload();
-                                }, 1500);
+                              window.location.reload(); // Recarga la página inmediatamente
                             });
                         } else {
                             // Si 'success' es false, es un error lógico de negocio (ej. "campo vacío" desde el backend)

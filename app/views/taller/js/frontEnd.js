@@ -2207,14 +2207,13 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (xhr.status >= 200 && xhr.status < 300) {
                                 Swal.fire({
                                     icon: 'success',
-                                    title: 'Éxito',
-                                    text: `la Fecha de la llegada de repuesto para el Ticket Nro: ${ticket.nro_ticket} fue renovada correctamente.`,
+                                    title: '¡Fecha Actualizada con Éxito!',
+                                    html: `la Fecha de la llegada de repuesto para el Ticket Nro: <span span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span> fue renovada correctamente.`,
                                     confirmButtonText: 'Aceptar', 
                                     color: 'black',
                                     confirmButtonColor: '#003594',
                                     allowOutsideClick: false, 
                                     allowEscapeKey: false,
-                                    showCloseButton: true,
                                     keydownListenerCapture: true,
                                 }).then((confirmResult) => {
                                   if (confirmResult.isConfirmed) {
@@ -2885,7 +2884,7 @@ document.addEventListener("DOMContentLoaded", () => {
               Swal.fire({
                 icon: "success",
                 title: "¡Fecha Registrada Correctamente!",
-                html: `La fecha de repuesto ha sido guardada con éxito: ${selectedDate}.`,
+                html: `La fecha de repuesto ha sido guardada con éxito: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"${selectedDate}</span>.`,
                 showConfirmButton: true, // Asegura que el botón de confirmación sea visible
                 confirmButtonText: 'Cerrar', // Opcional: Personaliza el texto del botón
                 confirmButtonColor: '#003594', // Opcional: Personaliza el color del botón

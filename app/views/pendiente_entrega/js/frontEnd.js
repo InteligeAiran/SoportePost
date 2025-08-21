@@ -597,7 +597,7 @@ function getTicketDataFinaljs() {
                                         </button>`;
                     }
                     // Prioridad 2: Validar si el ticket es de Caracas o Miranda y está Reparado
-                    else if (currentStatusLab === "Reparado" && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas")) {
+                    else if (currentStatusLab === "Reparado" || currentStatusLab === ""  && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas")) {
                         actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
                                             data-id-ticket="${idTicket}"
                                             data-serial-pos="${serialPos}"
@@ -650,7 +650,8 @@ function getTicketDataFinaljs() {
                         if (shouldShowLoadKeyCheckbox && accionllaves == "Llaves Cargadas" && fechaLlavesEnviada != "NULL" && fechaCargaLlaves != "NULL") {
                             return `<input type="checkbox" class="receive-key-checkbox" 
                                     data-id-ticket="${idTicket}" 
-                                    data-nro-ticket="${row.nro_ticket}" 
+                                    data-nro-ticket="${row.nro_ticket}"
+                                    data-serial-pos="${row.serial_pos}" 
                                     title="Llaves Cargadas"
                                     checked disabled>`;
                                     
@@ -659,10 +660,19 @@ function getTicketDataFinaljs() {
                                     data-id-ticket="${idTicket}" 
                                     data-nro-ticket="${row.nro_ticket}" 
                                     title="Llaves Cargadas En el Rosal" checked disabled>`; // Sin marcar y habilitado
-                        } else {
+
+                        } else if (accionllaves === "En espera de Confirmar Devolución") {
+
                            return `<input type="checkbox" class="receive-key-checkbox" 
                                     data-id-ticket="${idTicket}" 
-                                    data-nro-ticket="${row.nro_ticket}" 
+                                    data-nro-ticket="${row.nro_ticket}"
+                                     data-serial-pos="${row.serial_pos} 
+                                    title="Es devolucion" checked disabled>`;
+                        } else {
+                          return `<input type="checkbox" class="receive-key-checkbox" 
+                                    data-id-ticket="${idTicket}" 
+                                    data-nro-ticket="${row.nro_ticket}"
+                                     data-serial-pos="${row.serial_pos} 
                                     title="Confirmar Carga De llaves">`;
                         }
                 },
@@ -684,7 +694,7 @@ function getTicketDataFinaljs() {
                 const filename = row.original_filename;
 
                 if (hasEnvioDestinoDocument && url_documento) {
-                  if (row.name_accion_ticket === "En espera de confirmar recibido en el Rosal") {
+                  if (row.name_accion_ticket === "En espera de confirmar recibido en el Rosal" || row.name_accion_ticket === "En espera de Confirmar Devolución	") {
                     // Si está en espera de confirmar, mostrar botón para ver imagen (modal)
                     const fileExtension = url_documento.split('.').pop().toLowerCase();
                     const isPdf = fileExtension === 'pdf';
@@ -808,7 +818,7 @@ function getTicketDataFinaljs() {
                               // Función para buscar automáticamente el primer botón con datos
                               function findFirstButtonWithData() {
                                   const searchTerms = [
-                                      { button: "btn-por-asignar", term: "En espera de confirmar recibido en el Rosal" },
+                                      { button: "btn-por-asignar", term: "En espera de confirmar recibido en el Rosal||En espera de Confirmar Devolución" },
                                       { button: "btn-asignados", term: "^En el Rosal$" },
                                       { button: "btn-recibidos", term: "Entregado a Cliente" },
                                       { button: "btn-llaves-cargadas", term: "Llaves Cargadas" }
@@ -872,9 +882,9 @@ function getTicketDataFinaljs() {
 
                               // Event listeners para los botones (mantener la funcionalidad manual)
                               $("#btn-por-asignar").on("click", function () {
-                                  if (checkDataExists("En espera de confirmar recibido en el Rosal")) {
+                                  if (checkDataExists("En espera de confirmar recibido en el Rosal||En espera de Confirmar Devolución")) {
                                       dataTableInstance.columns().search('').draw(false);
-                                      dataTableInstance.column(10).search("En espera de confirmar recibido en el Rosal", true).draw();
+                                      dataTableInstance.column(10).search("En espera de confirmar recibido en el Rosal||En espera de Confirmar Devolución", true, false).draw();
                                       dataTableInstance.column(17).visible(true);
                                       dataTableInstance.column(18).visible(true);
                                       dataTableInstance.column(19).visible(true);
@@ -1047,6 +1057,7 @@ function getTicketDataFinaljs() {
 
                     const ticketId = $(this).data("id-ticket");
                     const nroTicket = $(this).data("nro-ticket");
+                    const serialPos = $(this).data("serial-pos") || ""; // Asegúrate de que serial_pos esté definido
                     const isChecked = $(this).is(":checked"); // Verifica si el checkbox está marcado
                     const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
 
@@ -1072,7 +1083,7 @@ function getTicketDataFinaljs() {
                             keydownListenerCapture: true,
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                MarkDateKey(ticketId, nroTicket); // `false` indica que se cargaron las llaves
+                                MarkDateKey(ticketId, nroTicket, serialPos); // `false` indica que se cargaron las llaves
                                 $(this).prop('checked', true);
                             } else {
                                 $(this).prop('checked', false);
@@ -1124,9 +1135,9 @@ function getTicketDataFinaljs() {
                     });
                 });
 
-                 $("#tabla-ticket tbody")
-                            .off("click", ".received-ticket-btn")
-                            .on("click", ".received-ticket-btn", function (e) {
+                $("#tabla-ticket tbody")
+                  .off("click", ".received-ticket-btn")
+                   .on("click", ".received-ticket-btn", function (e) {
                                 e.stopPropagation();
                                 const ticketId = $(this).data("id-ticket");
                                 const nroTicket = $(this).data("nro-ticket");
@@ -1255,7 +1266,6 @@ function getTicketDataFinaljs() {
       console.error("Error:", xhr.status, xhr.statusText);
     }
   };
-
   xhr.onerror = function () {
     if (tableContainer) {
       tableContainer.innerHTML = "<p>Error de red.</p>";
@@ -1266,7 +1276,6 @@ function getTicketDataFinaljs() {
   const datos = `action=GetTicketDataFinal`;
   xhr.send(datos);
 }
-
 
 document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
 
@@ -1366,18 +1375,18 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
 }
 
 $("#confirmTallerBtn").on("click", function () {
-    const ticketIdToConfirm = currentTicketIdForConfirmTaller;
-    const nroTicketToConfirm = currentNroTicketForConfirmTaller; // Si necesitas el nro_ticket aquí
-    const serialPosToConfirm = currentSerialPosForConfirmTaller; // Si necesitas el serial_pos aquí
+  const ticketIdToConfirm = currentTicketIdForConfirmTaller;
+  const nroTicketToConfirm = currentNroTicketForConfirmTaller; // Si necesitas el nro_ticket aquí
+  const serialPosToConfirm = currentSerialPosForConfirmTaller; // Si necesitas el serial_pos aquí
 
-    if (ticketIdToConfirm) {
-      updateTicketStatusInRosal(ticketIdToConfirm, nroTicketToConfirm, serialPosToConfirm);
-      if (confirmInTallerModalInstance) {
-        confirmInTallerModalInstance.hide();
-      }
-    } else {
-      console.error("ID de ticket no encontrado para confirmar en taller.");
+  if (ticketIdToConfirm) {
+    updateTicketStatusInRosal(ticketIdToConfirm, nroTicketToConfirm, serialPosToConfirm);
+    if (confirmInTallerModalInstance) {
+      confirmInTallerModalInstance.hide();
     }
+  } else {
+    console.error("ID de ticket no encontrado para confirmar en taller.");
+  }
 });
 
 function updateTicketStatusInRosal(ticketId, nroTicketToConfirm, serialPosToConfirm) {
@@ -1469,7 +1478,7 @@ function updateTicketStatusInRosal(ticketId, nroTicketToConfirm, serialPosToConf
   xhr.send(dataToSendString);
 }
 
-function MarkDateKey(ticketId, nroTicket) {
+function MarkDateKey(ticketId, nroTicket, serialPos) {
   const id_user = document.getElementById("userId").value;
   const nro_ticket = nroTicket;
     if (!ticketId) {
@@ -1498,7 +1507,7 @@ function MarkDateKey(ticketId, nroTicket) {
                     Swal.fire({
                         icon: "success",
                         title: "¡Éxito!",
-                        text: `La fecha de la carga de llaves al POS asociado al Nro de ticket: ${nro_ticket} fue registrada correctamente.`,
+                        html: `La fecha de la carga de llaves al POS: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> fue registrada correctamente.`,
                         confirmButtonText: "Aceptar", // <-- OPCIONAL: Puedes personalizar el texto del botón
                         allowOutsideClick: false, // <-- ELIMINAR O COMENTAR esta línea
                         color: "black", // <-- ELIMINAR O COMENTAR esta línea

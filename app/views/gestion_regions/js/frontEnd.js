@@ -504,12 +504,12 @@ function getTicketDataFinaljs() {
                       <div class="mb-4">
                         ${customWarningSvg}
                       </div> 
-                      <p class="h4 mb-3" style="color: black;">¿Desea marcar el Ticket Nro: ${nroTicket} como "Llaves Cargadas".?</p> 
+                      <p class="h4 mb-3" style="color: black;">¿Desea marcar el Ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> como "Llaves Cargadas".?</p> 
                       <p class="h5" style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de la carga de llaves</p>`,
-                    confirmButtonText: "Sí, Confirmar",
+                    confirmButtonText: "Confirmar",
                     color: "black",
                     confirmButtonColor: "#003594",
-                    cancelButtonText: "No, cancelar",
+                    cancelButtonText: "Cancelar",
                     focusConfirm: false,
                     allowOutsideClick: false,
                     showCancelButton: true,

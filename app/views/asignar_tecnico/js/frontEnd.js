@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
           Swal.fire({
             icon: 'success',
             title: '¡Reasignación Exitosa!',
-            text: `El Ticket ${currentTicketNro} ha sido reasignado con éxito a ${newTechnicianName}.`,
+            html: `El Ticket <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNro}</span> ha sido reasignado con éxito a <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${newTechnicianName}</span>.`,
             confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594'
@@ -473,12 +473,8 @@ function getTicketDataCoordinator() {
             },
             dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
             initComplete: function (settings, json) {
-              // Dentro de initComplete, 'this' se refiere a la tabla jQuery
-              // y 'this.api()' devuelve la instancia de la API de DataTables.
-              const api = this.api(); // <--- Correcto: Obtener la instancia de la API aquí
+              const api = this.api();
 
-              // Esto es parte de tu inicialización de DataTables, probablemente dentro de 'initComplete'
-              // o en un script que se ejecuta después de que la tabla está lista.
               const buttonsHtml = `
                 <button id="btn-por-asignar" class="btn btn-primary me-2" title="Tickets por Asignar">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16">
@@ -541,7 +537,8 @@ function getTicketDataCoordinator() {
                 const searchTerms = [
                   { button: "btn-por-asignar", term: "Asignado al Coordinador" },
                   { button: "btn-recibidos", term: "Recibido por el Coordinador" },
-                  { button: "btn-asignados", term: "^Asignado al Técnico$" },
+                  // CORREGIDO: Usar expresión que funcione para ambos
+                  { button: "btn-asignados", term: "Asignado al Técnico|Recibido por el Técnico" },
                   { button: "btn-reasignado", term: "Reasignado al Técnico" }
                 ];
 
@@ -569,8 +566,8 @@ function getTicketDataCoordinator() {
                 api.columns().search('').draw(false);
                 api.column(6).visible(false);
                 api.column(7).visible(true);
-                api.column(5).search("NO_DATA_FOUND").draw(); // Búsqueda que no devuelve resultados
-                setActiveButton("btn-por-asignar"); // Mantener el primer botón activo por defecto
+                api.column(5).search("NO_DATA_FOUND").draw();
+                setActiveButton("btn-por-asignar");
                 
                 // Mostrar mensaje de que no hay datos
                 const tbody = document.querySelector("#tabla-ticket tbody");
@@ -586,11 +583,14 @@ function getTicketDataCoordinator() {
 
               // Event listeners para los botones (mantener la funcionalidad manual)
               $("#btn-asignados").on("click", function () {
-                if (checkDataExists("^Asignado al Técnico$")) {
+                // CORREGIDO: Usar expresión que funcione para ambos
+                const searchTerm = "Asignado al Técnico|Recibido por el Técnico";
+                
+                if (checkDataExists(searchTerm)) {
                   api.columns().search('').draw(false);
                   api.column(6).visible(true);
                   api.column(7).visible(true);
-                  api.column(5).search("^Asignado al Técnico$", true, false).draw();
+                  api.column(5).search(searchTerm, true, false).draw();
                   setActiveButton("btn-asignados");
                 } else {
                   // Si no hay datos, buscar en el siguiente botón
@@ -1626,10 +1626,12 @@ function AssignTicket() {
 
   if (!currentTicketId || !id_tecnico_asignado) {
     Swal.fire({
-      icon: "error",
-      title: "Error",
+      icon: "warning",
+      title: "¡Atención!",
       text: "Por favor, selecciona un ticket antes de asignar un técnico.",
       color: "black",
+      confirmButtonText: "Ok",
+      confirmButtonColor: "#003594",
     });
     return;
   }
@@ -1656,6 +1658,7 @@ function AssignTicket() {
               getTicketDataCoordinator();
               if (modalInstanceCoordinator) {
                 modalInstanceCoordinator.hide();
+                document.getElementById("InputRegion").value = "";
               }
             }
           });

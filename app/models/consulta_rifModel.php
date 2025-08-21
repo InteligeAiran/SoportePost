@@ -1343,6 +1343,7 @@ class consulta_rifModel extends Model
                     $id_new_status_payment,
                     $new_status_domiciliacion
                 );
+                $sqlresultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
                 return array('save_result' => $result, 'history_result' => $sqlInsertHistory);
 
             }
