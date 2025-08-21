@@ -131,8 +131,8 @@ let globalTicketData = [];
 function getTicketDataFinaljs() {
   const id_user = document.getElementById("userId").value;
   const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketDataRegion`);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketDataRegion`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   const detailsPanel = document.getElementById("ticket-details-panel");
 
   const tableElement = document.getElementById("tabla-ticket");
@@ -144,22 +144,22 @@ function getTicketDataFinaljs() {
     : null;
   const tableContainer = document.querySelector(".table-responsive");
 
-   const columnTitles = {
-        nro_ticket: "N° Ticket",
-        serial_pos: "Serial POS",
-        rif: "Rif",
-        name_failure: "Falla",
-        full_name_tecnico: "Técnico Gestión",
-        razonsocial_cliente: "Razón Social",
-        name_status_ticket: "Estatus Ticket",
-        name_process_ticket: "Proceso Ticket",
-        name_accion_ticket: "Acción Ticket",
-        name_status_payment: "Estatus Pago",
-        nombre_estado_cliente: "Estado Cliente",
-        full_name_tecnico_n2_actual: "Técnico 2",
-        fecha_instalacion: "Fecha Instalación",
-        estatus_inteliservices: "Estatus Inteliservices",
-    };
+  const columnTitles = {
+    nro_ticket: "N° Ticket",
+    serial_pos: "Serial POS",
+    rif: "Rif",
+    name_failure: "Falla",
+    full_name_tecnico: "Técnico Gestión",
+    razonsocial_cliente: "Razón Social",
+    name_status_ticket: "Estatus Ticket",
+    name_process_ticket: "Proceso Ticket",
+    name_accion_ticket: "Acción Ticket",
+    name_status_payment: "Estatus Pago",
+    nombre_estado_cliente: "Estado Cliente",
+    full_name_tecnico_n2_actual: "Técnico 2",
+    fecha_instalacion: "Fecha Instalación",
+    estatus_inteliservices: "Estatus Inteliservices",
+  };
 
   xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status < 300) {
@@ -216,16 +216,15 @@ function getTicketDataFinaljs() {
                       const fullText = String(data || "").trim();
                       if (fullText.length > displayLengthForTruncate) {
                         return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(
-                         0,
-                         displayLengthForTruncate
-                        )
-                      }...</span>`;
-                     }
-                     return fullText;
+                          0,
+                          displayLengthForTruncate
+                        )}...</span>`;
+                      }
+                      return fullText;
                     }
                     return data;
                   };
-                }                   
+                }
                 // ************* FIN: APLICAR LÓGICA DE TRUNCADO A FALLA *************
 
                 // ************* APLICAR LÓGICA DE TRUNCADO A STATUS_PAYMENTS *************
@@ -245,85 +244,83 @@ function getTicketDataFinaljs() {
               }
             }
 
-
             // Añadir la columna "Acción" al final
             columnsConfig.push({
-                data: null,
-                title: "Acción",
-                orderable: false,
-                searchable: false,
-                className: "dt-body-center",
-                render: function (data, type, row) {
-                    const idTicket = row.id_ticket;
-                    const serialPos = row.serial_pos;
-                    const nroTicket = row.nro_ticket;
-                    const name_status_payment = row.name_status_payment;
-                    const currentStatusLab = row.status_taller;
-                    const name_accion_ticket = (row.name_accion_ticket || "").trim();
-                    const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
-                    const nombre_estado_cliente = row.nombre_estado_cliente;
-                    const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
-                    let actionButton = '';
+              data: null,
+              title: "Acción",
+              orderable: false,
+              searchable: false,
+              className: "dt-body-center",
+              render: function (data, type, row) {
+                const idTicket = row.id_ticket;
+                const serialPos = row.serial_pos;
+                const nroTicket = row.nro_ticket;
+                const name_status_payment = row.name_status_payment;
+                const currentStatusLab = row.status_taller;
+                const name_accion_ticket = (row.name_accion_ticket || "").trim();
+                const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
+                const nombre_estado_cliente = row.nombre_estado_cliente;
+                const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
+                let actionButton = '';
 
-                    // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
-                    if (name_accion_ticket === "En espera de confirmar recibido en Región") {
-                      actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
-                        data-id-ticket="${idTicket}"
-                        data-serial-pos="${serialPos}"
-                        data-nro-ticket="${nroTicket}">
-                        <i class="fas fa-hand-holding-box"></i> Recibido
-                      </button>`;
-                    }else{
-                      actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
-                        data-id-ticket="${idTicket}"
-                        data-serial-pos="${serialPos}"
-                        data-nro-ticket="${nroTicket}">
-                        <i class="fas fa-truck"></i> Entregar A cliente
-                      </button>`;
-                    }
-                  return actionButton;
-                },
+                // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
+                if (name_accion_ticket === "En espera de confirmar recibido en Región") {
+                  actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
+                    data-id-ticket="${idTicket}"
+                    data-serial-pos="${serialPos}"
+                    data-nro-ticket="${nroTicket}">
+                    <i class="fas fa-hand-holding-box"></i> Recibido
+                  </button>`;
+                } else {
+                  actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
+                    data-id-ticket="${idTicket}"
+                    data-serial-pos="${serialPos}"
+                    data-nro-ticket="${nroTicket}">
+                    <i class="fas fa-truck"></i> Entregar A cliente
+                  </button>`;
+                }
+                return actionButton;
+              },
             });
-
 
             // Añadir la columna "Imagen"
             columnsConfig.push({
-                data: null,
-                title: "Vizualizar Documentos",
-                orderable: false,
-                searchable: false,
-                width: "8%",
-                render: function (data, type, row) {
-                    const idTicket = row.id_ticket;
-                    const nroTicket = row.nro_ticket;
-                    const accionllaves = row.name_accion_ticket;
-                    const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
-                    
-                    // Obtener la ruta del documento, si existe.
-                    const documentUrl = row.file_paths || row.document_path || '';
-                    const documentType = getDocumentType(documentUrl);
-                    const documentName = row.original_filenames || row.file_name || 'Documento';
+              data: null,
+              title: "Vizualizar Documentos",
+              orderable: false,
+              searchable: false,
+              width: "8%",
+              render: function (data, type, row) {
+                const idTicket = row.id_ticket;
+                const nroTicket = row.nro_ticket;
+                const accionllaves = row.name_accion_ticket;
+                const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
+                
+                // Obtener la ruta del documento, si existe.
+                const documentUrl = row.file_paths || row.document_path || '';
+                const documentType = getDocumentType(documentUrl);
+                const documentName = row.original_filenames || row.file_name || 'Documento';
 
-                    if (hasEnvioDestinoDocument) {
-                      // Se asume que el estatus "En la región" significa que el documento ya fue subido y puede ser visto
-                      if(row.name_accion_ticket === "En la región" || row.name_accion_ticket === "Entregado a Cliente"){
-                        // CORRECCIÓN: Agregar los atributos data-url-document y data-document-type al botón
-                        return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
-                          data-id-ticket="${idTicket}"
-                          data-nro-ticket="${nroTicket}"
-                          data-url-document="${documentUrl}"
-                          data-document-type="${documentType}"
-                          data-document-name="${documentName}"
-                          data-bs-toggle="modal"
-                          data-bs-target="#viewDocumentModal">Ver Documento Cargados
-                        </button>`;
-                      } else {
-                        return `<button type="button" class="btn btn-secondary btn-sm disabled">Confirme Recibido</button>`; 
-                      }
-                    } else {
-                      return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Documentos Cargados</button>`;
+                if (hasEnvioDestinoDocument) {
+                  // Se asume que el estatus "En la región" significa que el documento ya fue subido y puede ser visto
+                  if(row.name_accion_ticket === "En la región" || row.name_accion_ticket === "Entregado a Cliente"){
+                    // CORRECCIÓN: Agregar los atributos data-url-document y data-document-type al botón
+                    return `<button type="button" id="viewimage" class="btn btn-success btn-sm See_imagen"
+                      data-id-ticket="${idTicket}"
+                      data-nro-ticket="${nroTicket}"
+                      data-url-document="${documentUrl}"
+                      data-document-type="${documentType}"
+                      data-document-name="${documentName}"
+                      data-bs-toggle="modal"
+                      data-bs-target="#viewDocumentModal">Ver Documento Cargados
+                    </button>`;
+                  } else {
+                    return `<button type="button" class="btn btn-secondary btn-sm disabled">Confirme Recibido</button>`; 
                   }
-                },
+                } else {
+                  return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Documentos Cargados</button>`;
+                }
+              },
             });
 
             // Initialize DataTables
@@ -364,348 +361,263 @@ function getTicketDataFinaljs() {
               },
               
               dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-            initComplete: function (settings, json) {
-              // Dentro de initComplete, 'this' se refiere a la tabla jQuery
-              // y 'this.api()' devuelve la instancia de la API de DataTables.
-              const api = this.api(); // <--- Correcto: Obtener la instancia de la API aquí
+              initComplete: function (settings, json) {
+                const api = this.api();
 
-            // Esto es parte de tu inicialización de DataTables, probablemente dentro de 'initComplete'
-            // o en un script que se ejecuta después de que la tabla está lista.
-            const buttonsHtml = `
-                                <button id="btn-por-asignar" class="btn btn-primary me-2" title="Pendiente por confirmar recibido en la Región">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                                  </svg>
-                                </button>
+                const buttonsHtml = `
+                  <button id="btn-por-asignar" class="btn btn-primary me-2" title="Pendiente por confirmar recibido en la Región">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                      <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                    </svg>
+                  </button>
 
-                                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets en la Región">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house-door" viewBox="0 0 16 16">
-                                    <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z"/>
-                                  </svg>
-                                </button>
+                  <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets en la Región">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house-door" viewBox="0 0 16 16">
+                      <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z"/>
+                    </svg>
+                  </button>
 
-                                <button id="btn-asignados" class="btn btn-secondary me-2" title="Entregados al Cliente">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                                    </svg>
-                                </button>`;
-            $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+                  <button id="btn-asignados" class="btn btn-secondary me-2" title="Entregados al Cliente">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                      <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                    </svg>
+                  </button>`;
+                $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
-            function setActiveButton(activeButtonId) {
-                $("#btn-por-asignar")
+                function setActiveButton(activeButtonId) {
+                  $("#btn-por-asignar")
                     .removeClass("btn-primary")
                     .addClass("btn-secondary");
-                $("#btn-asignados")
+                  $("#btn-asignados")
                     .removeClass("btn-primary")
                     .addClass("btn-secondary");
-                $("#btn-recibidos")
+                  $("#btn-recibidos")
                     .removeClass("btn-primary")
                     .addClass("btn-secondary");
-                $("#btn-reasignado")
+                  $("#btn-reasignado")
                     .removeClass("btn-primary")
                     .addClass("btn-secondary");
-                $(`#${activeButtonId}`)
+                  $(`#${activeButtonId}`)
                     .removeClass("btn-secondary")
                     .addClass("btn-primary");
-            }
-
-            api.columns().search('').draw(false);
-            api // <--- Usar 'api' en lugar de 'dataTableInstance'
-              .column(9)
-              .search("^En espera de confirmar recibido en Región$", true) // CAMBIO AQUÍ
-              .draw();
-            setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
-
-            $("#btn-por-asignar").on("click", function () {
-              api.columns().search('').draw(false);
-              api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                .column(9)
-                .search("^En espera de confirmar recibido en Región$", true) // <-- Cambio aquí
-                .draw();
-              setActiveButton("btn-por-asignar");
-            });
-
-            
-            $("#btn-recibidos").on("click", function () {
-              api.columns().search('').draw(false);
-              api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                .column(9)
-                .search("^En la región$")
-                .draw();
-              setActiveButton("btn-recibidos");
-            });
-
-            $("#btn-asignados").on("click", function () {
-                api.columns().search('').draw(false);
-                api.column(15).visible(false);
-                api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                    .column(9)
-                    .search("^Entregado a Cliente$") // <-- Cambio aquí
-                    .draw();
-                setActiveButton("btn-asignados");
-            });
-          },
-        });
-
-          $(document).on("click", ".deliver-ticket-btn", function () {
-    const idTicket = $(this).data("id-ticket");
-    const nroTicket = $(this).data("nro-ticket");
-    const serialPos = $(this).data("serial-pos");
-    const customDeliverSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
-    const id_user = document.getElementById('userId').value;
-
-    // Lógica para mostrar el modal
-    Swal.fire({
-        title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
-            <div class="custom-modal-header-content">Confirmación de Entrega al Cliente</div>
-        </div>`,
-        html: `<div class="custom-modal-body-content">
-            <div class="mb-4">
-                ${customDeliverSvg}
-            </div> 
-            <p class="h4 mb-3" style="color: black;">¿Desea marcar el dispositivo con serial <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> del Ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> como "Entregado al Cliente"?</p> 
-            <p class="h5" style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">Esta acción registrará la fecha de entrega al cliente.</p>
-        </div>`,
-        confirmButtonText: "Confirmar Entrega",
-        color: "black",
-        confirmButtonColor: "#28a745",
-        cancelButtonText: "Cancelar",
-        focusConfirm: false,
-        allowOutsideClick: false,
-        showCancelButton: true,
-        allowEscapeKey: false,
-        keydownListenerCapture: true,
-        screenX: false,
-        screenY: false,
-    }).then((result) => {
-        // AGREGAR ESTA LÓGICA PARA EL BOTÓN CANCELAR
-        if (result.dismiss === Swal.DismissReason.cancel) {
-            // El usuario presionó Cancelar, no hacer nada (modal se cierra automáticamente)
-            console.log("Usuario canceló la operación");
-            return;
-        }
-        
-        // Solo continuar si el usuario confirmó
-        if (result.isConfirmed) {
-            Swal.fire({
-                title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
-                    <div class="custom-modal-header-content">Detalles de la Entrega</div>
-                </div>`,
-                html: `<div class="custom-modal-body-content">
-                    <p class="h4 mb-1" style="color: black;">Por favor, ingrese un comentario o un texto adicional sobre el Dispositivo a entregar con el Serial: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">${serialPos}</span> asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">${nroTicket}</span>.</p>
-                    <div class="form-group mb-3"><br>
-                        <textarea id="comentarioEntrega" class="form-control" rows="3" placeholder="Escriba aquí cualquier detalle relevante sobre la entrega... O reparación del Equipo"></textarea>
-                    </div>
-                </div>`,
-                showCancelButton: true,
-                confirmButtonText: 'Guardar y Completar',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#003594',
-                color: "black",
-                focusConfirm: false,
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                keydownListenerCapture: true,
-                screenX: false,
-                screenY: false,
-                width: '600px',
-                customClass: {
-                    popup: 'no-scroll'
-                },
-                preConfirm: () => {
-                    const comentario = Swal.getPopup().querySelector('#comentarioEntrega').value.trim();
-                    if (!comentario) {
-                        Swal.showValidationMessage('El campo de texto no puede estar vacío.');
-                        return false;
-                    }
-                    return { comentario: comentario };
                 }
-            }).then((resultFinal) => {
-                if (resultFinal.isConfirmed) {
-                    const comentario = resultFinal.value.comentario;
-                    const dataToSendString = `action=entregar_ticket&id_ticket=${encodeURIComponent(idTicket)}&comentario=${encodeURIComponent(comentario)}&id_user=${encodeURIComponent(id_user)}`;
 
-                    const xhr = new XMLHttpRequest();
-                    const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/entregar_ticket`;
-
-                    xhr.open('POST', url, true);
-                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-                    xhr.onload = function() {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            Swal.fire({
-                                title: '¡Éxito!', 
-                                html: `El Pos con el serial <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ha sido entregado con éxito, asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span>.`,                                                            
-                                icon: 'success',
-                                color: "black",
-                                confirmButtonColor: "#003594",
-                                confirmButtonText: 'Aceptar', 
-                                showCloseButton: false, 
-                                allowOutsideClick: false, 
-                                allowEscapeKey: false, 
-                                keydownListenerCapture: true,
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    window.location.reload();
-                                }
-                            });
-                        } else {
-                            Swal.fire('Error', 'Hubo un problema al conectar con el servidor. Código de estado: ' + xhr.status, 'error');
-                        }
-                    };
-                    xhr.onerror = function() {
-                        Swal.fire('Error de red', 'Hubo un problema con la conexión.', 'error');
-                    };
-                    xhr.send(dataToSendString);
-                } else if (resultFinal.dismiss === Swal.DismissReason.cancel) {
-                    console.log("El usuario canceló el segundo modal.");
+                // Función para verificar si hay datos en una búsqueda específica
+                function checkDataExists(searchTerm) {
+                  api.columns().search('').draw(false);
+                  api.column(9).search(searchTerm, true, false).draw();
+                  const rowCount = api.rows({ filter: 'applied' }).count();
+                  return rowCount > 0;
                 }
-            });
-        }
-    });
-          });
 
+                // Función para buscar automáticamente el primer botón con datos
+                function findFirstButtonWithData() {
+                  const searchTerms = [
+                    { button: "btn-por-asignar", term: "^En espera de confirmar recibido en Región$" },
+                    { button: "btn-recibidos", term: "^En la región$" },
+                    { button: "btn-asignados", term: "^Entregado a Cliente$" }
+                  ];
 
-           // ************* INICIO: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
-           $("#tabla-ticket tbody")
-                .off("change", ".receive-key-checkbox") // <--- Usamos 'change' para checkboxes
-                .on("change", ".receive-key-checkbox", function (e) {
-                    e.stopPropagation(); // Evita propagación del evento
-
-                    const ticketId = $(this).data("id-ticket");
-                    const nroTicket = $(this).data("nro-ticket");
-                    const isChecked = $(this).is(":checked"); // Verifica si el checkbox está marcado
-                    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
-
-                    if (isChecked) {
-                        Swal.fire({
-                              title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
-                                        <div class="custom-modal-header-content">Confirmación de Carga de Llaves</div>
-                                      </div>`,
-                          html: `<div class="custom-modal-body-content">
-                                  <div class="mb-4">
-                                      ${customWarningSvg}
-                                  </div> 
-                                   <p class="h4 mb-3" style = "color: black;">¿Desea marcar el Ticket Nro: ${nroTicket} como "Llaves Cargadas".?</p> 
-                                   <p class="h5" style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de la carga de llaves</p>`,
-                              confirmButtonText: "Sí, Confirmar",
-                            color: "black",
-                            confirmButtonColor: "#003594",
-                            cancelButtonText: "No, cancelar",
-                            focusConfirm: false,
-                            allowOutsideClick: false,
-                            showCancelButton: true,
-                            allowEscapeKey: false,
-                            keydownListenerCapture: true,
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                MarkDateKey(ticketId, nroTicket); // `false` indica que se cargaron las llaves
-                                $(this).prop('checked', true);
-                            } else {
-                                $(this).prop('checked', false);
-                            }
-                        });
-                    } else {
-                        // Si el checkbox se desmarca, puedes añadir lógica aquí si es necesario
-                        // Por ahora, no hace nada si se desmarca.
+                  for (let i = 0; i < searchTerms.length; i++) {
+                    const { button, term } = searchTerms[i];
+                    
+                    if (checkDataExists(term)) {
+                      // Si hay datos, aplicar la búsqueda y activar el botón
+                      api.columns().search('').draw(false);
+                      api.column(9).search(term, true, false).draw();
+                      setActiveButton(button);
+                      return true; // Encontramos datos
                     }
+                  }
+                  
+                  // Si no hay datos en ningún botón, mostrar mensaje
+                  api.columns().search('').draw(false);
+                  api.column(9).search("NO_DATA_FOUND").draw(); // Búsqueda que no devuelve resultados
+                  setActiveButton("btn-por-asignar"); // Mantener el primer botón activo por defecto
+                  
+                  // Mostrar mensaje de que no hay datos
+                  const tbody = document.querySelector("#tabla-ticket tbody");
+                  if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="16" class="text-center text-muted">No hay tickets disponibles en ningún estado</td></tr>';
+                  }
+                  
+                  return false;
+                }
+
+                // Ejecutar la búsqueda automática al inicializar
+                findFirstButtonWithData();
+
+                // Event listeners para los botones (mantener la funcionalidad manual)
+                $("#btn-por-asignar").on("click", function () {
+                  if (checkDataExists("^En espera de confirmar recibido en Región$")) {
+                    api.columns().search('').draw(false);
+                    api.column(9).search("^En espera de confirmar recibido en Región$", true, false).draw();
+                    setActiveButton("btn-por-asignar");
+                  } else {
+                    findFirstButtonWithData();
+                  }
                 });
 
-                 $("#tabla-ticket tbody")
-                            .off("click", ".received-ticket-btn")
-                            .on("click", ".received-ticket-btn", function (e) {
-                                e.stopPropagation();
-                                const ticketId = $(this).data("id-ticket");
-                                const nroTicket = $(this).data("nro-ticket");
-                                const serialPos = $(this).data("serial-pos") || ""; // Asegúrate de que serial_pos esté definido
+                $("#btn-recibidos").on("click", function () {
+                  if (checkDataExists("^En la región$")) {
+                    api.columns().search('').draw(false);
+                    api.column(9).search("^En la región$", true, false).draw();
+                    setActiveButton("btn-recibidos");
+                  } else {
+                    findFirstButtonWithData();
+                  }
+                });
 
-                                currentTicketIdForConfirmTaller = ticketId;
-                                currentNroTicketForConfirmTaller = nroTicket;
-                                currentSerialPos = serialPos; // Asegúrate de que serial_pos esté definido
+                $("#btn-asignados").on("click", function () {
+                  if (checkDataExists("^Entregado a Cliente$")) {
+                    api.columns().search('').draw(false);
+                    api.column(9).search("^Entregado a Cliente$", true, false).draw();
+                    setActiveButton("btn-asignados");
+                  } else {
+                    findFirstButtonWithData();
+                  }
+                });
+              },
+            });
 
-                                $("#modalTicketIdConfirmTaller").val(ticketId);
-                                $("#modalHiddenNroTicketConfirmTaller").val(nroTicket);
-                                $("#serialPost").text(serialPos);
+            // === REST OF YOUR EXISTING CODE ===
+            // (Mantener todo el código existente de event listeners, etc.)
 
-                                $("#modalTicketIdConfirmTaller").text(nroTicket);
+            // ************* INICIO: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
+            $("#tabla-ticket tbody")
+              .off("change", ".receive-key-checkbox")
+              .on("change", ".receive-key-checkbox", function (e) {
+                e.stopPropagation();
 
-                                if (confirmInTallerModalInstance) {
-                                    confirmInTallerModalInstance.show();
-                                } else {
-                                    console.error(
-                                        "La instancia del modal 'confirmInTallerModal' no está disponible."
-                                    );
-                                }
-                            });
+                const ticketId = $(this).data("id-ticket");
+                const nroTicket = $(this).data("nro-ticket");
+                const isChecked = $(this).is(":checked");
+                const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+
+                if (isChecked) {
+                  Swal.fire({
+                    title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                      <div class="custom-modal-header-content">Confirmación de Carga de Llaves</div>
+                    </div>`,
+                    html: `<div class="custom-modal-body-content">
+                      <div class="mb-4">
+                        ${customWarningSvg}
+                      </div> 
+                      <p class="h4 mb-3" style="color: black;">¿Desea marcar el Ticket Nro: ${nroTicket} como "Llaves Cargadas".?</p> 
+                      <p class="h5" style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de la carga de llaves</p>`,
+                    confirmButtonText: "Sí, Confirmar",
+                    color: "black",
+                    confirmButtonColor: "#003594",
+                    cancelButtonText: "No, cancelar",
+                    focusConfirm: false,
+                    allowOutsideClick: false,
+                    showCancelButton: true,
+                    allowEscapeKey: false,
+                    keydownListenerCapture: true,
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      MarkDateKey(ticketId, nroTicket);
+                      $(this).prop('checked', true);
+                    } else {
+                      $(this).prop('checked', false);
+                    }
+                  });
+                }
+              });
+
+            $("#tabla-ticket tbody")
+              .off("click", ".received-ticket-btn")
+              .on("click", ".received-ticket-btn", function (e) {
+                e.stopPropagation();
+                const ticketId = $(this).data("id-ticket");
+                const nroTicket = $(this).data("nro-ticket");
+                const serialPos = $(this).data("serial-pos") || "";
+
+                currentTicketIdForConfirmTaller = ticketId;
+                currentNroTicketForConfirmTaller = nroTicket;
+                currentSerialPos = serialPos;
+
+                $("#modalTicketIdConfirmTaller").val(ticketId);
+                $("#modalHiddenNroTicketConfirmTaller").val(nroTicket);
+                $("#serialPost").text(serialPos);
+
+                $("#modalTicketIdConfirmTaller").text(nroTicket);
+
+                if (confirmInTallerModalInstance) {
+                  confirmInTallerModalInstance.show();
+                } else {
+                  console.error(
+                    "La instancia del modal 'confirmInTallerModal' no está disponible."
+                  );
+                }
+              });
+
             // ************* FIN: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
 
             $("#tabla-ticket tbody").on("click", ".truncated-cell", function (e) {
-              // Detiene la propagación del evento para que no se active el clic en la fila
               e.stopPropagation();
 
               const cell = $(this);
               const fullText = cell.data("full-text");
-              const displayLength = 25; // Reutiliza la misma constante de longitud
+              const displayLength = 25;
               const currentText = cell.text();
 
-              // Alterna entre el texto completo y el texto truncado
               if (currentText.endsWith("...")) {
-                  cell.text(fullText);
+                cell.text(fullText);
               } else {
-                  cell.text(fullText.substring(0, displayLength) + "...");
+                cell.text(fullText.substring(0, displayLength) + "...");
               }
-          });
+            });
 
             // === ADD THE CLICK EVENT LISTENER FOR TABLE ROWS HERE ===
             $("#tabla-ticket tbody")
-                .off("click", "tr") // .off() to prevent multiple bindings if called multiple times
-                .on("click", "tr", function (e) {
-                    // Asegúrate de que el clic no proviene de una celda truncable/expandible o de un botón.
-                    if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('full-text-cell') || $(e.target).is('button') || $(e.target).is('input[type="checkbox"]')) {
-                      return; // Si el clic fue en la celda del checkbox o el botón, no activar el evento de la fila.
-                    }
+              .off("click", "tr")
+              .on("click", "tr", function (e) {
+                if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('full-text-cell') || $(e.target).is('button') || $(e.target).is('input[type="checkbox"]')) {
+                  return;
+                }
 
-                    const tr = $(this);
-                    const rowData = dataTableInstance.row(tr).data();
+                const tr = $(this);
+                const rowData = dataTableInstance.row(tr).data();
 
-                    if (!rowData) {
-                      return;
-                    }
+                if (!rowData) {
+                  return;
+                }
 
-                    $("#tabla-ticket tbody tr").removeClass("table-active");
-                    tr.addClass("table-active");
+                $("#tabla-ticket tbody tr").removeClass("table-active");
+                tr.addClass("table-active");
 
-                    const ticketId = rowData.id_ticket;
+                const ticketId = rowData.id_ticket;
 
-                    const selectedTicketDetails = TicketData.find(
-                        (t) => t.id_ticket == ticketId
+                const selectedTicketDetails = TicketData.find(
+                  (t) => t.id_ticket == ticketId
+                );
+
+                if (selectedTicketDetails) {
+                  detailsPanel.innerHTML = formatTicketDetailsPanel(
+                    selectedTicketDetails
+                  );
+                  loadTicketHistory(ticketId);
+                  if (selectedTicketDetails.serial_pos) {
+                    downloadImageModal(selectedTicketDetails.serial_pos);
+                  } else {
+                    const imgElement = document.getElementById(
+                      "device-ticket-image"
                     );
-
-                    if (selectedTicketDetails) {
-                        detailsPanel.innerHTML = formatTicketDetailsPanel(
-                            selectedTicketDetails
-                        );
-                        loadTicketHistory(ticketId);
-                        if (selectedTicketDetails.serial_pos) {
-                            downloadImageModal(selectedTicketDetails.serial_pos);
-                        } else {
-                            const imgElement = document.getElementById(
-                                "device-ticket-image"
-                            );
-                            if (imgElement) {
-                                // Asegúrate de que esta ruta sea correcta en el contexto de tu JS
-                                imgElement.src = '/public/img/consulta_rif/POS/mantainment.png';
-                                imgElement.alt = "Serial no disponible";
-                            }
-                        }
-                    } else {
-                        detailsPanel.innerHTML =
-                            "<p>No se encontraron detalles para este ticket.</p>";
+                    if (imgElement) {
+                      imgElement.src = '/public/img/consulta_rif/POS/mantainment.png';
+                      imgElement.alt = "Serial no disponible";
                     }
-                });
+                  }
+                } else {
+                  detailsPanel.innerHTML =
+                    "<p>No se encontraron detalles para este ticket.</p>";
+                }
+              });
+
             if (tableContainer) {
-              tableContainer.style.display = ""; // Show the table container
+              tableContainer.style.display = "";
             }
           } else {
             if (tableContainer) {

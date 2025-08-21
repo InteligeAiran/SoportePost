@@ -1468,29 +1468,104 @@ function SendDataFailure2(idStatusPayment) {
   verificarTicketEnProceso(serial)
     .then((response) => {
       if (response.ticket_en_proceso) {
-        console.log(response.ticket_en_proceso);
-        // Si ya existe un ticket en proceso, mostrar alerta y no permitir crear
+          const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+
         Swal.fire({
-          icon: "warning",
-          title: "Ticket en Proceso",
-          html: `
-            <div style="text-align: left;">
-              <p><strong>⚠️ No se puede crear un nuevo ticket</strong></p>
-              <p>Ya existe un ticket en proceso para el serial <strong>${serial}</strong>:</p>
-              <ul style="text-align: left; margin: 10px 0;">
-                <li><strong>Nro. Ticket:</strong> ${response.numero_ticket}</li>
-                <li><strong>Estado:</strong> ${response.estado_ticket}</li>
-                <li><strong>Fecha Creación:</strong> ${response.fecha_creacion}</li>
-                <li><strong>Falla:</strong> ${response.falla}</li>
-              </ul>
-              <p style="color: #d9534f; font-weight: bold;">Debe esperar a que este ticket se complete antes de crear uno nuevo.</p>
+          html: `<div class="custom-modal-body-content">
+            <div class="mb-4 text-center">
+              ${customWarningSvg}
+            </div> 
+    
+            <div class="alert alert-warning border-0 mb-3" role="alert">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-ban text-danger me-2"></i>
+                <strong class="text-danger">No se puede crear un nuevo ticket</strong>
+              </div>
             </div>
-          `,
-          confirmButtonText: "Ok",
-          confirmButtonColor: "#003594",
-          allowOutsideClick: false,
-          allowEscapeKey: false,
-        });
+    
+            <div class="info-section mb-3">
+              <p class="text-muted mb-2">
+                Ya existe un ticket en proceso para el serial:
+              </p>
+              <div class="serial-badge">
+                <i class="fas fa-microchip me-2"></i>
+                <strong>${serial}</strong>
+              </div>
+            </div>
+    
+        <div class="ticket-details-card">
+          <div class="text-primary bg-gradient-primary">
+            <h6 class="mb-0">
+              <i class="fas fa-info-circle text-primary me-2"></i>
+              Detalles del Ticket Existente
+            </h6>
+          </div>
+          <div class="card-body p-0">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span class="detail-label">
+                  <i class="fas fa-ticket-alt text-primary me-2"></i>
+                  Nro. Ticket:
+                </span>
+                <span class="detail-value badge bg-primary">${response.numero_ticket}</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span class="detail-label">
+                  <i class="fas fa-circle text-success me-2"></i>
+                  Estado:
+                </span>
+                <span class="detail-value badge bg-success">${response.estado_ticket}</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span class="detail-label">
+                  <i class="fas fa-calendar-alt text-info me-2"></i>
+                  Fecha Creación:
+                </span>
+                <span class="detail-value badge bg-info">${response.fecha_creacion}</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span class="detail-label">
+                  <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                  Falla:
+                </span>
+                <span class="detail-value failure-text">${response.falla}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+    
+        <div class="alert alert-danger border-0 mt-3" role="alert">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-clock text-danger me-2"></i>
+            <strong>Debe esperar a que este ticket se complete antes de crear uno nuevo.</strong>
+          </div>
+        </div>
+      </div>`,
+  
+      // Estilos personalizados
+      customClass: {
+        popup: 'custom-swal-popup',
+        title: 'custom-swal-title',
+        htmlContainer: 'custom-swal-html'
+      },
+      
+      // Configuración del modal
+      width: '600px',
+      showConfirmButton: true,
+      confirmButtonText: '<i class="fas fa-check me-2"></i>Entendido',
+      confirmButtonColor: '#003594',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      backdrop: true,
+  
+      // Animaciones
+      showClass: {
+        popup: 'animate__animated animate__fadeInDown animate__faster'
+      },
+      hideClass: {
+        popup: 'animate__animated animate__fadeOutUp animate__faster'
+      }
+    });
         return; // Detener la ejecución
       }
       continuarCreacionTicket();

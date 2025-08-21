@@ -304,30 +304,37 @@ function getTicketAprovalDocument() {
                                 const rechazado = row.documento_rechazado;
                                 
                                 const isRejected = idMotivoRechazo !== null && motivoRechazo !== null;
+
+                                if(row.name_status_payment === "Pendiente Por Cargar Documentos") {
+                                    return `<button class="btn btn-secondary btn-sm" title="Pendiente Por Cargar Documentos" disabled>Cargue Documentos</button>
+                                        <i class="fas fa-file-upload"></i>
+                                    </button>`;
+                                }else{
                                 
-                                let actionButtons = `
-                                    <button class="btn btn-info btn-sm view-image-btn" 
-                                            data-serial-pos="${serial_pos}" 
-                                            data-nro-ticket="${nro_ticket}" 
-                                            data-id="${idTicket}" 
-                                            data-envio="${envio}" 
-                                            data-exoneracion="${exoneracion}" 
-                                            data-anticipo="${pago}"
-                                            data-document-type="${documentType || ''}"
-                                            data-original-filename="${originalFilename || ''}"
-                                            data-motivo-rechazo="${motivoRechazo || ''}"
-                                            data-uploaded-at="${uploadedAt || ''}"
-                                            data-id-motivo-rechazo="${idMotivoRechazo || ''}"
-                                            data-rechazado="${rechazado || ''}"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#visualizarImagenModal" 
-                                            title="Visualizar Imágenes">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
-                                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                                        </svg>
-                                    </button>
-                                `;
+                                    let actionButtons = `
+                                        <button class="btn btn-info btn-sm view-image-btn" 
+                                                data-serial-pos="${serial_pos}" 
+                                                data-nro-ticket="${nro_ticket}" 
+                                                data-id="${idTicket}" 
+                                                data-envio="${envio}" 
+                                                data-exoneracion="${exoneracion}" 
+                                                data-anticipo="${pago}"
+                                                data-document-type="${documentType || ''}"
+                                                data-original-filename="${originalFilename || ''}"
+                                                data-motivo-rechazo="${motivoRechazo || ''}"
+                                                data-uploaded-at="${uploadedAt || ''}"
+                                                data-id-motivo-rechazo="${idMotivoRechazo || ''}"
+                                                data-rechazado="${rechazado || ''}"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#visualizarImagenModal" 
+                                                title="Visualizar Imágenes">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                                            </svg>
+                                        </button>
+                                    `;
+                                }
                                 
                                 if (isRejected) {
                                     actionButtons += `
@@ -408,26 +415,80 @@ function getTicketAprovalDocument() {
                                     $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
                                 }
 
-                                api.columns().search('').draw(false);
-                                api.column(5).search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true).draw();
-                                setActiveButton("btn-por-asignar");
-
-                                $("#btn-por-asignar").on("click", function () {
+                                // Función para verificar si hay datos en una búsqueda específica
+                                function checkDataExists(searchTerm) {
                                     api.columns().search('').draw(false);
-                                    api.column(5).search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true).draw();
-                                    setActiveButton("btn-por-asignar");
+                                    api.column(5).search(searchTerm, true, false, true).draw();
+                                    const rowCount = api.rows({ filter: 'applied' }).count();
+                                    return rowCount > 0;
+                                }
+
+                                // Función para buscar automáticamente el primer botón con datos
+                                function findFirstButtonWithData() {
+                                    const searchTerms = [
+                                        { button: "btn-por-asignar", term: "Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision" },
+                                        { button: "btn-recibidos", term: "Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)" },
+                                        { button: "btn-asignados", term: "Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado" }
+                                    ];
+
+                                    for (let i = 0; i < searchTerms.length; i++) {
+                                        const { button, term } = searchTerms[i];
+                                        
+                                        if (checkDataExists(term)) {
+                                            // Si hay datos, aplicar la búsqueda y activar el botón
+                                            api.columns().search('').draw(false);
+                                            api.column(5).search(term, true, false, true).draw();
+                                            setActiveButton(button);
+                                            return true; // Encontramos datos
+                                        }
+                                    }
+                                    
+                                    // Si no hay datos en ningún botón, mostrar mensaje
+                                    api.columns().search('').draw(false);
+                                    api.column(5).search("NO_DATA_FOUND").draw(); // Búsqueda que no devuelve resultados
+                                    setActiveButton("btn-por-asignar"); // Mantener el primer botón activo por defecto
+                                    
+                                    // Mostrar mensaje de que no hay datos
+                                    const tbody = document.querySelector("#tabla-ticket tbody");
+                                    if (tbody) {
+                                        tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted">No hay tickets disponibles en ningún estado</td></tr>';
+                                    }
+                                    
+                                    return false;
+                                }
+
+                                // Ejecutar la búsqueda automática al inicializar
+                                findFirstButtonWithData();
+
+                                // Event listeners para los botones (mantener la funcionalidad manual)
+                                $("#btn-por-asignar").on("click", function () {
+                                    if (checkDataExists("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision")) {
+                                        api.columns().search('').draw(false);
+                                        api.column(5).search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true).draw();
+                                        setActiveButton("btn-por-asignar");
+                                    } else {
+                                        findFirstButtonWithData();
+                                    }
                                 });
 
                                 $("#btn-recibidos").on("click", function () {
-                                    api.columns().search('').draw(false);
-                                    api.column(5).search("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)", true, false, true).draw();
-                                    setActiveButton("btn-recibidos");
+                                    if (checkDataExists("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)")) {
+                                        api.columns().search('').draw(false);
+                                        api.column(5).search("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)", true, false, true).draw();
+                                        setActiveButton("btn-recibidos");
+                                    } else {
+                                        findFirstButtonWithData();
+                                    }
                                 });
 
                                 $("#btn-asignados").on("click", function () {
-                                    api.columns().search('').draw(false);
-                                    api.column(5).search("Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado", true, false, true).draw();
-                                    setActiveButton("btn-asignados");
+                                    if (checkDataExists("Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado")) {
+                                        api.columns().search('').draw(false);
+                                        api.column(5).search("Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado", true, false, true).draw();
+                                        setActiveButton("btn-asignados");
+                                    } else {
+                                        findFirstButtonWithData();
+                                    }
                                 });
                             },
                         });

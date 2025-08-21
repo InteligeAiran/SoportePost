@@ -170,9 +170,161 @@ function mi_navbar() {}
                 text-decoration: underline;
                 cursor: pointer;
             }
+
+            /* Estilos para el modal personalizado */
+            .custom-swal-popup {
+                border-radius: 15px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                border: none;
+            }
+
+            .custom-swal-title {
+                border-radius: 15px 15px 0 0;
+                padding: 20px;
+                margin: 0;
+            }
+
+            .custom-swal-html {
+                padding: 20px;
+            }
+
+            /* Icono de advertencia */
+            .warning-icon-container {
+                display: inline-block;
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #ffc107, #ff9800);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
+            }
+
+            .warning-icon {
+                font-size: 40px;
+                color: white;
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+
+            /* Badge del serial */
+            .serial-badge {
+                display: inline-block;
+                padding: 12px 20px;
+                background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+                border: 2px solid #2196f3;
+                border-radius: 25px;
+                color: #1565c0;
+                font-size: 16px;
+                font-weight: 600;
+                box-shadow: 0 4px 15px rgba(33, 150, 243, 0.2);
+                transition: all 0.3s ease;
+            }
+
+            .serial-badge:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(33, 150, 243, 0.3);
+            }
+
+            /* Tarjeta de detalles */
+            .ticket-details-card {
+                border: 1px solid #e0e0e0;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }
+
+            .ticket-details-card .card-header {
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                border-bottom: 1px solid #dee2e6;
+                padding: 15px 20px;
+            }
+
+            .ticket-details-card .list-group-item {
+                padding: 15px 20px;
+                border: none;
+                border-bottom: 1px solid #f0f0f0;
+                transition: background-color 0.2s ease;
+            }
+
+            .ticket-details-card .list-group-item:hover {
+                background-color: #f8f9fa;
+            }
+
+            .ticket-details-card .list-group-item:last-child {
+                border-bottom: none;
+            }
+
+            /* Labels y valores */
+            .detail-label {
+                font-weight: 600;
+                color: #495057;
+                display: flex;
+                align-items: center;
+            }
+
+            .detail-value {
+                font-weight: 600;
+                padding: 8px 12px;
+                border-radius: 20px;
+                font-size: 14px;
+            }
+
+            .failure-text {
+                background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+                color: #856404;
+                padding: 8px 12px;
+                border-radius: 20px;
+                font-size: 14px;
+                font-weight: 600;
+                border: 1px solid #ffeaa7;
+                max-width: 200px;
+                text-align: center;
+                word-wrap: break-word;
+            }
+
+            /* Alertas mejoradas */
+            .alert {
+                border-radius: 10px;
+                border: none;
+                padding: 15px 20px;
+            }
+
+            .alert-warning {
+                background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+                color: #856404;
+            }
+
+            .alert-danger {
+                background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+                color: #721c24;
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                .custom-swal-popup {
+                    width: 95% !important;
+                    margin: 10px;
+                }
+                
+                .serial-badge {
+                    font-size: 14px;
+                    padding: 10px 16px;
+                }
+                
+                .detail-value {
+                    font-size: 12px;
+                    padding: 6px 10px;
+                }
+            }
         </style>
     </head>
-
     <body id="fondo" class="g-sidenav-show bg-gray-100">
         <div class="d-lg-none fixed-top bg-dark p-2">
             <button class="btn btn-dark" id="filter-toggle">
