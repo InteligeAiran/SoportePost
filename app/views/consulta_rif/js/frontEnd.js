@@ -1209,15 +1209,13 @@ function VerificarSucursales(rif) {
 
 let cargaSeleccionada = null; // Puede ser 'exoneracion', 'anticipo' o null
 
-document
-  .getElementById("DownloadExo")
-  .addEventListener("click", function (event) {
+document.getElementById("DownloadExo").addEventListener("click", function (event) {
     event.stopPropagation(); // Detener la propagación del evento
     cargaSeleccionada = "exoneracion";
     
     // Validación de exoneración AL HACER CLIC en "Cargar Exoneracion"
     const inputExoneracion = document.getElementById("ExoneracionInput");
-    const archivoExoneracion = inputExoneracion.files[0];
+    const archivoExoneracion = inputExoneracion.files;
     const inputExoneracion1 = document.getElementById("DownloadExo"); // El botón
 
     if (archivoExoneracion.size > 5 * 1024 * 1024) {
@@ -1316,9 +1314,7 @@ document.getElementById("DownloadAntici").addEventListener("click", function (ev
 
     // Si la validación pasa, puedes continuar con alguna otra lógica aquí si es necesario
     //console.log("Validación de anticipo pasada.");
-  });
-
-// Función para verificar si ya existe un ticket en proceso para el serial
+});
 
 function verificarTicketEnProceso(serial) {
   return new Promise((resolve, reject) => {
@@ -1352,7 +1348,6 @@ function verificarTicketEnProceso(serial) {
   });
 }
 
-
 function SendDataFailure2(idStatusPayment) {
   // AHORA: Obtener el valor (ID) y el texto de la falla
   const fallaSelect = document.getElementById("FallaSelect2");
@@ -1385,10 +1380,9 @@ function SendDataFailure2(idStatusPayment) {
   const inputExoneracion = document.getElementById("ExoneracionInput");
   const inputAnticipo = document.getElementById("AnticipoInput");
 
-  const archivoEnvio = inputEnvio.files[0];
-  console.log("Archivo de envío:", archivoEnvio); // <-- Corregido
-  const archivoExoneracion = inputExoneracion.files[0]; // <-- Corregido
-  const archivoAnticipo = inputAnticipo.files[0]; // <-- Corregido
+  const archivoEnvio = inputEnvio.files;
+  const archivoExoneracion = inputExoneracion.files; // <-- Corregido
+  const archivoAnticipo = inputAnticipo.files; // <-- Corregido
 
   const botonCargaPDFEnv = document.getElementById("botonCargaPDFEnv");
   const botonCargaExoneracion = document.getElementById(
@@ -1441,6 +1435,8 @@ function SendDataFailure2(idStatusPayment) {
         title: "Campo requerido",
         text: 'Por favor, seleccione el PDF de Envío después de marcar "Cargar PDF Envío".',
         color: "black",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#003594",
       });
       return;
     }
@@ -1450,6 +1446,8 @@ function SendDataFailure2(idStatusPayment) {
         title: "Campo requerido",
         text: 'Por favor, seleccione el PDF de Exoneración después de marcar "Cargar Exoneración".',
         color: "black",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#003594",
       });
       return;
     }
@@ -1459,6 +1457,8 @@ function SendDataFailure2(idStatusPayment) {
         title: "Campo requerido",
         text: 'Por favor, seleccione el PDF del Anticipo después de marcar "Cargar PDF Anticipo".',
         color: "black",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#003594",
       });
       return;
     }
