@@ -524,57 +524,114 @@ function getTicketDataCoordinator() {
                   .addClass("btn-primary");
               }
 
-              api.columns().search('').draw(false);
-              api.column(6).visible(false); // Oculta Técnico Asignado
-              api.column(7).visible(true); // Limpia el filtro de Técnico Asignado
-              api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                .column(5)
-                .search("Asignado al Coordinador") // CAMBIO AQUÍ
-                .draw();
-              setActiveButton("btn-por-asignar"); // Activa el botón "Por Asignar" al inicio // CAMBIO AQUÍ
-
-              $("#btn-asignados").on("click", function () {
+              // Función para verificar si hay datos en una búsqueda específica
+              function checkDataExists(searchTerm) {
                 api.columns().search('').draw(false);
-                api.column(6).visible(true); // Oculta Técnico Asignado
-                api.column(7).visible(true); // Limpia el filtro de Técnico Asignado
-                api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                  .column(5)
-                  .search("^Asignado al Técnico$", true, false) // <-- Cambio aquí
-                  .draw();
-                setActiveButton("btn-asignados");
+                api.column(6).visible(false);
+                api.column(7).visible(true);
+                
+                const filteredData = api.column(5).search(searchTerm, true, false).draw();
+                const rowCount = api.rows({ filter: 'applied' }).count();
+                
+                return rowCount > 0;
+              }
+
+              // Función para buscar automáticamente el primer botón con datos
+              function findFirstButtonWithData() {
+                const searchTerms = [
+                  { button: "btn-por-asignar", term: "Asignado al Coordinador" },
+                  { button: "btn-recibidos", term: "Recibido por el Coordinador" },
+                  { button: "btn-asignados", term: "^Asignado al Técnico$" },
+                  { button: "btn-reasignado", term: "Reasignado al Técnico" }
+                ];
+
+                for (let i = 0; i < searchTerms.length; i++) {
+                  const { button, term } = searchTerms[i];
+                  
+                  if (checkDataExists(term)) {
+                    // Si hay datos, aplicar la búsqueda y activar el botón
+                    api.columns().search('').draw(false);
+                    
+                    if (button === "btn-asignados") {
+                      api.column(6).visible(true);
+                    } else {
+                      api.column(6).visible(false);
+                    }
+                    
+                    api.column(7).visible(true);
+                    api.column(5).search(term, true, false).draw();
+                    setActiveButton(button);
+                    return true; // Encontramos datos
+                  }
+                }
+                
+                // Si no hay datos en ningún botón, mostrar mensaje
+                api.columns().search('').draw(false);
+                api.column(6).visible(false);
+                api.column(7).visible(true);
+                api.column(5).search("NO_DATA_FOUND").draw(); // Búsqueda que no devuelve resultados
+                setActiveButton("btn-por-asignar"); // Mantener el primer botón activo por defecto
+                
+                // Mostrar mensaje de que no hay datos
+                const tbody = document.querySelector("#tabla-ticket tbody");
+                if (tbody) {
+                  tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No hay tickets disponibles en ningún estado</td></tr>';
+                }
+                
+                return false;
+              }
+
+              // Ejecutar la búsqueda automática al inicializar
+              findFirstButtonWithData();
+
+              // Event listeners para los botones (mantener la funcionalidad manual)
+              $("#btn-asignados").on("click", function () {
+                if (checkDataExists("^Asignado al Técnico$")) {
+                  api.columns().search('').draw(false);
+                  api.column(6).visible(true);
+                  api.column(7).visible(true);
+                  api.column(5).search("^Asignado al Técnico$", true, false).draw();
+                  setActiveButton("btn-asignados");
+                } else {
+                  // Si no hay datos, buscar en el siguiente botón
+                  findFirstButtonWithData();
+                }
               });
 
               $("#btn-por-asignar").on("click", function () {
-                api.columns().search('').draw(false);
-                api.column(6).visible(false); // Índice 6 para "Técnico Asignado
-                api.column(7).visible(true); // Limpia el filtro de Técnico Asignado
-                api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                  .column(5)
-                  .search("Asignado al Coordinador")
-                  .draw();
-                setActiveButton("btn-por-asignar");
+                if (checkDataExists("Asignado al Coordinador")) {
+                  api.columns().search('').draw(false);
+                  api.column(6).visible(false);
+                  api.column(7).visible(true);
+                  api.column(5).search("Asignado al Coordinador").draw();
+                  setActiveButton("btn-por-asignar");
+                } else {
+                  findFirstButtonWithData();
+                }
               });
 
               $("#btn-recibidos").on("click", function () {
-                api.columns().search('').draw(false);
-                api.column(6).visible(false); // Índice 6 para "Técnico Asignado
-                api.column(7).visible(true); // Limpia el filtro de Técnico Asignado
-                api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                  .column(5)
-                  .search("Recibido por el Coordinador")
-                  .draw();
-                setActiveButton("btn-recibidos");
+                if (checkDataExists("Recibido por el Coordinador")) {
+                  api.columns().search('').draw(false);
+                  api.column(6).visible(false);
+                  api.column(7).visible(true);
+                  api.column(5).search("Recibido por el Coordinador").draw();
+                  setActiveButton("btn-recibidos");
+                } else {
+                  findFirstButtonWithData();
+                }
               });
 
               $("#btn-reasignado").on("click", function () {
-                api.columns().search('').draw(false);
-                api.column(6).visible(true); // Índice 6 para "Técnico Asignado
-                api.column(7).visible(false); // Limpia el filtro de Técnico Asignado
-                api // <--- Usar 'api' en lugar de 'dataTableInstance'
-                  .column(5)
-                  .search("Reasignado al Técnico")
-                  .draw();
-                setActiveButton("btn-reasignado");
+                if (checkDataExists("Reasignado al Técnico")) {
+                  api.columns().search('').draw(false);
+                  api.column(6).visible(true);
+                  api.column(7).visible(false);
+                  api.column(5).search("Reasignado al Técnico").draw();
+                  setActiveButton("btn-reasignado");
+                } else {
+                  findFirstButtonWithData();
+                }
               });
             },
           });
@@ -699,7 +756,6 @@ function getTicketDataCoordinator() {
             });
 
           // Evento click para el nuevo botón "Visualizar Imagen"
-          // Evento click para el nuevo botón "Visualizar Imagen"
           $("#tabla-ticket tbody")
             .off("click", ".btn-view-image")
             .on("click", ".btn-view-image", function (e) {
@@ -716,9 +772,9 @@ function getTicketDataCoordinator() {
               const BotonRechazo = document.getElementById('RechazoDocumento');
 
               if (documentoRechazado === 'Sí') {
-                BotonRechazo.style.display = 'none'; // Muestra el botón de rechazo
+                BotonRechazo.style.display = 'none'; // Oculta el botón de rechazo
               } else {
-                BotonRechazo.style.display = 'block'; // Oculta el botón de rechazo
+                BotonRechazo.style.display = 'block'; // Muestra el botón de rechazo
               }
 
               // Guardar en variables globales
@@ -793,9 +849,9 @@ function getTicketDataCoordinator() {
                 }
 
                 if (selectedOption === 'Envio') {
-                  BotonRechazo.style.display = 'none'; // Muestra el botón de rechazo
+                  BotonRechazo.style.display = 'none'; // Oculta el botón de rechazo
                 } else {
-                  BotonRechazo.style.display = 'block'; // Oculta el botón de rechazo
+                  BotonRechazo.style.display = 'block'; // Muestra el botón de rechazo
                 }
 
                 getMotivos(selectedOption);
@@ -1040,7 +1096,7 @@ function formatTicketDetailsPanel(d) {
                           ${d.fecha_instalacion || 'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
+                          <br><strong><div>Fecha último ticket:</div></strong>
                           ${d.fecha_cierre_anterior || 'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">

@@ -146,7 +146,8 @@ class reportsModel extends Model
         $mimeTypeFromFrontend,
         $documentSize,
         $id_user,
-        $document_type
+        $document_type,
+        $id_ticket
     ){
         try {
             $escapedOriginalFilename = pg_escape_literal($this->db->getConnection(), $originalDocumentName);
@@ -168,13 +169,73 @@ class reportsModel extends Model
             
             $result = Model::getResult($sql, $this->db);
 
+            if($result){
+                $id_status_lab = 0;
+                $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". (int)$id_ticket. ";";
+                $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+
+                if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                    $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab')?? 0;
+                }
+
+                $new_status_domiciliacion = 'NULL';
+                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = ". (int)$id_ticket. ";";
+                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+
+                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                    $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion')!== null? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
+                }
+
+                $id_status_ticket = 'NULL';
+                $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
+                $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
+
+                if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
+                    $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket')!== null? (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') : 'NULL';
+                }
+
+                $id_accion_ticket = 'NULL';
+                $accion_ticket_sql = "SELECT id_accion_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
+                $accion_ticket_result = pg_query($this->db->getConnection(), $accion_ticket_sql);
+
+                if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
+                    $id_accion_ticket = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket')!== null? (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') : 'NULL';
+                }
+
+                $id_status_payment = 'NULL';
+                $status_payment_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
+                $status_payment_result = pg_query($this->db->getConnection(), $status_payment_sql);
+                if ($status_payment_result && pg_num_rows($status_payment_result) > 0) {
+                    $id_status_payment = pg_fetch_result($status_payment_result, 0, 'id_status_payment')!== null? (int)pg_fetch_result($status_payment_result, 0, 'id_status_payment') : 'NULL';
+                }
+
+
+                $sqlInsertHistory = sprintf(
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                    (int)$id_ticket,
+                    (int)$id_user,
+                    (int)$id_status_ticket,
+                    (int)$id_accion_ticket,
+                    $id_status_lab,
+                    $id_status_payment,
+                    $new_status_domiciliacion
+                );
+
+                $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
+
+                if ($resultsqlInsertHistory === false) {
+                    error_log("Error al insertar en ticket_status_history para ticket ID: {$id_ticket}. PG Error: ". pg_last_error($db_conn));
+                    return false;
+                }
+            }
+             
+            return true;
             if ($result && isset($result['query'])) {
                 return pg_fetch_result($result['query'], 0, 0) === 't';
             } else {
                 error_log("Error: La consulta SQL no devolvió un resultado válido.");
                 return false;
             }
-
         } catch (Throwable $e) {
             error_log("Error al llamar a la función SQL 'save_document_to_db': " . $e->getMessage());
             return false;

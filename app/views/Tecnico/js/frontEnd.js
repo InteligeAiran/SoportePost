@@ -268,30 +268,93 @@ function getTicketData() {
                 $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
             }
 
-            // Inicialmente, establecer "Asignados" como activo (esto es correcto)
-            setActiveButton("btn-asignados");
-            dataTableInstance.column(5).search("Asignado al Técnico").draw();
+            // Función para verificar si hay datos en una búsqueda específica
+            function checkDataExists(searchTerm) {
+                dataTableInstance.columns().search('').draw(false);
+                
+                const filteredData = dataTableInstance.column(5).search(searchTerm, true, false).draw();
+                const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
+                
+                return rowCount > 0;
+            }
 
-            // Tus event listeners de clic están correctos
+            // Función para buscar automáticamente el primer botón con datos
+            function findFirstButtonWithData() {
+                const searchTerms = [
+                  { button: "btn-asignados", term: "Asignado al Técnico" },
+                  { button: "btn-recibidos", term: "Recibido por el Técnico" },
+                  { button: "btn-por-asignar", term: "Enviado a taller|En Taller" },
+                  { button: "btn-devuelto", term: "Pos devuelto a cliente" }
+                ];
+
+                for (let i = 0; i < searchTerms.length; i++) {
+                  const { button, term } = searchTerms[i];
+                  
+                  if (checkDataExists(term)) {
+                    // Si hay datos, aplicar la búsqueda y activar el botón
+                    dataTableInstance.columns().search('').draw(false);
+                    dataTableInstance.column(5).search(term, true, false).draw();
+                    setActiveButton(button);
+                    return true; // Encontramos datos
+                  }
+                }
+                
+                // Si no hay datos en ningún botón, mostrar mensaje
+                dataTableInstance.columns().search('').draw(false);
+                dataTableInstance.column(5).search("NO_DATA_FOUND").draw(); // Búsqueda que no devuelve resultados
+                setActiveButton("btn-asignados"); // Mantener el primer botón activo por defecto
+                
+                // Mostrar mensaje de que no hay datos
+                const tbody = document.querySelector("#tabla-ticket tbody");
+                if (tbody) {
+                  tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No hay tickets disponibles en ningún estado</td></tr>';
+                }
+                
+                return false;
+            }
+
+            // Ejecutar la búsqueda automática al inicializar
+            findFirstButtonWithData();
+
+            // Event listeners para los botones (mantener la funcionalidad manual)
             $("#btn-asignados").on("click", function () {
-                dataTableInstance.column(5).search("Asignado al Técnico").draw();
-                setActiveButton("btn-asignados");
+                if (checkDataExists("Asignado al Técnico")) {
+                  dataTableInstance.columns().search('').draw(false);
+                  dataTableInstance.column(5).search("Asignado al Técnico").draw();
+                  setActiveButton("btn-asignados");
+                } else {
+                  findFirstButtonWithData();
+                }
             });
 
             $("#btn-por-asignar").on("click", function () {
-                dataTableInstance.column(5).search("Enviado a taller").draw();
-                dataTableInstance.column(5).search("En Taller").draw();
-                setActiveButton("btn-por-asignar");
+                if (checkDataExists("Enviado a taller|En Taller")) {
+                  dataTableInstance.columns().search('').draw(false);
+                  dataTableInstance.column(5).search("Enviado a taller|En Taller", true, false).draw();
+                  setActiveButton("btn-por-asignar");
+                } else {
+                  findFirstButtonWithData();
+                }
             });
 
             $("#btn-recibidos").on("click", function () {
-                dataTableInstance.column(5).search("Recibido por el Técnico").draw();
-                setActiveButton("btn-recibidos");
+                if (checkDataExists("Recibido por el Técnico")) {
+                  dataTableInstance.columns().search('').draw(false);
+                  dataTableInstance.column(5).search("Recibido por el Técnico").draw();
+                  setActiveButton("btn-recibidos");
+                } else {
+                  findFirstButtonWithData();
+                }
             });
 
             $("#btn-devuelto").on("click", function () {
-                dataTableInstance.column(5).search("Pos devuelto a cliente").draw();
-                setActiveButton("btn-devuelto");
+                if (checkDataExists("Pos devuelto a cliente")) {
+                  dataTableInstance.columns().search('').draw(false);
+                  dataTableInstance.column(5).search("Pos devuelto a cliente").draw();
+                  setActiveButton("btn-devuelto");
+                } else {
+                  findFirstButtonWithData();
+                }
             });
             // ************* FIN CAMBIOS PARA LOS BOTONES *************
 
@@ -1684,7 +1747,7 @@ function formatTicketDetailsPanel(d) {
                           ${d.fecha_instalacion || 'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div  style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
+                          <br><strong><div>Fecha de último ticket:</div></strong>
                           ${d.fecha_cierre_anterior ||  'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">

@@ -155,7 +155,8 @@ class ReportRepository
             $mimeTypeFromFrontend,
             $documentSize,
             $id_user,
-            $document_type
+            $document_type,
+            $id_ticket
         ) {
         // Pasar los parámetros al modelo en el mismo orden
         $result = $this->model->saveDocument(
@@ -166,7 +167,8 @@ class ReportRepository
             $mimeTypeFromFrontend,
             $documentSize,
             $id_user,
-            $document_type
+            $document_type,
+            $id_ticket
         );
         return $result;
     }

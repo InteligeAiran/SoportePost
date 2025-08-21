@@ -474,7 +474,8 @@ class reportes extends Controller {
                     $mimeTypeFromFrontend,
                     $documentSize,
                     $id_user,
-                    $document_type
+                    $document_type,
+                    $id_ticket
                 );
 
                 if ($success) {

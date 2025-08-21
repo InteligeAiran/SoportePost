@@ -554,6 +554,46 @@ function mi_navbar()
             border-radius: 5px;
             transition: background-color 0.3s ease;
         }
+
+        #btn-llaves-cargadas{
+            background-color: #b0b0b0;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Estilo base para el botón Recibidos cuando es el activo */
+        #btn-llaves-cargadas.btn-primary {
+            background-color: #27CFF5; /* Verde éxito */
+            border-color: #27CFF5;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease,
+            box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Recibidos cuando es el activo */
+        #btn-llaves-cargadas.btn-primary:hover,
+        #btn-llaves-cargadas.btn-primary:focus {
+            background-color: #27CFF5; /* Verde éxito */
+            border-color: #27CFF5;
+            box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+            /* Sombra de enfoque/hover */
+        }
+
+         /* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
+        #btn-llaves-cargada.btn-secondary {
+            background-color: #a0a0a0;
+            /* Tu gris sutil */
+            border-color: #a0a0a0;
+            color: #ffffff;
+            /* O un gris oscuro si el fondo es claro */
+            transition: background-color 0.3s ease, border-color 0.3s ease,
+            box-shadow 0.3s ease;
+        }
     </style>
     <!-- CSS Files -->
     <link id="pagestyle" rel="stylesheet"

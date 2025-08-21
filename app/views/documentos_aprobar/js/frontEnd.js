@@ -1303,7 +1303,7 @@ function formatTicketDetailsPanel(d) {
                           ${d.fecha_instalacion ||  'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div  style = "font-size: 77%;" >Fecha de Cierre ultimo Ticket:</div></strong>
+                          <br><strong><div  style = "font-size: 77%;" >Fecha último ticket:</div></strong>
                           ${d.fecha_cierre_anterior ||  'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
