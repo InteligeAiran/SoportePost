@@ -371,6 +371,22 @@ function mi_navbar() {}
         #modalConfirmacionRechazo .modal-body::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
         }
+
+        /* #uploadFileBtn {
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.1);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }*/
     </style>
 </head>
 

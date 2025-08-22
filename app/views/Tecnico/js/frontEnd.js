@@ -120,31 +120,28 @@ function getTicketData() {
                 ticket.confirmtecn === true;
 
             // --- Lógica para el botón que abre el modal ---
-            // Solo se muestra el botón si hay acciones de documentos disponibles
-            if (
-                ticket.id_status_payment == 11 ||  //Pendiente Por Cargar Documento(PDF Envio ZOOM)
-                ticket.id_status_payment == 10 ||  //Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)
-                ticket.id_status_payment == 9 ||   //Pendiente Por Cargar Documentos
-                ticket.id_status_payment == 6 ||  //Pago Anticipo Aprobado
-                ticket.id_status_payment == 4     //Exoneracion Aprobado
-            ) {
-                actionButtonsHTML += `
-                    <button class="btn btn-sm btn-info btn-document-actions-modal mr-2"
-                        data-bs-toggle="tooltip" data-bs-placement="top"
-                        title="Acciones de Documentos"
-                        data-ticket-id="${ticket.id_ticket}"
-                        data-nro-ticket="${ticket.nro_ticket}"
-                        data-status-payment="${ticket.id_status_payment}"
-                        data-pdf-zoom-url="${ticket.pdf_zoom_url || ""}"
-                        data-img-exoneracion-url="${ticket.img_exoneracion_url || ""}"
-                        data-pdf-pago-url="${ticket.pdf_pago_url || ""}"
-                        data-exo-file="${ticket.img_exoneracion_filename || ""}"
-                        data-pago-file="${ticket.pdf_pago_filename || ""}"
-                        data-zoom-file="${ticket.pdf_zoom_filename || ""}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
-                    </button>
-                `;
-            }
+                    // Solo se muestra el botón si hay acciones de documentos disponibles
+              if ((ticket.id_status_payment == 11 || ticket.id_status_payment == 10 || ticket.id_status_payment == 9 || ticket.id_status_payment == 6 || ticket.id_status_payment == 4) && 
+                  (ticket.confirmtecn === "t" || ticket.confirmtecn === true || ticket.confirmcoord === "t" || ticket.confirmcoord === true)) {
+                  // Tu código aquí
+                    
+              actionButtonsHTML += `
+                  <button class="btn btn-sm btn-info btn-document-actions-modal mr-2"
+                      data-bs-toggle="tooltip" data-bs-placement="top"
+                      title="Acciones de Documentos"
+                      data-ticket-id="${ticket.id_ticket}"
+                      data-nro-ticket="${ticket.nro_ticket}"
+                      data-status-payment="${ticket.id_status_payment}"
+                      data-pdf-zoom-url="${ticket.pdf_zoom_url || ""}"
+                      data-img-exoneracion-url="${ticket.img_exoneracion_url || ""}"
+                      data-pdf-pago-url="${ticket.pdf_pago_url || ""}"
+                      data-exo-file="${ticket.img_exoneracion_filename || ""}"
+                      data-pago-file="${ticket.pdf_pago_filename || ""}"
+                      data-zoom-file="${ticket.pdf_zoom_filename || ""}">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
+                  </button>
+              `;
+          }
 
             // Lógica para el botón "Marcar como Recibido"
             if (!hasBeenConfirmedByAnyone) {
@@ -227,135 +224,154 @@ function getTicketData() {
             },
           },
           dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-         // Dentro de tu initComplete de DataTables
-            initComplete: function (settings, json) {
-            const dataTableInstance = this.api(); // Obtén la instancia de la API de DataTables 
-            const buttonsHtml = `
-                <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets Asignados">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+          // Dentro de tu initComplete de DataTables
+          initComplete: function (settings, json) {
+              const dataTableInstance = this.api(); // Obtén la instancia de la API de DataTables 
+              const buttonsHtml = `
+                  <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets Asignados">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                          <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                      </svg>
+                  </button>
+
+                  <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Técnico">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                      <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
                     </svg>
-                </button>
+                  </button>
 
-                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Técnico">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                  </svg>
-                </button>
+                  <button id="btn-por-asignar" class="btn btn-secondary me-2" title = "Enviados Taller">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                      <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+                    </svg>
+                  </button>
 
-                <button id="btn-por-asignar" class="btn btn-secondary me-2" title = "Enviados Taller">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
-                    <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
-                  </svg>
-                </button>
+                  <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos Entregado a cliente">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
+                      <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
+                    </svg>
+                  </button>
+              `;
+              $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
-                <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos devuelto a cliente">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
-                    <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
-                  </svg>
-                </button>
-            `;
-            $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+              // Tu función setActiveButton es correcta.
+              function setActiveButton(activeButtonId) {
+                  $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
+                  $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
+                  $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
+                  $("#btn-devuelto").removeClass("btn-primary").addClass("btn-secondary");
+                  $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
+              }
 
-            // Tu función setActiveButton es correcta.
-            function setActiveButton(activeButtonId) {
-                $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
-                $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
-                $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
-                $("#btn-devuelto").removeClass("btn-primary").addClass("btn-secondary");
-                $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
-            }
-
-            // Función para verificar si hay datos en una búsqueda específica
-            function checkDataExists(searchTerm) {
-                dataTableInstance.columns().search('').draw(false);
-                
-                const filteredData = dataTableInstance.column(5).search(searchTerm, true, false).draw();
-                const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
-                
-                return rowCount > 0;
-            }
-
-            // Función para buscar automáticamente el primer botón con datos
-            function findFirstButtonWithData() {
-                const searchTerms = [
-                  { button: "btn-asignados", term: "Asignado al Técnico" },
-                  { button: "btn-recibidos", term: "Recibido por el Técnico" },
-                  { button: "btn-por-asignar", term: "Enviado a taller|En Taller" },
-                  { button: "btn-devuelto", term: "Pos devuelto a cliente" }
-                ];
-
-                for (let i = 0; i < searchTerms.length; i++) {
-                  const { button, term } = searchTerms[i];
+              // Función para verificar si hay datos en una búsqueda específica
+              function checkDataExists(searchTerm) {
+                  dataTableInstance.columns().search('').draw(false);
                   
-                  if (checkDataExists(term)) {
-                    // Si hay datos, aplicar la búsqueda y activar el botón
-                    dataTableInstance.columns().search('').draw(false);
-                    dataTableInstance.column(5).search(term, true, false).draw();
-                    setActiveButton(button);
-                    return true; // Encontramos datos
+                  const filteredData = dataTableInstance.column(5).search(searchTerm, true, false).draw();
+                  const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
+                  
+                  return rowCount > 0;
+              }
+
+              // Función para buscar automáticamente el primer botón con datos
+              function findFirstButtonWithData() {
+                  const searchTerms = [
+                    { button: "btn-asignados", term: "Asignado al Técnico" },
+                    { button: "btn-recibidos", term: "Recibido por el Técnico" },
+                    { button: "btn-por-asignar", term: "Enviado a taller|En Taller" },
+                    { button: "btn-devuelto", term: "Entregado a Cliente" }
+                  ];
+
+                  for (let i = 0; i < searchTerms.length; i++) {
+                    const { button, term } = searchTerms[i];
+                    
+                    if (checkDataExists(term)) {
+                      // Si hay datos, aplicar la búsqueda y activar el botón
+                      dataTableInstance.columns().search('').draw(false);
+                      dataTableInstance.column(5).search(term, true, false).draw();
+                      
+                      // NUEVO: Ocultar columna 6 solo si es btn-devuelto
+                      if (button === "btn-devuelto") {
+                          dataTableInstance.column(6).visible(false);
+                      } else {
+                          dataTableInstance.column(6).visible(true);
+                      }
+                      
+                      setActiveButton(button);
+                      return true; // Encontramos datos
+                    }
                   }
-                }
-                
-                // Si no hay datos en ningún botón, mostrar mensaje
-                dataTableInstance.columns().search('').draw(false);
-                dataTableInstance.column(5).search("NO_DATA_FOUND").draw(); // Búsqueda que no devuelve resultados
-                setActiveButton("btn-asignados"); // Mantener el primer botón activo por defecto
-                
-                // Mostrar mensaje de que no hay datos
-                const tbody = document.querySelector("#tabla-ticket tbody");
-                if (tbody) {
-                  tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No hay tickets disponibles en ningún estado</td></tr>';
-                }
-                
-                return false;
-            }
-
-            // Ejecutar la búsqueda automática al inicializar
-            findFirstButtonWithData();
-
-            // Event listeners para los botones (mantener la funcionalidad manual)
-            $("#btn-asignados").on("click", function () {
-                if (checkDataExists("Asignado al Técnico")) {
+                  
+                  // Si no hay datos en ningún botón, mostrar mensaje
                   dataTableInstance.columns().search('').draw(false);
-                  dataTableInstance.column(5).search("Asignado al Técnico").draw();
-                  setActiveButton("btn-asignados");
-                } else {
-                  findFirstButtonWithData();
-                }
-            });
+                  dataTableInstance.column(5).search("NO_DATA_FOUND").draw(); // Búsqueda que no devuelve resultados
+                  setActiveButton("btn-asignados"); // Mantener el primer botón activo por defecto
+                  
+                  // NUEVO: Mostrar columna 6 por defecto cuando no hay datos
+                  dataTableInstance.column(6).visible(true);
+                  
+                  // Mostrar mensaje de que no hay datos
+                  const tbody = document.querySelector("#tabla-ticket tbody");
+                  if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No hay tickets disponibles en ningún estado</td></tr>';
+                  }
+                  
+                  return false;
+              }
 
-            $("#btn-por-asignar").on("click", function () {
-                if (checkDataExists("Enviado a taller|En Taller")) {
-                  dataTableInstance.columns().search('').draw(false);
-                  dataTableInstance.column(5).search("Enviado a taller|En Taller", true, false).draw();
-                  setActiveButton("btn-por-asignar");
-                } else {
-                  findFirstButtonWithData();
-                }
-            });
+              // Ejecutar la búsqueda automática al inicializar
+              findFirstButtonWithData();
 
-            $("#btn-recibidos").on("click", function () {
-                if (checkDataExists("Recibido por el Técnico")) {
-                  dataTableInstance.columns().search('').draw(false);
-                  dataTableInstance.column(5).search("Recibido por el Técnico").draw();
-                  setActiveButton("btn-recibidos");
-                } else {
-                  findFirstButtonWithData();
-                }
-            });
+              // Event listeners para los botones (mantener la funcionalidad manual)
+              $("#btn-asignados").on("click", function () {
+                  if (checkDataExists("Asignado al Técnico")) {
+                    dataTableInstance.columns().search('').draw(false);
+                    dataTableInstance.column(5).search("Asignado al Técnico").draw();
+                    // NUEVO: Mostrar columna 6 para otros botones
+                    dataTableInstance.column(6).visible(true);
+                    setActiveButton("btn-asignados");
+                  } else {
+                    findFirstButtonWithData();
+                  }
+              });
 
-            $("#btn-devuelto").on("click", function () {
-                if (checkDataExists("Pos devuelto a cliente")) {
-                  dataTableInstance.columns().search('').draw(false);
-                  dataTableInstance.column(5).search("Pos devuelto a cliente").draw();
-                  setActiveButton("btn-devuelto");
-                } else {
-                  findFirstButtonWithData();
-                }
-            });
+              $("#btn-por-asignar").on("click", function () {
+                  if (checkDataExists("Enviado a taller|En Taller")) {
+                    dataTableInstance.columns().search('').draw(false);
+                    dataTableInstance.column(5).search("Enviado a taller|En Taller", true, false).draw();
+                    // NUEVO: Mostrar columna 6 para otros botones
+                    dataTableInstance.column(6).visible(true);
+                    setActiveButton("btn-por-asignar");
+                  } else {
+                    findFirstButtonWithData();
+                  }
+              });
+
+              $("#btn-recibidos").on("click", function () {
+                  if (checkDataExists("Recibido por el Técnico")) {
+                    dataTableInstance.columns().search('').draw(false);
+                    dataTableInstance.column(5).search("Recibido por el Técnico").draw();
+                    // NUEVO: Mostrar columna 6 para otros botones
+                    dataTableInstance.column(6).visible(true);
+                    setActiveButton("btn-recibidos");
+                  } else {
+                    findFirstButtonWithData();
+                  }
+              });
+
+              $("#btn-devuelto").on("click", function () {
+                  if (checkDataExists("Entregado a Cliente")) {
+                    dataTableInstance.columns().search('').draw(false);
+                    dataTableInstance.column(5).search("Entregado a Cliente").draw();
+                    // NUEVO: Ocultar columna 6 solo para btn-devuelto
+                    dataTableInstance.column(6).visible(false);
+                    setActiveButton("btn-devuelto");
+                  } else {
+                    findFirstButtonWithData();
+                  }
+              });
             // ************* FIN CAMBIOS PARA LOS BOTONES *************
 
             $("#tabla-ticket tbody")
@@ -606,7 +622,6 @@ function getTicketData() {
 
                   staticBackdropModalInstance.show();
                 }
-
             }
           });
 
@@ -643,7 +658,7 @@ function getTicketData() {
           .on("click", function () {
             const id_document=currentDocument;
 
-                    if(id_document == 9 || id_document == 10 || id_document == 11) { 
+                    if(id_document == 9 || id_document == 11) { 
                         Swal.fire({
                         icon: 'warning',
                         title: '¡Advertencia!',
@@ -885,99 +900,99 @@ function getTicketData() {
     
     // 2. Manejador de eventos para el botón principal de la tabla (abre el modal de acciones)
     $(document).on('click', '.btn-document-actions-modal', function() {
-    const ticketId = $(this).data('ticket-id');
-    const statusPayment = $(this).data('status-payment');
-    const pdfZoomUrl = $(this).data('pdf-zoom-url');
-    const imgExoneracionUrl = $(this).data('img-exoneracion-url');
-    const pdfPagoUrl = $(this).data('pdf-pago-url');
-    const nro_ticket = $(this).data('nro-ticket');
-    const ExoneracionFile_name = $(this).data('exo-file');
-    const PagoFile_name = $(this).data('pago-file');
-    const ZoomFile_name = $(this).data('zoom-file');
+      const ticketId = $(this).data('ticket-id');
+      const statusPayment = $(this).data('status-payment');
+      const pdfZoomUrl = $(this).data('pdf-zoom-url');
+      const imgExoneracionUrl = $(this).data('img-exoneracion-url');
+      const pdfPagoUrl = $(this).data('pdf-pago-url');
+      const nro_ticket = $(this).data('nro-ticket');
+      const ExoneracionFile_name = $(this).data('exo-file');
+      const PagoFile_name = $(this).data('pago-file');
+      const ZoomFile_name = $(this).data('zoom-file');
 
 
-    const modalTitle = $('#modalTicketId');
-    const buttonsContainer = $('#modal-buttons-container');
+      const modalTitle = $('#modalTicketId');
+      const buttonsContainer = $('#modal-buttons-container');
 
-    $('#uploadForm').attr('data-nro-ticket', nro_ticket);
-    $('#uploadForm').attr('data-ticket-id', ticketId);
+      $('#uploadForm').attr('data-nro-ticket', nro_ticket);
+      $('#uploadForm').attr('data-ticket-id', ticketId);
 
-    buttonsContainer.empty();
-    modalTitle.text(nro_ticket);
+      buttonsContainer.empty();
+      modalTitle.text(nro_ticket);
 
-    let modalButtonsHTML = '';
+      let modalButtonsHTML = '';
 
-    if (pdfZoomUrl && imgExoneracionUrl) {
-        // Solo envío y exoneración
-        modalButtonsHTML = `
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Envio
-            </button>
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Exoneración
-            </button>
-        `;
-    } else if (pdfZoomUrl && pdfPagoUrl) {
-        // Solo envío y pago
-        modalButtonsHTML = `
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Envio
-            </button>
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Pago
-            </button>
-        `;
-    } else if (pdfZoomUrl) {
-        // Solo envío disponible - SOLO UNA OPCIÓN DE CARGA
-        modalButtonsHTML = `
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Envio
-            </button>
-            <button class="btn btn-primary btn-block btn-exoneracion-img" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
-                Cargar Documento de Exoneración
-            </button>
-            <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
-              Cargar Documento de Pago
-            </button>
-        `;
-    } else if (imgExoneracionUrl) {
-        // Solo exoneración disponible (sin envío)
-        modalButtonsHTML = `
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Exoneración
-            </button>
-            <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                Cargar Documento de Envio
-            </button>
-        `;
-    } else if (pdfPagoUrl) {
-        // Solo pago disponible (sin envío)
-        modalButtonsHTML = `
-            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Pago
-            </button>
-            <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                Cargar Documento de Envio
-            </button>
-        `;
-    } else {
-        // Ningún documento disponible
-        modalButtonsHTML = `
-            <button class="btn btn-info btn-block btn-zoom-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                Cargar Documento de Envio
-            </button>
-            <button class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
-                Cargar Documento de Exoneración
-            </button>
-            <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
+      if (pdfZoomUrl && imgExoneracionUrl) {
+          // Solo envío y exoneración
+          modalButtonsHTML = `
+              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+                  Ver Documento de Envio
+              </button>
+              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
+                  Ver Documento de Exoneración
+              </button>
+          `;
+      } else if (pdfZoomUrl && pdfPagoUrl) {
+          // Solo envío y pago
+          modalButtonsHTML = `
+              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+                  Ver Documento de Envio
+              </button>
+              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
+                  Ver Documento de Pago
+              </button>
+          `;
+      } else if (pdfZoomUrl) {
+          // Solo envío disponible - SOLO UNA OPCIÓN DE CARGA
+          modalButtonsHTML = `
+              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+                  Ver Documento de Envio
+              </button>
+              <button class="btn btn-primary btn-block btn-exoneracion-img" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
+                  Cargar Documento de Exoneración
+              </button>
+              <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
                 Cargar Documento de Pago
-            </button>
-        `;
-    }
+              </button>
+          `;
+      } else if (imgExoneracionUrl) {
+          // Solo exoneración disponible (sin envío)
+          modalButtonsHTML = `
+              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
+                  Ver Documento de Exoneración
+              </button>
+              <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
+                  Cargar Documento de Envio
+              </button>
+          `;
+      } else if (pdfPagoUrl) {
+          // Solo pago disponible (sin envío)
+          modalButtonsHTML = `
+              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
+                  Ver Documento de Pago
+              </button>
+              <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
+                  Cargar Documento de Envio
+              </button>
+          `;
+      } else {
+          // Ningún documento disponible
+          modalButtonsHTML = `
+              <button class="btn btn-info btn-block btn-zoom-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
+                  Cargar Documento de Envio
+              </button>
+              <button class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
+                  Cargar Documento de Exoneración
+              </button>
+              <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
+                  Cargar Documento de Pago
+              </button>
+          `;
+      }
 
-    buttonsContainer.html(modalButtonsHTML);
-    documentActionsModal.show();
-  });
+      buttonsContainer.html(modalButtonsHTML);
+      documentActionsModal.show();
+    });
 
     // 3. Manejador de eventos para los botones de "Cargar Documento" (desde el modal de acciones)
     $(document).on('click', '.btn-zoom-pdf, .btn-exoneracion-img, .btn-pago-pdf', function() {
@@ -2235,10 +2250,10 @@ function SendToDevolution(ticketId, currentnroTicket, currentSerial) {
                       <div class="mb-4">
                         ${customWarningSvg}
                       </div> 
-                      <p class="h4 mb-3" style="color: black;">Realmente deseas devolver el Pos: <span  style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentSerial}</span> asociado al Nro Ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentnroTicket}</span> al cliente?</p>`,
+                      <p class="h4 mb-3">Realmente deseas devolver el Pos: <span  style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentSerial}</span> asociado al Nro Ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentnroTicket}</span> al cliente?</p>`,
         showCancelButton: true,
         confirmButtonColor: '#003594',
-        cancelButtonColor: '#FF0000',
+        cancelButtonColor: '#A0A0A0',
         confirmButtonText: 'Devolver',
         cancelButtonText: 'Cancelar',
         color: 'black',
@@ -2270,7 +2285,7 @@ function SendToDevolution(ticketId, currentnroTicket, currentSerial) {
                             Swal.fire({
                                 icon: 'success',
                                 title: '¡Devolución Exitosa!',
-                                text:'<span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">El ticket reposa en Gestion Rosal para poder ser entregado al cliente</span>.',
+                                html:'<span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">El ticket reposa en Gestión Rosal para poder ser entregado al cliente</span>.',
                                 confirmButtonText: 'Ok',
                                 color: 'black',
                                 confirmButtonColor: '#003594',

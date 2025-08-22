@@ -359,6 +359,11 @@ function mi_navbar()
             background-color: red;
             color: white;
         }
+
+        #close-botonseleccionAction:hover{
+            background-color: red;
+            color: white;
+        }
     </style>
     </head>
 
@@ -449,7 +454,7 @@ function mi_navbar()
                             <p style="font-size: 115%;">¿Estás seguro de que deseas devolver este ticket al cliente?</p>
                             <div class="form-group">
                                 <label for="observacionesDevolver">Observaciones:</label>
-                                <textarea class="form-control" id="observacionesDevolver" rows="3"></textarea>
+                                <textarea class="form-control" id="observacionesDevolver" rows="3"  placeholder="Se cargó el documento de anticipo la [FECHA] para el Ticket Nro. [NRO_TICKET]. Adicionalmente, agregar un comentario"></textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -552,7 +557,7 @@ function mi_navbar()
         <!-- MODAL PARA ACCIONES DE DOCUMENTOS -->
             <div class="modal fade" id="documentActionsModal" tabindex="-1" role="dialog" aria-labelledby="documentActionsModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog modal-dialog-centered" role="document">
-                    <div class="modal-content">
+                    <div class="modal-content" style="width: 65%; margin-left: 21%;">
                     <div class="modal-header">
                         <h5 class="modal-title" id="documentActionsModalLabel" style="color: #000;">Acciones de Documentos</h5>                  
                     </div>
@@ -562,7 +567,7 @@ function mi_navbar()
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        <button type="button" id = "close-botonseleccionAction" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                     </div>
                     </div>
                 </div>

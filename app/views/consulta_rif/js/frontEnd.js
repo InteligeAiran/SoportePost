@@ -1478,7 +1478,7 @@ function SendDataFailure2(idStatusPayment) {
             <div class="alert alert-warning border-0 mb-3" role="alert">
               <div class="d-flex align-items-center">
                 <i class="fas fa-ban text-danger me-2"></i>
-                <strong class="text-danger">No se puede crear un nuevo ticket</strong>
+                <strong><span style = "color: white;">No se puede crear un nuevo ticket</span></strong>
               </div>
             </div>
     
@@ -1536,7 +1536,7 @@ function SendDataFailure2(idStatusPayment) {
         <div class="alert alert-danger border-0 mt-3" role="alert">
           <div class="d-flex align-items-center">
             <i class="fas fa-clock text-danger me-2"></i>
-            <strong>Debe esperar a que este ticket se complete antes de crear uno nuevo.</strong>
+            <strong><span style = "color: white;">Debe esperar a que este ticket se complete antes de crear uno nuevo.</strong></span>
           </div>
         </div>
       </div>`,

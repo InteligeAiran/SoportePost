@@ -707,7 +707,7 @@ function getTicketDataFinaljs() {
                       data-document-type="${isPdf ? 'pdf' : 'image'}"
                       data-filename="${filename || 'Documento'}"
                       onclick="showImageModal('${url_documento}', '${isPdf ? 'pdf' : 'image'}', '${filename || 'Documento'}')">
-                      Ver Imagen
+                      Ver Documento
                     </button>`;
                   } else {
                     // Si ya existe el documento y NO está en espera, mostrar botón para verlo
@@ -791,9 +791,9 @@ function getTicketDataFinaljs() {
                                   </button>
 
                                   <button id="btn-llaves-cargadas" class="btn btn-secondary me-2" title="Tickets con Llaves Cargadas">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-key-fill" viewBox="0 0 16 16">
-                                      <path d="M3.5 11.5a3.5 3.5 0 1 1 3.163-5H14L15.5 8 14 9H6.663a3.5 3.5 0 0 1-3.163 2M7.5 4.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/>
-                                    </svg>
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                                      </svg>
                                   </button>`;
                               $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
@@ -835,7 +835,7 @@ function getTicketDataFinaljs() {
                                               dataTableInstance.column(17).visible(false);
                                               dataTableInstance.column(18).visible(true);
                                               dataTableInstance.column(19).visible(true);
-                                              dataTableInstance.column(20).visible(false);
+                                              dataTableInstance.column(20).visible(true);
                                           } else if (button === "btn-asignados") {
                                               dataTableInstance.column(17).visible(true);
                                               dataTableInstance.column(18).visible(true);
@@ -864,7 +864,7 @@ function getTicketDataFinaljs() {
                                   dataTableInstance.column(17).visible(false);
                                   dataTableInstance.column(18).visible(false);
                                   dataTableInstance.column(19).visible(false);
-                                  dataTableInstance.column(20).visible(false);
+                                  dataTableInstance.column(20).visible(true);
                                   dataTableInstance.column(10).search("NO_DATA_FOUND").draw(); // Búsqueda que no devuelve resultados
                                   setActiveButton("btn-por-asignar"); // Mantener el primer botón activo por defecto
                                   
@@ -888,7 +888,7 @@ function getTicketDataFinaljs() {
                                       dataTableInstance.column(17).visible(true);
                                       dataTableInstance.column(18).visible(true);
                                       dataTableInstance.column(19).visible(true);
-                                      dataTableInstance.column(20).visible(false);
+                                      dataTableInstance.column(20).visible(true);
                                       setActiveButton("btn-por-asignar");
                                   } else {
                                       findFirstButtonWithData();
