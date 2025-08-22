@@ -998,9 +998,19 @@ function UpdateGuarantees() {
   let archivoAnticipo = null;
   let archivoEnvio = null;
 
-  if (inputExoneracion) archivoExoneracion = inputExoneracion.files;
-  if (inputAnticipo) archivoAnticipo = inputAnticipo.files;
-  if (inputEnvio) archivoEnvio = inputEnvio.files;
+  if (inputExoneracion && inputExoneracion.files.length > 0) {
+    archivoExoneracion = inputExoneracion.files[0];
+  }
+  if (inputAnticipo && inputAnticipo.files.length > 0) {
+    archivoAnticipo = inputAnticipo.files[0];
+  }
+  if (inputEnvio && inputEnvio.files.length > 0) {
+    archivoEnvio = inputEnvio.files[0];
+  }
+
+  console.log("Archivo Exoneración:", archivoExoneracion);
+  console.log("Archivo Anticipo:", archivoAnticipo);
+  console.log("Archivo Envío:", archivoEnvio);
 
   const uploadNowRadio = document.getElementById("uploadNow");
   const uploadPendingRadio = document.getElementById("uploadPending");
@@ -1025,27 +1035,35 @@ function UpdateGuarantees() {
       idStatusPayment = 9;
     } else if (uploadNowRadio && uploadNowRadio.checked) {
       
-      // NUEVA LÓGICA CORREGIDA: Si es Caracas o Miranda (no necesita envío)
       if (isCaracasMiranda) {
-        if (checkExoneracion && checkExoneracion.checked && archivoExoneracion) {
+        const tieneAnticipo = checkAnticipo && checkAnticipo.checked === true &&  archivoAnticipo && archivoAnticipo instanceof File;
+        const tieneExoneracion = checkExoneracion && checkExoneracion.checked === true && archivoExoneracion &&  archivoExoneracion instanceof File;
+                
+        if (tieneExoneracion) {
           idStatusPayment = 5; // Exoneración pendiente por revisión
-        } else if (checkAnticipo && checkAnticipo.checked && archivoAnticipo) {
+        } else if (tieneAnticipo) {
           idStatusPayment = 7; // Pago anticipo pendiente por revisión
         } else {
           idStatusPayment = 10; // Pendiente por cargar documento (exoneración o anticipo)
         }
       } else {
-        // LÓGICA ORIGINAL: Para otras regiones que sí necesitan envío
-        if (checkExoneracion && checkExoneracion.checked && archivoExoneracion && checkEnvio && checkEnvio.checked && archivoEnvio) {
+        // LÓGICA SIMPLIFICADA: Para otras regiones que sí necesitan envío
+        const tieneExoneracion = checkExoneracion && checkExoneracion.checked && archivoExoneracion;
+        const tieneAnticipo = checkAnticipo && checkAnticipo.checked && archivoAnticipo;
+        const tieneEnvio = checkEnvio && checkEnvio.checked && archivoEnvio;
+
+        if (tieneExoneracion && tieneEnvio) {
           idStatusPayment = 5; // Exoneración + Envío = Pendiente por revisión
-        } else if (checkAnticipo && checkAnticipo.checked && archivoAnticipo && checkEnvio && checkEnvio.checked && archivoEnvio) {
+        } else if (tieneAnticipo && tieneEnvio) {
           idStatusPayment = 7; // Anticipo + Envío = Pago anticipo pendiente por revisión
-        } else if (checkExoneracion && checkExoneracion.checked && archivoExoneracion && (!checkAnticipo || !checkAnticipo.checked) && !archivoAnticipo && (!checkEnvio || !checkEnvio.checked) && !archivoEnvio) {
+        } else if (tieneExoneracion && !tieneEnvio) {
           idStatusPayment = 11; // Solo exoneración = Pendiente por cargar envío
-        } else if ((!checkEnvio || !checkEnvio.checked) && archivoAnticipo && (!checkExoneracion || !checkExoneracion.checked) && !archivoExoneracion && checkAnticipo && checkAnticipo.checked && !archivoEnvio) {
+        } else if (tieneAnticipo && !tieneEnvio) {
           idStatusPayment = 11; // Solo anticipo = Pendiente por cargar envío
+        } else if (tieneEnvio && !tieneExoneracion && !tieneAnticipo) {
+          idStatusPayment = 10; // Solo envío = Pendiente por cargar documento
         } else {
-          idStatusPayment = 10; // Solo envío = Pendiente por cargar documento (exoneración o anticipo)
+          idStatusPayment = 10; // Pendiente por cargar documento
         }
       }
     } else {
@@ -1075,6 +1093,8 @@ function UpdateGuarantees() {
       garantiaAlertShown = true;
     }
   }
+  
+  console.log("Status Payment Final:", idStatusPayment);
   return idStatusPayment;
 }
 
