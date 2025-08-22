@@ -5,6 +5,11 @@ let currentnroTicket;
 let currentSerial;
 let currentDocument;
 
+let url_envio;
+let url_exoneracion;
+let url_pago;
+
+
 function getTicketData() {
   const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
   const detailsPanel = document.getElementById("ticket-details-panel");
@@ -163,7 +168,10 @@ function getTicketData() {
                         data-ticket-id="${ticket.id_ticket}"
                         data-nro_ticket="${ticket.nro_ticket}",
                         data-id_document="${ticket.id_status_payment}",
-                        data-serial_pos="${ticket.serial_pos || ''}">
+                        data-serial_pos="${ticket.serial_pos || ''}"
+                        data_url_zoom="${ticket.pdf_zoom_url || ''}"
+                        data_url_exo="${ticket.img_exoneracion_url || ''}"
+                        data_url_pago="${ticket.pdf_pago_url || ''}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
                     </button>`;
             }
@@ -563,11 +571,18 @@ function getTicketData() {
             const ticketId = $(this).data("ticket-id");
             const nroTicket = $(this).data("nro_ticket");
             const id_document = $(this).data("id_document");
+            const pdfZoomUrl = $(this).data("url_zoom") || "";
+            const imgExoneracionUrl = $(this).data("url_exo") || "";
+            const pdfPagoUrl = $(this).data("url_pago") || "";
             const serialPos = $(this).data("serial_pos") || "No disponible";
             currentTicketId = ticketId; // Asigna al currentTicketId para el modal de taller
             currentnroTicket = nroTicket;
             currentSerial = serialPos; // Asigna el serial al currentSerial
             currentDocument = id_document; // Asigna el serial al currentSerial
+
+            url_envio = pdfZoomUrl;
+            url_exoneracion = imgExoneracionUrl;
+            url_pago = pdfPagoUrl;
 
             if (actionSelectionModalInstance) {
               actionSelectionModalInstance.show(); // Abre el modal de selección de acción
@@ -582,7 +597,28 @@ function getTicketData() {
 
             const id_document=currentDocument;
 
-            if(id_document == 9 || id_document == 10 || id_document == 11) { 
+                   
+
+ // Variable que contendrá el resultado de la validación
+          let showButton = false;
+
+          // Caso 1: id_documento es 9
+          // Se cumple si id_document es 9 O si TODAS las URLs están vacías
+          if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
+              showButton = true;
+          } 
+          // Caso 2: id_documento es 10
+          // Se cumple si id_document es 10 Y url_envio NO está vacía Y (url_pago O url_exoneracion están vacías)
+          else if (id_document === 10 && url_envio !== "" && (url_pago === "" || url_exoneracion === "")) {
+              showButton = true;
+          } 
+          // Caso 3: id_documento es 11
+          // Se cumple si id_document es 11 Y url_envio está vacía Y (url_exoneracion O url_pago NO están vacías)
+          else if (id_document === 11 && url_envio === "" && (url_exoneracion !== "" || url_pago !== "")) {
+              showButton = true;
+          }
+          
+          if (showButton) {
                 Swal.fire({
                 icon: 'warning',
                 title: '¡Advertencia!',

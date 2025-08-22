@@ -157,7 +157,7 @@ class reportsModel extends Model
             $escapedDocumentType = pg_escape_literal($this->db->getConnection(), $document_type);
 
             $sql = "SELECT save_document_to_db(
-                " . ((int) $nro_ticket) . ",
+                '" .$nro_ticket. "',
                 " . $escapedOriginalFilename . ",
                 " . $escapedStoredFilename . ",
                 " . $escapedFilePath . ",
@@ -263,7 +263,7 @@ class reportsModel extends Model
             $escapedDocumentType = pg_escape_literal($this->db->getConnection(), $document_type);
 
             $sql = "SELECT save_document_to_db(
-                " . ((int) $nro_ticket) . ",
+                '" .$nro_ticket. "',
                 " . $escapedOriginalFilename . ",
                 " . $escapedStoredFilename . ",
                 " . $escapedFilePath . ",
@@ -370,7 +370,7 @@ class reportsModel extends Model
             $escapedDocumentType = pg_escape_literal($this->db->getConnection(), $document_type);
 
             $sql = "SELECT save_document_to_db(
-                " . ((int) $nro_ticket) . ",
+                '" . $nro_ticket."',
                 " . $escapedOriginalFilename . ",
                 " . $escapedStoredFilename . ",
                 " . $escapedFilePath . ",
@@ -384,7 +384,10 @@ class reportsModel extends Model
 
             if($result){
                 // DETERMINAR EL id_status_payment BASÁNDOSE EN LOS DOCUMENTOS EXISTENTES
+                            error_log("Determinando status payment para ticket: " . $nro_ticket . " y documento: " . $document_type);
+
                 $id_status_payment = $this->determineStatusPayment($nro_ticket, $document_type);
+            error_log("Status payment determinado: " . $id_status_payment);
 
                 $sqlticket = "UPDATE tickets SET id_status_payment = ".$id_status_payment." WHERE nro_ticket = '".$nro_ticket."';";
                 $resultticket = Model::getResult($sqlticket, $this->db);
@@ -461,45 +464,65 @@ class reportsModel extends Model
     }
 
 // NUEVA FUNCIÓN PARA DETERMINAR EL STATUS PAYMENT
-   private function determineStatusPayment($nro_ticket, $document_type_being_uploaded) {
-    // Verificar qué documentos ya existen para este ticket
-    $sql = "SELECT document_type FROM archivos_adjuntos WHERE nro_ticket = '".$nro_ticket."'";
+private function determineStatusPayment($nro_ticket, $document_type_being_uploaded) {
+    // Verificar qué documentos ya existen para este ticket (EXCLUYENDO el que se está subiendo)
+    $sql = "SELECT document_type FROM archivos_adjuntos WHERE nro_ticket = '".$nro_ticket."' AND document_type != '".$document_type_being_uploaded."'";
     $result = Model::getResult($sql, $this->db);
     
-    $existing_documents = [];
-    if ($result && isset($result['query'])) {
-        while ($row = pg_fetch_assoc($result['query'])) {
-            $existing_documents[] = $row['document_type'];
+    if ($result) {
+        //var_dump($result);  
+        $existing_documents = [];
+
+        for ($i = 0; $i < $result['numRows']; $i++) {
+            $agente = pg_fetch_assoc($result['query'], $i);
+            $existing_documents[] = $agente['document_type'];
         }
+
+       
+        error_log("Documento siendo subido: " . $document_type_being_uploaded);
+        error_log("Documentos existentes (excluyendo el actual): " . implode(', ', $existing_documents));
+
+        // LÓGICA COMPLETA PARA DETERMINAR EL STATUS PAYMENT
+        if ($document_type_being_uploaded === 'Envio') {
+            // Si se está subiendo envío
+            if (in_array('Exoneracion', $existing_documents)) {
+                error_log("Envio + Exoneracion existente = Status 5 (Exoneracion Pendiente por Revision)");
+                return 5; // Exoneracion Pendiente por Revision
+            } elseif (in_array('Anticipo', $existing_documents)) {
+                error_log("Envio + Anticipo existente = Status 7 (Pago Anticipo Pendiente por Revision)");
+                return 7; // Pago Anticipo Pendiente por Revision
+            } else {
+                // Solo envío (primer documento)
+                error_log("Solo Envio (primer documento) = Status 10 (Pendiente Por Cargar Documento)");
+                return 10; // Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)
+            }
+        } elseif ($document_type_being_uploaded === 'Exoneracion') {
+            // Si se está subiendo exoneración
+            if (in_array('Envio', $existing_documents)) {
+                error_log("Exoneracion + Envio existente = Status 5 (Exoneracion Pendiente por Revision)");
+                return 5; // Exoneracion Pendiente por Revision
+            } else {
+                // Solo exoneración (primer documento)
+                error_log("Solo Exoneracion (primer documento) = Status 11 (Pendiente Por Cargar Documento)");
+                return 11; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
+            }
+        } elseif ($document_type_being_uploaded === 'Anticipo') {
+            // Si se está subiendo anticipo
+            if (in_array('Envio', $existing_documents)) {
+                error_log("Anticipo + Envio existente = Status 7 (Pago Anticipo Pendiente por Revision)");
+                return 7; // Pago Anticipo Pendiente por Revision
+            } else {
+                // Solo anticipo (primer documento)
+                error_log("Solo Anticipo (primer documento) = Status 11 (Pendiente Por Cargar Documento)");
+                return 11; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
+            }
+        }   
+
+        error_log("Tipo de documento no reconocido, retornando Status 11 por defecto");
+        return 11;
+    } else {
+        return 11;
     }
-    
-    // LÓGICA CORREGIDA PARA DETERMINAR EL STATUS PAYMENT
-    if ($document_type_being_uploaded === 'Envio') {
-        // Si se está subiendo envío
-        if (in_array('Exoneracion', $existing_documents)) {
-            return 5; // Exoneracion Pendiente por Revision
-        } elseif (in_array('Anticipo', $existing_documents)) {
-            return 7; // Pago Anticipo Pendiente por Revision
-        } else {
-            return 10; // Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)
-        }
-    } elseif ($document_type_being_uploaded === 'Exoneracion') {
-        // Si se está subiendo exoneración
-        if (in_array('Envio', $existing_documents)) {
-            return 11; // Exoneracion Pendiente por Revision
-        } else {
-            return 5; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
-        }
-    } elseif ($document_type_being_uploaded === 'Anticipo') {
-        // Si se está subiendo anticipo
-        if (in_array('Envio', $existing_documents)) {
-            return 11; // Pago Anticipo Pendiente por Revision
-        } else {
-            return 7; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
-        }
-    }   
-    // Por defecto
-    return 11;
 }
 
     public function getDocument($id_ticket, $document_type){

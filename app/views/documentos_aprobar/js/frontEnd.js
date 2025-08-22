@@ -284,7 +284,7 @@ function getTicketAprovalDocument() {
                         }
 
                         // --- AÑADIR COLUMNA DE ACCIONES ---
-                         // --- AÑADIR COLUMNA DE ACCIONES ---
+                        // --- AÑADIR COLUMNA DE ACCIONES ---
                         columnsConfig.push({
                             data: null,
                             title: "Acciones",
@@ -308,50 +308,50 @@ function getTicketAprovalDocument() {
                                 const rechazado = row.documento_rechazado;
                                 
                                 const isRejected = idMotivoRechazo !== null && motivoRechazo !== null;
-
+                                
                                 if (row.name_status_payment === "Pendiente Por Cargar Documentos") {
                                     actionButtons = `<button class="btn btn-secondary btn-sm" title="Pendiente Por Cargar Documentos" disabled>Cargue Documentos</button>
                                                     <i class="fas fa-file-upload"></i>
                                                 </button>`;
                                 } else {
                                     actionButtons = `
-                                        <button class="btn btn-info btn-sm view-image-btn" 
-                                                data-serial-pos="${serial_pos}" 
-                                                data-nro-ticket="${nro_ticket}" 
+                                    <button class="btn btn-info btn-sm view-image-btn" 
+                                            data-serial-pos="${serial_pos}" 
+                                            data-nro-ticket="${nro_ticket}" 
+                                            data-id="${idTicket}" 
+                                            data-envio="${envio}" 
+                                            data-exoneracion="${exoneracion}" 
+                                            data-anticipo="${pago}"
+                                            data-document-type="${documentType || ''}"
+                                            data-original-filename="${originalFilename || ''}"
+                                            data-motivo-rechazo="${motivoRechazo || ''}"
+                                            data-uploaded-at="${uploadedAt || ''}"
+                                            data-id-motivo-rechazo="${idMotivoRechazo || ''}"
+                                            data-rechazado="${rechazado || ''}"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#visualizarImagenModal" 
+                                            title="Visualizar Imágenes">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                                        </svg>
+                                    </button>
+                                `;
+                                if (isRejected) {
+                                    actionButtons += `
+                                        <button class="btn btn-warning btn-sm upload-new-doc-btn ms-1" 
                                                 data-id="${idTicket}" 
-                                                data-envio="${envio}" 
-                                                data-exoneracion="${exoneracion}" 
-                                                data-anticipo="${pago}"
+                                                data-nro-ticket="${nro_ticket}" 
+                                                data-serial-pos="${serial_pos}"
                                                 data-document-type="${documentType || ''}"
-                                                data-original-filename="${originalFilename || ''}"
                                                 data-motivo-rechazo="${motivoRechazo || ''}"
-                                                data-uploaded-at="${uploadedAt || ''}"
-                                                data-id-motivo-rechazo="${idMotivoRechazo || ''}"
-                                                data-rechazado="${rechazado || ''}"
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#visualizarImagenModal" 
-                                                title="Visualizar Imágenes">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
-                                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                                                title="Subir Nuevo Documento">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
+                                                <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
                                             </svg>
                                         </button>
                                     `;
-                                    if (isRejected) {
-                                        actionButtons += `
-                                            <button class="btn btn-warning btn-sm upload-new-doc-btn ms-1" 
-                                                    data-id="${idTicket}" 
-                                                    data-nro-ticket="${nro_ticket}" 
-                                                    data-serial-pos="${serial_pos}"
-                                                    data-document-type="${documentType || ''}"
-                                                    data-motivo-rechazo="${motivoRechazo || ''}"
-                                                    title="Subir Nuevo Documento">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
-                                                    <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
-                                                </svg>
-                                            </button>
-                                        `;
-                                    }
+                                }
                                 }
                                 return actionButtons;
                             },
@@ -418,7 +418,7 @@ function getTicketAprovalDocument() {
 
                                 // Función para verificar si hay datos en una búsqueda específica
                                 function checkDataExists(searchTerm) {
-                                    api.columns().search('').draw(false);
+                                api.columns().search('').draw(false);
                                     api.column(5).search(searchTerm, true, false, true).draw();
                                     const rowCount = api.rows({ filter: 'applied' }).count();
                                     return rowCount > 0;
@@ -464,9 +464,9 @@ function getTicketAprovalDocument() {
                                 // Event listeners para los botones (mantener la funcionalidad manual)
                                 $("#btn-por-asignar").on("click", function () {
                                     if (checkDataExists("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision")) {
-                                        api.columns().search('').draw(false);
-                                        api.column(5).search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true).draw();
-                                        setActiveButton("btn-por-asignar");
+                                    api.columns().search('').draw(false);
+                                    api.column(5).search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true).draw();
+                                    setActiveButton("btn-por-asignar");
                                     } else {
                                         findFirstButtonWithData();
                                     }
@@ -474,9 +474,9 @@ function getTicketAprovalDocument() {
 
                                 $("#btn-recibidos").on("click", function () {
                                     if (checkDataExists("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)")) {
-                                        api.columns().search('').draw(false);
-                                        api.column(5).search("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)", true, false, true).draw();
-                                        setActiveButton("btn-recibidos");
+                                    api.columns().search('').draw(false);
+                                    api.column(5).search("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)", true, false, true).draw();
+                                    setActiveButton("btn-recibidos");
                                     } else {
                                         findFirstButtonWithData();
                                     }
@@ -484,9 +484,9 @@ function getTicketAprovalDocument() {
 
                                 $("#btn-asignados").on("click", function () {
                                     if (checkDataExists("Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado")) {
-                                        api.columns().search('').draw(false);
-                                        api.column(5).search("Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado", true, false, true).draw();
-                                        setActiveButton("btn-asignados");
+                                    api.columns().search('').draw(false);
+                                    api.column(5).search("Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado", true, false, true).draw();
+                                    setActiveButton("btn-asignados");
                                     } else {
                                         findFirstButtonWithData();
                                     }

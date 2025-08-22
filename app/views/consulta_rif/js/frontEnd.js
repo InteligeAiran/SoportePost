@@ -1007,11 +1007,7 @@ function UpdateGuarantees() {
   if (inputEnvio && inputEnvio.files.length > 0) {
     archivoEnvio = inputEnvio.files[0];
   }
-
-  console.log("Archivo Exoneración:", archivoExoneracion);
-  console.log("Archivo Anticipo:", archivoAnticipo);
-  console.log("Archivo Envío:", archivoEnvio);
-
+  
   const uploadNowRadio = document.getElementById("uploadNow");
   const uploadPendingRadio = document.getElementById("uploadPending");
 
@@ -1399,9 +1395,15 @@ function SendDataFailure2(idStatusPayment) {
   const inputExoneracion = document.getElementById("ExoneracionInput");
   const inputAnticipo = document.getElementById("AnticipoInput");
 
-  const archivoEnvio = inputEnvio.files;
-  const archivoExoneracion = inputExoneracion.files; // <-- Corregido
-  const archivoAnticipo = inputAnticipo.files; // <-- Corregido
+  const archivoEnvio = inputEnvio.files[0];
+  const archivoExoneracion = inputExoneracion.files[0]; // <-- Corregido
+  const archivoAnticipo = inputAnticipo.files[0]; // <-- Corregido
+
+  console.log("Datos enviados:", {
+    archivoEnvio,
+    archivoExoneracion, // <-- Corregido
+    archivoAnticipo, // <-- Corregido
+ });
 
   const botonCargaPDFEnv = document.getElementById("botonCargaPDFEnv");
   const botonCargaExoneracion = document.getElementById(

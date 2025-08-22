@@ -684,6 +684,8 @@ class Consulta extends Controller
 
         // 7. Función auxiliar para procesar archivos subidos (sin cambios)
         $processFile = function($fileKey, $documentType, $ticketId, $nrTicket, $userId, $repo, $baseTicketDir, $dateForFilename, &$targetVar) {
+            $repo = new technicalConsultionRepository();
+
             if (isset($_FILES[$fileKey]) && $_FILES[$fileKey]['error'] === UPLOAD_ERR_OK) {
                 $archivo = $_FILES[$fileKey];
                 $nombreArchivoOriginal = basename($archivo['name']);

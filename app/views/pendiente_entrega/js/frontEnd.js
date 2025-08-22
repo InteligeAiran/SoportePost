@@ -565,70 +565,72 @@ function getTicketDataFinaljs() {
            // ... (código anterior hasta la columna "Acción")
 
             // Añadir la columna "Acción" al final
-            columnsConfig.push({
-                data: null,
-                title: "Acción",
-                orderable: false,
-                searchable: false,
-                className: "dt-body-center",
-                render: function (data, type, row) {
-                    const idTicket = row.id_ticket;
-                    const serialPos = row.serial_pos;
-                    const nroTicket = row.nro_ticket;
-                    const currentStatusLab = (row.status_taller || "").trim();
-                    const name_accion_ticket = (row.name_accion_ticket || "").trim();
-                    const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
-                    const nombre_estado_cliente = (row.name_region || "").trim();
-                    
-                    // ** VALOR OBTENIDO DE LA FUNCIÓN getdataticketfinal() **
-                    // Verifica si la cadena de tipos de documentos incluye 'Envio_Destino'
-                    const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
-                    const isDocumentMissing = !hasEnvioDestinoDocument || hasEnvioDestinoDocument === null || hasEnvioDestinoDocument === '';
+           columnsConfig.push({
+                  data: null,
+                  title: "Acción",
+                  orderable: false,
+                  searchable: false,
+                  className: "dt-body-center",
+                  render: function (data, type, row) {
+                      const idTicket = row.id_ticket;
+                      const serialPos = row.serial_pos;
+                      const nroTicket = row.nro_ticket;
+                      const currentStatusLab = (row.status_taller || "").trim();
+                      const name_accion_ticket = (row.name_accion_ticket || "").trim();
+                      const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
+                      const nombre_estado_cliente = (row.nombre_estado_cliente || "").trim();
+                      
+                      const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
+                      const isDocumentMissing = !hasEnvioDestinoDocument || hasEnvioDestinoDocument === null || hasEnvioDestinoDocument === '';
 
-                    let actionButton = '';
+                      let actionButton = '';
 
-                    // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
-                    if (name_accion_ticket === "En espera de confirmar recibido en el Rosal") {
-                        actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
-                                            data-id-ticket="${idTicket}"
-                                            data-serial-pos="${serialPos}"
-                                            data-nro-ticket="${nroTicket}">
-                                            <i class="fas fa-hand-holding-box"></i> Recibido
-                                        </button>`;
-                    }
-                    // Prioridad 2: Validar si el ticket es de Caracas o Miranda y está Reparado
-                    else if (currentStatusLab === "Reparado" || currentStatusLab === ""  && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas")) {
-                        actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
-                                            data-id-ticket="${idTicket}"
-                                            data-serial-pos="${serialPos}"
-                                            data-nro-ticket="${nroTicket}">
-                                            Entregar al Cliente
-                                        </button>`;
-                    }else {
-                        const commonConditions = (currentStatusLab === "Reparado" && name_status_domiciliacion === "Solvente" && nombre_estado_cliente !== "Caracas" || nombre_estado_cliente !== "Miranda" ||  nombre_estado_cliente !== "Distrito Capital" || nombre_estado_cliente !== "Vargas" );
-                        if (commonConditions && isDocumentMissing) {
-                            actionButton = `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
-                                                data-id-ticket="${idTicket}"
-                                                data-nro-ticket="${nroTicket}"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#uploadDocumentModal">
-                                                Subir Documento
-                                            </button>`;
-                        }
-                        // Si cumple las condiciones base y YA se subió el documento
-                       if (commonConditions && hasEnvioDestinoDocument) {
-                          actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn"
+                      console.log(nombre_estado_cliente);
+
+                      // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
+                      if (name_accion_ticket === "En espera de confirmar recibido en el Rosal") {
+                          actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
                                               data-id-ticket="${idTicket}"
-                                              data-region-name="${nombre_estado_cliente}"
                                               data-serial-pos="${serialPos}"
                                               data-nro-ticket="${nroTicket}">
-                                              Enviar a Región: ${nombre_estado_cliente}
+                                              <i class="fas fa-hand-holding-box"></i> Recibido
                                           </button>`;
-                      }     
-                    }
-                    return actionButton;
-                },
-            });
+                      }
+                      // Prioridad 2: Validar si el ticket es de Caracas o Miranda y está Reparado
+                      else if ((currentStatusLab === "Reparado" || currentStatusLab === "") && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas")) {
+                          actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
+                                              data-id-ticket="${idTicket}"
+                                              data-serial-pos="${serialPos}"
+                                              data-nro-ticket="${nroTicket}">
+                                              Entregar al Cliente
+                                          </button>`;
+                      }
+                      else {
+                          const commonConditions = (currentStatusLab === "Reparado" && !(nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas"));
+                          
+                          if (commonConditions && isDocumentMissing) {
+                              actionButton = `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
+                                                  data-id-ticket="${idTicket}"
+                                                  data-nro-ticket="${nroTicket}"
+                                                  data-bs-toggle="modal"
+                                                  data-bs-target="#uploadDocumentModal">
+                                                  Subir Documento
+                                              </button>`;
+                          }
+                          // Si cumple las condiciones base y YA se subió el documento
+                          else if (commonConditions && hasEnvioDestinoDocument) {
+                              actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn"
+                                                  data-id-ticket="${idTicket}"
+                                                  data-region-name="${nombre_estado_cliente}"
+                                                  data-serial-pos="${serialPos}"
+                                                  data-nro-ticket="${nroTicket}">
+                                                  Enviar a Región: ${nombre_estado_cliente}
+                                              </button>`;
+                          }
+                      }
+                      return actionButton;
+                  },
+              });
 
             // Añadir la columna "Llaves"
             columnsConfig.push({

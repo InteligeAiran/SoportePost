@@ -410,10 +410,9 @@ class consulta_rifModel extends Model
             // aunque el ticket_id (ID de la clave primaria) es la relación principal.
             // Para este ejemplo, lo añadiremos como un campo adicional si lo consideras útil,
             // pero no es estrictamente necesario para la relación.
-
             $sql = sprintf(
                 "INSERT INTO public.archivos_adjuntos (nro_ticket, original_filename, stored_filename, file_path, mime_type, file_size_bytes, uploaded_by_user_id, document_type) VALUES (%d, %s, %s, %s, %s, %d, %d, %s);",
-                (int) $ticket_id,
+                $Nr_ticket,
                 $escaped_original_filename,
                 $escaped_stored_filename,
                 $escaped_file_path,
