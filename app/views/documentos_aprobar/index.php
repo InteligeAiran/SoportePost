@@ -476,7 +476,7 @@ function mi_navbar()
                     </div>
                     <div class="modal-body">
                         <div class="form-check">
-                        <input class="form-check-input" type="radio" name="opcionImagen" id="imagenEnvio" value="Envio" checked>
+                        <input class="form-check-input" type="radio" name="opcionImagen" id="imagenEnvio" value="Envio">
                         <label class="form-check-label" for="imagenEnvio" id = "labelEnvio">
                             Documento de Envío
                         </label>

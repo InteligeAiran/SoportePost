@@ -779,6 +779,36 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
         return;
     }
 
+    // LIMPIAR TODOS LOS RADIO BUTTONS PRIMERO
+    const radioButtons = document.querySelectorAll('input[name="opcionImagen"]');
+    radioButtons.forEach(radio => {
+        radio.checked = false;
+    });
+
+    // SELECCIONAR AUTOMÁTICAMENTE EL DOCUMENTO CORRECTO (NO ENVIO)
+    if (documentType && documentType !== 'Envio') {
+        // Si el documento rechazado es Exoneracion, seleccionar Exoneracion
+        if (documentType === 'Exoneracion') {
+            const radioExoneracion = document.getElementById('imagenExoneracion');
+            if (radioExoneracion) {
+                radioExoneracion.checked = true;
+            }
+        }
+        // Si el documento rechazado es Anticipo, seleccionar Anticipo
+        else if (documentType === 'Anticipo') {
+            const radioPago = document.getElementById('imagenPago');
+            if (radioPago) {
+                radioPago.checked = true;
+            }
+        }
+    } else {
+        // Si no hay documentoType o es Envio, seleccionar Exoneracion por defecto
+        const radioExoneracion = document.getElementById('imagenExoneracion');
+        if (radioExoneracion) {
+            radioExoneracion.checked = true;
+        }
+    }
+
     // Limpiar formulario anterior
     uploadForm.reset();
     imagePreview.style.display = 'none';
@@ -790,10 +820,9 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
     idTicketInput.value = ticketId;
     DocumentTypeInput.value = documentType;
 
-
     // Mostrar información del documento rechazado
     const infoHtml = `
-        <div class="alert mb-3" id = "CartWrong" role="alert">
+        <div class="alert mb-3" id="CartWrong" role="alert" style="background: linear-gradient(135deg, #6f42c1, #007bff); color: white; border: none;">
             <h6 class="alert-heading">Documento Rechazado</h6>
             <p class="mb-1"><strong>Serial POS:</strong> ${serialPos}</p>
             <p class="mb-1"><strong>Tipo de Documento:</strong> ${documentType || 'No especificado'}</p>
@@ -894,8 +923,8 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
                 Swal.showLoading();
             }
         });
+    };
 
-    }
     // Event listener para cerrar modal
     const handleCerrarClick = function() {
         bootstrapModal.hide();
@@ -918,6 +947,12 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
         imagePreview.style.display = 'none';
         uploadMessage.innerHTML = '';
         uploadMessage.classList.add('hidden');
+        
+        // LIMPIAR RADIO BUTTONS AL CERRAR
+        const radioButtons = document.querySelectorAll('input[name="opcionImagen"]');
+        radioButtons.forEach(radio => {
+            radio.checked = false;
+        });
     });
 }
 
