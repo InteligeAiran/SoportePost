@@ -153,7 +153,7 @@ function mi_navbar() {}
 
         #confirmarRechazoBtn{
             color: white;
-            background-color: blue;
+            background-color: #003594;
             border: none;
             cursor: pointer;
             padding: 10px 20px;

@@ -2303,7 +2303,6 @@ class consulta_rifModel extends Model
             } catch (Throwable $e) {
             error_log("Excepción en RechazarDocumentos: ". $e->getMessage());
             return false;
-        
         }
     }
 
