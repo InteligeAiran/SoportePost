@@ -451,7 +451,7 @@ function mi_navbar()
                             <h2  style="color: white;">Devolver al Cliente</h2>
                         </div>
                         <div class="modal-body">
-                            <p style="font-size: 115%;">¿Estás seguro de que deseas devolver este ticket al cliente?</p>
+                            <p style="font-size: 115%;">¿Estás seguro de que deseas devolver el Pos con el Serial: <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;" id="SerialLabel"></span> al cliente?</p>
                             <div class="form-group">
                                 <label for="observacionesDevolver">Observaciones:</label>
                                 <textarea class="form-control" id="observacionesDevolver" rows="3"  placeholder="Se cargó el documento de anticipo la [FECHA] para el Ticket Nro. [NRO_TICKET]. Adicionalmente, agregar un comentario"></textarea>
@@ -480,7 +480,7 @@ function mi_navbar()
                                 </svg>
                             </div>
                             <p class="h4 mb-3" style="color: black;">¿Deseas enviar a taller el POS asociado <span id="serialpos"></span> al nro de ticket:</p>
-                            <span class="h4 mb-3" id="modalTicketNr"></span><p class="h4" style="color: black;">?</p>
+                            <span class="h4 mb-3" id="modalTicketNr"></span><p class="h4 mb-3">?</p>
                         </div>
                         <div class="modal-footer justify-content-center">
                             <button id="close-button" type="button" class="btn btn-lg btn-secondary">Cerrar</button>

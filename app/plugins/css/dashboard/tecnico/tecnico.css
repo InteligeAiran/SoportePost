@@ -11,6 +11,8 @@
     border-radius: 1rem; /* Bordes más redondeados */
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Sombra suave */
     overflow: hidden; /* Asegura que los bordes redondeados se vean bien */
+    width: 73%;
+    margin-left: 26%;
 }
 
 #ModalConfirmarSendTaller .modal-header {
@@ -31,12 +33,10 @@
 }
 
 #ModalConfirmarSendTaller .modal-body p {
-    line-height: 1.5; /* Espaciado entre líneas para mejor lectura */
     color: #495057; /* Color de texto suave */
 }
 
 #modalTicketNr, #ticketNumberSpan, #NroTicketConfirReceiCoord, #ticketserialPos, #serialpos{
-    display: inline-block; 
     padding: 0.2rem 0.5rem;
     border-radius: 0.3rem;
     background-color: #e0f7fa;

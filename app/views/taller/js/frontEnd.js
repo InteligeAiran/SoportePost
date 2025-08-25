@@ -913,8 +913,8 @@ function updateTicketStatusInTaller(ticketId) {
           // Or `response.success == "true"` if your backend sends a string
           Swal.fire({
             // Changed from swal(...) to Swal.fire(...)
-            title: "¡Éxito!",
-            text: "El POS se encontrará en el taller como 'En Proceso de reparación'.",
+            title: "¡Notificación!",
+            html: `El POS se encontrará en el taller como <span style = "border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">'En Proceso de reparación'</span>.`,
             icon: "success",
             confirmButtonText: "Ok", // SweetAlert2 uses confirmButtonText
             confirmButtonColor: "#003594 ", // SweetAlert2 uses confirmButtonColor

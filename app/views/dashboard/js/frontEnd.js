@@ -3644,7 +3644,7 @@ function loadMonthlyCreatedTicketsChart() {
         monthlyTicketsChartInstance.destroy();
       }
       ctx.fillText(
-        "Error al cargar el gráfico.",
+        "No hay Datos en la gráfica.",
         ctx.canvas.width / 2,
         ctx.canvas.height / 2
       );
@@ -3846,7 +3846,7 @@ function loadMonthlyCreatedTicketsChartForState() {
         }
         // O mostrar un mensaje en el canvas si es posible
         ctx.fillText(
-          "No hay datos para mostrar.",
+          "No hay Datos para mostrar.",
           ctx.canvas.width / 2,
           ctx.canvas.height / 2
         );
@@ -3861,7 +3861,7 @@ function loadMonthlyCreatedTicketsChartForState() {
         monthlyTicketsChartInstanceForState.destroy();
       }
       ctx.fillText(
-        "Error al cargar el gráfico.",
+        "No hay Datos en la gráfica.",
         ctx.canvas.width / 2,
         ctx.canvas.height / 2
       );
@@ -3931,7 +3931,7 @@ function getTicketCounts() {
                 console.error("Error parsing JSON for counts:", error);
             }
         } else {
-            tbodyCounts.innerHTML = '<tr><td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">Error de conexión al obtener conteos.</td></tr>';
+            tbodyCounts.innerHTML = '<tr><td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">No hay tickets en los módulos.</td></tr>';
             console.error("Error al obtener conteos:", xhrCounts.status, xhrCounts.statusText);
         }
     };

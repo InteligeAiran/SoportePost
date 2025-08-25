@@ -167,11 +167,11 @@ function getTicketData() {
                         title="Enviar a Taller"
                         data-ticket-id="${ticket.id_ticket}"
                         data-nro_ticket="${ticket.nro_ticket}",
-                        data-id_document="${ticket.id_status_payment}",
+                        data-id_document="${ticket.id_status_payment}"
                         data-serial_pos="${ticket.serial_pos || ''}"
-                        data_url_zoom="${ticket.pdf_zoom_url || ''}"
-                        data_url_exo="${ticket.img_exoneracion_url || ''}"
-                        data_url_pago="${ticket.pdf_pago_url || ''}">
+                        data-url_zoom="${ticket.pdf_zoom_url || ''}"
+                        data-url_exo="${ticket.img_exoneracion_url || ''}"
+                        data-url_pago="${ticket.pdf_pago_url || ''}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
                     </button>`;
             }
@@ -575,6 +575,7 @@ function getTicketData() {
             const imgExoneracionUrl = $(this).data("url_exo") || "";
             const pdfPagoUrl = $(this).data("url_pago") || "";
             const serialPos = $(this).data("serial_pos") || "No disponible";
+
             currentTicketId = ticketId; // Asigna al currentTicketId para el modal de taller
             currentnroTicket = nroTicket;
             currentSerial = serialPos; // Asigna el serial al currentSerial
@@ -594,14 +595,8 @@ function getTicketData() {
           });
 
           $("#ButtonSendToTaller").off("click").on("click", function () {
-
             const id_document=currentDocument;
-
-                   
-
- // Variable que contendrá el resultado de la validación
-          let showButton = false;
-
+            let showButton = false;
           // Caso 1: id_documento es 9
           // Se cumple si id_document es 9 O si TODAS las URLs están vacías
           if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
@@ -632,7 +627,7 @@ function getTicketData() {
               Swal.fire({
                 icon: 'warning',
                 title: '¡Advertencia!',
-                text: 'Tiene documentos pendientes por revisar.',
+                text: ' Se encuntran documentos pendientes por revisar.',
                 confirmButtonText: 'Ok', 
                 confirmButtonColor: '#003594', // Color del botón
                 color: 'black',
@@ -693,12 +688,18 @@ function getTicketData() {
           .off("click")
           .on("click", function () {
             const id_document=currentDocument;
+            const modalTicketNrSpan = document.getElementById("SerialLabel");
 
+            if (modalTicketNrSpan && currentSerial) {
+              modalTicketNrSpan.textContent = currentSerial; // Asigna el serial al span del modal
+            } else {
+              modalTicketNrSpan.textContent = "Hay un error"; // Texto por defecto si no se encontró el número
+            }
                     if(id_document == 9 || id_document == 11) { 
                         Swal.fire({
                         icon: 'warning',
                         title: '¡Advertencia!',
-                        text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
+                        text: 'Antes de Devolver el equipo al Rosal, debe cargar al menos el ZOOM de envio.',
                         confirmButtonText: 'Ok', 
                         confirmButtonColor: '#003594', // Color del botón
                         color: 'black',
@@ -2206,12 +2207,12 @@ function handleSendToTallerClick() {
         const response = JSON.parse(xhr.responseText);
         Swal.fire({
             icon: "success",
-            title: "Notificación", // <-- FIX IS HERE
-            html:`El POS asociado <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialpos}</span> al ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> fue enviado a Taller`,
+            title: "¡Notificación!", // <-- FIX IS HERE
+            html:`El POS asociado <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialpos}</span> al ticket Nro: <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> fue enviado a Taller`,
             color: "black",
             // Eliminamos 'timer' y 'timerProgressBar' si quieres un botón explícito
             showConfirmButton: true, // Muestra el botón de confirmación
-            confirmButtonText: "Aceptar", // Texto del botón
+            confirmButtonText: "Ok", // Texto del botón
             confirmButtonColor: "#003594", // Color del botón (puedes ajustar)
             allowOutsideClick: false, // Opcional: para que el usuario DEBA hacer clic en el botón
             allowEscapeKey: false,   // Opcional: para que no se pueda cerrar con la tecla Escape
@@ -2321,10 +2322,13 @@ function SendToDevolution(ticketId, currentnroTicket, currentSerial) {
                             Swal.fire({
                                 icon: 'success',
                                 title: '¡Devolución Exitosa!',
-                                html:'<span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">El ticket reposa en Gestión Rosal para poder ser entregado al cliente</span>.',
+                                html:'<span style = "border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">El ticket reposa en Gestión Rosal para poder ser entregado al cliente</span>.',
                                 confirmButtonText: 'Ok',
                                 color: 'black',
                                 confirmButtonColor: '#003594',
+                                focusConfirm: false,
+                                allowOutsideClick: false, 
+                                allowEscapeKey: false,
                             }).then(() => {
                               window.location.reload(); // Recarga la página inmediatamente
                             });

@@ -585,8 +585,6 @@ function getTicketDataFinaljs() {
 
                       let actionButton = '';
 
-                      console.log(nombre_estado_cliente);
-
                       // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
                       if (name_accion_ticket === "En espera de confirmar recibido en el Rosal") {
                           actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
@@ -606,7 +604,7 @@ function getTicketDataFinaljs() {
                                           </button>`;
                       }
                       else {
-                          const commonConditions = (currentStatusLab === "Reparado" && !(nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas"));
+                          const commonConditions = ((currentStatusLab === "Reparado" || currentStatusLab === "") && !(nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas"));
                           
                           if (commonConditions && isDocumentMissing) {
                               actionButton = `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
@@ -621,10 +619,10 @@ function getTicketDataFinaljs() {
                           else if (commonConditions && hasEnvioDestinoDocument) {
                               actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn"
                                                   data-id-ticket="${idTicket}"
-                                                  data-region-name="${nombre_estado_cliente}"
+                                                  data-region-name="${nombre_estado_cliente || 'No tiene Asignado'}"  
                                                   data-serial-pos="${serialPos}"
                                                   data-nro-ticket="${nroTicket}">
-                                                  Enviar a Región: ${nombre_estado_cliente}
+                                                  Enviar a Región: ${nombre_estado_cliente} 
                                               </button>`;
                           }
                       }
@@ -820,7 +818,7 @@ function getTicketDataFinaljs() {
                               // Función para buscar automáticamente el primer botón con datos
                               function findFirstButtonWithData() {
                                   const searchTerms = [
-                                      { button: "btn-por-asignar", term: "En espera de confirmar recibido en el Rosal||En espera de Confirmar Devolución" },
+                                      { button: "btn-por-asignar", term: "En espera de confirmar recibido en el Rosal|En espera de Confirmar Devolución" },
                                       { button: "btn-asignados", term: "^En el Rosal$" },
                                       { button: "btn-recibidos", term: "Entregado a Cliente" },
                                       { button: "btn-llaves-cargadas", term: "Llaves Cargadas" }
@@ -836,7 +834,7 @@ function getTicketDataFinaljs() {
                                           if (button === "btn-por-asignar") {
                                               dataTableInstance.column(17).visible(false);
                                               dataTableInstance.column(18).visible(true);
-                                              dataTableInstance.column(19).visible(true);
+                                              dataTableInstance.column(19).visible(false);
                                               dataTableInstance.column(20).visible(true);
                                           } else if (button === "btn-asignados") {
                                               dataTableInstance.column(17).visible(true);
@@ -884,12 +882,12 @@ function getTicketDataFinaljs() {
 
                               // Event listeners para los botones (mantener la funcionalidad manual)
                               $("#btn-por-asignar").on("click", function () {
-                                  if (checkDataExists("En espera de confirmar recibido en el Rosal||En espera de Confirmar Devolución")) {
+                                  if (checkDataExists("^En espera de confirmar recibido en el Rosal$|^En espera de Confirmar Devolución$")) {
                                       dataTableInstance.columns().search('').draw(false);
-                                      dataTableInstance.column(10).search("En espera de confirmar recibido en el Rosal||En espera de Confirmar Devolución", true, false).draw();
-                                      dataTableInstance.column(17).visible(true);
+                                      dataTableInstance.column(10).search("^En espera de confirmar recibido en el Rosal$|^En espera de Confirmar Devolución$", true, false).draw();
+                                      dataTableInstance.column(17).visible(false);
                                       dataTableInstance.column(18).visible(true);
-                                      dataTableInstance.column(19).visible(true);
+                                      dataTableInstance.column(19).visible(false);
                                       dataTableInstance.column(20).visible(true);
                                       setActiveButton("btn-por-asignar");
                                   } else {
@@ -1022,7 +1020,7 @@ function getTicketDataFinaljs() {
                                       if (xhr.status >= 200 && xhr.status < 300) {
                                           Swal.fire({
                                               title: '¡Éxito!',
-                                              html: `El Pos con el serial <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; ">${serialPos}</span> ha sido entregado con éxito, asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span>.`,
+                                              html: `El Pos con el serial <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; ">${serialPos}</span> ha sido entregado con éxito, asociado al Nro de ticket: <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span>.`,
                                               icon: 'success',
                                               color: "black",
                                               confirmButtonColor: "#003594",

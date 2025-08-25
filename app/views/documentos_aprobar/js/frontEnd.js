@@ -131,7 +131,7 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
                     Swal.fire({
                         icon: 'success',
                         title: '¡Aprobado!',
-                        html: `El documento de  <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${documentType}</span> asociado al Nro Ticket <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> ha sido aprobado correctamente.`,
+                        html: `El documento de  <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${documentType}</span> asociado al Nro Ticket <span style = "border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> ha sido aprobado correctamente.`,
                         confirmButtonText: 'Ok',
                         confirmButtonColor: '#003594',
                         color: 'black'
@@ -385,35 +385,35 @@ function getTicketAprovalDocument() {
                             },
                             dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
                             initComplete: function (settings, json) {
-                            const api = this.api();
+                                const api = this.api();
 
-                            const buttonsHtml = `
-                                <button id="btn-por-asignar" class="btn btn-primary me-2" title="Pendientes por revisión Documentos">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                                    </svg>
-                                </button>
+                                const buttonsHtml = `
+                                    <button id="btn-por-asignar" class="btn btn-primary me-2" title="Pendientes por revisión Documentos">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                        </svg>
+                                    </button>
 
-                                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Pendiente por cargar Documentos">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
-                                        <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
-                                    </svg>
-                                </button>
+                                    <button id="btn-recibidos" class="btn btn-secondary me-2" title="Pendiente por cargar Documentos">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
+                                            <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
+                                        </svg>
+                                    </button>
 
-                                <button id="btn-asignados" class="btn btn-secondary me-2" title="Documentos Rechazados">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
-                                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
-                                    </svg>
-                                </button>
-                            `;
-                            $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+                                    <button id="btn-asignados" class="btn btn-secondary me-2" title="Documentos Rechazados">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                                        </svg>
+                                    </button>
+                                `;
+                                $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
-                            function setActiveButton(activeButtonId) {
-                                $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
-                                $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
-                                $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
-                                $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
-                            }
+                                function setActiveButton(activeButtonId) {
+                                    $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
+                                    $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
+                                    $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
+                                    $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
+                                }
 
                             // Función para verificar si hay datos en una búsqueda específica
                             function checkDataExists(searchTerm) {
@@ -478,7 +478,7 @@ function getTicketAprovalDocument() {
                             findFirstButtonWithData();
 
                             // Event listeners para los botones (mantener la funcionalidad manual)
-                            $("#btn-por-asignar").on("click", function () {
+                                $("#btn-por-asignar").on("click", function () {
                                 if (checkDataExists("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision")) {
                                     api.columns().search('').draw(false);
                                     api.column(6).visible(false);
@@ -490,9 +490,9 @@ function getTicketAprovalDocument() {
                                 } else {
                                     findFirstButtonWithData();
                                 }
-                            });
+                                });
 
-                            $("#btn-recibidos").on("click", function () {
+                                $("#btn-recibidos").on("click", function () {
                                 if (checkDataExists("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)")) {
                                     api.columns().search('').draw(false);
                                     api.column(6).visible(false); // Se aseguran de que las columnas sean visibles
@@ -504,9 +504,9 @@ function getTicketAprovalDocument() {
                                 } else {
                                     findFirstButtonWithData();
                                 }
-                            });
+                                });
 
-                            $("#btn-asignados").on("click", function () {
+                                $("#btn-asignados").on("click", function () {
                                 if (checkDataExists("Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado")) {
                                     api.columns().search('').draw(false);
                                     api.column(6).visible(true); // Se aseguran de que las columnas sean visibles
@@ -518,8 +518,8 @@ function getTicketAprovalDocument() {
                                 } else {
                                     findFirstButtonWithData();
                                 }
-                            });
-                        },
+                                });
+                            },
                         });
 
                         // --- NUEVO: EVENT LISTENER PARA TRUNCAMIENTO DE CELDAS ---

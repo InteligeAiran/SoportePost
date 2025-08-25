@@ -338,7 +338,7 @@
             }
 
             #changeStatusModalLabel {
-                color: grey;
+                color: #ffffff;
             }
 
             #rescheduleModalLabel {
@@ -775,16 +775,15 @@
             <div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <div class="modal-header">
+                        <div class="modal-header bg-gradient-primary">
                             <h5 class="modal-title" id="changeStatusModalLabel">Cambiar Estatus del Ticket</h5>
-                            <button type="button" id="icon-close" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <form id="changeStatusForm">
                                 <input type="hidden" id="modalTicketId">
                                 <div class="mb-3">
                                     <label for="modalCurrentStatus" class="form-label">Estatus Actual:</label>
-                                    <input type="text" class="form-control" id="modalCurrentStatus" readonly>
+                                    <input type="text" class="form-control" id="modalCurrentStatus" disabled>
                                 </div><br>
                                 <div class="mb-3">
                                     <label for="modalNewStatus" class="form-label">Nuevo Estatus:</label>
