@@ -1396,19 +1396,16 @@ function SendDataFailure2(idStatusPayment) {
   const inputAnticipo = document.getElementById("AnticipoInput");
 
   const archivoEnvio = inputEnvio.files[0];
-  const archivoExoneracion = inputExoneracion.files[0]; // <-- Corregido
-  const archivoAnticipo = inputAnticipo.files[0]; // <-- Corregido
-
-  console.log("Datos enviados:", {
-    archivoEnvio,
-    archivoExoneracion, // <-- Corregido
-    archivoAnticipo, // <-- Corregido
- });
-
+  const archivoExoneracion = inputExoneracion.files[0];
+  const archivoAnticipo = inputAnticipo.files[0];
+  
+  // EJECUTAR VALIDACIONES ANTES DE CONTINUAR
+  if (!validateTicketCreation()) {
+    return; // Detener la ejecución si hay errores
+  }
+  
   const botonCargaPDFEnv = document.getElementById("botonCargaPDFEnv");
-  const botonCargaExoneracion = document.getElementById(
-    "botonCargaExoneracion"
-  );
+  const botonCargaExoneracion = document.getElementById("botonCargaExoneracion");
   const botonCargaAnticipo = document.getElementById("botonCargaAnticipo");
 
   // Validaciones generales de campos obligatorios
@@ -1422,7 +1419,7 @@ function SendDataFailure2(idStatusPayment) {
     Swal.fire({
       icon: "warning",
       title: "Campos requeridos",
-      text: "Por favor, complete todos los campos obligatorios (Falla, RIF, Serial, Coordinador, Nivel de Falla).",
+      text: "Por favor, complete todos los campos obligatorios (Falla y Coordinador).",
       color: "black",
       confirmButtonText: "Ok",
       confirmButtonColor: "#003594",
@@ -1430,66 +1427,11 @@ function SendDataFailure2(idStatusPayment) {
     return;
   }
 
-  // Validaciones de archivos CONDICIONALES si se eligió "Sí" para cargar ahora
-  if (uploadNowRadio.checked) {
-    const checkEnvio = document.getElementById("checkEnvio");
-    const checkExoneracion = document.getElementById("checkExoneracion");
-    const checkAnticipo = document.getElementById("checkAnticipo");
-
-    // NUEVA VALIDACIÓN: Verificar que al menos un radio button esté marcado
-    if (!checkEnvio.checked && !checkExoneracion.checked && !checkAnticipo.checked) {
-      Swal.fire({
-        title: "¡Notificación!",
-        text: "Debe cargar los documentos pendientes.",
-        icon: "warning",
-        confirmButtonText: "OK",
-        color: "black",
-        confirmButtonColor: "#003594",
-      });
-      return;
-    }
-
-    // Validaciones individuales de archivos
-    if (checkEnvio.checked && !archivoEnvio) {
-      Swal.fire({
-        icon: "warning",
-        title: "Campo requerido",
-        text: 'Por favor, seleccione el PDF de Envío después de marcar "Cargar PDF Envío".',
-        color: "black",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#003594",
-      });
-      return;
-    }
-    if (checkExoneracion.checked && !archivoExoneracion) {
-      Swal.fire({
-        icon: "warning",
-        title: "Campo requerido",
-        text: 'Por favor, seleccione el PDF de Exoneración después de marcar "Cargar Exoneración".',
-        color: "black",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#003594",
-      });
-      return;
-    }
-    if (checkAnticipo.checked && !archivoAnticipo) {
-      Swal.fire({
-        icon: "warning",
-        title: "Campo requerido",
-        text: 'Por favor, seleccione el PDF del Anticipo después de marcar "Cargar PDF Anticipo".',
-        color: "black",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#003594",
-      });
-      return;
-    }
-  }
-
   // VERIFICAR SI YA EXISTE UN TICKET EN PROCESO PARA ESTE SERIAL
   verificarTicketEnProceso(serial)
     .then((response) => {
       if (response.ticket_en_proceso) {
-          const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+        const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
 
         Swal.fire({
           html: `<div class="custom-modal-body-content">
@@ -1605,16 +1547,16 @@ function SendDataFailure2(idStatusPayment) {
   function continuarCreacionTicket() {
     // Crear FormData
     const formData = new FormData();
-    formData.append("falla_id", descrpFailure_id); // Enviamos el ID de la falla
-    formData.append("falla_text", descrpFailure_text); // ¡Y el texto de la falla!
+    formData.append("falla_id", descrpFailure_id);
+    formData.append("falla_text", descrpFailure_text);
     formData.append("serial", serial);
     formData.append("coordinador", coordinador);
     formData.append("nivelFalla", nivelFallaValue);
     formData.append("nivelFalla_text", nivelFallaText);
-    formData.append("id_status_payment", idStatusPayment); // Viene de UpdateGuarantees()
+    formData.append("id_status_payment", idStatusPayment);
     formData.append("id_user", id_user);
     formData.append("rif", rif);
-    formData.append("coordinadorNombre", coordinadorNombre); // Añadir el nombre del coordinador
+    formData.append("coordinadorNombre", coordinadorNombre);
 
     // Añadir archivos a FormData SOLO si 'uploadNow' está checked Y el checkbox correspondiente está marcado
     if (uploadNowRadio.checked) {
@@ -1632,7 +1574,7 @@ function SendDataFailure2(idStatusPayment) {
         formData.append("archivoAnticipo", archivoAnticipo);
       }
     }
-    formData.append("action", "SaveDataFalla2"); // Acción para el backend
+    formData.append("action", "SaveDataFalla2");
 
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveDataFalla2`);
@@ -1661,20 +1603,17 @@ function SendDataFailure2(idStatusPayment) {
                       "Correo enviado con éxito:",
                       responseEmail.message
                     );
-                    // Muestra un mensaje de éxito al usuario
                   } else {
                     console.error(
                       "Error al enviar el correo:",
                       responseEmail.message
                     );
-                    // Muestra un mensaje de error al usuario
                   }
                 } catch (error) {
                   console.error(
                     "Error al parsear la respuesta del correo:",
                     error
                   );
-                  // Muestra un mensaje de error genérico al usuario
                 }
               } else {
                 console.error(
@@ -1682,7 +1621,6 @@ function SendDataFailure2(idStatusPayment) {
                   xhrEmail.status,
                   xhrEmail.responseText
                 );
-                // Muestra un mensaje de error al usuario
               }
             };
             const params = `id_coordinador=${encodeURIComponent(
@@ -1716,7 +1654,7 @@ function SendDataFailure2(idStatusPayment) {
                         <strong>❌ Falla Reportada:</strong> ${ticketData.falla_text}
                     </p>
                     <p style="margin-bottom: 8px;">
-                        <strong>📊 Nivel de Falla:</strong> ${ticketData.nivelFalla_text}
+                        <strong> 🔍  Nivel de Falla:</strong> ${ticketData.nivelFalla_text}
                     </p>
                     <p style="margin-bottom: 8px;">
                         <strong>🏢 RIF Cliente:</strong> ${ticketData.rif || "N/A"}
@@ -1725,13 +1663,13 @@ function SendDataFailure2(idStatusPayment) {
                       <strong>🏢Razon Social:</strong> ${globalRazon || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
-                        <strong>🧑‍💼 Usuario Gestión:</strong> ${ticketData.user_gestion || "N/A"}
+                        <strong>👤 Usuario Gestión:</strong> ${ticketData.user_gestion || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
                         <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.coordinador || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
-                        <strong>📋 Estado de Documentos:</strong> <span style="color: darkblue; font-weight: bold;">${ticketData.status_payment || "N/A"}</span>
+                        <strong>📁 Estado de Documentos:</strong> <span style="color: darkblue; font-weight: bold;">${ticketData.status_payment || "N/A"}</span>
                     </p>
                     <strong>
                       <p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
@@ -1747,7 +1685,7 @@ function SendDataFailure2(idStatusPayment) {
           color: "black",
           confirmButtonText: "Cerrar",
           confirmButtonColor: "#003594",
-          showConfirmButton: true, // Deshabilita el botón de confirmación
+          showConfirmButton: true,
           showClass: {
             popup: "animate__animated animate__fadeInDown",
           },
@@ -1756,29 +1694,22 @@ function SendDataFailure2(idStatusPayment) {
           },
           allowOutsideClick: false,
           allowEscapeKey: false,
-          showCancelButton: true, // Habilita el botón de cancelar
-          cancelButtonText: "Asociar Componentes", // Personaliza el texto del botón de cancelar
-          cancelButtonColor: "#28a745", // Asigna un color diferente al nuevo botón
+          showCancelButton: true,
+          cancelButtonText: "Asociar Componentes",
+          cancelButtonColor: "#28a745",
         }).then((result) => {
-          // Este bloque de código se ejecuta DESPUÉS de que el usuario interactúa y el modal de SweetAlert2 se cierra.
           if (result.isConfirmed) {
-            // Si el usuario hace clic en "Cerrar" (botón de confirmación)
-            // Oculta tu modal personalizado (si lo tienes y estás usando jQuery)
             $("#miModal").css("display", "none");
-            // Recarga la página después de un breve temporizador
             setTimeout(() => {
               location.reload();
             }, 1000);
           } else if (result.dismiss === Swal.DismissReason.cancel) {
               $("#miModal").css("display", "none");
               
-              // Se extraen el ticketId y el serialPos del objeto ticketData para pasarlos a la función.
             const ticketId = ticketData.id_ticket_creado;
             console.log(`Ticket ID: ${ticketId}`);
             const serialPos = ticketData.serial;
             
-            // Se llama a la función que abre el modal de componentes
-            // Nota: La función 'abrirModalComponentes' ya se encargará de mostrar el modal y cargar la información.
             abrirModalComponentes({
               dataset: {
                 idTicket: ticketId,
@@ -1902,6 +1833,171 @@ function SendDataFailure2(idStatusPayment) {
     }
 }
 
+// Función principal de validación para la creación de tickets
+function validateTicketCreation() {
+    // Obtener elementos del DOM
+    const inputEnvio = document.getElementById('EnvioInput');
+    const inputExoneracion = document.getElementById('ExoneracionInput');
+    const inputAnticipo = document.getElementById('AnticipoInput');
+    
+    const checkEnvio = document.getElementById('checkEnvio');
+    const checkExoneracion = document.getElementById('checkExoneracion');
+    const checkAnticipo = document.getElementById('checkAnticipo');
+    
+    const uploadNowRadio = document.getElementById('uploadNow');
+    
+    // Si no se eligió "Cargar ahora", no hay validaciones de archivos
+    if (!uploadNowRadio.checked) {
+        return true;
+    }
+    
+    // Verificar que al menos un checkbox esté marcado
+    if (!checkEnvio.checked && !checkExoneracion.checked && !checkAnticipo.checked) {
+        Swal.fire({
+            title: "¡Notificación!",
+            text: "Debe cargar los documentos pendientes.",
+            icon: "warning",
+            confirmButtonText: "OK",
+            color: "black",
+            confirmButtonColor: "#003594",
+        });
+        return false;
+    }
+    
+    // Validaciones individuales de archivos
+    const validacionEnvio = validateFileInput(inputEnvio, checkEnvio, 'Envío');
+    if (!validacionEnvio.isValid) {
+        Swal.fire({
+            icon: "warning",
+            title: "Campo requerido",
+            text: validacionEnvio.message,
+            color: "black",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#003594",
+        });
+        return false;
+    }
+    
+    const validacionExoneracion = validateFileInput(inputExoneracion, checkExoneracion, 'Exoneración');
+    if (!validacionExoneracion.isValid) {
+        Swal.fire({
+            icon: "warning",
+            title: "Campo requerido",
+            text: validacionExoneracion.message,
+            color: "black",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#003594",
+        });
+        return false;
+    }
+    
+    const validacionAnticipo = validateFileInput(inputAnticipo, checkAnticipo, 'Anticipo');
+    if (!validacionAnticipo.isValid) {
+        Swal.fire({
+            icon: "warning",
+            title: "Campo requerido",
+            text: validacionAnticipo.message,
+            color: "black",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#003594",
+        });
+        return false;
+    }
+    
+    // Validaciones adicionales de tipo y tamaño (opcional)
+    if (checkEnvio.checked && inputEnvio.files[0]) {
+        const validacionTipoEnvio = validateFileType(inputEnvio.files[0]);
+        if (!validacionTipoEnvio.isValid) {
+            Swal.fire({
+                icon: "error",
+                title: "Tipo de archivo no válido",
+                text: validacionTipoEnvio.message,
+                color: "black",
+                confirmButtonText: "OK",
+                confirmButtonColor: "#003594",
+            });
+            return false;
+        }
+        
+        const validacionTamañoEnvio = validateFileSize(inputEnvio.files[0]);
+        if (!validacionTamañoEnvio.isValid) {
+            Swal.fire({
+                icon: "error",
+                title: "Archivo demasiado grande",
+                text: validacionTamañoEnvio.message,
+                color: "black",
+                confirmButtonText: "OK",
+                confirmButtonColor: "#003594",
+            });
+            return false;
+        }
+    }
+    
+    if (checkExoneracion.checked && inputExoneracion.files[0]) {
+        const validacionTipoExo = validateFileType(inputExoneracion.files[0]);
+        if (!validacionTipoExo.isValid) {
+            Swal.fire({
+                icon: "error",
+                title: "Tipo de archivo no válido",
+                text: validacionTipoExo.message,
+                color: "black",
+                confirmButtonText: "OK",
+                confirmButtonColor: "#003594",
+            });
+            return false;
+        }
+    }
+    
+    if (checkAnticipo.checked && inputAnticipo.files[0]) {
+        const validacionTipoAnt = validateFileType(inputAnticipo.files[0]);
+        if (!validacionTipoAnt.isValid) {
+            Swal.fire({
+                icon: "error",
+                title: "Tipo de archivo no válido",
+                text: validacionTipoAnt.message,
+                color: "black",
+                confirmButtonText: "OK",
+                confirmButtonColor: "#003594",
+            });
+            return false;
+        }
+    }
+    
+    // Si todas las validaciones pasan
+    return true;
+}
+
+// Función para validar si un archivo está seleccionado
+function validateFileInput(fileInput, checkbox, documentType) {
+    if (checkbox.checked && (!fileInput.files || fileInput.files.length === 0)) {
+        return {
+            isValid: false,
+            message: `Por favor, seleccione el Documento de ${documentType} después de marcar "Cargar De ${documentType}".`
+        };
+    }
+    return { isValid: true };
+}
+
+// Función para validar el tipo de archivo
+function validateFileType(file, allowedTypes = ['*/*']) {
+    if (!file) return { isValid: true };
+    
+    // NUEVA LÓGICA: Aceptar cualquier tipo de archivo
+    return { isValid: true };
+}
+// Función para validar el tamaño del archivo (ejemplo: máximo 10MB)
+function validateFileSize(file, maxSizeMB = 10) {
+    if (!file) return { isValid: true };
+    
+    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+        return {
+            isValid: false,
+            message: `El archivo es demasiado grande. Tamaño máximo: ${maxSizeMB}MB.`
+        };
+    }
+    return { isValid: true };
+}
 // --- INICIALIZACIÓN Y MANEJO DE EVENTOS DEL DOM ---
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -2373,10 +2469,10 @@ function clearFormFields() {
   if (checkExoneracion) checkExoneracion.checked = false;
   if (checkAnticipo) checkAnticipo.checked = false;
 
-  // --- Limpiar los input type="file" ---
-  clearFileInput("EnvioInput");
+  // --- Limpiar los input type="file" BORRAR---
+  /*clearFileInput("EnvioInput");
   clearFileInput("ExoneracionInput");
-  clearFileInput("AnticipoInput");
+  clearFileInput("AnticipoInput");*/
 
   // --- Limpiar los elementos DIV que muestran el nombre del archivo ---
   clearFileSpan(fileChosenSpanEnvio);
@@ -2461,14 +2557,15 @@ function clearFormFields() {
   console.log("Campos limpiados correctamente"); // Para debugging
 }
 
-// --- Funciones auxiliares ---
-function clearFileInput(fileInputId) {
+// --- Funciones auxiliares BORRAR---
+/*function clearFileInput(fileInputId) {
   const oldFileInput = document.getElementById(fileInputId);
   if (oldFileInput) {
     const newFileInput = oldFileInput.cloneNode(true);
     oldFileInput.parentNode.replaceChild(newFileInput, oldFileInput);
   }
-}
+}*/
+
 
 function clearFileSpan(spanElement) {
   if (spanElement) spanElement.textContent = "";

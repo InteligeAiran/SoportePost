@@ -464,7 +464,7 @@ function mi_navbar() {}
                         <div class="row mt-4">
                             <label class="col-sm-2 col-form-label">Región</label>
                         </div>
-                        <input id="InputRegion" class="form-control" type="text" value="" aria-label="readonly input example" style="width: 100%;" readonly>
+                        <input id="InputRegion" class="form-control" type="text" value="" aria-label="readonly input example" style="width: 100%;"  placeholder="Seleccione Un Técnico" disabled>
                     </div>
                     <div class="modal-footer">
                         <button id="close-button" type="button" class="btn btn-secondary">Cerrar</button>

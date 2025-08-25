@@ -1649,7 +1649,7 @@ function AssignTicket() {
     Swal.fire({
       icon: "warning",
       title: "¡Atención!",
-      text: "Por favor, selecciona un ticket antes de asignar un técnico.",
+      text: "Por favor, selecciona un técnico antes de asignar.",
       color: "black",
       confirmButtonText: "Ok",
       confirmButtonColor: "#003594",
@@ -1669,7 +1669,7 @@ function AssignTicket() {
           Swal.fire({
             icon: "success",
             title: response.message,
-            html: `El Pos asociado <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketSerialPosForAssignment}</span> al nro de ticket: <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNroForAssignment}</span> ha sido asignado correctamente.`,
+            html: `El Pos asociado <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketSerialPosForAssignment}</span> al nro de ticket: <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNroForAssignment}</span> ha sido asignado correctamente.`,
             color: "black",
             showConfirmButton: true,
             confirmButtonText: "Ok",
