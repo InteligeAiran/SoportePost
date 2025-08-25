@@ -2246,7 +2246,7 @@ class consulta_rifModel extends Model
             $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
             $escaped_document_type = pg_escape_literal($db_conn, $document_type);
 
-            $sql = "UPDATE archivos_adjuntos SET id_motivo_rechazo = $id_motivo WHERE nro_ticket = ".$escaped_nro_ticket." AND document_type = ".$escaped_document_type.";";
+            $sql = "UPDATE archivos_adjuntos SET id_motivo_rechazo = $id_motivo, rechazado = 'TRUE' WHERE nro_ticket = ".$escaped_nro_ticket." AND document_type = ".$escaped_document_type.";";
             $result = Model::getResult($sql, $this->db);
 
             if($result){
