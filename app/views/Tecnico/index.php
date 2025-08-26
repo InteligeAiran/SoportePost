@@ -364,7 +364,167 @@ function mi_navbar()
             background-color: red;
             color: white;
         }
-    </style>
+
+        /* Estilos para los indicadores de estado del ticket */
+            .ticket-status-indicator {
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                padding: 15px 20px;
+                margin-bottom: 20px;
+                border-radius: 12px;
+                font-weight: bold;
+                text-align: center;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+                transition: all 0.3s ease;
+            }
+
+            .status-open {
+                background: linear-gradient(135deg, #51cf66, #40c057);
+                color: white;
+                border-left: 6px solid #2b8a3e;
+            }
+
+            .status-process {
+                background: linear-gradient(135deg, #ffd93d, #fcc419);
+                color: #2c3e50;
+                border-left: 6px solid #e67700;
+                animation: pulse 2s infinite;
+            }
+
+            .status-closed {
+                background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+                color: white;
+                border-left: 6px solid #c92a2a;
+            }
+
+            .status-content {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+            }
+
+            .status-icon {
+                font-size: 1.4em;
+                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            }
+
+            .status-text {
+                font-size: 1.2em;
+                letter-spacing: 1.5px;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            /* Animación para el estado en proceso */
+            @keyframes pulse {
+                    0% { opacity: 1; transform: scale(1); }
+                    50% { opacity: 0.9; transform: scale(1.02); }
+                    100% { opacity: 1; transform: scale(1); }
+                }
+
+                /* Responsive para móviles */
+                @media (max-width: 768px) {
+                    .ticket-status-indicator {
+                        padding: 12px 15px;
+                        margin-bottom: 15px;
+                    }
+                
+                .status-text {
+                    font-size: 1em;
+                    letter-spacing: 1px;
+                }
+                
+                .status-icon {
+                    font-size: 1.2em;
+                }
+            }
+        /* END Estilos para los indicadores de estado del ticket */
+
+
+        /* Botón de Cargar Envío (verde brillante) */
+            #EnvioBoton {
+                background-color: #38a169;
+                border-color: #38a169;
+                color: white;
+            }
+
+            #EnvioBoton:hover {
+                background-color: #2f855a;
+                border-color: #2f855a;
+            }
+
+            /* Botón de Cargar Exoneración (morado) */
+            #ExoBoton {
+                background-color: #805ad5;
+                border-color: #805ad5;
+                color: white;
+            }
+
+            #ExoBoton:hover {
+                background-color: #6b46c1;
+                border-color: #6b46c1;
+            }
+
+            /* Botón de Cargar Pago (azul brillante) */
+            #PagoBoton {
+                background-color: #4299e1;
+                border-color: #4299e1;
+                color: white;
+            }
+
+            #PagoBoton:hover {
+                background-color: #3182ce;
+                border-color: #3182ce;
+            }
+
+            /* Estilos para los botones de VER (COLORES GRISÁCEOS) */
+
+            /* Botón de Ver Envío (gris verdoso) */
+            #VerEnvio {
+                background-color: #687e74;
+                border-color: #687e74;
+                color: white;
+            }
+
+            #VerEnvio:hover {
+                background-color: #55665e;
+                border-color: #55665e;
+            }
+
+            /* Botón de Ver Exoneración (gris morado) */
+            #VerExo {
+                background-color: #6d667e;
+                border-color: #6d667e;
+                color: white;
+            }
+
+            #VerExo:hover {
+                background-color: #5b556b;
+                border-color: #5b556b;
+            }
+
+            /* Botón de Ver Pago (gris azulado) */
+            #VerPago {
+                background-color: #667280;
+                border-color: #667280;
+                color: white;
+            }
+
+            #VerPago:hover {
+                background-color: #576370;
+                border-color: #576370;
+            }
+
+        /* Estilos comunes para todos los botones en el modal */
+            .modal-body button {
+                width: 100%;
+                margin-bottom: 10px;
+                font-weight: bold;
+                border-radius: 0.5rem;
+                box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+            }
+        </style>
     </head>
 
     <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -401,6 +561,7 @@ function mi_navbar()
                                             </div>
                                         </div>
                                     </div>
+                                    <div id="ticket-status-indicator-container"></div>
                                    <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
                                         <thead>
                                         </thead>
@@ -427,9 +588,9 @@ function mi_navbar()
             <div id="actionSelectionModal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <div class="modal-header">
+                        <div class="modal-header bg-gradient-primary">
                             <button id="BtnCerrarSelecionAccion" type="button" class="btn-close" aria-label="Close"></button>
-                            <h2 style="color: black;">Seleccionar Acción</h2>
+                            <h2 style="color: white;">Seleccionar Acción</h2>
                         </div>
                         <div class="modal-body">
                             <p style="font-size: 115%;">¿Qué acción deseas realizar con el ticket?</p>

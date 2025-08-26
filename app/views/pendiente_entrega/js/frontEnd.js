@@ -461,6 +461,14 @@ function getTicketDataFinaljs() {
         if (response.success) {
           const TicketData = response.ticket;
 
+            // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente)
+            if (TicketData && TicketData.length > 0) {
+              const firstTicket = TicketData[0];
+              showTicketStatusIndicator(firstTicket.name_status_ticket, firstTicket.name_accion_ticket);
+            } else {
+              hideTicketStatusIndicator();
+            }
+
           if (TicketData && TicketData.length > 0) {
             // Destroy DataTables if it's already initialized on this table
             if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
@@ -595,13 +603,21 @@ function getTicketDataFinaljs() {
                                           </button>`;
                       }
                       // Prioridad 2: Validar si el ticket es de Caracas o Miranda y está Reparado
-                      else if ((currentStatusLab === "Reparado" || currentStatusLab === "") && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas")) {
+                      else if ((currentStatusLab === "Reparado") && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas")) {
                           actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
                                               data-id-ticket="${idTicket}"
                                               data-serial-pos="${serialPos}"
                                               data-nro-ticket="${nroTicket}">
                                               Entregar al Cliente
                                           </button>`;
+                      }else if((currentStatusLab === "Reparado" || currentStatusLab === "") && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas") && (name_accion_ticket == "En espera de Confirmar Devolución")){
+                         actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-bt"
+                                              data-id-ticket="${idTicket}"
+                                              data-serial-pos="${serialPos}"
+                                              data-nro-ticket="${nroTicket}">
+                                              Entregar al Cliente
+                                          </button>`;
+
                       }
                       else {
                           const commonConditions = ((currentStatusLab === "Reparado" || currentStatusLab === "") && !(nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas"));
@@ -652,8 +668,7 @@ function getTicketDataFinaljs() {
                                     data-id-ticket="${idTicket}" 
                                     data-nro-ticket="${row.nro_ticket}"
                                     data-serial-pos="${row.serial_pos}" 
-                                    title="Llaves Cargadas"
-                                    checked disabled>`;
+                                    title="Llaves Cargadas" checked disabled>`;
                                     
                         }else if (verificacionDeLlaves === false || verificacionDeLlaves === 'f' && accionllaves === "Llaves Cargadas" && fechaLlavesEnviada == null) {
                             return `<input type="checkbox" class="receive-key-checkbox" 
@@ -940,6 +955,75 @@ function getTicketDataFinaljs() {
                               });
                           },
                       });
+
+                  $(document).on("click", ".deliver-ticket-bt", function () {
+                    const idTicket = $(this).data("id-ticket");
+                  const nroTicket = $(this).data("nro-ticket"); 
+                  const serialPos = $(this).data("serial-pos"); 
+                  const customDeliverSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+                  const id_user = document.getElementById('userId').value;
+
+                  Swal.fire({
+                      title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                          <div class="custom-modal-header-content">Confirmación de Entrega al Cliente</div>
+                      </div>`,
+                      html: `<div class="custom-modal-body-content">
+                          <div class="mb-4">
+                              ${customDeliverSvg}
+                          </div> 
+                          <p class="h4 mb-3" style="color: black;">¿Desea marcar el dispositivo con serial <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> del Ticket Nro: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> como "Entregado al Cliente"?</p> 
+                          <p class="h5" style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">Esta acción registrará la fecha de entrega al cliente.</p>
+                      </div>`,
+                      confirmButtonText: "Confirmar Entrega",
+                      color: "black",
+                      confirmButtonColor: "#003594",
+                      cancelButtonText: "Cancelar",
+                      focusConfirm: false,
+                      allowOutsideClick: false,
+                      showCancelButton: true,
+                      allowEscapeKey: false,
+                      keydownListenerCapture: true,
+                      screenX: false,
+                      screenY: false,
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      const dataToSendString = `action=entregar_ticketDev&id_ticket=${encodeURIComponent(idTicket)}&id_user=${encodeURIComponent(id_user)}`;
+                      const xhr = new XMLHttpRequest();
+                      const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/entregar_ticketDev`;
+                      xhr.open('POST', url, true);
+                      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                      xhr.onload = function() {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                          Swal.fire({
+                            title: '¡Éxito!',
+                            html: `El Pos con el serial <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; ">${serialPos}</span> ha sido entregado con éxito, asociado al Nro de ticket: <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span>.`,
+                            icon: 'success',
+                            color: "black",
+                            confirmButtonColor: "#003594",
+                            confirmButtonText: 'Aceptar',
+                            showCloseButton: false,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            keydownListenerCapture: true,
+                          }).then((result) => {
+                            if (result.isConfirmed) {
+                              window.location.reload();
+                            }
+                          });
+                        } else {
+                          Swal.fire('Error', 'Hubo un problema al conectar con el servidor. Código de estado: ' + xhr.status, 'error');
+                        }
+                      };
+                      xhr.onerror = function() {
+                        Swal.fire('Error de red', 'Hubo un problema con la conexión.', 'error');
+                      };
+                      xhr.send(dataToSendString);              
+                    } else {
+                        // User clicked on "Cancel" or pressed Escape
+                    }
+                  })
+                });
 
                   $(document).on("click", ".deliver-ticket-btn", function () {
                   const idTicket = $(this).data("id-ticket");
@@ -1255,7 +1339,17 @@ function getTicketDataFinaljs() {
       }
     } else if (xhr.status === 404) {
       if (tableContainer) {
-        tableContainer.innerHTML = "<p>No se encontraron datos.</p>";
+        tableContainer.innerHTML =  `<tr>
+          <td colspan="14" class="text-center text-muted py-5">
+            <div class="d-flex flex-column align-items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+              </svg>
+              <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+              <p class="text-muted mb-0">No hay tickets en el Rosal para mostrar en este momento.</p>
+            </div>
+          </td>
+       </tr>`;
         tableContainer.style.display = "";
       }
     } else {
@@ -1507,7 +1601,7 @@ function MarkDateKey(ticketId, nroTicket, serialPos) {
                     Swal.fire({
                         icon: "success",
                         title: "¡Éxito!",
-                        html: `La fecha de la carga de llaves al POS: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> fue registrada correctamente.`,
+                        html: `La fecha de la carga de llaves al POS: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span>asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> fue registrada correctamente.`,
                         confirmButtonText: "Aceptar", // <-- OPCIONAL: Puedes personalizar el texto del botón
                         allowOutsideClick: false, // <-- ELIMINAR O COMENTAR esta línea
                         color: "black", // <-- ELIMINAR O COMENTAR esta línea
@@ -2349,6 +2443,9 @@ function loadTicketHistory(ticketId) {
 
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
+          // --- NUEVA LÓGICA: Mostrar comment_devolution cuando la acción es 'En espera de Confirmar Devolución' ---
+          const showCommentDevolution = itemAccion === 'En espera de Confirmar Devolución' && item.comment_devolution;
+
           const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
           let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
@@ -2362,6 +2459,14 @@ function loadTicketHistory(ticketId) {
             statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
           }
 
+          // Solo mostrar el comentario de devolución cuando sea relevante
+          if (item.name_accion_ticket === 'En espera de Confirmar Devolución' && item.comment_devolution) {
+            historyHtml += `
+              <div class="alert alert-warning alert-sm mb-2">
+                <strong>Comentario de Devolución:</strong> ${item.comment_devolution}
+              </div>
+            `;
+          }
          
           historyHtml += `
                         <div class="card mb-3 custom-history-card">
@@ -2431,6 +2536,12 @@ function loadTicketHistory(ticketId) {
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
                                                   </tr>
                                              ` : ''}
+                                                ${showCommentDevolution ? `
+                                                  <tr>
+                                                    <th class="text-start">Comentario de Devolución:</th>
+                                                    <td class="highlighted-change">${item.comment_devolution || "N/A"}</td>
+                                                  </tr>
+                                             ` : ''}
                                                 ${itemPago === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Pago:</th>
@@ -2446,7 +2557,7 @@ function loadTicketHistory(ticketId) {
                                                 ${itemEnvio === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Envío:</th>
-                                                    <td class="${envioChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                    <td class="${pagoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
                                                   </tr>
                                              ` : ''}
                                                 ${itemEnvioDestino === 'Sí' ? `
@@ -2508,5 +2619,66 @@ function obtenerRegionName() {
     return regionSelect.selectedOptions[0].text;
   }
   return 'Sin región asignada';
+}
+
+function getTicketStatusVisual(statusTicket, accionTicket) {
+  let statusClass = '';
+  let statusText = '';
+  let statusIcon = '';
+  
+  if (statusTicket === 'Abierto' || 
+      accionTicket === 'Asignado al Coordinador' ||
+      accionTicket === 'Pendiente por revisar domiciliacion') {
+    statusClass = 'status-open';
+    statusText = 'ABIERTO';
+    statusIcon = '🟢';
+  } else if (statusTicket === 'En proceso' || 
+             accionTicket === 'Asignado al Técnico' || 
+             accionTicket === 'Recibido por el Técnico' ||
+             accionTicket === 'Enviado a taller' ||
+             accionTicket === 'En Taller' ||
+             accionTicket === 'En espera de Confirmar Devolución') {
+    statusClass = 'status-process';
+    statusText = 'EN PROCESO';
+    statusIcon = '🟡';
+  } else if (statusTicket === 'Cerrado' || 
+             accionTicket === 'Entregado a Cliente') {
+    statusClass = 'status-closed';
+    statusText = 'CERRADO';
+    statusIcon = '🔴';
+  }
+  
+  return { statusClass, statusText, statusIcon };
+}
+
+// Función para mostrar el indicador de estado
+function showTicketStatusIndicator(statusTicket, accionTicket) {
+  const container = document.getElementById('ticket-status-indicator-container');
+  if (!container) return;
+  
+  const { statusClass, statusText, statusIcon } = getTicketStatusVisual(statusTicket, accionTicket);
+  
+  container.innerHTML = `
+    <div class="ticket-status-indicator ${statusClass}">
+      <div class="status-content">
+        <span class="status-icon">${statusIcon}</span>
+        <span class="status-text">${statusText}</span>
+      </div>
+    </div>
+  `;
+}
+
+// Función para ocultar el indicador
+function hideTicketStatusIndicator() {
+  const container = document.getElementById('ticket-status-indicator-container');
+  if (container) {
+    container.innerHTML = '';
+  }
+}
+
+// Cuando se selecciona un ticket específico
+function onTicketSelect(ticketData) {
+  showTicketStatusIndicator(ticketData.name_status_ticket, ticketData.name_accion_ticket);
+  // ... resto de tu código para mostrar detalles del ticket ...
 }
 

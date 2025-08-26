@@ -366,6 +366,21 @@ class reportsModel extends Model
  */
 private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_being_uploaded) {
     try {
+        // Primero, verificar el estado actual del ticket para ver si ya tiene documentos aprobados
+        $current_status_sql = "SELECT id_status_payment FROM tickets WHERE nro_ticket = '".$nro_ticket."'";
+        $current_status_result = Model::getResult($current_status_sql, $this->db);
+        
+        if ($current_status_result && isset($current_status_result['query']) && $current_status_result['numRows'] > 0) {
+            $current_status = pg_fetch_result($current_status_result['query'], 0, 'id_status_payment');
+            
+            // Si el ticket ya tiene documentos aprobados (status 4 = Exoneracion Aprobada, 6 = Anticipo Aprobado)
+            // y se está subiendo un documento de traslado o envio, mantener el status aprobado
+            if (($current_status == 4 || $current_status == 6) && 
+                ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio')) {
+                return $current_status; // Mantener el status aprobado
+            }
+        }
+        
         // Obtener todos los documentos para este ticket (excluyendo el que se está subiendo)
         $sql = "SELECT 
                     document_type, 
@@ -559,6 +574,21 @@ private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_b
 
 // NUEVA FUNCIÓN PARA DETERMINAR EL STATUS PAYMENT
 private function determineStatusPayment($nro_ticket, $document_type_being_uploaded) {
+    // Primero, verificar el estado actual del ticket para ver si ya tiene documentos aprobados
+    $current_status_sql = "SELECT id_status_payment FROM tickets WHERE nro_ticket = '".$nro_ticket."'";
+    $current_status_result = Model::getResult($current_status_sql, $this->db);
+    
+    if ($current_status_result && isset($current_status_result['query']) && $current_status_result['numRows'] > 0) {
+        $current_status = pg_fetch_result($current_status_result['query'], 0, 'id_status_payment');
+        
+        // Si el ticket ya tiene documentos aprobados (status 4 = Exoneracion Aprobada, 6 = Anticipo Aprobado)
+        // y se está subiendo un documento de traslado o envio, mantener el status aprobado
+        if (($current_status == 4 || $current_status == 6) && 
+            ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio')) {
+            return $current_status; // Mantener el status aprobado
+        }
+    }
+    
     // Verificar qué documentos ya existen para este ticket (EXCLUYENDO el que se está subiendo)
     $sql = "SELECT document_type FROM archivos_adjuntos WHERE nro_ticket = '".$nro_ticket."' AND document_type != '".$document_type_being_uploaded."'";
     $result = Model::getResult($sql, $this->db);

@@ -249,7 +249,15 @@ function searchDomiciliacionTickets() {
             existingTable.style.display = 'none';
             const noDataMessage = document.createElement('p');
             noDataMessage.className = 'message-info';
-            noDataMessage.textContent = 'El servicio solicitado no se encontró o no hay datos.';
+            noDataMessage.innerHTML =  `<div class="text-center text-muted py-5">
+               <div class="d-flex flex-column align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                        <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                    </svg>
+                    <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                    <p class="text-muted mb-0">No hay tickets para verificar solvencia para mostrar en este momento.</p>
+                </div> 
+            </div>`;
             if (tableContainerParent) {
                 tableContainerParent.appendChild(noDataMessage);
             } else {
@@ -583,6 +591,9 @@ function loadTicketHistory(ticketId) {
 
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
+          // --- NUEVA LÓGICA: Mostrar comment_devolution cuando la acción es 'En espera de Confirmar Devolución' ---
+          const showCommentDevolution = itemAccion === 'En espera de Confirmar Devolución' && item.comment_devolution;
+
           const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
           let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
@@ -596,6 +607,14 @@ function loadTicketHistory(ticketId) {
             statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
           }
 
+          // Solo mostrar el comentario de devolución cuando sea relevante
+          if (item.name_accion_ticket === 'En espera de Confirmar Devolución' && item.comment_devolution) {
+            historyHtml += `
+              <div class="alert alert-warning alert-sm mb-2">
+                <strong>Comentario de Devolución:</strong> ${item.comment_devolution}
+              </div>
+            `;
+          }
          
           historyHtml += `
                         <div class="card mb-3 custom-history-card">
@@ -665,6 +684,12 @@ function loadTicketHistory(ticketId) {
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
                                                   </tr>
                                              ` : ''}
+                                                ${showCommentDevolution ? `
+                                                  <tr>
+                                                    <th class="text-start">Comentario de Devolución:</th>
+                                                    <td class="highlighted-change">${item.comment_devolution || "N/A"}</td>
+                                                  </tr>
+                                             ` : ''}
                                                 ${itemPago === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Pago:</th>
@@ -680,7 +705,7 @@ function loadTicketHistory(ticketId) {
                                                 ${itemEnvio === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Envío:</th>
-                                                    <td class="${envioChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                    <td class="${pagoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
                                                   </tr>
                                              ` : ''}
                                                 ${itemEnvioDestino === 'Sí' ? `

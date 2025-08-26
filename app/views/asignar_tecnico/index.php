@@ -387,9 +387,86 @@ function mi_navbar() {}
                     transform: scale(1);
                 }
             }*/
+
+        /* ... existing styles ... */
+
+        /* Estilos para los indicadores de estado del ticket */
+            .ticket-status-indicator {
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                padding: 15px 20px;
+                margin-bottom: 20px;
+                border-radius: 12px;
+                font-weight: bold;
+                text-align: center;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+                transition: all 0.3s ease;
+            }
+
+            .status-open {
+                background: linear-gradient(135deg, #51cf66, #40c057);
+                color: white;
+                border-left: 6px solid #2b8a3e;
+            }
+
+            .status-process {
+                background: linear-gradient(135deg, #ffd93d, #fcc419);
+                color: #2c3e50;
+                border-left: 6px solid #e67700;
+                animation: pulse 2s infinite;
+            }
+
+            .status-closed {
+                background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+                color: white;
+                border-left: 6px solid #c92a2a;
+            }
+
+            .status-content {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+            }
+
+            .status-icon {
+                font-size: 1.4em;
+                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            }
+
+            .status-text {
+                font-size: 1.2em;
+                letter-spacing: 1.5px;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            /* Animación para el estado en proceso */
+            @keyframes pulse {
+                0% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.9; transform: scale(1.02); }
+                100% { opacity: 1; transform: scale(1); }
+            }
+
+            /* Responsive para móviles */
+            @media (max-width: 768px) {
+                .ticket-status-indicator {
+                    padding: 12px 15px;
+                    margin-bottom: 15px;
+                }
+            
+                .status-text {
+                    font-size: 1em;
+                    letter-spacing: 1px;
+                }
+                
+                .status-icon {
+                    font-size: 1.2em;
+                }
+            }
+        /* END Estilos para los indicadores de estado del ticket */
     </style>
 </head>
-
 <body id="fondo" class="g-sidenav-show bg-gray-100">
     <div class="min-height-300 bg-dark position-absolute w-100"></div>
     <div class="d-lg-none fixed-top bg-dark p-2">
@@ -419,6 +496,7 @@ function mi_navbar() {}
                                         </div>
                                     </div>
                                 </div>
+                                <div id="ticket-status-indicator-container"></div>
                                 <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
                                     <thead>
                                         <tr>
@@ -434,7 +512,6 @@ function mi_navbar() {}
                                     </thead>
                                     <tbody class="table-group-divider" id="table-ticket-body">
                                         <tr>
-                                            <td>No hay datos</td>
                                         </tr>
                                     </tbody>
                                 </table>

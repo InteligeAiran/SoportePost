@@ -412,7 +412,7 @@ function mi_navbar()
                                         </thead>
                                         <tbody class="table-group-divider" id="table-ticket-body">
                                             <tr>
-                                                <td colspan="3">No hay datos</td>
+                                              
                                             </tr>
                                         </tbody>
                                     </table>

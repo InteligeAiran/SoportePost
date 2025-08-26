@@ -282,6 +282,15 @@ function getTicketDataCoordinator() {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
           const TicketData = response.ticket;
+            
+          // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente)
+          if (TicketData && TicketData.length > 0) {
+            const firstTicket = TicketData[0];
+            showTicketStatusIndicator(firstTicket.name_status_ticket, firstTicket.name_accion_ticket);
+          } else {
+            hideTicketStatusIndicator();
+          }
+
           const modalElement = document.getElementById("staticBackdrop");
           if (modalElement) {
             modalInstanceCoordinator = new bootstrap.Modal(modalElement, {
@@ -854,18 +863,15 @@ function getTicketDataCoordinator() {
             });
             return;
         }
-
-        console.log('Visualización de imagen', ticketRechazado);
         
-            // NUEVA VALIDACIÓN SIMPLIFICADA: Verificar si el ticket tiene documentos rechazados
-    if (ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
-        // Si el ticket ya tiene documentos rechazados, NO mostrar botón de rechazo
-        BotonRechazo.style.display = 'none';
-    } else {
-        // Si el ticket NO tiene documentos rechazados, SÍ mostrar botón de rechazo
-        BotonRechazo.style.display = 'block';
-    }
-
+        // NUEVA VALIDACIÓN SIMPLIFICADA: Verificar si el ticket tiene documentos rechazados
+        if (ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
+            // Si el ticket ya tiene documentos rechazados, NO mostrar botón de rechazo
+            BotonRechazo.style.display = 'none';
+        } else {
+            // Si el ticket NO tiene documentos rechazados, SÍ mostrar botón de rechazo
+            BotonRechazo.style.display = 'block';
+        }
         
         getMotivos(selectedOption);
 
@@ -919,28 +925,40 @@ function getTicketDataCoordinator() {
                 });
             });
     });
-
     // MOSTRAR el modal
     visualizarImagenModal.show();
   });
         } else {
+          hideTicketStatusIndicator();
           tbody.innerHTML = '<tr><td>Error al cargar</td></tr>';
           console.error("Error:", response.message);
         }
       } catch (error) {
+        hideTicketStatusIndicator();
         tbody.innerHTML =
           '<tr><td>Error al procesar la respuesta</td></tr>';
         console.error("Error parsing JSON:", error);
       }
     } else if (xhr.status === 404) {
-      tbody.innerHTML =
-        '<tr><td>No se encontraron usuarios</td></tr>';
+      hideTicketStatusIndicator();
+      tbody.innerHTML =`<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets para Asignar a Técnico en este momento.</p>
+          </div>
+        </td>
+      </tr>`;
     } else {
       tbody.innerHTML = '<tr><td>Error de conexión</td></tr>';
       console.error("Error:", xhr.status, xhr.statusText);
     }
   };
   xhr.onerror = function () {
+    hideTicketStatusIndicator();
     tbody.innerHTML = '<tr><td>Error de conexión</td></tr>';
     console.error("Error de red");
   };
@@ -1372,6 +1390,9 @@ function loadTicketHistory(ticketId) {
 
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
+          // --- NUEVA LÓGICA: Mostrar comment_devolution cuando la acción es 'En espera de Confirmar Devolución' ---
+          const showCommentDevolution = itemAccion === 'En espera de Confirmar Devolución' && item.comment_devolution;
+
           const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
           let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
@@ -1385,6 +1406,14 @@ function loadTicketHistory(ticketId) {
             statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
           }
 
+          // Solo mostrar el comentario de devolución cuando sea relevante
+          if (item.name_accion_ticket === 'En espera de Confirmar Devolución' && item.comment_devolution) {
+            historyHtml += `
+              <div class="alert alert-warning alert-sm mb-2">
+                <strong>Comentario de Devolución:</strong> ${item.comment_devolution}
+              </div>
+            `;
+          }
          
           historyHtml += `
                         <div class="card mb-3 custom-history-card">
@@ -1454,6 +1483,12 @@ function loadTicketHistory(ticketId) {
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
                                                   </tr>
                                              ` : ''}
+                                                ${showCommentDevolution ? `
+                                                  <tr>
+                                                    <th class="text-start">Comentario de Devolución:</th>
+                                                    <td class="highlighted-change">${item.comment_devolution || "N/A"}</td>
+                                                  </tr>
+                                             ` : ''}
                                                 ${itemPago === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Pago:</th>
@@ -1469,7 +1504,7 @@ function loadTicketHistory(ticketId) {
                                                 ${itemEnvio === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Envío:</th>
-                                                    <td class="${envioChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                    <td class="${pagoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
                                                   </tr>
                                              ` : ''}
                                                 ${itemEnvioDestino === 'Sí' ? `
@@ -2458,3 +2493,65 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
     };
     xhr.send(datos);
 });
+
+
+function getTicketStatusVisual(statusTicket, accionTicket) {
+  let statusClass = '';
+  let statusText = '';
+  let statusIcon = '';
+  
+  if (statusTicket === 'Abierto' || 
+      accionTicket === 'Asignado al Coordinador' ||
+      accionTicket === 'Pendiente por revisar domiciliacion') {
+    statusClass = 'status-open';
+    statusText = 'ABIERTO';
+    statusIcon = '🟢';
+  } else if (statusTicket === 'En proceso' || 
+             accionTicket === 'Asignado al Técnico' || 
+             accionTicket === 'Recibido por el Técnico' ||
+             accionTicket === 'Enviado a taller' ||
+             accionTicket === 'En Taller' ||
+             accionTicket === 'En espera de Confirmar Devolución') {
+    statusClass = 'status-process';
+    statusText = 'EN PROCESO';
+    statusIcon = '🟡';
+  } else if (statusTicket === 'Cerrado' || 
+             accionTicket === 'Entregado a Cliente') {
+    statusClass = 'status-closed';
+    statusText = 'CERRADO';
+    statusIcon = '🔴';
+  }
+  
+  return { statusClass, statusText, statusIcon };
+}
+
+// Función para mostrar el indicador de estado
+function showTicketStatusIndicator(statusTicket, accionTicket) {
+  const container = document.getElementById('ticket-status-indicator-container');
+  if (!container) return;
+  
+  const { statusClass, statusText, statusIcon } = getTicketStatusVisual(statusTicket, accionTicket);
+  
+  container.innerHTML = `
+    <div class="ticket-status-indicator ${statusClass}">
+      <div class="status-content">
+        <span class="status-icon">${statusIcon}</span>
+        <span class="status-text">${statusText}</span>
+      </div>
+    </div>
+  `;
+}
+
+// Función para ocultar el indicador
+function hideTicketStatusIndicator() {
+  const container = document.getElementById('ticket-status-indicator-container');
+  if (container) {
+    container.innerHTML = '';
+  }
+}
+
+// Cuando se selecciona un ticket específico
+function onTicketSelect(ticketData) {
+  showTicketStatusIndicator(ticketData.name_status_ticket, ticketData.name_accion_ticket);
+  // ... resto de tu código para mostrar detalles del ticket ...
+}

@@ -57,7 +57,7 @@ function getTicketData() {
     const tbodyElement = tableElement
         ? tableElement.getElementsByTagName("tbody")[0]
         : null;
-    const tableContainer = document.querySelector(".table-responsive");
+    const tableContainer = document.querySelector("#tabla-ticket tbody");
 
     // Define column titles strictly based on your SQL function's output
     const columnTitles = {
@@ -82,6 +82,15 @@ function getTicketData() {
 
                 if (response.success) {
                     const TicketData = response.ticket;
+
+                    // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente)
+                    if (TicketData && TicketData.length > 0) {
+                      const firstTicket = TicketData[0];
+                      showTicketStatusIndicator(firstTicket.name_status_ticket, firstTicket.name_accion_ticket);
+                    } else {
+                      hideTicketStatusIndicator();
+                    }
+
                     const detailsPanel = document.getElementById("ticket-details-panel");
 
                     // Limpiar el panel de detalles al cargar nuevos datos de la tabla
@@ -669,8 +678,18 @@ function getTicketData() {
             }
         } else if (xhr.status === 404) {
             if (tableContainer) {
-                tableContainer.innerHTML = "<p>No se encontraron datos.</p>";
-                tableContainer.style.display = "";
+              tableContainer.innerHTML = `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en Taller para mostrar en este momento.</p>
+          </div>
+        </td>
+      </tr>`
+                   tableContainer.style.display = "";
             }
         } else {
             if (tableContainer) {
@@ -738,7 +757,7 @@ function sendTicketToRosal(id, nro, withoutKeys, serialPos) {
                             const nroticket = nro; // Ya tienes 'nro' disponible aquí
                             Swal.fire({
                                 title: "¡Enviado!",
-                                html: `El Pos asociado al ticket Nro: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> se ha enviado a Gestión Rosal correctamente.`,
+                                html: `El Pos asociado al ticket Nro: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> se ha enviado a <span style = "<span style = "border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Gestión Rosal</span> correctamente.`,
                                 icon: "success",
                                 confirmButtonText: "Ok",
                                 confirmButtonColor: "#003594",
@@ -749,6 +768,7 @@ function sendTicketToRosal(id, nro, withoutKeys, serialPos) {
                                 }
                             });
                         } else {
+                          hideTicketStatusIndicator
                             // Si la API retorna success: false o un error en el cuerpo
                             console.warn("La API retornó éxito: falso o un valor inesperado:", response);
                             Swal.fire({
@@ -761,6 +781,7 @@ function sendTicketToRosal(id, nro, withoutKeys, serialPos) {
                             });
                         }
                     } catch (error) {
+                      hideTicketStatusIndicator
                         console.error("Error al analizar la respuesta JSON para el envío al Rosal:", error, xhr.responseText);
                         Swal.fire({
                             title: "Error de Procesamiento",
@@ -772,6 +793,7 @@ function sendTicketToRosal(id, nro, withoutKeys, serialPos) {
                         });
                     }
                 } else {
+                  hideTicketStatusIndicator
                     // Errores HTTP como 404, 500, etc.
                     console.error("Error al enviar el ticket (HTTP):", xhr.status, xhr.statusText, xhr.responseText);
                     Swal.fire({
@@ -786,7 +808,7 @@ function sendTicketToRosal(id, nro, withoutKeys, serialPos) {
             };
 
             xhr.onerror = function () {
-                // Errores de red como conexión perdida
+                hideTicketStatusIndicator
                 console.error("Error de red al intentar enviar el ticket al Rosal.");
                 Swal.fire({
                     title: "Error de Conexión",
@@ -1269,6 +1291,9 @@ function loadTicketHistory(ticketId) {
 
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
+          // --- NUEVA LÓGICA: Mostrar comment_devolution cuando la acción es 'En espera de Confirmar Devolución' ---
+          const showCommentDevolution = itemAccion === 'En espera de Confirmar Devolución' && item.comment_devolution;
+
           const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
           let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
@@ -1282,6 +1307,14 @@ function loadTicketHistory(ticketId) {
             statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
           }
 
+          // Solo mostrar el comentario de devolución cuando sea relevante
+          if (item.name_accion_ticket === 'En espera de Confirmar Devolución' && item.comment_devolution) {
+            historyHtml += `
+              <div class="alert alert-warning alert-sm mb-2">
+                <strong>Comentario de Devolución:</strong> ${item.comment_devolution}
+              </div>
+            `;
+          }
          
           historyHtml += `
                         <div class="card mb-3 custom-history-card">
@@ -1351,6 +1384,12 @@ function loadTicketHistory(ticketId) {
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
                                                   </tr>
                                              ` : ''}
+                                                ${showCommentDevolution ? `
+                                                  <tr>
+                                                    <th class="text-start">Comentario de Devolución:</th>
+                                                    <td class="highlighted-change">${item.comment_devolution || "N/A"}</td>
+                                                  </tr>
+                                             ` : ''}
                                                 ${itemPago === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Pago:</th>
@@ -1366,7 +1405,7 @@ function loadTicketHistory(ticketId) {
                                                 ${itemEnvio === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Envío:</th>
-                                                    <td class="${envioChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                    <td class="${pagoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
                                                   </tr>
                                              ` : ''}
                                                 ${itemEnvioDestino === 'Sí' ? `
@@ -1555,7 +1594,7 @@ $(document).ready(function () {
           if (response.success) {
             Swal.fire({
               title: "¡Registrado!",
-              html: `La fecha de recepción de llave del Pos asociado el Nro de ticket: <span style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> ha sido guardada.`,
+              html: `La fecha de recepción de llave del Pos asociado el Nro de ticket: <span style = "border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> ha sido guardada.`,
               icon: "success",
               confirmButtonText: "Ok",
               color: "black",
@@ -2943,3 +2982,65 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+function getTicketStatusVisual(statusTicket, accionTicket) {
+  let statusClass = '';
+  let statusText = '';
+  let statusIcon = '';
+  
+  if (statusTicket === 'Abierto' || 
+      accionTicket === 'Asignado al Coordinador' ||
+      accionTicket === 'Pendiente por revisar domiciliacion') {
+    statusClass = 'status-open';
+    statusText = 'ABIERTO';
+    statusIcon = '🟢';
+  } else if (statusTicket === 'En proceso' || 
+             accionTicket === 'Asignado al Técnico' || 
+             accionTicket === 'Recibido por el Técnico' ||
+             accionTicket === 'Enviado a taller' ||
+             accionTicket === 'En Taller' ||
+             accionTicket === 'En espera de Confirmar Devolución') {
+    statusClass = 'status-process';
+    statusText = 'EN PROCESO';
+    statusIcon = '🟡';
+  } else if (statusTicket === 'Cerrado' || 
+             accionTicket === 'Entregado a Cliente') {
+    statusClass = 'status-closed';
+    statusText = 'CERRADO';
+    statusIcon = '🔴';
+  }
+  
+  return { statusClass, statusText, statusIcon };
+}
+
+// Función para mostrar el indicador de estado
+function showTicketStatusIndicator(statusTicket, accionTicket) {
+  const container = document.getElementById('ticket-status-indicator-container');
+  if (!container) return;
+  
+  const { statusClass, statusText, statusIcon } = getTicketStatusVisual(statusTicket, accionTicket);
+  
+  container.innerHTML = `
+    <div class="ticket-status-indicator ${statusClass}">
+      <div class="status-content">
+        <span class="status-icon">${statusIcon}</span>
+        <span class="status-text">${statusText}</span>
+      </div>
+    </div>
+  `;
+}
+
+// Función para ocultar el indicador
+function hideTicketStatusIndicator() {
+  const container = document.getElementById('ticket-status-indicator-container');
+  if (container) {
+    container.innerHTML = '';
+  }
+}
+
+// Cuando se selecciona un ticket específico
+function onTicketSelect(ticketData) {
+  showTicketStatusIndicator(ticketData.name_status_ticket, ticketData.name_accion_ticket);
+  // ... resto de tu código para mostrar detalles del ticket ...
+}
+

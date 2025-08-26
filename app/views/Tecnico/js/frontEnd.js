@@ -90,7 +90,17 @@ function getTicketData() {
     .then((response) => {
       if (!response.ok) {
         if (response.status === 404) {
-          throw new Error("No se encontraron usuarios (404)");
+           tbody.innerHTML =`<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets para Asignar a Técnico para mostrar en este momento.</p>
+          </div>
+        </td>
+      </tr>`;
         }
         throw new Error(
           `Error HTTP: ${response.status} ${response.statusText}`
@@ -101,6 +111,14 @@ function getTicketData() {
     .then((data) => {
     if (data.success && data.ticket) {
         const TicketData = data.ticket;
+
+        // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente)
+        if (TicketData && TicketData.length > 0) {
+          const firstTicket = TicketData[0];
+          showTicketStatusIndicator(firstTicket.name_status_ticket, firstTicket.name_accion_ticket);
+        } else {
+          hideTicketStatusIndicator();
+        }
 
         detailsPanel.innerHTML =
             "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
@@ -216,10 +234,9 @@ function getTicketData() {
           ],
           language: {
             lengthMenu: "Mostrar _MENU_",
-            emptyTable: "No hay datos disponibles en la tabla",
-            zeroRecords: "No se encontraron resultados para la búsqueda",
+            //emptyTable: "No hay datos disponibles en la tabla",
             info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
-            infoEmpty: "No hay datos disponibles",
+           //infoEmpty: "No hay datos disponibles",
             infoFiltered: " de _MAX_ Disponibles",
             search: "Buscar:",
             loadingRecords: "Cargando...",
@@ -612,6 +629,14 @@ function getTicketData() {
           else if (id_document === 11 && url_envio === "" && (url_exoneracion !== "" || url_pago !== "")) {
               showButton = true;
           }
+
+          else if(id_document === 6 && url_envio == "" && url_pago != "") { 
+            showButton = true;
+          }
+
+          else if(id_document === 4 && url_envio == "" && url_exoneracion != "") {
+            showButton = true;
+          }
           
           if (showButton) {
                 Swal.fire({
@@ -753,6 +778,7 @@ function getTicketData() {
         tbody.innerHTML =
           '<tr><td colspan="8" class="text-center">No hay tickets disponibles.</td></tr>';
         if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
+          hideTicketStatusIndicator
           $("#tabla-ticket").DataTable().destroy(); // Destruir si ya existía para evitar errores
         }
         $("#tabla-ticket").DataTable({
@@ -781,10 +807,9 @@ function getTicketData() {
           ],
           language: {
             lengthMenu: "Mostrar _MENU_ Registros",
-            emptyTable: "No hay datos disponibles en la tabla",
-            zeroRecords: "No se encontraron resultados para la búsqueda",
+            //emptyTable: "No hay datos disponibles en la tabla",
             info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
-            infoEmpty: "No hay datos disponibles",
+            //infoEmpty: "No hay datos disponibles",
             infoFiltered: " de _MAX_ Disponibles",
             search: "Buscar:",
             loadingRecords: "Cargando...",
@@ -848,6 +873,7 @@ function getTicketData() {
       }
     })
     .catch((error) => {
+      hideTicketStatusIndicator
       console.error("Error al obtener los datos del ticket:", error);
       tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Error al cargar los datos: ${error.message}</td></tr>`;
       if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
@@ -878,10 +904,18 @@ function getTicketData() {
         ],
         language: {
           lengthMenu: "Mostrar _MENU_ Registros",
-          emptyTable: "No hay datos disponibles en la tabla",
-          zeroRecords: "No se encontraron resultados para la búsqueda",
+          //emptyTable: "No hay datos disponibles en la tabla",
+          zeroRecords: `<div class="text-center text-muted py-5">
+              <div class="d-flex flex-column align-items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                  <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                </svg>
+                <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                <p class="text-muted mb-0">No hay tickets asociado al Técnico para mostrar en este momento.</p>
+              </div>
+            </div>`,
           info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
-          infoEmpty: "No hay datos disponibles",
+         // infoEmpty: "No hay datos disponibles",
           infoFiltered: " de _MAX_ Disponibles",
           search: "Buscar:",
           loadingRecords: "Cargando...",
@@ -962,66 +996,66 @@ function getTicketData() {
       if (pdfZoomUrl && imgExoneracionUrl) {
           // Solo envío y exoneración
           modalButtonsHTML = `
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+              <button id = "VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
                   Ver Documento de Envio
               </button>
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
+              <button  id = "VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
                   Ver Documento de Exoneración
               </button>
           `;
       } else if (pdfZoomUrl && pdfPagoUrl) {
           // Solo envío y pago
           modalButtonsHTML = `
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+              <button id = "VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
                   Ver Documento de Envio
               </button>
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
+              <button id = "VerPago"  class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
                   Ver Documento de Pago
               </button>
           `;
       } else if (pdfZoomUrl) {
           // Solo envío disponible - SOLO UNA OPCIÓN DE CARGA
           modalButtonsHTML = `
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+              <button id = "VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
                   Ver Documento de Envio
               </button>
-              <button class="btn btn-primary btn-block btn-exoneracion-img" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
+              <button id = "ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
                   Cargar Documento de Exoneración
               </button>
-              <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
+              <button id = "PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
                 Cargar Documento de Pago
               </button>
           `;
       } else if (imgExoneracionUrl) {
           // Solo exoneración disponible (sin envío)
           modalButtonsHTML = `
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
+              <button id = "VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
                   Ver Documento de Exoneración
               </button>
-              <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
+              <button id = EnvioBoton class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
                   Cargar Documento de Envio
               </button>
           `;
       } else if (pdfPagoUrl) {
           // Solo pago disponible (sin envío)
           modalButtonsHTML = `
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
+              <button  id = "VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
                   Ver Documento de Pago
               </button>
-              <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
+              <button id = "EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
                   Cargar Documento de Envio
               </button>
           `;
       } else {
           // Ningún documento disponible
           modalButtonsHTML = `
-              <button class="btn btn-info btn-block btn-zoom-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
+              <button id = EnvioBoton class="btn btn-info btn-block btn-zoom-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
                   Cargar Documento de Envio
               </button>
-              <button class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
+              <button id = "ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
                   Cargar Documento de Exoneración
               </button>
-              <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
+              <button id = "PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
                   Cargar Documento de Pago
               </button>
           `;
@@ -1134,6 +1168,7 @@ function getTicketData() {
                     showViewModal(ticketId, nroTicket, null, null, "Tipo de documento no soportado");
                 }
             } else {
+              hideTicketStatusIndicator
                 Swal.fire({
                     icon: 'warning',
                     title: 'Documento no encontrado',
@@ -1145,6 +1180,7 @@ function getTicketData() {
             }
         })
         .catch(error => {
+          hideTicketStatusIndicator
             console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
@@ -1156,6 +1192,7 @@ function getTicketData() {
             });
         });
     } else {
+      hideTicketStatusIndicator
         Swal.fire({
             icon: 'warning',
             title: 'Información incompleta',
@@ -2008,6 +2045,9 @@ function loadTicketHistory(ticketId) {
 
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
+          // --- NUEVA LÓGICA: Mostrar comment_devolution cuando la acción es 'En espera de Confirmar Devolución' ---
+          const showCommentDevolution = itemAccion === 'En espera de Confirmar Devolución' && item.comment_devolution;
+
           const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
           let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
@@ -2021,6 +2061,14 @@ function loadTicketHistory(ticketId) {
             statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
           }
 
+          // Solo mostrar el comentario de devolución cuando sea relevante
+          if (item.name_accion_ticket === 'En espera de Confirmar Devolución' && item.comment_devolution) {
+            historyHtml += `
+              <div class="alert alert-warning alert-sm mb-2">
+                <strong>Comentario de Devolución:</strong> ${item.comment_devolution}
+              </div>
+            `;
+          }
          
           historyHtml += `
                         <div class="card mb-3 custom-history-card">
@@ -2090,6 +2138,12 @@ function loadTicketHistory(ticketId) {
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
                                                   </tr>
                                              ` : ''}
+                                                ${showCommentDevolution ? `
+                                                  <tr>
+                                                    <th class="text-start">Comentario de Devolución:</th>
+                                                    <td class="highlighted-change">${item.comment_devolution || "N/A"}</td>
+                                                  </tr>
+                                             ` : ''}
                                                 ${itemPago === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Pago:</th>
@@ -2105,7 +2159,7 @@ function loadTicketHistory(ticketId) {
                                                 ${itemEnvio === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Envío:</th>
-                                                    <td class="${envioChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                    <td class="${pagoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
                                                   </tr>
                                              ` : ''}
                                                 ${itemEnvioDestino === 'Sí' ? `
@@ -2723,4 +2777,65 @@ function abrirModalComponentes(boton) {
       });
     }
     showSelectComponentsModal(ticketId, regionName, serialPos);
+}
+
+function getTicketStatusVisual(statusTicket, accionTicket) {
+  let statusClass = '';
+  let statusText = '';
+  let statusIcon = '';
+  
+  if (statusTicket === 'Abierto' || 
+      accionTicket === 'Asignado al Coordinador' ||
+      accionTicket === 'Pendiente por revisar domiciliacion') {
+    statusClass = 'status-open';
+    statusText = 'ABIERTO';
+    statusIcon = '🟢';
+  } else if (statusTicket === 'En proceso' || 
+             accionTicket === 'Asignado al Técnico' || 
+             accionTicket === 'Recibido por el Técnico' ||
+             accionTicket === 'Enviado a taller' ||
+             accionTicket === 'En Taller' ||
+             accionTicket === 'En espera de Confirmar Devolución') {
+    statusClass = 'status-process';
+    statusText = 'EN PROCESO';
+    statusIcon = '🟡';
+  } else if (statusTicket === 'Cerrado' || 
+             accionTicket === 'Entregado a Cliente') {
+    statusClass = 'status-closed';
+    statusText = 'CERRADO';
+    statusIcon = '🔴';
+  }
+  
+  return { statusClass, statusText, statusIcon };
+}
+
+// Función para mostrar el indicador de estado
+function showTicketStatusIndicator(statusTicket, accionTicket) {
+  const container = document.getElementById('ticket-status-indicator-container');
+  if (!container) return;
+  
+  const { statusClass, statusText, statusIcon } = getTicketStatusVisual(statusTicket, accionTicket);
+  
+  container.innerHTML = `
+    <div class="ticket-status-indicator ${statusClass}">
+      <div class="status-content">
+        <span class="status-icon">${statusIcon}</span>
+        <span class="status-text">${statusText}</span>
+      </div>
+    </div>
+  `;
+}
+
+// Función para ocultar el indicador
+function hideTicketStatusIndicator() {
+  const container = document.getElementById('ticket-status-indicator-container');
+  if (container) {
+    container.innerHTML = '';
+  }
+}
+
+// Cuando se selecciona un ticket específico
+function onTicketSelect(ticketData) {
+  showTicketStatusIndicator(ticketData.name_status_ticket, ticketData.name_accion_ticket);
+  // ... resto de tu código para mostrar detalles del ticket ...
 }

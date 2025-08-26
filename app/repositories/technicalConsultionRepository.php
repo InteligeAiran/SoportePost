@@ -661,6 +661,11 @@ class TechnicalConsultionRepository
         return $result;
     }
 
+    public function EntregarTicketDevolucion($id_ticket, $id_user){
+        $result = $this->model->EntregarTicketDevolucion($id_ticket, $id_user);
+        return $result;
+    }
+
     public function UpdateStatusToReceiveInRosal($ticketId, $id_user){
         $result = $this->model->UpdateStatusToReceiveInRosal($ticketId, $id_user);
         return $result;
