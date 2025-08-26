@@ -352,6 +352,7 @@ function getTicketData() {
               // Event listeners para los botones (mantener la funcionalidad manual)
               $("#btn-asignados").on("click", function () {
                   if (checkDataExists("Asignado al Técnico")) {
+                    showTicketStatusIndicator('En proceso', 'Asignado al Técnico');
                     dataTableInstance.columns().search('').draw(false);
                     dataTableInstance.column(5).search("Asignado al Técnico").draw();
                     // NUEVO: Mostrar columna 6 para otros botones
@@ -364,6 +365,7 @@ function getTicketData() {
 
               $("#btn-por-asignar").on("click", function () {
                   if (checkDataExists("Enviado a taller|En Taller")) {
+                    showTicketStatusIndicator('En proceso', 'Enviado a taller|En Taller');
                     dataTableInstance.columns().search('').draw(false);
                     dataTableInstance.column(5).search("Enviado a taller|En Taller", true, false).draw();
                     // NUEVO: Mostrar columna 6 para otros botones
@@ -376,6 +378,7 @@ function getTicketData() {
 
               $("#btn-recibidos").on("click", function () {
                   if (checkDataExists("Recibido por el Técnico")) {
+                    showTicketStatusIndicator('Recibido', 'Recibido por el Técnico');
                     dataTableInstance.columns().search('').draw(false);
                     dataTableInstance.column(5).search("Recibido por el Técnico").draw();
                     // NUEVO: Mostrar columna 6 para otros botones
@@ -388,6 +391,7 @@ function getTicketData() {
 
               $("#btn-devuelto").on("click", function () {
                   if (checkDataExists("Entregado a Cliente")) {
+                    showTicketStatusIndicator('Cerrado', 'Entregado a Cliente');
                     dataTableInstance.columns().search('').draw(false);
                     dataTableInstance.column(5).search("Entregado a Cliente").draw();
                     // NUEVO: Ocultar columna 6 solo para btn-devuelto
@@ -629,7 +633,7 @@ function getTicketData() {
           else if (id_document === 11 && url_envio === "" && (url_exoneracion !== "" || url_pago !== "")) {
               showButton = true;
           }
-
+          
           else if(id_document === 6 && url_envio == "" && url_pago != "") { 
             showButton = true;
           }

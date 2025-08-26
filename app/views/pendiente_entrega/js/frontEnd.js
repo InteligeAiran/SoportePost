@@ -668,7 +668,8 @@ function getTicketDataFinaljs() {
                                     data-id-ticket="${idTicket}" 
                                     data-nro-ticket="${row.nro_ticket}"
                                     data-serial-pos="${row.serial_pos}" 
-                                    title="Llaves Cargadas" checked disabled>`;
+                                    title="Llaves Cargadas"
+                                    checked disabled>`;
                                     
                         }else if (verificacionDeLlaves === false || verificacionDeLlaves === 'f' && accionllaves === "Llaves Cargadas" && fechaLlavesEnviada == null) {
                             return `<input type="checkbox" class="receive-key-checkbox" 
@@ -1601,7 +1602,7 @@ function MarkDateKey(ticketId, nroTicket, serialPos) {
                     Swal.fire({
                         icon: "success",
                         title: "¡Éxito!",
-                        html: `La fecha de la carga de llaves al POS: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span>asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> fue registrada correctamente.`,
+                        html: `La fecha de la carga de llaves al POS: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> fue registrada correctamente.`,
                         confirmButtonText: "Aceptar", // <-- OPCIONAL: Puedes personalizar el texto del botón
                         allowOutsideClick: false, // <-- ELIMINAR O COMENTAR esta línea
                         color: "black", // <-- ELIMINAR O COMENTAR esta línea

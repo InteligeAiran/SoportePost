@@ -652,7 +652,7 @@ function getTicketData() {
 
                         if (tableContainer) {
                             tableContainer.style.display = ""; // Show the table container
-                        }
+                            }
                     } else {
                         if (tableContainer) {
                             tableContainer.innerHTML = "<p>No hay datos disponibles.</p>";
@@ -689,7 +689,7 @@ function getTicketData() {
           </div>
         </td>
       </tr>`
-                   tableContainer.style.display = "";
+                tableContainer.style.display = "";
             }
         } else {
             if (tableContainer) {

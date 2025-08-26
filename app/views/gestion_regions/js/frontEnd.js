@@ -169,13 +169,20 @@ function getTicketDataFinaljs() {
         if (response.success) {
           const TicketData = response.ticket;
 
-          // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente)
+          // MOSTRAR EL ESTADO DEL TICKET ACTIVO (no siempre el primero)
           if (TicketData && TicketData.length > 0) {
-            const firstTicket = TicketData[0];
-            showTicketStatusIndicator(firstTicket.name_status_ticket, firstTicket.name_accion_ticket);
+            // Buscar el ticket que tenga estado "En proceso" o "En la región"
+            const activeTicket = TicketData.find(ticket => 
+              ticket.name_status_ticket === 'En proceso' || 
+              ticket.name_accion_ticket === 'En la región' ||
+              ticket.name_accion_ticket === 'En espera de confirmar recibido en Región'
+            ) || TicketData[0]; // Si no encuentra ninguno activo, usar el primero
+            
+            showTicketStatusIndicator(activeTicket.name_status_ticket, activeTicket.name_accion_ticket);
           } else {
             hideTicketStatusIndicator();
           }
+
           
           if (TicketData && TicketData.length > 0) {
             // Destroy DataTables if it's already initialized on this table
@@ -345,8 +352,6 @@ function getTicketDataFinaljs() {
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M8.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
                       Ver Documentos
                     </button>`;
-
-
                     } else {
                       return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Documentos Cargados</button>`;
                     }
@@ -462,6 +467,29 @@ function getTicketDataFinaljs() {
                       // Si hay datos, aplicar la búsqueda y activar el botón
                       api.columns().search('').draw(false);
                       api.column(9).search(term, true, false).draw();
+
+                      // Aplicar configuración específica para cada botón
+                      if (button === "btn-por-asignar") {
+                        api.column(15).visible(true);
+                        api.column(11).visible(false);
+                        api.column(13).visible(true);
+                        api.column(9).search("^En espera de confirmar recibido en Región$", true, false).draw();
+                        
+                        // Actualizar indicador de estado
+                        showTicketStatusIndicator('En proceso', 'En espera de confirmar recibido en Región');
+                      } else if (button === "btn-asignados") {
+                        api.column(15).visible(false);
+                        api.column(9).search("^Entregado a Cliente$", true, false).draw();
+                        
+                        // Actualizar indicador de estado
+                        showTicketStatusIndicator('Cerrado', 'Entregado a Cliente');
+                      } else if (button === "btn-recibidos") {
+                        api.column(15).visible(true);
+                        api.column(9).search("^En la región$", true, false).draw();
+                        
+                        // Actualizar indicador de estado
+                        showTicketStatusIndicator('En proceso', 'En la región');
+                      }
                       setActiveButton(button);
                       return true; // Encontramos datos
                     }
@@ -498,9 +526,14 @@ function getTicketDataFinaljs() {
                 $("#btn-por-asignar").on("click", function () {
                   if (checkDataExists("^En espera de confirmar recibido en Región$")) {
                     api.columns().search('').draw(false);
+                    api.column(15).visible(true);
+                    api.column(11).visible(false);
                     api.column(13).visible(true);
                     api.column(9).search("^En espera de confirmar recibido en Región$", true, false).draw();
                     setActiveButton("btn-por-asignar");
+                    
+                    // Actualizar indicador de estado para "En espera de confirmar recibido en Región"
+                    showTicketStatusIndicator('En proceso', 'En espera de confirmar recibido en Región');
                   } else {
                     findFirstButtonWithData();
                   }
@@ -509,8 +542,12 @@ function getTicketDataFinaljs() {
                 $("#btn-recibidos").on("click", function () {
                   if (checkDataExists("^En la región$")) {
                     api.columns().search('').draw(false);
+                    api.column(15).visible(true);
                     api.column(9).search("^En la región$", true, false).draw();
                     setActiveButton("btn-recibidos");
+                    
+                    // Actualizar indicador de estado para "En la región"
+                    showTicketStatusIndicator('En proceso', 'En la región');
                   } else {
                     findFirstButtonWithData();
                   }
@@ -519,9 +556,12 @@ function getTicketDataFinaljs() {
                 $("#btn-asignados").on("click", function () {
                   if (checkDataExists("^Entregado a Cliente$")) {
                     api.columns().search('').draw(false);
-                    api.column(9).search("^Entregado a Cliente$", true, false).draw();
                     api.column(15).visible(false);
+                    api.column(9).search("^Entregado a Cliente$", true, false).draw();
                     setActiveButton("btn-asignados");
+                    
+                    // Actualizar indicador de estado para "Entregado a Cliente"
+                    showTicketStatusIndicator('Cerrado', 'Entregado a Cliente');
                   } else {
                     findFirstButtonWithData();
                   }
@@ -1927,23 +1967,30 @@ function getTicketStatusVisual(statusTicket, accionTicket) {
   let statusText = '';
   let statusIcon = '';
   
-  if (statusTicket === 'Abierto' || 
+  // Primero evaluar si está en proceso (incluye "En la región")
+  if (statusTicket === 'En proceso' || 
+      accionTicket === 'Asignado al Técnico' || 
+      accionTicket === 'Recibido por el Técnico' ||
+      accionTicket === 'Enviado a taller' ||
+      accionTicket === 'En Taller' ||
+      accionTicket === 'En la región' ||
+      accionTicket === 'En espera de confirmar recibido en Región' ||  
+      accionTicket === 'En espera de Confirmar Devolución') {
+    statusClass = 'status-process';
+    statusText = 'EN PROCESO';
+    statusIcon = '🟡';
+  } 
+  // Luego evaluar si está abierto
+  else if (statusTicket === 'Abierto' || 
       accionTicket === 'Asignado al Coordinador' ||
       accionTicket === 'Pendiente por revisar domiciliacion') {
     statusClass = 'status-open';
     statusText = 'ABIERTO';
     statusIcon = '🟢';
-  } else if (statusTicket === 'En proceso' || 
-             accionTicket === 'Asignado al Técnico' || 
-             accionTicket === 'Recibido por el Técnico' ||
-             accionTicket === 'Enviado a taller' ||
-             accionTicket === 'En Taller' ||
-             accionTicket === 'En espera de Confirmar Devolución') {
-    statusClass = 'status-process';
-    statusText = 'EN PROCESO';
-    statusIcon = '🟡';
-  } else if (statusTicket === 'Cerrado' || 
-             accionTicket === 'Entregado a Cliente') {
+  } 
+  // Finalmente evaluar si está cerrado
+  else if (statusTicket === 'Cerrado' || 
+           accionTicket === 'Entregado a Cliente') {
     statusClass = 'status-closed';
     statusText = 'CERRADO';
     statusIcon = '🔴';
