@@ -340,28 +340,57 @@ class consulta_rifModel extends Model
             }
             pg_free_result($resultUserTicket); // Liberar el recurso
 
-            // 7. Insertar en ticket_status_history
-            $id_accion_ticket = 4; // Asumiendo que 4 es la acción de creación de ticket
-            $id_status_ticket = 1; // Asumiendo que 1 es el estado inicial (ej. 'Creado' o 'Pendiente')
-            $id_status_domiciliacion = 1; // Asumiendo el estado inicial de domiciliación
+            // 7. Insertar en ticket_status_history - PRIMERA ENTRADA: "crear ticket"
+            $id_accion_ticket_crear = 0; // ID para acción "crear ticket"
+            $id_status_ticket_inicial = 1; // Estado inicial del ticket
+            $id_status_domiciliacion_inicial = 1; // Estado inicial de domiciliación
+
+            // Insertar directamente en lugar de usar la función problemática
+            $sqlInsertHistoryCrear = sprintf(
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer);",
+                (int) $idTicketCreado,
+                (int) $id_user,
+                (int) $id_status_ticket_inicial,
+                (int) $id_accion_ticket_crear,
+                (int) $id_status_payment,
+                (int) $id_status_domiciliacion_inicial
+            );
+            $resultHistoryCrear = $this->db->pgquery($sqlInsertHistoryCrear);
+            
+            if ($resultHistoryCrear === false) {
+                error_log("Error al insertar en ticket_status_history (crear ticket): " . pg_last_error($db_conn) . " Query: " . $sqlInsertHistoryCrear);
+                return ['error' => 'Error al insertar en ticket_status_history (crear ticket).'];
+            }
+            
+            error_log("'crear ticket' insertado correctamente con ID: " . $idTicketCreado);
+            pg_free_result($resultHistoryCrear); // Liberar el recurso
+
+            // 8. Insertar en ticket_status_history - SEGUNDA ENTRADA: "Asignado al Coordinador"
+            $id_accion_ticket = 4; // ID para acción "Asignado al Coordinador"
+            $id_status_ticket = 1; // Estado del ticket
+            $id_status_domiciliacion = 1; // Estado de domiciliación
 
             $sqlInsertHistory = sprintf(
                 "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer);",
                 (int) $idTicketCreado,
                 (int) $id_user,
-                (int) $id_status_ticket, // El ID del estado inicial del ticket
+                (int) $id_status_ticket,
                 (int) $id_accion_ticket,
                 (int) $id_status_payment,
                 (int) $id_status_domiciliacion
             );
             $resultHistory = $this->db->pgquery($sqlInsertHistory);
             if ($resultHistory === false) {
-                error_log("Error al insertar en ticket_status_history: " . pg_last_error($db_conn) . " Query: " . $sqlInsertHistory);
-                return ['error' => 'Error al insertar en ticket_status_history.'];
+                error_log("Error al insertar en ticket_status_history (Asignado al Coordinador): " . pg_last_error($db_conn) . " Query: " . $sqlInsertHistory);
+                return ['error' => 'Error al insertar en ticket_status_history (Asignado al Coordinador).'];
             }
+            
+            // Verificar que se insertó correctamente
+            $resultData2 = pg_fetch_assoc($resultHistory);
+            error_log("Resultado de insertar 'Asignado al Coordinador': " . print_r($resultData2, true));
             pg_free_result($resultHistory); // Liberar el recurso
 
-            // 8. Insertar en tickets_status_domiciliacion
+            // 9. Insertar en tickets_status_domiciliacion
             $sqlInserDomiciliacion = "INSERT INTO tickets_status_domiciliacion (id_ticket, id_status_domiciliacion) VALUES (" . (int) $idTicketCreado . ", " . (int) $id_status_domiciliacion . ");";
             $resultInserDomiciliacion = $this->db->pgquery($sqlInserDomiciliacion);
             if ($resultInserDomiciliacion === false) {
