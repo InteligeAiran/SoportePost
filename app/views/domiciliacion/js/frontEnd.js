@@ -744,7 +744,15 @@ function loadTicketHistory(ticketId) {
       if (jqXHR.status === 0) {
         errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
       } else if (jqXHR.status == 404) {
-        errorMessage = '<p class="text-center text-danger">Recurso no encontrado. (Error 404)</p>';
+        errorMessage = `<div class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay datos en el historial.</p>
+          </div>
+        </div>`;
       } else if (jqXHR.status == 500) {
         errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
       } else if (textStatus === "parsererror") {
@@ -759,6 +767,7 @@ function loadTicketHistory(ticketId) {
     },
   });
 }
+
 
 $(document).ready(function () {
     const changeStatusDomiciliacionModalElement = document.getElementById("changeStatusDomiciliacionModal");

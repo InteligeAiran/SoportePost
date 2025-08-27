@@ -650,11 +650,11 @@ function mi_navbar() {}
             <div class="modal" id="miModal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"
                 data-bs-backdrop="static" data-bs-keyboard="false">
                 <div id="Modal2-div" class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content" style="    max-width: 66%;">
+                    <div class="modal-content" style="max-width: 66%; max-height: 90vh;">
                         <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalToggleLabel" style = "color: grey;">Falla Nivel 1</h1>
+                            <h1 class="modal-title fs-5" id="exampleModalToggleLabel" style="color: grey;">Falla Nivel 1</h1>
                         </div>
-                        <div class="modal-body">
+                        <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
                             <div>
                                 <label for="FallaSelect1">Falla Descrita Por el Cliente</label>
                                 <div id="FallaSelect1Container">
@@ -665,7 +665,7 @@ function mi_navbar() {}
                                 <input type="text" onchange="checkRif1()" id="InputRif1" placeholder="JV123456789" disabled>
                                 <p id="rifMensaje1"></p>
                                 <label for="serialSelect">Seriales de POS:</label>
-                            <div id="serialSelectContainer">
+                                <div id="serialSelectContainer">
                                     <input type="text" class="form-control" id="serialSelect1" name="serialSelect" disabled>
                                 </div><br>
                                 <label style="display: none;" for="FallaSelect">Nivel Falla</label>
@@ -680,9 +680,8 @@ function mi_navbar() {}
                                 </table>
                             </div>
                         </div>
-                        <div class="modal-footer" style = "margin-bottom: 10%">
+                        <div class="modal-footer" style="margin-bottom: 10%">
                             <button id="SendForm1" onclick="SendDataFailure1();" style="display: block;" class="btn btn-primary">Guardar</button>
-
                             <button id="buttonCerrar" type="button" class="btn btn-secondary"
                                 data-bs-dismiss="modal">Cerrar</button>
                         </div>

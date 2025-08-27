@@ -1428,8 +1428,7 @@ class Consulta extends Controller
             $this->response(['success' => true,'message' => 'El ticket ha sido entregado exitosamente.'], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
-        }
-        
+        } 
     }
 
     public function handleEntregarTicketDevolucion(){
