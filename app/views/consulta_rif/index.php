@@ -33,6 +33,9 @@ function mi_navbar() {}
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
 
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css"/>
+
+
         <style>
             #rifTipo {
                 width: auto;
@@ -803,6 +806,16 @@ function mi_navbar() {}
         <!-- Datatable -->
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
+
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/dataTables.bootstrap.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/jquery.dataTables.min.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/dataTables.buttons.min.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/buttons.print.min.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/buttons.flash.min.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/pdfmake.min.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/jszip.min.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/vfs_fonts.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/buttons.html5.min.js"></script>
 
         <!-- Chart -->
         <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>
