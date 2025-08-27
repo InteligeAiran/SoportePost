@@ -570,7 +570,7 @@ function loadIndividualProceess() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
+        "<p>No hay data.</p>";
       console.error("Error fetching taller details:", error);
     });
 }
@@ -769,7 +769,7 @@ function loadIndividualIrreparable(){
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
+        "<p>Sin datos disponibles</p>";
       console.error("Error fetching taller details:", error);
     }); 
 }
@@ -1001,7 +1001,7 @@ function loadIndividualPendienteRepuesto(){
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
+        "<p>Sin datos disponibles</p>";
       console.error("Error fetching taller details:", error);
     });
 }
@@ -1104,7 +1104,7 @@ function loadIndividualReparado(){
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
+        "<p>Sin datos disponibles</p>";
       console.error("Error fetching taller details:", error);
     });
 }
@@ -1326,7 +1326,7 @@ function loadIndividualProceessReparacion() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
+        "<p>Sin datos disponibles</p>";
       console.error("Error fetching taller details:", error);
     });
 }
@@ -1427,7 +1427,7 @@ function loadTallerTicketDetails() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Error de red al cargar los detalles de Taller. Por favor, intente de nuevo más tarde.</p>";
+        "<p>Sin datos disponibles</p>";
       console.error("Error fetching taller details:", error);
     });
   // TODO: Agregar más lógica para mostrar los detalles de tickets de taller
@@ -1526,7 +1526,7 @@ function loadResolveTicketDetails() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Error de red al cargar los detalles regionales. Por favor, intente de nuevo más tarde.</p>";
+        "<p>Sin datos disponibles.</p>";
       console.error("Error fetching regional details:", error);
     });
 }

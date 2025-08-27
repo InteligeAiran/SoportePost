@@ -2909,8 +2909,10 @@ function SendRif() {
           // Inicialización de DataTables
           if ($.fn.DataTable.isDataTable("#rifCountTable")) {
             $("#rifCountTable").DataTable().destroy();
+
           }
           $("#rifCountTable").DataTable({
+
             responsive: false,
             pagingType: "simple_numbers",
             lengthMenu: [5],
@@ -2932,6 +2934,17 @@ function SendRif() {
                 previous: "Anterior",
               },
             },
+
+              dom: 'Bfrtip', // Añade 'B' para incluir los botones
+              buttons: [
+                  {
+                      extend: 'excelHtml5',
+                      text: 'Excel',
+                      title: 'Busqueda por RIF', // Opcional: define el nombre del archivo
+                  }
+              ]
+
+
           });
           $("#rifCountTable").resizableColumns();
         } else {
@@ -3127,6 +3140,15 @@ function SendSerial() {
                 previous: "Anterior",
               },
             },
+
+            dom: 'Bfrtip', // Añade 'B' para incluir los botones
+              buttons: [
+                  {
+                      extend: 'excelHtml5',
+                      text: 'Excel',
+                      title: 'Busqueda por Serial', // Opcional: define el nombre del archivo
+                  }
+              ]
           });
           $(newTable).resizableColumns();
 
@@ -3366,6 +3388,16 @@ function SendRazon() {
                 previous: "Anterior",
               },
             },
+
+            dom: 'Blfrtip', // Añade 'B' para incluir los botones
+              buttons: [
+                  {
+                      extend: 'excelHtml5',
+                      text: ' Excel',
+                      title: 'Busqueda por RIF', // Opcional: define el nombre del archivo
+                       // Opcional: clase para el estilo del botón
+                  }
+              ]
           });
           $("#rifCountTable").resizableColumns();
         } else {
@@ -3567,6 +3599,14 @@ function fetchSerialData(serial, rif,razonsocial) {
                   previous: "Anterior",
                 },
               },
+              dom: 'Bfrtip', // Añade 'B' para incluir los botones
+              buttons: [
+                  {
+                      extend: 'excelHtml5',
+                      text: 'Excel',
+                      title: 'Reporte', 
+                  }
+              ]
             });
           });
         } else {
