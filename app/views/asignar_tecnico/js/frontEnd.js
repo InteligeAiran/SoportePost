@@ -544,15 +544,15 @@ function getTicketDataCoordinator() {
               // Función para buscar automáticamente el primer botón con datos
               function findFirstButtonWithData() {
                 const searchTerms = [
-                  { button: "btn-por-asignar", term: "Asignado al Coordinador" },
-                  { button: "btn-recibidos", term: "Recibido por el Coordinador" },
+                  { button: "btn-por-asignar", term: "Asignado al Coordinador" , status: "Abierto", action: "Asignado al Coordinador"},
+                  { button: "btn-recibidos", term: "Recibido por el Coordinador",  status: "Abierto", action: "Recibido por el Coordinador"},
                   // CORREGIDO: Usar expresión que funcione para ambos
-                  { button: "btn-asignados", term: "Asignado al Técnico|Recibido por el Técnico" },
-                  { button: "btn-reasignado", term: "Reasignado al Técnico" }
+                  { button: "btn-asignados", term: "Asignado al Técnico|Recibido por el Técnico", status: "En proceso", action: ["En espera de confirmar recibido en Región", "Recibido por el Coordinador"]},
+                  { button: "btn-reasignado", term: "Reasignado al Técnico", status: "En proceso", action: "Reasignado al Técnico"}
                 ];
 
                 for (let i = 0; i < searchTerms.length; i++) {
-                  const { button, term } = searchTerms[i];
+                  const { button, term, status, action} = searchTerms[i];
                   
                   if (checkDataExists(term)) {
                     // Si hay datos, aplicar la búsqueda y activar el botón
@@ -567,6 +567,7 @@ function getTicketDataCoordinator() {
                     api.column(7).visible(true);
                     api.column(5).search(term, true, false).draw();
                     setActiveButton(button);
+                    showTicketStatusIndicator(status, action);
                     return true; // Encontramos datos
                   }
                 }
@@ -577,6 +578,8 @@ function getTicketDataCoordinator() {
                 api.column(7).visible(true);
                 api.column(5).search("NO_DATA_FOUND").draw();
                 setActiveButton("btn-por-asignar");
+                showTicketStatusIndicator("Cerrado", "Sin datos");
+
                 
                 // Mostrar mensaje de que no hay datos
                 const tbody = document.querySelector("#tabla-ticket tbody");
@@ -601,6 +604,7 @@ function getTicketDataCoordinator() {
                   api.column(7).visible(true);
                   api.column(5).search(searchTerm, true, false).draw();
                   setActiveButton("btn-asignados");
+                  showTicketStatusIndicator("En proceso", ["Asignado al Técnico", "Recibido por el Técnico"]);
                 } else {
                   // Si no hay datos, buscar en el siguiente botón
                   findFirstButtonWithData();
@@ -614,6 +618,7 @@ function getTicketDataCoordinator() {
                   api.column(7).visible(true);
                   api.column(5).search("Asignado al Coordinador").draw();
                   setActiveButton("btn-por-asignar");
+                  showTicketStatusIndicator("Abierto", "Asignado al Coordinador");
                 } else {
                   findFirstButtonWithData();
                 }
@@ -626,6 +631,7 @@ function getTicketDataCoordinator() {
                   api.column(7).visible(true);
                   api.column(5).search("Recibido por el Coordinador").draw();
                   setActiveButton("btn-recibidos");
+                  showTicketStatusIndicator("Abierto", "Recibido por el Coordinador");
                 } else {
                   findFirstButtonWithData();
                 }
@@ -638,6 +644,7 @@ function getTicketDataCoordinator() {
                   api.column(7).visible(false);
                   api.column(5).search("Reasignado al Técnico").draw();
                   setActiveButton("btn-reasignado");
+                  showTicketStatusIndicator("En proceso", "Reasignado al Técnico");
                 } else {
                   findFirstButtonWithData();
                 }
@@ -2538,7 +2545,10 @@ function showTicketStatusIndicator(statusTicket, accionTicket) {
   const container = document.getElementById('ticket-status-indicator-container');
   if (!container) return;
   
-  const { statusClass, statusText, statusIcon } = getTicketStatusVisual(statusTicket, accionTicket);
+  // Si accionTicket es un array, usar el primer elemento
+  const actionToUse = Array.isArray(accionTicket) ? accionTicket[0] : accionTicket;
+  
+  const { statusClass, statusText, statusIcon } = getTicketStatusVisual(statusTicket, actionToUse);
   
   container.innerHTML = `
     <div class="ticket-status-indicator ${statusClass}">
@@ -2549,7 +2559,6 @@ function showTicketStatusIndicator(statusTicket, accionTicket) {
     </div>
   `;
 }
-
 // Función para ocultar el indicador
 function hideTicketStatusIndicator() {
   const container = document.getElementById('ticket-status-indicator-container');

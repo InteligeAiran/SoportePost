@@ -1657,7 +1657,7 @@ function SendDataFailure2(idStatusPayment) {
                         <strong> 🔍  Nivel de Falla:</strong> ${ticketData.nivelFalla_text}
                     </p>
                     <p style="margin-bottom: 8px;">
-                        <strong>🏢 RIF Cliente:</strong> ${ticketData.rif || "N/A"}
+                        <strong>🏢 RIF:</strong> ${ticketData.rif || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
                       <strong>🏢Razon Social:</strong> ${globalRazon || "N/A"}
@@ -2344,237 +2344,237 @@ function SendDataFailure1() {
 
   // Función que continúa con la creación del ticket
   function continuarCreacionTicket() {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveDataFalla`);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded"); // Asegúrate de que esto esté presente
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveDataFalla`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded"); // Asegúrate de que esto esté presente
 
-    xhr.onload = function () {
-      if (xhr.status === 200) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          if (response.success) {
-            // **MOVER LA LÓGICA DEL CORREO AQUÍ**
-            const xhrEmail = new XMLHttpRequest();
-            xhrEmail.open(
-              "POST",
-              `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket1`
-            );
-            xhrEmail.setRequestHeader(
-              "Content-Type",
-              "application/x-www-form-urlencoded"
-            );
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          // **MOVER LA LÓGICA DEL CORREO AQUÍ**
+          const xhrEmail = new XMLHttpRequest();
+          xhrEmail.open(
+            "POST",
+            `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket1`
+          );
+          xhrEmail.setRequestHeader(
+            "Content-Type",
+            "application/x-www-form-urlencoded"
+          );
 
-            xhrEmail.onload = function () {
-              if (xhrEmail.status === 200) {
-                const responseEmail = JSON.parse(xhrEmail.responseText);
-                // Puedes manejar la respuesta del envío de correo aquí si es necesario
-                console.log("Respuesta del envío de correo:", responseEmail);
-              } else {
-                console.error(
-                  "Error al solicitar el envío de correo:",
-                  xhrEmail.status
-                );
-              }
-            };
+          xhrEmail.onload = function () {
+            if (xhrEmail.status === 200) {
+              const responseEmail = JSON.parse(xhrEmail.responseText);
+              // Puedes manejar la respuesta del envío de correo aquí si es necesario
+              console.log("Respuesta del envío de correo:", responseEmail);
+            } else {
+              console.error(
+                "Error al solicitar el envío de correo:",
+                xhrEmail.status
+              );
+            }
+          };
 
-            xhrEmail.onerror = function () {
-              console.error("Error de red al solicitar el envío de correo.");
-            };
-            const paramsEmail = `id_user=${encodeURIComponent(id_user)}`; // Asegúrate de enviar el ID del usuario para el correo
-            xhrEmail.send(paramsEmail); // No necesitas enviar datos adicionales si tu backend ya tiene la información
-            // **FIN DE LA LÓGICA DEL CORREO**
-            Swal.fire({
-              icon: "success",
-              title: "Guardado exitoso",
-              text: response.message,
-              color: "black",
-              timer: 2500,
-              timerProgressBar: true,
-              didOpen: () => {
-                Swal.showLoading();
-              },
-              willClose: () => {
-                // Cuando el primer modal se cierra, mostramos el segundo modal "bonito"
-                const ticketData = response.ticket_data; // Datos del ticket desde el backend
-                // Construcción del contenido HTML para el modal de detalles
-                // Usaremos un estilo más visual
+          xhrEmail.onerror = function () {
+            console.error("Error de red al solicitar el envío de correo.");
+          };
+          const paramsEmail = `id_user=${encodeURIComponent(id_user)}`; // Asegúrate de enviar el ID del usuario para el correo
+          xhrEmail.send(paramsEmail); // No necesitas enviar datos adicionales si tu backend ya tiene la información
+          // **FIN DE LA LÓGICA DEL CORREO**
+          Swal.fire({
+            icon: "success",
+            title: "Guardado exitoso",
+            text: response.message,
+            color: "black",
+            timer: 2500,
+            timerProgressBar: true,
+            didOpen: () => {
+              Swal.showLoading();
+            },
+            willClose: () => {
+              // Cuando el primer modal se cierra, mostramos el segundo modal "bonito"
+              const ticketData = response.ticket_data; // Datos del ticket desde el backend
+              // Construcción del contenido HTML para el modal de detalles
+              // Usaremos un estilo más visual
 
-                const beautifulHtmlContent = `
-                                  <div style="text-align: left; padding: 15px;">
-                                      <h3 style="color: #0056b3; margin-bottom: 15px; text-align: center;">🔧 ¡Ticket Generado! 🔧</h3>
-                                      <p style="font-size: 1.1em; margin-bottom: 10px;">
+              const beautifulHtmlContent = `
+                                <div style="text-align: left; padding: 15px;">
+                                    <h3 style="color: #0056b3; margin-bottom: 15px; text-align: center;">🔧 ¡Ticket Generado! 🔧</h3>
+                                    <p style="font-size: 1.1em; margin-bottom: 10px;">
                                           <strong style = "color: black;">🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${
-                                            ticketData.Nr_ticket
-                                          }</span>
-                                      </p>
-                                      <p style="margin-bottom: 8px;">
+                                          ticketData.Nr_ticket
+                                        }</span>
+                                    </p>
+                                    <p style="margin-bottom: 8px;">
                                           <strong style = "color: black;">👤 Usuario Gesti&oacuten:</strong> ${
-                                            ticketData.user_gestion || "N/A"
-                                          }
-                                      </p>
-                                      <p style="margin-bottom: 8px;">
+                                          ticketData.user_gestion || "N/A"
+                                        }
+                                    </p>
+                                    <p style="margin-bottom: 8px;">
                                           <strong style = "color: black;">⚙️ Serial del Equipo:</strong> ${
-                                            ticketData.serial
-                                          }
-                                      </p>
-                                      <p style="margin-bottom: 8px;">
+                                          ticketData.serial
+                                        }
+                                    </p>
+                                    <p style="margin-bottom: 8px;">
                                           <strong style = "color: black;">🚨 Falla Reportada:</strong> ${
-                                            ticketData.falla_text
-                                          }
-                                      </p>
-                                      <p style="margin-bottom: 8px;">
+                                          ticketData.falla_text
+                                        }
+                                    </p>
+                                    <p style="margin-bottom: 8px;">
                                           <strong style = "color: black;">📊 Nivel de Falla:</strong> ${
-                                            ticketData.nivelFalla_text
-                                          }
-                                      </p>
-                                      <p style="margin-bottom: 8px;">
+                                          ticketData.nivelFalla_text
+                                        }
+                                    </p>
+                                    <p style="margin-bottom: 8px;">
                                           <strong style = "color: black;">🏢 RIF Cliente:</strong> ${
-                                            ticketData.rif || "N/A"
-                                          }
-                                      </p>
-                                     <p style="margin-bottom: 8px;">
+                                          ticketData.rif || "N/A"
+                                        }
+                                    </p>
+                                   <p style="margin-bottom: 8px;">
                                         <strong style = "color: black;">🏢Razon Social:</strong> ${globalRazon || "N/A"}
-                                      </p>
-                                      </p>
-                                      <strong><p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
-                                          Se ha enviado una notificación por correo electrónico.<br>
+                                    </p>
+                                    </p>
+                                    <strong><p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
+                                        Se ha enviado una notificación por correo electrónico.<br>
                                           <h7 style = "color: black;">El Estatus del Ticket es: <span style = "color: red";>${ticketData.status_text}</h7></span>
-                                      </p></strong>
-                                  </div>`;
-                Swal.fire({
-                  icon: "success", // Un icono de éxito también para este modal
-                  title: "Detalles del Ticket",
-                  html: beautifulHtmlContent, // Contenido HTML personalizado
-                  confirmButtonText: "Cerrar",
-                  confirmButtonColor: "#003594", // Botón de confirmación AZUL
-                  showClass: {
-                    popup: "animate__animated animate__fadeInDown",
-                  },
-                  hideClass: {
-                    popup: "animate__animated animate__fadeOutUp",
-                  },
-                  allowOutsideClick: false,
-                  allowEscapeKey: false,
-                }).then(() => {
-                  // Este bloque de código se ejecuta DESPUÉS de que el usuario interactúa y el modal de SweetAlert2 se cierra.
+                                    </p></strong>
+                                </div>`;
+              Swal.fire({
+                icon: "success", // Un icono de éxito también para este modal
+                title: "Detalles del Ticket",
+                html: beautifulHtmlContent, // Contenido HTML personalizado
+                confirmButtonText: "Cerrar",
+                confirmButtonColor: "#003594", // Botón de confirmación AZUL
+                showClass: {
+                  popup: "animate__animated animate__fadeInDown",
+                },
+                hideClass: {
+                  popup: "animate__animated animate__fadeOutUp",
+                },
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+              }).then(() => {
+                // Este bloque de código se ejecuta DESPUÉS de que el usuario interactúa y el modal de SweetAlert2 se cierra.
 
-                  // Oculta tu modal personalizado (si lo tienes y estás usando jQuery)
-                  // Es crucial que esto se haga ANTES de la recarga.
-                  $("#miModal1").css("display", "none");
-                  $("#miModal").css("display", "none");
-                  // Establece un temporizador para recargar la página después de 2 segundos.
-                  setTimeout(() => {
-                    location.reload(); // Recarga la página
-                  }, 1000); // 2000 milisegundos = 2 segundos
-                }); // Este cierra el .then()
-              },
-            });
-          } else {
-            Swal.fire({
-              icon: "error",
-              title: "Error al guardar",
-              text: response.message,
-              color: "black",
-            });
-          }
-        } catch (error) {
+                // Oculta tu modal personalizado (si lo tienes y estás usando jQuery)
+                // Es crucial que esto se haga ANTES de la recarga.
+                $("#miModal1").css("display", "none");
+                $("#miModal").css("display", "none");
+                // Establece un temporizador para recargar la página después de 2 segundos.
+                setTimeout(() => {
+                  location.reload(); // Recarga la página
+                }, 1000); // 2000 milisegundos = 2 segundos
+              }); // Este cierra el .then()
+            },
+          });
+        } else {
           Swal.fire({
             icon: "error",
-            title: "Error al procesar la respuesta",
-            text: error.message,
+            title: "Error al guardar",
+            text: response.message,
             color: "black",
           });
         }
-      } else if (xhr.status === 400) {
-        // El backend devolvió un error de "Bad Request" (campos vacíos)
-        try {
-          const response = JSON.parse(xhr.responseText);
-          Swal.fire({
-            icon: "warning",
-            title: "Error",
-            text: response.message, // Mostrar el mensaje "Hay un campo vacio." del backend
-            color: "black",
-            confirmButtonText: "Ok",
-            confirmButtonColor: "#003594", // Botón de confirmación AZULs
-          });
-        } catch (error) {
-          Swal.fire({
-            icon: "warning",
-            title: "Error en la solicitud",
-            text: "Se encontraron problemas con los datos enviados.",
-            color: "black",
-          });
-        }
-      } else if (xhr.status === 429) {
-        // Manejo específico para el código de estado 429 (Too Many Requests)
-        try {
-          const response = JSON.parse(xhr.responseText);
-          Swal.fire({
-            icon: "warning",
-            title: "Demasiadas Solicitudes",
-            text: response.message, // Muestra el mensaje específico del backend (ej. "Debes esperar X minutos...")
-            color: "black",
-            confirmButtonText: "Ok",
-            confirmButtonColor: "#003594", // Botón de confirmación AZUL
-          });
-        } catch (error) {
-          console.error("Error al parsear JSON (429 Too Many Requests):", error);
-          Swal.fire({
-            icon: "warning",
-            title: "Error de Validación de Tiempo",
-            text: "Ha intentado crear un ticket demasiado pronto. Por favor, espere y reintente.",
-            color: "black",
-            confirmButtonText: "OK",
-          });
-        }
-      } else if (xhr.status === 500) {
-        // El backend devolvió un error interno del servidor
-        try {
-          const response = JSON.parse(xhr.responseText);
-          Swal.fire({
-            icon: "error",
-            title: "Error del servidor",
-            text: response.message, // Mostrar el mensaje "Error al guardar los datos de falla." del backend
-            color: "black",
-          });
-        } catch (error) {
-          Swal.fire({
-            icon: "error",
-            title: "Error del servidor",
-            text: "Ocurrió un error al intentar guardar los datos.",
-            color: "black",
-          });
-        }
-      } else {
-        // Otros errores de conexión o estados HTTP no manejados
+      } catch (error) {
         Swal.fire({
           icon: "error",
-          title: "Error inesperado",
-          text: `Ocurrió un error al comunicarse con el servidor. Código de estado: ${xhr.status}`,
+          title: "Error al procesar la respuesta",
+          text: error.message,
           color: "black",
         });
       }
-    };
-
-    xhr.onerror = function () {
+    } else if (xhr.status === 400) {
+      // El backend devolvió un error de "Bad Request" (campos vacíos)
+      try {
+        const response = JSON.parse(xhr.responseText);
+        Swal.fire({
+          icon: "warning",
+          title: "Error",
+          text: response.message, // Mostrar el mensaje "Hay un campo vacio." del backend
+          color: "black",
+          confirmButtonText: "Ok",
+          confirmButtonColor: "#003594", // Botón de confirmación AZULs
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: "warning",
+          title: "Error en la solicitud",
+          text: "Se encontraron problemas con los datos enviados.",
+          color: "black",
+        });
+      }
+    } else if (xhr.status === 429) {
+      // Manejo específico para el código de estado 429 (Too Many Requests)
+      try {
+        const response = JSON.parse(xhr.responseText);
+        Swal.fire({
+          icon: "warning",
+          title: "Demasiadas Solicitudes",
+          text: response.message, // Muestra el mensaje específico del backend (ej. "Debes esperar X minutos...")
+          color: "black",
+          confirmButtonText: "Ok",
+          confirmButtonColor: "#003594", // Botón de confirmación AZUL
+        });
+      } catch (error) {
+        console.error("Error al parsear JSON (429 Too Many Requests):", error);
+        Swal.fire({
+          icon: "warning",
+          title: "Error de Validación de Tiempo",
+          text: "Ha intentado crear un ticket demasiado pronto. Por favor, espere y reintente.",
+          color: "black",
+          confirmButtonText: "OK",
+        });
+      }
+    } else if (xhr.status === 500) {
+      // El backend devolvió un error interno del servidor
+      try {
+        const response = JSON.parse(xhr.responseText);
+        Swal.fire({
+          icon: "error",
+          title: "Error del servidor",
+          text: response.message, // Mostrar el mensaje "Error al guardar los datos de falla." del backend
+          color: "black",
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error del servidor",
+          text: "Ocurrió un error al intentar guardar los datos.",
+          color: "black",
+        });
+      }
+    } else {
+      // Otros errores de conexión o estados HTTP no manejados
       Swal.fire({
         icon: "error",
-        title: "Error de conexión",
-        text: "No se pudo conectar con el servidor.",
+        title: "Error inesperado",
+        text: `Ocurrió un error al comunicarse con el servidor. Código de estado: ${xhr.status}`,
         color: "black",
       });
-    };
-    const rif = document.getElementById("InputRif1").value;
-    const datos = `action=SaveDataFalla&serial=${encodeURIComponent(
-      serial
-    )}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(
-      nivelFalla
-    )}&id_user=${encodeURIComponent(id_user)}&rif=${encodeURIComponent(
-      rif
-    )}&falla_text=${encodeURIComponent(
-      fallaText
-    )}&nivelFalla_text=${encodeURIComponent(nivelFallaText)}`;
-    xhr.send(datos);
+    }
+  };
+
+  xhr.onerror = function () {
+    Swal.fire({
+      icon: "error",
+      title: "Error de conexión",
+      text: "No se pudo conectar con el servidor.",
+      color: "black",
+    });
+  };
+  const rif = document.getElementById("InputRif1").value;
+  const datos = `action=SaveDataFalla&serial=${encodeURIComponent(
+    serial
+  )}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(
+    nivelFalla
+  )}&id_user=${encodeURIComponent(id_user)}&rif=${encodeURIComponent(
+    rif
+  )}&falla_text=${encodeURIComponent(
+    fallaText
+  )}&nivelFalla_text=${encodeURIComponent(nivelFallaText)}`;
+  xhr.send(datos);
   }
 }
 

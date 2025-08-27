@@ -106,6 +106,16 @@ class emailModel extends Model{
         }
     }
 
+    public function GetDataTicketClosed(){
+        try{
+            $sql = "SELECT * FROM GetDataTicketClosed()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }  
+
     public function GetDataTicketConsultation(){
         try{
             $sql = "SELECT * FROM GetDataTicketConsultation()";

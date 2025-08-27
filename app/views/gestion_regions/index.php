@@ -12,19 +12,20 @@ function mi_navbar() {}
             <?php echo tituloPagina; ?>
         </title>
 
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
 
-        <link rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
+        <link rel="stylesheet"  href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
-
+        <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/animate-css/animate.min.css"/>
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
 
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+
         <style>
             /* Estilos para los indicadores de estado del ticket */
             .ticket-status-indicator {
@@ -101,7 +102,7 @@ function mi_navbar() {}
                 }
             }
         /* END Estilos para los indicadores de estado del ticket */
-        
+
             .highlighted-change {
                 font-weight: bold;
                 color: #000; /* Color de texto más oscuro para mayor contraste */

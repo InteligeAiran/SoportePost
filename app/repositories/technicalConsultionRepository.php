@@ -661,6 +661,21 @@ class TechnicalConsultionRepository
         return $result;
     }
 
+    public function GetTicketDataForDelivery($ticketId){
+        $result = $this->model->GetTicketDataForDelivery($ticketId);
+        if ($result) {
+
+             $ticket = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $ticket = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $ticket;
+            }
+            return $ticket;
+        } else {
+            return null;
+        }
+    }
+
     public function EntregarTicketDevolucion($id_ticket, $id_user){
         $result = $this->model->EntregarTicketDevolucion($id_ticket, $id_user);
         return $result;

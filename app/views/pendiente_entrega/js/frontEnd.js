@@ -834,14 +834,14 @@ function getTicketDataFinaljs() {
                               // Función para buscar automáticamente el primer botón con datos
                               function findFirstButtonWithData() {
                                   const searchTerms = [
-                                      { button: "btn-por-asignar", term: "En espera de confirmar recibido en el Rosal|En espera de Confirmar Devolución" },
-                                      { button: "btn-asignados", term: "^En el Rosal$" },
-                                      { button: "btn-recibidos", term: "Entregado a Cliente" },
-                                      { button: "btn-llaves-cargadas", term: "Llaves Cargadas" }
+                                      { button: "btn-por-asignar", term: "En espera de confirmar recibido en el Rosal|En espera de Confirmar Devolución", status: "En proceso", action: ["En espera de confirmar recibido en el Rosal", "En espera de Confirmar Devolución"]},
+                                      { button: "btn-asignados", term: "^En el Rosal$", status: "En proceso", action: "En el Rosal"},
+                                      { button: "btn-recibidos", term: "Entregado a Cliente", status: "Cerrado", action: "Entregado a Cliente"},
+                                      { button: "btn-llaves-cargadas", term: "Llaves Cargadas", status: "En proceso", action: "Llaves Cargadas"}
                                   ];
 
                                   for (let i = 0; i < searchTerms.length; i++) {
-                                      const { button, term } = searchTerms[i];
+                                      const { button, term, status, action} = searchTerms[i];
                                       
                                       if (checkDataExists(term)) {
                                           // Si hay datos, aplicar la búsqueda y activar el botón
@@ -852,25 +852,31 @@ function getTicketDataFinaljs() {
                                               dataTableInstance.column(18).visible(true);
                                               dataTableInstance.column(19).visible(false);
                                               dataTableInstance.column(20).visible(true);
+                                              showTicketStatusIndicator('En proceso', ['En espera de confirmar recibido en el Rosal', 'En espera de Confirmar Devolución']);
+
                                           } else if (button === "btn-asignados") {
                                               dataTableInstance.column(17).visible(true);
                                               dataTableInstance.column(18).visible(true);
                                               dataTableInstance.column(19).visible(true);
                                               dataTableInstance.column(20).visible(true);
+                                              showTicketStatusIndicator('En proceso', "En el Rosal");
                                           } else if (button === "btn-recibidos") {
                                               dataTableInstance.column(17).visible(false);
                                               dataTableInstance.column(18).visible(false);
                                               dataTableInstance.column(19).visible(false);
                                               dataTableInstance.column(20).visible(false);
+                                              showTicketStatusIndicator('Cerrado', "Entregado a Cliente");
                                           } else if (button === "btn-llaves-cargadas") {
                                               dataTableInstance.column(17).visible(true);
                                               dataTableInstance.column(18).visible(true);
                                               dataTableInstance.column(19).visible(true);
                                               dataTableInstance.column(20).visible(true);
+                                              showTicketStatusIndicator('En proceso', "Llaves Cargadas");
                                           }
                                           
                                           dataTableInstance.column(10).search(term, true, false).draw();
                                           setActiveButton(button);
+                                          showTicketStatusIndicator(status, action);
                                           return true; // Encontramos datos
                                       }
                                   }
@@ -883,6 +889,7 @@ function getTicketDataFinaljs() {
                                   dataTableInstance.column(20).visible(true);
                                   dataTableInstance.column(10).search("NO_DATA_FOUND").draw(); // Búsqueda que no devuelve resultados
                                   setActiveButton("btn-por-asignar"); // Mantener el primer botón activo por defecto
+                                  showTicketStatusIndicator('Cerrado', 'Sin datos');
                                   
                                   // Mostrar mensaje de que no hay datos
                                   const tbody = document.querySelector("#tabla-ticket tbody");
@@ -906,6 +913,7 @@ function getTicketDataFinaljs() {
                                       dataTableInstance.column(19).visible(false);
                                       dataTableInstance.column(20).visible(true);
                                       setActiveButton("btn-por-asignar");
+                                      showTicketStatusIndicator('En proceso', ['En espera de confirmar recibido en el Rosal', 'En espera de Confirmar Devolución']);
                                   } else {
                                       findFirstButtonWithData();
                                   }
@@ -921,6 +929,7 @@ function getTicketDataFinaljs() {
                                       dataTableInstance.column(19).visible(true);
                                       dataTableInstance.column(20).visible(true);                                  
                                       setActiveButton("btn-asignados");
+                                      showTicketStatusIndicator('En proceso', "En el Rosal");
                                   } else {
                                       findFirstButtonWithData();
                                   }
@@ -935,6 +944,7 @@ function getTicketDataFinaljs() {
                                       dataTableInstance.column(19).visible(false);
                                       dataTableInstance.column(20).visible(false);
                                       setActiveButton("btn-recibidos");
+                                      showTicketStatusIndicator('Cerrado', "Entregado a Cliente");
                                   } else {
                                       findFirstButtonWithData();
                                   }
@@ -950,6 +960,7 @@ function getTicketDataFinaljs() {
                                       dataTableInstance.column(19).visible(true);
                                       dataTableInstance.column(20).visible(true);
                                       setActiveButton("btn-llaves-cargadas");
+                                      showTicketStatusIndicator('En proceso', "Llaves Cargadas");
                                   } else {
                                       findFirstButtonWithData();
                                   }
@@ -987,42 +998,149 @@ function getTicketDataFinaljs() {
                       screenX: false,
                       screenY: false,
                   }).then((result) => {
-                    if (result.isConfirmed) {
-                      const dataToSendString = `action=entregar_ticketDev&id_ticket=${encodeURIComponent(idTicket)}&id_user=${encodeURIComponent(id_user)}`;
-                      const xhr = new XMLHttpRequest();
-                      const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/entregar_ticketDev`;
-                      xhr.open('POST', url, true);
-                      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                  if (resultFinal.isConfirmed) {
+    const comentario = resultFinal.value.comentario;
+    const dataToSendString = `action=entregar_ticket&id_ticket=${encodeURIComponent(idTicket)}&comentario=${encodeURIComponent(comentario)}&id_user=${encodeURIComponent(id_user)}`;
 
-                      xhr.onload = function() {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                          Swal.fire({
-                            title: '¡Éxito!',
-                            html: `El Pos con el serial <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; ">${serialPos}</span> ha sido entregado con éxito, asociado al Nro de ticket: <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span>.`,
-                            icon: 'success',
-                            color: "black",
-                            confirmButtonColor: "#003594",
-                            confirmButtonText: 'Aceptar',
-                            showCloseButton: false,
-                            allowOutsideClick: false,
-                            allowEscapeKey: false,
-                            keydownListenerCapture: true,
-                          }).then((result) => {
-                            if (result.isConfirmed) {
-                              window.location.reload();
+    const xhr = new XMLHttpRequest();
+    const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/entregar_ticket`;
+
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+
+                if (response.success) {
+                    // Mostrar el primer modal (Entrega exitosa)
+                    Swal.fire({
+                        icon: "success",
+                        title: "Entrega Exitosa",
+                        text: response.message,
+                        color: "black",
+                        timer: 2500,
+                        timerProgressBar: true,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        willClose: () => {
+                            // Cuando el primer modal se cierra, mostramos el segundo modal con detalles
+                            const ticketData = response.ticket_data;
+
+                            if (ticketData) {
+                                const beautifulHtmlContent = `
+                                    <div style="text-align: left; padding: 15px;">
+                                        <h3 style="color: #28a745; margin-bottom: 15px; text-align: center;">✅ ¡Ticket Entregado! ✅</h3>
+                                        <p style="font-size: 1.1em; margin-bottom: 10px;">
+                                            <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.nro_ticket}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>🏢 RIF:</strong> ${ticketData.rif_cliente || "N/A"}
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>🏢Razon Social:</strong> ${ticketData.razonsocial_cliente || "N/A"}
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>⚙️ Serial del Equipo:</strong> <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticketData.serial_pos}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>📝 Comentario de Entrega:</strong> ${ticketData.customer_delivery_comment || "Sin comentarios"}
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>�� Usuario que Realizó la Entrega:</strong> ${ticketData.user_gestion || "N/A"}
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.user_coordinator|| "N/A"}
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>📅 Fecha de Entrega:</strong> ${ticketData.date_create_ticket || "N/A"}
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>�� Fecha de Cierre:</strong> ${ticketData.date_end_ticket ||  "N/A"}
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>🔄 Estado del Ticket:</strong> <span style="color: #28a745; font-weight: bold;">${ticketData.name_status_ticket}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>📋 Acción del Ticket:</strong> <span style="color: #007bff; font-weight: bold;">${ticketData.name_accion_ticket}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong> Estado de Domiciliación:</strong> <span style="color: #6f42c1; font-weight: bold;">${ticketData.name_status_domiciliacion || "N/A"}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>💰 Estado de Pago:</strong> <span style="color: #fd7e14; font-weight: bold;">${ticketData.name_status_payment || "N/A"}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>🔬 Estado del Laboratorio:</strong> <span style="color: #20c997; font-weight: bold;">${ticketData.name_status_lab || "N/A"}</span>
+                                        </p>
+                                        <strong>
+                                            <p style="font-size: 0.9em; color: green; margin-top: 20px; text-align: center;">
+                                                El ticket ha sido marcado como entregado y cerrado exitosamente.<br>
+                                                <span style="color: #000;">Se ha registrado en el historial del sistema.</span>
+                                            </p>
+                                        </strong>
+                                    </div>`;
+
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Detalles de la Entrega",
+                                    html: beautifulHtmlContent,
+                                    color: "black",
+                                    confirmButtonText: "Cerrar",
+                                    confirmButtonColor: "#003594",
+                                    showConfirmButton: true,
+                                    showClass: {
+                                        popup: "animate__animated animate__fadeInDown",
+                                    },
+                                    hideClass: {
+                                        popup: "animate__animated animate__fadeOutUp",
+                                    },
+                                    allowOutsideClick: false,
+                                    allowEscapeKey: false,
+                                    width: '700px'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        // ENVIAR CORREO DESPUÉS DE CERRAR EL MODAL
+                                        enviarCorreoTicketCerrado(ticketData);
+                                        
+                                        // Usuario hizo clic en "Cerrar"
+                                        window.location.reload();
+                                    }
+                                });
+                            } else {
+                                // Si no hay datos del ticket, mostrar solo mensaje de éxito
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Entrega Exitosa",
+                                    text: "El ticket ha sido entregado exitosamente.",
+                                    confirmButtonText: "Cerrar",
+                                    confirmButtonColor: "#003594"
+                                }).then(() => {
+                                    window.location.reload();
+                                });
                             }
-                          });
-                        } else {
-                          Swal.fire('Error', 'Hubo un problema al conectar con el servidor. Código de estado: ' + xhr.status, 'error');
-                        }
-                      };
-                      xhr.onerror = function() {
-                        Swal.fire('Error de red', 'Hubo un problema con la conexión.', 'error');
-                      };
-                      xhr.send(dataToSendString);              
-                    } else {
-                        // User clicked on "Cancel" or pressed Escape
-                    }
+                        },
+                    });
+                } else {
+                    Swal.fire('Error', response.message || 'Error al procesar la entrega', 'error');
+                }
+            } catch (error) {
+                console.error('Error al parsear la respuesta:', error);
+                Swal.fire('Error', 'Error al procesar la respuesta del servidor', 'error');
+            }
+        } else {
+            Swal.fire('Error', 'Hubo un problema al conectar con el servidor. Código de estado: ' + xhr.status, 'error');
+        }
+    };
+
+    xhr.onerror = function() {
+        Swal.fire('Error de red', 'Hubo un problema con la conexión.', 'error');
+    };
+
+    xhr.send(dataToSendString);
+}
                   })
                 });
 
@@ -1101,37 +1219,141 @@ function getTicketDataFinaljs() {
                                   xhr.open('POST', url, true);
                                   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-                                  xhr.onload = function() {
-                                      if (xhr.status >= 200 && xhr.status < 300) {
-                                          Swal.fire({
-                                              title: '¡Éxito!',
-                                              html: `El Pos con el serial <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; ">${serialPos}</span> ha sido entregado con éxito, asociado al Nro de ticket: <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span>.`,
-                                              icon: 'success',
-                                              color: "black",
-                                              confirmButtonColor: "#003594",
-                                              confirmButtonText: 'Aceptar',
-                                              showCloseButton: false,
-                                              allowOutsideClick: false,
-                                              allowEscapeKey: false,
-                                              keydownListenerCapture: true,
-                                          }).then((result) => {
-                                              if (result.isConfirmed) {
-                                                  window.location.reload();
-                                              }
-                                          });
-                                      } else {
-                                          Swal.fire('Error', 'Hubo un problema al conectar con el servidor. Código de estado: ' + xhr.status, 'error');
+                                   xhr.onload = function() {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                          try {
+                            const response = JSON.parse(xhr.responseText);
+
+                            if (response.success) {
+                              // Mostrar el primer modal (Entrega exitosa)
+                              Swal.fire({
+                                icon: "success",
+                                title: "Entrega Exitosa",
+                                text: response.message,
+                                color: "black",
+                                timer: 2500,
+                                timerProgressBar: true,
+                                didOpen: () => {
+                                  Swal.showLoading();
+                                },
+                                willClose: () => {
+                                  // Cuando el primer modal se cierra, mostramos el segundo modal con detalles
+                                  const ticketData = response.ticket_data;
+
+                                  if (ticketData) {
+                                    const beautifulHtmlContent = `
+                                      <div style="text-align: left; padding: 15px;">
+                                          <h3 style="color: #28a745; margin-bottom: 15px; text-align: center;">✅ ¡Ticket Entregado! ✅</h3>
+                                          <p style="font-size: 1.1em; margin-bottom: 10px;">
+                                              <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.nro_ticket}</span>
+                                          </p>
+                                          <p style="margin-bottom: 8px;">
+                                            <strong>🏢 RIF:</strong> ${ticketData.rif_cliente || "N/A"}
+                                          </p>
+                                          <p style="margin-bottom: 8px;">
+                                            <strong>🏢Razon Social:</strong> ${ticketData.razonsocial_cliente || "N/A"}
+                                          </p>
+                                          <p style="margin-bottom: 8px;">
+                                              <strong>⚙️ Serial del Equipo:</strong> <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticketData.serial_pos}</span>
+                                          </p>
+                                          <p style="margin-bottom: 8px;">
+                                              <strong>📝 Comentario de Entrega:</strong> ${ticketData.customer_delivery_comment || "Sin comentarios"}
+                                          </p>
+                                          <p style="margin-bottom: 8px;">
+                                              <strong>👤 Usuario que Realizó la Entrega:</strong> ${ticketData.user_gestion || "N/A"}
+                                          </p>
+                                          <p style="margin-bottom: 8px;">
+                                              <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.user_coordinator|| "N/A"}
+                                          </p>
+                                          <p style="margin-bottom: 8px;">
+                                              <strong>📅 Fecha de Entrega:</strong> ${ticketData.date_create_ticket || "N/A"}
+                                          </p>
+                                          <p style="margin-bottom: 8px;">
+                                              <strong>📅 Fecha de Cierre:</strong> ${ticketData.date_end_ticket ||  "N/A"}
+                                          </p>
+                                          <p style="margin-bottom: 8px;">
+                                              <strong>🔄 Estado del Ticket:</strong> <span style="color: #28a745; font-weight: bold;">${ticketData.name_status_ticket}</span>
+                                          </p>
+                                          <p style="margin-bottom: 8px;">
+                                              <strong>📋 Acción del Ticket:</strong> <span style="color: #007bff; font-weight: bold;">${ticketData.name_accion_ticket}</span>
+                                          </p>
+                                          <p style="margin-bottom: 8px;">
+                                              <strong> Estado de Domiciliación:</strong> <span style="color: #6f42c1; font-weight: bold;">${ticketData.name_status_domiciliacion || "N/A"}</span>
+                                          </p>
+                                          <p style="margin-bottom: 8px;">
+                                              <strong>💰 Estado de Pago:</strong> <span style="color: #fd7e14; font-weight: bold;">${ticketData.name_status_payment || "N/A"}</span>
+                                          </p>
+                                          <p style="margin-bottom: 8px;">
+                                              <strong>🔬 Estado del Laboratorio:</strong> <span style="color: #20c997; font-weight: bold;">${ticketData.name_status_lab || "N/A"}</span>
+                                          </p>
+                                          <strong>
+                                              <p style="font-size: 0.9em; color: green; margin-top: 20px; text-align: center;">
+                                                  El ticket ha sido marcado como entregado y cerrado exitosamente.<br>
+                                                  <span style="color: #000;">Se ha registrado en el historial del sistema ademas </span>
+                                              </p>
+                                          </strong>
+                                      </div>`;
+
+                                    Swal.fire({
+                                      icon: "success",
+                                      title: "Detalles de la Entrega",
+                                      html: beautifulHtmlContent,
+                                      color: "black",
+                                      confirmButtonText: "Cerrar",
+                                      confirmButtonColor: "#003594",
+                                      showConfirmButton: true,
+                                      showClass: {
+                                        popup: "animate__animated animate__fadeInDown",
+                                      },
+                                      hideClass: {
+                                        popup: "animate__animated animate__fadeOutUp",
+                                      },
+                                      allowOutsideClick: false,
+                                      allowEscapeKey: false,
+                                      width: '700px'
+                                    }).then((result) => {
+                                      if (result.isConfirmed) {
+                                        enviarCorreoTicketCerrado(ticketData);
+                                        // Usuario hizo clic en "Cerrar"
+                                        window.location.reload();
                                       }
-                                  };
-                                  xhr.onerror = function() {
-                                      Swal.fire('Error de red', 'Hubo un problema con la conexión.', 'error');
-                                  };
-                                  xhr.send(dataToSendString);
-                              }
-                          });
-                      }
+                                    });
+                                  } else {
+                                    // Si no hay datos del ticket, mostrar solo mensaje de éxito
+                                    Swal.fire({
+                                      icon: "success",
+                                      title: "Entrega Exitosa",
+                                      text: "El ticket ha sido entregado exitosamente.",
+                                      confirmButtonText: "Cerrar",
+                                      confirmButtonColor: "#003594"
+                                    }).then(() => {
+                                      window.location.reload();
+                                    });
+                                  }
+                                },
+                              });
+                            } else {
+                              Swal.fire('Error', response.message || 'Error al procesar la entrega', 'error');
+                            }
+                          } catch (error) {
+                            console.error('Error al parsear la respuesta:', error);
+                            Swal.fire('Error', 'Error al procesar la respuesta del servidor', 'error');
+                          }
+                        } else {
+                          Swal.fire('Error', 'Hubo un problema al conectar con el servidor. Código de estado: ' + xhr.status, 'error');
+                        }
+                      };
+
+                      xhr.onerror = function() {
+                        Swal.fire('Error de red', 'Hubo un problema con la conexión.', 'error');
+                      };
+
+                      xhr.send(dataToSendString);
+                    }
                   });
-          });
+                }
+                });
+              });
 
 
            // ************* INICIO: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
@@ -1373,6 +1595,41 @@ function getTicketDataFinaljs() {
 }
 
 document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
+
+// Función para enviar correo cuando se cierra el ticket
+function enviarCorreoTicketCerrado(ticketData) {
+    const xhrEmail = new XMLHttpRequest();
+    xhrEmail.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/email/send_end_ticket`);
+    xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhrEmail.onload = function() {
+        if (xhrEmail.status === 200) {
+            try {
+                const responseEmail = JSON.parse(xhrEmail.responseText);
+                if (responseEmail.success) {
+                  
+                } else {
+                    console.error("❌ Error al enviar correo:", responseEmail.message);
+                }
+            } catch (error) {
+                console.error("❌ Error al parsear respuesta del correo:", error);
+            }
+        } else {
+            console.error("❌ Error en solicitud de correo:", xhrEmail.status);
+        }
+    };
+
+    xhrEmail.onerror = function() {
+        console.error("❌ Error de red al enviar correo");
+    };
+
+    // Obtener el coordinador del ticket (ajusta según tu estructura de datos)
+    const coordinador = ticketData.user_coordinator_id || ticketData.id_coordinator || '';
+    const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
+    
+    const params = `id_coordinador=${encodeURIComponent(coordinador)}&id_user=${encodeURIComponent(id_user)}`;
+    xhrEmail.send(params);
+}
 
 /**
  * Muestra un modal de SweetAlert para seleccionar componentes antes de enviar el ticket.

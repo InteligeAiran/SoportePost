@@ -301,48 +301,41 @@ function getTicketData() {
               }
 
               // Función para buscar automáticamente el primer botón con datos
+              // Función para buscar automáticamente el primer botón con datos
               function findFirstButtonWithData() {
                   const searchTerms = [
-                    { button: "btn-asignados", term: "Asignado al Técnico" },
-                    { button: "btn-recibidos", term: "Recibido por el Técnico" },
-                    { button: "btn-por-asignar", term: "Enviado a taller|En Taller" },
-                    { button: "btn-devuelto", term: "Entregado a Cliente" }
+                      { button: "btn-asignados", term: "Asignado al Técnico", status: "En proceso", action: "Asignado al Técnico" },
+                      { button: "btn-recibidos", term: "Recibido por el Técnico", status: "En proceso", action: "Recibido por el Técnico" },
+                      { button: "btn-por-asignar", term: "Enviado a taller|En Taller", status: "En proceso",  action: "Enviado a taller|En Taller"},
+                      { button: "btn-devuelto", term: "Entregado a Cliente", status: "Cerrado", action: "Entregado a Cliente" }
                   ];
 
                   for (let i = 0; i < searchTerms.length; i++) {
-                    const { button, term } = searchTerms[i];
-                    
-                    if (checkDataExists(term)) {
-                      // Si hay datos, aplicar la búsqueda y activar el botón
-                      dataTableInstance.columns().search('').draw(false);
-                      dataTableInstance.column(5).search(term, true, false).draw();
+                      const { button, term, status, action } = searchTerms[i];
                       
-                      // NUEVO: Ocultar columna 6 solo si es btn-devuelto
-                      if (button === "btn-devuelto") {
-                          dataTableInstance.column(6).visible(false);
-                      } else {
-                          dataTableInstance.column(6).visible(true);
+                      if (checkDataExists(term)) {
+                          // Si hay datos, aplicar la búsqueda y activar el botón
+                          dataTableInstance.columns().search('').draw(false);
+                          dataTableInstance.column(5).search(term, true, false).draw();
+                          
+                          // NUEVO: Ocultar columna 6 solo si es btn-devuelto
+                          if (button === "btn-devuelto") {
+                              dataTableInstance.column(6).visible(false);
+                          } else {
+                              dataTableInstance.column(6).visible(true);
+                          }
+                          
+                          setActiveButton(button);
+                          
+                          // EJECUTAR showTicketStatusIndicator con los datos correspondientes
+                          showTicketStatusIndicator(status, action);
+                          
+                          return true; // Encontramos datos
                       }
-                      
-                      setActiveButton(button);
-                      return true; // Encontramos datos
-                    }
                   }
                   
-                  // Si no hay datos en ningún botón, mostrar mensaje
-                  dataTableInstance.columns().search('').draw(false);
-                  dataTableInstance.column(5).search("NO_DATA_FOUND").draw(); // Búsqueda que no devuelve resultados
-                  setActiveButton("btn-asignados"); // Mantener el primer botón activo por defecto
-                  
-                  // NUEVO: Mostrar columna 6 por defecto cuando no hay datos
-                  dataTableInstance.column(6).visible(true);
-                  
-                  // Mostrar mensaje de que no hay datos
-                  const tbody = document.querySelector("#tabla-ticket tbody");
-                  if (tbody) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No hay tickets disponibles en ningún estado</td></tr>';
-                  }
-                  
+                  // Si no se encontraron datos en ningún botón, ocultar el indicador
+                  hideTicketStatusIndicator();
                   return false;
               }
 

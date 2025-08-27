@@ -65,6 +65,11 @@ class email extends Controller {
                     $this->handleSendTicket2();
                 break;
 
+                case 'send_end_ticket':
+                    // Manejo del envío de ticket final
+                    $this->handleSendEndTicket();
+                break;
+
                 case 'consultationHistorial':
                     $this->handleconsultationHistorial();
                 break;
@@ -602,6 +607,196 @@ class email extends Controller {
         } else {
             $this->response(['success' => false, 'message' => 'Error al enviar ambos correos. ' . $mensaje_final, 'color' => 'red']);
         }
+    }
+
+    public function handleSendEndTicket() {
+    $repository = new EmailRepository();
+
+    // 1. Obtener ID del coordinador desde el POST y sus datos
+    $id_coordinador = isset($_POST['id_coordinador']) ? $_POST['id_coordinador'] : '';
+    $result_coordinador = $repository->GetEmailCoorDataById($id_coordinador);
+
+    // Si no se encuentra información del coordinador, no podemos continuar
+    if (!$result_coordinador) {
+        $this->response(['success' => false, 'message' => 'Correo del coordinador no existe o no se encontraron datos.', 'color' => 'red']);
+        return;
+    }
+
+    $email_coordinador = $result_coordinador['email'];
+    $nombre_coordinador = $result_coordinador['full_name'];
+
+    // 2. Obtener datos del ticket cerrado
+    $result_ticket = $repository->GetDataTicketClosed();
+    if (!$result_ticket) {
+        $this->response(['success' => false, 'message' => 'No se encontraron datos del ticket.', 'color' => 'red']);
+        return;
+    }
+
+    $nombre_tecnico_ticket = $result_ticket['full_name_tecnico'];
+    $ticketNivelFalla = $result_ticket['id_level_failure'];
+    $ticketfinished = $result_ticket['create_ticket'];
+    $ticketstatus = $result_ticket['name_status_ticket'];
+    $ticketprocess = $result_ticket['name_process_ticket'];
+    $ticketaccion = $result_ticket['name_accion_ticket'];
+    $ticketserial = $result_ticket['serial_pos'];
+    $ticketnro = $result_ticket['nro_ticket'] ?? 'N/A';
+    $ticketpayment = $result_ticket['name_status_payment'];
+    $ticketdomiciliacion = $result_ticket['name_status_domiciliacion'] ?? 'N/A';
+    $ticketlab = $result_ticket['name_status_lab'] ?? 'N/A';
+    $fecha_entrega = $result_ticket['date_delivered'] ?? 'N/A';
+    $comentario_entrega = $result_ticket['customer_delivery_comment'] ?? 'Sin comentarios';
+
+    // 3. Obtener información del cliente
+    $result_client = $repository->GetClientInfo($ticketserial);
+    $clientName = $result_client['razonsocial'] ?? 'N/A';
+    $clientRif = $result_client['coddocumento'] ?? 'N/A';
+
+    // 4. Obtener datos del técnico
+    $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
+    $result_tecnico = $repository->GetEmailUserDataById($id_user);
+    $email_tecnico = $result_tecnico['user_email'] ?? '';
+    $nombre_tecnico = $result_tecnico['full_name'] ?? 'Técnico';
+
+    // --- Configuración y envío del correo para el COORDINADOR ---
+    $subject_coordinador = 'Notificación de Ticket Cerrado';
+    $body_coordinador = '
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Ticket Cerrado</title>
+            <style>
+                body { font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 30px; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+                .ticket-container { background-color: #fff; border: 1px solid #ced4da; border-radius: 10px; padding: 30px; max-width: 600px; width: 100%; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); }
+                .ticket-header { background-color: #28a745; color: #fff; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin-bottom: 25px; }
+                .ticket-title { font-size: 1.8em; margin-bottom: 10px; font-weight: bold; }
+                .greeting { margin-bottom: 20px; color: #495057; font-size: 1.1em; }
+                .info-list { list-style: none; padding-left: 0; margin-bottom: 20px; }
+                .info-item { margin-bottom: 12px; color: #343a40; font-size: 1em; display: flex; align-items: baseline; }
+                .info-item strong { font-weight: bold; color: #007bff; margin-right: 10px; width: 150px; display: inline-block; }
+                .footer { text-align: center; margin-top: -12px; color: #6c757d; font-size: 0.9em; }
+                .logo { display: block; margin: 20px auto 0; max-width: 150px; margin-top: -40px; }
+                hr { border-top: 1px solid #dee2e6; margin: 20px 0; margin-top: -50px; }
+                .status-closed { color: #28a745; font-weight: bold; }
+                .status-pending { color: #ffc107; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <div class="ticket-container">
+                <div class="ticket-header">
+                    <h2 class="ticket-title">✅ ¡Ticket Cerrado!</h2>
+                </div>
+                <p class="greeting">Hola, ' . htmlspecialchars($nombre_coordinador) . '</p>
+                <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">Nos complace informarle que el Técnico <strong>' . htmlspecialchars($nombre_tecnico_ticket) . '</strong> ha <strong>cerrado exitosamente</strong> el siguiente ticket:</p>
+                <ul class="info-list">
+                    <li class="info-item"><strong>Nro. Ticket:</strong> ' . htmlspecialchars($ticketnro) . '</li>
+                    <li class="info-item"><strong>RIF Cliente:</strong> ' . htmlspecialchars($clientRif) . '</li>
+                    <li class="info-item"><strong>Nombre Cliente:</strong> ' . htmlspecialchars($clientName) . '</li>
+                    <li class="info-item"><strong>Serial POS:</strong> ' . htmlspecialchars($ticketserial) . '</li>
+                    <li class="info-item"><strong>Nivel Falla:</strong> ' . htmlspecialchars($ticketNivelFalla) . '</li>
+                    <li class="info-item"><strong>Fecha de Creación:</strong> ' . htmlspecialchars($ticketfinished) . '</li>
+                    <li class="info-item"><strong>Fecha de Entrega:</strong> ' . htmlspecialchars($fecha_entrega) . '</li>
+                    <li class="info-item"><strong>Estatus:</strong> <span class="status-closed">' . htmlspecialchars($ticketstatus) . '</span></li>
+                    <li class="info-item"><strong>Acción:</strong> ' . htmlspecialchars($ticketaccion) . '</li>
+                    <li class="info-item"><strong>Estatus Carga Documento:</strong> <span class="status-pending">' . htmlspecialchars($ticketpayment) . '</span></li>
+                    <li class="info-item"><strong>Estado de Domiciliación:</strong> ' . htmlspecialchars($ticketdomiciliacion) . '</li>
+                    <li class="info-item"><strong>Estado del Laboratorio:</strong> ' . htmlspecialchars($ticketlab) . '</li>
+                    <li class="info-item"><strong>Comentario de Entrega:</strong> ' . htmlspecialchars($comentario_entrega) . '</li>
+                </ul>
+                <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
+                <hr>
+                <p class="footer">Atentamente,</p>
+                <p class="footer">El equipo de InteliSoft</p>
+                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
+            </div>
+        </body>
+        </html>
+    ';
+
+    $embeddedImages = [];
+    if (defined('FIRMA_CORREO')) {
+        $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
+    }
+
+    $correo_coordinador_enviado = false;
+    $correo_tecnico_enviado = false;
+    $mensaje_final = '';
+
+    // Enviar correo al coordinador
+    if ($this->emailService->sendEmail($email_coordinador, $subject_coordinador, $body_coordinador, [], $embeddedImages)) {
+        $correo_coordinador_enviado = true;
+    }
+
+    // Enviar correo al técnico
+    if ($email_tecnico && $result_tecnico) {
+        $subject_tecnico = 'Ticket Cerrado Exitosamente';
+        $body_tecnico = '
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Ticket Cerrado</title>
+                <style>
+                    body { font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 30px; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+                    .ticket-container { background-color: #fff; border: 1px solid #ced4da; border-radius: 10px; padding: 30px; max-width: 600px; width: 100%; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); }
+                    .ticket-header { background-color: #28a745; color: #fff; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin-bottom: 25px; }
+                    .ticket-title { font-size: 1.8em; margin-bottom: 10px; font-weight: bold; }
+                    .greeting { margin-bottom: 20px; color: #495057; font-size: 1.1em; }
+                    .info-list { list-style: none; padding-left: 0; margin-bottom: 20px; }
+                    .info-item { margin-bottom: 12px; color: #343a40; font-size: 1em; display: flex; align-items: baseline; }
+                    .info-item strong { font-weight: bold; color: #007bff; margin-right: 10px; width: 150px; display: inline-block; }
+                    .footer { text-align: center; margin-top: -12px; color: #6c757d; font-size: 0.9em; }
+                    .logo { display: block; margin: 20px auto 0; max-width: 150px; margin-top: -40px; }
+                    hr { border-top: 1px solid #dee2e6; margin: 20px 0; margin-top: -50px; }
+                    .status-closed { color: #28a745; font-weight: bold; }
+                </style>
+            </head>
+            <body>
+                <div class="ticket-container">
+                    <div class="ticket-header">
+                        <h2 class="ticket-title">�� ¡Ticket Cerrado!</h2>
+                    </div>
+                    <p class="greeting">Hola, ' . htmlspecialchars($nombre_tecnico) . '</p>
+                    <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">¡Felicitaciones! Has <strong>cerrado exitosamente</strong> el siguiente ticket:</p>
+                    <ul class="info-list">
+                        <li class="info-item"><strong>Nro. Ticket:</strong> ' . htmlspecialchars($ticketnro) . '</li>
+                        <li class="info-item"><strong>RIF Cliente:</strong> ' . htmlspecialchars($clientRif) . '</li>
+                        <li class="info-item"><strong>Nombre Cliente:</strong> ' . htmlspecialchars($clientName) . '</li>
+                        <li class="info-item"><strong>Serial POS:</strong> ' . htmlspecialchars($ticketserial) . '</li>
+                        <li class="info-item"><strong>Nivel Falla:</strong> ' . htmlspecialchars($ticketNivelFalla) . '</li>
+                        <li class="info-item"><strong>Fecha de Creación:</strong> ' . htmlspecialchars($ticketfinished) . '</li>
+                        <li class="info-item"><strong>Fecha de Entrega:</strong> ' . htmlspecialchars($fecha_entrega) . '</li>
+                        <li class="info-item"><strong>Estatus:</strong> <span class="status-closed">' . htmlspecialchars($ticketstatus) . '</span></li>
+                        <li class="info-item"><strong>Acción:</strong> ' . htmlspecialchars($ticketaccion) . '</li>
+                        <li class="info-item"><strong>Comentario de Entrega:</strong> ' . htmlspecialchars($comentario_entrega) . '</li>
+                    </ul>
+                    <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
+                    <hr>
+                    <p class="footer">Atentamente,</p>
+                    <p class="footer">El equipo de InteliSoft</p>
+                    ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
+                </div>
+            </body>
+            </html>
+        ';
+
+        if ($this->emailService->sendEmail($email_tecnico, $subject_tecnico, $body_tecnico, [], $embeddedImages)) {
+            $correo_tecnico_enviado = true;
+        }
+    }
+
+    // --- Verificar si ambos correos fueron enviados ---
+    if ($correo_coordinador_enviado && $correo_tecnico_enviado) {
+        $this->response(['success' => true, 'message' => 'Correos enviados exitosamente al coordinador y al técnico.', 'color' => 'green']);
+    } elseif ($correo_coordinador_enviado) {
+        $this->response(['success' => true, 'message' => 'Correo enviado al coordinador. No se pudo enviar al técnico.', 'color' => 'orange']);
+    } elseif ($correo_tecnico_enviado) {
+        $this->response(['success' => false, 'message' => 'Error al enviar el correo al coordinador. Correo del técnico enviado.', 'color' => 'red']);
+    } else {
+        $this->response(['success' => false, 'message' => 'Error al enviar ambos correos.', 'color' => 'red']);
+    }
     }
 
     public function handleconsultationHistorial(): void{
