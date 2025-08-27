@@ -1424,19 +1424,19 @@ class Consulta extends Controller
 
         $repository = new technicalConsultionRepository();
         $result = $repository->EntregarTicket($ticketId, $id_user,  $comment);
-        
+
         if ($result) {
-        // Obtener los datos del ticket para el modal
-        $ticketData = $repository->GetTicketDataForDelivery($ticketId);
-        
-        $this->response([
-            'success' => true,
-            'message' => 'El ticket ha sido entregado exitosamente.',
-            'ticket_data' => $ticketData
-        ], 200);
-    } else {
-        $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
-    } 
+            // Obtener los datos del ticket para el modal
+            $ticketData = $repository->GetTicketDataForDelivery($ticketId);
+            
+            $this->response([
+                'success' => true,
+                'message' => 'El ticket ha sido entregado exitosamente.',
+                'ticket_data' => $ticketData
+            ], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        } 
     }
 
     public function handleEntregarTicketDevolucion(){
@@ -1450,11 +1450,19 @@ class Consulta extends Controller
 
         $repository = new technicalConsultionRepository();
         $result = $repository->EntregarTicketDevolucion($ticketId, $id_user);
+        
         if ($result) {
-            $this->response(['success' => true,'message' => 'El ticket ha sido entregado con devolución exitosamente.'], 200);
+            // Obtener los datos del ticket para el modal
+            $ticketData = $repository->GetTicketDataForDelivery($ticketId);
+            
+            $this->response([
+                'success' => true,
+                'message' => 'El ticket ha sido entregado exitosamente.',
+                'ticket_data' => $ticketData
+            ], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
-        }
+        } 
     }
 
     public function handleUpdateStatusToReceiveInRosal(){
