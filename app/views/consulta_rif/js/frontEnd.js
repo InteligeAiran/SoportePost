@@ -947,7 +947,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
   const botonAnticipo = document.getElementById("DownloadAntici");
 
   if (fechaInstalacion === "No disponible") {
-    resultadoElemento.textContent = "Sin Garantía de Instalación";
+    resultadoElemento.textContent = "Sin garantía de instalación";
     resultadoElemento.style.color = "";
     return null;
   } else {
@@ -957,7 +957,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
     const meses = Math.ceil(diferencia / (1000 * 3600 * 24 * 30));
 
     if (meses <= 6) {
-      resultadoElemento.textContent = "Garantía por Instalación aplica";
+      resultadoElemento.textContent = "Aplica garantía por instalación";
       resultadoElemento.style.color = "red";
       
       if (botonExoneracion) botonExoneracion.style.display = "none";
@@ -975,7 +975,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
       
       return 1;
     } else {
-      resultadoElemento.textContent = "Sin Garantía de Instalación";
+      resultadoElemento.textContent = "Sin garantía de instalación";
       resultadoElemento.style.color = "";
       if (botonExoneracion) botonExoneracion.style.display = "inline-block";
       if (botonAnticipo) botonAnticipo.style.display = "inline-block";
@@ -1072,7 +1072,7 @@ function UpdateGuarantees() {
     if (idStatusPayment === 3) {
       Swal.fire({
         title: "¡Notificación!",
-        text: "Tiene Garantía Por Reingreso.",
+        text: "Tiene garantía Por reingreso.",
         icon: "warning",
         confirmButtonText: "OK",
         color: "black",
@@ -1081,7 +1081,7 @@ function UpdateGuarantees() {
     } else if (idStatusPayment === 1) {
       Swal.fire({
         title: "¡Notificación!",
-        text: "Tiene Garantía Por Instalacion.",
+        text: "Tiene garantía Por instalacion.",
         icon: "warning",
         confirmButtonText: "OK",
         color: "black",
@@ -1128,7 +1128,7 @@ function showGarantiaAlert() {
   if (idStatusPaymentReingreso === 3) {
       Swal.fire({
         title: "¡Notificación!",
-        text: "Tiene Garantía Por Reingreso.",
+        text: "Tiene garantía por reingreso.",
         icon: "warning",
         confirmButtonText: "OK",
         color: "black",
@@ -1136,7 +1136,7 @@ function showGarantiaAlert() {
   } else if (idStatusPaymentInstalacion === 1) {
       Swal.fire({
         title: "¡Notificación!",
-        text: "Tiene Garantía Por Instalacion.",
+        text: "Tiene garantía por instalación.",
         icon: "warning",
         confirmButtonText: "OK",
         color: "black",
@@ -2765,7 +2765,7 @@ function SendRif() {
   if (!numeroRif) {
     Swal.fire({
       title: "Atención",
-      text: "Debes ingresar un número de RIF.",
+      text: "El campo no puede estar vacío",
       icon: "warning",
       confirmButtonText: "Aceptar",
       allowOutsideClick: false,
@@ -3191,7 +3191,7 @@ function SendSerial() {
   if (!serialInputValue) {
     Swal.fire({
       title: "Atención",
-      text: "Debes ingresar un número de serie",
+      text: "El campo no puede estar vacío",
       icon: "warning",
       confirmButtonText: "Aceptar",
       allowOutsideClick: false,
@@ -3582,7 +3582,7 @@ function SendRazon() {
   if (!razonInputValue) {
     Swal.fire({
       title: "Atención",
-      text: "Debes ingresar una Razón Social",
+      text: "El campo no puede estar vacío",
       icon: "warning",
       confirmButtonText: "Aceptar",
       allowOutsideClick: false,

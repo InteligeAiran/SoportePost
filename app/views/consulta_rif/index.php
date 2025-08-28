@@ -591,7 +591,7 @@ function mi_navbar() {}
                             <form id="miFormulario" class="row g-3">
                                 <div id="detalle1" class="col-md-6">
                                     <div><br>
-                                        <label for="FallaSelect2" class="form-label">Falla Descrita Por el Cliente</label>
+                                        <label for="FallaSelect2" class="form-label">Falla descrita por el cliente</label>
                                         <div id="FallaSelect2Container">
                                             <select id="FallaSelect2" name="FallaSelect2" class="form-select">
                                                 <option></option>
@@ -664,15 +664,15 @@ function mi_navbar() {}
                                         <label class="form-label">Selecciona los documentos a cargar:</label>
                                         <div id = "checkEnvioContainer" class="form-check">
                                             <input class="form-check-input" type="checkbox" id="checkEnvio" value="envio">
-                                            <label class="form-check-label" for="checkEnvio">Cargar PDF Envío</label>
+                                            <label class="form-check-label" for="checkEnvio"> Documento de Envío</label>
                                         </div>
                                         <div id="checkExoneracionContainer" class="form-check">
                                             <input class="form-check-input" type="radio" id="checkExoneracion" name="documentType" value="exoneracion">
-                                            <label class="form-check-label" id="checkExoneracionLabel" for="checkExoneracion">Cargar Exoneración</label>
+                                            <label class="form-check-label" id="checkExoneracionLabel" for="checkExoneracion">Exoneración</label>
                                         </div>
                                         <div id="checkAnticipoContainer" class="form-check">
                                             <input class="form-check-input" type="radio" id="checkAnticipo" name="documentType" value="anticipo">
-                                            <label class="form-check-label" id="checkAnticipoLabel" for="checkAnticipo">Cargar PDF Anticipo</label>
+                                            <label class="form-check-label" id="checkAnticipoLabel" for="checkAnticipo">Anticipo</label>
                                         </div>
                                     </div>
 

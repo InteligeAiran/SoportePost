@@ -685,7 +685,7 @@ function getTicketData() {
               Swal.fire({
                 icon: 'warning',
                 title: '¡Advertencia!',
-                text: ' Se encuntran documentos pendientes por revisar.',
+                text: ' Se encuentran documentos pendientes por revisar.',
                 confirmButtonText: 'Ok', 
                 confirmButtonColor: '#003594', // Color del botón
                 color: 'black',

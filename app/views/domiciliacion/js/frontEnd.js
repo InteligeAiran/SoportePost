@@ -95,7 +95,7 @@ function searchDomiciliacionTickets() {
                                             data-id="${idTicket}"
                                             data-current-status-id="${currentStatusDomiciliacion}"
                                             data-current-status-name="${currentNameStatusDomiciliacion}">
-                                            Cambiar Estatus
+                                            Verificar Solvencia
                                         </button>`;
                                 }
                             }
