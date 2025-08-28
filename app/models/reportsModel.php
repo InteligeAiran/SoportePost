@@ -1104,6 +1104,26 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
             // Handle exception
         }
     }
+
+    public function GetTicketsGestionComercialPorcent(){
+        try {
+            $sql = "SELECT * FROM get_percentage_gestion_comercial_tickets()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function getTicketagestioncomercialCount(){
+        try {
+            $sql = "SELECT * FROM getticketagestioncomercialcount()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
 ?>
 

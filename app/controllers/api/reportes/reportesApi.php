@@ -209,6 +209,14 @@ class reportes extends Controller {
                     $this->SearchEstatusData();
                 break;
 
+                case 'getTicketsgestioncomercialPorcent':
+                    $this->getTicketsgestioncomercialPorcent();
+                break;
+
+                case 'getTicketGestionComercialCount':
+                    $this->getTicketGestionComercialCount();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -1186,6 +1194,30 @@ class reportes extends Controller {
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los tickets'], 500);
         }
+    }
+
+    public function getTicketsgestioncomercialPorcent(){
+        $repository = new ReportRepository();
+        $result = $repository->GetTicketsGestionComercialPorcent();
+        if ($result!== false &&!empty($result)) {
+            $this->response(['success' => true, 'count' => $result], 200);
+        } elseif ($result!== false && empty($result)) {
+            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500);
+        }    
+
+    }
+
+    public function getTicketGestionComercialCount(){
+        $repository = new ReportRepository();
+        $result = $repository->getTicketagestioncomercialCount();
+        if ($result !== null) {
+            $this->response(['success' => true, 'count' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'userCount' => 0], 200);
+        }
+        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Tickets en Gestion Comercial.'], 500);
     }
 }
 ?>

@@ -581,4 +581,16 @@ class ReportRepository
             return [];
         }
     }
+
+    public function GetTicketsGestionComercialPorcent(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketsGestionComercialPorcent(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['get_percentage_gestion_comercial_tickets'];
+    }
+
+    public function getTicketagestioncomercialCount(){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->getTicketagestioncomercialCount(); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['getticketagestioncomercialcount'];
+    }
 }

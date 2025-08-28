@@ -175,7 +175,7 @@ function mi_navbar() {}
                                             <h5 class="card-title font-weight-bolder" id="TicketsAbiertos">0</h5>
                                             <p class="card-text mb-0">
                                                 <span class="text-danger font-weight-bolder"
-                                                    id="TicketPorcentOpen"></span>Del total de tickets
+                                                    id="TicketPorcentOpen">0.00%</span>Del total de tickets
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
@@ -457,9 +457,9 @@ function mi_navbar() {}
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
                                             <p class="card-category" style="color: black">GESTI&OacuteN COMERCIAL</p>
-                                            <h5 class="card-title">0</h5>
-                                            <p class="card-text">
-                                                <span class="text-success-percentage">0.00%</span>Del total de Tickets
+                                            <h5 class="card-title" id="ticketGestionComercialCount">0</h5>
+                                            <p class="card-text mb-0">
+                                                <span class="text-percentage" id="PorcentGestionComercial"></span>Del total de tickets
                                             </p>
                                         </div>
                                         <div class="icon-on-right">

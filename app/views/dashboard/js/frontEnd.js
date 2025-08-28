@@ -2741,45 +2741,78 @@ function getTicketsResueltosPercentage() {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          // 1. Convertir el string a número
-          const percentage = parseFloat(response.count);
-
-          // 2. Redondear a 2 decimales y almacenar en displayPercentage
-          const displayPercentage = percentage.toFixed(2);
+          // 1. Verificar si hay datos válidos
+          let percentage;
+          let displayPercentage;
+          
+          if (response.count === null || response.count === undefined || response.count === '') {
+            // No hay datos: mostrar 0.00%
+            percentage = 0;
+            displayPercentage = "0.00";
+          } else {
+            // Convertir el string a número
+            percentage = parseFloat(response.count);
+            
+            // Verificar si es un número válido
+            if (isNaN(percentage)) {
+              percentage = 0;
+              displayPercentage = "0.00";
+            } else {
+              // Redondear a 2 decimales
+              displayPercentage = percentage.toFixed(2);
+            }
+          }
 
           const percentageSpan = document.getElementById(
             "ticketResueltoPercentage"
           );
 
-          // Usar displayPercentage para mostrar y percentage (el número original) para la lógica de color
-          percentageSpan.textContent =
-            (percentage > 0 ? "+" : "") + displayPercentage + "%";
+          // Mostrar el porcentaje (siempre con + para 0.00%)
+          percentageSpan.textContent = "+" + displayPercentage + "%";
 
-          // === CAMBIO CLAVE AQUÍ ===
-          // Definir el umbral: si el porcentaje de tickets resueltos es menor que esto, será rojo.
-          // Si es igual o mayor, será verde.
-          const thresholdForGood = 50; // Quieres que sea verde si es >= 50%
+          // === LÓGICA DE COLOR ===
+          const thresholdForGood = 50; // Verde si es >= 50%
 
           if (percentage < thresholdForGood) {
             // Si es MENOR que el umbral (50%), es "malo" (rojo)
-            percentageSpan.classList.remove("text-success"); // Asegúrate de quitar la clase verde
-            percentageSpan.classList.add("text-danger"); // Añadir la clase roja
+            percentageSpan.classList.remove("text-success");
+            percentageSpan.classList.add("text-danger");
           } else {
             // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
-            percentageSpan.classList.remove("text-danger"); // Asegúrate de quitar la clase roja
-            percentageSpan.classList.add("text-success"); // Añadir la clase verde
+            percentageSpan.classList.remove("text-danger");
+            percentageSpan.classList.add("text-success");
           }
-          // =========================
         } else {
+          // Si response.success es false, mostrar 0.00% en rojo
+          const percentageSpan = document.getElementById(
+            "ticketResueltoPercentage"
+          );
+          percentageSpan.textContent = "+0.00%";
+          percentageSpan.classList.remove("text-success");
+          percentageSpan.classList.add("text-danger");
           console.error("Error:", response.message);
         }
       } catch (error) {
+        // Si hay error parsing JSON, mostrar 0.00% en rojo
+        const percentageSpan = document.getElementById(
+          "ticketResueltoPercentage"
+        );
+        percentageSpan.textContent = "+0.00%";
+        percentageSpan.classList.remove("text-success");
+        percentageSpan.classList.add("text-danger");
         console.error(
           "Error parsing JSON for Tickets Resueltos percentage:",
           error
         );
       }
     } else {
+      // Si hay error HTTP, mostrar 0.00% en rojo
+      const percentageSpan = document.getElementById(
+        "ticketResueltoPercentage"
+      );
+      percentageSpan.textContent = "+0.00%";
+      percentageSpan.classList.remove("text-success");
+      percentageSpan.classList.add("text-danger");
       console.error(
         "Error fetching Tickets Resueltos percentage:",
         xhr.status,
@@ -2788,7 +2821,126 @@ function getTicketsResueltosPercentage() {
     }
   };
 
+  xhr.onerror = function() {
+    // Si hay error de red, mostrar 0.00% en rojo
+    const percentageSpan = document.getElementById(
+      "ticketResueltoPercentage"
+    );
+    percentageSpan.textContent = "+0.00%";
+    percentageSpan.classList.remove("text-success");
+    percentageSpan.classList.add("text-danger");
+    console.error("Network error occurred");
+  };
+
   const datos = "action=getTicketsResueltosPercentage";
+  xhr.send(datos);
+}
+
+function getTicketsgestionComercialporcent() {
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsgestioncomercialPorcent`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          // 1. Verificar si hay datos válidos
+          let percentage;
+          let displayPercentage;
+          
+          if (response.count === null || response.count === undefined || response.count === '') {
+            // No hay datos: mostrar 0.00%
+            percentage = 0;
+            displayPercentage = "0.00";
+          } else {
+            // Convertir el string a número
+            percentage = parseFloat(response.count);
+            
+            // Verificar si es un número válido
+            if (isNaN(percentage)) {
+              percentage = 0;
+              displayPercentage = "0.00";
+            } else {
+              // Redondear a 2 decimales
+              displayPercentage = percentage.toFixed(2);
+            }
+          }
+
+          const percentageSpan = document.getElementById(
+            "PorcentGestionComercial"
+          );
+
+          // Mostrar el porcentaje (siempre con + para 0.00%)
+          percentageSpan.textContent = "+" + displayPercentage + "%";
+
+          // === LÓGICA DE COLOR ===
+          const thresholdForGood = 50; // Verde si es >= 50%
+
+          if (percentage < thresholdForGood) {
+            // Si es MENOR que el umbral (50%), es "malo" (rojo)
+            percentageSpan.classList.remove("text-success");
+            percentageSpan.classList.add("text-danger");
+          } else {
+            // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
+            percentageSpan.classList.remove("text-danger");
+            percentageSpan.classList.add("text-success");
+          }
+        } else {
+          // Si response.success es false, mostrar 0.00% en rojo
+          const percentageSpan = document.getElementById(
+            "PorcentGestionComercial"
+          );
+          percentageSpan.textContent = "+0.00%";
+          percentageSpan.classList.remove("text-success");
+          percentageSpan.classList.add("text-danger");
+          console.error("Error:", response.message);
+        }
+      } catch (error) {
+        // Si hay error parsing JSON, mostrar 0.00% en rojo
+        const percentageSpan = document.getElementById(
+          "PorcentGestionComercial"
+        );
+        percentageSpan.textContent = "+0.00%";
+        percentageSpan.classList.remove("text-success");
+        percentageSpan.classList.add("text-danger");
+        console.error(
+          "Error parsing JSON for Tickets Resueltos percentage:",
+          error
+        );
+      }
+    } else {
+      // Si hay error HTTP, mostrar 0.00% en rojo
+      const percentageSpan = document.getElementById(
+        "PorcentGestionComercial"
+      );
+      percentageSpan.textContent = "+0.00%";
+      percentageSpan.classList.remove("text-success");
+      percentageSpan.classList.add("text-danger");
+      console.error(
+        "Error fetching Tickets Resueltos percentage:",
+        xhr.status,
+        xhr.statusText
+      );
+    }
+  };
+
+  xhr.onerror = function() {
+    // Si hay error de red, mostrar 0.00% en rojo
+    const percentageSpan = document.getElementById(
+      "ticketResueltoPercentage"
+    );
+    percentageSpan.textContent = "+0.00%";
+    percentageSpan.classList.remove("text-success");
+    percentageSpan.classList.add("text-danger");
+    console.error("Network error occurred");
+  };
+
+  const datos = "action=getTicketsgestioncomercialPorcent";
   xhr.send(datos);
 }
 
@@ -2824,6 +2976,35 @@ function getTicketTotal() {
   };
 
   const datos = "action=getTicketsTotalCount";
+  xhr.send(datos);
+}
+
+function getTicketGestionComercial() {
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketGestionComercialCount`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          document.getElementById("ticketGestionComercialCount").textContent = response.count; // Selecciona por ID
+        } else {
+          console.error("Error:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  const datos = "action=getTicketGestionComercialCount";
   xhr.send(datos);
 }
 
@@ -4005,4 +4186,6 @@ document.addEventListener("DOMContentLoaded", function () {
   getTicketPendienteRepuesto();
   getTicketIrreparables();
   getTicketCounts(); // Para la tabla de conteos
+  getTicketsgestionComercialporcent();
+  getTicketGestionComercial();
 });
