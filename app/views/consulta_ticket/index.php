@@ -23,11 +23,11 @@ function mi_navbar() {}
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/flatpickr-4.6.13/dist/flatpickr.min.css">
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
-        <!--link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/bootstrap.css" /-->
         <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css"/>
+
         <style>
             #rifTipo {
                 width: auto;
@@ -220,6 +220,74 @@ function mi_navbar() {}
             position: fixed;
             margin-left: 15%;
         }
+
+         #btn-excel-modern-id {
+                background: linear-gradient(45deg, #217346, #28a745) !important;
+                color: white !important;
+                border: 2px solid #217346 !important;
+                border-radius: 25px !important;
+                padding: 12px 24px !important;
+                font-weight: 700 !important;
+                font-size: 13px !important;
+                box-shadow: 0 8px 25px rgba(33, 115, 70, 0.25) !important;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+                position: relative !important;
+                overflow: hidden !important;
+            }
+
+            #btn-excel-modern-id::before {
+                content: '' !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: -100% !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent) !important;
+                transition: left 0.5s !important;
+            }
+
+            #btn-excel-modern-id:hover::before {
+                left: 100% !important;
+            }
+
+            #btn-excel-modern-id:hover {
+                background: linear-gradient(45deg, #1e6b3d, #217346) !important;
+                transform: translateY(-3px) scale(1.05) !important;
+                box-shadow: 0 12px 35px rgba(33, 115, 70, 0.4) !important;
+                border-color: #1e6b3d !important;
+            }
+
+            #btn-excel-modern-id:active {
+                transform: translateY(-1px) scale(1.02) !important;
+            }
+
+            /* Estilos para el botón PDF */
+            #btn-pdf-modern-id {
+                background: linear-gradient(45deg, #dc3545, #c82333) !important;
+                color: white !important;
+                border: 2px solid #dc3545 !important;
+                border-radius: 8px !important;
+                padding: 10px 16px !important;
+                font-weight: 600 !important;
+                font-size: 14px !important;
+                box-shadow: 0 4px 15px rgba(220, 53, 69, 0.25) !important;
+                transition: all 0.3s ease !important;
+            }
+
+            #btn-pdf-modern-id:hover {
+                background: linear-gradient(45deg, #c82333, #bd2130) !important;
+                transform: translateY(-2px) !important;
+                box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4) !important;
+            }
+
+
+            div.dataTables_wrapper div.dataTables_filter {
+                margin-right: -16%;
+            }
+
+            div.dt-buttons{
+                margin-left: 2%;
+            }
     </style>
     </head>
     <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -431,8 +499,13 @@ function mi_navbar() {}
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
         <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
-         <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
-         <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
+        <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
+        <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/buttons.flash.min.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/pdfmake.min.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/jszip.min.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/vfs_fonts.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/buttons.html5.min.js"></script>
 
         <!-- Chart -->
         <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>

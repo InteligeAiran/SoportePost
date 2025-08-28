@@ -356,6 +356,9 @@ function SendRegions() {
   }
 
   const RegionSelectValue = document.getElementById("SelectRgions").value;
+  const selectElement = document.getElementById("SelectRgions");
+  const selectedOptionIndex = selectElement.selectedIndex;
+  const regionName = selectElement.options[selectedOptionIndex].text;
 
   // Mover la validación al principio para detener la ejecución si no hay región
   if (!RegionSelectValue) {
@@ -501,6 +504,11 @@ function SendRegions() {
             scrollCollapse: true,
             scrollX: true,
             responsive: false,
+              buttons: [{
+              extend: "excelHtml5",
+              footer: true,
+              text: "Excel",
+            }, ],
             scrollY: '60vh', // Altura fija para el cuerpo de la tabla
             fixedHeader: true, // Fijar el encabezado
             autoWidth: false, // Deshabilitar autoWidth para mejor control
@@ -526,6 +534,182 @@ function SendRegions() {
                 previous: "Anterior",
               },
             },
+
+             dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
+                    </svg>Excel`,
+                    title: `${regionName}`,
+                    className: 'btn-excel-modern',
+                    attr: {
+                        id: 'btn-excel-modern-id',
+                        title: 'Exportar a Excel'
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            header: function(data, columnIdx) {
+                                if (typeof data === 'string') {
+                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+                                }
+                                return data;
+                            },
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    // Remover HTML
+                                    data = data.replace(/<[^>]*>/g, '');
+                                    data = data.replace(/\n/g, ' ').trim();
+                                    data = data.replace(/\s+/g, ' ');
+                                    
+                                    // Separar fecha y garantía para Excel
+                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
+                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
+                                        if (dateMatch) {
+                                            const fecha = dateMatch[0];
+                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
+                                            return fecha + '\n' + garantia;
+                                        }
+                                    }
+                                    
+                                    // Truncar texto muy largo
+                                    if (data.length > 100) {
+                                        data = data.substring(0, 97) + '...';
+                                    }
+                                }
+                                return data;
+                            }
+                        }
+                    },
+                    customize: function(xlsx) {
+                        var sheet = xlsx.xl.worksheets['Consulta_por_región' + '.xml'];
+                        
+                        // Ajustar ancho de columnas
+                        $('col', sheet).each(function(index) {
+                            if (index === 1 || index === 7 || index === 8) {
+                                $(this).attr('width', 50);
+                            } else if (index === 0 || index === 2 || index === 3 || index === 4 || index === 5) {
+                                $(this).attr('width', 20);
+                            } else {
+                                $(this).attr('width', 25);
+                            }
+                        });
+                        
+                        // Ajustar altura de filas
+                        $('row', sheet).each(function(index) {
+                            if (index === 0) {
+                                $(this).attr('ht', 30);
+                            } else {
+                                let hasDateWithWarranty = false;
+                                $('c', this).each(function() {
+                                    let cellValue = $(this).text();
+                                    if (cellValue && (cellValue.includes('Sin garantia') || cellValue.includes('Sin garantía'))) {
+                                        hasDateWithWarranty = true;
+                                    }
+                                });
+                                
+                                if (hasDateWithWarranty) {
+                                    $(this).attr('ht', 80);
+                                } else {
+                                    $(this).attr('ht', 60);
+                                }
+                            }
+                        });
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+                    </svg>PDF`,
+                    title: `${regionName}`,
+                    className: 'btn-pdf-modern',
+                    attr: {
+                        id: 'btn-pdf-modern-id',
+                        title: 'Exportar a PDF'
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            header: function(data, columnIdx) {
+                                if (typeof data === 'string') {
+                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+                                }
+                                return data;
+                            },
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    // Remover HTML
+                                    data = data.replace(/<[^>]*>/g, '');
+                                    data = data.replace(/\n/g, ' ').trim();
+                                    data = data.replace(/\s+/g, ' ');
+                                    
+                                    // Separar fecha y garantía para PDF
+                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
+                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
+                                        if (dateMatch) {
+                                            const fecha = dateMatch[0];
+                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
+                                            return fecha + '\n' + garantia;
+                                        }
+                                    }
+                                    
+                                    // Truncar texto muy largo para PDF
+                                    if (data.length > 60) {
+                                        data = data.substring(0, 57) + '...';
+                                    }
+                                }
+                                return data;
+                            }
+                        }
+                    },
+                    // Configuración SIMPLIFICADA y ESTABLE para PDF
+                    customize: function(doc) {
+                        // Solo configuraciones básicas que no causan errores
+                        doc.pageOrientation = 'landscape';
+                        doc.pageSize = 'A4';
+                        doc.pageMargins = [10, 20, 10, 20];
+                        
+                        // Estilos básicos
+                        doc.styles.tableHeader = {
+                            fillColor: '#2E86AB',
+                            color: 'white',
+                            fontSize: 6,
+                            bold: true
+                        };
+                        
+                        doc.defaultStyle = {
+                            fontSize: 7,
+                            lineHeight: 1.1
+                        };
+                        
+                        // Título
+                        doc.header = function(currentPage, pageCount) {
+                            return {
+                                text: `${regionName}`,
+                                alignment: 'center',
+                                fontSize: 14,
+                                bold: true,
+                                margin: [0, 10, 0, 0]
+                            };
+                        };
+                        
+                        // Pie de página
+                        doc.footer = function(currentPage, pageCount) {
+                            return {
+                                text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
+                                alignment: 'center',
+                                fontSize: 10,
+                                margin: [0, 0, 0, 10]
+                            };
+                        };
+                        
+                        // NO configurar widths ni body - dejar que se ajuste automáticamente
+                    }
+                }
+            ]
           });
           $(newTable).resizableColumns();
 
@@ -746,6 +930,11 @@ function SendRif() {
             data: TicketData,
             columns: columnsConfig,
             pagingType: "simple_numbers",
+              buttons: [{
+              extend: "excelHtml5",
+              footer: true,
+              text: "Excel",
+            }, ],
             lengthMenu: [5],
             autoWidth: false,
             language: {
@@ -765,6 +954,182 @@ function SendRif() {
                 previous: "Anterior",
               },
             },
+
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
+                    </svg>Excel`,
+                    title: 'Busqueda por RIF',
+                    className: 'btn-excel-modern',
+                    attr: {
+                        id: 'btn-excel-modern-id',
+                        title: 'Exportar a Excel'
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            header: function(data, columnIdx) {
+                                if (typeof data === 'string') {
+                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+                                }
+                                return data;
+                            },
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    // Remover HTML
+                                    data = data.replace(/<[^>]*>/g, '');
+                                    data = data.replace(/\n/g, ' ').trim();
+                                    data = data.replace(/\s+/g, ' ');
+                                    
+                                    // Separar fecha y garantía para Excel
+                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
+                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
+                                        if (dateMatch) {
+                                            const fecha = dateMatch[0];
+                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
+                                            return fecha + '\n' + garantia;
+                                        }
+                                    }
+                                    
+                                    // Truncar texto muy largo
+                                    if (data.length > 100) {
+                                        data = data.substring(0, 97) + '...';
+                                    }
+                                }
+                                return data;
+                            }
+                        }
+                    },
+                    customize: function(xlsx) {
+                        var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                        
+                        // Ajustar ancho de columnas
+                        $('col', sheet).each(function(index) {
+                            if (index === 1 || index === 7 || index === 8) {
+                                $(this).attr('width', 50);
+                            } else if (index === 0 || index === 2 || index === 3 || index === 4 || index === 5) {
+                                $(this).attr('width', 20);
+                            } else {
+                                $(this).attr('width', 25);
+                            }
+                        });
+                        
+                        // Ajustar altura de filas
+                        $('row', sheet).each(function(index) {
+                            if (index === 0) {
+                                $(this).attr('ht', 30);
+                            } else {
+                                let hasDateWithWarranty = false;
+                                $('c', this).each(function() {
+                                    let cellValue = $(this).text();
+                                    if (cellValue && (cellValue.includes('Sin garantia') || cellValue.includes('Sin garantía'))) {
+                                        hasDateWithWarranty = true;
+                                    }
+                                });
+                                
+                                if (hasDateWithWarranty) {
+                                    $(this).attr('ht', 80);
+                                } else {
+                                    $(this).attr('ht', 60);
+                                }
+                            }
+                        });
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+                    </svg>PDF`,
+                    title: 'Busqueda por RIF',
+                    className: 'btn-pdf-modern',
+                    attr: {
+                        id: 'btn-pdf-modern-id',
+                        title: 'Exportar a PDF'
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            header: function(data, columnIdx) {
+                                if (typeof data === 'string') {
+                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+                                }
+                                return data;
+                            },
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    // Remover HTML
+                                    data = data.replace(/<[^>]*>/g, '');
+                                    data = data.replace(/\n/g, ' ').trim();
+                                    data = data.replace(/\s+/g, ' ');
+                                    
+                                    // Separar fecha y garantía para PDF
+                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
+                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
+                                        if (dateMatch) {
+                                            const fecha = dateMatch[0];
+                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
+                                            return fecha + '\n' + garantia;
+                                        }
+                                    }
+                                    
+                                    // Truncar texto muy largo para PDF
+                                    if (data.length > 60) {
+                                        data = data.substring(0, 57) + '...';
+                                    }
+                                }
+                                return data;
+                            }
+                        }
+                    },
+                    // Configuración SIMPLIFICADA y ESTABLE para PDF
+                    customize: function(doc) {
+                        // Solo configuraciones básicas que no causan errores
+                        doc.pageOrientation = 'landscape';
+                        doc.pageSize = 'A4';
+                        doc.pageMargins = [10, 20, 10, 20];
+                        
+                        // Estilos básicos
+                        doc.styles.tableHeader = {
+                            fillColor: '#2E86AB',
+                            color: 'white',
+                            fontSize: 6,
+                            bold: true
+                        };
+                        
+                        doc.defaultStyle = {
+                            fontSize: 7,
+                            lineHeight: 1.1
+                        };
+                        
+                        // Título
+                        doc.header = function(currentPage, pageCount) {
+                            return {
+                                text: 'Busqueda por RIF',
+                                alignment: 'center',
+                                fontSize: 14,
+                                bold: true,
+                                margin: [0, 10, 0, 0]
+                            };
+                        };
+                        
+                        // Pie de página
+                        doc.footer = function(currentPage, pageCount) {
+                            return {
+                                text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
+                                alignment: 'center',
+                                fontSize: 10,
+                                margin: [0, 0, 0, 10]
+                            };
+                        };
+                        
+                        // NO configurar widths ni body - dejar que se ajuste automáticamente
+                    }
+                }
+            ]
           });
           $(newTable).resizableColumns();
 
@@ -983,6 +1348,11 @@ function SendSerial() {
             responsive: false,
             data: TicketData,
             columns: columnsConfig,
+            buttons: [{
+              extend: "excelHtml5",
+              footer: true,
+              text: "Excel",
+            }, ],
             pagingType: "simple_numbers",
             lengthMenu: [5],
             autoWidth: false,
@@ -1003,6 +1373,182 @@ function SendSerial() {
                 previous: "Anterior",
               },
             },
+
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
+                    </svg>Excel`,
+                    title: 'Busqueda por Serial',
+                    className: 'btn-excel-modern',
+                    attr: {
+                        id: 'btn-excel-modern-id',
+                        title: 'Exportar a Excel'
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            header: function(data, columnIdx) {
+                                if (typeof data === 'string') {
+                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+                                }
+                                return data;
+                            },
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    // Remover HTML
+                                    data = data.replace(/<[^>]*>/g, '');
+                                    data = data.replace(/\n/g, ' ').trim();
+                                    data = data.replace(/\s+/g, ' ');
+                                    
+                                    // Separar fecha y garantía para Excel
+                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
+                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
+                                        if (dateMatch) {
+                                            const fecha = dateMatch[0];
+                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
+                                            return fecha + '\n' + garantia;
+                                        }
+                                    }
+                                    
+                                    // Truncar texto muy largo
+                                    if (data.length > 100) {
+                                        data = data.substring(0, 97) + '...';
+                                    }
+                                }
+                                return data;
+                            }
+                        }
+                    },
+                    customize: function(xlsx) {
+                        var sheet = xlsx.xl.worksheets['Busqueda_Por_Serial.xml'];
+                        
+                        // Ajustar ancho de columnas
+                        $('col', sheet).each(function(index) {
+                            if (index === 1 || index === 7 || index === 8) {
+                                $(this).attr('width', 50);
+                            } else if (index === 0 || index === 2 || index === 3 || index === 4 || index === 5) {
+                                $(this).attr('width', 20);
+                            } else {
+                                $(this).attr('width', 25);
+                            }
+                        });
+                        
+                        // Ajustar altura de filas
+                        $('row', sheet).each(function(index) {
+                            if (index === 0) {
+                                $(this).attr('ht', 30);
+                            } else {
+                                let hasDateWithWarranty = false;
+                                $('c', this).each(function() {
+                                    let cellValue = $(this).text();
+                                    if (cellValue && (cellValue.includes('Sin garantia') || cellValue.includes('Sin garantía'))) {
+                                        hasDateWithWarranty = true;
+                                    }
+                                });
+                                
+                                if (hasDateWithWarranty) {
+                                    $(this).attr('ht', 80);
+                                } else {
+                                    $(this).attr('ht', 60);
+                                }
+                            }
+                        });
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+                    </svg>PDF`,
+                    title: 'Busqueda por Serial',
+                    className: 'btn-pdf-modern',
+                    attr: {
+                        id: 'btn-pdf-modern-id',
+                        title: 'Exportar a PDF'
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            header: function(data, columnIdx) {
+                                if (typeof data === 'string') {
+                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+                                }
+                                return data;
+                            },
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    // Remover HTML
+                                    data = data.replace(/<[^>]*>/g, '');
+                                    data = data.replace(/\n/g, ' ').trim();
+                                    data = data.replace(/\s+/g, ' ');
+                                    
+                                    // Separar fecha y garantía para PDF
+                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
+                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
+                                        if (dateMatch) {
+                                            const fecha = dateMatch[0];
+                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
+                                            return fecha + '\n' + garantia;
+                                        }
+                                    }
+                                    
+                                    // Truncar texto muy largo para PDF
+                                    if (data.length > 60) {
+                                        data = data.substring(0, 57) + '...';
+                                    }
+                                }
+                                return data;
+                            }
+                        }
+                    },
+                    // Configuración SIMPLIFICADA y ESTABLE para PDF
+                    customize: function(doc) {
+                        // Solo configuraciones básicas que no causan errores
+                        doc.pageOrientation = 'landscape';
+                        doc.pageSize = 'A4';
+                        doc.pageMargins = [10, 20, 10, 20];
+                        
+                        // Estilos básicos
+                        doc.styles.tableHeader = {
+                            fillColor: '#2E86AB',
+                            color: 'white',
+                            fontSize: 6,
+                            bold: true
+                        };
+                        
+                        doc.defaultStyle = {
+                            fontSize: 7,
+                            lineHeight: 1.1
+                        };
+                        
+                        // Título
+                        doc.header = function(currentPage, pageCount) {
+                            return {
+                                text: 'Busqueda por Serial',
+                                alignment: 'center',
+                                fontSize: 14,
+                                bold: true,
+                                margin: [0, 10, 0, 0]
+                            };
+                        };
+                        
+                        // Pie de página
+                        doc.footer = function(currentPage, pageCount) {
+                            return {
+                                text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
+                                alignment: 'center',
+                                fontSize: 10,
+                                margin: [0, 0, 0, 10]
+                            };
+                        };
+                        
+                        // NO configurar widths ni body - dejar que se ajuste automáticamente
+                    }
+                }
+            ]
           });
           $(newTable).resizableColumns();
 
@@ -1202,6 +1748,11 @@ function SendRango() {
           // Inicialización de DataTables
           $(rifCountTable).DataTable({
             scrollCollapse: true,
+            buttons: [{
+              extend: "excelHtml5",
+              footer: true,
+              text: "Excel",
+            }, ],
             scrollX: true,
             responsive: false,
             scrollY: '60vh',
@@ -1228,6 +1779,182 @@ function SendRango() {
                 previous: "Anterior",
               },
             },
+
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
+                    </svg>Excel`,
+                    title: 'Busqueda por Rango De Fecha',
+                    className: 'btn-excel-modern',
+                    attr: {
+                        id: 'btn-excel-modern-id',
+                        title: 'Exportar a Excel'
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            header: function(data, columnIdx) {
+                                if (typeof data === 'string') {
+                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+                                }
+                                return data;
+                            },
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    // Remover HTML
+                                    data = data.replace(/<[^>]*>/g, '');
+                                    data = data.replace(/\n/g, ' ').trim();
+                                    data = data.replace(/\s+/g, ' ');
+                                    
+                                    // Separar fecha y garantía para Excel
+                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
+                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
+                                        if (dateMatch) {
+                                            const fecha = dateMatch[0];
+                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
+                                            return fecha + '\n' + garantia;
+                                        }
+                                    }
+                                    
+                                    // Truncar texto muy largo
+                                    if (data.length > 100) {
+                                        data = data.substring(0, 97) + '...';
+                                    }
+                                }
+                                return data;
+                            }
+                        }
+                    },
+                    customize: function(xlsx) {
+                        var sheet = xlsx.xl.worksheets['Consulta_Por_Rango_Fecha(SoportePos).xml'];
+                        
+                        // Ajustar ancho de columnas
+                        $('col', sheet).each(function(index) {
+                            if (index === 1 || index === 7 || index === 8) {
+                                $(this).attr('width', 50);
+                            } else if (index === 0 || index === 2 || index === 3 || index === 4 || index === 5) {
+                                $(this).attr('width', 20);
+                            } else {
+                                $(this).attr('width', 25);
+                            }
+                        });
+                        
+                        // Ajustar altura de filas
+                        $('row', sheet).each(function(index) {
+                            if (index === 0) {
+                                $(this).attr('ht', 30);
+                            } else {
+                                let hasDateWithWarranty = false;
+                                $('c', this).each(function() {
+                                    let cellValue = $(this).text();
+                                    if (cellValue && (cellValue.includes('Sin garantia') || cellValue.includes('Sin garantía'))) {
+                                        hasDateWithWarranty = true;
+                                    }
+                                });
+                                
+                                if (hasDateWithWarranty) {
+                                    $(this).attr('ht', 80);
+                                } else {
+                                    $(this).attr('ht', 60);
+                                }
+                            }
+                        });
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+                    </svg>PDF`,
+                    title: 'Busqueda por Rango De Fecha',
+                    className: 'btn-pdf-modern',
+                    attr: {
+                        id: 'btn-pdf-modern-id',
+                        title: 'Exportar a PDF'
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            header: function(data, columnIdx) {
+                                if (typeof data === 'string') {
+                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+                                }
+                                return data;
+                            },
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    // Remover HTML
+                                    data = data.replace(/<[^>]*>/g, '');
+                                    data = data.replace(/\n/g, ' ').trim();
+                                    data = data.replace(/\s+/g, ' ');
+                                    
+                                    // Separar fecha y garantía para PDF
+                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
+                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
+                                        if (dateMatch) {
+                                            const fecha = dateMatch[0];
+                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
+                                            return fecha + '\n' + garantia;
+                                        }
+                                    }
+                                    
+                                    // Truncar texto muy largo para PDF
+                                    if (data.length > 60) {
+                                        data = data.substring(0, 57) + '...';
+                                    }
+                                }
+                                return data;
+                            }
+                        }
+                    },
+                    // Configuración SIMPLIFICADA y ESTABLE para PDF
+                    customize: function(doc) {
+                        // Solo configuraciones básicas que no causan errores
+                        doc.pageOrientation = 'landscape';
+                        doc.pageSize = 'A4';
+                        doc.pageMargins = [10, 20, 10, 20];
+                        
+                        // Estilos básicos
+                        doc.styles.tableHeader = {
+                            fillColor: '#2E86AB',
+                            color: 'white',
+                            fontSize: 6,
+                            bold: true
+                        };
+                        
+                        doc.defaultStyle = {
+                            fontSize: 7,
+                            lineHeight: 1.1
+                        };
+                        
+                        // Título
+                        doc.header = function(currentPage, pageCount) {
+                            return {
+                                text: 'Busqueda por Rango de Fecha',
+                                alignment: 'center',
+                                fontSize: 14,
+                                bold: true,
+                                margin: [0, 10, 0, 0]
+                            };
+                        };
+                        
+                        // Pie de página
+                        doc.footer = function(currentPage, pageCount) {
+                            return {
+                                text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
+                                alignment: 'center',
+                                fontSize: 10,
+                                margin: [0, 0, 0, 10]
+                            };
+                        };
+                        
+                        // NO configurar widths ni body - dejar que se ajuste automáticamente
+                    }
+                }
+            ]
           });
           $(rifCountTable).resizableColumns();
 

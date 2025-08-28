@@ -691,17 +691,17 @@ function getTicketDataFinaljs() {
                                   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
                                   xhr.onload = function() {
-                        if (xhr.status >= 200 && xhr.status < 300) {
+                                      if (xhr.status >= 200 && xhr.status < 300) {
                           try {
                             const response = JSON.parse(xhr.responseText);
 
                             if (response.success) {
                               // Mostrar el primer modal (Entrega exitosa)
-                              Swal.fire({
+                                          Swal.fire({
                                 icon: "success",
                                 title: "Entrega Exitosa",
                                 text: response.message,
-                                color: "black",
+                                              color: "black",
                                 timer: 2500,
                                 timerProgressBar: true,
                                 didOpen: () => {
@@ -771,7 +771,7 @@ function getTicketDataFinaljs() {
                                       html: beautifulHtmlContent,
                                       color: "black",
                                       confirmButtonText: "Cerrar",
-                                      confirmButtonColor: "#003594",
+                                              confirmButtonColor: "#003594",
                                       showConfirmButton: true,
                                       showClass: {
                                         popup: "animate__animated animate__fadeInDown",
@@ -779,15 +779,15 @@ function getTicketDataFinaljs() {
                                       hideClass: {
                                         popup: "animate__animated animate__fadeOutUp",
                                       },
-                                      allowOutsideClick: false,
-                                      allowEscapeKey: false,
+                                              allowOutsideClick: false,
+                                              allowEscapeKey: false,
                                       width: '700px'
-                                    }).then((result) => {
-                                      if (result.isConfirmed) {
+                                          }).then((result) => {
+                                              if (result.isConfirmed) {
                                         enviarCorreoTicketCerrado(ticketData);
-                                         window.location.reload();
-                                      }
-                                    });
+                                                  window.location.reload();
+                                              }
+                                          });
                                   } else {
                                     // Si no hay datos del ticket, mostrar solo mensaje de éxito
                                     Swal.fire({
@@ -809,23 +809,23 @@ function getTicketDataFinaljs() {
                             console.error('Error al parsear la respuesta:', error);
                             Swal.fire('Error', 'Error al procesar la respuesta del servidor', 'error');
                           }
-                        } else {
-                          Swal.fire('Error', 'Hubo un problema al conectar con el servidor. Código de estado: ' + xhr.status, 'error');
-                        }
-                      };
+                                      } else {
+                                          Swal.fire('Error', 'Hubo un problema al conectar con el servidor. Código de estado: ' + xhr.status, 'error');
+                                      }
+                                  };
 
-                      xhr.onerror = function() {
-                        Swal.fire('Error de red', 'Hubo un problema con la conexión.', 'error');
-                      };
+                                  xhr.onerror = function() {
+                                      Swal.fire('Error de red', 'Hubo un problema con la conexión.', 'error');
+                                  };
 
-                      xhr.send(dataToSendString);
-                    }
+                                  xhr.send(dataToSendString);
+                              }
+                          });
+                      }
                   });
-                }
-                });
-              });
-          
-    
+          });
+
+
             $("#tabla-ticket tbody")
               .off("click", ".received-ticket-btn")
               .on("click", ".received-ticket-btn", function (e) {

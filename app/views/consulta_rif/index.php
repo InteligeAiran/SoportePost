@@ -37,6 +37,75 @@ function mi_navbar() {}
 
 
         <style>
+           /* Estilos para el botón Excel usando ID */
+            #btn-excel-modern-id {
+                background: linear-gradient(45deg, #217346, #28a745) !important;
+                color: white !important;
+                border: 2px solid #217346 !important;
+                border-radius: 25px !important;
+                padding: 12px 24px !important;
+                font-weight: 700 !important;
+                font-size: 13px !important;
+                box-shadow: 0 8px 25px rgba(33, 115, 70, 0.25) !important;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+                position: relative !important;
+                overflow: hidden !important;
+            }
+
+            #btn-excel-modern-id::before {
+                content: '' !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: -100% !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent) !important;
+                transition: left 0.5s !important;
+            }
+
+            #btn-excel-modern-id:hover::before {
+                left: 100% !important;
+            }
+
+            #btn-excel-modern-id:hover {
+                background: linear-gradient(45deg, #1e6b3d, #217346) !important;
+                transform: translateY(-3px) scale(1.05) !important;
+                box-shadow: 0 12px 35px rgba(33, 115, 70, 0.4) !important;
+                border-color: #1e6b3d !important;
+            }
+
+            #btn-excel-modern-id:active {
+                transform: translateY(-1px) scale(1.02) !important;
+            }
+
+            /* Estilos para el botón PDF */
+            #btn-pdf-modern-id {
+                background: linear-gradient(45deg, #dc3545, #c82333) !important;
+                color: white !important;
+                border: 2px solid #dc3545 !important;
+                border-radius: 8px !important;
+                padding: 10px 16px !important;
+                font-weight: 600 !important;
+                font-size: 14px !important;
+                box-shadow: 0 4px 15px rgba(220, 53, 69, 0.25) !important;
+                transition: all 0.3s ease !important;
+            }
+
+            #btn-pdf-modern-id:hover {
+                background: linear-gradient(45deg, #c82333, #bd2130) !important;
+                transform: translateY(-2px) !important;
+                box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4) !important;
+            }
+
+
+            div.dataTables_wrapper div.dataTables_filter {
+                margin-top: 1%;
+            }
+
+            div.dt-buttons{
+                margin-left: 2%;
+            }
+
             #rifTipo {
                 width: auto;
                 max-width: 80px;
