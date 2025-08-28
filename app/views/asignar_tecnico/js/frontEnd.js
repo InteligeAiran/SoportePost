@@ -1574,6 +1574,7 @@ function loadTicketHistory(ticketId) {
   });
 }
 
+
 function markTicketAsReceived(ticketId, nroTicket, serialPos) {
   // Asegúrate de que nroTicket esté como parámetro
   const id_user = document.getElementById("id_user").value;

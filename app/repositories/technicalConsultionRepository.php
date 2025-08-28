@@ -238,7 +238,7 @@ class TechnicalConsultionRepository
             $fileInfo['file_path'],
             $fileInfo['mime_type'],
             $fileInfo['file_size_bytes'],
-            $fileInfo['document_type']
+            $fileInfo['document_type'],
         );
     }
 
