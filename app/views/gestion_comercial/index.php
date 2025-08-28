@@ -204,7 +204,7 @@ function mi_navbar()
                                             <div
                                                 class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
                                                 <strong>
-                                                    <h5 class="text-black text-capitalize ps-3" style="color: black;">Gestión Técnico</h5>
+                                                    <h5 class="text-black text-capitalize ps-3" style="color: black;">Gestión Comercial</h5>
                                                 </strong>
                                             </div>
                                         </div>

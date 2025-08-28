@@ -2983,7 +2983,7 @@ function SendRif() {
                         }
                     },
                     customize: function(xlsx) {
-                        var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                        var sheet = xlsx.xl.worksheets['Consulta_por_Rif.xml'];
                         
                         // Ajustar ancho de columnas
                         $('col', sheet).each(function(index) {
@@ -3088,7 +3088,7 @@ function SendRif() {
                         // Título
                         doc.header = function(currentPage, pageCount) {
                             return {
-                                text: 'Busqueda por RIF',
+                                text: 'Consulta por RIF',
                                 alignment: 'center',
                                 fontSize: 16,
                                 bold: true,
@@ -3336,7 +3336,7 @@ function SendSerial() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: 'Busqueda por RIF',
+                    title: 'Búsqueda por Serial',
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
@@ -3379,7 +3379,7 @@ function SendSerial() {
                         }
                     },
                     customize: function(xlsx) {
-                        var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                        var sheet = xlsx.xl.worksheets['Consulta_por_Serial.xml'];
                         
                         // Ajustar ancho de columnas
                         $('col', sheet).each(function(index) {
@@ -3420,7 +3420,7 @@ function SendSerial() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
                     </svg>PDF`,
-                    title: 'Busqueda por RIF',
+                    title: 'Búsqueda por Serial',
                     className: 'btn-pdf-modern',
                     attr: {
                         id: 'btn-pdf-modern-id',
@@ -3484,7 +3484,7 @@ function SendSerial() {
                         // Título
                         doc.header = function(currentPage, pageCount) {
                             return {
-                                text: 'Busqueda por RIF',
+                                text: 'Consulta por Serial',
                                 alignment: 'center',
                                 fontSize: 16,
                                 bold: true,
@@ -3751,7 +3751,7 @@ function SendRazon() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: 'Busqueda por RIF',
+                    title: 'Búsqueda por Razón Social',
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
@@ -3794,7 +3794,7 @@ function SendRazon() {
                         }
                     },
                     customize: function(xlsx) {
-                        var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                        var sheet = xlsx.xl.worksheets['Consuta_Por_RazonSocial.xml'];
                         
                         // Ajustar ancho de columnas
                         $('col', sheet).each(function(index) {
@@ -3835,7 +3835,7 @@ function SendRazon() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
                     </svg>PDF`,
-                    title: 'Busqueda por RIF',
+                    title: 'Búsqueda por Razón Social',
                     className: 'btn-pdf-modern',
                     attr: {
                         id: 'btn-pdf-modern-id',
@@ -3899,7 +3899,7 @@ function SendRazon() {
                         // Título
                         doc.header = function(currentPage, pageCount) {
                             return {
-                                text: 'Busqueda por RIF',
+                                text: 'Consulta por Razón Social',
                                 alignment: 'center',
                                 fontSize: 16,
                                 bold: true,

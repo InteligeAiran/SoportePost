@@ -3461,6 +3461,65 @@ function formatMonthlyDetails(details) {
 let monthlyTicketsChartInstance; // Variable global para la instancia del gráfico
 let monthlyTicketsChartInstanceForState;
 
+// Función para mostrar mensajes de error con mejor formato
+function displayChartErrorMessage(chartId, message, type = 'info') {
+    const chartContainer = document.getElementById(chartId).parentNode;
+    let errorMessageDiv = chartContainer.querySelector('.chart-error-message');
+
+    if (!errorMessageDiv) {
+        errorMessageDiv = document.createElement('div');
+        errorMessageDiv.className = 'chart-error-message';
+        errorMessageDiv.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,249,250,0.95) 100%);
+            color: #495057;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            z-index: 10;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
+        `;
+        chartContainer.style.position = 'relative';
+        chartContainer.appendChild(errorMessageDiv);
+    }
+
+    // Crear contenido del mensaje con icono y texto
+    errorMessageDiv.innerHTML = `
+        <div style="margin-bottom: 15px;">
+            ${type === 'error' ? 
+                '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#dc3545" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>' :
+                '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+            }
+        </div>
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px; color: ${type === 'error' ? '#dc3545' : '#495057'};">
+            ${message}
+        </div>
+        <div style="font-size: 14px; color: #6c757d; opacity: 0.8;">
+            ${type === 'error' ? 'Cree tickets para Vizualizar datos' : 'No hay información disponible'}
+        </div>
+    `;
+    
+    errorMessageDiv.style.display = 'flex';
+}
+
+// Función para ocultar mensajes de error
+function hideChartErrorMessage(chartId) {
+    const chartContainer = document.getElementById(chartId).parentNode;
+    const errorMessageDiv = chartContainer.querySelector('.chart-error-message');
+    if (errorMessageDiv) {
+        errorMessageDiv.style.display = 'none';
+    }
+}
+
 function loadMonthlyCreatedTicketsChart() {
   // Array para los colores de fondo con degradado (ej. para Chart.js)
   // Cada objeto contiene los colores de inicio y fin para el degradado de una barra.
@@ -3507,7 +3566,11 @@ function loadMonthlyCreatedTicketsChart() {
     "rgba(52, 152, 219, 1)", // Diciembre
   ];
 
-  const ctx = document.getElementById("chart-line").getContext("2d");
+  const chartCanvasId = "chart-line";
+  const ctx = document.getElementById(chartCanvasId).getContext("2d");
+
+  // Ocultar mensaje de error previo
+  hideChartErrorMessage(chartCanvasId);
 
   fetch(
     `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChart`
@@ -3627,12 +3690,8 @@ function loadMonthlyCreatedTicketsChart() {
         if (monthlyTicketsChartInstance) {
           monthlyTicketsChartInstance.destroy();
         }
-        // O mostrar un mensaje en el canvas si es posible
-        ctx.fillText(
-          "No hay datos para mostrar.",
-          ctx.canvas.width / 2,
-          ctx.canvas.height / 2
-        );
+        // Mostrar mensaje de "no data" con mejor formato
+        displayChartErrorMessage(chartCanvasId, "No hay tickets creados este mes", 'info');
       }
     })
     .catch((error) => {
@@ -3643,11 +3702,8 @@ function loadMonthlyCreatedTicketsChart() {
       if (monthlyTicketsChartInstance) {
         monthlyTicketsChartInstance.destroy();
       }
-      ctx.fillText(
-        "No hay Datos en la gráfica.",
-        ctx.canvas.width / 2,
-        ctx.canvas.height / 2
-      );
+      // Mostrar mensaje de error con mejor formato
+      displayChartErrorMessage(chartCanvasId, "No hay datos en la gráfica", 'error');
     });
 }
 
@@ -3728,7 +3784,11 @@ function loadMonthlyCreatedTicketsChartForState() {
     "rgba(231, 76, 60, 1)",
   ];
 
-  const ctx = document.getElementById("ticketsChart").getContext("2d");
+  const chartCanvasId = "ticketsChart";
+  const ctx = document.getElementById(chartCanvasId).getContext("2d");
+
+  // Ocultar mensaje de error previo
+  hideChartErrorMessage(chartCanvasId);
 
   fetch(
     `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChartForState`
@@ -3844,12 +3904,8 @@ function loadMonthlyCreatedTicketsChartForState() {
         if (monthlyTicketsChartInstanceForState) {
           monthlyTicketsChartInstanceForState.destroy();
         }
-        // O mostrar un mensaje en el canvas si es posible
-        ctx.fillText(
-          "No hay Datos para mostrar.",
-          ctx.canvas.width / 2,
-          ctx.canvas.height / 2
-        );
+        // Mostrar mensaje de "no data" con mejor formato
+        displayChartErrorMessage(chartCanvasId, "No hay tickets por región disponibles", 'info');
       }
     })
     .catch((error) => {
@@ -3860,11 +3916,8 @@ function loadMonthlyCreatedTicketsChartForState() {
       if (monthlyTicketsChartInstanceForState) {
         monthlyTicketsChartInstanceForState.destroy();
       }
-      ctx.fillText(
-        "No hay Datos en la gráfica.",
-        ctx.canvas.width / 2,
-        ctx.canvas.height / 2
-      );
+      // Mostrar mensaje de error con mejor formato
+      displayChartErrorMessage(chartCanvasId, "No hay tickes en la gráfica", 'error');
     });
 }
 

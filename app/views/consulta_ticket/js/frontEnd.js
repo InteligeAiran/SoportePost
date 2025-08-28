@@ -2286,7 +2286,7 @@ function SendRango() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: 'Busqueda por Rango De Fecha',
+                    title: 'Búsqueda por Rango De Fecha',
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
@@ -2328,7 +2328,7 @@ function SendRango() {
                         }
                     },
                     customize: function(xlsx) {
-                        var sheet = xlsx.xl.worksheets['Consulta_Por_Rango_Fecha(SoportePos).xml'];
+                        var sheet = xlsx.xl.worksheets['Consulta_Por_Rango_Fecha.xml'];
                         
                         // Ajustar ancho de columnas
                         $('col', sheet).each(function(index) {
@@ -2368,7 +2368,7 @@ function SendRango() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
                     </svg>PDF`,
-                    title: 'Busqueda por Rango De Fecha',
+                    title: 'Búsqueda por Rango De Fecha',
                     className: 'btn-pdf-modern',
                     attr: {
                         id: 'btn-pdf-modern-id',
@@ -2425,14 +2425,14 @@ function SendRango() {
                         };
                         
                         doc.defaultStyle = {
-                            fontSize: 7,
+                            fontSize: 5,
                             lineHeight: 1.1
                         };
                         
                         // Título
                         doc.header = function(currentPage, pageCount) {
                             return {
-                                text: 'Busqueda por Rango de Fecha',
+                                text: 'Consulta por Rango de Fecha',
                                 alignment: 'center',
                                 fontSize: 14,
                                 bold: true,

@@ -1244,7 +1244,7 @@ function getTicketDataFinaljs() {
                                   if (ticketData) {
                                     const beautifulHtmlContent = `
                                       <div style="text-align: left; padding: 15px;">
-                                          <h3 style="color: #28a745; margin-bottom: 15px; text-align: center;">✅ ¡Ticket Entregado! ✅</h3>
+                                          <h3 style="color: #28a745; margin-bottom: 15px; text-align: center;">✅ ¡POS Entregado! ✅</h3>
                                           <p style="font-size: 1.1em; margin-bottom: 10px;">
                                               <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.nro_ticket}</span>
                                           </p>
