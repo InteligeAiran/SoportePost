@@ -205,6 +205,10 @@ class reportes extends Controller {
                     $this->SaveComponents();
                 break;
 
+                case 'SearchEstatusData':
+                    $this->SearchEstatusData();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -1163,4 +1167,25 @@ class reportes extends Controller {
             $this->response(['success' => false, 'message' => 'Error al guardar los componentes'], 500);
         }
     }
+
+    public function SearchEstatusData(){
+        $estatus = isset($_POST['estatus'])? $_POST['estatus'] : null;
+        
+        if (!$estatus) {
+            $this->response(['success' => false, 'message' => 'Debe seleccionar un estatus'], 400);
+            return;
+        }
+        
+        $repository = new ReportRepository();
+        $result = $repository->GetDataEstatusTicket($estatus);
+
+        if ($result !== false && !empty($result)) {
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => false, 'message' => 'No hay tickets con ese estatus'], 404);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los tickets'], 500);
+        }
+    }
 }
+?>

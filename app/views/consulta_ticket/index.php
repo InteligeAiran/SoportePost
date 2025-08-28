@@ -173,9 +173,11 @@ function mi_navbar() {}
             border-radius: 1rem;
             /* box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); // Sombra opcional */
         }
+
         .date-input-wrapper {
             position: relative;
         }
+
         input[type="text"] {
             padding: 1rem 1.5rem; /* Más padding */
             border: none; /* Sin borde por defecto */
@@ -312,11 +314,12 @@ function mi_navbar() {}
             <div class="container-fluid py-4">
                 <div id="Row" class="row mt-4">
                     <div class="cord">
-                        <div class="d-flex justify-content-start mt-2 flex-wrap" style="margin-left: 20%; margin-top: -2%;">
+                        <div class="d-flex justify-content-start mt-2 flex-wrap" style="margin-left: 15%; margin-top: -2%;">
                             <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorRangoBtn">Buscar por Rango de Fecha</button>
                             <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
                             <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
                             <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRegionsBtn">Buscar Por Region</button>
+                            <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorStatusBtn">Buscar Por Estatus</button>
                         </div>
                         <div id="SearchRif" class="mb-3 d-flex align-items-center">
                             <div id="welcomeMessage" class="d-flex justify-content-center align-items-center">
@@ -356,6 +359,12 @@ function mi_navbar() {}
                                 <select id="SelectRgions" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
                                 </select>
                                 <button type="button" class="btn btn-primary" onclick="SendRegions()" id="buscarRegions" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
+                            </div>
+
+                            <div id = "SelectStatusInput" class="d-flex align-items-center" style = "margin-top: -2%; margin-left: -20%;">
+                                <select id="SelectStatus" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
+                                </select>
+                                <button type="button" class="btn btn-primary" onclick="SendStatus()" id="buscarStatus" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
                             </div>
 
                         </div><br>

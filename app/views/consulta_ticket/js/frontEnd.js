@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const buscarPorRifBtn = document.getElementById("buscarPorRifBtn");
     const buscarPorRegionsBtn = document.getElementById("buscarPorRegionsBtn");
     const buscarPorRazonBtn = document.getElementById("buscarPorNombreBtn"); 
-    const searchRifDiv = document.getElementById("SearchRif"); // Contenedor principal de los inputs de búsqueda
+    const searchRifDiv = document.getElementById("SearchRif");
     const rifTipoSelect = document.getElementById("rifTipo");
     const rifInput = document.getElementById("rifInput");
     const buscarRifBtn = document.getElementById("buscarRif");
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const buscarSerialBtn = document.getElementById("buscarSerial");
     const razonInput = document.getElementById("RazonInput");
     const buscarRazonBtn = document.getElementById("buscarRazon");
-    const inputsDateDiv = document.getElementById("inputsDate"); // El div que contiene los inputs de fecha
+    const inputsDateDiv = document.getElementById("inputsDate");
     const dateIniInput = document.getElementById("date-ini");
     const dateEndInput = document.getElementById("date-end");
     const buscarRangoBtn = document.getElementById("buscarRango");
@@ -126,7 +126,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const errorDateEnd = document.getElementById("errorDateEnd");
     const selectRegions = document.getElementById("SelectRgions");
     const buscarRegionsBtn = document.getElementById("buscarRegions");
-    const resultsCard = document.querySelector(".card"); // El contenedor principal para los resultados (la tabla)
+
+    // NUEVAS REFERENCIAS para búsqueda por estatus
+    const buscarPorEstatusBtn = document.getElementById("buscarPorStatusBtn");
+    const buscarPorEstatus = document.getElementById("buscarStatus");
+    const buscarPorEstatusSelect = document.getElementById("SelectStatus");
+     
+    const resultsCard = document.querySelector(".card");
 
     // Función para ocultar todos los campos de búsqueda y limpiar mensajes de error
     function hideAllSearchInputs() {
@@ -138,16 +144,16 @@ document.addEventListener("DOMContentLoaded", function () {
         buscarSerialBtn.style.display = "none";
 
         razonInput.style.display = "none";
-        razonInput.value = ""; // Limpiar el valor del input de Razon Social
-        dateIniInput.value = ""; // Limpiar el valor del input de fecha inicio
-        dateEndInput.value = ""; // Limpiar el valor del input de fecha fin
-        selectRegions.value = ""; // Limpiar el valor del select de regiones
-        rifInput.value = ""; // Limpiar el valor del input de RIF
-        serialInput.value = ""; // Limpiar el valor del input de Serial
+        razonInput.value = "";
+        dateIniInput.value = "";
+        dateEndInput.value = "";
+        selectRegions.value = "";
+        rifInput.value = "";
+        serialInput.value = "";
         buscarRazonBtn.style.display = "none";
 
-        inputsDateDiv.style.display = "none"; // Oculta el contenedor completo de fecha
-        dateIniInput.style.display = "none"; // Asegura que los inputs individuales también se oculten si no están dentro de inputsDateDiv
+        inputsDateDiv.style.display = "none";
+        dateIniInput.style.display = "none";
         dateEndInput.style.display = "none";
         buscarRangoBtn.style.display = "none";
         errorDateIni.style.display = "none";
@@ -156,11 +162,13 @@ document.addEventListener("DOMContentLoaded", function () {
         selectRegions.style.display = "none";
         buscarRegionsBtn.style.display = "none";
 
+        // NUEVO: Ocultar elementos de búsqueda por estatus
+        buscarPorEstatusSelect.style.display = "none";
+        buscarPorEstatus.style.display = "none";
+
         // Limpiar el contenido del card de resultados
         if (resultsCard) {
-            resultsCard.style.display = "none"; // Oculta el card de resultados
-            // Si la tabla DataTables está inicializada aquí, deberías destruirla antes de limpiar el HTML
-            // Por ejemplo: if ($.fn.DataTable.isDataTable('#rifCountTable')) { $('#rifCountTable').DataTable().destroy(); }
+            resultsCard.style.display = "none";
             resultsCard.innerHTML = `
                 <div class="table-responsive">
                     <table id="rifCountTable" style="display: none;">
@@ -173,7 +181,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     </table>
                 </div>
             `;
-            // Vuelve a ocultar la tabla rifCountTable dentro del card
             const rifCountTable = resultsCard.querySelector("#rifCountTable");
             if (rifCountTable) {
                 rifCountTable.style.display = "none";
@@ -184,80 +191,72 @@ document.addEventListener("DOMContentLoaded", function () {
     // Event Listeners para los botones de "Buscar por..."
     if (buscarPorRegionsBtn) {
         buscarPorRegionsBtn.addEventListener("click", function () {
-            // Show the welcome message when changing search type
             const welcomeMessage = document.getElementById("welcomeMessage");
             if (welcomeMessage) {
                 welcomeMessage.style.visibility = "visible";
                 welcomeMessage.style.opacity = "1";
             }
             
-            hideAllSearchInputs(); // Oculta todos los demás
+            hideAllSearchInputs();
             selectRegions.style.display = "block";
             buscarRegionsBtn.style.display = "block";
-            resultsCard.style.display = "block"; // Muestra el card de resultados
-            // Lógica para cargar regiones
-            resultsCard.style.marginTop = "0%"; // Asegúrate de que la fila sea visible
-
+            resultsCard.style.display = "block";
+            resultsCard.style.marginTop = "0%";
         });
     }
 
     if (buscarPorRangoBtn) {
         buscarPorRangoBtn.addEventListener("click", function () {
-            // Show the welcome message when changing search type
             const welcomeMessage = document.getElementById("welcomeMessage");
             if (welcomeMessage) {
                 welcomeMessage.style.visibility = "visible";
                 welcomeMessage.style.opacity = "1";
             }
             
-            hideAllSearchInputs(); // Oculta todos los demás
-            inputsDateDiv.style.display = "flex"; // ¡IMPORTANTE! Vuelve a poner display: flex;
+            hideAllSearchInputs();
+            inputsDateDiv.style.display = "flex";
             dateIniInput.style.display = "block";
             dateEndInput.style.display = "block";
             buscarRangoBtn.style.display = "block";
-            resultsCard.style.marginTop = "-3%"; // Asegúrate de que la fila sea visible
+            resultsCard.style.marginTop = "-3%";
 
-            // No mostrar los mensajes de error inicialmente
             errorDateIni.style.display = "none"; 
             errorDateEnd.style.display = "none";
-            resultsCard.style.display = "block"; // Muestra el card de resultados
+            resultsCard.style.display = "block";
         });
     }
 
-    if (buscarPorRazonBtn) { // Asumiendo que este es el botón correcto para buscar por Razon Social
+    if (buscarPorRazonBtn) {
         buscarPorRazonBtn.addEventListener("click", function () {
-            // Show the welcome message when changing search type
             const welcomeMessage = document.getElementById("welcomeMessage");
             if (welcomeMessage) {
                 welcomeMessage.style.visibility = "visible";
                 welcomeMessage.style.opacity = "1";
             }
             
-            hideAllSearchInputs(); // Oculta todos los demás
+            hideAllSearchInputs();
             razonInput.style.display = "block";
             buscarRazonBtn.style.display = "block";
-            resultsCard.style.display = "block"; // Muestra el card de resultados
-            resultsCard.style.marginTop = "0%"; // Asegúrate de que la fila sea visible
+            resultsCard.style.display = "block";
+            resultsCard.style.marginTop = "0%";
         });
     }
 
     if (buscarPorRifBtn) {
         buscarPorRifBtn.addEventListener("click", function () {
-            // Show the welcome message when changing search type
             const welcomeMessage = document.getElementById("welcomeMessage");
             if (welcomeMessage) {
                 welcomeMessage.style.visibility = "visible";
                 welcomeMessage.style.opacity = "1";
             }
             
-            hideAllSearchInputs(); // Oculta todos los demás
+            hideAllSearchInputs();
             rifTipoSelect.style.display = "block";
             rifInput.style.display = "block";
             buscarRifBtn.style.display = "block";
-            resultsCard.style.display = "block"; // Muestra el card de resultados
-            resultsCard.style.marginTop = "5%"; // Asegúrate de que la fila sea visible
+            resultsCard.style.display = "block";
+            resultsCard.style.marginTop = "5%";
 
-            // Lógica para validación de input de RIF
             $("#rifInput").keyup(function () {
                 let string = $("#rifInput").val();
                 $("#rifInput").val(string.replace(/ /g, ""));
@@ -273,20 +272,38 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (buscarPorSerialBtn) {
         buscarPorSerialBtn.addEventListener("click", function () {
-            // Show the welcome message when changing search type
             const welcomeMessage = document.getElementById("welcomeMessage");
             if (welcomeMessage) {
                 welcomeMessage.style.visibility = "visible";
                 welcomeMessage.style.opacity = "1";
             }
             
-            hideAllSearchInputs(); // Oculta todos los demás
+            hideAllSearchInputs();
             serialInput.style.display = "block";
             buscarSerialBtn.style.display = "block";
-            resultsCard.style.display = "block"; // Muestra el card de resultados
-            resultsCard.style.marginTop = "0%"; // Asegúrate de que la fila sea visible
+            resultsCard.style.display = "block";
+            resultsCard.style.marginTop = "0%";
         });
     }
+
+    // NUEVO: Event Listener para búsqueda por estatus
+    if (buscarPorEstatusBtn) {
+        buscarPorEstatusBtn.addEventListener("click", function () {
+            const welcomeMessage = document.getElementById("welcomeMessage");
+            if (welcomeMessage) {
+                welcomeMessage.style.visibility = "visible";
+                welcomeMessage.style.opacity = "1";
+            }
+            
+            hideAllSearchInputs();
+            buscarPorEstatusSelect.style.display = "block";
+            buscarPorEstatus.style.display = "block";
+            resultsCard.style.display = "block";
+            resultsCard.style.marginTop = "0%";
+        });
+    }
+
+    // Inicializar ocultando todos los campos
     hideAllSearchInputs();
 });
 
@@ -347,6 +364,64 @@ function getRegionUsuarios() {
 // Llama a la función para cargar las fallas cuando la página se cargue
 document.addEventListener("DOMContentLoaded", getRegionUsuarios);
 
+function getEstatusTicket() {
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getEstatusTicket`);
+
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          const select = document.getElementById("SelectStatus");
+
+          select.innerHTML = "";
+
+          select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+          if (
+            Array.isArray(response.Estatus) &&
+            response.Estatus.length > 0
+          ) {
+            response.Estatus.forEach((Estatu) => {
+              const option = document.createElement("option");
+              option.value = Estatu.id_status_ticket;
+              option.textContent = Estatu.name_status_ticket;
+              select.appendChild(option);
+            });
+          } else {
+            // Si no hay fallas, puedes mostrar un mensaje en el select
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No hay información disponible";
+            select.appendChild(option);
+          }
+        } else {
+          document.getElementById("rifMensaje").innerHTML +=
+            "<br>Error al obtener los datos.";
+          console.error("Error al obtener las fallas:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        document.getElementById("rifMensaje").innerHTML +=
+          "<br>Error al procesar la información.";
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+      document.getElementById("rifMensaje").innerHTML +=
+        "<br>Error de conexión con el servidor para los áreas.";
+    }
+  };
+
+  const datos = `action=GetRegionUsers`; // Cambia la acción para que coincida con el backend
+  xhr.send(datos);
+}
+
+document.addEventListener("DOMContentLoaded", getEstatusTicket);
+
+
+
 function SendRegions() {
   // Get the welcome message element and show it at the start
   const welcomeMessage = document.getElementById("welcomeMessage");
@@ -365,7 +440,7 @@ function SendRegions() {
     Swal.fire({
       icon: "warning",
       title: "Atención",
-      text: "Por favor, selecciona una región antes de buscar.",
+      text: "Por favor, Seleccione una región.",
       color: "black",
       confirmButtonText: "Aceptar",
       confirmButtonColor: "#003594",
@@ -1607,6 +1682,430 @@ function SendSerial() {
   };
 
   const datos = `action=SearchSerialData&serial=${encodeURIComponent(serialInputValue)}`;
+  xhr.send(datos);
+}
+
+function SendStatus() {
+  // Get the welcome message element and show it at the start
+  const welcomeMessage = document.getElementById("welcomeMessage");
+  if (welcomeMessage) {
+    welcomeMessage.style.visibility = "visible";
+    welcomeMessage.style.opacity = "1";
+  }
+
+  const EstatusSelectValue = document.getElementById("SelectStatus").value;
+  const selectElement = document.getElementById("SelectStatus");
+  const selectedOptionIndex = selectElement.selectedIndex;
+  const EstatusName = selectElement.options[selectedOptionIndex].text;
+
+
+
+
+  // Mover la validación al principio para detener la ejecución si no hay serial
+  if (!EstatusSelectValue) {
+    Swal.fire({
+      icon: "warning",
+      title: "Atención",
+      text: "Por favor, Seleccione un Estatus.",
+      color: "black",
+      confirmButtonText: "Aceptar",
+      confirmButtonColor: "#003594",
+    });
+    // Show the welcome message if validation fails
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
+    return;
+  }
+
+  const razonCountTableCard = document.querySelector(".card");
+  if (!razonCountTableCard) {
+    console.error("Error: El contenedor principal de tablas (.card) no se encontró.");
+    return;
+  }
+  
+  // Limpiar cualquier mensaje de error o "no data" previo del contenedor principal
+  razonCountTableCard.querySelectorAll("p").forEach((p) => p.remove());
+
+  // **Lógica para destruir DataTables y limpiar la tabla de forma segura**
+  // Destruye la instancia de DataTables si ya existe
+  const rifCountTable = document.getElementById("rifCountTable");
+  if (rifCountTable && $.fn.DataTable.isDataTable(rifCountTable)) {
+    $(rifCountTable).DataTable().destroy();
+    rifCountTable.remove(); // Remueve completamente la tabla antigua
+  }
+  
+  // Opcional: mostrar un mensaje de "cargando..." mientras se busca
+  const loadingMessage = document.createElement("p");
+  loadingMessage.textContent = "Buscando datos...";
+  loadingMessage.className = "text-center text-muted";
+  razonCountTableCard.appendChild(loadingMessage);
+
+  razonCountTableCard.style.display = "block";
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/reportes/SearchEstatusData`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    // Eliminar el mensaje de carga
+    if(loadingMessage) {
+        loadingMessage.remove();
+    }
+    
+    // Buscar de nuevo la referencia a la tabla, ya que pudo ser removida
+    const existingTable = document.getElementById("rifCountTable");
+    if (existingTable) {
+        if ($.fn.DataTable.isDataTable(existingTable)) {
+            $(existingTable).DataTable().destroy();
+        }
+        existingTable.remove();
+    }
+
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+
+        if (response.success && response.ticket && response.ticket.length > 0) {
+          // Hide the welcome message when data is found successfully
+          if (welcomeMessage) {
+            welcomeMessage.style.visibility = "hidden";
+            welcomeMessage.style.opacity = "0";
+          }
+          
+          const TicketData = response.ticket;
+
+          // Crea la tabla y sus elementos
+          const newTable = document.createElement("table");
+          newTable.id = "rifCountTable";
+          newTable.className = "table table-striped table-bordered table-hover table-sm";
+          razonCountTableCard.appendChild(newTable);
+
+          const thead = document.createElement("thead");
+          const tbody = document.createElement("tbody");
+          newTable.appendChild(thead);
+          newTable.appendChild(tbody);
+
+          // Lógica para crear las columnas y el thead
+          const columnsConfig = [];
+          const headerRow = thead.insertRow();
+          const visibleKeys = new Set();
+          
+          Object.keys(TicketData[0]).forEach(key => {
+              if (TicketData.some(item => item[key] !== null && item[key] !== undefined && item[key] !== "")) {
+                  visibleKeys.add(key);
+              }
+          });
+
+          const columnTitles = {
+              // ... Tus títulos de columna
+              id_ticket: "ID Ticket",
+              create_ticket: "Create Ticket",
+              name_status_ticket: "Status Ticket",
+              rif_empresa: "Rif",
+              razonsocial_cliente: "Razón Social",
+              name_process_ticket: "Process Ticket",
+              name_status_payment: "Estatus Pago",
+              full_name_tecnico: "Usuario Gestión",
+              name_accion_ticket: "Accion Ticket",
+              full_name_coordinador: "Coordinador",
+              id_level_failure: "Nivel de Falla",
+              full_name_tecnicoassignado: "Técnico Asignado",
+              serial_pos: "Serial POS",
+              name_failure: "Descripción de Fallas",
+              downl_exoneration: "Exoneración",
+              downl_payment: "Pago Anticipo",
+              downl_send_to_rosal: "Enviado a Rosal",
+              downl_send_fromrosal: "Enviado desde Rosal a destino",
+              date_send_lab: "Fecha Envío Lab",
+              date_send_torosal_fromlab: "Fecha Envío a rosal",
+              name_status_domiciliacion: "Estatus Domiciliación",
+              date_sendkey: "Fecha Envío Key",
+              date_receivekey: "Fecha Recibo Key",
+              date_receivefrom_desti: "Fecha Recibo Destino",
+          };
+
+          for (const key of visibleKeys) {
+              const th = document.createElement("th");
+              th.textContent = columnTitles[key] || key;
+              headerRow.appendChild(th);
+              
+              const columnDef = {
+                  data: key,
+                  title: columnTitles[key] || key,
+                  defaultContent: "",
+              };
+              if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
+                  columnDef.render = (data) => (data === "Sí" ? "Sí" : "No");
+              }
+              columnsConfig.push(columnDef);
+          }
+
+          // Inicialización de DataTables
+          $(newTable).DataTable({
+            responsive: false,
+            data: TicketData,
+            columns: columnsConfig,
+            buttons: [{
+              extend: "excelHtml5",
+              footer: true,
+              text: "Excel",
+            }, ],
+            pagingType: "simple_numbers",
+            lengthMenu: [5],
+            autoWidth: false,
+            language: {
+              lengthMenu: "Mostrar _MENU_ registros",
+              emptyTable: "No hay datos disponibles en la tabla",
+              zeroRecords: "No se encontraron resultados para la búsqueda",
+              info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+              infoEmpty: "No hay Registros disponibles",
+              infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
+              search: "Buscar:",
+              loadingRecords: "Buscando...",
+              processing: "Procesando...",
+              paginate: {
+                first: "Primero",
+                last: "Último",
+                next: "Siguiente",
+                previous: "Anterior",
+              },
+            },
+
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
+                    </svg>Excel`,
+                    title: `${EstatusName}`,
+                    className: 'btn-excel-modern',
+                    attr: {
+                        id: 'btn-excel-modern-id',
+                        title: 'Exportar a Excel'
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            header: function(data, columnIdx) {
+                                if (typeof data === 'string') {
+                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+                                }
+                                return data;
+                            },
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    // Remover HTML
+                                    data = data.replace(/<[^>]*>/g, '');
+                                    data = data.replace(/\n/g, ' ').trim();
+                                    data = data.replace(/\s+/g, ' ');
+                                    
+                                    // Separar fecha y garantía para Excel
+                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
+                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
+                                        if (dateMatch) {
+                                            const fecha = dateMatch[0];
+                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
+                                            return fecha + '\n' + garantia;
+                                        }
+                                    }
+                                    
+                                    // Truncar texto muy largo
+                                    if (data.length > 100) {
+                                        data = data.substring(0, 97) + '...';
+                                    }
+                                }
+                                return data;
+                            }
+                        }
+                    },
+                    customize: function(xlsx) {
+                        var sheet = xlsx.xl.worksheets['Busqueda_Por_Estatus.xml'];
+                        
+                        // Ajustar ancho de columnas
+                        $('col', sheet).each(function(index) {
+                            if (index === 1 || index === 7 || index === 8) {
+                                $(this).attr('width', 50);
+                            } else if (index === 0 || index === 2 || index === 3 || index === 4 || index === 5) {
+                                $(this).attr('width', 20);
+                            } else {
+                                $(this).attr('width', 25);
+                            }
+                        });
+                        
+                        // Ajustar altura de filas
+                        $('row', sheet).each(function(index) {
+                            if (index === 0) {
+                                $(this).attr('ht', 30);
+                            } else {
+                                let hasDateWithWarranty = false;
+                                $('c', this).each(function() {
+                                    let cellValue = $(this).text();
+                                    if (cellValue && (cellValue.includes('Sin garantia') || cellValue.includes('Sin garantía'))) {
+                                        hasDateWithWarranty = true;
+                                    }
+                                });
+                                
+                                if (hasDateWithWarranty) {
+                                    $(this).attr('ht', 80);
+                                } else {
+                                    $(this).attr('ht', 60);
+                                }
+                            }
+                        });
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+                    </svg>PDF`,
+                    title: `${EstatusName}`,
+                    className: 'btn-pdf-modern',
+                    attr: {
+                        id: 'btn-pdf-modern-id',
+                        title: 'Exportar a PDF'
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            header: function(data, columnIdx) {
+                                if (typeof data === 'string') {
+                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+                                }
+                                return data;
+                            },
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    // Remover HTML
+                                    data = data.replace(/<[^>]*>/g, '');
+                                    data = data.replace(/\n/g, ' ').trim();
+                                    data = data.replace(/\s+/g, ' ');
+                                    
+                                    // Separar fecha y garantía para PDF
+                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
+                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
+                                        if (dateMatch) {
+                                            const fecha = dateMatch[0];
+                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
+                                            return fecha + '\n' + garantia;
+                                        }
+                                    }
+                                    
+                                    // Truncar texto muy largo para PDF
+                                    if (data.length > 60) {
+                                        data = data.substring(0, 57) + '...';
+                                    }
+                                }
+                                return data;
+                            }
+                        }
+                    },
+                    // Configuración SIMPLIFICADA y ESTABLE para PDF
+                    customize: function(doc) {
+                        // Solo configuraciones básicas que no causan errores
+                        doc.pageOrientation = 'landscape';
+                        doc.pageSize = 'A4';
+                        doc.pageMargins = [10, 20, 10, 20];
+                        
+                        // Estilos básicos
+                        doc.styles.tableHeader = {
+                            fillColor: '#2E86AB',
+                            color: 'white',
+                            fontSize: 6,
+                            bold: true
+                        };
+                        
+                        doc.defaultStyle = {
+                            fontSize: 7,
+                            lineHeight: 1.1
+                        };
+                        
+                        // Título
+                        doc.header = function(currentPage, pageCount) {
+                            return {
+                                text: `${EstatusName}`,
+                                alignment: 'center',
+                                fontSize: 14,
+                                bold: true,
+                                margin: [0, 10, 0, 0]
+                            };
+                        };
+                        
+                        // Pie de página
+                        doc.footer = function(currentPage, pageCount) {
+                            return {
+                                text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
+                                alignment: 'center',
+                                fontSize: 10,
+                                margin: [0, 0, 0, 10]
+                            };
+                        };
+                        
+                        // NO configurar widths ni body - dejar que se ajuste automáticamente
+                    }
+                }
+            ]
+          });
+          $(newTable).resizableColumns();
+
+        } else {
+          const noDataMessage = document.createElement("p");
+          noDataMessage.textContent = "No se encontraron datos para el estatus seleccionado.";
+          razonCountTableCard.appendChild(noDataMessage);
+          // Show the welcome message if no data found
+          if (welcomeMessage) {
+            welcomeMessage.style.visibility = "visible";
+            welcomeMessage.style.opacity = "1";
+          }
+        }
+      } catch (error) {
+        const errorMessage = document.createElement("p");
+        errorMessage.textContent = "Error al procesar la respuesta del servidor.";
+        razonCountTableCard.appendChild(errorMessage);
+        console.error("Error parsing JSON:", error);
+        // Show the welcome message if there's an error
+        if (welcomeMessage) {
+          welcomeMessage.style.visibility = "visible";
+          welcomeMessage.style.opacity = "1";
+        }
+      }
+    } else {
+      const errorMessage = document.createElement("p");
+      errorMessage.textContent = "No hay Datos en su búsqueda.";
+      razonCountTableCard.appendChild(errorMessage);
+      console.error("Error:", xhr.status, xhr.statusText);
+      // Show the welcome message if there's a connection error
+      if (welcomeMessage) {
+        welcomeMessage.style.visibility = "visible";
+        welcomeMessage.style.opacity = "1";
+      }
+    }
+  };
+
+  xhr.onerror = function () {
+    if(loadingMessage) {
+        loadingMessage.remove();
+    }
+    const existingTable = document.getElementById("rifCountTable");
+    if (existingTable && $.fn.DataTable.isDataTable(existingTable)) {
+        $(existingTable).DataTable().destroy();
+        existingTable.remove();
+    }
+    const errorMessage = document.createElement("p");
+    errorMessage.textContent = "Error de conexión de red. Verifique su conexión a internet.";
+    razonCountTableCard.appendChild(errorMessage);
+    console.error("Error de red");
+    // Show the welcome message if there's a network error
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
+  };
+
+  const datos = `action=SearchSerialData&estatus=${encodeURIComponent(EstatusSelectValue)}`;
   xhr.send(datos);
 }
 

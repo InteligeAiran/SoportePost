@@ -2555,5 +2555,15 @@ class consulta_rifModel extends Model
             return false;
         }
     }
+
+    public function GetEstatusTicket(){
+        $sql = "SELECT * FROM get_status_tickets();";
+        $result = Model::getResult($sql, $this->db);
+        if ($result === false) {
+            error_log("Error al consultar estatus de tickets: ". pg_last_error($this->db->getConnection()));
+            return false;
+        }
+        return $result;
+    }
 }
 ?>

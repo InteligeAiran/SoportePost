@@ -270,6 +270,10 @@ class Consulta extends Controller
                     $this->handleapprovedocument();
                     break;
 
+                case 'getEstatusTicket':
+                    $this->handleGetEstatusTicket();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -1450,7 +1454,7 @@ class Consulta extends Controller
 
         $repository = new technicalConsultionRepository();
         $result = $repository->EntregarTicketDevolucion($ticketId, $id_user);
-        
+
         if ($result) {
             // Obtener los datos del ticket para el modal
             $ticketData = $repository->GetTicketDataForDelivery($ticketId);
@@ -1761,6 +1765,20 @@ class Consulta extends Controller
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }
+    }
+
+    public function handleGetEstatusTicket(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetEstatusTicket();
+       // var_dump($result);
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'Estatus' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay coordinadores disponibles o No ha seleccionado ningun coordinador'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los coordinadores'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
     }
 }
 ?>

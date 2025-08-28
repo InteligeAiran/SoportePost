@@ -1036,6 +1036,16 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
             return false;
         }
     }
+
+    public function GetDataEstatusTicket($estatus){
+        try {
+            $sql = "SELECT * FROM getticketsbyestatus(".$estatus.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
 ?>
 

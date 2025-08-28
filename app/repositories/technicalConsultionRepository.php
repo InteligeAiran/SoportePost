@@ -778,5 +778,18 @@ class TechnicalConsultionRepository
         $result = $this->model->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type);
         return $result;
     }
+
+    public function GetEstatusTicket(){
+        $result = $this->model->GetEstatusTicket();
+
+        if ($result) {
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $tipousers[] = $agente;
+                //var_dump($agente);
+            }
+            return $tipousers;
+        }
+    }
 }
 ?>

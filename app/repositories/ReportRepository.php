@@ -566,4 +566,19 @@ class ReportRepository
         $result = $this->model->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user);
         return $result;
     }
+
+    public function GetDataEstatusTicket($estatus){
+        // Lógica para obtener los estados del ticket
+        $result = $this->model->GetDataEstatusTicket($estatus);
+         if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
 }

@@ -1,4 +1,4 @@
- #buscarPorRifBtn, #buscarPorSerialBtn, #buscarPorNombreBtn, #buscarPorRangoBtn, #buscarPorRegionsBtn{
+ #buscarPorRifBtn, #buscarPorSerialBtn, #buscarPorNombreBtn, #buscarPorRangoBtn, #buscarPorRegionsBtn, #buscarPorStatusBtn{
         background-color: #001f3f; /* Azul oscuro */
         color: #FFFFFF; /* Amarillo */
         /*color: #ffff00; /* Amarillo */
@@ -16,7 +16,16 @@
         margin-left: 24%;
     }
 
+    #buscarPorStatusBtn{
+        margin-left: 1%;
+    }
+
     #buscarPorRifBtn:hover {
+        box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
+        transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    }
+
+    #buscarPorStatusBtn:hover{
         box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
         transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
     }
