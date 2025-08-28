@@ -1015,7 +1015,7 @@ function UpdateGuarantees() {
   const checkExoneracion = document.getElementById("checkExoneracion");
   const checkAnticipo = document.getElementById("checkAnticipo");
 
-  // NUEVO: Verificar si es Caracas o Miranda (región 1)
+  // NUEVO: Verificar si es Caracas, Miranda, Vargas o Distrito Capital (región 1)
   const checkEnvioContainer = document.getElementById("checkEnvioContainer");
   const isCaracasMiranda = checkEnvioContainer && checkEnvioContainer.style.display === "none";
 
@@ -1027,23 +1027,23 @@ function UpdateGuarantees() {
   } else if (idStatusPaymentInstalacion === 1) {
     idStatusPayment = 1;
   } else {
-    if (uploadPendingRadio && uploadPendingRadio.checked) {
-      idStatusPayment = 9;
-    } else if (uploadNowRadio && uploadNowRadio.checked) {
-      
-      if (isCaracasMiranda) {
-        const tieneAnticipo = checkAnticipo && checkAnticipo.checked === true &&  archivoAnticipo && archivoAnticipo instanceof File;
-        const tieneExoneracion = checkExoneracion && checkExoneracion.checked === true && archivoExoneracion &&  archivoExoneracion instanceof File;
-                
-        if (tieneExoneracion) {
-          idStatusPayment = 5; // Exoneración pendiente por revisión
-        } else if (tieneAnticipo) {
-          idStatusPayment = 7; // Pago anticipo pendiente por revisión
-        } else {
-          idStatusPayment = 10; // Pendiente por cargar documento (exoneración o anticipo)
-        }
+    // PRIMERO: Validar si es de estados que no necesitan envío
+    if (isCaracasMiranda) {
+      const tieneAnticipo = checkAnticipo && checkAnticipo.checked === true &&  archivoAnticipo && archivoAnticipo instanceof File;
+      const tieneExoneracion = checkExoneracion && checkExoneracion.checked === true && archivoExoneracion &&  archivoExoneracion instanceof File;
+              
+      if (tieneExoneracion) {
+        idStatusPayment = 5; // Exoneración pendiente por revisión
+      } else if (tieneAnticipo) {
+        idStatusPayment = 7; // Pago anticipo pendiente por revisión
       } else {
-        // LÓGICA SIMPLIFICADA: Para otras regiones que sí necesitan envío
+        idStatusPayment = 10; // Pendiente por cargar documento (exoneración o anticipo)
+      }
+    } else {
+      // SEGUNDO: Para otras regiones que sí necesitan envío
+      if (uploadPendingRadio && uploadPendingRadio.checked) {
+        idStatusPayment = 9;
+      } else if (uploadNowRadio && uploadNowRadio.checked) {
         const tieneExoneracion = checkExoneracion && checkExoneracion.checked && archivoExoneracion;
         const tieneAnticipo = checkAnticipo && checkAnticipo.checked && archivoAnticipo;
         const tieneEnvio = checkEnvio && checkEnvio.checked && archivoEnvio;
@@ -1061,9 +1061,9 @@ function UpdateGuarantees() {
         } else {
           idStatusPayment = 10; // Pendiente por cargar documento
         }
+      } else {
+        idStatusPayment = 9;
       }
-    } else {
-      idStatusPayment = 9;
     }
   }
 
@@ -1089,8 +1089,6 @@ function UpdateGuarantees() {
       garantiaAlertShown = true;
     }
   }
-  
-  console.log("Status Payment Final:", idStatusPayment);
   return idStatusPayment;
 }
 

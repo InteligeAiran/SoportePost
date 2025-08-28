@@ -396,7 +396,6 @@ private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_b
             return 10; // Pendiente por cargar documento
         }
         
-         
         // --- CORRECCIÓN 2: INICIALIZAR ARREGLOS FUERA DEL BUCLE ---
         $existing_documents = [];
         $rejected_documents = [];
@@ -404,6 +403,36 @@ private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_b
         for ($i = 0; $i < $result['numRows']; $i++) {
             $agente = pg_fetch_assoc($result['query'], $i);
             $existing_documents[] = $agente['document_type'];
+        }
+        
+        // NUEVA VALIDACIÓN: Para estados Miranda, Caracas, Distrito Capital y Vargas
+        // Obtener el estado del ticket
+        $serial_sql = "SELECT tik.serial_pos FROM tickets tik WHERE tik.nro_ticket = '".$nro_ticket."';";
+        $serial_result = Model::getResult($serial_sql, $this->db);
+
+        if ($serial_result && isset($serial_result['query']) && $serial_result['numRows'] > 0) {
+            $serial = pg_fetch_result($serial_result['query'], 0,'serial_pos');
+        }
+
+        // NUEVA VALIDACIÓN: Para estados Miranda, Caracas, Distrito Capital y Vargas
+        // Obtener el estado del ticket usando la función verifingbranches_serial
+        $estado_sql = "SELECT * FROM verifingbranches_serial('".$serial."');";
+        $estado_result = Model::getResult($estado_sql, $this->db);
+
+        if ($estado_result && isset($estado_result['query']) && $estado_result['numRows'] > 0) {
+            $nombre_estado = pg_fetch_result($estado_result['query'], 0, 'nombre_estado');
+            
+            // Si el estado es Miranda, Caracas, Distrito Capital o Vargas
+            if (in_array($nombre_estado, ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'])) {
+                // Si se carga Exoneracion, va a estado 5 (Exoneracion Pendiente por Aprobar)
+                if ($document_type_being_uploaded === 'Exoneracion') {
+                    return 5; // Exoneracion Pendiente por Aprobar
+                }
+                // Si se carga Anticipo, va a estado 7 (Pago Anticipo Pendiente por Revision)
+                elseif ($document_type_being_uploaded === 'Anticipo') {
+                    return 7; // Pago Anticipo Pendiente por Revision
+                }
+            }
         }
         
         // Si subes Envio y ya tienes Exoneracion válida (no rechazada)
@@ -602,6 +631,35 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
             $existing_documents[] = $agente['document_type'];
         }
 
+         // NUEVA VALIDACIÓN: Para estados Miranda, Caracas, Distrito Capital y Vargas
+        // Obtener el estado del ticket
+        $serial_sql = "SELECT tik.serial_pos FROM tickets tik WHERE tik.nro_ticket = '".$nro_ticket."'";
+        $serial_result = Model::getResult($serial_sql, $this->db);
+
+        if ($serial_result && isset($serial_result['query']) && $serial_result['numRows'] > 0) {
+            $serial = pg_fetch_result($serial_result['query'], 0,'serial_pos');
+        }
+
+        // NUEVA VALIDACIÓN: Para estados Miranda, Caracas, Distrito Capital y Vargas
+        // Obtener el estado del ticket usando la función verifingbranches_serial
+        $estado_sql = "SELECT * FROM verifingbranches_serial('".$serial."');";
+        $estado_result = Model::getResult($estado_sql, $this->db);
+
+        if ($estado_result && isset($estado_result['query']) && $estado_result['numRows'] > 0) {
+            $nombre_estado = pg_fetch_result($estado_result['query'], 0, 'nombre_estado');
+            
+            // Si el estado es Miranda, Caracas, Distrito Capital o Vargas
+            if (in_array($nombre_estado, ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'])) {
+                // Si se carga Exoneracion, va a estado 5 (Exoneracion Pendiente por Aprobar)
+                if ($document_type_being_uploaded === 'Exoneracion') {
+                    return 5; // Exoneracion Pendiente por Aprobar
+                }
+                // Si se carga Anticipo, va a estado 7 (Pago Anticipo Pendiente por Revision)
+                elseif ($document_type_being_uploaded === 'Anticipo') {
+                    return 7; // Pago Anticipo Pendiente por Revision
+                }
+            }
+        }
        
         error_log("Documento siendo subido: " . $document_type_being_uploaded);
         error_log("Documentos existentes (excluyendo el actual): " . implode(', ', $existing_documents));

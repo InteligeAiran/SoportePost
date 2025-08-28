@@ -160,7 +160,8 @@ function getTicketData() {
                       data-pdf-pago-url="${ticket.pdf_pago_url || ""}"
                       data-exo-file="${ticket.img_exoneracion_filename || ""}"
                       data-pago-file="${ticket.pdf_pago_filename || ""}"
-                      data-zoom-file="${ticket.pdf_zoom_filename || ""}">
+                      data-zoom-file="${ticket.pdf_zoom_filename || ""}"
+                      data-estado-cliente="${ticket.nombre_estado_cliente}">
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
                   </button>
               `;
@@ -968,99 +969,185 @@ function getTicketData() {
     
     // 2. Manejador de eventos para el botón principal de la tabla (abre el modal de acciones)
     $(document).on('click', '.btn-document-actions-modal', function() {
-      const ticketId = $(this).data('ticket-id');
-      const statusPayment = $(this).data('status-payment');
-      const pdfZoomUrl = $(this).data('pdf-zoom-url');
-      const imgExoneracionUrl = $(this).data('img-exoneracion-url');
-      const pdfPagoUrl = $(this).data('pdf-pago-url');
-      const nro_ticket = $(this).data('nro-ticket');
-      const ExoneracionFile_name = $(this).data('exo-file');
-      const PagoFile_name = $(this).data('pago-file');
-      const ZoomFile_name = $(this).data('zoom-file');
+    const ticketId = $(this).data('ticket-id');
+    const statusPayment = $(this).data('status-payment');
+    const pdfZoomUrl = $(this).data('pdf-zoom-url');
+    const imgExoneracionUrl = $(this).data('img-exoneracion-url');
+    const pdfPagoUrl = $(this).data('pdf-pago-url');
+    const nro_ticket = $(this).data('nro-ticket');
+    const ExoneracionFile_name = $(this).data('exo-file');
+    const PagoFile_name = $(this).data('pago-file');
+    const ZoomFile_name = $(this).data('zoom-file');
+    const estado_cliente = $(this).data('estado-cliente');
 
+    const modalTitle = $('#modalTicketId');
+    const buttonsContainer = $('#modal-buttons-container');
 
-      const modalTitle = $('#modalTicketId');
-      const buttonsContainer = $('#modal-buttons-container');
+    $('#uploadForm').attr('data-nro-ticket', nro_ticket);
+    $('#uploadForm').attr('data-ticket-id', ticketId);
 
-      $('#uploadForm').attr('data-nro-ticket', nro_ticket);
-      $('#uploadForm').attr('data-ticket-id', ticketId);
+    buttonsContainer.empty();
+    modalTitle.text(nro_ticket);
 
-      buttonsContainer.empty();
-      modalTitle.text(nro_ticket);
+    // Estados donde NO se debe mostrar el botón de envío
+    const estadosSinEnvio = ['Caracas', 'Miranda', 'Vargas', 'Distrito Capital'];
+    const debeOcultarEnvio = estadosSinEnvio.includes(estado_cliente);
 
-      let modalButtonsHTML = '';
+    let modalButtonsHTML = '';
 
-      if (pdfZoomUrl && imgExoneracionUrl) {
-          // Solo envío y exoneración
-          modalButtonsHTML = `
-              <button id = "VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Envio
-              </button>
-              <button  id = "VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Exoneración
-              </button>
-          `;
-      } else if (pdfZoomUrl && pdfPagoUrl) {
-          // Solo envío y pago
-          modalButtonsHTML = `
-              <button id = "VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Envio
-              </button>
-              <button id = "VerPago"  class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Pago
-              </button>
-          `;
-      } else if (pdfZoomUrl) {
-          // Solo envío disponible - SOLO UNA OPCIÓN DE CARGA
-          modalButtonsHTML = `
-              <button id = "VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Envio
-              </button>
-              <button id = "ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
-                  Cargar Documento de Exoneración
-              </button>
-              <button id = "PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
-                Cargar Documento de Pago
-              </button>
-          `;
-      } else if (imgExoneracionUrl) {
-          // Solo exoneración disponible (sin envío)
-          modalButtonsHTML = `
-              <button id = "VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Exoneración
-              </button>
-              <button id = EnvioBoton class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                  Cargar Documento de Envio
-              </button>
-          `;
-      } else if (pdfPagoUrl) {
-          // Solo pago disponible (sin envío)
-          modalButtonsHTML = `
-              <button  id = "VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Pago
-              </button>
-              <button id = "EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                  Cargar Documento de Envio
-              </button>
-          `;
-      } else {
-          // Ningún documento disponible
-          modalButtonsHTML = `
-              <button id = EnvioBoton class="btn btn-info btn-block btn-zoom-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                  Cargar Documento de Envio
-              </button>
-              <button id = "ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
-                  Cargar Documento de Exoneración
-              </button>
-              <button id = "PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
-                  Cargar Documento de Pago
-              </button>
-          `;
-      }
+    if (pdfZoomUrl && imgExoneracionUrl) {
+        // Solo envío y exoneración
+        modalButtonsHTML = `
+            <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Envio
+            </button>
+            <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Exoneración
+            </button>
+        `;
+    } else if (pdfZoomUrl && pdfPagoUrl) {
+        // Solo envío y pago
+        modalButtonsHTML = `
+            <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Envio
+            </button>
+            <button id="VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Pago
+            </button>
+        `;
+    } else if (pdfZoomUrl) {
+        // Solo envío disponible
+        if (debeOcultarEnvio) {
+            // Estados sin envío - NO mostrar botón de envío
+            modalButtonsHTML = `
+                <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
+                    Cargar Documento de Exoneración
+                </button>
+                <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}">
+                    Cargar Documento de Pago
+                </button>
+            `;
+        } else {
+            // Estados con envío - mostrar botón de envío
+            modalButtonsHTML = `
+                <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+                    Ver Documento de Envio
+                </button>
+                <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
+                    Cargar Documento de Exoneración
+                </button>
+                <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
+                    Cargar Documento de Pago
+                </button>
+            `;
+        }
+    } else if (imgExoneracionUrl) {
+        // Solo exoneración disponible (sin envío)
+        if (debeOcultarEnvio) {
+            // Estados sin envío - NO mostrar botón de envío
+            modalButtonsHTML = `
+                <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
+                    Ver Documento de Exoneración
+                </button>
+            `;
+        } else {
+            // Estados con envío - mostrar botón de envío
+            modalButtonsHTML = `
+                <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
+                    Ver Documento de Exoneración
+                </button>
+                <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
+                    Cargar Documento de Envio
+                </button>
+            `;
+        }
+    } else if (pdfPagoUrl) {
+        // Solo pago disponible (sin envío)
+        if (debeOcultarEnvio) {
+            // Estados sin envío - NO mostrar botón de envío
+            modalButtonsHTML = `
+                <button id="VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
+                    Ver Documento de Pago
+                </button>
+            `;
+        } else {
+            // Estados con envío - mostrar botón de envío
+            modalButtonsHTML = `
+                <button id="VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
+                    Ver Documento de Pago
+                </button>
+                <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
+                    Cargar Documento de Envio
+                </button>
+            `;
+        }
+    } else {
+        // Ningún documento disponible
+        if (debeOcultarEnvio) {
+            // Estados sin envío - NO mostrar botón de envío
+            modalButtonsHTML = `
+                <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
+                    Cargar Documento de Exoneración
+                </button>
+                <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}">
+                    Cargar Documento de Pago
+                </button>
+            `;
+        } else {
+            // Estados con envío - mostrar botón de envío
+            modalButtonsHTML = `
+                <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
+                    Cargar Documento de Envio
+                </button>
+                <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
+                    Cargar Documento de Exoneración
+                </button>
+                <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
+                    Cargar Documento de Pago
+                </button>
+            `;
+        }
+    }
 
-      buttonsContainer.html(modalButtonsHTML);
-      documentActionsModal.show();
-    });
+    buttonsContainer.html(modalButtonsHTML);
+    documentActionsModal.show();
+});
+
+// Función para determinar el estatus según el tipo de documento y estado del cliente
+function getStatusForDocument(documentType, estadoCliente) {
+    const estadosSinEnvio = ['Caracas', 'Miranda', 'Vargas', 'Distrito Capital'];
+    const debeOcultarEnvio = estadosSinEnvio.includes(estadoCliente);
+    
+    if (debeOcultarEnvio) {
+        // Estados sin envío - usar estatus específicos
+        switch(documentType) {
+            case 'Exoneracion':
+                return 5; // "Exoneracion Pendiente por Revision"
+            case 'Anticipo':
+                return 7; // "Pago Anticipo Pendiente por Revision"
+            default:
+                return 11; // "Pendiente Por Cargar Documento(PDF Envio ZOOM)"
+        }
+    } else {
+        // Estados con envío - usar estatus estándar
+        return 11; // "Pendiente Por Cargar Documento(PDF Envio ZOOM)"
+    }
+}
+
+// Uso en los botones de carga
+$(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', function() {
+    const documentType = $(this).data('document-type');
+    const estadoCliente = $(this).data('estado-cliente');
+    const ticketId = $(this).data('ticket-id');
+    
+    // Obtener el estatus correcto
+    const nuevoEstatus = getStatusForDocument(documentType, estadoCliente);
+    
+    console.log(`Documento: ${documentType}, Estado: ${estadoCliente}, Nuevo Estatus: ${nuevoEstatus}`);
+    
+    // Aquí puedes enviar el nuevo estatus al backend
+    // updateTicketStatus(ticketId, nuevoEstatus);
+});
 
     // 3. Manejador de eventos para los botones de "Cargar Documento" (desde el modal de acciones)
     $(document).on('click', '.btn-zoom-pdf, .btn-exoneracion-img, .btn-pago-pdf', function() {
