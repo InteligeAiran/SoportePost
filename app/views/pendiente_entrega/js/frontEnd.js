@@ -1031,6 +1031,8 @@ function getTicketDataFinaljs() {
                                                       const ticketData = response.ticket_data;
 
                                                       if (ticketData) {
+                                                        const comentarioEntrega = ticketData.customer_delivery_comment && ticketData.customer_delivery_comment.trim() !== "" ? ticketData.customer_delivery_comment : `<strong>Comentario Devolución:</strong> ${ticketData.comment_devolution || "N/A"}`;
+
                                                           const beautifulHtmlContent = `
                                                               <div style="text-align: left; padding: 15px;">
                                                                   <h3 style="color: #28a745; margin-bottom: 15px; text-align: center;">↩️ ¡Ticket Devueto! ↩️</h3>
@@ -1047,10 +1049,10 @@ function getTicketDataFinaljs() {
                                                                       <strong>⚙️ Serial del Equipo:</strong> <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticketData.serial_pos}</span>
                                                                   </p>
                                                                   <p style="margin-bottom: 8px;">
-                                                                      <strong>📝 Comentario de Entrega:</strong> ${ticketData.customer_delivery_comment || "Sin comentarios"}
+                                                                    📝${comentarioEntrega} 
                                                                   </p>
                                                                   <p style="margin-bottom: 8px;">
-                                                                      <strong>�� Usuario que Realizó la Entrega:</strong> ${ticketData.user_gestion || "N/A"}
+                                                                      <strong>👤 Usuario que Realizó la Entrega:</strong> ${ticketData.user_gestion || "N/A"}
                                                                   </p>
                                                                   <p style="margin-bottom: 8px;">
                                                                       <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.user_coordinator|| "N/A"}
@@ -1059,7 +1061,7 @@ function getTicketDataFinaljs() {
                                                                       <strong>📅 Fecha de Entrega:</strong> ${ticketData.date_create_ticket || "N/A"}
                                                                   </p>
                                                                   <p style="margin-bottom: 8px;">
-                                                                      <strong>�� Fecha de Cierre:</strong> ${ticketData.date_end_ticket ||  "N/A"}
+                                                                      <strong>📅 Fecha de Cierre:</strong> ${ticketData.date_end_ticket ||  "N/A"}
                                                                   </p>
                                                                   <p style="margin-bottom: 8px;">
                                                                       <strong>🔄 Estado del Ticket:</strong> <span style="color: #28a745; font-weight: bold;">${ticketData.name_status_ticket}</span>
@@ -1068,7 +1070,7 @@ function getTicketDataFinaljs() {
                                                                       <strong>📋 Acción del Ticket:</strong> <span style="color: #007bff; font-weight: bold;">${ticketData.name_accion_ticket}</span>
                                                                   </p>
                                                                   <p style="margin-bottom: 8px;">
-                                                                      <strong> Estado de Domiciliación:</strong> <span style="color: #6f42c1; font-weight: bold;">${ticketData.name_status_domiciliacion || "N/A"}</span>
+                                                                      <strong>📊Estado de Domiciliación:</strong> <span style="color: #6f42c1; font-weight: bold;">${ticketData.name_status_domiciliacion || "N/A"}</span>
                                                                   </p>
                                                                   <p style="margin-bottom: 8px;">
                                                                       <strong>💰 Estado de Pago:</strong> <span style="color: #fd7e14; font-weight: bold;">${ticketData.name_status_payment || "N/A"}</span>
@@ -1079,7 +1081,7 @@ function getTicketDataFinaljs() {
                                                                   <strong>
                                                                       <p style="font-size: 0.9em; color: green; margin-top: 20px; text-align: center;">
                                                                           El ticket ha sido marcado como entregado y cerrado exitosamente.<br>
-                                                                          <span style="color: #000;">Se ha registrado en el historial del sistema.</span>
+                                                                          <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Se ha registrado en el historial del sistema.</span>
                                                                       </p>
                                                                   </strong>
                                                               </div>`;
@@ -1290,7 +1292,7 @@ function getTicketDataFinaljs() {
                                           <strong>
                                               <p style="font-size: 0.9em; color: green; margin-top: 20px; text-align: center;">
                                                   El ticket ha sido marcado como entregado y cerrado exitosamente.<br>
-                                                  <span style="color: #000;">Se ha registrado en el historial del sistema además Se le ha enviado una notificación al correo </span>
+                                                  <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Se ha registrado en el historial del sistema además Se le ha enviado una notificación al correo </span>
                                               </p>
                                           </strong>
                                       </div>`;

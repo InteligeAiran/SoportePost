@@ -276,6 +276,8 @@ function getTicketDataFinaljs() {
                 const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
                 const nombre_estado_cliente = row.nombre_estado_cliente;
                 const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
+                const HasDevolution = row.devolution
+
                 let actionButton = '';
 
                 // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
@@ -290,7 +292,8 @@ function getTicketDataFinaljs() {
                   actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
                     data-id-ticket="${idTicket}"
                     data-serial-pos="${serialPos}"
-                    data-nro-ticket="${nroTicket}">
+                    data-nro-ticket="${nroTicket}"
+                    data-has_devolution="${HasDevolution}">
                     <i class="fas fa-truck"></i> Entregar A cliente
                   </button>`;
                 }
@@ -615,12 +618,13 @@ function getTicketDataFinaljs() {
                 }
               });
 
-                $(document).on("click", ".deliver-ticket-btn", function () {
+             $(document).on("click", ".deliver-ticket-btn", function () {
                   const idTicket = $(this).data("id-ticket");
                   const nroTicket = $(this).data("nro-ticket"); 
                   const serialPos = $(this).data("serial-pos"); 
                   const customDeliverSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
                   const id_user = document.getElementById('userId').value;
+                  const devolution = $(this).data("has_devolution"); 
 
                   Swal.fire({
                       title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
@@ -646,185 +650,213 @@ function getTicketDataFinaljs() {
                       screenY: false,
                   }).then((result) => {
                       if (result.isConfirmed) {
-                          Swal.fire({
-                              title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
-                                  <div class="custom-modal-header-content">Detalles de la Entrega</div>
-                              </div>`,
-                              html: `<div class="custom-modal-body-content">
-                                  <p class="h4 mb-1" style="color: black;">Por favor, ingrese un comentario o un texto adicional sobre el Dispositivo a entregar con el Serial: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">${serialPos}</span> asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">${nroTicket}</span>.</p>
-                                  <div class="form-group mb-3"><br>
-                                      <textarea id="comentarioEntrega" class="form-control" rows="3" placeholder="Escriba aquí cualquier detalle relevante sobre la entrega... O reparación del Equipo"></textarea>
-                                  </div>
-                              </div>`,
-                              showCancelButton: true,
-                              confirmButtonText: 'Guardar y Completar',
-                              cancelButtonText: 'Cancelar',
-                              confirmButtonColor: '#003594',
-                              color: "black",
-                              focusConfirm: false,
-                              allowOutsideClick: false,
-                              allowEscapeKey: false,
-                              keydownListenerCapture: true,
-                              screenX: false,
-                              screenY: false,
-                              width: '600px',
-                              customClass: {
-                                  popup: 'no-scroll'
-                              },
-                              preConfirm: () => {
-                                  const comentario = Swal.getPopup().querySelector('#comentarioEntrega').value.trim();
-                                  if (!comentario) {
-                                      Swal.showValidationMessage('El campo de texto no puede estar vacío.');
-                                      return false;
-                                  }
-                                  return { comentario: comentario };
-                              }
-                          }).then((resultFinal) => {
-                              if (resultFinal.isConfirmed) {
-                                  const comentario = resultFinal.value.comentario;
-                                  const dataToSendString = `action=entregar_ticket&id_ticket=${encodeURIComponent(idTicket)}&comentario=${encodeURIComponent(comentario)}&id_user=${encodeURIComponent(id_user)}`;
-
-                                  const xhr = new XMLHttpRequest();
-                                  const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/entregar_ticket`;
-
-                                  xhr.open('POST', url, true);
-                                  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-                                  xhr.onload = function() {
-                                      if (xhr.status >= 200 && xhr.status < 300) {
-                          try {
-                            const response = JSON.parse(xhr.responseText);
-
-                            if (response.success) {
-                              // Mostrar el primer modal (Entrega exitosa)
-                                          Swal.fire({
-                                icon: "success",
-                                title: "Entrega Exitosa",
-                                text: response.message,
-                                              color: "black",
-                                timer: 2500,
-                                timerProgressBar: true,
-                                didOpen: () => {
-                                  Swal.showLoading();
-                                },
-                                willClose: () => {
-                                  // Cuando el primer modal se cierra, mostramos el segundo modal con detalles
-                                  const ticketData = response.ticket_data;
-
-                                  if (ticketData) {
-                                    const beautifulHtmlContent = `
-                                      <div style="text-align: left; padding: 15px;">
-                                          <h3 style="color: #28a745; margin-bottom: 15px; text-align: center;">✅ ¡POS Entregado! ✅</h3>
-                                          <p style="font-size: 1.1em; margin-bottom: 10px;">
-                                              <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.nro_ticket}</span>
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                            <strong>🏢 RIF:</strong> ${ticketData.rif_cliente || "N/A"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                            <strong>🏢Razon Social:</strong> ${ticketData.razonsocial_cliente || "N/A"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>⚙️ Serial del Equipo:</strong> <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticketData.serial_pos}</span>
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>📝 Comentario de Entrega:</strong> ${ticketData.customer_delivery_comment || "Sin comentarios"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>👤 Usuario que Realizó la Entrega:</strong> ${ticketData.user_gestion || "N/A"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.user_coordinator|| "N/A"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>📅 Fecha de Entrega:</strong> ${ticketData.date_create_ticket || "N/A"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>📅 Fecha de Cierre:</strong> ${ticketData.date_end_ticket ||  "N/A"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>🔄 Estado del Ticket:</strong> <span style="color: #28a745; font-weight: bold;">${ticketData.name_status_ticket}</span>
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>📋 Acción del Ticket:</strong> <span style="color: #007bff; font-weight: bold;">${ticketData.name_accion_ticket}</span>
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong> Estado de Domiciliación:</strong> <span style="color: #6f42c1; font-weight: bold;">${ticketData.name_status_domiciliacion || "N/A"}</span>
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>💰 Estado de Pago:</strong> <span style="color: #fd7e14; font-weight: bold;">${ticketData.name_status_payment || "N/A"}</span>
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>🔬 Estado del Laboratorio:</strong> <span style="color: #20c997; font-weight: bold;">${ticketData.name_status_lab || "N/A"}</span>
-                                          </p>
-                                          <strong>
-                                              <p style="font-size: 0.9em; color: green; margin-top: 20px; text-align: center;">
-                                                  El ticket ha sido marcado como entregado y cerrado exitosamente.<br>
-                                                  <span style="color: #000;">Se ha registrado en el historial del sistema además Se le ha enviado una notificación al correo</span>
-                                              </p>
-                                          </strong>
-                                      </div>`;
-
-                                    Swal.fire({
-                                      icon: "success",
-                                      title: "Detalles de la Entrega",
-                                      html: beautifulHtmlContent,
-                                      color: "black",
-                                      confirmButtonText: "Cerrar",
-                                              confirmButtonColor: "#003594",
-                                      showConfirmButton: true,
-                                      showClass: {
-                                        popup: "animate__animated animate__fadeInDown",
-                                      },
-                                      hideClass: {
-                                        popup: "animate__animated animate__fadeOutUp",
-                                      },
-                                              allowOutsideClick: false,
-                                              allowEscapeKey: false,
-                                      width: '700px'
-                                          }).then((result) => {
-                                              if (result.isConfirmed) {
-                                        enviarCorreoTicketCerrado(ticketData);
-                                                  window.location.reload();
-                                              }
-                                          });
-                                  } else {
-                                    // Si no hay datos del ticket, mostrar solo mensaje de éxito
-                                    Swal.fire({
-                                      icon: "success",
-                                      title: "Entrega Exitosa",
-                                      text: "El ticket ha sido entregado exitosamente.",
-                                      confirmButtonText: "Cerrar",
-                                      confirmButtonColor: "#003594"
-                                    }).then(() => {
-                                      window.location.reload();
-                                    });
-                                  }
-                                },
-                              });
-                            } else {
-                              Swal.fire('Error', response.message || 'Error al procesar la entrega', 'error');
-                            }
-                          } catch (error) {
-                            console.error('Error al parsear la respuesta:', error);
-                            Swal.fire('Error', 'Error al procesar la respuesta del servidor', 'error');
-                          }
-                                      } else {
-                                          Swal.fire('Error', 'Hubo un problema al conectar con el servidor. Código de estado: ' + xhr.status, 'error');
+                          // NUEVA VALIDACIÓN: Si devolution es true, proceder directamente
+                          if (devolution === true || devolution === 'true' || devolution === 't') {
+                              // Proceder directamente con la entrega sin comentario
+                              procesarEntrega(idTicket, null, id_user, nroTicket, serialPos, true); // true = es devolución
+                          } else {
+                              // Mostrar modal de comentario (código existente)
+                              Swal.fire({
+                                  title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                                      <div class="custom-modal-header-content">Detalles de la Entrega</div>
+                                  </div>`,
+                                  html: `<div class="custom-modal-body-content">
+                                      <p class="h4 mb-1" style="color: black;">Por favor, ingrese un comentario o un texto adicional sobre el Dispositivo a entregar con el Serial: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">${serialPos}</span> asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">${nroTicket}</span>.</p>
+                                      <div class="form-group mb-3"><br>
+                                          <textarea id="comentarioEntrega" class="form-control" rows="3" placeholder="Escriba aquí cualquier detalle relevante sobre la entrega... O reparación del Equipo"></textarea>
+                                      </div>
+                                  </div>`,
+                                  showCancelButton: true,
+                                  confirmButtonText: 'Guardar y Completar',
+                                  cancelButtonText: 'Cancelar',
+                                  confirmButtonColor: '#003594',
+                                  color: "black",
+                                  focusConfirm: false,
+                                  allowOutsideClick: false,
+                                  allowEscapeKey: false,
+                                  keydownListenerCapture: true,
+                                  screenX: false,
+                                  screenY: false,
+                                  width: '600px',
+                                  customClass: {
+                                      popup: 'no-scroll'
+                                  },
+                                  preConfirm: () => {
+                                      const comentario = Swal.getPopup().querySelector('#comentarioEntrega').value.trim();
+                                      if (!comentario) {
+                                          Swal.showValidationMessage('El campo de texto no puede estar vacío.');
+                                          return false;
                                       }
-                                  };
-
-                                  xhr.onerror = function() {
-                                      Swal.fire('Error de red', 'Hubo un problema con la conexión.', 'error');
-                                  };
-
-                                  xhr.send(dataToSendString);
-                              }
-                          });
+                                      return { comentario: comentario };
+                                  }
+                              }).then((resultFinal) => {
+                                  if (resultFinal.isConfirmed) {
+                                      const comentario = resultFinal.value.comentario;
+                                      procesarEntrega(idTicket, comentario, id_user, nroTicket, serialPos, false); // false = no es devolución
+                                  }
+                              });
+                          }
                       }
                   });
-          });
+              });
 
+                    // NUEVA FUNCIÓN: Procesar la entrega (reutilizable)
+                    function procesarEntrega(idTicket, comentario, id_user, nroTicket, serialPos, esDevolucion) {
+                        const dataToSendString = `action=entregar_ticket&id_ticket=${encodeURIComponent(idTicket)}&comentario=${encodeURIComponent(comentario)}&id_user=${encodeURIComponent(id_user)}`;
+
+                        const xhr = new XMLHttpRequest();
+                        const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/entregar_ticket`;
+
+                        xhr.open('POST', url, true);
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                        xhr.onload = function() {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                                try {
+                                    const response = JSON.parse(xhr.responseText);
+
+                                    if (response.success) {
+                                        // Mostrar el primer modal (Entrega exitosa)
+                                        Swal.fire({
+                                            icon: "success",
+                                            title: "Entrega Exitosa",
+                                            text: response.message,
+                                            color: "black",
+                                            timer: 2500,
+                                            timerProgressBar: true,
+                                            didOpen: () => {
+                                                Swal.showLoading();
+                                            },
+                                            willClose: () => {
+                                                // Cuando el primer modal se cierra, mostramos el segundo modal con detalles
+                                                const ticketData = response.ticket_data;
+
+                                                if (ticketData) {
+                                                    // NUEVO: Mostrar comentario según el tipo de ticket
+                                                    let comentarioHTML;
+                                                    if (esDevolucion === true || esDevolucion === 't') {
+                                                        // Para tickets devueltos: usar la lógica existente
+                                                        comentarioHTML = `<strong>📝Comentario Devolución:</strong> ${ticketData.comment_devolution || "N/A"}`;
+                                                    } else {
+                                                        // Para tickets normales: mostrar comentario de entrega
+                                                        comentarioHTML = `<strong>📝 Comentario de Entrega:</strong> ${ticketData.customer_delivery_comment || "Sin comentarios"}`;
+                                                    }
+
+                                                    let headerComment;
+                                                    if (esDevolucion === true || esDevolucion === 't') {
+                                                        headerComment = "¡POS Devuelto!";
+                                                    } else {
+                                                        headerComment = "¡POS Entregado!";
+                                                    }
+
+                                                    const beautifulHtmlContent = `
+                                                        <div style="text-align: left; padding: 15px;">
+                                                            <h3 style="color: #28a745; margin-bottom: 15px; text-align: center;">✅ ${headerComment} ✅</h3>
+                                                            <p style="font-size: 1.1em; margin-bottom: 10px;">
+                                                                <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.nro_ticket}</span>
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>🏢 RIF:</strong> ${ticketData.rif_cliente || "N/A"}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>🏢Razon Social:</strong> ${ticketData.razonsocial_cliente || "N/A"}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>⚙️ Serial del Equipo:</strong> <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticketData.serial_pos}</span>
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                ${comentarioHTML}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>👤 Usuario que Realizó la Entrega:</strong> ${ticketData.user_gestion || "N/A"}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.user_coordinator|| "N/A"}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>📅 Fecha de Entrega:</strong> ${ticketData.date_create_ticket || "N/A"}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>📅 Fecha de Cierre:</strong> ${ticketData.date_end_ticket ||  "N/A"}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>🔄 Estado del Ticket:</strong> <span style="color: #28a745; font-weight: bold;">${ticketData.name_status_ticket}</span>
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>📋 Acción del Ticket:</strong> <span style="color: #007bff; font-weight: bold;">${ticketData.name_accion_ticket}</span>
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>📊Estado de Domiciliación:</strong> <span style="color: #6f42c1; font-weight: bold;">${ticketData.name_status_domiciliacion || "N/A"}</span>
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>💰 Estado de Pago:</strong> <span style="color: #fd7e14; font-weight: bold;">${ticketData.name_status_payment || "N/A"}</span>
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>🔬 Estado del Laboratorio:</strong> <span style="color: #20c997; font-weight: bold;">${ticketData.name_status_lab || "N/A"}</span>
+                                                            </p>
+                                                            <strong>
+                                                                <p style="font-size: 0.9em; color: green; margin-top: 20px; text-align: center;">
+                                                                    El ticket ha sido marcado como entregado y cerrado exitosamente.<br>
+                                                                    <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Se ha registrado en el historial del sistema además Se le ha enviado una notificación al correo</span>
+                                                                </p>
+                                                            </strong>
+                                                        </div>`;
+
+                                                    Swal.fire({
+                                                        icon: "success",
+                                                        title: "Detalles de la Entrega",
+                                                        html: beautifulHtmlContent,
+                                                        color: "black",
+                                                        confirmButtonText: "Cerrar",
+                                                        confirmButtonColor: "#003594",
+                                                        showConfirmButton: true,
+                                                        showClass: {
+                                                            popup: "animate__animated animate__fadeInDown",
+                                                        },
+                                                        hideClass: {
+                                                            popup: "animate__animated animate__fadeOutUp",
+                                                        },
+                                                        allowOutsideClick: false,
+                                                        allowEscapeKey: false,
+                                                        width: '700px'
+                                                    }).then((result) => {
+                                                        if (result.isConfirmed) {
+                                                            enviarCorreoTicketCerrado(ticketData);
+                                                            window.location.reload();
+                                                        }
+                                                    });
+                                                } else {
+                                                    // Si no hay datos del ticket, mostrar solo mensaje de éxito
+                                                    Swal.fire({
+                                                        icon: "success",
+                                                        title: "Entrega Exitosa",
+                                                        text: "El ticket ha sido entregado exitosamente.",
+                                                        confirmButtonText: "Cerrar",
+                                                        confirmButtonColor: "#003594"
+                                                    }).then(() => {
+                                                        window.location.reload();
+                                                    });
+                                                }
+                                            },
+                                        });
+                                    } else {
+                                        Swal.fire('Error', response.message || 'Error al procesar la entrega', 'error');
+                                    }
+                                } catch (error) {
+                                    console.error('Error al parsear la respuesta:', error);
+                                    Swal.fire('Error', 'Error al procesar la respuesta del servidor', 'error');
+                                }
+                            } else {
+                                Swal.fire('Error', 'Hubo un problema al conectar con el servidor. Código de estado: ' + xhr.status, 'error');
+                            }
+                        };
+
+                        xhr.onerror = function() {
+                            Swal.fire('Error de red', 'Hubo un problema con la conexión.', 'error');
+                        };
+
+                        xhr.send(dataToSendString);
+                    }
 
             $("#tabla-ticket tbody")
               .off("click", ".received-ticket-btn")

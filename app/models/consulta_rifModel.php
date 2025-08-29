@@ -502,8 +502,7 @@ class consulta_rifModel extends Model
     {
         try {
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial);
-            $sql = "SELECT * FROM Get_last_date_ticket(" . $escaped_serial . ")";
-            //var_dump($sql);
+            $sql = "SELECT * FROM get_last_date_ticket(" . $escaped_serial . ")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -1340,7 +1339,7 @@ class consulta_rifModel extends Model
                 $id_accion_ticket = 12;
                 $id_status_ticket_history = 2;
 
-                $sql = "UPDATE tickets SET id_accion_ticket = ".(int)$id_accion_ticket.", comment_devolution = '".$comment."' WHERE id_ticket = ".$ticketId.";";
+                $sql = "UPDATE tickets SET id_accion_ticket = ".(int)$id_accion_ticket.", comment_devolution = '".$comment."', id_status_payment = 15, devolution = true WHERE id_ticket = ".$ticketId.";";
                 $result = Model::getResult($sql, $this->db);
 
                 if ($result) {
@@ -1820,13 +1819,15 @@ class consulta_rifModel extends Model
 
     public function EntregarTicket($id_ticket, $id_user, $comment){
         try {
-            $sql = "UPDATE tickets SET id_accion_ticket = 16, id_status_ticket = 3, date_delivered = NOW(), customer_delivery_comment = '". $comment. "', date_end_ticket = NOW() WHERE id_ticket = ". (int)$id_ticket. ";";
+            $sql = "UPDATE tickets SET id_accion_ticket = 16, id_status_ticket = 3, date_delivered = NOW(), customer_delivery_comment = '". $comment. "' WHERE id_ticket = ". (int)$id_ticket. ";";
             $result = Model::getResult($sql, $this->db);
             
             if ($result) {
 
-              
-                       $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $id_ticket. ";";
+              $sqldate = "UPDATE users_tickets SET date_end_ticket = NOW() WHERE id_ticket = ". (int)$id_ticket. ";";
+              $resultdate = Model::getResult($sqldate, $this->db);
+               if ($resultdate) {
+                    $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $id_ticket. ";";
                     $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
 
                     if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
@@ -1873,30 +1874,33 @@ class consulta_rifModel extends Model
 
                     $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
 
-                        if ($resultsqlInsertHistory) {
+                    if ($resultsqlInsertHistory) {
 
-                            $sqlInsertHistory1 = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
-                            (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
-                            (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
-                            3, // Usamos la acción específica para el historial
-                            21, // Usamos la acción específica para el historial
-                            (int)$id_new_status_lab,
-                            $id_new_status_payment,
-                            $new_status_domiciliacion,
-                            );
+                        $sqlInsertHistory1 = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                        (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
+                        (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
+                        3, // Usamos la acción específica para el historial
+                        21, // Usamos la acción específica para el historial
+                        (int)$id_new_status_lab,
+                        $id_new_status_payment,
+                        $new_status_domiciliacion,
+                        );
 
-                            $resultsqlInsertHistory1 = pg_query($this->db->getConnection(), $sqlInsertHistory1);
+                        $resultsqlInsertHistory1 = pg_query($this->db->getConnection(), $sqlInsertHistory1);
 
-                            return $resultsqlInsertHistory1 && $result && $resultsqlInsertHistory;
+                        return $resultsqlInsertHistory1 && $result && $resultsqlInsertHistory;
+                    }else{
+                        return false;
+                    }
                 } else {
                     return false;
                 }
-                    }else {
-                        return false;
+            }else {
+                return false;
             }
         } catch (Throwable $e) {
             return false; // Return false on error
-                }
+        }
         
     }
 
@@ -1912,12 +1916,18 @@ class consulta_rifModel extends Model
 
     public function EntregarTicketDevolucion($id_ticket, $id_user){
          try {
-            $sql = "UPDATE tickets SET id_accion_ticket = 16, id_status_ticket = 3, date_delivered = NOW(), date_end_ticket = NOW() WHERE id_ticket = ". (int)$id_ticket. ";";
+            $sql = "UPDATE tickets SET id_accion_ticket = 16, id_status_ticket = 3, date_delivered = NOW(), devolution = true, id_status_payment = 15 WHERE id_ticket = ". (int)$id_ticket. ";";
             $result = Model::getResult($sql, $this->db);
             
 
-              if ($result) {
-                       $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $id_ticket. ";";
+            if ($result) {
+
+                $sqldate = "UPDATE users_tickets SET date_end_ticket = NOW() WHERE id_ticket = ". (int)$id_ticket. ";";
+                $resultdate = Model::getResult($sqldate, $this->db);
+
+                if ($resultdate) {
+
+                    $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $id_ticket. ";";
                     $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
 
                     if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
@@ -1965,21 +1975,25 @@ class consulta_rifModel extends Model
                     $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
                     return $result && $resultsqlInsertHistory;
 
-                     if ($resultsqlInsertHistory) {
+                    if ($resultsqlInsertHistory) {
 
-                            $sqlInsertHistory1 = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
-                            (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
-                            (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
-                            3, // Usamos la acción específica para el historial
-                            21, // Usamos la acción específica para el historial
-                            (int)$id_new_status_lab,
-                            $id_new_status_payment,
-                            $new_status_domiciliacion,
-                            );
-                            $resultsqlInsertHistory1 = pg_query($this->db->getConnection(), $sqlInsertHistory1);
-                            return $resultsqlInsertHistory1;
-                        }else{
-                            error_log("Error al insertar en ticket_status_history para ticket ID: {$id_ticket}. PG Error: ". pg_last_error($this->db->getConnection()));
+                        $sqlInsertHistory1 = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                        (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
+                        (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
+                        3, // Usamos la acción específica para el historial
+                        21, // Usamos la acción específica para el historial
+                        (int)$id_new_status_lab,
+                        $id_new_status_payment,
+                        $new_status_domiciliacion,
+                        );
+                        $resultsqlInsertHistory1 = pg_query($this->db->getConnection(), $sqlInsertHistory1);
+                        return $resultsqlInsertHistory1;
+                    }else{
+                        error_log("Error al insertar en ticket_status_history para ticket ID: {$id_ticket}. PG Error: ". pg_last_error($this->db->getConnection()));
+                        return false;
+                    }
+                }else{
+                    error_log("Error al actualizar en tickets para ticket ID: {$id_ticket}. PG Error: ". pg_last_error($this->db->getConnection()));
                     return false;
                 }
                
