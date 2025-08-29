@@ -1012,6 +1012,8 @@ function SendRif() {
             }, ],
             lengthMenu: [5],
             autoWidth: false,
+            scrollCollapse: true,
+            scrollX: true,
             language: {
               lengthMenu: "Mostrar _MENU_ registros",
               emptyTable: "No hay datos disponibles en la tabla",
@@ -1431,6 +1433,8 @@ function SendSerial() {
             pagingType: "simple_numbers",
             lengthMenu: [5],
             autoWidth: false,
+            scrollCollapse: true,
+            scrollX: true,
             language: {
               lengthMenu: "Mostrar _MENU_ registros",
               emptyTable: "No hay datos disponibles en la tabla",
@@ -1855,6 +1859,8 @@ function SendStatus() {
             pagingType: "simple_numbers",
             lengthMenu: [5],
             autoWidth: false,
+            scrollCollapse: true,
+            scrollX: true,
             language: {
               lengthMenu: "Mostrar _MENU_ registros",
               emptyTable: "No hay datos disponibles en la tabla",
