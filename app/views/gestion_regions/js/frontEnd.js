@@ -332,7 +332,6 @@ function getTicketDataFinaljs() {
                 const exoneracionUrl = row.exoneracion_document_url;
                 const pagoUrl = row.pago_document_url;
 
-                console.log(row);
                 if (hasEnvioDestinoDocument) {
                   // Se asume que el estatus "En la región" significa que el documento ya fue subido y puede ser visto
                   if(row.name_accion_ticket === "En la región" || row.name_accion_ticket === "Entregado a Cliente"){
@@ -1071,8 +1070,6 @@ document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
 
     const Envio_DestinoUrl = $(this).data('envio-destino');
     const EnvioDestinoName = $(this).data('envio-destino-filename');
-
-    console.log("Nombre Achivo: " + EnvioDestinoName);
 
     const nro_ticket = $(this).data('nro-ticket');
 

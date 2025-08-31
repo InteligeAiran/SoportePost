@@ -840,20 +840,14 @@ function getTicketDataCoordinator() {
     }
 
     // REMOVER event listeners anteriores para evitar duplicados
-    const btnCerrar = document.getElementById('BotonCerrarSelectDocument');
     const btnConfirmar = document.getElementById('btnConfirmarVisualizacion');
 
     // Clonar elementos para remover event listeners
-    const btnCerrarClone = btnCerrar.cloneNode(true);
     const btnConfirmarClone = btnConfirmar.cloneNode(true);
 
-    btnCerrar.parentNode.replaceChild(btnCerrarClone, btnCerrar);
     btnConfirmar.parentNode.replaceChild(btnConfirmarClone, btnConfirmar);
 
     // Botón para cerrar el modal de visualización
-    btnCerrarClone.addEventListener('click', function () {
-        visualizarImagenModal.hide();
-    });
 
     // Evento para el botón confirmar visualización
     btnConfirmarClone.addEventListener('click', function () {
@@ -2374,6 +2368,7 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
   const messageContainer = document.getElementById("viewDocumentMessage");
   const nameDocumento = document.getElementById("NombreImage");
   const BotonCerrarModal = document.getElementById("CerrarModalVizualizar");
+  const BotonCerrarModalSelect = document.getElementById("BotonCerrarSelectDocument");
 
   currentTicketId = ticketId;
   currentNroTicket = nroTicket;
@@ -2430,12 +2425,26 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
   const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
 
   viewDocumentModal.show();
-  visualizarImagenModal.hide();
+  
 
-  BotonCerrarModal.addEventListener('click', function () {
-    viewDocumentModal.hide();
+     BotonCerrarModal.addEventListener('click', function () {
+                // Ocultar el modal de visualización
+                viewDocumentModal.hide();
+                
+                // Mostrar nuevamente el modal de selección
+                setTimeout(() => {
+                    visualizarImagenModal.show();
+                }, 300); //
   });
-}
+
+  BotonCerrarModalSelect.addEventListener('click', function () {
+    // Ocultar el modal de visualización
+    visualizarImagenModal.hide();
+    
+  });
+
+  
+};
 
 const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
 

@@ -503,8 +503,8 @@ function mi_navbar() {}
             <div class="modal fade" id="documentActionsModal" tabindex="-1" role="dialog" aria-labelledby="documentActionsModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog modal-dialog-centered" role="document">
                     <div class="modal-content" style="width: 65%; margin-left: 21%;">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="documentActionsModalLabel" style="color: #000;">Acciones de Documentos</h5>                  
+                    <div class="modal-header bg-gradient-primary text-white">
+                        <h5 class="modal-title" id="documentActionsModalLabel">Acciones de Documentos</h5>                  
                     </div>
                     <div class="modal-body">
                         <p>Selecciona una opción para ver el documento del ticket <strong id="modalTicketId"></strong>:</p>

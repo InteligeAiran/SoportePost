@@ -664,21 +664,21 @@ function mi_navbar() {}
                                         <label class="form-label">Selecciona los documentos a cargar:</label>
                                         <div id = "checkEnvioContainer" class="form-check">
                                             <input class="form-check-input" type="checkbox" id="checkEnvio" value="envio">
-                                            <label class="form-check-label" for="checkEnvio">Cargar PDF Envío</label>
+                                            <label class="form-check-label" for="checkEnvio">Envío</label>
                                         </div>
                                         <div id="checkExoneracionContainer" class="form-check">
                                             <input class="form-check-input" type="radio" id="checkExoneracion" name="documentType" value="exoneracion">
-                                            <label class="form-check-label" id="checkExoneracionLabel" for="checkExoneracion">Cargar Exoneración</label>
+                                            <label class="form-check-label" id="checkExoneracionLabel" for="checkExoneracion">Exoneración</label>
                                         </div>
                                         <div id="checkAnticipoContainer" class="form-check">
                                             <input class="form-check-input" type="radio" id="checkAnticipo" name="documentType" value="anticipo">
-                                            <label class="form-check-label" id="checkAnticipoLabel" for="checkAnticipo">Cargar PDF Anticipo</label>
+                                            <label class="form-check-label" id="checkAnticipoLabel" for="checkAnticipo">Anticipo</label>
                                         </div>
                                     </div>
 
                                     <div id="DownloadsBotons">
                                         <div id="botonCargaPDFEnv" style="display: none;">
-                                            <button id="DownloadEnvi" class="btn btn-outline-secondary btn-sm" type="button">Cargar Documento Envio</button>
+                                            <button id="DownloadEnvi" class="btn btn-outline-secondary btn-sm" type="button">Adjunte Documento Envio</button>
                                             <input class="form-control" id="EnvioInput" type="file"
                                                 style="display: none; margin-left: 10px;"
                                                 accept="application/pdf, image/jpeg, image/jpg, image/png">
@@ -688,7 +688,7 @@ function mi_navbar() {}
                                         <div style="display: flex; align-items: center; margin-bottom: 6%; display: none;"
                                             id="botonCargaExoneracion">
                                             <button id="DownloadExo" class="btn btn-outline-secondary btn-sm"
-                                                type="button">Cargar Documento Exoneracion</button>
+                                                type="button">Adjunte Documento Exoneracion</button>
                                             <input class="form-control" id="ExoneracionInput" type="file"
                                                 style="display: none; margin-left: 10px;"
                                                 accept="application/pdf, image/jpeg, image/jpg, image/png">
@@ -697,7 +697,7 @@ function mi_navbar() {}
 
                                         <div style="display: flex; align-items: center; margin-bottom: 2%; display: none;"
                                             id="botonCargaAnticipo">
-                                            <button id="DownloadAntici" class="btn btn-outline-secondary btn-sm" type="button">Cargar Documento Anticipo</button>
+                                            <button id="DownloadAntici" class="btn btn-outline-secondary btn-sm" type="button">Adjunte Documento Anticipo</button>
                                             <input id="AnticipoInput" type="file" style="display: none; margin-left: 10px;"
                                                 accept="application/pdf, image/jpeg, image/jpg, image/png">
                                             <div id="anticipoStatus"></div>
