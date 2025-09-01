@@ -2831,6 +2831,7 @@ function SendRif() {
             const rifCell = row.insertCell();
             const name_modeloposCell = row.insertCell();
             const serial_posCell = row.insertCell();
+            const desc_posCell = row.insertCell();
             const afiliacionCell = row.insertCell();
             const fechainstallCell = row.insertCell();
             const bancoCell = row.insertCell();
@@ -2868,6 +2869,7 @@ function SendRif() {
             };
             
             fechainstallCell.textContent = item.fechainstalacion;
+            desc_posCell.textContent = item.desc_pos;
             afiliacionCell.textContent = item.afiliacion;
 
             // Lógica de la garantía
@@ -3634,6 +3636,7 @@ function SendRazon() {
             const rifCell = row.insertCell();
             const name_modeloposCell = row.insertCell();
             const serial_posCell = row.insertCell();
+            const desc_posCell = row.insertCell();
             const afiliacionCell = row.insertCell();
             const fechainstallCell = row.insertCell();
             const bancoCell = row.insertCell();
@@ -3671,6 +3674,7 @@ function SendRazon() {
             };
             
             fechainstallCell.textContent = item.fechainstalacion;
+            desc_posCell.textContent = item.desc_pos;
             afiliacionCell.textContent = item.afiliacion;
 
             // Lógica de la garantía

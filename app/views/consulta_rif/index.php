@@ -455,6 +455,7 @@ function mi_navbar() {}
                                                 <th style="width: 5%;">RIF</th>
                                                 <th style="width: 5%;">Modelo POS</th>
                                                 <th style="width: 5%;" class="serial-pos-column">Serial POS</th>
+                                                <th style="width: 5%;">Estatus del Equipo</th>
                                                 <th style="width: 5%;">N° Afiliaci&oacuten</th>
                                                 <th style="width: 5%;">Fecha Instalaci&oacuten</th>
                                                 <th style="width: 5%;">Banco</th>
