@@ -615,10 +615,10 @@ function mi_navbar() {}
                                     </div>
                                     <br>
                                     <div>
-                                        <label id="LabelCoordinador" class="form-label" for="AsiganrCoordinador">Asignar a
-                                            Coordinador</label>
+                                        <label id="LabelCoordinador" class="form-label" for="AsiganrCoordinador">Asignar a la
+                                            Coordinación</label>
                                         <div id="AsiganrCoordinadorContainer">
-                                            <select id="AsiganrCoordinador" name="AsiganrCoordinador" class="form-select">
+                                            <select id="AsiganrCoordinador" name="AsiganrCoordinador" class="form-select" style = "width: 150%; margin-left: -21%;">
                                                 <option></option>
                                             </select>
                                         </div><br>

@@ -332,7 +332,7 @@ function getTicketDataCoordinator() {
           TicketData.forEach((data) => {
             let actionButtonsHtml = ""; // Variable para construir los botones de acción
             // Lógica para los botones de acción
-            if (data.name_accion_ticket === "Asignado al Coordinador") {
+            if (data.name_accion_ticket === "Asignado a la Coordinación") {
               // Acción 4
               actionButtonsHtml += `
                 <button id = "confirmreceived" class="btn btn-sm btn-info btn-received-coord mr-2"
@@ -544,7 +544,7 @@ function getTicketDataCoordinator() {
               // Función para buscar automáticamente el primer botón con datos
               function findFirstButtonWithData() {
                 const searchTerms = [
-                  { button: "btn-por-asignar", term: "Asignado al Coordinador" , status: "Abierto", action: "Asignado al Coordinador"},
+                  { button: "btn-por-asignar", term: "Asignado a la Coordinación" , status: "Abierto", action: "Asignado a la Coordinación"},
                   { button: "btn-recibidos", term: "Recibido por el Coordinador",  status: "Abierto", action: "Recibido por el Coordinador"},
                   // CORREGIDO: Usar expresión que funcione para ambos
                   { button: "btn-asignados", term: "Asignado al Técnico|Recibido por el Técnico", status: "En proceso", action: ["En espera de confirmar recibido en Región", "Recibido por el Coordinador"]},
@@ -612,13 +612,13 @@ function getTicketDataCoordinator() {
               });
 
               $("#btn-por-asignar").on("click", function () {
-                if (checkDataExists("Asignado al Coordinador")) {
+                if (checkDataExists("Asignado a la Coordinación")) {
                   api.columns().search('').draw(false);
                   api.column(6).visible(false);
                   api.column(7).visible(true);
-                  api.column(5).search("Asignado al Coordinador").draw();
+                  api.column(5).search("Asignado a la Coordinación").draw();
                   setActiveButton("btn-por-asignar");
-                  showTicketStatusIndicator("Abierto", "Asignado al Coordinador");
+                  showTicketStatusIndicator("Abierto", "Asignado a la Coordinación");
                 } else {
                   findFirstButtonWithData();
                 }
@@ -1369,19 +1369,16 @@ function loadTicketHistory(ticketId) {
           const itemExoneracion = cleanString(item.exoneracion);
           const itemEnvio = cleanString(item.envio);
           const itemEnvioDestino = cleanString(item.envio_destino);
-          const itemDocumentoRechazado = cleanString(item.documento_rechazado);
 
           const prevPago = cleanString(prevItem.pago);
           const prevExoneracion = cleanString(prevItem.exoneracion);
           const prevEnvio = cleanString(prevItem.envio);
           const prevEnvioDestino = cleanString(prevItem.envio_destino);
-          const prevDocumentoRechazado = cleanString(prevItem.documento_rechazado);
 
           const pagoChanged = prevPago && itemPago !== prevPago;
           const exoneracionChanged = prevExoneracion && itemExoneracion !== prevExoneracion;
           const envioChanged = prevEnvio && itemEnvio !== prevEnvio;
           const envioDestinoChanged = prevEnvioDestino && itemEnvioDestino !== prevEnvioDestino;
-          const documentoRechazadoChanged = prevDocumentoRechazado && itemDocumentoRechazado !== prevDocumentoRechazado;
           
           // --- LÓGICA CORREGIDA PARA MOSTRAR EL MOTIVO DE RECHAZO ---
           const rejectedActions = [
@@ -1414,7 +1411,7 @@ function loadTicketHistory(ticketId) {
           // Solo mostrar el comentario de devolución cuando sea relevante
           if (showCommentDevolution) {
             historyHtml += `
-              <div class="alert alert-warning alert-sm mb-2" style = "color: white;">
+              <div class="alert alert-warning alert-sm mb-2" style="color: white;">
                 <strong>Comentario de Devolución:</strong> ${item.comment_devolution}
               </div>
             `;
@@ -1423,7 +1420,7 @@ function loadTicketHistory(ticketId) {
           // Solo mostrar comentario de reasignación cuando sea relevante
           if (showCommentReasignation) {
             historyHtml += `
-              <div class="alert alert-info alert-sm mb-2" style = "color: white;">
+              <div class="alert alert-info alert-sm mb-2" style="color: white;">
                 <strong>Comentario de Reasignación:</strong> ${item.comment_reasignation}
               </div>
             `;
@@ -1456,12 +1453,16 @@ function loadTicketHistory(ticketId) {
                                                     <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-start">Operador de Gestión:</th>
-                                                    <td>${item.full_name_tecnico_gestion || "N/A"}</td>
+                                                    <th class="text-start">Operador Ticket:</th>
+                                                    <td>${item.operador_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Coordinador:</th>
                                                     <td>${item.full_name_coordinador || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                  <th class="text-start">Coordinación:</th>
+                                                  <td>${item.nombre_coordinacion || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Técnico Asignado:</th>
@@ -1494,7 +1495,7 @@ function loadTicketHistory(ticketId) {
                                                 ${showMotivoRechazo ? `
                                                   <tr>
                                                     <th class="text-start">Motivo Rechazo Documento:</th>
-                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
+                                                    <td class="${motivoRechazoChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
                                                   </tr>
                                              ` : ''}
                                                 ${showCommentDevolution ? `
@@ -1524,19 +1525,13 @@ function loadTicketHistory(ticketId) {
                                                 ${itemEnvio === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Envío:</th>
-                                                    <td class="${pagoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                    <td class="${envioChanged ? "highlighted-change" : ""}">✓ Cargado</td>
                                                   </tr>
                                              ` : ''}
                                                 ${itemEnvioDestino === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Envío a Destino:</th>
                                                     <td class="${envioDestinoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
-                                                  </tr>
-                                             ` : ''}
-                                                ${itemDocumentoRechazado === 'Sí' ? `
-                                                  <tr>
-                                                    <th class="text-start">Documento Rechazado:</th>
-                                                    <td class="${documentoRechazadoChanged ? "highlighted-change" : ""}">⚠ Rechazado</td>
                                                   </tr>
                                              ` : ''}
                                             </tbody>
@@ -2544,7 +2539,7 @@ function getTicketStatusVisual(statusTicket, accionTicket) {
   let statusIcon = '';
   
   if (statusTicket === 'Abierto' || 
-      accionTicket === 'Asignado al Coordinador' ||
+      accionTicket === 'Asignado a la Coordinación' ||
       accionTicket === 'Pendiente por revisar domiciliacion') {
     statusClass = 'status-open';
     statusText = 'ABIERTO';

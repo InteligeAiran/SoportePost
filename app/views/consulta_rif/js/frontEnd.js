@@ -5,8 +5,107 @@ let globalEstatusPos = ""; // O null, dependiendo de cómo quieras inicializarla
 // Variable global para controlar que el alerta de garantía se muestre solo una vez
 let garantiaAlertShown = false;
 
+  // FUNCIÓN PARA RESTAURAR EL ESTADO DE LA COORDINACIÓN
+function restoreCoordinacionState() {
+  const select = document.getElementById("AsiganrCoordinador");
+  if (!select) return;
+
+  // Obtener el estado actual de coordinaciones desde el servidor
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getCoordinacion`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          // LIMPIAR EL SELECT ANTES DE POBLARLO
+          select.innerHTML = '';
+
+          if (
+            Array.isArray(response.coordinaciones) &&
+            response.coordinaciones.length > 0
+          ) {
+            // SI SOLO HAY UNA COORDINACIÓN, LA SELECCIONAMOS AUTOMÁTICAMENTE
+            if (response.coordinaciones.length === 1) {
+              const coordinacion = response.coordinaciones[0];
+              const option = document.createElement("option");
+              option.value = coordinacion.id_department;
+              option.textContent = coordinacion.name_department;
+              option.selected = true; // MARCA COMO SELECCIONADA
+              select.appendChild(option);
+              
+              // DESHABILITAR EL SELECT YA QUE SOLO HAY UNA OPCIÓN
+              select.disabled = true;
+            
+              
+              // Remover texto anterior si existe
+              const existingInfo = select.parentNode.querySelector(".form-text");
+              if (existingInfo) {
+                existingInfo.remove();
+              }
+              
+              select.parentNode.appendChild(infoText);
+              
+            } else {
+              // CÓDIGO PARA CUANDO HAY MÚLTIPLES COORDINACIONES (FUTURO)
+              // ============================================================
+              // Este código se ejecutará cuando en el futuro agreguen más coordinaciones
+              // y quieras mostrar un dropdown con múltiples opciones
+              
+              // Agregar opción por defecto
+              const defaultOption = document.createElement("option");
+              defaultOption.value = "";
+              defaultOption.textContent = "Seleccione Coordinación";
+              select.appendChild(defaultOption);
+              
+              // Agregar cada coordinación como opción
+              response.coordinaciones.forEach((coordinacion) => {
+                const option = document.createElement("option");
+                option.value = coordinacion.id_department;
+                option.textContent = coordinacion.name_department;
+                select.appendChild(option);
+              });
+              
+              // Habilitar el select para que el usuario pueda elegir
+              select.disabled = false;
+              
+              // Remover el texto explicativo si existe
+              const existingInfo = select.parentNode.querySelector(".form-text");
+              if (existingInfo) {
+                existingInfo.remove();
+              }
+            }
+            
+          } else {
+            // SI NO HAY COORDINACIONES DISPONIBLES
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No hay Coordinaciones disponibles";
+            select.appendChild(option);
+            select.disabled = true;
+          }
+          
+        } else {
+          console.error("Error al restaurar coordinaciones:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON al restaurar coordinaciones:", error);
+      }
+    } else {
+      console.error("Error al restaurar coordinaciones:", xhr.status, xhr.statusText);
+    }
+  };
+
+  const datos = `action=getCoordinacion`;
+  xhr.send(datos);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   // Estilo para el span "No file chosen"
+    restoreCoordinacionState();
+
   const noFileChosenStyle =
     "color: gray; font-style: italic; margin-left: 5px;";
 
@@ -32,6 +131,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     return fileName;
   }
+
 
   // Para el botón de Envío
   const cargarBtnEnvio = document.getElementById("DownloadEnvi");
@@ -351,6 +451,8 @@ function inicializeModal() {
             getUltimateTicket(globalSerial);
             getInstalationDate(globalSerial);
           }
+           // NUEVO: CARGAR COORDINACIONES ANTES DE MOSTRAR EL MODAL
+          restoreCoordinacionState();
         } else {
           Swal.fire({
             icon: "warning",
@@ -677,9 +779,9 @@ function getCoordinador() {
   xhr.send(datos);
 }
 
-document.addEventListener("DOMContentLoaded", getCoordinador);
+//document.addEventListener("DOMContentLoaded", getCoordinador);
 
-/*function getCoordinacion() {
+function getCoordinacion() {
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getCoordinacion`);
 
@@ -692,46 +794,94 @@ document.addEventListener("DOMContentLoaded", getCoordinador);
         if (response.success) {
           const select = document.getElementById("AsiganrCoordinador");
 
-          select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+          // LIMPIAR EL SELECT ANTES DE POBLARLO
+          select.innerHTML = '';
+
           if (
             Array.isArray(response.coordinaciones) &&
             response.coordinaciones.length > 0
           ) {
-            response.coordinaciones.forEach((coordinacion) => {
+            // SI SOLO HAY UNA COORDINACIÓN, LA SELECCIONAMOS AUTOMÁTICAMENTE
+            if (response.coordinaciones.length === 1) {
+              const coordinacion = response.coordinaciones[0];
               const option = document.createElement("option");
               option.value = coordinacion.id_department;
               option.textContent = coordinacion.name_department;
+              option.selected = true; // MARCA COMO SELECCIONADA
               select.appendChild(option);
-            });
+              
+              // DESHABILITAR EL SELECT YA QUE SOLO HAY UNA OPCIÓN
+              select.disabled = true;
+              
+              // AGREGAR UN TEXTO EXPLICATIVO
+              const infoText = document.createElement("small");
+              infoText.className = "form-text text-muted";
+              infoText.textContent = "Solo hay una coordinación disponible, se ha seleccionado automáticamente";
+              select.parentNode.appendChild(infoText);
+              
+            } else {
+              // CÓDIGO PARA CUANDO HAY MÚLTIPLES COORDINACIONES (FUTURO)
+              // ============================================================
+              // Este código se ejecutará cuando en el futuro agreguen más coordinaciones
+              // y quieras mostrar un dropdown con múltiples opciones
+              
+              // Agregar opción por defecto
+              const defaultOption = document.createElement("option");
+              defaultOption.value = "";
+              defaultOption.textContent = "Seleccione Coordinación";
+              select.appendChild(defaultOption);
+              
+              // Agregar cada coordinación como opción
+              response.coordinaciones.forEach((coordinacion) => {
+                const option = document.createElement("option");
+                option.value = coordinacion.id_department;
+                option.textContent = coordinacion.name_department;
+                select.appendChild(option);
+              });
+              
+              // Habilitar el select para que el usuario pueda elegir
+              select.disabled = false;
+              
+              // Remover el texto explicativo si existe
+              const existingInfo = select.parentNode.querySelector(".form-text");
+              if (existingInfo) {
+                existingInfo.remove();
+              }
+            }
+            
           } else {
-            // Si no hay fallas, puedes mostrar un mensaje en el select
+            // SI NO HAY COORDINACIONES DISPONIBLES
             const option = document.createElement("option");
             option.value = "";
-            option.textContent = "No hay Coordinador disponibles";
+            option.textContent = "No hay Coordinaciones disponibles";
             select.appendChild(option);
+            select.disabled = true;
           }
+          
         } else {
+          // MANEJO DE ERRORES
           document.getElementById("rifMensaje").innerHTML +=
-            "<br>Error al obtener los Coordinadores.";
-          console.error("Error al obtener las fallas:", response.message);
+            "<br>Error al obtener las Coordinaciones.";
+          console.error("Error al obtener las coordinaciones:", response.message);
         }
       } catch (error) {
         console.error("Error parsing JSON:", error);
         document.getElementById("rifMensaje").innerHTML +=
-          "<br>Error al procesar la respuesta de los Coordinadores.";
+          "<br>Error al procesar la respuesta de las Coordinaciones.";
       }
     } else {
       console.error("Error:", xhr.status, xhr.statusText);
       document.getElementById("rifMensaje").innerHTML +=
-        "<br>Error de conexión con el servidor para los Coordinadores.";
+        "<br>Error de conexión con el servidor para las Coordinaciones.";
     }
   };
 
-  const datos = `action=getCoordinacion`; // Cambia la acción para que coincida con el backend
+  const datos = `action=getCoordinacion`;
   xhr.send(datos);
 }
+
 // Llama a la función para cargar las fallas cuando la página se cargue
-document.addEventListener("DOMContentLoaded", getCoordinacion);*/
+document.addEventListener("DOMContentLoaded", getCoordinacion);
 
 let fechaUltimoTicketGlobal = null;
 let fechaInstalacionGlobal = null;
@@ -2640,7 +2790,8 @@ function SendDataFailure1() {
   }
 }
 
-function clearFormFields() {
+// --- tiene problema borrando la coordinacion
+  /*function clearFormFields() {
   // --- Limpiar checkboxes ---
   const checkEnvio = document.getElementById("checkEnvio");
   const checkExoneracion = document.getElementById("checkExoneracion");
@@ -2734,6 +2885,100 @@ function clearFormFields() {
   if (anticipoStatusDiv) anticipoStatusDiv.textContent = "";
 
   console.log("Campos limpiados correctamente"); // Para debugging
+}*/
+//---
+
+function clearFormFields() {
+  // --- Limpiar checkboxes ---
+  const checkEnvio = document.getElementById("checkEnvio");
+  const checkExoneracion = document.getElementById("checkExoneracion");
+  const checkAnticipo = document.getElementById("checkAnticipo");
+
+  if (checkEnvio) checkEnvio.checked = false;
+  if (checkExoneracion) checkExoneracion.checked = false;
+  if (checkAnticipo) checkAnticipo.checked = false;
+
+  // --- Limpiar los elementos DIV que muestran el nombre del archivo ---
+  clearFileSpan(fileChosenSpanEnvio);
+  clearFileSpan(fileChosenSpanExo);
+  clearFileSpan(fileChosenSpanAntici);
+
+  // --- Limpiar campos de Modal Nivel 2 (miModal) ---
+  const fallaSelect2 = document.getElementById("FallaSelect2");
+  if (fallaSelect2) {
+    fallaSelect2.value = "";
+  }
+
+  const inputRif = document.getElementById("InputRif");
+  if (inputRif) inputRif.value = "";
+
+  const serialSelect = document.getElementById("serialSelect");
+  if (serialSelect) serialSelect.value = "";
+
+  // --- NUEVO: NO LIMPIAR LA COORDINACIÓN, SOLO RESTAURAR SU ESTADO ---
+  // En lugar de limpiar, vamos a restaurar el estado de la coordinación
+  restoreCoordinacionState();
+
+  const fallaSelectt2 = document.getElementById("FallaSelectt2");
+  if (fallaSelectt2) fallaSelectt2.value = "2";
+
+  const rifMensaje1 = document.getElementById("rifMensaje1");
+  if (rifMensaje1) rifMensaje1.innerHTML = "";
+
+  const rifMensaje = document.getElementById("rifMensaje");
+  if (rifMensaje) rifMensaje.innerHTML = "";
+
+  const inputRazon = document.getElementById("InputRazon");
+  if (inputRazon) inputRazon.value = "";
+
+  // --- Limpiar campos de Modal Nivel 1 (miModal1) ---
+  const fallaSelect1 = document.getElementById("FallaSelect1");
+  if (fallaSelect1) fallaSelect1.value = "";
+
+  const inputRif1 = document.getElementById("InputRif1");
+  if (inputRif1) inputRif1.value = "";
+
+  const serialSelect1 = document.getElementById("serialSelect1");
+  if (serialSelect1) serialSelect1.value = "";
+
+  const fallaSelectt1 = document.getElementById("FallaSelectt1");
+  if (fallaSelectt1) fallaSelectt1.value = "1";
+
+  // --- Restablecer radio buttons y checkboxes ---
+  const uploadNowRadio = document.getElementById("uploadNow");
+  const uploadLaterRadio = document.getElementById("uploadLater");
+
+  if (uploadLaterRadio) uploadLaterRadio.checked = true;
+  if (uploadNowRadio) uploadNowRadio.checked = false;
+
+  // --- NUEVO: RESTAURAR COMPLETAMENTE LA VISIBILIDAD DE TODOS LOS ELEMENTOS ---
+  restaurarVisibilidadCompleta();
+
+  // --- Actualizar visibilidad de documentos ---
+  if (typeof updateDocumentUploadVisibility === "function") {
+    updateFileUploadButtonVisibility();
+  } else {
+    // Fallback
+    const documentUploadOptions = document.getElementById("documentUploadOptions");
+    if (documentUploadOptions) documentUploadOptions.style.display = "none";
+    
+    const botonCargaPDFEnv = document.getElementById("botonCargaPDFEnv");
+    const botonCargaExoneracion = document.getElementById("botonCargaExoneracion");
+    const botonCargaAnticipo = document.getElementById("botonCargaAnticipo");
+    
+    if (botonCargaPDFEnv) botonCargaPDFEnv.style.display = "none";
+    if (botonCargaExoneracion) botonCargaExoneracion.style.display = "none";
+    if (botonCargaAnticipo) botonCargaAnticipo.style.display = "none";
+  }
+
+  // --- Limpiar status divs ---
+  const envioStatusDiv = document.getElementById("envioStatus");
+  const exoneracionStatusDiv = document.getElementById("exoneracionStatus");
+  const anticipoStatusDiv = document.getElementById("anticipoStatus");
+  
+  if (envioStatusDiv) envioStatusDiv.textContent = "";
+  if (exoneracionStatusDiv) envioStatusDiv.textContent = "";
+  if (anticipoStatusDiv) anticipoStatusDiv.textContent = "";
 }
 
 // NUEVA FUNCIÓN: Restaurar completamente la visibilidad de todos los elementos
@@ -2993,6 +3238,7 @@ function SendRif() {
             const rifCell = row.insertCell();
             const name_modeloposCell = row.insertCell();
             const serial_posCell = row.insertCell();
+            const desc_posCell = row.insertCell();
             const afiliacionCell = row.insertCell();
             const fechainstallCell = row.insertCell();
             const bancoCell = row.insertCell();
@@ -3012,6 +3258,7 @@ function SendRif() {
             enlaceSerial.style.textDecoration = "underline";
             enlaceSerial.style.cursor = "pointer";
             serial_posCell.appendChild(enlaceSerial);
+            desc_posCell.textContent = item.desc_po
 
             // Modal de detalles del serial (tu código existente)
             const modalSerial = document.getElementById("ModalSerial");
@@ -3796,6 +4043,7 @@ function SendRazon() {
             const rifCell = row.insertCell();
             const name_modeloposCell = row.insertCell();
             const serial_posCell = row.insertCell();
+            const desc_posCell = row.insertCell();
             const afiliacionCell = row.insertCell();
             const fechainstallCell = row.insertCell();
             const bancoCell = row.insertCell();
@@ -3815,6 +4063,7 @@ function SendRazon() {
             enlaceSerial.style.textDecoration = "underline";
             enlaceSerial.style.cursor = "pointer";
             serial_posCell.appendChild(enlaceSerial);
+            desc_posCell.textContent = item.desc_pos;
 
             // Modal de detalles del serial (tu código existente)
             const modalSerial = document.getElementById("ModalSerial");

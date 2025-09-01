@@ -1280,19 +1280,16 @@ function loadTicketHistory(ticketId) {
           const itemExoneracion = cleanString(item.exoneracion);
           const itemEnvio = cleanString(item.envio);
           const itemEnvioDestino = cleanString(item.envio_destino);
-          const itemDocumentoRechazado = cleanString(item.documento_rechazado);
 
           const prevPago = cleanString(prevItem.pago);
           const prevExoneracion = cleanString(prevItem.exoneracion);
           const prevEnvio = cleanString(prevItem.envio);
           const prevEnvioDestino = cleanString(prevItem.envio_destino);
-          const prevDocumentoRechazado = cleanString(prevItem.documento_rechazado);
 
           const pagoChanged = prevPago && itemPago !== prevPago;
           const exoneracionChanged = prevExoneracion && itemExoneracion !== prevExoneracion;
           const envioChanged = prevEnvio && itemEnvio !== prevEnvio;
           const envioDestinoChanged = prevEnvioDestino && itemEnvioDestino !== prevEnvioDestino;
-          const documentoRechazadoChanged = prevDocumentoRechazado && itemDocumentoRechazado !== prevDocumentoRechazado;
           
           // --- LÓGICA CORREGIDA PARA MOSTRAR EL MOTIVO DE RECHAZO ---
           const rejectedActions = [
@@ -1325,7 +1322,7 @@ function loadTicketHistory(ticketId) {
           // Solo mostrar el comentario de devolución cuando sea relevante
           if (showCommentDevolution) {
             historyHtml += `
-              <div class="alert alert-warning alert-sm mb-2" style = "color: white;">
+              <div class="alert alert-warning alert-sm mb-2" style="color: white;">
                 <strong>Comentario de Devolución:</strong> ${item.comment_devolution}
               </div>
             `;
@@ -1334,7 +1331,7 @@ function loadTicketHistory(ticketId) {
           // Solo mostrar comentario de reasignación cuando sea relevante
           if (showCommentReasignation) {
             historyHtml += `
-              <div class="alert alert-info alert-sm mb-2" style = "color: white;">
+              <div class="alert alert-info alert-sm mb-2" style="color: white;">
                 <strong>Comentario de Reasignación:</strong> ${item.comment_reasignation}
               </div>
             `;
@@ -1367,12 +1364,16 @@ function loadTicketHistory(ticketId) {
                                                     <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-start">Operador de Gestión:</th>
-                                                    <td>${item.full_name_tecnico_gestion || "N/A"}</td>
+                                                    <th class="text-start">Operador Ticket:</th>
+                                                    <td>${item.operador_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Coordinador:</th>
                                                     <td>${item.full_name_coordinador || "N/A"}</td>
+                                                </tr>
+                                                <tr>
+                                                  <th class="text-start">Coordinación:</th>
+                                                  <td>${item.nombre_coordinacion || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Técnico Asignado:</th>
@@ -1405,7 +1406,7 @@ function loadTicketHistory(ticketId) {
                                                 ${showMotivoRechazo ? `
                                                   <tr>
                                                     <th class="text-start">Motivo Rechazo Documento:</th>
-                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
+                                                    <td class="${motivoRechazoChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
                                                   </tr>
                                              ` : ''}
                                                 ${showCommentDevolution ? `
@@ -1435,19 +1436,13 @@ function loadTicketHistory(ticketId) {
                                                 ${itemEnvio === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Envío:</th>
-                                                    <td class="${pagoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                    <td class="${envioChanged ? "highlighted-change" : ""}">✓ Cargado</td>
                                                   </tr>
                                              ` : ''}
                                                 ${itemEnvioDestino === 'Sí' ? `
                                                   <tr>
                                                     <th class="text-start">Documento de Envío a Destino:</th>
                                                     <td class="${envioDestinoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
-                                                  </tr>
-                                             ` : ''}
-                                                ${itemDocumentoRechazado === 'Sí' ? `
-                                                  <tr>
-                                                    <th class="text-start">Documento Rechazado:</th>
-                                                    <td class="${documentoRechazadoChanged ? "highlighted-change" : ""}">⚠ Rechazado</td>
                                                   </tr>
                                              ` : ''}
                                             </tbody>
