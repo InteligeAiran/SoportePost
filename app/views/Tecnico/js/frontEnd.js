@@ -1516,10 +1516,20 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
         const viewDocumentModal = new bootstrap.Modal(modalElementView);
         viewDocumentModal.show();
 
+        const accionsDocument = document.getElementById("documentActionsModal");
+        const accionsdocumentsIntance = new bootstrap.Modal(accionsDocument);
+
         const buttonCerrarModal = document.getElementById("CerrarModalVizualizar");
         if (buttonCerrarModal) {
             buttonCerrarModal.addEventListener("click", function() {
                 viewDocumentModal.hide();
+                accionsdocumentsIntance.hide();
+                setTimeout(() => {
+                    accionsdocumentsIntance.show();
+                    setTimeout(() => {
+                        documentActionsModal.show();
+                    }, 300); //
+                }, 300); //
             });
         }
     } catch (error) {
