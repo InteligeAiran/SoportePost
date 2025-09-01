@@ -676,8 +676,62 @@ function getCoordinador() {
   const datos = `action=GetCoordinador`; // Cambia la acción para que coincida con el backend
   xhr.send(datos);
 }
-// Llama a la función para cargar las fallas cuando la página se cargue
+
 document.addEventListener("DOMContentLoaded", getCoordinador);
+
+/*function getCoordinacion() {
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getCoordinacion`);
+
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          const select = document.getElementById("AsiganrCoordinador");
+
+          select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+          if (
+            Array.isArray(response.coordinaciones) &&
+            response.coordinaciones.length > 0
+          ) {
+            response.coordinaciones.forEach((coordinacion) => {
+              const option = document.createElement("option");
+              option.value = coordinacion.id_department;
+              option.textContent = coordinacion.name_department;
+              select.appendChild(option);
+            });
+          } else {
+            // Si no hay fallas, puedes mostrar un mensaje en el select
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No hay Coordinador disponibles";
+            select.appendChild(option);
+          }
+        } else {
+          document.getElementById("rifMensaje").innerHTML +=
+            "<br>Error al obtener los Coordinadores.";
+          console.error("Error al obtener las fallas:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        document.getElementById("rifMensaje").innerHTML +=
+          "<br>Error al procesar la respuesta de los Coordinadores.";
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+      document.getElementById("rifMensaje").innerHTML +=
+        "<br>Error de conexión con el servidor para los Coordinadores.";
+    }
+  };
+
+  const datos = `action=getCoordinacion`; // Cambia la acción para que coincida con el backend
+  xhr.send(datos);
+}
+// Llama a la función para cargar las fallas cuando la página se cargue
+document.addEventListener("DOMContentLoaded", getCoordinacion);*/
 
 let fechaUltimoTicketGlobal = null;
 let fechaInstalacionGlobal = null;
@@ -951,7 +1005,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
   const botonAnticipo = document.getElementById("DownloadAntici");
 
   if (fechaInstalacion === "No disponible") {
-    resultadoElemento.textContent = "Sin garantía de instalación";
+    resultadoElemento.textContent = "Sin Garantía de Instalación";
     resultadoElemento.style.color = "";
     return null;
   } else {
@@ -961,7 +1015,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
     const meses = Math.ceil(diferencia / (1000 * 3600 * 24 * 30));
 
     if (meses <= 6) {
-      resultadoElemento.textContent = "Aplica garantía por instalación";
+      resultadoElemento.textContent = "Garantía por Instalación aplica";
       resultadoElemento.style.color = "red";
       
       if (botonExoneracion) botonExoneracion.style.display = "none";
@@ -979,7 +1033,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
       
       return 1;
     } else {
-      resultadoElemento.textContent = "Sin garantía de instalación";
+      resultadoElemento.textContent = "Sin Garantía de Instalación";
       resultadoElemento.style.color = "";
       if (botonExoneracion) botonExoneracion.style.display = "inline-block";
       if (botonAnticipo) botonAnticipo.style.display = "inline-block";
@@ -1076,7 +1130,7 @@ function UpdateGuarantees() {
     if (idStatusPayment === 3) {
       Swal.fire({
         title: "¡Notificación!",
-        text: "Tiene garantía Por reingreso.",
+        text: "Tiene Garantía Por Reingreso.",
         icon: "warning",
         confirmButtonText: "OK",
         color: "black",
@@ -1085,7 +1139,7 @@ function UpdateGuarantees() {
     } else if (idStatusPayment === 1) {
       Swal.fire({
         title: "¡Notificación!",
-        text: "Tiene garantía Por instalacion.",
+        text: "Tiene Garantía Por Instalacion.",
         icon: "warning",
         confirmButtonText: "OK",
         color: "black",
@@ -1132,7 +1186,7 @@ function showGarantiaAlert() {
   if (idStatusPaymentReingreso === 3) {
       Swal.fire({
         title: "¡Notificación!",
-        text: "Tiene garantía por reingreso.",
+        text: "Tiene Garantía Por Reingreso.",
         icon: "warning",
         confirmButtonText: "OK",
         color: "black",
@@ -1140,7 +1194,7 @@ function showGarantiaAlert() {
   } else if (idStatusPaymentInstalacion === 1) {
       Swal.fire({
         title: "¡Notificación!",
-        text: "Tiene garantía por instalación.",
+        text: "Tiene Garantía Por Instalacion.",
         icon: "warning",
         confirmButtonText: "OK",
         color: "black",
@@ -2873,7 +2927,7 @@ function SendRif() {
   if (!numeroRif) {
     Swal.fire({
       title: "Atención",
-      text: "El campo no puede estar vacío",
+      text: "Debes ingresar un número de RIF.",
       icon: "warning",
       confirmButtonText: "Aceptar",
       allowOutsideClick: false,
@@ -2939,7 +2993,6 @@ function SendRif() {
             const rifCell = row.insertCell();
             const name_modeloposCell = row.insertCell();
             const serial_posCell = row.insertCell();
-            const desc_posCell = row.insertCell();
             const afiliacionCell = row.insertCell();
             const fechainstallCell = row.insertCell();
             const bancoCell = row.insertCell();
@@ -2977,7 +3030,6 @@ function SendRif() {
             };
             
             fechainstallCell.textContent = item.fechainstalacion;
-            desc_posCell.textContent = item.desc_pos;
             afiliacionCell.textContent = item.afiliacion;
 
             // Lógica de la garantía
@@ -3301,7 +3353,7 @@ function SendSerial() {
   if (!serialInputValue) {
     Swal.fire({
       title: "Atención",
-      text: "El campo no puede estar vacío",
+      text: "Debes ingresar un número de serie",
       icon: "warning",
       confirmButtonText: "Aceptar",
       allowOutsideClick: false,
@@ -3692,7 +3744,7 @@ function SendRazon() {
   if (!razonInputValue) {
     Swal.fire({
       title: "Atención",
-      text: "El campo no puede estar vacío",
+      text: "Debes ingresar una Razón Social",
       icon: "warning",
       confirmButtonText: "Aceptar",
       allowOutsideClick: false,
@@ -3744,7 +3796,6 @@ function SendRazon() {
             const rifCell = row.insertCell();
             const name_modeloposCell = row.insertCell();
             const serial_posCell = row.insertCell();
-            const desc_posCell = row.insertCell();
             const afiliacionCell = row.insertCell();
             const fechainstallCell = row.insertCell();
             const bancoCell = row.insertCell();
@@ -3782,7 +3833,6 @@ function SendRazon() {
             };
             
             fechainstallCell.textContent = item.fechainstalacion;
-            desc_posCell.textContent = item.desc_pos;
             afiliacionCell.textContent = item.afiliacion;
 
             // Lógica de la garantía

@@ -163,7 +163,18 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function GetCoordinator(){
+    public function getCoordinacion(){
+        $result = $this->model->getCoordinacion();
+    
+        for ($i = 0; $i < $result['numRows']; $i++) {
+            $agente = pg_fetch_assoc($result['query'], $i);
+            $coordi[] = $agente;
+            //var_dump($agente);
+        }
+        return $coordi;
+    }
+
+     public function GetCoordinator(){
         $result = $this->model->GetCoordinator();
     
         for ($i = 0; $i < $result['numRows']; $i++) {
@@ -173,6 +184,7 @@ class TechnicalConsultionRepository
         }
         return $coordi;
     }
+
 
     public function GetFailure2(){
         $result = $this->model->GetFailure2();

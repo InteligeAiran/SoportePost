@@ -94,7 +94,11 @@ class Consulta extends Controller
                     $this->handGetInstallPosDate();
                     break;
 
-                case 'GetCoordinator':
+                case 'getCoordinacion':
+                    $this->handlegetCoordinacion();
+                    break;
+
+                  case 'GetCoordinator':
                     $this->handleGetCoordinator();
                     break;
 
@@ -837,7 +841,22 @@ class Consulta extends Controller
         }
     }
 
-    public function handleGetCoordinator()
+    public function handlegetCoordinacion()
+    {
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->getCoordinacion();
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'coordinaciones' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay coordinadores disponibles o No ha seleccionado ningun coordinador'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los coordinadores'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
+    }
+
+      public function handleGetCoordinator()
     {
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetCoordinator();

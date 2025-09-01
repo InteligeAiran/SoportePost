@@ -568,10 +568,10 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function GetCoordinator()
+    public function getCoordinacion()
     {
         try {
-            $sql = "SELECT * FROM get_data_coordinator()";
+            $sql = "SELECT * FROM get_data_coordinacion()";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -583,6 +583,17 @@ class consulta_rifModel extends Model
     {
         try {
             $sql = "SELECT * FROM GetDataTicketByIdAccion(" . $id_user . ")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }
+
+     public function GetCoordinator()
+    {
+        try {
+            $sql = "SELECT * FROM get_data_coordinator()";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
