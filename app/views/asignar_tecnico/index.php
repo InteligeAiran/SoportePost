@@ -574,7 +574,7 @@ function mi_navbar() {}
         </div>
     <!---- END CONFIRMACION DE REASIGNACION DE TICKET -->
 
-    <!-- MODAL PARA SELECCIONAR TECNICO EN REACCIGNACION DE TECNICO -->
+    <!-- MODAL PARA SELECCIONAR TECNICO EN REASIGNACION DE TECNICO -->
         <div class="modal fade" id="selectTechnicianModal" tabindex="-1" aria-labelledby="selectTechnicianModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content shadow-lg rounded">

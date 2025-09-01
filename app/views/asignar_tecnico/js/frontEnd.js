@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
           Swal.fire({
             icon: 'success',
             title: '¡Reasignación Exitosa!',
-            html: `El Ticket <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNro}</span> ha sido reasignado con éxito a <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${newTechnicianName}</span>.`,
+            html: `El Ticket <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNro}</span> ha sido reasignado con éxito a <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${newTechnicianName}</span>.`,
             confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594'
@@ -840,20 +840,14 @@ function getTicketDataCoordinator() {
     }
 
     // REMOVER event listeners anteriores para evitar duplicados
-    const btnCerrar = document.getElementById('BotonCerrarSelectDocument');
     const btnConfirmar = document.getElementById('btnConfirmarVisualizacion');
 
     // Clonar elementos para remover event listeners
-    const btnCerrarClone = btnCerrar.cloneNode(true);
     const btnConfirmarClone = btnConfirmar.cloneNode(true);
 
-    btnCerrar.parentNode.replaceChild(btnCerrarClone, btnCerrar);
     btnConfirmar.parentNode.replaceChild(btnConfirmarClone, btnConfirmar);
 
     // Botón para cerrar el modal de visualización
-    btnCerrarClone.addEventListener('click', function () {
-        visualizarImagenModal.hide();
-    });
 
     // Evento para el botón confirmar visualización
     btnConfirmarClone.addEventListener('click', function () {
@@ -1339,7 +1333,7 @@ function loadTicketHistory(ticketId) {
           // Marcar como cambiado si:
           // 1. Ambos valores existen y son diferentes, O
           // 2. Uno de los dos valores existe y el otro no (asignación/desasignación)
-          const tecnicoChanged = (prevTecnico && itemTecnico && prevTecnico !== itemTecnico) || 
+          const tecnicoChanged = (prevTecnico && itemTecnico && prevTecnico !== prevTecnico) || 
                                 (prevTecnico && !itemTecnico) || 
                                 (!prevTecnico && itemTecnico);
 
@@ -1397,8 +1391,12 @@ function loadTicketHistory(ticketId) {
 
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
-          // --- NUEVA LÓGICA: Mostrar comment_devolution cuando la acción es 'En espera de Confirmar Devolución' ---
+          // --- LÓGICA CORREGIDA: Solo mostrar comentarios en registros específicos ---
+          // Comentario de devolución solo cuando la acción es 'En espera de Confirmar Devolución'
           const showCommentDevolution = itemAccion === 'En espera de Confirmar Devolución' && item.comment_devolution;
+
+          // Comentario de reasignación solo cuando la acción es 'Reasignado al Técnico'
+          const showCommentReasignation = itemAccion === 'Reasignado al Técnico' && item.comment_reasignation && item.comment_reasignation.trim() !== '';
 
           const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
@@ -1414,10 +1412,19 @@ function loadTicketHistory(ticketId) {
           }
 
           // Solo mostrar el comentario de devolución cuando sea relevante
-          if (item.name_accion_ticket === 'En espera de Confirmar Devolución' && item.comment_devolution) {
+          if (showCommentDevolution) {
             historyHtml += `
-              <div class="alert alert-warning alert-sm mb-2">
+              <div class="alert alert-warning alert-sm mb-2" style = "color: white;">
                 <strong>Comentario de Devolución:</strong> ${item.comment_devolution}
+              </div>
+            `;
+          }
+
+          // Solo mostrar comentario de reasignación cuando sea relevante
+          if (showCommentReasignation) {
+            historyHtml += `
+              <div class="alert alert-info alert-sm mb-2" style = "color: white;">
+                <strong>Comentario de Reasignación:</strong> ${item.comment_reasignation}
               </div>
             `;
           }
@@ -1494,6 +1501,12 @@ function loadTicketHistory(ticketId) {
                                                   <tr>
                                                     <th class="text-start">Comentario de Devolución:</th>
                                                     <td class="highlighted-change">${item.comment_devolution || "N/A"}</td>
+                                                  </tr>
+                                             ` : ''}
+                                                ${showCommentReasignation ? `
+                                                  <tr>
+                                                    <th class="text-start">Comentario de Reasignación:</th>
+                                                    <td class="highlighted-change">${item.comment_reasignation || "N/A"}</td>
                                                   </tr>
                                              ` : ''}
                                                 ${itemPago === 'Sí' ? `
@@ -2355,6 +2368,7 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
   const messageContainer = document.getElementById("viewDocumentMessage");
   const nameDocumento = document.getElementById("NombreImage");
   const BotonCerrarModal = document.getElementById("CerrarModalVizualizar");
+  const BotonCerrarModalSelect = document.getElementById("BotonCerrarSelectDocument");
 
   currentTicketId = ticketId;
   currentNroTicket = nroTicket;
@@ -2411,12 +2425,26 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
   const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
 
   viewDocumentModal.show();
-  visualizarImagenModal.hide();
+  
 
-  BotonCerrarModal.addEventListener('click', function () {
-    viewDocumentModal.hide();
+     BotonCerrarModal.addEventListener('click', function () {
+                // Ocultar el modal de visualización
+                viewDocumentModal.hide();
+                
+                // Mostrar nuevamente el modal de selección
+                setTimeout(() => {
+                    visualizarImagenModal.show();
+                }, 300); //
   });
-}
+
+  BotonCerrarModalSelect.addEventListener('click', function () {
+    // Ocultar el modal de visualización
+    visualizarImagenModal.hide();
+    
+  });
+
+  
+};
 
 const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
 

@@ -573,7 +573,6 @@ class Consulta extends Controller
     $nivelFalla_text = isset($_POST['nivelFalla_text']) ? $_POST['nivelFalla_text'] : '';
     $id_status_payment = isset($_POST['id_status_payment']) ? $_POST['id_status_payment'] : '';
     $coordinador_nombre = isset($_POST['coordinadorNombre']) ? $_POST['coordinadorNombre'] : '';
-
     // Ahora estas variables se pasarán por referencia a la función auxiliar
     $archivoEnvioInfo = null;
     $archivoExoneracionInfo = null;
@@ -637,12 +636,13 @@ class Consulta extends Controller
         $id_status_payment,
         $id_user,
         $rif,
-        $Nr_ticket,
+        $Nr_ticket
     );
 
     if (isset($result['success']) && $result['success']) {
         // CORRECCIÓN: Obtener el ID real de la base de datos
         $idTicketReal = $result['id_ticket_db'] ?? null; // ID real de la base de datos
+    
         $idTicketCreado = $Nr_ticket; // Número del ticket (para compatibilidad)
         $ticket_status_info = $result['status_info']; // Directamente del modelo/repositorio
         $ticket_status_info_payment = $result['status_payment_info'] ?? null; // Información del estado de pago, si está disponible

@@ -1516,10 +1516,20 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
         const viewDocumentModal = new bootstrap.Modal(modalElementView);
         viewDocumentModal.show();
 
+        const accionsDocument = document.getElementById("documentActionsModal");
+        const accionsdocumentsIntance = new bootstrap.Modal(accionsDocument);
+
         const buttonCerrarModal = document.getElementById("CerrarModalVizualizar");
         if (buttonCerrarModal) {
             buttonCerrarModal.addEventListener("click", function() {
                 viewDocumentModal.hide();
+                accionsdocumentsIntance.hide();
+                setTimeout(() => {
+                    accionsdocumentsIntance.show();
+                    setTimeout(() => {
+                        documentActionsModal.show();
+                    }, 300); //
+                }, 300); //
             });
         }
     } catch (error) {
@@ -2106,7 +2116,7 @@ function loadTicketHistory(ticketId) {
           // Marcar como cambiado si:
           // 1. Ambos valores existen y son diferentes, O
           // 2. Uno de los dos valores existe y el otro no (asignación/desasignación)
-          const tecnicoChanged = (prevTecnico && itemTecnico && prevTecnico !== itemTecnico) || 
+          const tecnicoChanged = (prevTecnico && itemTecnico && prevTecnico !== prevTecnico) || 
                                 (prevTecnico && !itemTecnico) || 
                                 (!prevTecnico && itemTecnico);
 
@@ -2164,8 +2174,12 @@ function loadTicketHistory(ticketId) {
 
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
-          // --- NUEVA LÓGICA: Mostrar comment_devolution cuando la acción es 'En espera de Confirmar Devolución' ---
+          // --- LÓGICA CORREGIDA: Solo mostrar comentarios en registros específicos ---
+          // Comentario de devolución solo cuando la acción es 'En espera de Confirmar Devolución'
           const showCommentDevolution = itemAccion === 'En espera de Confirmar Devolución' && item.comment_devolution;
+
+          // Comentario de reasignación solo cuando la acción es 'Reasignado al Técnico'
+          const showCommentReasignation = itemAccion === 'Reasignado al Técnico' && item.comment_reasignation && item.comment_reasignation.trim() !== '';
 
           const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
@@ -2181,10 +2195,19 @@ function loadTicketHistory(ticketId) {
           }
 
           // Solo mostrar el comentario de devolución cuando sea relevante
-          if (item.name_accion_ticket === 'En espera de Confirmar Devolución' && item.comment_devolution) {
+          if (showCommentDevolution) {
             historyHtml += `
-              <div class="alert alert-warning alert-sm mb-2">
+              <div class="alert alert-warning alert-sm mb-2" style = "color: white;">
                 <strong>Comentario de Devolución:</strong> ${item.comment_devolution}
+              </div>
+            `;
+          }
+
+          // Solo mostrar comentario de reasignación cuando sea relevante
+          if (showCommentReasignation) {
+            historyHtml += `
+              <div class="alert alert-info alert-sm mb-2" style = "color: white;">
+                <strong>Comentario de Reasignación:</strong> ${item.comment_reasignation}
               </div>
             `;
           }
@@ -2261,6 +2284,12 @@ function loadTicketHistory(ticketId) {
                                                   <tr>
                                                     <th class="text-start">Comentario de Devolución:</th>
                                                     <td class="highlighted-change">${item.comment_devolution || "N/A"}</td>
+                                                  </tr>
+                                             ` : ''}
+                                                ${showCommentReasignation ? `
+                                                  <tr>
+                                                    <th class="text-start">Comentario de Reasignación:</th>
+                                                    <td class="highlighted-change">${item.comment_reasignation || "N/A"}</td>
                                                   </tr>
                                              ` : ''}
                                                 ${itemPago === 'Sí' ? `

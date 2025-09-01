@@ -135,7 +135,7 @@ function mi_navbar() {}
 
             .dataTables_wrapper {
                 width: 100%;
-                overflow-x: auto;
+                overflow-x: 100px;
             }
 
             .dataTables_scrollBody {

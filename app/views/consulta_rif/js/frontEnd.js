@@ -225,7 +225,11 @@ function inicializeModal() {
   cerraModalFalla2.off("click").on("click", function () {
     // Cierre Modal falla 2 (BOTON DE CERRAR)
     modal.css("display", "none");
+    restaurarVisibilidadCompleta();
     clearFormFields(); // Limpiar campos de ambos modales
+
+    garantiaAlertShown = false;
+    isInitialLoad = true;
   });
 
   spanFalla2.off("click").on("click", function () {
@@ -917,7 +921,7 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
     const diferencia = fechaActual.getTime() - fechaTicket.getTime();
     const meses = Math.ceil(diferencia / (1000 * 3600 * 24 * 30));
 
-    if (meses <= 3) {
+    if (meses <= 1) {
       resultadoElemento.textContent = "Garantía por Reingreso aplica";
       resultadoElemento.style.color = "red";
 
@@ -1556,23 +1560,29 @@ function SendDataFailure2(idStatusPayment) {
     formData.append("rif", rif);
     formData.append("coordinadorNombre", coordinadorNombre);
 
-    // Añadir archivos a FormData SOLO si 'uploadNow' está checked Y el checkbox correspondiente está marcado
-    if (uploadNowRadio.checked) {
-      const checkEnvio = document.getElementById("checkEnvio");
-      const checkExoneracion = document.getElementById("checkExoneracion");
-      const checkAnticipo = document.getElementById("checkAnticipo");
+    // NUEVO: Agregar información de documentos cargados
+    const checkEnvio = document.getElementById("checkEnvio");
+    const checkExoneracion = document.getElementById("checkExoneracion");
+    const checkAnticipo = document.getElementById("checkAnticipo");
 
+    if (uploadNowRadio.checked) {
+      // Documentos que se están cargando ahora
       if (checkEnvio.checked && archivoEnvio) {
         formData.append("archivoEnvio", archivoEnvio);
+        formData.append("documento_envio", "Sí"); // NUEVO: Marcar que se cargó envío
       }
       if (checkExoneracion.checked && archivoExoneracion) {
         formData.append("archivoExoneracion", archivoExoneracion);
+        formData.append("documento_exoneracion", "Sí"); // NUEVO: Marcar que se cargó exoneración
       }
       if (checkAnticipo.checked && archivoAnticipo) {
         formData.append("archivoAnticipo", archivoAnticipo);
+        formData.append("documento_anticipo", "Sí"); // NUEVO: Marcar que se cargó anticipo
       }
     }
+
     formData.append("action", "SaveDataFalla2");
+
 
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveDataFalla2`);
@@ -2586,11 +2596,6 @@ function clearFormFields() {
   if (checkExoneracion) checkExoneracion.checked = false;
   if (checkAnticipo) checkAnticipo.checked = false;
 
-  // --- Limpiar los input type="file" BORRAR---
-  /*clearFileInput("EnvioInput");
-  clearFileInput("ExoneracionInput");
-  clearFileInput("AnticipoInput");*/
-
   // --- Limpiar los elementos DIV que muestran el nombre del archivo ---
   clearFileSpan(fileChosenSpanEnvio);
   clearFileSpan(fileChosenSpanExo);
@@ -2645,6 +2650,9 @@ function clearFormFields() {
   if (uploadLaterRadio) uploadLaterRadio.checked = true;
   if (uploadNowRadio) uploadNowRadio.checked = false;
 
+  // --- NUEVO: RESTAURAR COMPLETAMENTE LA VISIBILIDAD DE TODOS LOS ELEMENTOS ---
+  restaurarVisibilidadCompleta();
+
   // --- Actualizar visibilidad de documentos ---
   if (typeof updateDocumentUploadVisibility === "function") {
     updateFileUploadButtonVisibility();
@@ -2672,6 +2680,106 @@ function clearFormFields() {
   if (anticipoStatusDiv) anticipoStatusDiv.textContent = "";
 
   console.log("Campos limpiados correctamente"); // Para debugging
+}
+
+// NUEVA FUNCIÓN: Restaurar completamente la visibilidad de todos los elementos
+function restaurarVisibilidadCompleta() {
+  // Restaurar contenedores de checkboxes
+  const checkExoneracionContainer = document.getElementById("checkExoneracionContainer");
+  const checkAnticipoContainer = document.getElementById("checkAnticipoContainer");
+  const checkEnvioContainer = document.getElementById("checkEnvioContainer");
+  
+  if (checkExoneracionContainer) {
+    checkExoneracionContainer.style.display = "block";
+    console.log("checkExoneracionContainer restaurado");
+  }
+  if (checkAnticipoContainer) {
+    checkAnticipoContainer.style.display = "block";
+    console.log("checkAnticipoContainer restaurado");
+  }
+  if (checkEnvioContainer) {
+    checkEnvioContainer.style.display = "block";
+    console.log("checkEnvioContainer restaurado");
+  }
+
+  // Restaurar botones de descarga
+  const downloadExo = document.getElementById("DownloadExo");
+  const downloadAntici = document.getElementById("DownloadAntici");
+  
+  if (downloadExo) {
+    downloadExo.style.display = "inline-block";
+    console.log("downloadExo restaurado");
+  }
+  if (downloadAntici) {
+    downloadAntici.style.display = "inline-block";
+    console.log("downloadAntici restaurado");
+  }
+
+  // Restaurar checkboxes individuales
+  const checkExoneracion = document.getElementById("checkExoneracion");
+  const checkExoneracionLabel = document.getElementById("checkExoneracionLabel");
+  const checkAnticipo = document.getElementById("checkAnticipo");
+  const checkAnticipoLabel = document.getElementById("checkAnticipoLabel");
+  
+  if (checkExoneracion) {
+    checkExoneracion.style.display = "block";
+    console.log("checkExoneracion restaurado");
+  }
+  if (checkExoneracionLabel) {
+    checkExoneracionLabel.style.display = "block";
+    console.log("checkExoneracionLabel restaurado");
+  }
+  if (checkAnticipo) {
+    checkAnticipo.style.display = "block";
+    console.log("checkAnticipo restaurado");
+  }
+  if (checkAnticipoLabel) {
+    checkAnticipoLabel.style.display = "block";
+    console.log("checkAnticipoLabel restaurado");
+  }
+
+  // Restaurar elementos de garantía
+  const resultadoGarantiaReingreso = document.getElementById("resultadoGarantiaReingreso");
+  const resultadoGarantiaInstalacion = document.getElementById("resultadoGarantiaInstalacion");
+  
+  if (resultadoGarantiaReingreso) {
+    resultadoGarantiaReingreso.textContent = "Sin Garantía Por Reingreso";
+    resultadoGarantiaReingreso.style.color = "";
+    console.log("resultadoGarantiaReingreso restaurado");
+  }
+  
+  if (resultadoGarantiaInstalacion) {
+    resultadoGarantiaInstalacion.textContent = "Sin Garantía de Instalación";
+    resultadoGarantiaInstalacion.style.color = "";
+    console.log("resultadoGarantiaInstalacion restaurado");
+  }
+
+  // Restaurar opciones de carga de documentos
+  const documentUploadOptions = document.getElementById("documentUploadOptions");
+  if (documentUploadOptions) {
+    documentUploadOptions.style.display = "none"; // Por defecto oculto hasta que se seleccione "Sí"
+    console.log("documentUploadOptions restaurado");
+  }
+
+  // Restaurar botones de carga
+  const botonCargaPDFEnv = document.getElementById("botonCargaPDFEnv");
+  const botonCargaExoneracion = document.getElementById("botonCargaExoneracion");
+  const botonCargaAnticipo = document.getElementById("botonCargaAnticipo");
+  
+  if (botonCargaPDFEnv) {
+    botonCargaPDFEnv.style.display = "none";
+    console.log("botonCargaPDFEnv restaurado");
+  }
+  if (botonCargaExoneracion) {
+    botonCargaExoneracion.style.display = "none";
+    console.log("botonCargaExoneracion restaurado");
+  }
+  if (botonCargaAnticipo) {
+    botonCargaAnticipo.style.display = "none";
+    console.log("botonCargaAnticipo restaurado");
+  }
+
+  console.log("Visibilidad completa restaurada");
 }
 
 // --- Funciones auxiliares BORRAR---

@@ -3,7 +3,6 @@ let currentNroTicketForConfirmTaller = null; // <--- NUEVA VARIABLE PARA EL NÚM
 let confirmInTallerModalInstance = null;
 let currentSerialPos = null; // <--- NUEVA VARIABLE PARA EL SERIAL POS
 
-
 document.addEventListener("DOMContentLoaded", function () {
         const confirmInTallerModalElement = document.getElementById("confirmInRosalModal");
         const CerramodalBtn = document.getElementById("CerrarButtonTallerRecib");
@@ -144,6 +143,17 @@ function getTicketDataFinaljs() {
     : null;
   const tableContainer = document.querySelector(".table-responsive");
 
+   // Mostrar el modal de selección
+    const modalSelectOption = document.getElementById('visualizarImagenModal');
+      
+    let modalInstance = null;
+
+
+    modalInstance = new bootstrap.Modal(modalSelectOption, {
+      backdrop: "static",
+    });
+
+
   const columnTitles = {
     nro_ticket: "N° Ticket",
     serial_pos: "Serial POS",
@@ -276,6 +286,8 @@ function getTicketDataFinaljs() {
                 const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
                 const nombre_estado_cliente = row.nombre_estado_cliente;
                 const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
+                const HasDevolution = row.devolution
+
                 let actionButton = '';
 
                 // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
@@ -290,7 +302,8 @@ function getTicketDataFinaljs() {
                   actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
                     data-id-ticket="${idTicket}"
                     data-serial-pos="${serialPos}"
-                    data-nro-ticket="${nroTicket}">
+                    data-nro-ticket="${nroTicket}"
+                    data-has_devolution="${HasDevolution}">
                     <i class="fas fa-truck"></i> Entregar A cliente
                   </button>`;
                 }
@@ -311,47 +324,41 @@ function getTicketDataFinaljs() {
                 const nroTicket = row.nro_ticket;
                 const accionllaves = row.name_accion_ticket;
                 const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
-                
-                // Obtener las URLs y nombres de archivos de cada tipo de documento
-                const envioUrl = row.envio_document_url || '';
-                const envioType = row.envio_document_type || '';
-                const envioFilename = row.envio_original_filename || '';
-                
-                const exoneracionUrl = row.exoneracion_document_url || '';
-                const exoneracionType = row.exoneracion_document_type || '';
-                const exoneracionFilename = row.exoneracion_original_filename || '';
-                
-                const pagoUrl = row.pago_document_url || '';
-                const pagoType = row.pago_document_type || '';
-                const pagoFilename = row.pago_original_filename || '';
+
+                const nombre_estado_cliente = row.nombre_estado_cliente;
+               
+                 // Validar si el ticket está en la región y si el documento de envío fue subido
+                const envioUrl = row.envio_document_url;
+                const exoneracionUrl = row.exoneracion_document_url;
+                const pagoUrl = row.pago_document_url;
 
                 if (hasEnvioDestinoDocument) {
                   // Se asume que el estatus "En la región" significa que el documento ya fue subido y puede ser visto
                   if(row.name_accion_ticket === "En la región" || row.name_accion_ticket === "Entregado a Cliente"){
                     // Verificar si hay al menos un documento disponible
+                     
                     const hasAnyDocument = envioUrl || exoneracionUrl || pagoUrl;
-                    
                   // ... existing code ...
-                  if (hasAnyDocument) {
+                 if (hasAnyDocument) {
                     return `<button type="button" class="btn btn-success btn-sm btn-document-actions-modal"
-                      data-bs-toggle="modal"
-                      data-bs-target="#visualizarImagenModal"
-                      data-bs-toggle="tooltip" data-bs-placement="top"
-                      title="Acciones de Documentos"
-                      data-ticket-id="${idTicket}"
-                      data-nro-ticket="${nroTicket}"
-                      data-envio-url="${envioUrl}"
-                      data-envio-type="${envioType}"
-                      data-envio-filename="${envioFilename}"
-                      data-exoneracion-url="${exoneracionUrl}"
-                      data-exoneracion-type="${exoneracionType}"
-                      data-exoneracion-filename="${exoneracionFilename}"
-                      data-pago-url="${pagoUrl}"
-                      data-pago-type="${pagoType}"
-                      data-pago-filename="${pagoFilename}">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M8.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
-                      Ver Documentos
+                        data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Acciones de Documentos"
+                        data-nombre-estado="${nombre_estado_cliente}"
+                        data-ticket-id="${idTicket}"
+                        data-nro-ticket="${nroTicket}"
+                        data-pdf-zoom-url="${row.envio_document_url || ''}"
+                        data-envio-filename="${row.envio_original_filename || ''}"
+                        data-exoneracion-url="${row.exoneracion_document_url || ''}"
+                        data-exoneracion-filename="${row.exoneracion_original_filename || ''}"
+                        data-pago-url="${row.pago_document_url || ''}"
+                        data-pago-filename="${row.pago_original_filename || ''}"
+                        data-envio-destino="${row.envio_destino_document_url || ''}"
+                        data-envio-destino-filename="${row.envio_destino_original_filename || ''}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M8.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
+                        Ver Documentos
                     </button>`;
+                
+            
                     } else {
                       return `<button type="button" class="btn btn-secondary btn-sm disabled">No hay Documentos Cargados</button>`;
                     }
@@ -615,12 +622,13 @@ function getTicketDataFinaljs() {
                 }
               });
 
-                $(document).on("click", ".deliver-ticket-btn", function () {
+             $(document).on("click", ".deliver-ticket-btn", function () {
                   const idTicket = $(this).data("id-ticket");
                   const nroTicket = $(this).data("nro-ticket"); 
                   const serialPos = $(this).data("serial-pos"); 
                   const customDeliverSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
                   const id_user = document.getElementById('userId').value;
+                  const devolution = $(this).data("has_devolution"); 
 
                   Swal.fire({
                       title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
@@ -646,185 +654,213 @@ function getTicketDataFinaljs() {
                       screenY: false,
                   }).then((result) => {
                       if (result.isConfirmed) {
-                          Swal.fire({
-                              title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
-                                  <div class="custom-modal-header-content">Detalles de la Entrega</div>
-                              </div>`,
-                              html: `<div class="custom-modal-body-content">
-                                  <p class="h4 mb-1" style="color: black;">Por favor, ingrese un comentario o un texto adicional sobre el Dispositivo a entregar con el Serial: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">${serialPos}</span> asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">${nroTicket}</span>.</p>
-                                  <div class="form-group mb-3"><br>
-                                      <textarea id="comentarioEntrega" class="form-control" rows="3" placeholder="Escriba aquí cualquier detalle relevante sobre la entrega... O reparación del Equipo"></textarea>
-                                  </div>
-                              </div>`,
-                              showCancelButton: true,
-                              confirmButtonText: 'Guardar y Completar',
-                              cancelButtonText: 'Cancelar',
-                              confirmButtonColor: '#003594',
-                              color: "black",
-                              focusConfirm: false,
-                              allowOutsideClick: false,
-                              allowEscapeKey: false,
-                              keydownListenerCapture: true,
-                              screenX: false,
-                              screenY: false,
-                              width: '600px',
-                              customClass: {
-                                  popup: 'no-scroll'
-                              },
-                              preConfirm: () => {
-                                  const comentario = Swal.getPopup().querySelector('#comentarioEntrega').value.trim();
-                                  if (!comentario) {
-                                      Swal.showValidationMessage('El campo de texto no puede estar vacío.');
-                                      return false;
-                                  }
-                                  return { comentario: comentario };
-                              }
-                          }).then((resultFinal) => {
-                              if (resultFinal.isConfirmed) {
-                                  const comentario = resultFinal.value.comentario;
-                                  const dataToSendString = `action=entregar_ticket&id_ticket=${encodeURIComponent(idTicket)}&comentario=${encodeURIComponent(comentario)}&id_user=${encodeURIComponent(id_user)}`;
-
-                                  const xhr = new XMLHttpRequest();
-                                  const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/entregar_ticket`;
-
-                                  xhr.open('POST', url, true);
-                                  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-                                  xhr.onload = function() {
-                                      if (xhr.status >= 200 && xhr.status < 300) {
-                          try {
-                            const response = JSON.parse(xhr.responseText);
-
-                            if (response.success) {
-                              // Mostrar el primer modal (Entrega exitosa)
-                                          Swal.fire({
-                                icon: "success",
-                                title: "Entrega Exitosa",
-                                text: response.message,
-                                              color: "black",
-                                timer: 2500,
-                                timerProgressBar: true,
-                                didOpen: () => {
-                                  Swal.showLoading();
-                                },
-                                willClose: () => {
-                                  // Cuando el primer modal se cierra, mostramos el segundo modal con detalles
-                                  const ticketData = response.ticket_data;
-
-                                  if (ticketData) {
-                                    const beautifulHtmlContent = `
-                                      <div style="text-align: left; padding: 15px;">
-                                          <h3 style="color: #28a745; margin-bottom: 15px; text-align: center;">✅ ¡POS Entregado! ✅</h3>
-                                          <p style="font-size: 1.1em; margin-bottom: 10px;">
-                                              <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.nro_ticket}</span>
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                            <strong>🏢 RIF:</strong> ${ticketData.rif_cliente || "N/A"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                            <strong>🏢Razon Social:</strong> ${ticketData.razonsocial_cliente || "N/A"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>⚙️ Serial del Equipo:</strong> <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticketData.serial_pos}</span>
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>📝 Comentario de Entrega:</strong> ${ticketData.customer_delivery_comment || "Sin comentarios"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>👤 Usuario que Realizó la Entrega:</strong> ${ticketData.user_gestion || "N/A"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.user_coordinator|| "N/A"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>📅 Fecha de Entrega:</strong> ${ticketData.date_create_ticket || "N/A"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>📅 Fecha de Cierre:</strong> ${ticketData.date_end_ticket ||  "N/A"}
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>🔄 Estado del Ticket:</strong> <span style="color: #28a745; font-weight: bold;">${ticketData.name_status_ticket}</span>
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>📋 Acción del Ticket:</strong> <span style="color: #007bff; font-weight: bold;">${ticketData.name_accion_ticket}</span>
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong> Estado de Domiciliación:</strong> <span style="color: #6f42c1; font-weight: bold;">${ticketData.name_status_domiciliacion || "N/A"}</span>
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>💰 Estado de Pago:</strong> <span style="color: #fd7e14; font-weight: bold;">${ticketData.name_status_payment || "N/A"}</span>
-                                          </p>
-                                          <p style="margin-bottom: 8px;">
-                                              <strong>🔬 Estado del Laboratorio:</strong> <span style="color: #20c997; font-weight: bold;">${ticketData.name_status_lab || "N/A"}</span>
-                                          </p>
-                                          <strong>
-                                              <p style="font-size: 0.9em; color: green; margin-top: 20px; text-align: center;">
-                                                  El ticket ha sido marcado como entregado y cerrado exitosamente.<br>
-                                                  <span style="color: #000;">Se ha registrado en el historial del sistema además Se le ha enviado una notificación al correo</span>
-                                              </p>
-                                          </strong>
-                                      </div>`;
-
-                                    Swal.fire({
-                                      icon: "success",
-                                      title: "Detalles de la Entrega",
-                                      html: beautifulHtmlContent,
-                                      color: "black",
-                                      confirmButtonText: "Cerrar",
-                                              confirmButtonColor: "#003594",
-                                      showConfirmButton: true,
-                                      showClass: {
-                                        popup: "animate__animated animate__fadeInDown",
-                                      },
-                                      hideClass: {
-                                        popup: "animate__animated animate__fadeOutUp",
-                                      },
-                                              allowOutsideClick: false,
-                                              allowEscapeKey: false,
-                                      width: '700px'
-                                          }).then((result) => {
-                                              if (result.isConfirmed) {
-                                        enviarCorreoTicketCerrado(ticketData);
-                                                  window.location.reload();
-                                              }
-                                          });
-                                  } else {
-                                    // Si no hay datos del ticket, mostrar solo mensaje de éxito
-                                    Swal.fire({
-                                      icon: "success",
-                                      title: "Entrega Exitosa",
-                                      text: "El ticket ha sido entregado exitosamente.",
-                                      confirmButtonText: "Cerrar",
-                                      confirmButtonColor: "#003594"
-                                    }).then(() => {
-                                      window.location.reload();
-                                    });
-                                  }
-                                },
-                              });
-                            } else {
-                              Swal.fire('Error', response.message || 'Error al procesar la entrega', 'error');
-                            }
-                          } catch (error) {
-                            console.error('Error al parsear la respuesta:', error);
-                            Swal.fire('Error', 'Error al procesar la respuesta del servidor', 'error');
-                          }
-                                      } else {
-                                          Swal.fire('Error', 'Hubo un problema al conectar con el servidor. Código de estado: ' + xhr.status, 'error');
+                          // NUEVA VALIDACIÓN: Si devolution es true, proceder directamente
+                          if (devolution === true || devolution === 'true' || devolution === 't') {
+                              // Proceder directamente con la entrega sin comentario
+                              procesarEntrega(idTicket, null, id_user, nroTicket, serialPos, true); // true = es devolución
+                          } else {
+                              // Mostrar modal de comentario (código existente)
+                              Swal.fire({
+                                  title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                                      <div class="custom-modal-header-content">Detalles de la Entrega</div>
+                                  </div>`,
+                                  html: `<div class="custom-modal-body-content">
+                                      <p class="h4 mb-1" style="color: black;">Por favor, ingrese un comentario o un texto adicional sobre el Dispositivo a entregar con el Serial: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">${serialPos}</span> asociado al Nro de ticket: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; font-size: 75%;">${nroTicket}</span>.</p>
+                                      <div class="form-group mb-3"><br>
+                                          <textarea id="comentarioEntrega" class="form-control" rows="3" placeholder="Escriba aquí cualquier detalle relevante sobre la entrega... O reparación del Equipo"></textarea>
+                                      </div>
+                                  </div>`,
+                                  showCancelButton: true,
+                                  confirmButtonText: 'Guardar y Completar',
+                                  cancelButtonText: 'Cancelar',
+                                  confirmButtonColor: '#003594',
+                                  color: "black",
+                                  focusConfirm: false,
+                                  allowOutsideClick: false,
+                                  allowEscapeKey: false,
+                                  keydownListenerCapture: true,
+                                  screenX: false,
+                                  screenY: false,
+                                  width: '600px',
+                                  customClass: {
+                                      popup: 'no-scroll'
+                                  },
+                                  preConfirm: () => {
+                                      const comentario = Swal.getPopup().querySelector('#comentarioEntrega').value.trim();
+                                      if (!comentario) {
+                                          Swal.showValidationMessage('El campo de texto no puede estar vacío.');
+                                          return false;
                                       }
-                                  };
-
-                                  xhr.onerror = function() {
-                                      Swal.fire('Error de red', 'Hubo un problema con la conexión.', 'error');
-                                  };
-
-                                  xhr.send(dataToSendString);
-                              }
-                          });
+                                      return { comentario: comentario };
+                                  }
+                              }).then((resultFinal) => {
+                                  if (resultFinal.isConfirmed) {
+                                      const comentario = resultFinal.value.comentario;
+                                      procesarEntrega(idTicket, comentario, id_user, nroTicket, serialPos, false); // false = no es devolución
+                                  }
+                              });
+                          }
                       }
                   });
-          });
+              });
 
+                    // NUEVA FUNCIÓN: Procesar la entrega (reutilizable)
+                    function procesarEntrega(idTicket, comentario, id_user, nroTicket, serialPos, esDevolucion) {
+                        const dataToSendString = `action=entregar_ticket&id_ticket=${encodeURIComponent(idTicket)}&comentario=${encodeURIComponent(comentario)}&id_user=${encodeURIComponent(id_user)}`;
+
+                        const xhr = new XMLHttpRequest();
+                        const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/entregar_ticket`;
+
+                        xhr.open('POST', url, true);
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                        xhr.onload = function() {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                                try {
+                                    const response = JSON.parse(xhr.responseText);
+
+                                    if (response.success) {
+                                        // Mostrar el primer modal (Entrega exitosa)
+                                        Swal.fire({
+                                            icon: "success",
+                                            title: "Entrega Exitosa",
+                                            text: response.message,
+                                            color: "black",
+                                            timer: 2500,
+                                            timerProgressBar: true,
+                                            didOpen: () => {
+                                                Swal.showLoading();
+                                            },
+                                            willClose: () => {
+                                                // Cuando el primer modal se cierra, mostramos el segundo modal con detalles
+                                                const ticketData = response.ticket_data;
+
+                                                if (ticketData) {
+                                                    // NUEVO: Mostrar comentario según el tipo de ticket
+                                                    let comentarioHTML;
+                                                    if (esDevolucion === true || esDevolucion === 't') {
+                                                        // Para tickets devueltos: usar la lógica existente
+                                                        comentarioHTML = `<strong>📝Comentario Devolución:</strong> ${ticketData.comment_devolution || "N/A"}`;
+                                                    } else {
+                                                        // Para tickets normales: mostrar comentario de entrega
+                                                        comentarioHTML = `<strong>📝 Comentario de Entrega:</strong> ${ticketData.customer_delivery_comment || "Sin comentarios"}`;
+                                                    }
+
+                                                    let headerComment;
+                                                    if (esDevolucion === true || esDevolucion === 't') {
+                                                        headerComment = "¡POS Devuelto!";
+                                                    } else {
+                                                        headerComment = "¡POS Entregado!";
+                                                    }
+
+                                                    const beautifulHtmlContent = `
+                                                        <div style="text-align: left; padding: 15px;">
+                                                            <h3 style="color: #28a745; margin-bottom: 15px; text-align: center;">✅ ${headerComment} ✅</h3>
+                                                            <p style="font-size: 1.1em; margin-bottom: 10px;">
+                                                                <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.nro_ticket}</span>
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>🏢 RIF:</strong> ${ticketData.rif_cliente || "N/A"}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>🏢Razon Social:</strong> ${ticketData.razonsocial_cliente || "N/A"}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>⚙️ Serial del Equipo:</strong> <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticketData.serial_pos}</span>
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                ${comentarioHTML}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>👤 Usuario que Realizó la Entrega:</strong> ${ticketData.user_gestion || "N/A"}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.user_coordinator|| "N/A"}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>📅 Fecha de Entrega:</strong> ${ticketData.date_create_ticket || "N/A"}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>📅 Fecha de Cierre:</strong> ${ticketData.date_end_ticket ||  "N/A"}
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>🔄 Estado del Ticket:</strong> <span style="color: #28a745; font-weight: bold;">${ticketData.name_status_ticket}</span>
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>📋 Acción del Ticket:</strong> <span style="color: #007bff; font-weight: bold;">${ticketData.name_accion_ticket}</span>
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>📊Estado de Domiciliación:</strong> <span style="color: #6f42c1; font-weight: bold;">${ticketData.name_status_domiciliacion || "N/A"}</span>
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>💰 Estado de Pago:</strong> <span style="color: #fd7e14; font-weight: bold;">${ticketData.name_status_payment || "N/A"}</span>
+                                                            </p>
+                                                            <p style="margin-bottom: 8px;">
+                                                                <strong>🔬 Estado del Laboratorio:</strong> <span style="color: #20c997; font-weight: bold;">${ticketData.name_status_lab || "N/A"}</span>
+                                                            </p>
+                                                            <strong>
+                                                                <p style="font-size: 0.9em; color: green; margin-top: 20px; text-align: center;">
+                                                                    El ticket ha sido marcado como entregado y cerrado exitosamente.<br>
+                                                                    <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Se ha registrado en el historial del sistema además Se le ha enviado una notificación al correo</span>
+                                                                </p>
+                                                            </strong>
+                                                        </div>`;
+
+                                                    Swal.fire({
+                                                        icon: "success",
+                                                        title: "Detalles de la Entrega",
+                                                        html: beautifulHtmlContent,
+                                                        color: "black",
+                                                        confirmButtonText: "Cerrar",
+                                                        confirmButtonColor: "#003594",
+                                                        showConfirmButton: true,
+                                                        showClass: {
+                                                            popup: "animate__animated animate__fadeInDown",
+                                                        },
+                                                        hideClass: {
+                                                            popup: "animate__animated animate__fadeOutUp",
+                                                        },
+                                                        allowOutsideClick: false,
+                                                        allowEscapeKey: false,
+                                                        width: '700px'
+                                                    }).then((result) => {
+                                                        if (result.isConfirmed) {
+                                                            enviarCorreoTicketCerrado(ticketData);
+                                                            window.location.reload();
+                                                        }
+                                                    });
+                                                } else {
+                                                    // Si no hay datos del ticket, mostrar solo mensaje de éxito
+                                                    Swal.fire({
+                                                        icon: "success",
+                                                        title: "Entrega Exitosa",
+                                                        text: "El ticket ha sido entregado exitosamente.",
+                                                        confirmButtonText: "Cerrar",
+                                                        confirmButtonColor: "#003594"
+                                                    }).then(() => {
+                                                        window.location.reload();
+                                                    });
+                                                }
+                                            },
+                                        });
+                                    } else {
+                                        Swal.fire('Error', response.message || 'Error al procesar la entrega', 'error');
+                                    }
+                                } catch (error) {
+                                    console.error('Error al parsear la respuesta:', error);
+                                    Swal.fire('Error', 'Error al procesar la respuesta del servidor', 'error');
+                                }
+                            } else {
+                                Swal.fire('Error', 'Hubo un problema al conectar con el servidor. Código de estado: ' + xhr.status, 'error');
+                            }
+                        };
+
+                        xhr.onerror = function() {
+                            Swal.fire('Error de red', 'Hubo un problema con la conexión.', 'error');
+                        };
+
+                        xhr.send(dataToSendString);
+                    }
 
             $("#tabla-ticket tbody")
               .off("click", ".received-ticket-btn")
@@ -1017,101 +1053,117 @@ document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
     const pdfViewViewer = document.getElementById('pdfViewViewer');
     const imageViewPreview = document.getElementById('imageViewPreview');
     
+  
     // 2. Manejador de eventos para el botón principal de la tabla (abre el modal de acciones)
     $(document).on('click', '.btn-document-actions-modal', function() {
-      const ticketId = $(this).data('ticket-id');
-      const statusPayment = $(this).data('status-payment');
-      const pdfZoomUrl = $(this).data('pdf-zoom-url');
-      const imgExoneracionUrl = $(this).data('img-exoneracion-url');
-      const pdfPagoUrl = $(this).data('pdf-pago-url');
-      const nro_ticket = $(this).data('nro-ticket');
-      const ExoneracionFile_name = $(this).data('exo-file');
-      const PagoFile_name = $(this).data('pago-file');
-      const ZoomFile_name = $(this).data('zoom-file');
+    const ticketId = $(this).data('ticket-id');
+    const statusPayment = $(this).data('status-payment');
+
+    const pdfZoomUrl = $(this).data('pdf-zoom-url');
+    const ZoomFile_name = $(this).data('envio-filename');
+
+    const imgExoneracionUrl = $(this).data('exoneracion-url');
+    const ExoneracionFile_name = $(this).data('exoneracion-filename');
+
+    const pdfPagoUrl = $(this).data('pago-url');
+    const PagoFile_name = $(this).data('pago-filename');
+
+    const Envio_DestinoUrl = $(this).data('envio-destino');
+    const EnvioDestinoName = $(this).data('envio-destino-filename');
+
+    const nro_ticket = $(this).data('nro-ticket');
+
+    const estado_cliente = $(this).data('nombre_estado');
+
+    const modalTitle = $('#modalTicketId');
+    const buttonsContainer = $('#modal-buttons-container');
+
+    $('#uploadForm').attr('data-nro-ticket', nro_ticket);
+    $('#uploadForm').attr('data-ticket-id', ticketId);
+
+    buttonsContainer.empty();
+    modalTitle.text(nro_ticket);
+
+    // Estados donde NO se debe mostrar el botón de envío
+    const estadosSinEnvio = ['Caracas', 'Miranda', 'Vargas', 'Distrito Capital'];
+    const debeOcultarEnvio = estadosSinEnvio.includes(estado_cliente);
+
+    let modalButtonsHTML = '';
+
+    if (pdfZoomUrl && imgExoneracionUrl && Envio_DestinoUrl ) {
+        // Solo Envío, Exoneración y Envio_Destino
+        modalButtonsHTML = `
+            <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Envio
+            </button>
+            <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Exoneración
+            </button>
+            <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="envio_estino" data-file-url="${Envio_DestinoUrl}" data-file-name="${EnvioDestinoName}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Envio a Destino
+            </button>
+        `;
+    } else if (pdfZoomUrl && pdfPagoUrl) {
+        // Solo Envío y Pago
+        modalButtonsHTML = `
+            <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Envio
+            </button>
+            <button id="VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Pago
+            </button>
+        `;
+ 
+    }else if (pdfZoomUrl && imgExoneracionUrl) {
+        // Solo Envío y Exoneración
+        modalButtonsHTML = `
+            <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Envio
+            </button>
+            <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Exoneración
+            </button>
+        `;
+    } else if (pdfZoomUrl && Envio_DestinoUrl && pdfPagoUrl) {
+        // Solo Envío, Envio_Destino y Pago
+         modalButtonsHTML = `
+            <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Envio
+            </button>
+            <button id="VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Pago
+            </button>
+            <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="envio_estino" data-file-url="${Envio_DestinoUrl}" data-file-name="${EnvioDestinoName}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Envio a Destino
+            </button>
+        `;
+    }else if (pdfZoomUrl && Envio_DestinoUrl) {
+        // Solo Envío
+        modalButtonsHTML = `
+            <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Envio
+            </button>
+
+            <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="envio_estino" data-file-url="${Envio_DestinoUrl}" data-file-name="${EnvioDestinoName}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Envio a Destino
+            </button>
+        `;
 
 
-      const modalTitle = $('#modalTicketId');
-      const buttonsContainer = $('#modal-buttons-container');
+    } 
 
-      $('#uploadForm').attr('data-nro-ticket', nro_ticket);
-      $('#uploadForm').attr('data-ticket-id', ticketId);
+    buttonsContainer.html(modalButtonsHTML);
 
-      buttonsContainer.empty();
-      modalTitle.text(nro_ticket);
-
-      let modalButtonsHTML = '';
-
-      if (pdfZoomUrl && imgExoneracionUrl) {
-          // Solo envío y exoneración
-          modalButtonsHTML = `
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Envio
-              </button>
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Exoneración
-              </button>
-          `;
-      } else if (pdfZoomUrl && pdfPagoUrl) {
-          // Solo envío y pago
-          modalButtonsHTML = `
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Envio
-              </button>
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Pago
-              </button>
-          `;
-      } else if (pdfZoomUrl) {
-          // Solo envío disponible - SOLO UNA OPCIÓN DE CARGA
-          modalButtonsHTML = `
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Envio
-              </button>
-              <button class="btn btn-primary btn-block btn-exoneracion-img" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
-                  Cargar Documento de Exoneración
-              </button>
-              <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
-                Cargar Documento de Pago
-              </button>
-          `;
-      } else if (imgExoneracionUrl) {
-          // Solo exoneración disponible (sin envío)
-          modalButtonsHTML = `
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Exoneración
-              </button>
-              <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                  Cargar Documento de Envio
-              </button>
-          `;
-      } else if (pdfPagoUrl) {
-          // Solo pago disponible (sin envío)
-          modalButtonsHTML = `
-              <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
-                  Ver Documento de Pago
-              </button>
-              <button class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                  Cargar Documento de Envio
-              </button>
-          `;
-      } else {
-          // Ningún documento disponible
-          modalButtonsHTML = `
-              <button class="btn btn-info btn-block btn-zoom-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
-                  Cargar Documento de Envio
-              </button>
-              <button class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
-                  Cargar Documento de Exoneración
-              </button>
-              <button class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
-                  Cargar Documento de Pago
-              </button>
-          `;
-      }
-
-      buttonsContainer.html(modalButtonsHTML);
-      documentActionsModal.show();
+     // Mostrar el modal (asegúrate de que documentActionsModal esté definido)
+    if (typeof documentActionsModal !== 'undefined') {
+        documentActionsModal.show();
+    } else {
+        // Si no está definido, usar Bootstrap Modal directamente
+        const modal = new bootstrap.Modal(document.getElementById('documentActionsModal'));
+        modal.show();
+    }
     });
+
 
     // 3. Manejador de eventos para los botones de "Cargar Documento" (desde el modal de acciones)
     $(document).on('click', '.btn-zoom-pdf, .btn-exoneracion-img, .btn-pago-pdf', function() {
@@ -1121,6 +1173,7 @@ document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
         const documentType = $(this).data('document-type');
         const nro_ticket = $(this).data('nro-ticket');
         const fileName = $(this).data('file-name') || '';
+
 
         uploadForm[0].reset();
         $('#imagePreview').attr('src', '#').hide();
@@ -1169,84 +1222,7 @@ document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
         return;
     }
 
-    // Si no tenemos la URL, obtener el documento desde la API
-    if (documentType && nroTicket) {
-        // Determinar el tipo de documento para la API
-        let apiDocumentType = '';
-        switch(documentType) {
-            case 'zoom':
-                apiDocumentType = 'Envio';
-                break;
-            case 'exoneracion':
-                apiDocumentType = 'Exoneracion';
-                break;
-            case 'pago':
-                apiDocumentType = 'Anticipo';
-                break;
-            case 'exoneracion_pago':
-                // Para este caso, mostrar un modal de selección
-                showDocumentSelectionModal(ticketId, nroTicket);
-                return;
-            default:
-                apiDocumentType = documentType;
-        }
-
-        // Llamar a la API para obtener el documento
-        fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `action=GetDocumentByType&ticketId=${nroTicket}&documentType=${apiDocumentType}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.document) {
-                const document = data.document;
-                const filePath = document.file_path;
-                const mimeType = document.mime_type;
-                const fileName = document.original_filename;
-
-                // Determinar si es imagen o PDF
-                if (mimeType.startsWith('image/')) {
-                    showViewModal(ticketId, nroTicket, filePath, null, fileName);
-                } else if (mimeType === 'application/pdf') {
-                    showViewModal(ticketId, nroTicket, null, filePath, fileName);
-                } else {
-                    showViewModal(ticketId, nroTicket, null, null, "Tipo de documento no soportado");
-                }
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Documento no encontrado',
-                    text: 'No se pudo obtener el documento solicitado.',
-                    confirmButtonText: 'Ok',
-                    color: 'black',
-                    confirmButtonColor: '#003594'
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al obtener el documento del servidor.',
-                confirmButtonText: 'Ok',
-                color: 'black',
-                confirmButtonColor: '#003594'
-            });
-        });
-    } else {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Información incompleta',
-            text: 'No se pudo determinar qué documento mostrar.',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#003594'
-        });
-    }
+ 
    });
 /**
  * Toggles the visibility of the states container and populates it with state names.
@@ -1321,12 +1297,13 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     const pdfViewViewer = document.getElementById("pdfViewViewer");
     const messageContainer = document.getElementById("viewDocumentMessage");
     const nameDocumento = document.getElementById("NombreImage");
-    const BotonCerrarModal = document.getElementById("modalCerrarshow");
+    const BotonCerrarModal = document.getElementById("CerrarModalVizualizar");
+     const modal = new bootstrap.Modal(document.getElementById('documentActionsModal'));
 
     currentTicketId = ticketId;
     currentNroTicket = nroTicket;
     modalTicketIdSpanView.textContent = currentNroTicket;
-
+    
     // Limpiar vistas y mensajes
     imageViewPreview.style.display = "none";
     pdfViewViewer.style.display = "none";
@@ -1373,152 +1350,47 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
         nameDocumento.textContent = "";
     }
 
-    // Usar la instancia de Bootstrap Modal existente o crear una nueva
-    if (bsViewModal) {
-        bsViewModal.show();
-    } else {
-        // Crear nueva instancia si no existe
-        const viewDocumentModal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
+    // Crear y mostrar el modal usando Bootstrap
+    try {
+        const viewDocumentModal = new bootstrap.Modal(modalElementView);
         viewDocumentModal.show();
-    }
 
-    // Event listener para el botón de cerrar
-    if (BotonCerrarModal) {
-        BotonCerrarModal.addEventListener('click', function () {
-            if (bsViewModal) {
-                bsViewModal.hide();
-            } else {
-                const viewDocumentModal = bootstrap.Modal.getInstance(document.getElementById('viewDocumentModal'));
-                if (viewDocumentModal) {
+        // Event listener para el botón de cerrar
+        if (BotonCerrarModal) {
+            BotonCerrarModal.addEventListener('click', function () {
+                viewDocumentModal.hide();
+                modal.show();
+
+                if(modal.isOpen) {
                     viewDocumentModal.hide();
                 }
-            }
+
+                if(viewDocumentModal.isOpen) {
+                    modal.hide();
+                }
+
+            });
+        }
+    } catch (error) {
+        console.error("Error al mostrar el modal:", error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error del Sistema',
+            text: 'No se pudo mostrar el modal de visualización.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
         });
     }
 }
 
 // Función para determinar el tipo de documento basado en la extensión
 // Función para determinar el tipo de documento
-function getDocumentType(filePath) {
-    if (!filePath) return 'unknown';
-    
-    // Si tienes múltiples archivos separados por '|', toma el primero
-    const singleFilePath = filePath.split('|')[0];
-    const extension = singleFilePath.split('.').pop().toLowerCase();
-    
-    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension)) {
-        return 'image';
-    } else if (['pdf'].includes(extension)) {
-        return 'pdf';
-    } else {
-        return 'unknown';
-    }
-}
+
 
 // Event listener para manejar los clics en los botones
-document.addEventListener("click", function (event) {
-    const openUploadBtn = event.target.closest("#openModalButton");
-    if (openUploadBtn) {
-        event.preventDefault();
-        const idTicket = openUploadBtn.dataset.idTicket;
-        showUploadModal(idTicket);
-        return;
-    }
-
-    // Maneja el botón para ver la imagen
-    const openViewBtn = event.target.closest("#viewimage");
-    if (openViewBtn) {
-        event.preventDefault();
-        const idTicket = openViewBtn.dataset.idTicket;
-        const nroTicket = openViewBtn.dataset.nroTicket;
-        const documentUrl = openViewBtn.dataset.urlDocument;
-        const documentName = openViewBtn.dataset.documentName;
-        
-        // CORRECCIÓN: Obtenemos el tipo de documento de la función
-        const documentType = getDocumentType(documentUrl);
-        
-        // IMPORTANTE: Aquí se debe construir la URL completa y accesible por el navegador
-        // Reemplaza '/uploads_tickets/' con la ruta real en tu servidor web
-        
-        if (documentType === 'image') {
-            showViewModal(idTicket, nroTicket, documentUrl, null, documentName);
-        } else if (documentType === 'pdf') {
-            showViewModal(idTicket, nroTicket, null, documentUrl, documentName);
-        } else {
-            console.warn("Tipo de documento no especificado para la visualización.");
-            showViewModal(idTicket, nroTicket, null, null);
-        }
-    }
-});
 
 // Función para mostrar el modal de visualización
-function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
-    const modalElementView = document.getElementById("viewDocumentModal");
-    const modalTicketIdSpanView = modalElementView ? modalElementView.querySelector("#viewModalTicketId") : null;
-
-    let bsViewModal = null;
-    if (modalElementView) {
-        bsViewModal = new bootstrap.Modal(modalElementView, { keyboard: false });
-    }
-
-    currentTicketId = ticketId;
-    currentNroTicket = nroTicket;
-    if (modalTicketIdSpanView) {
-        modalTicketIdSpanView.textContent = currentNroTicket;
-    }
-
-    const imageViewPreview = document.getElementById("imageViewPreview");
-    const pdfViewViewer = document.getElementById("pdfViewViewer");
-    const messageContainer = document.getElementById("viewDocumentMessage");
-    const nameDocumento = document.getElementById("NombreImage");
-    const cerrarBotonModal = document.getElementById("modalCerrarshow");
-
-
-    // Limpiar vistas y mensajes
-    if (imageViewPreview) imageViewPreview.style.display = "none";
-    if (pdfViewViewer) pdfViewViewer.style.display = "none";
-    if (messageContainer) {
-        messageContainer.textContent = "";
-        messageContainer.classList.add("hidden");
-    }
-
-  const fullUrl = `http://localhost/SoportePost/${imageUrl}`;
-
-    if (imageUrl) {
-        // CORRECCIÓN: Asigna la URL construida
-        if (imageViewPreview) {
-             imageViewPreview.src = fullUrl;
-             imageViewPreview.style.display = "block";
-             nameDocumento.textContent = documentName;
-        }
-    } else if (pdfUrl) {
-        // CORRECCIÓN: Asigna la URL construida
-        if (pdfViewViewer) {
-            pdfViewViewer.innerHTML = `<iframe src="${pdfUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
-            pdfViewViewer.style.display = "block";
-            nameDocumento.textContent = documentName;
-        }
-    } else {
-        if (messageContainer) {
-            messageContainer.textContent = "No hay documento disponible para este ticket.";
-            messageContainer.classList.remove("hidden");
-        }
-    }
-
-    if (bsViewModal) {
-        bsViewModal.show();
-    } else {
-        console.error("Error: Instancia de Bootstrap Modal para 'viewDocumentModal' no creada.");
-    }
-
-    if (cerrarBotonModal) {
-      cerrarBotonModal.addEventListener("click", function (event) {
-        event.preventDefault();
-        bsViewModal.hide();
-      });
-    }
-
-}
 
 // Tu función showUploadModal permanece sin cambios ya que el problema está en la visualización
 function showUploadModal(ticketId) {
@@ -1784,7 +1656,7 @@ function loadTicketHistory(ticketId) {
           // Marcar como cambiado si:
           // 1. Ambos valores existen y son diferentes, O
           // 2. Uno de los dos valores existe y el otro no (asignación/desasignación)
-          const tecnicoChanged = (prevTecnico && itemTecnico && prevTecnico !== itemTecnico) || 
+          const tecnicoChanged = (prevTecnico && itemTecnico && prevTecnico !== prevTecnico) || 
                                 (prevTecnico && !itemTecnico) || 
                                 (!prevTecnico && itemTecnico);
 
@@ -1842,8 +1714,12 @@ function loadTicketHistory(ticketId) {
 
           const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
 
-          // --- NUEVA LÓGICA: Mostrar comment_devolution cuando la acción es 'En espera de Confirmar Devolución' ---
+          // --- LÓGICA CORREGIDA: Solo mostrar comentarios en registros específicos ---
+          // Comentario de devolución solo cuando la acción es 'En espera de Confirmar Devolución'
           const showCommentDevolution = itemAccion === 'En espera de Confirmar Devolución' && item.comment_devolution;
+
+          // Comentario de reasignación solo cuando la acción es 'Reasignado al Técnico'
+          const showCommentReasignation = itemAccion === 'Reasignado al Técnico' && item.comment_reasignation && item.comment_reasignation.trim() !== '';
 
           const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
@@ -1859,10 +1735,19 @@ function loadTicketHistory(ticketId) {
           }
 
           // Solo mostrar el comentario de devolución cuando sea relevante
-          if (item.name_accion_ticket === 'En espera de Confirmar Devolución' && item.comment_devolution) {
+          if (showCommentDevolution) {
             historyHtml += `
-              <div class="alert alert-warning alert-sm mb-2">
+              <div class="alert alert-warning alert-sm mb-2" style = "color: white;">
                 <strong>Comentario de Devolución:</strong> ${item.comment_devolution}
+              </div>
+            `;
+          }
+
+          // Solo mostrar comentario de reasignación cuando sea relevante
+          if (showCommentReasignation) {
+            historyHtml += `
+              <div class="alert alert-info alert-sm mb-2" style = "color: white;">
+                <strong>Comentario de Reasignación:</strong> ${item.comment_reasignation}
               </div>
             `;
           }
@@ -1939,6 +1824,12 @@ function loadTicketHistory(ticketId) {
                                                   <tr>
                                                     <th class="text-start">Comentario de Devolución:</th>
                                                     <td class="highlighted-change">${item.comment_devolution || "N/A"}</td>
+                                                  </tr>
+                                             ` : ''}
+                                                ${showCommentReasignation ? `
+                                                  <tr>
+                                                    <th class="text-start">Comentario de Reasignación:</th>
+                                                    <td class="highlighted-change">${item.comment_reasignation || "N/A"}</td>
                                                   </tr>
                                              ` : ''}
                                                 ${itemPago === 'Sí' ? `
