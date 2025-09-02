@@ -719,7 +719,6 @@ class consulta_rifModel extends Model
                     WHERE ut.id_user_ticket = last_ut.id_user_ticket
                     RETURNING ut.id_coordinador;
                     ";
-
                     $resultUpdate = $this->db->pgquery($updateSql);
 
                     if ($resultUpdate && pg_num_rows($resultUpdate) > 0) {
