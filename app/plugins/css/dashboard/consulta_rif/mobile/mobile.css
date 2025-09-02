@@ -1,0 +1,564 @@
+@media (max-width: 1199px) {
+/* Estilos generales para pantallas pequeñas */
+body {
+    font-size: 14px; /* Reduce el tamaño de la fuente para mejor lectura */
+  }
+  
+  .container-fluid {
+    padding-left: 10px;
+    padding-right: 10px; /* Reduce el padding horizontal para aprovechar el espacio */
+    margin-top: -19px !important; /* Ajusta el margen superior si la barra de navegación es fija */
+  }
+  
+  .row {
+    display: block; /* Los elementos dentro de .row se apilarán verticalmente */
+  }
+  
+  .cord {
+    width: 100%; /* Ocupa todo el ancho disponible */
+    margin-bottom: 20px; /* Espacio entre los bloques de contenido */
+  }
+  
+  /* Estilos para los modales */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Fondo oscuro semitransparente */
+    display: none; /* Oculto por defecto */
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+    overflow: auto; /* Permite el scroll si el contenido es muy largo */
+  }
+
+   /* IMAGES STYLES PARA PANTALLAS PEQUEÑAS */
+   .ingenico-ict250,
+   .sunmi-P2,
+   .ingenico-ict220,
+   .move-2500,
+   .ingenico-iwl220,
+   .sunmi-P2mini,
+   .sunmi-P2SE,
+   .Kozen-P10 {
+       width: 166%; /* Ocupa la mayoría del ancho */
+       max-width: 400px; /* O un valor máximo razonable */
+       height: auto !important; /* Permite que la altura se ajuste proporcionalmente */
+       margin-left: 20% !important; /* Centra horizontalmente */
+       margin-right: auto !important; /* Centra horizontalmente */
+       margin-top: 20px !important; /* Espacio entre las imágenes */
+       display: block; /* Asegura que cada imagen esté en una nueva línea */
+   }
+
+   #rifCountTable_length select {
+    width: 100px; /* Ajusta el ancho del select */
+    padding: 5px; /* Añade un poco de espacio interno */
+    border-radius: 4px; /* Bordes redondeados */
+    border: 1px solid #ccc; /* Borde gris claro */
+    font-size: 0.8em; /* Tamaño de fuente más pequeño */
+    margin-bottom: 10px; /* Espacio entre el select y la tabla */
+   }
+  
+  .modal-contenido, .modal-contenido1 {
+    background-color: #fefefe;
+    margin: 15% auto; /* Centra verticalmente y añade margen superior */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%; /* Ajusta el ancho del modal */
+    border-radius: 8px;
+    position: relative;
+  }
+  
+  .cerrar, .cerrar1 {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .cerrar:hover,
+  .cerrar:focus,
+  .cerrar1:hover,
+  .cerrar1:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  #contenidoModal, .nivel1modal #contenidoModal2 {
+    margin-left: 0 !important; /* Elimina el margen izquierdo específico para desktop */
+  }
+  
+  #contenidoModal h2, .nivel1modal #contenidoModal2 h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  #contenidoModal div, .nivel1modal #contenidoModal2 div {
+    margin-bottom: 15px;
+  }
+  
+  #contenidoModal label, .nivel1modal #contenidoModal2 label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+  }
+  
+  #contenidoModal input[type="text"],
+  #contenidoModal select,
+  .nivel1modal #contenidoModal2 input[type="text"],
+  .nivel1modal #contenidoModal2 select {
+    width: calc(100% - 12px); /* Ocupa casi todo el ancho con un poco de padding */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 0.9em;
+  }
+  
+  #contenidoModal p#rifMensaje, .nivel1modal #contenidoModal2 p#rifMensaje1 {
+    font-size: 0.8em;
+    color: red;
+    margin-top: 5px;
+  }
+  
+  .contenedor-fechas div {
+    display: block; /* Apila las etiquetas y los inputs */
+    margin-bottom: 15px;
+  }
+  
+  .contenedor-fechas label {
+    position: static !important; /* Anula la posición fixed para que se apilen */
+    width: auto !important;
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .contenedor-fechas input[type="text"] {
+    width: calc(100% - 12px) !important; /* Ajusta el ancho */
+    position: static !important;
+  }
+  
+  .contenedor-fechas div div[id^="resultadoGarantia"] {
+    margin-top: 5px !important;
+    width: 100% !important;
+    font-size: 0.8em !important;
+  }
+  
+  #contenidoModal label[for="FallaSelect1"], .nivel1modal #contenidoModal2 label[for="FallaSelect"] {
+    margin-left: 0 !important;
+    width: auto !important;
+    margin-top: 10px !important;
+    position: static !important;
+    display: block !important;
+    margin-bottom: 5px !important;
+  }
+  
+  #contenidoModal #FallaSelectContainer1 select, .nivel1modal #FallaSelectContainer select {
+    margin-left: 0 !important;
+    width: calc(100% - 12px) !important;
+  }
+  
+  #contenidoModal div[style*="display: flex; flex-direction: column; margin-top: -24%;"],
+  .nivel1modal #contenidoModal2 div[style*="display: flex; flex-direction: column;"] {
+    margin-top: 10px !important; /* Ajusta el margen superior */
+  }
+  
+  #contenidoModal div[style*="display: flex; align-items: center;"],
+  .nivel1modal #contenidoModal2 div[style*="display: flex; align-items: center;"] {
+    flex-direction: column; /* Apila los elementos en pantallas pequeñas */
+    align-items: flex-start; /* Alinea los elementos a la izquierda */
+  }
+  
+  #contenidoModal button[id^="Download"], .nivel1modal #contenidoModal2 button[id^="SendForm"] {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  #contenidoModal input[type="file"], .nivel1modal #contenidoModal2 input[type="file"] {
+    margin-left: 0 !important;
+    margin-top: 5px;
+    display: block !important;
+  }
+  
+  .contenedor-triangulo, #animation.contenedor-triangulo1 {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+  }
+  
+  .triangulo, .triangulo1 {
+    width: 20px;
+    height: 20px;
+    /* ... tus estilos de triángulo ... */
+  }
+  
+  #contenidoModal div button#SendForm2 {
+    width: 100%;
+    padding: 10px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+  }
+  
+  #contenidoModal div button#SendForm2:hover {
+    background-color: #0056b3;
+  }
+  
+  .navegacion {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .navegacion button {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    font-size: 0.9em;
+  }
+  
+  .navegacion button:hover {
+    background-color: #e9ecef;
+  }
+  
+  /* Estilos para el selector de tipo de falla */
+  #crearTicketSelect.boton-modal {
+    width: 27%;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 10px;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-left: 220px;
+    position: absolute;
+    margin-bottom: -38px;
+    background-color: #72b6f5; /* Fondo gris claro */
+    color: white;
+  }
+  
+  /* Estilos para el buscador de RIF */
+  #SearchRif {
+    display: flex;
+    align-items: center; /* Vertically align items in the center */
+    margin-bottom: 20px; /* Espacio entre el buscador y la tabla */
+    width: 100%; /* Asegura que el buscador ocupe todo el ancho disponible */
+    }
+  
+  #rifInput {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+    font-size: 1em;
+    margin-right: 15px; /* Add some space to the right of the input */
+    width: 122px;
+  }
+  
+  #buscarRif {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    font-size: 10px;
+  }
+  
+  #buscarRif:hover {
+    background-color: #1e7e34;
+  }
+  
+  /* Estilos para la tabla */
+  .table-responsive {
+    overflow-x: auto; /* Permite el scroll horizontal si la tabla es muy ancha */
+  }
+  
+  #rifCountTable {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  #rifCountTable th, #rifCountTable td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+    font-size: 0.8em;
+    white-space: nowrap; /* Evita el salto de línea en celdas */
+  }
+  
+  #rifCountTable th {
+    background-color: #f2f2f2;
+  }
+  
+  #rifCountTable thead th {
+    font-size: 0.9em;
+  }
+  
+  #rifCountTable tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  #rifCountTable td[colspan="3"] {
+    text-align: center;
+  }
+  
+  /* Estilos para el modal de detalles del serial */
+  #ModalSerial {
+    position: fixed;
+    top: 0;
+    left: -10%;
+    width: 116%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none;
+    z-index: 1001;
+    overflow: auto;
+  }
+  
+  #ModalSerial-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+    border-radius: 8px;
+    position: relative;
+  }
+
+  #ModalSerial-close {
+    color: red;
+    position: absolute; /* Posición absoluta para colocarlo en la esquina */
+    top: 10px;
+    right: 15px;
+    font-size: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease; /* Transición suave para el color */
+  }
+  
+  #ModalSerial-close:hover,
+  #ModalSerial-close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  #ModalSerial-content h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+  }
+  
+  #ModalSerial-content div[style="display: flex;"] {
+    flex-direction: column; /* Apila la tabla y la imagen */
+  }
+  
+  #ModalSerial-content div[style="width: 150px;"] {
+    width: 100%; /* La imagen ocupa todo el ancho */
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  #serialCountTable, #serialCountTableDetalle1, #serialCountTableDetalle2, #serialCountTableDetalle3 {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  #serialCountTable th, #serialCountTable td,
+  #serialCountTableDetalle1 th, #serialCountTableDetalle1 td,
+  #serialCountTableDetalle2 th, #serialCountTableDetalle2 td,
+  #serialCountTableDetalle3 th, #serialCountTableDetalle3 td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+    font-size: 0.9em;
+  }
+
+   #modalContenido span {
+    text-align: right;
+    display: block; /* Asegura que los spans ocupen todo el ancho */
+   }
+
+   .sin-garantia {
+    background-color: #f8d7da; /* Fondo rojo claro */
+    color: #721c24; /* Texto rojo oscuro */
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 5px;
+    }
+
+    .garantia-activa {
+        background-color: #d4edda; /* Fondo verde claro */
+        color: #155724; /* Texto verde oscuro */
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 5px;
+    }
+  
+  #serialCountTable th,
+  #serialCountTableDetalle1 th,
+  #serialCountTableDetalle2 th,
+  #serialCountTableDetalle3 th {
+    background-color: #f2f2f2;
+  }
+  
+  /* Estilos para el modal de garantía */
+  #garantiaModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none;
+    z-index: 1002;
+    overflow: auto;
+  }
+  
+  #garantiaModal-content {
+    background-color: #fefefe;
+    margin: 30% auto; /* Ajusta el margen para centrarlo mejor en pantallas pequeñas */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    border-radius: 8px;
+    text-align: center;
+    position: relative;
+  }
+  
+  #garantiaModal-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  #garantiaModal-close:hover,
+  #garantiaModal-close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  #garantiaModal-titulo {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    color: orange; /* Un color llamativo para la alerta */
+  }
+  
+  #garantiaModal-mensaje {
+    font-size: 1.1em;
+  }
+  
+  /* Ajustes para el pie de página (si es visible en móviles) */
+  footer.footer {
+    margin-top: 30px;
+  }
+  
+  footer.footer .container-fluid {
+    padding: 15px;
+  }
+  
+  footer.footer .copyright {
+    font-size: 0.8em;
+    text-align: center !important; /* Centra el texto en móviles */
+  }
+  
+  footer.footer .copyright .text-lg-start {
+    text-align: center !important; /* Asegura que se centre en todos los tamaños */
+  }
+  
+  /* Ocultar el fixed plugin en pantallas pequeñas */
+  .fixed-plugin {
+    display: none;
+  }
+
+  .dataTables_paginate {
+    overflow-x: auto;
+    white-space: nowrap; /* Evita que los botones se envuelvan */
+    padding: 5px 0; /* Añade un poco de padding vertical */
+    }
+
+    .dataTables_paginate a.paginate_button,
+    .dataTables_paginate span.paginate_button {
+        display: inline-block; /* Permite que estén en la misma línea */
+        margin-right: 2px;
+        padding: 1px 12px;
+        border-radius: 4px;
+    }
+
+    .dataTables_paginate a.paginate_button.current {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+    .dataTables_paginate a.paginate_button.disabled {
+        color: #6c757d;
+        border-color: #6c757d;
+        cursor: not-allowed;
+    }
+
+    .dataTables_paginate a.paginate_button:last-child,
+    .dataTables_paginate span.paginate_button:last-child {
+        margin-right: 0;
+    }
+
+    #ModalSerial-content {
+        background-color: #f9f9f9; /* Un gris claro de fondo suele ser agradable */
+        margin: 5% auto; /* Reducir el margen superior e inferior para centrar mejor */
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* Sombra más sutil */
+        width: 80%; /* Ajusta el ancho según necesites */
+        max-width: 700px; /* Un ancho máximo razonable para la mayoría de las pantallas */
+        position: relative;
+    }
+    
+    #ModalSerial-content h2 {
+        font-size: 28px; /* Un tamaño de fuente un poco mayor para el título */
+        font-weight: 500; /* Un peso de fuente seminegrita */
+        margin-bottom: 25px;
+        color: #333; /* Un color de texto más oscuro */
+        text-align: center; /* Centrar el título */
+    }
+
+    #serialCountTable {
+        width: 100%;
+        border-collapse: collapse; /* Colapsar los bordes de las celdas */
+        margin-bottom: 20px; /* Espacio debajo de la tabla */
+    }
+    
+    #serialCountTable th,
+    #serialCountTable td {
+        padding: 10px 15px; /* Más espacio dentro de las celdas */
+        text-align: left;
+        border-bottom: 1px solid #eee; /* Línea divisoria sutil entre filas */
+    }
+    
+    #serialCountTable th {
+        font-weight: bold;
+        color: #555; /* Un color para los encabezados */
+    }
+    
+    #serialCountTable tbody tr:last-child td {
+        border-bottom: none; /* Quitar el borde inferior de la última fila */
+    }
+    
+    #serialCountTable tbody tr:nth-child(even) {
+        background-color: #f2f2f2; /* Un ligero fondo gris para filas pares */
+    }
+
+    
+}

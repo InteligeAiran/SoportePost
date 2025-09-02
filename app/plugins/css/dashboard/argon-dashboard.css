@@ -94,7 +94,7 @@
   --bs-tertiary-color-rgb: 103, 116, 142;
   --bs-tertiary-bg: #f8f9fa;
   --bs-tertiary-bg-rgb: 248, 249, 250;
-  --bs-heading-color: #344767;
+  --bs-heading-color: #fff;
   --bs-link-color: #5e72e4;
   --bs-link-color-rgb: 94, 114, 228;
   --bs-link-decoration: none;
@@ -202,7 +202,7 @@ body {
   font-size: var(--bs-body-font-size);
   font-weight: var(--bs-body-font-weight);
   line-height: var(--bs-body-line-height);
-  color: var(--bs-body-color);
+  /*color: var(--bs-body-color);*/
   text-align: var(--bs-body-text-align);
   background-color: var(--bs-body-bg);
   -webkit-text-size-adjust: 100%;
@@ -629,9 +629,9 @@ progress {
   vertical-align: baseline;
 }
 
-[hidden] {
+/*[hidden] {
   display: none !important;
-}
+}*/
 
 .lead {
   font-size: 1.25rem;
@@ -791,7 +791,7 @@ progress {
   --bs-gutter-x: 1.5rem;
   --bs-gutter-y: 0;
   width: 100%;
-  padding-right: calc(var(--bs-gutter-x) * 0.5);
+  /*padding-right: calc(var(--bs-gutter-x) * 0.5);*/  /* LO MODIFICO AIRAN*/
   padding-left: calc(var(--bs-gutter-x) * 0.5);
   margin-right: auto;
   margin-left: auto;
@@ -862,8 +862,8 @@ progress {
   display: flex;
   flex-wrap: wrap;
   margin-top: calc(-1 * var(--bs-gutter-y));
-  margin-right: calc(-0.5 * var(--bs-gutter-x));
-  margin-left: calc(-0.5 * var(--bs-gutter-x));
+  /*margin-right: calc(-0.5 * var(--bs-gutter-x));
+  margin-left: calc(-0.5 * var(--bs-gutter-x));*/
 }
 
 .row>* {
@@ -2062,7 +2062,8 @@ progress {
 
   .col-xl-3 {
     flex: 0 0 auto;
-    width: 25%;
+    /*ESTABA EN 25%*/
+    width: 16%;
   }
 
   .col-xl-4 {
@@ -2578,15 +2579,19 @@ progress {
   --bs-table-bg-type: initial;
   --bs-table-color-state: initial;
   --bs-table-bg-state: initial;
-  --bs-table-color: #67748e;
+  /*--bs-table-color: #67748e;*/
+  --bs-table-color: black;
   --bs-table-bg: transparent;
   --bs-table-border-color: #e9ecef;
   --bs-table-accent-bg: transparent;
-  --bs-table-striped-color: #67748e;
-  --bs-table-striped-bg: rgba(0, 0, 0, 0.05);
-  --bs-table-active-color: #67748e;
+  /*--bs-table-striped-color: #67748e;*/
+  --bs-table-striped-color: black;
+  --bs-table-striped-bg: rgba(0, 0, 0, 0.1);
+  /*--bs-table-active-color: #67748e;*/
+  --bs-table-active-color: black;
   --bs-table-active-bg: rgba(0, 0, 0, 0.1);
-  --bs-table-hover-color: #67748e;
+  /*--bs-table-hover-color: #67748e;*/
+  --bs-table-hover-color: black;  
   --bs-table-hover-bg: rgba(0, 0, 0, 0.075);
   width: 100%;
   margin-bottom: 1rem;
@@ -2770,10 +2775,10 @@ progress {
   border-color: var(--bs-table-border-color);
 }
 
-.table-responsive {
+/*.table-responsive {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-}
+}*/
 
 @media (max-width: 575.98px) {
   .table-responsive-sm {
@@ -3018,7 +3023,7 @@ textarea.form-control-lg {
 }
 
 .form-select {
-  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  --bs-form-select-bg-img: url('data:image/svg+xml;utf8,<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
   display: block;
   width: 100%;
   padding: 0.5rem 1rem 0.5rem 0.75rem;
@@ -3157,11 +3162,11 @@ textarea.form-control-lg {
 }
 
 .form-check-input:checked[type=checkbox] {
-  --bs-form-check-bg-image: linear-gradient(310deg, #5e72e4 0%, #825ee4 100%);
+  --bs-form-check-bg-image: linear-gradient(310deg, #193cec 0%, #a640b6 100%);
 }
 
 .form-check-input:checked[type=radio] {
-  --bs-form-check-bg-image: linear-gradient(310deg, #5e72e4 0%, #825ee4 100%);
+  --bs-form-check-bg-image: linear-gradient(310deg, #1338ee 0%, #b930ce 100%);
 }
 
 .form-check-input[type=checkbox]:indeterminate {
@@ -5398,7 +5403,7 @@ fieldset:disabled .btn {
   flex-direction: column;
   min-width: 0;
   height: var(--bs-card-height);
-  color: var(--bs-body-color);
+  /*color: var(--bs-body-color);*/
   word-wrap: break-word;
   background-color: var(--bs-card-bg);
   background-clip: border-box;
@@ -6487,7 +6492,7 @@ fieldset:disabled .btn {
   background: transparent var(--bs-btn-close-bg) center/1em auto no-repeat;
   border: 0;
   border-radius: 0.375rem;
-  opacity: var(--bs-btn-close-opacity);
+  /*opacity: var(--bs-btn-close-opacity);*/
 }
 
 .btn-close:hover {
@@ -6774,13 +6779,6 @@ fieldset:disabled .btn {
   .modal-xl {
     --bs-modal-width: 1140px;
   }
-}
-
-.modal-fullscreen {
-  width: 100vw;
-  max-width: none;
-  height: 100%;
-  margin: 0;
 }
 
 .modal-fullscreen .modal-content {
@@ -9709,7 +9707,7 @@ fieldset:disabled .btn {
 
 .my-3 {
   margin-top: 1rem !important;
-  margin-bottom: 1rem !important;
+  /*margin-bottom: 1rem !important;*/
 }
 
 .my-4 {
@@ -9770,9 +9768,9 @@ fieldset:disabled .btn {
   margin-top: 0.25rem !important;
 }
 
-.mt-2 {
-  margin-top: 0.5rem !important;
-}
+/*.mt-2 {
+  margin-top: 10.5rem;
+}*/
 
 .mt-3 {
   margin-top: 1rem !important;
@@ -9983,8 +9981,14 @@ fieldset:disabled .btn {
 }
 
 .ms-auto {
+  margin-left: 30% !important;
+}
+
+/* asi estaba y yo lo cambie el 20/06/2025
+.ms-auto {
   margin-left: auto !important;
 }
+*/
 
 .m-n1 {
   margin: -0.25rem !important;
@@ -10355,7 +10359,7 @@ fieldset:disabled .btn {
 }
 
 .p-2 {
-  padding: 0.5rem !important;
+  padding: 0.5rem;
 }
 
 .p-3 {
@@ -10484,8 +10488,8 @@ fieldset:disabled .btn {
 }
 
 .py-4 {
-  padding-top: 5.5rem !important;
-  padding-bottom: 1.5rem !important;
+  padding-top: 2.5rem;
+  padding-bottom: 1.5rem;
 }
 
 .py-5 {
@@ -10913,7 +10917,7 @@ fieldset:disabled .btn {
 }
 
 .fs-5 {
-  font-size: 1.25rem !important;
+  font-size: 1.25rem;
 }
 
 .fs-6 {
@@ -11326,8 +11330,8 @@ fieldset:disabled .btn {
   background-color: transparent !important;
 }
 
-.bg-gray-100 {
-  background-color: #f8f9fa !important;
+.bg-gray9-100 {
+  background-color: #f8f9fa;
 }
 
 .bg-gray-200 {
@@ -11503,9 +11507,9 @@ fieldset:disabled .btn {
   z-index: 1 !important;
 }
 
-.z-index-2 {
+/*.z-index-2 {
   z-index: 2 !important;
-}
+}*/
 
 .z-index-3 {
   z-index: 3 !important;
@@ -22200,7 +22204,7 @@ fieldset:disabled .btn {
 }
 
 .card {
-  box-shadow: 0 0 2rem 0 rgba(0, 53, 148, 0.8);
+  box-shadow: 0 0 2rem 0 rgba(0, 53, 148, 1.8);
 }
 
 .card .card-header {
@@ -22409,7 +22413,6 @@ fieldset:disabled .btn {
   .dropup .dropdown-toggle:after,
   .dropstart .dropdown-toggle:after,
   .dropend .dropdown-toggle:after {
-    content: "\f107";
     font: normal normal normal 14px/1 FontAwesome;
     border: none;
     vertical-align: middle;
@@ -22432,7 +22435,7 @@ fieldset:disabled .btn {
 
   .dropdown.dropdown-hover .dropdown-menu,
   .dropdown .dropdown-menu {
-    display: block;
+    /*display: block;*/
     opacity: 0;
     top: 0;
     pointer-events: none;
@@ -22450,10 +22453,10 @@ fieldset:disabled .btn {
     animation: show-navbar-dropdown 0.25s ease forwards;
   }
 
-  .dropdown.dropdown-hover:hover>.dropdown-menu:before,
+  /*.dropdown.dropdown-hover:hover>.dropdown-menu:before,
   .dropdown .dropdown-menu.show:before {
     top: -20px;
-  }
+  }*/
 
   .dropdown.dropdown-hover:after {
     content: "";
@@ -22464,13 +22467,13 @@ fieldset:disabled .btn {
     height: 100%;
   }
 
-  .dropdown:not(.dropdown-hover) .dropdown-menu {
+  /*.dropdown:not(.dropdown-hover) .dropdown-menu {
     margin-top: 40px !important;
-  }
+  }*/ 
 
   .dropdown .dropdown-menu:before {
     font-family: "FontAwesome";
-    content: "\f0d8";
+    /*content: "\f0d8";*/
     position: absolute;
     top: 0;
     left: 28px;
@@ -22551,7 +22554,7 @@ fieldset:disabled .btn {
 
   .dropdown .dropdown-menu:before {
     font-family: "FontAwesome";
-    content: "\f0d8";
+    /*content: "\f0d8";*/
     position: absolute;
     top: 0;
     left: 28px;
@@ -22882,19 +22885,28 @@ fieldset:disabled .btn {
   border: 0;
 }
 
-.form-check:not(.form-switch) .form-check-input[type=checkbox]:after {
-  transition: opacity 0.25s ease-in-out;
-  font-family: "FontAwesome";
-  content: "\f00c";
-  width: 100%;
-  height: 100%;
-  color: #fff;
-  position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.67rem;
-  opacity: 0;
+.form-check:not(.form-switch) .form-check-input[type=checkbox]:checked + .form-check-label::before {
+    /* Aquí va el código para el ícono de FontAwesome */
+    font-family: "Font Awesome 5 Free"; /* O "Font Awesome 6 Free" si usas v6 */
+    font-weight: 900; /* Esto es crucial para los íconos 'solid' */
+    content: "\f00c";
+    color: #fff;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.67rem;
+}
+
+/* También necesitarás un estilo para el fondo del checkbox */
+.form-check:not(.form-switch) .form-check-input[type=checkbox]:checked {
+    background-color: #007bff; /* Color de fondo cuando está seleccionado */
+    border-color: #007bff; /* Color del borde cuando está seleccionado */
+}
+
+/* Y el estilo para que el ícono esté oculto cuando no esté seleccionado */
+.form-check:not(.form-switch) .form-check-input[type=checkbox]:not(:checked) + .form-check-label::before {
+    display: none;
 }
 
 .form-check:not(.form-switch) .form-check-input[type=checkbox]:checked:after {
@@ -23014,7 +23026,7 @@ label,
 }
 
 .bg-gradient-primary {
-  background-image: linear-gradient(310deg, #5e72e4 0%, #825ee4 100%);
+background-image: linear-gradient(to right, #003594 0%, #000 100%);
 }
 
 .bg-gradient-secondary {
@@ -23431,7 +23443,7 @@ hr.horizontal.gray-light {
 }
 
 .border-radius-xl {
-  border-radius: 1rem;
+  border-radius: 2rem;
 }
 
 .border-radius-2xl {
@@ -23884,7 +23896,7 @@ hr.horizontal.gray-light {
   top: 0;
   bottom: 0;
   width: 100%;
-  max-width: 15.625rem !important;
+  max-width: 16.625rem !important;
   overflow-y: auto;
   padding: 0;
   box-shadow: none;
@@ -23938,9 +23950,9 @@ hr.horizontal.gray-light {
   width: 100%;
 }
 
-.navbar-vertical.navbar-expand-xs .navbar-nav>.nav-item {
+/*.navbar-vertical.navbar-expand-xs .navbar-nav>.nav-item {
   margin-top: 0.125rem;
-}
+}*/
 
 .navbar-vertical.navbar-expand-xs .navbar-nav>.nav-item .icon .ni {
   top: 0;
@@ -25963,14 +25975,6 @@ hr.horizontal.gray-light {
   position: relative;
 }
 
-.timeline:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 1rem;
-  height: 100%;
-  border-right: 2px solid #dee2e6;
-}
 
 .timeline-block {
   position: relative;
@@ -26027,11 +26031,6 @@ hr.horizontal.gray-light {
 }
 
 @media (min-width: 992px) {
-  .timeline:before {
-    left: 50%;
-    margin-left: -1px;
-  }
-
   .timeline-step {
     left: 50%;
   }
@@ -26095,7 +26094,7 @@ html * {
 
 body {
   font-weight: 400;
-  line-height: 1.6;
+  line-height: 1.2;
 }
 
 h1,
@@ -26172,7 +26171,7 @@ h5,
 
 h6,
 .h6 {
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: 1.625;
 }
 
@@ -26220,7 +26219,7 @@ h4,
 
 a {
   letter-spacing: -0.025rem;
-  color: #344767;
+  color: black;
 }
 
 .text-sm {

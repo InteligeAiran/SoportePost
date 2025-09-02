@@ -1,14 +1,14 @@
-document.addEventListener('DOMContentLoaded', (event) => {
+/*document.addEventListener('DOMContentLoaded', (event) => {
     const anchoPantalla = window.innerWidth;
     const altoPantalla = window.innerHeight;
     console.log(`Ancho de la pantalla: ${anchoPantalla}px`);
     console.log(`Alto de la pantalla: ${altoPantalla}px`);
-});
+});*/
 
 // Get the input field
 var input1 = document.getElementById("username");
 var input2 = document.getElementById("password");
-var input3 = document.getElementById("email");
+var input3 = document.getElementById("restoreUsername");
 
 // Execute a function when the user presses a key on the keyboard
 input1.addEventListener("keypress", function(event) {
@@ -25,7 +25,7 @@ jQuery('#clickme').on('click', function() {
     jQuery('#password').attr('type', function(index, attr) {
       return attr == 'text' ? 'password' : 'text';
     })
-  })
+})
 
 input2.addEventListener("keypress", function(event) {
     // If the user presses the "Enter" key on the keyboard
@@ -68,7 +68,7 @@ function SendForm() {
     const password = document.getElementById('password').value;
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost/SoportePost/api/login');
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/access`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -77,17 +77,11 @@ function SendForm() {
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
+                    // Si response.success es true y no es un 409, siempre redirige
+                    // El mensaje de 'ya existe una sesión activa.' debe ser manejado por el 409
                     window.location.href = response.redirect;
-                    if (response.message === 'ya existe una sesión activa.') {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Sesión activa detectada',
-                            text: response.message,
-                            color: 'black'
-                        });
-                    }
-                    // No necesitas otra alerta de "éxito" aquí si solo rediriges
                 } else {
+                    // Manejar otros casos donde success es false (ej. credenciales incorrectas, etc.)
                     Swal.fire({
                         icon: 'error',
                         title: 'No se puede iniciar sesión',
@@ -106,14 +100,94 @@ function SendForm() {
                 });
             }
         } else if (xhr.status === 409) { // Manejar el código de estado 409 (Conflicto - Sesión activa)
-            //console.log(xhr.responseText);
             try {
                 const response = JSON.parse(xhr.responseText);
+                // Aquí, y solo aquí, se muestra la alerta con la opción de forzar sesión
                 Swal.fire({
                     icon: 'warning',
                     title: 'Sesión activa detectada',
-                    text: response.message,
-                    color: 'black'
+                    text: response.message + ' ¿Deseas cerrar la sesión anterior y abrir una nueva?',
+                    color: 'black',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0000ff',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, Abrir Nueva Sesión',
+                    cancelButtonText: 'No, Mantener Anterior'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const forceLoginXHR = new XMLHttpRequest();
+                        forceLoginXHR.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/access`);
+                        forceLoginXHR.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                        
+                        forceLoginXHR.onload = function() {
+                            if (forceLoginXHR.status >= 200 && forceLoginXHR.status < 300) {
+                                try {
+                                    const forceResponse = JSON.parse(forceLoginXHR.responseText);
+                                  if (forceResponse.success) {
+                                        Swal.fire({
+                                            title: '¡Sesión Cerrada y Abierta!', // Título
+                                            text: 'La sesión anterior ha sido cerrada y se ha iniciado una nueva.', // Mensaje
+                                            icon: 'success', // Icono
+                                            // Para el color del texto, se recomienda usar customClass y CSS:
+                                            // customClass: {
+                                            //     popup: 'my-swal-popup-black-text' // Define esta clase en tu CSS
+                                            // },
+                                            // En tu CSS: .my-swal-popup-black-text { color: black; }
+
+                                            // Si el color 'black' era para el título, puedes usar:
+                                            color: 'black', // Esto cambia el color del texto del título.
+
+                                            confirmButtonText: 'Ok', // Texto del botón de confirmación
+                                            confirmButtonColor: '#0000ff' // Color del botón de confirmación
+                                        }).then(() => {
+                                            // Esta función se ejecuta después de que el usuario hace clic en "Ok"
+                                            window.location.href = forceResponse.redirect;
+                                        });
+                                    } else {
+                                        Swal.fire(
+                                            'Error al Forzar Sesión',
+                                            forceResponse.message || 'No se pudo iniciar una nueva sesión.',
+                                            'error'
+                                        );
+                                    }
+                                } catch (e) {
+                                    console.error('Error parsing JSON for force login (409):', e);
+                                    Swal.fire(
+                                        'Error',
+                                        'Problema al procesar la respuesta de forzar inicio de sesión (409).',
+                                        'error'
+                                    );
+                                }
+                            } else {
+                                Swal.fire(
+                                    'Error',
+                                    'No se pudo conectar con el servidor para forzar el inicio de sesión (409).',
+                                    'error'
+                                );
+                            }
+                        };
+
+                        forceLoginXHR.onerror = function() {
+                            Swal.fire(
+                                'Error de Red',
+                                'No se pudo completar la solicitud para forzar el inicio de sesión (409).',
+                                'error'
+                            );
+                        };
+
+                        const forceDatos = `action=access&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&force_new_session=true`;
+                        forceLoginXHR.send(forceDatos);
+
+                    } else {
+                         Swal.fire({ // <-- Inicia un objeto para las opciones
+                            icon: 'info', // El icono ya está bien
+                            title: 'Operación Cancelada', // El título ya está bien
+                            text: 'Se mantendrá la sesión anterior activa.', // El texto ya está bien
+                            color: 'black', // <-- Esto es una propiedad del objeto de configuración
+                            confirmButtonText: 'Ok', // <-- Esto es una propiedad del objeto de configuración
+                            confirmButtonColor: '#0000ff' // <-- Esto es una propiedad del objeto de configuración
+                        }); // <-- Cierra el objeto de configuración
+                    }
                 });
             } catch (error) {
                 console.error('Error parsing JSON (409):', error);
@@ -124,8 +198,7 @@ function SendForm() {
                     color: 'black'
                 });
             }
-        } else if (xhr.status === 400) { // Manejar el código de estado 400 (Solicitud incorrecta - Datos faltantes o inválidos)
-            //console.log(xhr.responseText);
+        } else if (xhr.status === 400) {
             try {
                 const response = JSON.parse(xhr.responseText);
                 Swal.fire({
@@ -135,7 +208,6 @@ function SendForm() {
                     color: 'black'
                 });
             } catch (error) {
-                //console.error('Error parsing JSON (400):', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error al procesar respuesta (Solicitud incorrecta)',
@@ -143,8 +215,7 @@ function SendForm() {
                     color: 'black'
                 });
             }
-        } else if (xhr.status === 401) { // Manejar el código de estado 401 (No autorizado - Credenciales inválidas)
-            //console.log(xhr.responseText);
+        } else if (xhr.status === 401) {
             try {
                 const response = JSON.parse(xhr.responseText);
                 Swal.fire({
@@ -154,7 +225,6 @@ function SendForm() {
                     color: 'black'
                 });
             } catch (error) {
-                //console.error('Error parsing JSON (401):', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error al procesar respuesta (Credenciales inválidas)',
@@ -162,8 +232,7 @@ function SendForm() {
                     color: 'black'
                 });
             }
-        } else if (xhr.status === 403) { // Manejar el código de estado 403 (Prohibido - Usuario bloqueado)
-            //console.log(xhr.responseText);
+        } else if (xhr.status === 403) {
             try {
                 const response = JSON.parse(xhr.responseText);
                 Swal.fire({
@@ -173,7 +242,6 @@ function SendForm() {
                     color: 'black'
                 });
             } catch (error) {
-                //console.error('Error parsing JSON (403):', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error al procesar respuesta (Cuenta bloqueada)',
@@ -181,8 +249,7 @@ function SendForm() {
                     color: 'black'
                 });
             }
-        } else { // Manejar otros errores de conexión
-            //console.error('Error:', xhr.status, xhr.statusText);
+        } else {
             Swal.fire({
                 icon: 'error',
                 title: 'Error de conexión',
@@ -191,7 +258,7 @@ function SendForm() {
             });
         }
     };
-    const datos = `action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+    const datos = `action=access&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
     xhr.send(datos);
 }
 
@@ -207,7 +274,7 @@ function checkUser() {
         mensajeDivt.style.color = 'red';
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost/SoportePost/api/checkUser');
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/checkUser`);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -231,41 +298,96 @@ function checkUser() {
     }
 }
 
-// filepath: /c:/xampp/htdocs/SoportePost/app/views/login/js/frontEnd.js
-function checkPass() {
-    const username    = document.getElementById('username').value;
-    const password    = document.getElementById('password').value;
-    const mensajeDiv  = document.getElementById('passwordError');
-    const mensajeDivt = document.getElementById('passwordVerification');
-    mensajeDiv.innerHTML = '';
+function GetEmailByUsername() {
+    const usernameInput = document.getElementById('restoreUsername');
+    const emailInput = document.getElementById('email');
+    const usernameErrorDiv = document.getElementById('restoreUsernameError');
+    const usernameVerificationDiv = document.getElementById('restoreUsernameVerification'); // Este div mostrará el mensaje
 
-    if (password === '') {
-        mensajeDivt.innerHTML = 'Campo vacío'; // Muestra el mensaje en rojo directamente
-        mensajeDivt.style.color = 'red';
-    } else {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost/SoportePost/api/checkPass');
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    // Clear previous messages and styles for username input
+    usernameErrorDiv.innerHTML = '';
+    usernameVerificationDiv.innerHTML = '';
+    usernameVerificationDiv.style.color = '';
+    usernameInput.style.borderColor = '';
 
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    mensajeDivt.innerHTML = response.message;
-                    mensajeDivt.style.color = response.color; // Aplica el color del mensaje
-                } catch (error) {
-                    console.error('Error parsing JSON:', error);
-                    mensajeDiv.innerHTML = 'Error al procesar la respuesta del servidor.';
-                }
-            } else {
-                console.error('Error:', xhr.status, xhr.statusText);
-                mensajeDiv.innerHTML = 'Error de conexión con el servidor.';
-            }
-        };
+    // Always clear the email input when a new username check starts
+    emailInput.value = '';
+    emailInput.style.borderColor = '';
+    document.getElementById('emailError').innerHTML = '';
+    document.getElementById('emailVerification').innerHTML = '';
 
-        const datos = `action=checkPass&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
-        xhr.send(datos);
+    if (usernameInput.value.trim() === '') {
+        usernameVerificationDiv.innerHTML = 'Campo de usuario vacío';
+        usernameVerificationDiv.style.color = 'red';
+        usernameInput.style.borderColor = 'red';
+        return;
     }
+
+    const xhr = new XMLHttpRequest();
+    // La URL de tu API
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/getEmailByUsername`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) { // Éxito (HTTP 200)
+            try {
+                const response = JSON.parse(xhr.responseText);
+
+                if (response.success && response.email) {
+                    usernameVerificationDiv.innerHTML = 'Usuario encontrado. Email asociado cargado.';
+                    usernameVerificationDiv.style.color = 'green';
+                    usernameInput.style.borderColor = 'green';
+                    emailInput.value = response.email;
+                    emailInput.style.borderColor = 'green';
+                } else {
+                    // Si success es false (lo que pasa con status 404 en tu PHP),
+                    // o email no es proporcionado (aunque el status sea 200, por si acaso)
+                    usernameVerificationDiv.innerHTML = response.message || 'Usuario no encontrado o sin email asociado.';
+                    usernameVerificationDiv.style.color = 'red';
+                    usernameInput.style.borderColor = 'red';
+                    emailInput.value = '';
+                    emailInput.style.borderColor = 'red';
+                }
+            } catch (error) {
+                console.error('Error parsing JSON for GetEmailByUsername:', error);
+                usernameErrorDiv.innerHTML = 'Error al procesar la respuesta del servidor.';
+                usernameInput.style.borderColor = 'red';
+                emailInput.value = '';
+                emailInput.style.borderColor = 'red';
+            }
+        } else if (xhr.status === 404) { // Manejo específico para "No encontrado"
+            try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                usernameVerificationDiv.innerHTML = errorResponse.message || 'El usuario no existe.'; // Muestra el mensaje del servidor
+                usernameVerificationDiv.style.color = 'red';
+                usernameInput.style.borderColor = 'red';
+                emailInput.value = '';
+                emailInput.style.borderColor = 'red';
+            } catch (error) {
+                console.error('Error parsing JSON for 404 response:', error);
+                usernameErrorDiv.innerHTML = 'Usuario no encontrado';
+                usernameInput.style.borderColor = 'red';
+                emailInput.value = '';
+                emailInput.style.borderColor = 'red';
+            }
+        } else { // Otros errores HTTP (ej. 500 Internal Server Error, 400 Bad Request, etc.)
+            console.error('Error en GetEmailByUsername:', xhr.status, xhr.statusText);
+            usernameErrorDiv.innerHTML = 'Error de conexión con el servidor. Código: ' + xhr.status; // Más descriptivo
+            usernameInput.style.borderColor = 'red';
+            emailInput.value = '';
+            emailInput.style.borderColor = 'red';
+        }
+    };
+    xhr.onerror = function() { // Maneja errores de red puros (sin respuesta del servidor)
+        console.error('Network Error for GetEmailByUsername');
+        usernameErrorDiv.innerHTML = 'Error de red. No se pudo conectar con el servidor.';
+        usernameInput.style.borderColor = 'red';
+        emailInput.value = '';
+        emailInput.style.borderColor = 'red';
+    };
+
+    const datos = `action=getEmailByUsername&username=${encodeURIComponent(usernameInput.value)}`;
+    xhr.send(datos);
 }
 
 function checkEmail() {
@@ -274,13 +396,17 @@ function checkEmail() {
     const mensajeDivt = document.getElementById('emailVerification');
 
     mensajeDiv.innerHTML = '';
+    mensajeDivt.innerHTML = '';
+    mensajeDivt.style.color = ''; // Resetear el color del mensaje
+    input.style.borderColor = ''; // Resetear el borde a su estado original
 
-    if (input.value === '') {
-        mensajeDivt.innerHTML = 'Campo vacío'; // Muestra el mensaje en rojo directamente
+    if (input.value.trim() === '') { // Usar .trim() para quitar espacios en blanco
+        mensajeDivt.innerHTML = 'Campo vacío';
         mensajeDivt.style.color = 'red';
+        input.style.borderColor = 'red'; // Pone el borde rojo
     } else {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost/SoportePost/api/checkEmail');
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/checkEmail`);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = function() {
@@ -289,6 +415,7 @@ function checkEmail() {
                     const response = JSON.parse(xhr.responseText);
                     mensajeDivt.innerHTML = response.message;
                     mensajeDivt.style.color = response.color; // Aplica el color del mensaje
+                     input.style.borderColor = response.color; // Pone el borde rojo
                 } catch (error) {
                     console.error('Error parsing JSON:', error);
                     mensajeDiv.innerHTML = 'Error al procesar la respuesta del servidor.';
@@ -355,7 +482,8 @@ setTimeout(function() {
 function SendEmail() {
     const email = document.getElementById('email').value;
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost/SoportePost/api/email/restore_password');
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/resetPassword`);
+
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
     mostrarCargando(); // Muestra el "cargando"
@@ -370,7 +498,7 @@ function SendEmail() {
                     title: 'Se ha enviado la nueva contraseña con éxito. Verifique su bandeja de entrada.',
                     text: response.message, // Muestra el mensaje específico del backend
                     color: 'black',
-                    timer: 3500, // Cierra el modal después de 2.5 segundos (2500 ms)
+                    timer: 5000, // Cierra el modal después de 2.5 segundos (2500 ms)
                     timerProgressBar: true, // Opcional: muestra una barra de progreso del tiempo
                     didOpen: () => {
                      Swal.showLoading();
@@ -378,7 +506,7 @@ function SendEmail() {
                     willClose: () => {
                         setTimeout(() => {
                             location.reload(); // Recarga la página después del temporizador
-                        }, 2500); // Espera 2.5 segundos (igual que el temporizador)
+                        }, 5000); // Espera 2.5 segundos (igual que el temporizador)
                     }
                 });
                 document.getElementById('modal').style.display = 'none'; // Cierra el modal
@@ -400,6 +528,6 @@ function SendEmail() {
             });
         }
     };
-    const datos = `action=email&email=${encodeURIComponent(email)}`;
+    const datos = `action=resetPassword&email=${encodeURIComponent(email)}`;
     xhr.send(datos);
 }

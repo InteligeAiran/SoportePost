@@ -118,7 +118,7 @@
     // Método público para acceder a la conexión privada
     public function getConnection() {
       return $this->conexion;
-  }
+    }
 
     // Método para cerrar la conexión
     public function closeConnection() {
@@ -130,7 +130,7 @@
 
     // Destructor
     public function __destruct() {
-        $this->closeConnection();
+      $this->closeConnection();
     }
   }
 ?>

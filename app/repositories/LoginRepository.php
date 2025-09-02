@@ -2,7 +2,6 @@
 namespace App\Repositories; // Usar namespaces para organizar tus clases
 require_once __DIR__. '/../models/loginModel.php'; // Asegúrate de que el modelo de usuario esté incluido
 use loginModel; // Asegúrate de que tu modelo de usuario exista
-session_start(); // Iniciar la sesión si no se ha hecho antes
 class LoginRepository
 {
     private $model;

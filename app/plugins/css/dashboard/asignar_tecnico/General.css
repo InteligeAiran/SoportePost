@@ -1,0 +1,144 @@
+#ModalSelecttecnico{
+    width: 55%;
+    justify-content: center;
+    text-align: center;
+    margin-top: 27%;
+    margin-left: 37%;
+
+}
+
+#close-button:hover{
+    background-color: red;
+    color: white;
+}
+
+#assingment-button{
+    background-color: #003594;;
+    color: white;
+}
+
+#assingment-button:hover{
+    background-color: green;
+    color: white;
+}
+
+#Close-icon{
+    background-color: #8392ab;
+}
+
+#Close-icon:hover{
+    background-color: red;
+    color: white;
+}
+
+#table-user {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    table-layout: auto; /* Importante para el ancho de las columnas */
+    font-size: 0.9em; /* Reducir ligeramente el tamaño de la fuente */
+}
+
+#table-user th, #table-user td {
+    border: 1px solid #ddd;
+    padding: 8px 5px; /* Reducir el padding vertical y horizontal */
+    text-align: left;
+    height: auto; /* Permitir que la altura se ajuste al contenido */
+ font-size: 20px; /* Reducir el tamaño de la fuente */
+    white-space: nowrap; /* Evitar saltos de línea innecesarios */
+    overflow: hidden; /* Ocultar el texto que se desborda */
+    text-overflow: ellipsis; /* Mostrar "..." para el texto oculto */
+}
+
+#table-user th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+#table-user_length select {
+    width: 100px; /* Ajusta el ancho del select */
+    padding: 5px; /* Añade un poco de espacio interno */
+    border-radius: 4px; /* Bordes redondeados */
+    border: 1px solid #ccc; /* Borde gris claro */
+}
+
+#table-user td {
+    height: auto; /* Permitir que la altura se ajuste al contenido */
+}
+
+#table-user tbody tr:hover {
+    background-color: #f0f0f0; /* Cambia el color de fondo al pasar el ratón */
+    cursor: pointer; /* Cambia el cursor a una mano para indicar que es interactivo */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px; /* Reducido el margen */
+}
+
+th, td {
+    border: 1px solid #eee;
+    padding: 8px 5px; /* Reducido el padding */
+   text-align: left;
+    font-family: 'Arial', sans-serif;
+   font-size: 12px; /* Tamaño de la fuente reducido */
+}
+
+th {
+    background-color: #f9f9f9;
+    font-weight: 600;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Estilo general del contenedor de paginación */
+    .dataTables_wrapper .dataTables_paginate {
+        font-size: 14px;
+        margin-top: 10px;
+        padding: 5px;
+        background-color: #f0f0f0; /* Color de fondo */
+        border-radius: 5px; /* Bordes redondeados */
+    }
+
+    /* Estilo de los botones de paginación */
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 5px 10px;
+        margin: 0 5px;
+        border: 1px solid #ccc;
+        background-color: #e0e0e0;
+        color: #333;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+
+    /* Estilo del botón activo (página actual) */
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background-color: #007bff;
+        color: #fff;
+        border-color: #007bff;
+    }
+
+    /* Estilo de los botones deshabilitados */
+    .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+        opacity: 0.5;
+        /*cursor: not-allowed;*/
+    }
+
+    /* Estilo al pasar el ratón por encima de los botones */
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background-color: #d0d0d0;
+    }
+
+    /* Estilo de la información de paginación */
+    .dataTables_wrapper .dataTables_info {
+        font-size: 16px;
+        margin-top: 5px;
+        color: #666;
+    }
+
+    #table-user .dataTables_paginate{
+        margin-left: 86%;
+    }

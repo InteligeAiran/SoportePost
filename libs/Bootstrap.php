@@ -5,7 +5,7 @@ class Bootstrap{
         $url = rtrim($url, '/');
         $url = explode('/',$url);
 
-        // --- ENRUTAMIENTO PARA LA API ---
+         // --- ENRUTAMIENTO PARA LA API ---
         if (isset($url[0]) && $url[0] === 'api') {
             $this->routeApi(array_slice($url, 1));
             exit; // Detener el procesamiento del Bootstrap para URLs normales
@@ -77,11 +77,53 @@ class Bootstrap{
     }
 
     private function routeApi($urlSegments) {
-        require 'app/controllers/api.php';
-        $controller = new Api();
-        $controller->processApi($urlSegments); // Cambiar el nombre de la función
-        return false; // Detener el procesamiento del Bootstrap para URLs normales}
+        if (isset($urlSegments[0])) {
+            $apiFolder = 'app/controllers/api/';
+            $controllerName = strtolower($urlSegments[0]);
+            $controllerFile = $apiFolder . $controllerName . '/' . $controllerName . 'Api.php';
+
+            if (file_exists($controllerFile)) {
+                // Incluimos el archivo del controlador
+                require $controllerFile;
+
+                // Construimos el namespace basado en la estructura de carpetas
+                $namespace = 'App\\Controllers\\Api\\' . ucfirst($controllerName);
+
+                // Inferimos el nombre de la clase del nombre del archivo (quitando "Api")
+                $classNameBase = ucfirst($controllerName);
+                $classNameWithNamespace = $namespace . '\\' . $classNameBase;
+
+                // Verificamos si la clase con el namespace existe
+                if (class_exists($classNameWithNamespace)) {
+                    try {
+                        $controller = new $classNameWithNamespace();
+
+                        if (isset($urlSegments[1]) && method_exists($controller, $urlSegments[1])) {
+                            $method = $urlSegments[1];
+                            $params = array_slice($urlSegments, 2);
+                            call_user_func_array([$controller, $method], $params);
+                        } else {
+                            $controller->processApi($urlSegments); // Fallback si no hay un método específico
+                        }
+                    } catch (\Throwable $e) {
+                        echo "Error al instanciar el controlador: " . $e->getMessage();
+                    }
+                } else {
+                    echo "Clase con namespace no encontrada: " . $classNameWithNamespace;
+                }
+            } else {
+                require 'app/controllers/error.php';
+                $controller = new Error1();
+                $controller->index();
+            }
+        } else {
+            require 'app/controllers/error.php';
+            $controller = new Error1();
+            $controller->index();
+        }
+        return false;
     }
+
     function error1(){
         require 'app/controllers/error.php';
         $controller = new Error1();

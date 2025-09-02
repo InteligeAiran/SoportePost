@@ -1,0 +1,228 @@
+@media (min-width: 330px) and (max-width: 950px) {
+    .identifying-text {
+        font-family: sans-serif;
+        color: #59b2ff; /* A darker shade of blue */
+        text-align: center; /* Center the text on mobile */
+        padding: 15px 20px; /* Adjust padding */
+        font-size: 1.8em; /* Slightly smaller font size for better fit */
+        font-weight: 600; /* Bold */
+        margin-bottom: 10px; /* Add a little space below */
+        position: static; /* Make it flow normally at the top */
+        text-shadow:
+            -1px -1px 0 black, /* Top-left */
+            1px -1px 0 black,  /* Top-right */
+            -1px 1px 0 black,  /* Bottom-left */
+            1px 1px 0 black;   /* Bottom-right */
+        margin-top: 0; /* Reset margin-top */
+    }
+
+    #animacion-carga {
+        position: absolute;
+        top: -10px; /* Adjust as needed within the consulta-container */
+        left: 55%; /* Center horizontally within the consulta-container */
+        transform: translateX(-50%); /* Center horizontally */
+        z-index: 1001;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        opacity: 1;
+        transform: translateX(-50%) scale(0.7);
+        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        font-size: 16px;
+        width: 100%;
+    }
+
+
+    /* Styles for the header content */
+    .consulta-header {
+        background-color: #fff;
+        color: #333;
+        padding: 20px; /* Reduce padding */
+        text-align: center; /* Center the header content */
+        border-bottom: 1px solid #eee;
+        flex-direction: column; /* Stack logo and text */
+        align-items: center; /* Center items in the flex container */
+        gap: 10px; /* Adjust gap between logo and text */
+    }
+
+    .consulta-header h1 {
+        margin: 0;
+        font-size: 1.2em; /* Adjust font size */
+        font-weight: 700;
+        letter-spacing: -0.5px; /* Adjust letter spacing */
+    }
+
+    .icono-consulta {
+        background-color: #003594;
+        border-radius: 50%;
+        padding: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .icono-consulta img {
+        width: 30px; /* Adjust logo size */
+        height: 30px; /* Adjust logo size */
+        filter: brightness(1.1) saturate(1.2);
+    }
+
+    body {
+        font-family: 'Roboto', sans-serif; /* Una fuente moderna y limpia */
+        background-color: #f7f7f7; /* Un gris muy claro y uniforme */
+        margin: 0;
+        padding: 20px; /* Reduce padding around the container */
+        display: flex;
+        flex-direction: column; /* Stack elements vertically */
+        align-items: center; /* Center the container */
+        height: auto;
+        overflow-y: auto; /* Allow vertical scrolling on mobile if needed */
+    }
+
+    .consulta-container {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* Adjust shadow */
+        max-width: 95%; /* Take up more width on mobile */
+        width: auto; /* Adjust width */
+        margin-bottom: 30px; /* Adjust margin */
+        overflow: hidden;
+        border-left: 5px solid #003594; /* Adjust border thickness */
+        margin-top: 20px; /* Adjust margin */
+        position: relative; /* Make it a positioning context for absolute children */
+    }
+
+    .consulta-header p {
+        display: block; /* Show the subtitle on mobile */
+        font-size: 0.9em;
+        color: #777;
+        margin-top: 5px;
+    }
+
+    .filtros-consulta {
+        padding: 20px; /* Reduce padding */
+        background-color: #fcfcfc; /* Gris muy claro */
+        border-bottom: 1px solid #eee;
+    }
+
+    .filtros-consulta h3 {
+        color: #222;
+        margin-top: 0;
+        margin-bottom: 15px; /* Adjust margin */
+        font-weight: 600;
+        font-size: 1.2em; /* Adjust font size */
+        border-bottom: 1.5px solid #ddd; /* Adjust border thickness */
+        padding-bottom: 6px; /* Adjust padding */
+    }
+
+    #formulario-filtros {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Smaller minmax */
+        gap: 15px; /* Adjust gap */
+        align-items: center;
+    }
+
+    .campo-filtro label {
+        display: block;
+        margin-bottom: 6px; /* Adjust margin */
+        color: #555;
+        font-weight: 500;
+        font-size: 0.85em; /* Adjust font size */
+    }
+
+    .campo-filtro input[type="text"],
+    .campo-filtro select {
+        width: 100%;
+        padding: 10px; /* Reduce padding */
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 0.9em; /* Adjust font size */
+        color: #333;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .boton-filtrar {
+        background-color: #003594; /* Color primario */
+        color: #fff;
+        border: none;
+        padding: 12px 24px; /* Reduce padding */
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1em; /* Adjust font size */
+        transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px; /* Adjust gap */
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .boton-filtrar svg {
+        width: 16px; /* Adjust icon size */
+        height: 16px; /* Adjust icon size */
+        fill: #fff;
+    }
+
+    .resultados-consulta {
+        padding: 20px;
+        overflow-x: auto; /* Enable horizontal scrolling */
+    }
+
+    .resultados-consulta h2 {
+        color: #222;
+        margin-top: 0;
+        margin-bottom: 20px; /* Adjust margin */
+        font-weight: 600;
+        font-size: 1.3em; /* Adjust font size */
+        border-bottom: 1.5px solid #ddd; /* Adjust border thickness */
+        padding-bottom: 6px; /* Adjust padding */
+    }
+
+    .tabla-resultados {
+        width: auto;
+        border-collapse: collapse;
+        margin-bottom: 20px; /* Adjust margin */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        border-radius: 6px;
+        overflow-x: auto;
+        border: 1px solid #e0e0e0;
+        font-size: 0.85em; /* Smaller font size for table */
+    }
+
+    .tabla-resultados thead th {
+        background-color: #59b2ff; /* Fondo claro para los encabezados */
+        color: #fff; /* Texto más oscuro */
+        padding: 10px 12px; /* Reduce padding */
+        text-align: left;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        font-size: 0.8em; /* Smaller font size */
+        border-bottom: 1.5px solid #ddd; /* Adjust border thickness */
+    }
+
+    .tabla-resultados tbody td {
+        padding: 8px 12px; /* Reduce padding */
+        border-bottom: 1px solid #eee;
+        font-size: 0.85em; /* Smaller font size */
+        color: #555;
+    }
+
+    .no-resultados {
+        padding: 20px; /* Reduce padding */
+        background-color: #fff3f3;
+        color: #d32f2f;
+        border-radius: 6px;
+        text-align: center;
+        font-size: 1em; /* Adjust font size */
+        font-weight: bold;
+    }
+
+      .consulta-header p{
+        display: none;
+    }
+
+    .oculto {
+        display: none;
+    }
+}

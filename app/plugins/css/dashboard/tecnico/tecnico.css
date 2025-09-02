@@ -1,0 +1,1391 @@
+#ModalSelecttecnico {
+  width: 50%;
+  justify-content: center;
+  text-align: center;
+  margin-top: 27%;
+  margin-left: 30%;
+}
+
+/* Estilos para el modal personalizado */
+#ModalConfirmarSendTaller {
+    border-radius: 1rem; /* Bordes más redondeados */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Sombra suave */
+    overflow: hidden; /* Asegura que los bordes redondeados se vean bien */
+    width: 73%;
+    margin-left: 26%;
+}
+
+#ModalConfirmarSendTaller .modal-header {
+    background-color: #f8f9fa; /* Un fondo gris claro para el encabezado */
+    border-bottom: 1px solid #dee2e6; /* Separador */
+    padding: 1.5rem; /* Más espacio */
+    border-top-left-radius: 1rem; /* Mantener redondeo */
+    border-top-right-radius: 1rem; /* Mantener redondeo */
+}
+
+#ModalConfirmarSendTaller .modal-title {
+    font-weight: 600; /* Un poco más de negrita para el título */
+    color: white; /* Color de texto oscuro */
+}
+
+#ModalConfirmarSendTaller .modal-body {
+    padding: 2rem; /* Más espaciado interno */
+}
+
+#ModalConfirmarSendTaller .modal-body p {
+    color: #495057; /* Color de texto suave */
+}
+
+#modalTicketNr, #ticketNumberSpan, #NroTicketConfirReceiCoord, #ticketserialPos, #serialpos{
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.3rem;
+    background-color: #e0f7fa;
+    color: #007bff;
+}
+
+
+#btn-devuelto.btn-primary {
+  background-color: #003594;
+  /* Tu azul fuerte */
+  border-color: #003594;
+  color: #ffffff;
+  transition: background-color 0.3s ease, 
+  border-color 0.3s ease,
+  box-shadow 0.3s ease;
+}
+
+#textConfirm{
+    font-size: 1.2rem; /* Tamaño de fuente más grande para el texto de confirmación */
+    color: #343a40; /* Color de texto oscuro */
+}
+
+#textConfirmp{
+    font-size: 0.9rem; /* Tamaño de fuente más grande para el texto de confirmación */
+     padding: 0.2rem 0.5rem; 
+     border-radius: 0.3rem; 
+     background-color: #e0f7fa; 
+     color: #007bff; 
+}
+
+#ModalConfirmarSendTaller .modal-footer {
+    background-color: #f8f9fa; /* Fondo gris claro para el pie de página */
+    border-top: 1px solid #dee2e6; /* Separador */
+    padding: 1.5rem; /* Más espacio */
+    border-bottom-left-radius: 1rem; /* Mantener redondeo */
+    border-bottom-right-radius: 1rem; /* Mantener redondeo */
+}
+
+/* Animación sutil para el icono */
+.custom-icon-animation {
+    animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Estilos para el botón de cerrar en el encabezado */
+#Close-icon {
+    font-size: 1.2rem; /* Ajustar tamaño si es necesario */
+}
+
+#Close-icon:focus {
+    box-shadow: none; /* Eliminar el borde de foco si no lo deseas */
+}
+
+#devolverClienteModal, #modalComponentes{
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+#actionSelectionModal {
+  display: none;
+  /* Oculto por defecto */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  /* Fondo semi-transparente */
+  justify-content: center;
+  align-items: center;
+}
+
+#actionSelectionModal .modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  /* Centrado */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  /* Ancho del modal */
+  max-width: 500px;
+  /* Ancho máximo */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* Espacio entre elementos del contenido */
+}
+
+#actionSelectionModa.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  color: black
+}
+
+/* Título del modal - Centrado */
+#actionSelectionModal .modal-header h2 {
+    flex-grow: 1; /* Permite que el h2 ocupe el espacio disponible */
+    text-align: center; /* Centra el texto del título */
+    margin: 0; /* Elimina márgenes predeterminados */
+    font-size: 1.5rem; /* Tamaño de fuente, ajusta si es necesario */
+    color: #333; /* Color del texto */
+    position: absolute; /* Posicionamiento absoluto para centrarlo realmente */
+    left: 50%;
+    transform: translateX(-50%);
+    width: fit-content; /* Asegura que el ancho sea solo el del contenido */
+    white-space: nowrap; /* Evita que el título se rompa en varias líneas */
+}
+
+/* Botón de cerrar (la 'x') usando su ID específico */
+#BtnCerrarSelecionAccion{
+    margin-left: auto; /* Empuja el botón a la derecha */
+    background-color: #8392ab !important; /* Quitar el fondo gris si Bootstrap lo pone */
+    opacity: 1; /* Asegurar que sea visible si Bootstrap lo oculta */
+    position: relative; /* Para que quede en el flujo normal después del h2 */
+    z-index: 1; /* Asegurar que esté por encima del h2 si se solapan */
+    /* Para cambiar el color de la X, si es un SVG o icon-font de Bootstrap: */
+    /* Puedes intentar con `color: #333;` o, si es un SVG, necesitarás un `filter: invert(X%)`
+       o modificar el SVG directamente. El `background-color: #b0b0b0;` inline en tu HTML
+       puede estar afectando el color del icono si es un pseudo-elemento. Considera moverlo aquí. */
+}
+
+#BtnCerrarSelecionAccion:hover {
+  background-color: #585858; /* Cambia el color de la X cuando se pasa el mouse */
+}
+
+/* Cuerpo del modal */
+#actionSelectionModal .modal-body {
+    padding: 20px;
+    text-align: center; /* Centrar el texto de "¿Qué acción...?" */
+    font-size: 1.1em;
+    color: #555;
+}
+
+/* Contenedor de botones de acción */
+#actionSelectionModal .action-buttons {
+    display: flex;
+    flex-direction: column; /* Apilar los botones verticalmente */
+    gap: 15px; /* Espacio entre botones */
+    padding: 0 20px 20px; /* Relleno lateral y abajo */
+}
+
+/* Estilos para los botones dentro de .action-buttons (pueden seguir siendo clases si solo afectan a estos) */
+#actionSelectionModal .action-buttons .btn-primary,
+#actionSelectionModal .action-buttons .btn-secondary {
+    width: 100%; /* Botones de ancho completo */
+    padding: 15px;
+    font-size: 1.2em;
+    border-radius: 8px; /* Bordes redondeados */
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+
+
+#actionSelectionModal .action-buttons .btn-primary {
+    background-color: #007bff; /* Color azul para "Enviar a Taller" */
+    color: white;
+}
+
+#actionSelectionModal .action-buttons .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+#actionSelectionModal .action-buttons .btn-secondary {
+    background-color: #6c757d; /* Color gris para "Devolver al Cliente" */
+    color: white;
+}
+
+#actionSelectionModal .action-buttons .btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+
+#staticBackdrop {
+  backdrop-filter: blur(8px);
+  background-color: rgba(0,
+      0,
+      0,
+      0.4);
+  /* Si quieres asegurar un color de fondo específico además del blur */
+}
+
+#confirmReassignModal {
+  backdrop-filter: blur(8px);
+  background-color: rgba(0,
+      0,
+      0,
+      0.4);
+  /* Si quieres asegurar un color de fondo específico además del blur */
+}
+
+.swal2-container {
+  backdrop-filter: blur(8px);
+  background-color: rgba(0,
+      0,
+      0,
+      0.4);
+  /* Si quieres asegurar un color de fondo específico además del blur */
+}
+
+#selectTechnicianModal {
+  backdrop-filter: blur(8px);
+  background-color: rgba(0,
+      0,
+      0,
+      0.4);
+  /* Si quieres asegurar un color de fondo específico además del blur */
+}
+
+#close-button:hover {
+  background-color: red;
+  color: white;
+}
+
+#assingment-button {
+  background-color: #003594;
+  color: white;
+}
+
+#assingment-button:hover {
+  background-color: green;
+  color: white;
+}
+
+#reasingButton {
+  color: #ffffff;
+  background-color: #003594;
+  border-color: #003594;
+}
+
+#Close-icon {
+  background-color: #8392ab;
+}
+
+#Close-icon:hover {
+  background-color: red;
+  color: white;
+}
+
+button.btn-wrench-custom {
+  background-color: #003594;
+  /* Tu color azul deseado */
+  border-color: #003594;
+  /* Importante: el borde también debe coincidir */
+  color: #ffffff;
+  /* Color del icono/texto para asegurar contraste */
+}
+
+button.btn-wrench-custom:hover {
+  background-color: green;
+  /* Color más oscuro al pasar el ratón */
+  border-color: white;
+  /* Cambia el borde también */
+  color: white;
+  /* Color del icono/texto al pasar el ratón */
+}
+
+#SendToTaller-button {
+  background-color: #003594;
+  /* Tu color azul deseado */
+  border-color: #003594;
+  /* Importante: el borde también debe coincidir */
+  color: #ffffff;
+  /* Color del icono/texto para asegurar contraste */
+}
+
+#SendToTaller-button:hover {
+  background-color: green;
+  /* Color más oscuro al pasar el ratón */
+  border-color: white;
+  /* Cambia el borde también */
+  color: white;
+  /* Color del icono/texto al pasar el ratón */
+}
+
+.swal2-cancel-hover-red:hover {
+  background-color: red !important;
+  /* Rojo al hacer hover */
+  color: white !important;
+  border-color: red !important;
+  /* Asegura que el borde también cambie si lo tiene */
+}
+
+.swal2-confirm-hover-green:hover {
+  background-color: green !important;
+  /* Verde al hacer hover */
+  color: white !important;
+  border-color: green !important;
+  /* Asegura que el borde también cambie si lo tiene */
+}
+
+#saveStatusDomiciliacionChangeBtn {
+  background-color: #003594;
+  /* Tu color azul deseado */
+  border-color: #003594;
+  /* Importante: el borde también debe coincidir */
+  color: #ffffff;
+  /* Color del icono/texto para asegurar contraste */
+}
+
+#saveStatusDomiciliacionChangeBtn:hover {
+  background-color: green;
+  /* Color más oscuro al pasar el ratón */
+  border-color: white;
+  /* Cambia el borde también */
+  color: white;
+  /* Color del icono/texto al pasar el ratón */
+}
+
+#BtnChange {
+  background-color: #003594;
+  /* Tu color azul deseado */
+  border-color: #003594;
+  /* Importante: el borde también debe coincidir */
+  color: #ffffff;
+  /* Color del icono/texto para asegurar contraste */
+}
+
+/* Estilo base para el botón de Asignar Técnico */
+#myUniqueAssingmentButton {
+  background-color: #003594;
+  /* Color base: Light Sea Green */
+  color: #ffffff;
+  /* Color del texto/icono: Blanco */
+  border: 1px solid #003594;
+  /* Un borde sutil que combine */
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+  /* Transición suave para el hover */
+}
+
+/* Estilo para el SVG dentro del botón */
+#myUniqueAssingmentButton svg {
+  vertical-align: middle;
+  /* Alinea el SVG con el texto si lo hubiera */
+  margin-right: 0.25rem;
+  /* Espacio a la derecha del icono si hay texto */
+  /* Puedes ajustar el color del SVG si no se hereda correctamente */
+  fill: currentColor;
+  /* Hace que el SVG use el color del texto del botón */
+}
+
+.truncated-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+  /* Ajusta este valor según el ancho deseado para la columna truncada */
+  display: inline-block;
+  /* Importante para que max-width funcione */
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+/* Opcional: estilo para cuando la celda está expandida */
+.expanded-cell {
+  white-space: normal;
+  /* Permite que el texto se envuelva */
+  overflow: visible;
+  /* Muestra todo el contenido */
+  text-overflow: clip;
+  /* No muestra puntos suspensivos */
+  max-width: none;
+  /* No hay límite de ancho */
+  cursor: pointer;
+}
+
+.falla-reportada {
+  position: static;
+}
+
+#myUniqueAssingmentButton:hover {
+  background-color: #0067b8;
+  /* Color base: Midnight Blue */
+  border-color: #0067b8;
+  /* Color del borde */
+  box-shadow: 0 0 0 2px rgba(0, 103, 184, 0.1);
+  /* Um efecto de sombra en el hover */
+}
+
+#ticket-details-panel table td,
+table th {
+  white-space: normal !important;
+}
+
+#btn-asignados {
+  background-color: #17a2b8; /* Azul info */
+  border-color: #17a2b8;
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+  box-shadow 0.3s ease;
+}
+
+#btn-por-asignar {
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* CSS para los botones de Asignados/Por Asignar */
+/* Estilo base para el botón Asignados cuando es el activo */
+#btn-por-asignar.btn-primary {
+  background-color: #17a2b8; /* Azul info */
+  border-color: #17a2b8;
+  color: #ffffff;
+}
+
+
+/* Estilo hover/focus para el botón Asignados cuando es el activo */
+#btn-asignados.btn-primary:hover,
+#btn-asignados.btn-primary:focus {
+background-color: #17a2b8; /* Azul info */
+  border-color: #17a2b8;
+  box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+  /* Sombra de enfoque/hover */
+}
+
+/* Estilo para el botón Asignados cuando NO es el activo (es gris) */
+#btn-asignados.btn-secondary {
+  background-color: #a0a0a0;
+  /* Tu gris sutil */
+  border-color: #a0a0a0;
+  color: #ffffff;
+  /* O un gris oscuro si el fondo es claro */
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Estilo hover/focus para el botón Asignados cuando NO es el activo */
+#btn-asignados.btn-secondary:hover,
+#btn-asignados.btn-secondary:focus {
+  background-color: #b0b0b0;
+  border-color: #b0b0b0;
+  box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+}
+
+#btn-asignados,
+#btn-por-asignar,
+#btn-recibidos,
+#btn-devuelto {
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-size: 13px;
+}
+
+#btn-recibidos {
+  background-color: #a0a0a0;
+  color: #ffffff;
+  border: 1px solid #a0a0a0;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+  box-shadow 0.3s ease;
+}
+
+#btn-devuelto {
+  background-color: #a0a0a0;
+  color: #ffffff;
+  border: 1px solid #a0a0a0;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+#btn-devuelto.btn-secondary:hover,
+#btn-devuelto.btn-secondary:focus {
+  background-color: #b0b0b0;
+  border-color: #b0b0b0;
+  box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+}
+
+/* Estilo base para el botón Por Asignar cuando es el activo */
+#btn-por-asignar.btn-primary {
+  background-color: #ffc107; /* Amarillo warning */
+  border-color: #ffc107;
+  color: #ffffff; /* Texto oscuro para contraste */
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+  box-shadow 0.3s ease;
+}
+
+/* Estilo hover/focus para el botón Por Asignar cuando es el activo */
+#btn-por-asignar.btn-primary:hover,
+#btn-por-asignar.btn-primary:focus {
+  background-color: #ffc107; /* Amarillo warning */
+  border-color: #ffc107;
+  color: #ffffff; /* Texto oscuro para contraste */
+  box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+}
+
+#btn-devuelto.btn-primary:hover,
+#btn-devuelto.btn-primary:focus {
+  background-color: #0045b4;
+  border-color: #0045b4;
+  box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+}
+
+/* Estilo para el botón Por Asignar cuando NO es el activo (es gris) */
+#btn-por-asignar.btn-secondary {
+  background-color: #a0a0a0;
+  border-color: #a0a0a0;
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Estilo hover/focus para el botón Por Asignar cuando NO es el activo */
+#btn-por-asignar.btn-secondary:hover,
+#btn-por-asignar.btn-secondary:focus {
+  background-color: #b0b0b0;
+  border-color: #b0b0b0;
+  box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+}
+
+/* Estilo base para el botón Recibidos cuando es el activo */
+#btn-recibidos.btn-primary {
+  background-color: #28a745; /* Verde éxito */
+  border-color: #28a745;
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+  box-shadow 0.3s ease;
+}
+
+/* Estilo hover/focus para el botón Recibidos cuando es el activo */
+#btn-recibidos.btn-primary:hover,
+#btn-recibidos.btn-primary:focus {
+  background-color: #28a745; /* Verde éxito */
+  border-color: #28a745;
+  color: #ffffff;
+  box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+  /* Sombra de enfoque/hover */
+}
+
+/* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
+#btn-recibidos.btn-secondary {
+  background-color: #a0a0a0;
+  /* Tu gris sutil */
+  border-color: #a0a0a0;
+  color: #ffffff;
+  /* O un gris oscuro si el fondo es claro */
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+#btn-reasignado.btn-primary {
+  color: #ffffff;
+  background-color: #dc3545; /* Rojo danger */
+  border-color: #dc3545;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+  box-shadow 0.3s ease;
+}
+
+#btn-reasignado.btn-primary:hover,
+#btn-reasignado.btn-primary:focus {
+  color: #ffffff;
+  background-color: #dc3545; /* Rojo danger */
+  border-color: #dc3545;
+  color: #ffffff;
+  box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+  /* Sombra de enfoque/hover */
+}
+
+#btn-reasignado.btn-secondary:hover,
+#btn-reasignado.btn-secondary:focus {
+  color: white;
+  background-color: #b0b0b0;
+  border-color: #b0b0b0;
+  box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+}
+
+#btn-reasignado.btn-secondary {
+  color: white;
+  background-color: #b0b0b0;
+  border-color: #b0b0b0;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+  box-shadow 0.3s ease;
+}
+
+/* Estilo hover/focus para el botón Recibidos cuando NO es el activo */
+#btn-recibidos.btn-secondary:hover,
+#btn-recibidos.btn-secondary:focus {
+  background-color: #b0b0b0;
+  border-color: #b0b0b0;
+  box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+}
+
+/* Contenedor de paginación de DataTables */
+.dataTables_wrapper .dataTables_paginate.paging_simple_numbers {
+  /* Puedes ajustar márgenes o padding aquí si es necesario */
+  margin-top: 15px;
+  /* Espacio superior para separar de la tabla */
+}
+
+/* Estilo para los elementos LI de la paginación (números, Anterior, Siguiente) */
+.dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button {
+  background-color: #f0f0f0;
+  /* Un gris claro para el fondo */
+  color: black;
+  /* Un gris oscuro para el texto */
+  border: 1px solid #cccccc;
+  /* Un borde sutil */
+  padding: 8px 12px;
+  margin: 0 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+  /* Transición suave */
+  border-radius: 4px;
+  /* Bordes ligeramente redondeados */
+  list-style: none;
+  /* Eliminar viñetas de lista */
+  display: inline-block;
+  /* Asegura que se comporten como bloques en línea */
+}
+
+/* Estilo al pasar el puntero (hover) sobre los LI que no están activos ni deshabilitados */
+.dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button:hover:not(.active):not(.disabled) {
+  background-color: #fff;
+  /* Un gris ligeramente más oscuro al pasar el puntero */
+  color: #007bff;
+  /* Un azul suave para el texto, o puedes mantener el gris oscuro */
+  border-color: #a0a0a0;
+  /* Un borde un poco más visible */
+  text-decoration: none;
+  /* Asegurar que no haya subrayado si hay un enlace dentro */
+}
+
+/* Estilo de la página activa */
+.dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button.active {
+  background-color: #8392ab;
+  /* Azul para la página activa (puedes elegir un color más sutil aquí) */
+  color: #ffffff;
+  /* Texto blanco para la página activa */
+  border-color: #8392ab;
+  /* Borde del mismo color que el fondo */
+  cursor: default;
+  /* No cambia el cursor al pasar por la página actual */
+}
+
+/* Estilo para los botones deshabilitados (Anterior, Siguiente, o los "...") */
+.dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button.disabled {
+  background-color: #f8f8f8;
+  /* Un gris muy claro, casi blanco */
+  color: #999999;
+  /* Un gris más claro para el texto */
+  border: 1px solid #e0e0e0;
+  /* Un borde muy sutil */
+  cursor: not-allowed;
+  /* Indica que no es clickeable */
+  pointer-events: none;
+  /* Asegura que no sea clickeable incluso si hay un 'a' dentro */
+}
+
+/* Si los "..." tienen una clase específica como 'ellipsis', puedes añadirla aquí,
+        pero generalmente .disabled los cubre si están dentro de un li.paginate_button. */
+/* .dataTables_wrapper .dataTables_paginate ul.pagination li.ellipsis {
+            background-color: #f8f8f8;
+            color: #999999;
+            border: 1px solid #e0e0e0;
+            cursor: default;
+        } */
+
+/* Estilo al pasar el puntero (hover) sobre los elementos de paginación NO activos y NO deshabilitados */
+.dataTables_wrapper .dataTables_paginate ul.pagination li.paginate_button:hover:not(.active):not(.disabled) {
+  background-color: #fff;
+  /* Un gris ligeramente más oscuro al pasar el puntero (sutil) */
+  color: #003594;
+  /* Azul suave para el texto al hacer hover, o puedes mantener el gris oscuro si prefieres menos cambio */
+  border-color: white;
+  /* Borde un poco más visible al hacer hover */
+}
+
+div.dataTables_wrapper div.dataTables_filter input {
+  width: 36% !important;
+}
+
+.falla-reportada-texto {
+  color: #dc3545;
+  /* Rojo de Bootstrap 'danger' */
+  /* O un color naranja: */
+  /* color: #FD7E14; */
+  /* Naranja de Bootstrap 'warning' */
+  /* O un color personalizado: */
+  /* color: #C0392B; */
+  /* Un rojo ladrillo */
+  /* color: #E67E22; */
+  /* Un naranja más suave */
+  font-weight: bold;
+  /* Opcional: para que resalte más */
+}
+
+@media (max-width: 1550px) {
+  .falla-reportada-texto {
+    margin-top: 10%;
+  }
+
+  .falla-reportada {
+    margin-left: 11%;
+  }
+}
+
+#confirmReassignModalLabel {
+  color: grey;
+}
+
+/* Estilos para el popup principal de SweetAlert2 */
+.swal2-popup.custom-received-ticket-modal {
+  border-radius: 12px;
+  /* Bordes más suaves */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.1);
+  /* Sombra más pronunciada */
+  overflow: hidden;
+  /* Asegura que el radio de borde se aplique a los hijos */
+  background-color: #f8f9fa;
+  /* Fondo general para el modal */
+  color: #343a40;
+  /* Color de texto base */
+}
+
+/* Encabezado del modal */
+.swal2-popup.custom-received-ticket-modal .swal2-header {
+  background-color: #ffcc00;
+  /* Un amarillo vibrante para el encabezado de advertencia */
+  border-bottom: none;
+  /* Eliminar el borde inferior por defecto */
+  padding: 1.5rem;
+  /* Más espacio en el encabezado */
+  display: flex;
+  align-items: center;
+  /* Centrar verticalmente el contenido del header */
+  justify-content: center;
+  /* Centrar el título */
+  position: relative;
+  /* Necesario para posicionar el icono si lo usas con `html` */
+}
+
+/* Título del modal (Swal2 usa .swal2-title) */
+.swal2-popup.custom-received-ticket-modal .swal2-title {
+  font-size: 1.6rem;
+  /* Título un poco más grande */
+  font-weight: 700;
+  /* Negrita más pronunciada */
+  color: #343a40;
+  /* Color oscuro para el título */
+  margin: 0;
+  /* Eliminar margen por defecto de Swal2 */
+  padding-left: 10px;
+  /* Espacio si el ícono está a la izquierda del título */
+  display: flex;
+  /* Para alinear con el ícono si lo pones en el título */
+  align-items: center;
+}
+
+/* Ícono del modal (Swal2 lo inserta por defecto en .swal2-icon) */
+.swal2-popup.custom-received-ticket-modal .swal2-icon {
+  margin: 0 auto 1rem;
+  /* Centrarlo y darle margen inferior */
+  border-color: #ffcc00 !important;
+  /* Color del borde del ícono */
+  color: #ffcc00 !important;
+  /* Color del ícono */
+  font-size: 3em !important;
+  /* Tamaño del ícono */
+}
+
+/* Para ocultar el ícono por defecto si no lo quieres */
+
+/* Cuerpo del modal (Swal2 usa .swal2-html-container o .swal2-content) */
+.swal2-popup.custom-received-ticket-modal .swal2-html-container {
+  padding: 1.5rem 2.5rem;
+  /* Más espacio en el cuerpo */
+  text-align: center;
+  /* Centrar el texto */
+  font-size: 1.1rem;
+  /* Texto del cuerpo un poco más grande */
+  color: #495057;
+  /* Un gris más oscuro para el texto */
+  line-height: 1.6;
+}
+
+/* Pie de página del modal (botones) */
+.swal2-popup.custom-received-ticket-modal .swal2-actions {
+  background-color: #f0f2f5;
+  /* Un gris muy claro para el pie de página */
+  border-top: 1px solid #e9ecef;
+  /* Un borde sutil */
+  padding: 1.2rem;
+  /* Más espacio en el pie de página */
+  display: flex;
+  justify-content: center;
+  /* Centrar los botones */
+  gap: 20px;
+  /* Espacio entre los botones */
+  width: 100%;
+  /* Asegura que ocupe todo el ancho */
+  margin-top: 0;
+  /* Eliminar margen superior por defecto */
+}
+
+/* Estilos para los botones de SweetAlert2 */
+.swal2-popup.custom-received-ticket-modal .swal2-confirm,
+.swal2-popup.custom-received-ticket-modal .swal2-cancel {
+  padding: 0.8rem 1.8rem;
+  /* Más padding para botones más grandes */
+  font-size: 1.05rem;
+  border-radius: 8px;
+  /* Bordes suaves para los botones */
+  font-weight: 600;
+}
+
+/* Botón "Cancelar" */
+.swal2-popup.custom-received-ticket-modal .swal2-cancel {
+  background-color: #6c757d;
+  /* Gris para cancelar */
+  border: 1px solid #6c757d;
+  color: white;
+}
+
+.swal2-popup.custom-received-ticket-modal .swal2-cancel:hover {
+  background-color: #495057;
+  /* Gris más oscuro al pasar el ratón */
+  border-color: #495057;
+  transform: translateY(-2px);
+  /* Pequeño efecto de elevación */
+}
+
+/* Botón "Confirmar" (Sí, Recibir Ticket) */
+.swal2-popup.custom-received-ticket-modal .swal2-confirm {
+  background-color: #007bff;
+  /* Azul primario para confirmar */
+  border: 1px solid #007bff;
+  color: white;
+}
+
+.swal2-popup.custom-received-ticket-modal .swal2-confirm:hover {
+  background-color: #0056b3;
+  /* Un azul más oscuro al pasar el ratón */
+  border-color: #0056b3;
+  transform: translateY(-2px);
+  /* Pequeño efecto de elevación */
+}
+
+#confirmReassignModal .modal-content {
+  border-radius: 12px;
+  /* Bordes más suaves */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.1);
+  /* Sombra más pronunciada */
+  overflow: hidden;
+  /* Asegura que el radio de borde se aplique a los hijos */
+}
+
+#confirmReassignModal .modal-header {
+  /*background-color: #ffc107; /* Amarillo de Bootstrap 'warning' */
+  border-bottom: none;
+  /* Eliminar el borde inferior por defecto */
+  padding: 1.5rem;
+  /* Más espacio en el encabezado */
+  display: flex;
+  align-items: center;
+  /* Centrar verticalmente el contenido del header */
+  justify-content: space-between;
+}
+
+#confirmReassignModal .modal-header .modal-title {
+  font-size: 1.5rem;
+  /* Título un poco más grande */
+  font-weight: 600;
+  /* Negrita más pronunciada */
+  display: flex;
+  align-items: center;
+}
+
+#confirmReassignModal .modal-header .modal-title svg {
+  /* Si usas SVG directo */
+  margin-right: 10px;
+  /* Espacio entre el ícono y el texto */
+  fill: #343a40;
+  /* Color del SVG */
+}
+
+#confirmReassignModal .modal-header .modal-title .bi {
+  /* Si usas Bootstrap Icons con <i> */
+  margin-right: 10px;
+  /* Espacio entre el ícono y el texto */
+  font-size: 1.7rem;
+  /* Tamaño del ícono */
+}
+
+#confirmReassignModal .modal-body {
+  padding: 2rem;
+  /* Más espacio en el cuerpo */
+  text-align: center;
+  /* Centrar el texto */
+  font-size: 1.1rem;
+  /* Texto del cuerpo un poco más grande */
+  color: #495057;
+  /* Un gris más oscuro para el texto */
+}
+
+#confirmReassignModal .modal-body .fw-bold {
+  color: #007bff;
+  /* Un azul primario para el número de ticket destacado */
+  font-size: 1.2rem;
+  /* Número de ticket ligeramente más grande */
+}
+
+#confirmReassignModal .modal-body small {
+  display: block;
+  /* Asegura que la nota pequeña esté en su propia línea */
+  margin-top: 0.5rem;
+  /* Espacio sobre la nota */
+  font-size: 0.9rem;
+  /* Tamaño de fuente para la nota */
+  color: #6c757d;
+  /* Gris más claro para la nota */
+}
+
+#confirmReassignModal .modal-footer {
+  background-color: #f8f9fa;
+  /* Un gris muy claro para el pie de página */
+  border-top: none;
+  /* Eliminar el borde superior por defecto */
+  padding: 1.5rem;
+  /* Más espacio en el pie de página */
+  display: flex;
+  justify-content: center;
+  /* Centrar los botones */
+  gap: 15px;
+  /* Espacio entre los botones */
+}
+
+#confirmReassignModal .modal-footer .btn {
+  padding: 0.75rem 1.5rem;
+  /* Más padding para botones más grandes */
+  font-size: 1rem;
+  border-radius: 8px;
+  /* Bordes suaves para los botones */
+  transition: all 0.3s ease;
+  /* Transición suave para los estados hover/active */
+}
+
+#confirmReassignModal .modal-footer #noConfirm,
+#ButtonCancel {
+  border-color: #6c757d;
+  color: white;
+}
+
+#confirmReassignModal .modal-footer #noConfirm:hover {
+  background-color: red;
+  color: white;
+  transform: translateY(-2px);
+  /* Pequeño efecto de elevación */
+}
+
+#confirmReassignModal .modal-footer #confirmReassignYesBtn {
+  background-color: #007bff;
+  /* Amarillo de Bootstrap 'warning' */
+  border-color: #007bff;
+  color: white;
+  /* Texto oscuro */
+}
+
+#confirmReassignModal .modal-footer #confirmReassignYesBtn:hover {
+  background-color: green;
+  /* Un amarillo más oscuro al pasar el ratón */
+  border-color: green;
+  color: white;
+}
+
+/* Estilo para los íconos dentro de los botones */
+#confirmReassignModal .modal-footer .btn i {
+  margin-right: 8px;
+  /* Espacio entre el ícono y el texto del botón */
+}
+
+/* Estilos para el botón de Confirmar Recibido */
+#swal2-confirm-receive-ticket-id,
+#swal2-cancel-receive-ticket-id {
+  padding: 0.75rem 1.5rem;
+  /* Más padding para botones más grandes */
+  font-size: 1rem;
+  border-radius: 8px;
+  /* Bordes suaves para los botones */
+  box-shadow: none;
+}
+
+#swal2-confirm-receive-ticket-id:hover {
+  background-color: green !important;
+  /* Un azul un poco más oscuro al hacer hover */
+  transform: translateY(-2px);
+  /* Un ligero movimiento hacia arriba */
+  box-shadow: none;
+}
+
+#swal2-cancel-receive-ticket-id:hover {
+  background-color: red !important;
+  /* Un gris un poco más oscuro al hacer hover */
+  transform: translateY(-2px);
+}
+
+/* Estilo para el popup general para aplicar sombras si se desea */
+.swal2-custom-header-popup {
+  /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.3) !important; */
+  border-radius: 0.8rem !important;
+  /* Bordes redondeados */
+  overflow: hidden;
+  /* Asegura que el gradiente del header no se desborde */
+}
+
+/* Estilo para el título dentro del header */
+.swal2-custom-header-popup .swal2-title {
+  color: white !important;
+  /* Asegura que el título sea blanco */
+  padding-left: 0 !important;
+  /* Restablece el padding si SweetAlert2 añade alguno */
+  margin-top: 0 !important;
+  /* Elimina margen superior si SweetAlert2 añade */
+  background-image: linear-gradient(310deg, #003594 0%, #000 100%);
+}
+
+#confirmreceived {
+  background-color: green;
+  border: none;
+  color: white;
+}
+
+/* Asegúrate de que esta clase exista en tu CSS */
+.bg-gradient-primary {
+  background-image: linear-gradient(310deg, #003594 0%, #000 100%);
+}
+
+/* Ajustes generales para el modal si es necesario, aunque las clases de Bootstrap ya ayudan mucho */
+#selectTechnicianModal .modal-content {
+  border: none;
+  /* Elimina el borde predeterminado de Bootstrap */
+}
+
+/* Asegura que el texto en los campos estáticos se vea bien */
+#selectTechnicianModal .form-control-plaintext {
+  font-weight: 500;
+  /* Ligeramente más grueso que el texto normal */
+  color: #333 !important;
+  /* Color de texto más oscuro si 'text-muted' es demasiado claro */
+}
+
+/* Opcional: Estilo al dropdown si quieres algo más que lo por defecto */
+#selectTechnicianModal #technicianSelect {
+  border-color: #ced4da;
+  box-shadow: none;
+}
+
+#selectTechnicianModal #technicianSelect:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+#assignTechnicianBtn {
+  background-color: #003594;
+  /* Tu azul fuerte */
+  border-color: #003594;
+  color: #ffffff;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+#assignTechnicianBtn:hover {
+  background-color: green;
+  /* Un tono un poco más oscuro o claro al hover */
+  border-color: green;
+}
+
+#ButtonCancel:hover {
+  background-color: red;
+  border-color: red;
+  color: white;
+}
+
+.Accion-ticket {
+  width: 31%;
+}
+
+/* Estilos base para el modal (estos son generales para todos los modales,
+   se mantienen con selectores de clase si Bootstrap los aplica así,
+   pero se asegurará que los estilos específicos del modal de devolución
+   sean por ID o selectores anidados con ID) */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal.fade {
+    opacity: 0;
+    transition: opacity 0.15s linear;
+}
+
+.modal.show {
+    opacity: 1;
+    display: block;
+}
+
+/* Animación de entrada del modal */
+@keyframes animatetop {
+    from {top: -300px; opacity: 0}
+    to {top: 0; opacity: 1}
+}
+
+/* === ESTILOS ESPECÍFICOS PARA EL MODAL DE DEVOLUCIÓN AL CLIENTE (#devolverClienteModal) === */
+
+#devolverClienteModal .modal-dialog {
+    position: relative;
+    margin: 10% auto;
+    padding: 0; /* Asegurarse de que no haya padding extra que afecte los bordes redondeados */
+    width: 90%;
+    max-width: 500px;
+}
+
+#devolverClienteModal .modal-content {
+    background-color: #fefefe; /* Fondo blanco para el cuerpo */
+    border: 1px solid #888;
+    border-radius: 8px; /* Bordes redondeados del modal completo */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    animation-name: animatetop;
+    animation-duration: 0.4s;
+    overflow: hidden; /* Importante para que los border-radius funcionen con el header/footer */
+}
+
+#devolverClienteModal .modal-header {
+    /* Color de fondo oscuro como en la imagen */
+    color: white;
+    display: flex;
+    justify-content: center; /* Centrar el título */
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: none; /* No queremos borde inferior si el fondo es sólido */
+    position: relative; /* Para posicionar el botón de cerrar */
+}
+
+#devolverClienteModal .modal-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+    color: white; /* El texto del título debe ser blanco */
+    flex-grow: 1; /* Permite que el título ocupe espacio y centre el texto */
+    text-align: center;
+}
+
+
+#devolverClienteModal .modal-body {
+    padding: 20px;
+    line-height: 1.6;
+    color: #333; /* Color de texto más oscuro para el cuerpo */
+}
+
+#devolverClienteModal .form-group {
+    margin-bottom: 1rem;
+}
+
+#observacionesDevolver {
+    display: block;
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+#observacionesDevolver:focus {
+    color: #495057;
+    background-color: #fff;
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+#devolverClienteModal .modal-footer {
+    /* Fondo oscuro para el footer, similar al header */
+    background-color: #ecf0f1; /* Un gris claro, casi blanco, como en la imagen */
+    display: flex;
+    justify-content: flex-end; /* Alinear botones a la derecha */
+    padding: 15px 20px;
+    border-top: none; /* Eliminar borde superior si el fondo es sólido */
+    border-bottom-left-radius: 8px; /* Redondeo inferior izquierdo */
+    border-bottom-right-radius: 8px; /* Redondeo inferior derecho */
+}
+
+/* Estilos para los botones dentro del footer del modal de devolución */
+#devolverClienteModal .modal-footer .btn-secondary { /* Botón Cancelar */
+    background-color: #6c757d; /* Gris para "Cancelar" */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px; /* Bordes redondeados para el botón */
+    cursor: pointer;
+    font-size: 1em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Sombra sutil para el botón */
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#devolverClienteModal .modal-footer .btn-secondary:hover {
+    background-color: red; /* Gris más oscuro al pasar el ratón */
+    color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+#confirmDevolverCliente { /* Botón Confirmar Devolución */
+    background-color: #003594; /* Azul vibrante como en la imagen */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px; /* Bordes redondeados para el botón */
+    cursor: pointer;
+    font-size: 1em;
+    margin-left: 10px; /* Espacio entre los botones */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Sombra sutil para el botón */
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#confirmDevolverCliente:hover {
+    background-color: green; /* Azul más oscuro al pasar el ratón */
+    color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+
+/* Main popup container */
+.custom-swal-popup {
+    border-radius: 0.5rem !important; /* Match border-radius of Gestión Técnico */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important; /* Soft shadow */
+    overflow: hidden; /* Ensures content respects border-radius */
+    max-width: 500px; /* Adjust max width as needed */
+    width: 100% !important; /* Ensure it respects max-width */
+}
+
+/* Custom header for the modal */
+.custom-swal-header {
+    background-color: #003594 !important; /* Dark blue background like Gestión Técnico header */
+    color: white !important; /* White text */
+    padding: 1rem 1.5rem !important; /* Padding for the header */
+    border-top-left-radius: 0.5rem !important;
+    border-top-right-radius: 0.5rem !important;
+    text-align: left !important; /* Align text to left */
+    display: flex; /* Use flexbox for alignment */
+    align-items: center; /* Center items vertically */
+    justify-content: space-between; /* Space title and potential close button */
+    height: auto !important; /* Auto height to fit content */
+}
+
+.custom-modal-header-content {
+    font-size: 1.5rem; /* Larger font size for the header title */
+    font-weight: bold; /* Bold text */
+    margin: 0; /* Remove default margin */
+}
+
+/* Hide the default SweetAlert2 title that gets rendered by the `title` option */
+.custom-swal-title-hidden {
+    display: none !important;
+}
+
+/* Content area (where your custom HTML goes) */
+.custom-swal-content {
+    padding: 2rem 1.5rem !important; /* Adjust padding for content */
+    color: #343a40 !important; /* Darker text color */
+    font-size: 1.1rem !important; /* Slightly larger text */
+}
+
+.custom-modal-body-content .h4 {
+    font-size: 1.3rem; /* Adjust font size for the main question */
+    color: #343a40; /* Darker grey for question text */
+}
+
+.custom-modal-body-content .h5 {
+    font-size: 1rem; /* Adjust font size for explanatory text */
+    color: #6c757d; /* Lighter grey for descriptive text */
+}
+
+/* Footer (buttons container) */
+.custom-swal-actions {
+    background-color: #f8f9fa !important; /* Light background for footer */
+    border-top: 1px solid #e9ecef !important; /* Light border at top */
+    border-bottom-left-radius: 0.5rem !important;
+    border-bottom-right-radius: 0.5rem !important;
+    justify-content: center !important; /* Center buttons */
+    gap: 1rem; /* Space between buttons */
+}
+
+/* Specific button styles */
+.custom-confirm-button {
+   /* background-color: #007bff !important; /* Bootstrap primary blue */
+  /*  border-color: #007bff !important;*/
+    font-weight: 500 !important; /* Adjust font weight */
+    min-width: 150px; /* Make buttons a bit wider */
+}
+
+.custom-cancel-button {
+    background-color: #6c757d !important; /* Bootstrap secondary grey */
+    border-color: #6c757d !important;
+    font-weight: 500 !important; /* Adjust font weight */
+    min-width: 150px; /* Make buttons a bit wider */
+}
+
+/* Animation for the icon */
+.custom-icon-animation {
+    animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+    }
+}

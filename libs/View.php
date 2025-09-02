@@ -9,6 +9,8 @@
     public $modelViews;
     public $sessionLifetime;
 
+    public $redirectURL;
+
       function __construct(){
       	//Constructor de view
       }
@@ -27,5 +29,3 @@
    }
       
 ?>
-
-

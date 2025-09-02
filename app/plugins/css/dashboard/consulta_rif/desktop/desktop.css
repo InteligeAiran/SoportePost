@@ -1,11 +1,91 @@
-@media (max-width: 1900px) AND (min-width: 1200px) AND (max-height: 1000px) AND (min-height: 400px){
+
+    #buscarPorRifBtn, #buscarPorSerialBtn, #buscarPorNombreBtn, #buscarPorRangoBtn, #buscarPorRegionsBtn{
+        background-color: #001f3f; /* Azul oscuro */
+        color: #FFFFFF; /* Amarillo */
+        /*color: #ffff00; /* Amarillo */
+        border: 2px solid #00ffff; /* Azul claro */
+        border-radius: 8px; /* Bordes redondeados */
+        padding: 12px 24px; /* Ajustar el relleno según sea necesario */
+        font-weight: bold; /* Texto en negrita */
+        box-shadow: 0 0 15px #00ffff; /* Resplandor azul claro */
+        transition: box-shadow 0.3s ease, transform 0.3s ease; /* Transición suave para el resplandor y la escala */
+        text-transform: uppercase; /* Texto en mayúsculas */
+        letter-spacing: 1px; /* Espacio entre letras */
+    }
+
+    #buscarPorNombreBtn{
+        margin-left: 24%;
+    }
+
+    .mt-2 {
+        margin-top: 0.5rem ;
+    }
+
+    @media (max-width: 1550px) {
+        .mt-2 {
+            margin-top: 10.5rem ;
+        }
+    }
+
+    #buscarPorRifBtn:hover {
+        box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
+        transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    }
+
+     #buscarPorRegionsBtn:hover {
+        box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
+        transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    }
+
+    #buscarPorRangoBtn:hover{
+        box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
+        transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    }
+
+
+    #buscarPorSerialBtn:hover{
+        box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
+        transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    }
+
+    #buscarPorNombreBtn:hover{
+        box-shadow: 0 0 20px #00ffff; /* Resplandor más intenso al pasar el ratón */
+        transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    }
+
+    #buscarPorNombreBtn:focus {
+        outline: none; /* Eliminar el contorno predeterminado al enfocar */
+        box-shadow: 0 0 20px #00ffff; /* Mantener el resplandor al enfocar */
+    }
+
+    #buscarPorRifBtn:focus {
+        outline: none; /* Eliminar el contorno predeterminado al enfocar */
+        box-shadow: 0 0 20px #00ffff; /* Mantener el resplandor al enfocar */
+    }
+
+    #buscarPorSerialBtn:focus {
+        outline: none; /* Eliminar el contorno predeterminado al enfocar */
+        box-shadow: 0 0 20px #00ffff; /* Mantener el resplandor al enfocar */
+    }
+
+    /* Aplicar los estilos a los botones */
+    .d-flex.justify-content-start.mt-2 button.me-2:nth-child(1),
+    .d-flex.justify-content-start.mt-2 button.me-2:nth-child(2),
+    .d-flex.justify-content-start.mt-2 button#buscarPorRifBtn {
+        @apply btn-custom; /* Si usas Tailwind CSS */
+    /* Si no usas Tailwind, añade la clase 'btn-custom' a cada botón en tu HTML */
+    }
+
+    .py-4 {
+       margin-top: 6%;
+    }
 
     body {
         display: flex;
         flex-direction: column;
         min-height: 100vh; /* Asegura que el body ocupe al menos el 100% de la altura de la ventana */
         margin: 0; /* Elimina los márgenes predeterminados del body */
-        
+
         overflow: hidden;
         flex-grow: 1; /* Permite que el contenido principal crezca */
         display: flex;
@@ -15,7 +95,7 @@
     .main-content {
         flex-grow: 1;
     }
-    
+
     .footer {
         margin-top: 600px; /* Empuja el footer hacia la parte inferior */
         text-align: center; /* Centra el texto del footer */
@@ -24,26 +104,72 @@
     }
 
     #SearchRif{
-        margin-left: 550px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        margin: 2rem auto;
+        max-width: 800px;
     }
 
-    #buscarRifContainer {
-        display: flex;
-        justify-content: center; /* Centra horizontalmente */
-        align-items: center; /* Centra verticalmente */
-        margin: 20px 0; /* Añade margen superior e inferior */
+    /* Layout horizontal para los inputs de búsqueda */
+    #SearchRif .d-flex.align-items-center {
+        flex-direction: row !important;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Estilos específicos para cada tipo de búsqueda */
+    /* Búsqueda por RIF - Select a la izquierda, input en el centro, botón a la derecha */
+    #SearchRif .d-flex.align-items-center:has(#rifTipo) {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    #rifTipo {
+        order: 1; /* Primero: select de letra */
     }
 
     #rifInput {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        margin-right: 10px;
-        width: 200px; /* Ajusta el ancho según sea necesario */
-        font-size: 16px;
+        order: 2; /* Segundo: input de RIF */
     }
 
     #buscarRif {
+        order: 3; /* Tercero: botón buscar */
+    }
+
+    /* Búsqueda por Serial - Input a la izquierda, botón a la derecha */
+    #serialInput {
+        order: 1; /* Primero: input de serial */
+    }
+
+    #buscarSerial {
+        order: 2; /* Segundo: botón buscar */
+    }
+
+    /* Búsqueda por Razón Social - Input a la izquierda, botón a la derecha */
+    #RazonInput {
+        order: 1; /* Primero: input de razón social */
+    }
+
+    #buscarRazon {
+        order: 2; /* Segundo: botón buscar */
+    }
+
+    /* Búsqueda por Región - Select a la izquierda, botón a la derecha */
+    #SelectRgions {
+        order: 1; /* Primero: select de región */
+    }
+
+    #buscarRegions {
+        order: 2; /* Segundo: botón buscar */
+    }
+
+    #SearchRif button{
         padding: 10px 20px;
         background-color: #007bff; /* Color azul, puedes cambiarlo */
         color: white;
@@ -54,9 +180,26 @@
         transition: background-color 0.3s ease; /* Transición suave */
     }
 
-    #buscarRif:hover {
+    #SearchRif button:hover {
         background-color: #0056b3; /* Color más oscuro al pasar el ratón */
     }
+
+    #buscarRifContainer {
+        display: flex;
+        justify-content: center; /* Centra horizontalmente */
+        align-items: center; /* Centra verticalmente */
+        margin: 20px 0; /* Añade margen superior e inferior */
+    }
+
+    #SearchRif input{
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: 10px;
+        width: 200px; /* Ajusta el ancho según sea necesario */
+        font-size: 16px;
+    }
+
     /* Estilos generales */
     body {
         font-family: Arial, sans-serif;
@@ -67,19 +210,35 @@
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 20px;
-        table-layout: fixed;
+        table-layout: fixed; /* Importante para el ancho de las columnas */
+        font-size: 0.9em; /* Reducir ligeramente el tamaño de la fuente */
     }
 
-    #rifCountTable th, td {
+    #rifCountTable th, #rifCountTable td {
         border: 1px solid #ddd;
-        padding: 8px;
+        padding: 8px 5px; /* Reducir el padding vertical y horizontal */
         text-align: left;
-        height: -8px;
-        font-size: 14px;
+        height: auto; /* Permitir que la altura se ajuste al contenido */
+        font-size: 12px; /* Reducir el tamaño de la fuente */
+        white-space: nowrap; /* Evitar saltos de línea innecesarios */
+        overflow: hidden; /* Ocultar el texto que se desborda */
+        text-overflow: ellipsis; /* Mostrar "..." para el texto oculto */
+    }
+
+    #rifCountTable th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+    #rifCountTable_length select {
+        width: 100px; /* Ajusta el ancho del select */
+        padding: 5px; /* Añade un poco de espacio interno */
+        border-radius: 4px; /* Bordes redondeados */
+        border: 1px solid #ccc; /* Borde gris claro */
     }
 
     #rifCountTable td {
-        height: 50px;
+        height: auto; /* Permitir que la altura se ajuste al contenido */
     }
 
     th {
@@ -91,13 +250,6 @@
         background-color: #f9f9f9;
     }
 
-    /* Estilos del input y el botón */
-    #rifInput {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        margin-right: 10px;
-    }
 
     #buscarBtn {
         padding: 10px 20px;
@@ -113,7 +265,24 @@
     }
 
     #Row{
-        margin-top: -4.5rem !important;
+        margin-top: -7.5rem !important;
+    }
+
+    @media (max-width: 1550px) {
+    #Row{
+            margin-top: -16.5rem !important;
+        }
+    }
+
+    @media (max-width: 1550px) {
+            #miModal .modal-content {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            width: 100%;
+            max-height: 112vh;
+            overflow: hidden;
+        }
     }
 
     /* Estilo general del contenedor de paginación */
@@ -146,7 +315,7 @@
     /* Estilo de los botones deshabilitados */
     .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
         opacity: 0.5;
-        cursor: not-allowed;
+        /*cursor: not-allowed;*/
     }
 
     /* Estilo al pasar el ratón por encima de los botones */
@@ -161,10 +330,11 @@
         color: #666;
     }
 
-    #rifCountTable td {
-        padding: -5px; /* Ajusta el padding según sea necesario */
-        height: 50px;
-    }
+
+    /*.table-responsive {
+        /*overflow-y: auto; /* Añade scroll vertical cuando el contenido desborda */
+        /*max-height: 80vh; /* O una altura máxima que consideres apropiada para la visualización inicial */
+    /*}*/
 
     #cliente{
         margin-left: 100px;
@@ -180,7 +350,7 @@
         display: none; /* Oculto por defecto */
         position: fixed; /* Posición fija */
         z-index: 1000; /* Asegura que esté por encima de otros elementos */
-        left: 130px;
+        /*left: 130px;*/
         top: 0;
         width: 100%; /* Ancho completo */
         height: 100%; /* Alto completo */
@@ -188,7 +358,7 @@
         background-color: rgba(0, 0, 0, 0.5); /* Fondo translúcido oscuro */
         backdrop-filter: blur(5px); /* Efecto de desenfoque al fondo (opcional) */
     }
-    
+
     #ModalSerial-content {
         background-color: #ffffff; /* Fondo blanco para el contenido */
         margin: 10% auto; /* Centrado */
@@ -199,7 +369,7 @@
         max-width: 1269px; /* Ancho máximo para evitar que se vea demasiado grande en pantallas grandes */
         position: relative; /* Para posicionar el botón de cierre correctamente */
     }
-    
+
     #ModalSerial-close {
         color: red;
         position: absolute; /* Posición absoluta para colocarlo en la esquina */
@@ -210,13 +380,13 @@
         cursor: pointer;
         transition: color 0.3s ease; /* Transición suave para el color */
     }
-    
+
     #ModalSerial-close:hover,
     #ModalSerial-close:focus {
         color: #333;
         text-decoration: none;
     }
-    
+
     #modalContenido {
         text-align: center; /* Centrar el contenido */
         font-size: 18px; /* Tamaño de fuente más grande */
@@ -224,14 +394,14 @@
         color: #333; /* Color de texto más oscuro */
         margin-bottom: 20px; /* Espacio debajo del texto */
     }
-    
+
     /* Estilos adicionales para mejorar la apariencia */
     #ModalSerial-content h2 {
         font-size: 24px;
         margin-bottom: 20px;
         color: #007bff; /* Color azul para el título */
     }
-    
+
     #ModalSerial-content p {
         margin-bottom: 15px;
     }
@@ -249,6 +419,8 @@
         width: 80%;
         max-width: 800px; /* Ajusta según sea necesario */
         position: relative;
+        margin-left: 35%;
+        margin-top: 4%;
     }
 
     #ModalSerial-content h2 {
@@ -257,10 +429,11 @@
         margin-bottom: 20px;
         color: #333;
     }
-    
+
     #serialCountTable {
         width: 65%;
         border-collapse: collapse;
+        margin-left: 6%;
     }
 
     #serialCountTable td:hover {
@@ -268,7 +441,7 @@
         cursor: pointer; /* Cambia el cursor a una mano para indicar que es interactivo */
     }
 
-    
+
     #serialCountTable th,
     #serialCountTable td {
         padding: 10px;
@@ -277,16 +450,16 @@
         box-sizing: border-box; /* Incluye el padding en el ancho */
 
     }
-    
+
     #serialCountTable th {
         font-weight: 600;
         width: 40%;
     }
-    
+
     #serialCountTable td {
         width: 85%;
     }
-    
+
     #serialCountTable tbody tr:nth-child(even) {
         background-color: #f9f9f9;
     }
@@ -299,27 +472,27 @@
     #serialCountTable th {
         font-weight: bold;
     }
-    
+
     #serialCountTable td {
         text-align: right; /* Alinea los valores a la derecha */
     }
-    
+
     #ModalSerial-content strong {
         font-weight: bold;
     }
-    
+
     #ModalSerial-content em {
         font-style: italic;
     }
-    
+
     #ModalSerial-content .resaltado {
         color: #007bff; /* Cambia el color según sea necesario */
     }
-    
+
     #ModalSerial-content tr {
         margin-bottom: 10px; /* Ajusta el margen vertical entre filas */
     }
-    
+
         /* Estilos para el botón */
     .boton-modal {
         position: absolute; /* Permite posicionarlo donde quieras */
@@ -341,18 +514,6 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra ligera */
     }
 
-    #crearTicketSelect {
-        /* Copia los estilos de tu botón original aquí */
-        width: 211px;
-        padding: 10px 20px;
-        background-color: #4CAF50; /* Ejemplo de color verde */
-        color: white;
-        border: none;
-        cursor: pointer;
-        margin-left: 1%;
-        margin-top: 4px;
-    }
-    
     /* Estilos para el modal */
     .modal {
         display: none;
@@ -367,8 +528,6 @@
         backdrop-filter: blur(8px);
     }
 
-    
-
     table {
         width: 100%;
         border-collapse: collapse;
@@ -377,7 +536,7 @@
 
     th, td {
         border: 1px solid #eee;
-        padding: 8px; /* Reducido el padding */
+        padding: 8px 5px; /* Reducido el padding */
         text-align: left;
         font-family: 'Arial', sans-serif;
         font-size: 12px; /* Tamaño de la fuente reducido */
@@ -389,7 +548,6 @@
     }
 
     /* IMAGES STYLES */
-
     .ingenico-ict250 {
         width: 150px;
         border: 2px solid green;
@@ -399,24 +557,27 @@
     }
 
     .sunmi-P2{
-        margin-top: 60px;
-        height: 435px;
-        margin-left: -253px;
-        width: 480px;
+        margin-top: -5%;
+        height: 95%;
+        margin-left: -171%;
+        width: 307%;
     }
 
     .ingenico-ict220{
-        margin-left: -261px;
-        margin-top: 15px;
+        margin-left: -152%;
+        margin-top: -8%;
+        height: 99%;
     }
 
     .move-2500{
-        margin-left: -165px;
+        margin-left: -93px;
+        height: 71%;
     }
 
     .ingenico-iwl220{
-        margin-top: 25px;
-        margin-left: -254px;
+        margin-top: -43%;
+        margin-left: -179%;
+        height: 110%;
     }
 
     .sunmi-P2mini{
@@ -425,16 +586,16 @@
     }
 
     .sunmi-P2SE{
-        width: 625px;
-        margin-left: -323px;
-        margin-top: 54px;
-    }
+        width: 376%; 
+        margin-left: -197%;
+        margin-top: -5%;
 
+    }
+    
     .Kozen-P10{
         margin-left: -156px;
         height: 525px;
     }
-
     /*  END IMAGES STYLES */
     
 
@@ -447,4 +608,4 @@
         height: 467px;
         margin-left: -200px;
     }*/
-}
+    

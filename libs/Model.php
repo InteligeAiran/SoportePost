@@ -54,6 +54,19 @@
       return $array;
 	}
 
+	public static function getResultImg($sql, $db) {
+        try {
+            $result = $db->pgquery($sql);
+            if ($result) {
+                $row = $db->pgfetch($result);
+                return ['row' => $row]; // Devuelve la cadena Base64 directamente
+            } else {
+                return ['error' => pg_last_error($db->getConnection())];
+            }
+        } catch (Throwable $e) {
+            return ['error' => $e->getMessage()];
+        }
+    }
   }//endClass
 
   

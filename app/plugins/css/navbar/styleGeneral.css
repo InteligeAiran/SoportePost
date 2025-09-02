@@ -1,0 +1,192 @@
+    /* Estilos generales para el body */
+    body.g-sidenav-show {
+        transition: margin-left 0.3s ease; /* Transición suave para el cambio de margen */
+    }
+
+    /* Ocultar el sidebar en pantallas pequeñas (menores de 1199px) */
+    @media (min-width: 1198px) {
+        .sidenav {
+            left: -250px; /* Oculto fuera de la pantalla */
+        }
+
+        body.g-sidenav-show {
+            margin-left: 0 !important; /* Asegura que no haya margen */
+        }
+
+        /* Ocultar el botón de toggle en pantallas menores de 1199px */
+        .d-lg-none {
+            display: none !important;
+        }
+
+        .main-content {
+            margin-left: 250px; /* Ajustar el margen para el sidebar fijo */
+            transition: margin-left 0.3s ease; /* Transición suave */
+            font-size: 15px;
+        }
+    }
+
+    /* Mostrar el botón de toggle y manejar el sidebar en 1199px */
+    @media (max-width: 1199px) {
+        .d-lg-none {
+            display: block !important;
+            opacity: 1 !important; /* Asegurémonos de que no esté transparente */
+            visibility: visible !important; /* Asegurémonos de que sea visible */
+        }
+
+        #filter-toggle {
+            position: fixed;
+            top: 15px; /* Ajusta la posición vertical */
+            left: 15px; /* Ajusta la posición horizontal */
+            z-index: 5000; /* Por encima del sidebar y el contenido */
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .sidenav {
+            position: fixed; /* Para que se superponga al contenido */
+            top: 0;
+            left: -270px; /* O un valor igual al ancho de tu sidebar (ej: -250px) */
+            bottom: 0;
+            width: 270px; /* El ancho de tu sidebar */
+            background-color: #003594 !important; /* El color de fondo de tu sidebar */
+            z-index: 1050; /* Un valor alto para que esté por encima del contenido */
+            transition: left 0.3s ease-in-out; /* Animación suave al aparecer/desaparecer */
+            /* Opcional: Añade sombra para el efecto flotante */
+            box-shadow: 5px 0 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .main-content {
+            transition: margin-left 0.3s ease-in-out; /* Para una transición suave si decides ajustar el margen */
+            margin-left: 0 !important; /* El contenido ocupa todo el ancho inicialmente */
+        }
+
+        body.g-sidenav-show {
+            margin-left: 0 !important; /* Sin margen para el contenido */
+        }
+
+    }
+
+    /* Estilos para los enlaces del navbar (sin cambios) */
+    .sidenav .navbar-nav .nav-item .nav-link.active {
+        background-image: linear-gradient(310deg, #000 0%, #000 100%);
+        color: white;
+        box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+        padding: 10px 15px;
+        z-index: 1050; /* Un valor alto para que flote por encima del contenido */
+
+    }
+
+    .sidenav .navbar-nav .nav-item .nav-link.active .icon i,
+    .sidenav .navbar-nav .nav-item .nav-link.active .nav-link-text {
+        color: white;
+    }
+
+
+    .sidenav .navbar-nav .nav-item .nav-link:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        color: #344767;
+        border-radius: 8px;
+    }
+
+    .sidenav .navbar-nav .nav-item {
+        margin-bottom: 5px;
+    }
+
+    .sidenav .navbar-nav .nav-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .sidenav .navbar-nav .nav-link .nav-link-text {
+        font-weight: 600;
+    }
+
+    .sidenav .navbar-nav .nav-link svg {
+        margin-right: 8px;
+    }
+
+    /* Estilos para las clases 'active' y 'sidenav-open' */
+    .sidenav.active {
+        left: 250px !important; /* Mostrar el sidebar */
+    }
+
+    body.sidenav-open {
+        margin-left: 0px !important; /* Ajustar el margen del body */
+    }
+    /* Estilos para el dropdown "Crear Ticket" */
+    .nav-item.dropdown {
+        position: relative;
+        margin-bottom: 5px; /* Mantén el margen inferior para separar los elementos */
+    }
+
+    .nav-item.dropdown .nav-link {
+        display: flex;
+        align-items: center;
+        color: white; /* Color inicial del texto */
+        padding: 10px 15px;
+        border-radius: 8px;
+        transition: background-color 0.3s ease, color 0.3s ease; /* Transición suave */
+    }
+
+    .nav-item.dropdown:hover .nav-link {
+        background-color: black; /* Fondo negro al hacer hover */
+        color: white; /* Texto blanco al hacer hover */
+    }
+
+    .nav-item.dropdown .nav-link svg {
+        fill: white; /* Color inicial del icono */
+        margin-right: 8px;
+    }
+
+    .nav-item.dropdown:hover .nav-link svg {
+        fill: white; /* Color del icono al hacer hover (puedes cambiarlo si quieres) */
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        display: none; /* Oculto por defecto */
+        min-width: 200px; /* Ajusta el ancho mínimo del dropdown */
+        padding: 5px 0;
+        margin: 0;
+        font-size: 1rem;
+        color: #212529;
+        text-align: left;
+        list-style: none;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        border-radius: 0.25rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+    }
+
+    .dropdown-menu.show {
+        display: block; /* Mostrar el menú cuando tiene la clase 'show' */
+    }
+
+    .dropdown-item {
+        display: block;
+        width: 100%;
+        padding: 0.25rem 1.5rem;
+        clear: both;
+        font-weight: 400;
+        color: #212529;
+        text-align: inherit;
+        white-space: nowrap;
+        background-color: transparent;
+        border: 0;
+        transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out; /* Transición suave */
+        font-family: revert;
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item:focus {
+        color: black; /* Texto negro al hacer hover en las opciones */
+        background-color: #ddeeff; /* Color de fondo claro que combina con azul y negro */
+        text-decoration: none;
+    }
