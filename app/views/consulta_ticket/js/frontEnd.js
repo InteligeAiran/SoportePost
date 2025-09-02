@@ -309,7 +309,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function getRegionUsuarios() {
   const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/GetRegionUsers`);
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getRegionTicket`);
 
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 

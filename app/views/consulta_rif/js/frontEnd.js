@@ -4442,12 +4442,9 @@ function fetchSerialData(serial, rif,razonsocial) {
               td.setAttribute("data-column-name", formattedKey);
 
               // Obtén referencias a los botones
-              const createTicketFalla1Btn = document.getElementById(
-                "createTicketFalla1Btn"
-              );
-              const createTicketFalla2Btn = document.getElementById(
-                "createTicketFalla2Btn"
-              );
+              const createTicketFalla1Btn = document.getElementById("createTicketFalla1Btn");
+              const createTicketFalla2Btn = document.getElementById("createTicketFalla2Btn");
+              const descEstatus=document.getElementById("txtDescripcion");
 
               // Verifica si los botones existen antes de intentar manipularlos
               if (createTicketFalla1Btn && createTicketFalla2Btn) {
@@ -4465,30 +4462,16 @@ function fetchSerialData(serial, rif,razonsocial) {
                     // Ocultar los botones:
                     createTicketFalla1Btn.style.display = "none"; // Oculta el primer botón
                     createTicketFalla2Btn.style.display = "none"; // Oculta el segundo botón
+                    descEstatus.textContent = "Equipo Desafiliado, no puede generar tickets";
+                    descEstatus.style.color = "";
 
-                    // Si prefieres usar clases de Bootstrap (por ejemplo, d-none):
-                    // createTicketFalla1Btn.classList.add('d-none');
-                    // createTicketFalla2Btn.classList.add('d-none');
 
-                    // Si usas el contenedor de botones:
-                    // if (buttonsContainer) {
-                    //     buttonsContainer.style.display = 'none';
-                    //     // O buttonsContainer.classList.add('d-none');
-                    // }
                   } else {
                     // Si el estatus NO es "Equipo Desafiliado" ni "Equipo Inactivo", asegúrate de que los botones estén visibles:
                     createTicketFalla1Btn.style.display = "block"; // Restablece el display a su valor por defecto
                     createTicketFalla2Btn.style.display = "block"; // Restablece el display a su valor por defecto
+                    
 
-                    // O si usas clases de Bootstrap:
-                    // createTicketFalla1Btn.classList.remove('d-none');
-                    // createTicketFalla2Btn.classList.remove('d-none');
-
-                    // Si usas el contenedor de botones:
-                    // if (buttonsContainer) {
-                    //     buttonsContainer.style.display = '';
-                    //     // O buttonsContainer.classList.remove('d-none');
-                    // }
                   }
                 }
               } else {
