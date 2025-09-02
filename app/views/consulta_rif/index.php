@@ -492,9 +492,11 @@ function mi_navbar() {}
                                         <button type="button" class="btn btn-success me-2" id="createTicketFalla1Btn">Crear Ticket Falla 1</button>
                                         <button type="button" class="btn btn-warning" id="createTicketFalla2Btn">Crear Ticket Falla 2</button>
                                     </div>
+                                    <div class="mt-3 w-100 d-flex justify-content-center" id="txtDescripcion"></div>
                                     <!--div class="mt-3 w-100 d-flex justify-content-center">
                                         <button type="button" class="btn btn-secondary w-75" id="closeDetailsPanelBtn">Cerrar Detalles</button>
                                     </div-->
+
                                 </div>
                             </div>
                         </div>

@@ -2598,5 +2598,15 @@ class consulta_rifModel extends Model
         }
         return $result;
     }
+
+        public function GetRegionTicket(){
+        try{
+            $sql = "SELECT * FROM sp_verregionusers()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }
 }
 ?>

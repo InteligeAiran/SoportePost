@@ -803,5 +803,16 @@ class TechnicalConsultionRepository
             return $tipousers;
         }
     }
+
+    public function GetRegionTicket(){
+        $result = $this->model->GetRegionTicket();
+    
+        for ($i = 0; $i < $result['numRows']; $i++) {
+            $agente = pg_fetch_assoc($result['query'], $i);
+            $tipousers[] = $agente;
+            //var_dump($agente);
+        }
+        return $tipousers;
+    }
 }
 ?>

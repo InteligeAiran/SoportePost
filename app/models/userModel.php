@@ -56,7 +56,7 @@ class userModel extends Model{
 
     public function GetRegionUsers(){
         try{
-            $sql = "SELECT * FROM sp_verregionusers()";
+            $sql = "SELECT * FROM sp_verregionusers() where idreg!='8'";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
