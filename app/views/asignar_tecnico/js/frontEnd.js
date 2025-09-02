@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
           Swal.fire({
             icon: 'success',
             title: '¡Reasignación Exitosa!',
-            html: `El Ticket <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNro}</span> ha sido reasignado con éxito a <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${newTechnicianName}</span>.`,
+            html: `El Ticket <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNro}</span> ha sido reasignado con éxito a <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${newTechnicianName}</span>.`,
             confirmButtonText: 'Ok',
             color: 'black',
             confirmButtonColor: '#003594'
@@ -1314,7 +1314,6 @@ function loadTicketHistory(ticketId) {
 
           const prevItem = response.history[index + 1] || {};
 
-          // CORRECCIÓN: Mejorar la función cleanString para manejar espacios en blanco
           const cleanString = (str) => {
             if (!str) return null;
             const trimmed = str.replace(/\s/g, ' ').trim();
@@ -1322,20 +1321,28 @@ function loadTicketHistory(ticketId) {
           };
 
           const itemAccion = cleanString(item.name_accion_ticket);
-          const itempago = cleanString(item.name_status_payment);
           const prevAccion = cleanString(prevItem.name_accion_ticket);
           const accionChanged = prevAccion && itemAccion !== prevAccion;
 
-          // CORRECCIÓN: Mejorar el manejo del técnico asignado para detectar cambios
+          // CORRECCIÓN: Lógica para Coordinador
+          const itemCoord = cleanString(item.full_name_coordinador);
+          const prevCoord = cleanString(prevItem.full_name_coordinador);
+          const coordChanged = (prevCoord && itemCoord && prevCoord !== itemCoord) ||
+                                (prevCoord && !itemCoord) ||
+                                (!prevCoord && itemCoord);
+
+          // CORRECCIÓN: Lógica para Usuario Gestión
+          const itemUsuarioGestion = cleanString(item.usuario_gestion);
+          const prevUsuarioGestion = cleanString(prevItem.usuario_gestion);
+          const usuarioGestionChanged = (prevUsuarioGestion && itemUsuarioGestion && prevUsuarioGestion !== itemUsuarioGestion) ||
+                                         (prevUsuarioGestion && !itemUsuarioGestion) ||
+                                         (!prevUsuarioGestion && itemUsuarioGestion);
+          
           const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
           const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
-          
-          // Marcar como cambiado si:
-          // 1. Ambos valores existen y son diferentes, O
-          // 2. Uno de los dos valores existe y el otro no (asignación/desasignación)
-          const tecnicoChanged = (prevTecnico && itemTecnico && prevTecnico !== prevTecnico) || 
-                                (prevTecnico && !itemTecnico) || 
-                                (!prevTecnico && itemTecnico);
+          const tecnicoChanged = (prevTecnico && itemTecnico && prevTecnico !== itemTecnico) || 
+                                 (prevTecnico && !itemTecnico) || 
+                                 (!prevTecnico && itemTecnico);
 
           const itemStatusLab = cleanString(item.name_status_lab);
           const prevStatusLab = cleanString(prevItem.name_status_lab);
@@ -1357,14 +1364,13 @@ function loadTicketHistory(ticketId) {
           const prevComponents = cleanString(prevItem.components_list);
           const componentsChanged = prevComponents && itemComponents !== prevComponents;
 
-          // --- NUEVO CÓDIGO PARA COMPARAR EL MOTIVO DE RECHAZO ---
           const itemMotivoRechazo = cleanString(item.name_motivo_rechazo);
           const prevMotivoRechazo = cleanString(prevItem.name_motivo_rechazo);
           const motivoRechazoChanged = prevMotivoRechazo && itemMotivoRechazo !== prevMotivoRechazo;
 
           const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
+          const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
-          // --- NUEVO CÓDIGO PARA DOCUMENTOS CARGADOS ---
           const itemPago = cleanString(item.pago);
           const itemExoneracion = cleanString(item.exoneracion);
           const itemEnvio = cleanString(item.envio);
@@ -1379,28 +1385,25 @@ function loadTicketHistory(ticketId) {
           const exoneracionChanged = prevExoneracion && itemExoneracion !== prevExoneracion;
           const envioChanged = prevEnvio && itemEnvio !== prevEnvio;
           const envioDestinoChanged = prevEnvioDestino && itemEnvioDestino !== prevEnvioDestino;
-          
-          // --- LÓGICA CORREGIDA PARA MOSTRAR EL MOTIVO DE RECHAZO ---
+
           const rejectedActions = [
             'Documento de Exoneracion Rechazado',
             'Documento de Anticipo Rechazado'         
          ];
+          const showMotivoRechazo = rejectedActions.includes(cleanString(item.name_status_payment)) && itemMotivoRechazo;
 
-          const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
-
-          // --- LÓGICA CORREGIDA: Solo mostrar comentarios en registros específicos ---
-          // Comentario de devolución solo cuando la acción es 'En espera de Confirmar Devolución'
-          const showCommentDevolution = itemAccion === 'En espera de Confirmar Devolución' && item.comment_devolution;
-
-          // Comentario de reasignación solo cuando la acción es 'Reasignado al Técnico'
+          // Solo mostrar comentario de devolución si:
+          // 1. La acción es "En espera de Confirmar Devolución"
+          // 2. Existe el comentario
+          // 3. NO hay documento de envío a destino (envio_destino !== 'Sí')
+          const showCommentDevolution = itemAccion === 'En espera de Confirmar Devolución' && 
+                                       item.comment_devolution && 
+                                       itemEnvioDestino !== 'Sí';
           const showCommentReasignation = itemAccion === 'Reasignado al Técnico' && item.comment_reasignation && item.comment_reasignation.trim() !== '';
-
-          const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
           let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
           let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
           
-          // NUEVA LÓGICA: Mostrar el status del laboratorio cuando la acción es "En taller"
           let statusHeaderText;
           if (itemAccion === "Enviado a taller" || itemAccion === "En Taller") {
             statusHeaderText = ` (${item.name_status_lab || "Desconocido"})`;
@@ -1408,7 +1411,6 @@ function loadTicketHistory(ticketId) {
             statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
           }
 
-          // Solo mostrar el comentario de devolución cuando sea relevante
           if (showCommentDevolution) {
             historyHtml += `
               <div class="alert alert-warning alert-sm mb-2" style="color: white;">
@@ -1417,7 +1419,6 @@ function loadTicketHistory(ticketId) {
             `;
           }
 
-          // Solo mostrar comentario de reasignación cuando sea relevante
           if (showCommentReasignation) {
             historyHtml += `
               <div class="alert alert-info alert-sm mb-2" style="color: white;">
@@ -1457,8 +1458,12 @@ function loadTicketHistory(ticketId) {
                                                     <td>${item.operador_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
+                                                    <th class="text-start">Usuario Gestión:</th>
+                                                    <td class="${usuarioGestionChanged ? "highlighted-change" : ""}">${item.usuario_gestion || "N/A"}</td>
+                                                </tr>
+                                                <tr>
                                                     <th class="text-start">Coordinador:</th>
-                                                    <td>${item.full_name_coordinador || "N/A"}</td>
+                                                    <td class="${coordChanged ? "highlighted-change" : ""}">${item.full_name_coordinador || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                   <th class="text-start">Coordinación:</th>

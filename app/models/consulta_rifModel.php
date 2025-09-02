@@ -282,154 +282,154 @@ class consulta_rifModel extends Model
     // También asegúrate de que Model::getResult esté correctamente definido si lo usas.
 
 
- public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket)
-{
-    try {
-        $db_conn = $this->db->getConnection();
+    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket)
+    {
+        try {
+            $db_conn = $this->db->getConnection();
 
-        // 1. Escapar todas las variables de cadena (TEXT, VARCHAR)
-        $escaped_serial = pg_escape_literal($db_conn, $serial);
-        $escaped_descripcion = pg_escape_literal($db_conn, $descripcion);
-        $escaped_rif = pg_escape_literal($db_conn, $rif);
-        $escaped_Nr_ticket = pg_escape_literal($db_conn, $Nr_ticket);
+            // 1. Escapar todas las variables de cadena (TEXT, VARCHAR)
+            $escaped_serial = pg_escape_literal($db_conn, $serial);
+            $escaped_descripcion = pg_escape_literal($db_conn, $descripcion);
+            $escaped_rif = pg_escape_literal($db_conn, $rif);
+            $escaped_Nr_ticket = pg_escape_literal($db_conn, $Nr_ticket);
 
-        // 2. Construir la consulta para save_data_failure2
-        $sql = "SELECT * FROM public.save_data_failure2("
-            . $escaped_serial . "::TEXT, "
-            . (int) $nivelFalla . "::INTEGER, "
-            . (int) $id_status_payment . "::INTEGER, "
-            . $escaped_rif . "::VARCHAR, "
-            . $escaped_Nr_ticket . "::VARCHAR);";
+            // 2. Construir la consulta para save_data_failure2
+            $sql = "SELECT * FROM public.save_data_failure2("
+                . $escaped_serial . "::TEXT, "
+                . (int) $nivelFalla . "::INTEGER, "
+                . (int) $id_status_payment . "::INTEGER, "
+                . $escaped_rif . "::VARCHAR, "
+                . $escaped_Nr_ticket . "::VARCHAR);";
 
-        $result = $this->db->pgquery($sql);
+            $result = $this->db->pgquery($sql);
 
-        if ($result === false) {
-            error_log("Error al ejecutar save_data_failure2: " . pg_last_error($db_conn) . " Query: " . $sql);
-            return ['error' => 'Error al insertar datos de falla principal.'];
+            if ($result === false) {
+                error_log("Error al ejecutar save_data_failure2: " . pg_last_error($db_conn) . " Query: " . $sql);
+                return ['error' => 'Error al insertar datos de falla principal.'];
+            }
+
+            $ticketData = pg_fetch_assoc($result);
+            pg_free_result($result); // Liberar el recurso
+
+            if (!isset($ticketData['save_data_failure2']) || $ticketData['save_data_failure2'] == 0) {
+                error_log("Error: La función save_data_failure2 no devolvió un ID de ticket válido o devolvió 0.");
+                return ['error' => 'Error al obtener ID del ticket de la base de datos.'];
+            }
+            $idTicketCreado = (int) $ticketData['save_data_failure2'];
+
+            // 5. Insertar TicketFailure
+            $sqlFailure = "SELECT public.InsertTicketFailure(" . (int) $idTicketCreado . ", " . $escaped_descripcion . ");";
+            $resultFailure = $this->db->pgquery($sqlFailure);
+            if ($resultFailure === false) {
+                error_log("Error al insertar TicketFailure: " . pg_last_error($db_conn) . " Query: " . $sqlFailure);
+                return ['error' => 'Error al insertar falla específica del ticket.'];
+            }
+            pg_free_result($resultFailure); // Liberar el recurso
+
+            // 6. Llamar a insertintouser_ticket
+            $sqlInsertUserTicket = sprintf(
+                "SELECT public.insertintouser_ticket(%d::integer, %d::integer, NOW()::timestamp without time zone, NULL::timestamp without time zone, %d::integer, NOW()::timestamp without time zone, NULL::integer, NULL::timestamp without time zone);",
+                (int) $idTicketCreado,
+                (int) $id_user,
+                (int) $coordinador
+            );
+            $resultUserTicket = $this->db->pgquery($sqlInsertUserTicket);
+            if ($resultUserTicket === false) {
+                error_log("Error al insertar en users_tickets: " . pg_last_error($db_conn) . " Query: " . $sqlInsertUserTicket);
+                return ['error' => 'Error al insertar en users_tickets.'];
+            }
+            pg_free_result($resultUserTicket); // Liberar el recurso
+
+            // 7. Insertar en ticket_status_history - PRIMERA ENTRADA: "crear ticket"
+            $id_accion_ticket_crear = 0; // ID para acción "crear ticket"
+            $id_status_ticket_inicial = 1; // Estado inicial del ticket
+            $id_status_domiciliacion_inicial = 1; // Estado inicial de domiciliación
+
+            $sqlInsertHistoryCrear = sprintf(
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer);",
+                (int) $idTicketCreado,
+                (int) $id_user,
+                (int) $id_status_ticket_inicial,
+                (int) $id_accion_ticket_crear,
+                (int) $id_status_payment,
+                (int) $id_status_domiciliacion_inicial
+            );
+            $resultHistoryCrear = $this->db->pgquery($sqlInsertHistoryCrear);
+            
+            if ($resultHistoryCrear === false) {
+                error_log("Error al insertar en ticket_status_history (crear ticket): " . pg_last_error($db_conn) . " Query: " . $sqlInsertHistoryCrear);
+                return ['error' => 'Error al insertar en ticket_status_history (crear ticket).'];
+            }
+            
+            error_log("'crear ticket' insertado correctamente con ID: " . $idTicketCreado);
+            pg_free_result($resultHistoryCrear);
+
+            // 8. Insertar en ticket_status_history - SEGUNDA ENTRADA: "Asignado al Coordinador"
+            $id_accion_ticket = 4; // ID para acción "Asignado al Coordinador"
+            $id_status_ticket = 1; // Estado del ticket
+            $id_status_domiciliacion = 1; // Estado de domiciliación
+
+            $sqlInsertHistoryCoord = sprintf(
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer);",
+                (int) $idTicketCreado,
+                (int) $id_user,
+                (int) $id_status_ticket,
+                (int) $id_accion_ticket,
+                (int) $id_status_payment,
+                (int) $id_status_domiciliacion
+            );
+            $resultHistoryCoord = $this->db->pgquery($sqlInsertHistoryCoord);
+            
+            if ($resultHistoryCoord === false) {
+                error_log("Error al insertar en ticket_status_history (Asignado al Coordinador): " . pg_last_error($db_conn) . " Query: " . $sqlInsertHistoryCoord);
+                return ['error' => 'Error al insertar en ticket_status_history (Asignado al Coordinador).'];
+            }
+            
+            error_log("'Asignado al Coordinador' insertado correctamente con ID: " . $idTicketCreado);
+            pg_free_result($resultHistoryCoord);
+
+            // 9. Insertar en tickets_status_domiciliacion
+            $sqlInserDomiciliacion = "INSERT INTO tickets_status_domiciliacion (id_ticket, id_status_domiciliacion) VALUES (" . (int) $idTicketCreado . ", " . (int) $id_status_domiciliacion . ");";
+            $resultInserDomiciliacion = $this->db->pgquery($sqlInserDomiciliacion);
+            if ($resultInserDomiciliacion === false) {
+                error_log("Error al insertar en tickets_status_domiciliacion: " . pg_last_error($db_conn) . " Query: " . $sqlInserDomiciliacion);
+                return ['error' => 'Error al insertar en tickets_status_domiciliacion.'];
+            }
+            pg_free_result($resultInserDomiciliacion);
+
+            // 10. NUEVO: Guardar archivos adjuntos DESPUÉS de crear el historial
+            if (!empty($envio)) {
+                $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $envio, 'envio_stored', '/path/to/envio', 'application/pdf', 1024, 'Envio');
+            }
+            
+            if (!empty($exoneracion)) {
+                $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $exoneracion, 'exoneracion_stored', '/path/to/exoneracion', 'application/pdf', 1024, 'Exoneracion');
+            }
+            
+            if (!empty($anticipo)) {
+                $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $anticipo, 'anticipo_stored', '/path/to/anticipo', 'application/pdf', 1024, 'Anticipo');
+            }
+
+            // 11. Obtener el estado actual del ticket
+            $currentTicketStatus = $this->getStatusTicket($idTicketCreado);
+            $SearchStatusPayment = $this->getStatusTicketPayment($idTicketCreado);
+            if (!$currentTicketStatus) {
+                error_log("Advertencia: No se pudo obtener el estado del ticket después de la creación para ID: " . $idTicketCreado);
+                $currentTicketStatus = ['id_status_ticket' => null, 'name_status_ticket' => 'Desconocido'];
+            }
+
+            return [
+                'success' => true,
+                'id_ticket_creado' => $idTicketCreado,
+                'status_info' => $currentTicketStatus,
+                'status_payment_info' => $SearchStatusPayment
+            ];
+
+        } catch (Throwable $e) {
+            error_log("Excepción en SaveDataFalla2 (General): " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
+            return ['error' => 'Error inesperado: ' . $e->getMessage()];
         }
-
-        $ticketData = pg_fetch_assoc($result);
-        pg_free_result($result); // Liberar el recurso
-
-        if (!isset($ticketData['save_data_failure2']) || $ticketData['save_data_failure2'] == 0) {
-            error_log("Error: La función save_data_failure2 no devolvió un ID de ticket válido o devolvió 0.");
-            return ['error' => 'Error al obtener ID del ticket de la base de datos.'];
-        }
-        $idTicketCreado = (int) $ticketData['save_data_failure2'];
-
-        // 5. Insertar TicketFailure
-        $sqlFailure = "SELECT public.InsertTicketFailure(" . (int) $idTicketCreado . ", " . $escaped_descripcion . ");";
-        $resultFailure = $this->db->pgquery($sqlFailure);
-        if ($resultFailure === false) {
-            error_log("Error al insertar TicketFailure: " . pg_last_error($db_conn) . " Query: " . $sqlFailure);
-            return ['error' => 'Error al insertar falla específica del ticket.'];
-        }
-        pg_free_result($resultFailure); // Liberar el recurso
-
-        // 6. Llamar a insertintouser_ticket
-        $sqlInsertUserTicket = sprintf(
-            "SELECT public.insertintouser_ticket(%d::integer, %d::integer, NOW()::timestamp without time zone, NULL::timestamp without time zone, %d::integer, NOW()::timestamp without time zone, NULL::integer, NULL::timestamp without time zone);",
-            (int) $idTicketCreado,
-            (int) $id_user,
-            (int) $coordinador
-        );
-        $resultUserTicket = $this->db->pgquery($sqlInsertUserTicket);
-        if ($resultUserTicket === false) {
-            error_log("Error al insertar en users_tickets: " . pg_last_error($db_conn) . " Query: " . $sqlInsertUserTicket);
-            return ['error' => 'Error al insertar en users_tickets.'];
-        }
-        pg_free_result($resultUserTicket); // Liberar el recurso
-
-        // 7. Insertar en ticket_status_history - PRIMERA ENTRADA: "crear ticket"
-        $id_accion_ticket_crear = 0; // ID para acción "crear ticket"
-        $id_status_ticket_inicial = 1; // Estado inicial del ticket
-        $id_status_domiciliacion_inicial = 1; // Estado inicial de domiciliación
-
-        $sqlInsertHistoryCrear = sprintf(
-            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer);",
-            (int) $idTicketCreado,
-            (int) $id_user,
-            (int) $id_status_ticket_inicial,
-            (int) $id_accion_ticket_crear,
-            (int) $id_status_payment,
-            (int) $id_status_domiciliacion_inicial
-        );
-        $resultHistoryCrear = $this->db->pgquery($sqlInsertHistoryCrear);
-        
-        if ($resultHistoryCrear === false) {
-            error_log("Error al insertar en ticket_status_history (crear ticket): " . pg_last_error($db_conn) . " Query: " . $sqlInsertHistoryCrear);
-            return ['error' => 'Error al insertar en ticket_status_history (crear ticket).'];
-        }
-        
-        error_log("'crear ticket' insertado correctamente con ID: " . $idTicketCreado);
-        pg_free_result($resultHistoryCrear);
-
-        // 8. Insertar en ticket_status_history - SEGUNDA ENTRADA: "Asignado al Coordinador"
-        $id_accion_ticket = 4; // ID para acción "Asignado al Coordinador"
-        $id_status_ticket = 1; // Estado del ticket
-        $id_status_domiciliacion = 1; // Estado de domiciliación
-
-        $sqlInsertHistoryCoord = sprintf(
-            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer);",
-            (int) $idTicketCreado,
-            (int) $id_user,
-            (int) $id_status_ticket,
-            (int) $id_accion_ticket,
-            (int) $id_status_payment,
-            (int) $id_status_domiciliacion
-        );
-        $resultHistoryCoord = $this->db->pgquery($sqlInsertHistoryCoord);
-        
-        if ($resultHistoryCoord === false) {
-            error_log("Error al insertar en ticket_status_history (Asignado al Coordinador): " . pg_last_error($db_conn) . " Query: " . $sqlInsertHistoryCoord);
-            return ['error' => 'Error al insertar en ticket_status_history (Asignado al Coordinador).'];
-        }
-        
-        error_log("'Asignado al Coordinador' insertado correctamente con ID: " . $idTicketCreado);
-        pg_free_result($resultHistoryCoord);
-
-        // 9. Insertar en tickets_status_domiciliacion
-        $sqlInserDomiciliacion = "INSERT INTO tickets_status_domiciliacion (id_ticket, id_status_domiciliacion) VALUES (" . (int) $idTicketCreado . ", " . (int) $id_status_domiciliacion . ");";
-        $resultInserDomiciliacion = $this->db->pgquery($sqlInserDomiciliacion);
-        if ($resultInserDomiciliacion === false) {
-            error_log("Error al insertar en tickets_status_domiciliacion: " . pg_last_error($db_conn) . " Query: " . $sqlInserDomiciliacion);
-            return ['error' => 'Error al insertar en tickets_status_domiciliacion.'];
-        }
-        pg_free_result($resultInserDomiciliacion);
-
-        // 10. NUEVO: Guardar archivos adjuntos DESPUÉS de crear el historial
-        if (!empty($envio)) {
-            $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $envio, 'envio_stored', '/path/to/envio', 'application/pdf', 1024, 'Envio');
-        }
-        
-        if (!empty($exoneracion)) {
-            $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $exoneracion, 'exoneracion_stored', '/path/to/exoneracion', 'application/pdf', 1024, 'Exoneracion');
-        }
-        
-        if (!empty($anticipo)) {
-            $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $anticipo, 'anticipo_stored', '/path/to/anticipo', 'application/pdf', 1024, 'Anticipo');
-        }
-
-        // 11. Obtener el estado actual del ticket
-        $currentTicketStatus = $this->getStatusTicket($idTicketCreado);
-        $SearchStatusPayment = $this->getStatusTicketPayment($idTicketCreado);
-        if (!$currentTicketStatus) {
-            error_log("Advertencia: No se pudo obtener el estado del ticket después de la creación para ID: " . $idTicketCreado);
-            $currentTicketStatus = ['id_status_ticket' => null, 'name_status_ticket' => 'Desconocido'];
-        }
-
-        return [
-            'success' => true,
-            'id_ticket_creado' => $idTicketCreado,
-            'status_info' => $currentTicketStatus,
-            'status_payment_info' => $SearchStatusPayment
-        ];
-
-    } catch (Throwable $e) {
-        error_log("Excepción en SaveDataFalla2 (General): " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
-        return ['error' => 'Error inesperado: ' . $e->getMessage()];
     }
-}
 
     // Nueva función para insertar en archivos_adjuntos
     public function saveArchivoAdjunto($ticket_id, $Nr_ticket, $uploaded_by_user_id, $original_filename, $stored_filename, $file_path, $mime_type, $file_size_bytes, $document_type)
@@ -705,24 +705,44 @@ class consulta_rifModel extends Model
             $new_status_domiciliacion = null;
         }
 
+        
+                   $updateSql = "
+                    UPDATE users_tickets ut
+                    SET id_coordinador = {$id_user}
+                    FROM (
+                        SELECT id_user_ticket
+                        FROM users_tickets
+                        WHERE id_ticket = {$id_ticket}
+                        ORDER BY id_user_ticket DESC
+                        LIMIT 1
+                    ) last_ut
+                    WHERE ut.id_user_ticket = last_ut.id_user_ticket
+                    RETURNING ut.id_coordinador;
+                    ";
 
-        // Construir la llamada a la función de historial
-        // Asegúrate que el orden y número de parámetros coincidan exactamente con tu función PostgreSQL
-        // Por ejemplo, si insert_ticket_status_history tiene esta firma:
-        // insert_ticket_status_history(p_id_ticket, p_changedstatus_by, p_new_action, p_new_status_lab, p_new_status_payment, p_new_status_domiciliacion)
+                    $resultUpdate = $this->db->pgquery($updateSql);
 
-        $sqlInsertHistory = sprintf(
-            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
-            (int)$id_ticket,                  // p_id_ticket
-            (int)$id_user,                    // p_changedstatus_by (según tu código PHP previo, $id_user era el 2do param)
-            (int)$id_status_ticket,              // p_new_status (según tu código PHP previo, $id_new_status era el 3er param)
-            (int)$id_accion_ticket,           // p_new_action
-            (int)$id_new_status_lab,          // p_new_status_lab
-            (int)$id_new_status_payment,      // p_new_status_payment
-            (int)$new_status_domiciliacion    // p_new_status_domiciliacion - ¡Este es el que te faltaba en la llamada!
-        );
-                
+                    if ($resultUpdate && pg_num_rows($resultUpdate) > 0) {
+                        $row = pg_fetch_assoc($resultUpdate);
+                        $id_coordinador = (int)$row['id_coordinador'];
+                        pg_free_result($resultUpdate);
+                    } else {
+                        error_log('UPDATE users_tickets no retornó filas. ' . pg_last_error($this->db->getConnection()));
+                        $id_coordinador = null;
+                    }
 
+                    $sqlInsertHistory = sprintf(
+                        "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                        (int)$id_ticket,                  // p_id_ticket
+                        (int)$id_user,                    // p_changedstatus_by (según tu código PHP previo, $id_user era el 2do param)
+                        (int)$id_status_ticket,              // p_new_status (según tu código PHP previo, $id_new_status era el 3er param)
+                        (int)$id_accion_ticket,           // p_new_action
+                        (int)$id_new_status_lab,          // p_new_status_lab
+                        (int)$id_new_status_payment,      // p_new_status_payment
+                        (int)$new_status_domiciliacion,    // p_new_status_domiciliacion - ¡Este es el que te faltaba en la llamada!
+                        (int)$id_coordinador,    // p_new_status_domiciliacion - ��Este es el que te faltaba en la llamada!
+
+                    );
                 $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
 
                 if (!$resultsqlInsertHistory) {
@@ -731,8 +751,7 @@ class consulta_rifModel extends Model
                     return array('error' => 'Error al insertar en users_tickets: ' . pg_last_error($this->db->getConnection()));
                 }
             }
-
-            return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory);
+           return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory, 'insert_coordinador_result' => $resultUpdate);
         } catch (Throwable $e) {
             // Considera manejar el error de forma más robusta aquí, por ejemplo, loguear el error y devolver un resultado 'false'
             error_log("Error en UpdateAccion (PHP): " . $e->getMessage());
@@ -804,17 +823,28 @@ class consulta_rifModel extends Model
                 $id_status_ticket = 2; // Asignar un valor predeterminado o dinámico según tu lógica
                 $id_status_lab = 6; // Asignar un valor predeterminado o dinámico según tu lógica
 
+                $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                    $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                    $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                    pg_free_result($resultcoordinador);
+                }else{ 
+                    $id_coordinador = null;
+                }
+
+
                 // Llamar a insertintouser_ticket AQUI
                 $sqlInsertHistory = sprintf(
-            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                     (int) $id_ticket,    // Corresponds to p_id_ticket
                     (int) $id_user,      // Corresponds to p_changedstatus_by
                     $id_status_ticket,     // Corresponds to p_new_action (assuming it's always 4 based on your function's internal logic)
                     (int) $id_accion_ticket,         // Corresponds to p_id_action_ticket
                     (int) $id_status_lab,
                     (int)$id_new_status_payment,  // p_new_status_payment - ��Este es el que te faltaba en la llamada!
-                    (int)$new_status_domiciliacion    // p_new_status_domiciliacion - ¡Este es el que te faltaba en la llamada!
-
+                    (int)$new_status_domiciliacion,
+                    (int)$id_coordinador    // p_new_status_domiciliacion - ¡Este es el que te faltaba en la llamada!
                 );
 
                 $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
@@ -936,16 +966,28 @@ class consulta_rifModel extends Model
                         $id_new_status_lab = 0;
                     }
 
+                    $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
+
                 // Mueve la lógica del historial a donde realmente se ejecute la actualización correspondiente
                 $sqlInsertHistory1 = sprintf(
-                     "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                     "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                     (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     2, // Usamos la acción específica para el historial
                    (int)$id_accion_ticket, // Usamos la acción específica para el historial
                     (int)$id_new_status_lab,
                     $id_new_status_payment,
-                    $new_status_domiciliacion
+                    $new_status_domiciliacion,
+                    $id_coordinador
                 );
                 $resultsqlInsertHistory1 = $this->db->pgquery($sqlInsertHistory1);
 
@@ -1011,15 +1053,28 @@ class consulta_rifModel extends Model
 
                 // Mueve la lógica del historial a donde realmente se ejecute la actualización correspondiente
                 $id_status_ticket = 2; // Asignar un valor predeterminado o dinámico según tu lógica (¿Es siempre 1 o debería ser $id_new_status?)
+
+                $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                    $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                    $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                    pg_free_result($resultcoordinador);
+                }else{ 
+                    $id_coordinador = null;
+                }
+
+
                 $sqlInsertHistory2 = sprintf(
-                     "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                     "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                     (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     2, // Usamos la acción específica para el historial
                    (int)$id_accion_ticket, // Usamos la acción específica para el historial
                     (int)$id_new_status_lab,
                     $id_new_status_payment,
-                    $new_status_domiciliacion
+                    $new_status_domiciliacion,
+                    $id_coordinador
                 );
 
                 $resultsqlInsertHistory2 = $this->db->pgquery($sqlInsertHistory2);
@@ -1089,15 +1144,27 @@ class consulta_rifModel extends Model
                         $id_new_status_lab = 0;
                     }
 
+                    $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
+
                   $sqlInsertHistory = sprintf(
-                     "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                     "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                     (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     2, // Usamos la acción específica para el historial
                     (int)$id_accion_ticket, // Usamos la acción específica para el historial
                     (int)$id_new_status_lab,
                     $id_new_status_payment,
-                    $new_status_domiciliacion
+                    $new_status_domiciliacion,
+                    $id_coordinador
                 );
 
                 $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
@@ -1198,15 +1265,27 @@ class consulta_rifModel extends Model
         // Por ejemplo, si insert_ticket_status_history tiene esta firma:
         // insert_ticket_status_history(p_id_ticket, p_changedstatus_by, p_new_action, p_new_status_lab, p_new_status_payment, p_new_status_domiciliacion)
 
+         $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+            $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+            if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                pg_free_result($resultcoordinador);
+            }else{ 
+                $id_coordinador = null;
+            }
+
+
         $sqlInsertHistory = sprintf(
-            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
             (int)$id_ticket,                  // p_id_ticket
             (int)$id_user,                    // p_changedstatus_by (según tu código PHP previo, $id_user era el 2do param)
             (int)$id_status_ticket,              // p_new_status (según tu código PHP previo, $id_new_status era el 3er param)
             (int)$id_accion_ticket,           // p_new_action
             (int)$id_new_status_lab,          // p_new_status_lab
             (int)$id_new_status_payment,      // p_new_status_payment
-            (int)$new_status_domiciliacion    // p_new_status_domiciliacion - ¡Este es el que te faltaba en la llamada!
+            (int)$new_status_domiciliacion,    // p_new_status_domiciliacion - ¡Este es el que te faltaba en la llamada!
+            (int)$id_coordinador           // p_id_coordinador
         );
 
         $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
@@ -1379,15 +1458,27 @@ class consulta_rifModel extends Model
                     $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
                 }
 
+                $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
+                $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                    $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                    $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                    pg_free_result($resultcoordinador);
+                }else{ 
+                    $id_coordinador = null;
+                }
+
+
                     $sqlInsertHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
                     (int)$ticketId, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     (int)$id_status_ticket_history, // Usamos la acción específica para el historial
                     (int)$id_accion_ticket, // Usamos la acción específica para el historial
                     $id_new_status_lab,
                     $id_new_status_payment,
-                    $new_status_domiciliacion
+                    $new_status_domiciliacion,
+                    (int)$id_coordinador
                 );
                 $sqlresultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
                 return array('save_result' => $result, 'history_result' => $sqlInsertHistory);
@@ -1424,16 +1515,27 @@ class consulta_rifModel extends Model
                     $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
                 }
 
+                $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
+                $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                    $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                    $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                    pg_free_result($resultcoordinador);
+                }else{ 
+                    $id_coordinador = null;
+                }
+
 
                     $sqlInsertHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
                     (int)$ticketId, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     (int)2, // Usamos la acción específica para el historial
                     (int)$id_accion_ticket, // Usamos la acción específica para el historial
                     $id_status_lab,
                     $id_new_status_payment,
-                    $new_status_domiciliacion
+                    $new_status_domiciliacion,
+                    $id_coordinador
                 );
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
 
@@ -1488,9 +1590,19 @@ class consulta_rifModel extends Model
                         $repuesto_date_sql = "'" . pg_escape_string($conn, $repuesto_date) . "'"; 
                     }
 
+                    $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
 
                     $sqlInsertHistory = sprintf(
-            "SELECT public.insert_ticket_status_historyDateRepuesto(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %s);",
+            "SELECT public.insert_ticket_status_historyDateRepuesto(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %s, %d::integer);",
                         (int)$ticketId, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     2, // Usamos la acción específica para el historial
@@ -1498,7 +1610,8 @@ class consulta_rifModel extends Model
                     (int)$id_status_lab,
                     $id_new_status_payment,
                     $new_status_domiciliacion,
-                    $repuesto_date_sql 
+                    $repuesto_date_sql,
+                    $id_coordinador
                 );
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
 
@@ -1599,8 +1712,19 @@ class consulta_rifModel extends Model
                         $repuesto_date_sql = "'" . pg_escape_string($conn, $repuesto_date) . "'"; 
                     }
 
+                    $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
+
                         $sqlInsertHistory = sprintf(
-                        "SELECT public.insert_ticket_status_historyDateRepuesto(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %s);",
+                        "SELECT public.insert_ticket_status_historyDateRepuesto(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %s, %d::integer);",
                         (int)$ticketId, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     2, // Usamos la acción específica para el historial
@@ -1608,7 +1732,8 @@ class consulta_rifModel extends Model
                     (int)$id_new_status_lab,
                     $id_new_status_payment,
                     $new_status_domiciliacion,
-                    $repuesto_date_sql 
+                    $repuesto_date_sql,
+                    (int)$id_coordinador
                 );
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
 
@@ -1654,8 +1779,18 @@ class consulta_rifModel extends Model
                         $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
                     }
 
+                    $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
 
-                    $sqlInsertHistory = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+
+                    $sqlInsertHistory = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                     (int)$ticketId, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     2, // Usamos la acción específica para el historial
@@ -1663,6 +1798,7 @@ class consulta_rifModel extends Model
                     7,
                     $id_new_status_payment,
                     $new_status_domiciliacion,
+                    $id_coordinador
                 );
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
 
@@ -1731,9 +1867,17 @@ class consulta_rifModel extends Model
                         $id_accion_ticket = null;
                     }
 
-                    
+                    $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
 
-                    $sqlInsertHistory = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                    $sqlInsertHistory = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                     (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     2, // Usamos la acción específica para el historial
@@ -1741,6 +1885,7 @@ class consulta_rifModel extends Model
                     (int)$id_new_status_lab,
                     $id_new_status_payment,
                     $new_status_domiciliacion,
+                    $id_coordinador
                 );
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
 
@@ -1794,8 +1939,17 @@ class consulta_rifModel extends Model
                         $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
                     }
 
+                    $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
 
-                    $sqlInsertHistory = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                    $sqlInsertHistory = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                     (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     2, // Usamos la acción específica para el historial
@@ -1803,6 +1957,7 @@ class consulta_rifModel extends Model
                     (int)$id_new_status_lab,
                     $id_new_status_payment,
                     $new_status_domiciliacion,
+                    $id_coordinador
                 );
 
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
@@ -1872,8 +2027,18 @@ class consulta_rifModel extends Model
                         $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
                     }
 
+                    $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
 
-                    $sqlInsertHistory = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+
+                    $sqlInsertHistory = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                     (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     3, // Usamos la acción específica para el historial
@@ -1881,13 +2046,14 @@ class consulta_rifModel extends Model
                     (int)$id_new_status_lab,
                     $id_new_status_payment,
                     $new_status_domiciliacion,
+                    (int)$id_coordinador,
                     );
 
                     $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
 
                     if ($resultsqlInsertHistory) {
 
-                        $sqlInsertHistory1 = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                        $sqlInsertHistory1 = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                         (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
                         (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                         3, // Usamos la acción específica para el historial
@@ -1895,6 +2061,7 @@ class consulta_rifModel extends Model
                         (int)$id_new_status_lab,
                         $id_new_status_payment,
                         $new_status_domiciliacion,
+                        (int)$id_coordinador,
                         );
 
                         $resultsqlInsertHistory1 = pg_query($this->db->getConnection(), $sqlInsertHistory1);
@@ -1972,8 +2139,18 @@ class consulta_rifModel extends Model
                         $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
                     }
 
+                    $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
 
-                    $sqlInsertHistory = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+
+                    $sqlInsertHistory = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                     (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     3, // Usamos la acción específica para el historial
@@ -1981,6 +2158,7 @@ class consulta_rifModel extends Model
                     (int)$id_new_status_lab,
                     $id_new_status_payment,
                     $new_status_domiciliacion,
+                    (int)$id_coordinador
                     );
 
                     $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
@@ -1988,7 +2166,7 @@ class consulta_rifModel extends Model
 
                     if ($resultsqlInsertHistory) {
 
-                        $sqlInsertHistory1 = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                        $sqlInsertHistory1 = sprintf("SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                         (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
                         (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                         3, // Usamos la acción específica para el historial
@@ -1996,6 +2174,7 @@ class consulta_rifModel extends Model
                         (int)$id_new_status_lab,
                         $id_new_status_payment,
                         $new_status_domiciliacion,
+                        (int)$id_coordinador
                         );
                         $resultsqlInsertHistory1 = pg_query($this->db->getConnection(), $sqlInsertHistory1);
                         return $resultsqlInsertHistory1;
@@ -2051,16 +2230,27 @@ class consulta_rifModel extends Model
                     $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
                 }
 
+                 $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
 
                     $sqlInsertHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
                     (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     (int)2, // Usamos la acción específica para el historial
                     (int)$id_accion_ticket, // Usamos la acción específica para el historial
                     $id_status_lab,
                     $id_new_status_payment,
-                    $new_status_domiciliacion
+                    $new_status_domiciliacion,
+                    (int)$id_coordinador
                 );
 
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
@@ -2127,16 +2317,26 @@ class consulta_rifModel extends Model
                         $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
                     }
 
+                     $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
 
                     $sqlInsertHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
                     (int)$ticketId, // Se asume que $id_ticket ya es un entero válido o se castea
                     (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                     (int)2, // Usamos la acción específica para el historial
                     (int)$id_accion_ticket, // Usamos la acción específica para el historial
                     $id_status_lab,
                     $id_new_status_payment,
-                    $new_status_domiciliacion
+                    $new_status_domiciliacion,
+                    (int)$id_coordinador // Se asume que $id_coordinador ya es un entero válido o se castea
                 );
 
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
@@ -2203,16 +2403,27 @@ class consulta_rifModel extends Model
                     $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') !== null ? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
                 }
 
+                 $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
                 // Inserta el historial de "Actualización de Componentes" (id_accion_ticket = 20)
                 $sqlInsertComponentHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
                     (int)$ticketId,
                     (int)$id_user,
                     (int)$id_status_ticket,
                     (int)20, // id_accion_ticket para "Actualización de Componentes"
                     $id_status_lab,
                     $id_new_status_payment,
-                    $new_status_domiciliacion
+                    $new_status_domiciliacion,
+                    $id_coordinador
                 );
                 $resultComponentHistory = pg_query($this->db->getConnection(), $sqlInsertComponentHistory);
                 
@@ -2265,17 +2476,28 @@ class consulta_rifModel extends Model
             if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
                 $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') !== null ? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
             }
+
+             $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
             
             // 5. Se inserta en el historial el estado "En espera de confirmar recibido en Región"
             $sqlInsertHistory = sprintf(
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
                 (int)$ticketId,
                 (int)$id_user,
                 (int)2, // id_status_ticket (debe ser el valor correcto para el estado actual)
                 (int)$id_accion_ticket, // 18 para "En espera de confirmar recibido en Región"
                 $id_status_lab,
                 $id_new_status_payment,
-                $new_status_domiciliacion
+                $new_status_domiciliacion,
+                $id_coordinador // id_coordinador
             );
             $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
             
@@ -2332,15 +2554,26 @@ class consulta_rifModel extends Model
                 $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion')!== null? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
             }
 
+             $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
             $sqlInsertHistory = sprintf(
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
                 (int)$ticketId,
                 (int)$id_user,
                 (int)2,
                 (int)$id_accion_ticket,
                 $id_status_lab,
                 $id_new_status_payment,
-                $new_status_domiciliacion
+                $new_status_domiciliacion,
+                $id_coordinador
             );
 
             $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
@@ -2495,15 +2728,26 @@ class consulta_rifModel extends Model
                     $id_accion_ticket = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket')!== null? (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') : 'NULL';
                 }
 
+                 $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
                 $sqlInsertHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
                     (int)$id_ticket,
                     (int)$id_user,
                     (int)$id_status_ticket,
                     (int)$id_accion_ticket,
                     $id_status_lab,
                     $id_new_status_payment,
-                    $new_status_domiciliacion
+                    $new_status_domiciliacion,
+                    $id_coordinador
                 );
                $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
                 }
@@ -2564,15 +2808,26 @@ class consulta_rifModel extends Model
                     $id_accion_ticket = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket')!== null? (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') : 'NULL';
                 }
 
+                 $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
                 $sqlInsertHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
                     (int)$id_ticket,
                     (int)$id_user,
                     (int)$id_status_ticket,
                     (int)$id_accion_ticket,
                     $id_status_lab,
                     $id_new_status_payment,
-                    $new_status_domiciliacion
+                    $new_status_domiciliacion,
+                    $id_coordinador
                 );
 
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);

@@ -104,77 +104,81 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     const nameDocumento = document.getElementById("NombreImage");
     const BotonCerrarModal = document.getElementById("modalCerrarshow");
 
-    currentTicketId = ticketId;
-    currentNroTicket = nroTicket;
-    modalTicketIdSpanView.textContent = currentNroTicket;
+    // Verificar si ya hay un modal abierto y cerrarlo primero
+    if (bsViewModal && bsViewModal._isShown) {
+        bsViewModal.hide();
+        // Esperar a que se cierre completamente antes de continuar
+        setTimeout(() => {
+            openViewModal();
+        }, 300);
+        return;
+    }
 
-    // Limpiar vistas y mensajes
-    imageViewPreview.style.display = "none";
-    pdfViewViewer.style.display = "none";
-    messageContainer.textContent = "";
-    messageContainer.classList.add("hidden");
+    function openViewModal() {
+        currentTicketId = ticketId;
+        currentNroTicket = nroTicket;
+        modalTicketIdSpanView.textContent = currentNroTicket;
 
-    // Función para limpiar la ruta del archivo
-    function cleanFilePath(filePath) {
-        if (!filePath) return null;
+        // Limpiar vistas y mensajes
+        imageViewPreview.style.display = "none";
+        pdfViewViewer.style.display = "none";
+        messageContainer.textContent = "";
+        messageContainer.classList.add("hidden");
 
-        // Reemplazar barras invertidas con barras normales
-        let cleanPath = filePath.replace(/\\/g, '/');
+        // Función para limpiar la ruta del archivo
+        function cleanFilePath(filePath) {
+            if (!filePath) return null;
 
-        // Extraer la parte después de 'Documentos_SoportePost/'
-        const pathSegments = cleanPath.split('Documentos_SoportePost/');
-        if (pathSegments.length > 1) {
-            cleanPath = pathSegments[1];
+            // Reemplazar barras invertidas con barras normales
+            let cleanPath = filePath.replace(/\\/g, '/');
+
+            // Extraer la parte después de 'Documentos_SoportePost/'
+            const pathSegments = cleanPath.split('Documentos_SoportePost/');
+            if (pathSegments.length > 1) {
+                cleanPath = pathSegments[1];
+            }
+
+            // Construir la URL completa
+            return `http://localhost/Documentos/${cleanPath}`;
         }
 
-        // Construir la URL completa
-        return `http://localhost/Documentos/${cleanPath}`;
-    }
+        if (imageUrl) {
+            // Es una imagen
+            const fullUrl = cleanFilePath(imageUrl);
 
-    if (imageUrl) {
-        // Es una imagen
-        const fullUrl = cleanFilePath(imageUrl);
+            imageViewPreview.src = fullUrl;
+            imageViewPreview.style.display = "block";
+            nameDocumento.textContent = documentName;
 
-        imageViewPreview.src = fullUrl;
-        imageViewPreview.style.display = "block";
-        nameDocumento.textContent = documentName;
+        } else if (pdfUrl) {
+            // Es un PDF
+            const fullUrl = cleanFilePath(pdfUrl);
 
-    } else if (pdfUrl) {
-        // Es un PDF
-        const fullUrl = cleanFilePath(pdfUrl);
+            pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
+            pdfViewViewer.style.display = "block";
+            nameDocumento.textContent = documentName;
 
-        pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
-        pdfViewViewer.style.display = "block";
-        nameDocumento.textContent = documentName;
+        } else {
+            // No hay documento
+            messageContainer.textContent = "No hay documento disponible para este ticket.";
+            messageContainer.classList.remove("hidden");
+            nameDocumento.textContent = "";
+        }
 
-    } else {
-        // No hay documento
-        messageContainer.textContent = "No hay documento disponible para este ticket.";
-        messageContainer.classList.remove("hidden");
-        nameDocumento.textContent = "";
-    }
+        // Event listener para el botón de cerrar - Limpiar listeners anteriores
+        if (BotonCerrarModal) {
+            // Remover listeners anteriores para evitar duplicados
+            BotonCerrarModal.removeEventListener('click', closeViewModalHandler);
+            BotonCerrarModal.addEventListener('click', closeViewModalHandler);
+        }
 
-    // Usar la instancia de Bootstrap Modal existente o crear una nueva
-    if (bsViewModal) {
+        // Mostrar el modal
         bsViewModal.show();
-    } else {
-        // Crear nueva instancia si no existe
-        const viewDocumentModal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
-        viewDocumentModal.show();
     }
 
-    // Event listener para el botón de cerrar
-    if (BotonCerrarModal) {
-        BotonCerrarModal.addEventListener('click', function () {
-            if (bsViewModal) {
-                bsViewModal.hide();
-            } else {
-                const viewDocumentModal = bootstrap.Modal.getInstance(document.getElementById('viewDocumentModal'));
-                if (viewDocumentModal) {
-                    viewDocumentModal.hide();
-                }
-            }
-        });
+    // Si no hay modal abierto, abrir directamente
+    if (!bsViewModal || !bsViewModal._isShown) {
+        openViewModal();
     }
 }
 
@@ -214,35 +218,35 @@ function closeUploadModalAndClean() {
     function closeViewModalAndClean() {
         if (bsViewModal) {
             bsViewModal.hide(); // Usa el método de Bootstrap para ocultar el modal
-        } else {
-            // Lógica manual si no usas Bootstrap JS
-            if (!modalElementView) return;
-            modalElementView.classList.remove("show");
-            setTimeout(() => {
-                modalElementView.style.display = "none";
-                modalElementView.setAttribute("aria-hidden", "true");
-                document.body.classList.remove("modal-open");
-                const backdrop = document.querySelector(".manual-modal-backdrop");
-                if (backdrop) {
-                    backdrop.classList.remove("show");
-                    setTimeout(() => {
-                        backdrop.remove();
-                    }, 150);
-                }
-            }, 150);
         }
-        const imageViewPreview = document.getElementById("imageViewPreview");
-        const pdfViewViewer = document.getElementById("pdfViewViewer");
-        if (imageViewPreview) {
-            imageViewPreview.src = "#";
-            imageViewPreview.style.display = "none";
-        }
-        if (pdfViewViewer) {
-            pdfViewViewer.innerHTML = "";
-            pdfViewViewer.style.display = "none";
-        }
-        document.getElementById("viewDocumentMessage").classList.add("hidden"); // Oculta el mensaje
-        currentTicketId = null; // Restablecer el ID del ticket
+        
+        // Limpiar contenido después de un pequeño delay para evitar parpadeos
+        setTimeout(() => {
+            const imageViewPreview = document.getElementById("imageViewPreview");
+            const pdfViewViewer = document.getElementById("pdfViewViewer");
+            const messageContainer = document.getElementById("viewDocumentMessage");
+            
+            if (imageViewPreview) {
+                imageViewPreview.src = "#";
+                imageViewPreview.style.display = "none";
+            }
+            if (pdfViewViewer) {
+                pdfViewViewer.innerHTML = "";
+                pdfViewViewer.style.display = "none";
+            }
+            if (messageContainer) {
+                messageContainer.classList.add("hidden");
+            }
+            
+            // Restablecer variables globales
+            currentTicketId = null;
+            currentNroTicket = null;
+        }, 500);
+    }
+
+    // Función handler para el botón de cerrar
+    function closeViewModalHandler() {
+        closeViewModalAndClean();
     }
 
 
@@ -715,14 +719,12 @@ function getTicketDataFinaljs() {
                     const fileExtension = url_documento.split('.').pop().toLowerCase();
                     const isPdf = fileExtension === 'pdf';
                         
-                    return `<button type="button" id="viewimage" 
-                      class="btn btn-info btn-sm" 
+                    return `<button type="button" class="btn btn-info btn-sm view-document-btn" 
                       data-id-ticket="${idTicket}"
                       data-nro-ticket="${nroTicket}"
                       data-url-document="${url_documento}"
                       data-document-type="${isPdf ? 'pdf' : 'image'}"
-                      data-filename="${filename || 'Documento'}"
-                      onclick="showImageModal('${url_documento}', '${isPdf ? 'pdf' : 'image'}', '${filename || 'Documento'}')">
+                      data-filename="${filename || 'Documento'}">
                       Ver Documento
                     </button>`;
                   } else {
@@ -1990,7 +1992,23 @@ $(document).ready(function () {
     ); // Crea la instancia de Bootstrap Modal
   }
 
-  // 3. Listener para el clic en los botones "Subir Documento" en la tabla
+  // 3. Listener para el clic en los botones "Ver Documento" en la tabla
+  $(document).on("click", ".view-document-btn", function () {
+    const urlDocument = $(this).data("url-document");
+    const documentType = $(this).data("document-type");
+    const filename = $(this).data("filename");
+    const idTicket = $(this).data("id-ticket");
+    const nroTicket = $(this).data("nro-ticket");
+    
+    // Llamar a la función showViewModal con los parámetros correctos
+    if (documentType === 'pdf') {
+      showViewModal(idTicket, nroTicket, null, urlDocument, filename);
+    } else {
+      showViewModal(idTicket, nroTicket, urlDocument, null, filename);
+    }
+  });
+
+  // 4. Listener para el clic en los botones "Subir Documento" en la tabla
   // Usamos delegación de eventos con $(document).on('click', ...)
   // para los botones generados dinámicamente por DataTables.
   $(document).on("click", ".upload-document-btn", function () {
@@ -2660,7 +2678,6 @@ function loadTicketHistory(ticketId) {
 
           const prevItem = response.history[index + 1] || {};
 
-          // CORRECCIÓN: Mejorar la función cleanString para manejar espacios en blanco
           const cleanString = (str) => {
             if (!str) return null;
             const trimmed = str.replace(/\s/g, ' ').trim();
@@ -2668,20 +2685,28 @@ function loadTicketHistory(ticketId) {
           };
 
           const itemAccion = cleanString(item.name_accion_ticket);
-          const itempago = cleanString(item.name_status_payment);
           const prevAccion = cleanString(prevItem.name_accion_ticket);
           const accionChanged = prevAccion && itemAccion !== prevAccion;
 
-          // CORRECCIÓN: Mejorar el manejo del técnico asignado para detectar cambios
+          // CORRECCIÓN: Lógica para Coordinador
+          const itemCoord = cleanString(item.full_name_coordinador);
+          const prevCoord = cleanString(prevItem.full_name_coordinador);
+          const coordChanged = (prevCoord && itemCoord && prevCoord !== itemCoord) ||
+                                (prevCoord && !itemCoord) ||
+                                (!prevCoord && itemCoord);
+
+          // CORRECCIÓN: Lógica para Usuario Gestión
+          const itemUsuarioGestion = cleanString(item.usuario_gestion);
+          const prevUsuarioGestion = cleanString(prevItem.usuario_gestion);
+          const usuarioGestionChanged = (prevUsuarioGestion && itemUsuarioGestion && prevUsuarioGestion !== itemUsuarioGestion) ||
+                                         (prevUsuarioGestion && !itemUsuarioGestion) ||
+                                         (!prevUsuarioGestion && itemUsuarioGestion);
+          
           const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
           const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
-          
-          // Marcar como cambiado si:
-          // 1. Ambos valores existen y son diferentes, O
-          // 2. Uno de los dos valores existe y el otro no (asignación/desasignación)
-          const tecnicoChanged = (prevTecnico && itemTecnico && prevTecnico !== prevTecnico) || 
-                                (prevTecnico && !itemTecnico) || 
-                                (!prevTecnico && itemTecnico);
+          const tecnicoChanged = (prevTecnico && itemTecnico && prevTecnico !== itemTecnico) || 
+                                 (prevTecnico && !itemTecnico) || 
+                                 (!prevTecnico && itemTecnico);
 
           const itemStatusLab = cleanString(item.name_status_lab);
           const prevStatusLab = cleanString(prevItem.name_status_lab);
@@ -2703,14 +2728,13 @@ function loadTicketHistory(ticketId) {
           const prevComponents = cleanString(prevItem.components_list);
           const componentsChanged = prevComponents && itemComponents !== prevComponents;
 
-          // --- NUEVO CÓDIGO PARA COMPARAR EL MOTIVO DE RECHAZO ---
           const itemMotivoRechazo = cleanString(item.name_motivo_rechazo);
           const prevMotivoRechazo = cleanString(prevItem.name_motivo_rechazo);
           const motivoRechazoChanged = prevMotivoRechazo && itemMotivoRechazo !== prevMotivoRechazo;
 
           const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
+          const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
-          // --- NUEVO CÓDIGO PARA DOCUMENTOS CARGADOS ---
           const itemPago = cleanString(item.pago);
           const itemExoneracion = cleanString(item.exoneracion);
           const itemEnvio = cleanString(item.envio);
@@ -2725,28 +2749,25 @@ function loadTicketHistory(ticketId) {
           const exoneracionChanged = prevExoneracion && itemExoneracion !== prevExoneracion;
           const envioChanged = prevEnvio && itemEnvio !== prevEnvio;
           const envioDestinoChanged = prevEnvioDestino && itemEnvioDestino !== prevEnvioDestino;
-          
-          // --- LÓGICA CORREGIDA PARA MOSTRAR EL MOTIVO DE RECHAZO ---
+
           const rejectedActions = [
             'Documento de Exoneracion Rechazado',
             'Documento de Anticipo Rechazado'         
          ];
+          const showMotivoRechazo = rejectedActions.includes(cleanString(item.name_status_payment)) && itemMotivoRechazo;
 
-          const showMotivoRechazo = rejectedActions.includes(itempago) && item.name_motivo_rechazo;
-
-          // --- LÓGICA CORREGIDA: Solo mostrar comentarios en registros específicos ---
-          // Comentario de devolución solo cuando la acción es 'En espera de Confirmar Devolución'
-          const showCommentDevolution = itemAccion === 'En espera de Confirmar Devolución' && item.comment_devolution;
-
-          // Comentario de reasignación solo cuando la acción es 'Reasignado al Técnico'
+          // Solo mostrar comentario de devolución si:
+          // 1. La acción es "En espera de Confirmar Devolución"
+          // 2. Existe el comentario
+          // 3. NO hay documento de envío a destino (envio_destino !== 'Sí')
+          const showCommentDevolution = itemAccion === 'En espera de Confirmar Devolución' && 
+                                       item.comment_devolution && 
+                                       itemEnvioDestino !== 'Sí';
           const showCommentReasignation = itemAccion === 'Reasignado al Técnico' && item.comment_reasignation && item.comment_reasignation.trim() !== '';
-
-          const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
           let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
           let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
           
-          // NUEVA LÓGICA: Mostrar el status del laboratorio cuando la acción es "En taller"
           let statusHeaderText;
           if (itemAccion === "Enviado a taller" || itemAccion === "En Taller") {
             statusHeaderText = ` (${item.name_status_lab || "Desconocido"})`;
@@ -2754,7 +2775,6 @@ function loadTicketHistory(ticketId) {
             statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
           }
 
-          // Solo mostrar el comentario de devolución cuando sea relevante
           if (showCommentDevolution) {
             historyHtml += `
               <div class="alert alert-warning alert-sm mb-2" style="color: white;">
@@ -2763,7 +2783,6 @@ function loadTicketHistory(ticketId) {
             `;
           }
 
-          // Solo mostrar comentario de reasignación cuando sea relevante
           if (showCommentReasignation) {
             historyHtml += `
               <div class="alert alert-info alert-sm mb-2" style="color: white;">
@@ -2803,8 +2822,12 @@ function loadTicketHistory(ticketId) {
                                                     <td>${item.operador_ticket || "N/A"}</td>
                                                 </tr>
                                                 <tr>
+                                                    <th class="text-start">Usuario Gestión:</th>
+                                                    <td class="${usuarioGestionChanged ? "highlighted-change" : ""}">${item.usuario_gestion || "N/A"}</td>
+                                                </tr>
+                                                <tr>
                                                     <th class="text-start">Coordinador:</th>
-                                                    <td>${item.full_name_coordinador || "N/A"}</td>
+                                                    <td class="${coordChanged ? "highlighted-change" : ""}">${item.full_name_coordinador || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                   <th class="text-start">Coordinación:</th>

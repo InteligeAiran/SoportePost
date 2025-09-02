@@ -562,7 +562,7 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
 
             // --- PASO 1: Obtener datos del ticket existente para mantenerlos ---
             // Usamos el ID del ticket sanitizado
-            $data_sql = "SELECT id_ticket, date_sendcoordinator, id_coordinator, date_create_ticket, date_end_ticket, id_tecnico_n1 FROM users_tickets WHERE id_ticket = " . $safe_id_ticket;
+            $data_sql = "SELECT id_ticket, date_sendcoordinator, id_coordinador, date_create_ticket, date_end_ticket, id_tecnico_n1 FROM users_tickets WHERE id_ticket = " . $safe_id_ticket;
             $result_select_initial = Model::getResult($data_sql, $this->db); // Usando tu método Model::getResult
 
             $existing_data = null;
@@ -603,7 +603,7 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
             // --- PASO 2: Realizar el INSERT en users_tickets ---
             // Usamos los IDs sanitizados
             $sql_insert_ticket = "INSERT INTO public.users_tickets
-            (id_ticket, date_sendcoordinator, id_coordinator, date_assign_tec2, id_tecnico_n2, date_create_ticket, date_end_ticket, id_tecnico_n1, commentchangetec)
+            (id_ticket, date_sendcoordinator, id_coordinador, date_assign_tec2, id_tecnico_n2, date_create_ticket, date_end_ticket, id_tecnico_n1, commentchangetec)
             VALUES (
                 " . $safe_id_ticket . ", 
                 '" . $date_sendcoordinator . "', 
@@ -655,15 +655,26 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
 
             // --- PASO 4: Llamar a la función de historial con sprintf ---
             // Usamos los IDs sanitizados y los valores de status/accion para el historial
+             $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$safe_id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
             $sqlInsertHistory = sprintf(
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
                 (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
                 (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
                 (int)$id_status_ticket_history, // Usamos la acción específica para el historial
                 (int)$id_accion_ticket_history, // Usamos la acción específica para el historial
                 $id_new_status_lab,
                 $id_new_status_payment,
-                $new_status_domiciliacion
+                $new_status_domiciliacion,
+                $id_coordinador
             );
             
             $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);

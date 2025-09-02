@@ -209,16 +209,27 @@ class reportsModel extends Model
                     $id_status_payment = pg_fetch_result($status_payment_result, 0, 'id_status_payment')!== null? (int)pg_fetch_result($status_payment_result, 0, 'id_status_payment') : 'NULL';
                 }
 
+                 $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
 
                 $sqlInsertHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
                     (int)$id_ticket,
                     (int)$id_user,
                     (int)$id_status_ticket,
                     (int)$id_accion_ticket,
                     $id_status_lab,
                     $id_status_payment,
-                    $new_status_domiciliacion
+                    $new_status_domiciliacion,
+                    $id_coordinador
                 );
 
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
@@ -323,15 +334,26 @@ class reportsModel extends Model
                         $id_accion_ticket = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket')!== null? (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') : 'NULL';
                     }
 
+                     $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
                     $sqlInsertHistory = sprintf(
-                        "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %d::integer, %s::integer);",
+                        "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %d::integer, %s::integer, %d::integer);",
                         (int)$id_ticket,
                         (int)$id_user,
                         (int)$id_status_ticket,
                         (int)$id_accion_ticket,
                         $id_status_lab,
                         $id_status_payment,
-                        $new_status_domiciliacion
+                        $new_status_domiciliacion,
+                        $id_coordinador
                     );
 
                     $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
@@ -568,16 +590,27 @@ private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_b
                     $id_accion_ticket = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket')!== null? (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') : 'NULL';
                 }
 
+                 $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
                 // USAR EL id_status_payment CALCULADO ANTERIORMENTE
                 $sqlInsertHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %d::integer, %s::integer);",
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %d::integer, %s::integer, %d::integer);",
                     (int)$id_ticket,
                     (int)$id_user,
                     (int)$id_status_ticket,
                     (int)$id_accion_ticket,
                     $id_status_lab,
                     $id_status_payment, // AQUÍ USAS EL VALOR CALCULADO
-                    $new_status_domiciliacion
+                    $new_status_domiciliacion,
+                    $id_coordinador // AQUÍ USAS EL VALOR CALCULADO
                 );
 
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
@@ -1062,15 +1095,26 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
                 
                 $id_accion_ticket = 20;
 
+                 $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
                 $sqlInsertHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer);",
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
                     (int)$idticket,
                     (int)$id_user,
                     (int)$id_status_ticket,
                     (int)$id_accion_ticket,
                     $id_status_lab,
                     $id_new_status_payment,
-                    $new_status_domiciliacion
+                    $new_status_domiciliacion,
+                    (int)$id_coordinador
                 );
 
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);

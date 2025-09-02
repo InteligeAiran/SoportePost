@@ -79,8 +79,19 @@ class HistoricalModel extends Model
             // --- 3. Insertar en ticket_status_history ---
             $id_accion_ticket_history = 3; // ID de acción para "Recibido por Coordinador"
 
+             $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+            $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+            if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                pg_free_result($resultcoordinador);
+            }else{ 
+                $id_coordinador = null;
+            }
+
+
             $sqlInsertHistory = sprintf(
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                 (int) $id_ticket,
                 (int) $id_user, // changedstatus_by
                 (int) $last_status_ticket, // new_status (del ticket principal, 'En Proceso')
@@ -88,6 +99,7 @@ class HistoricalModel extends Model
                 (int) $last_status_lab, // new_status_lab (del historial anterior)
                 (int) $last_status_payment, // new_status_payment (del historial anterior)
                 (int) $last_status_domiciliacion, // new_status_domiciliacion (del historial anterior)
+                (int) $id_coordinador // new_coordinador (del historial anterior)
             );
 
             $resultHistory = $this->db->pgquery($sqlInsertHistory);
@@ -161,8 +173,18 @@ class HistoricalModel extends Model
             // --- 3. Insertar en ticket_status_history ---
             $id_accion_ticket_history = 10; // ID de acción para "Recibido por Técnico"
 
+            $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+            $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+            if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                pg_free_result($resultcoordinador);
+            }else{ 
+                $id_coordinador = null;
+            }
+
             $sqlInsertHistory = sprintf(
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
                 (int) $id_ticket,
                 (int) $id_user, // changedstatus_by
                 (int) $last_status_ticket, // new_status (del ticket principal, 'En Proceso')
@@ -170,6 +192,7 @@ class HistoricalModel extends Model
                 (int) $last_status_lab, // new_status_lab (del historial anterior)
                 (int) $last_status_payment, // new_status_payment (del historial anterior)
                 (int) $last_status_domiciliacion, // new_status_domiciliacion (del historial anterior)
+                (int) $id_coordinador // new_coordinador (del historial anterior)
             );
 
             $resultHistory = $this->db->pgquery($sqlInsertHistory);

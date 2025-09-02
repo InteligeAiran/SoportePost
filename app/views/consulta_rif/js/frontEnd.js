@@ -1878,7 +1878,7 @@ function SendDataFailure2(idStatusPayment) {
                         <strong>👤 Usuario Gestión:</strong> ${ticketData.user_gestion || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
-                        <strong>🧑‍💻 Coordinador Asignado:</strong> ${ticketData.coordinador || "N/A"}
+                        <strong>🧑‍💻 Coordinación Asignada:</strong> ${ticketData.coordinador || "N/A"}
                     </p>
                     <p style="margin-bottom: 8px;">
                         <strong>📁 Estado de Documentos:</strong> <span style="color: darkblue; font-weight: bold;">${ticketData.status_payment || "N/A"}</span>
