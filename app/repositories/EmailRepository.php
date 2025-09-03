@@ -50,8 +50,26 @@ class EmailRepository
         return $result ? $result['row'] : null;
     }
 
-    public function GetEmailCoorDataById($id_coordinador){
-        $result = $this->model->GetEmailCoordById($id_coordinador);
+    public function GetEmailCoorDataById($id_ticket){
+        $result = $this->model->GetEmailCoordById($id_ticket);
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetEmailArea(){
+        // Lógica para obtener datos de usuario
+        $result = $this->model->GetEmailArea();
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetCoordinacion($id_ticket){
+        // Lógica para obtener datos de usuario
+        $result = $this->model->GetCoordinacion($id_ticket);
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetTicketId($nro_ticket){
+        // Lógica para obtener datos de usuario
+        $result = $this->model->GetTicketId($nro_ticket);
         return $result ? $result['row'] : null;
     }
 

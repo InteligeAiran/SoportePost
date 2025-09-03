@@ -1787,7 +1787,6 @@ function SendDataFailure2(idStatusPayment) {
 
     formData.append("action", "SaveDataFalla2");
 
-
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveDataFalla2`);
     xhr.onload = function () {
@@ -1835,9 +1834,7 @@ function SendDataFailure2(idStatusPayment) {
                 );
               }
             };
-            const params = `id_coordinador=${encodeURIComponent(
-              coordinador
-            )}&id_user=${encodeURIComponent(id_user)}`;
+            const params = `id_user=${encodeURIComponent(id_user)}`;
             xhrEmail.send(params);
 
             // Mostrar el primer modal (Guardado exitoso)

@@ -362,17 +362,19 @@ class email extends Controller {
             $repository = new EmailRepository(); // Inicialización aquí si no se hace en el constructor
 
             // 1. Obtener ID del coordinador desde el POST y sus datos
-            $id_coordinador = isset($_POST['id_coordinador']) ? $_POST['id_coordinador'] : '';
-            $result_coordinador = $repository->GetEmailCoorDataById($id_coordinador);
+            $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
+
+            // EMAIL DEL AREA
+            $result_email_area = $repository->GetEmailArea();
 
             // Si no se encuentra información del coordinador, no podemos continuar
-            if (!$result_coordinador) {
+            if (!$result_email_area) {
                 $this->response(['success' => false, 'message' => 'Correo del coordinador no existe o no se encontraron datos.', 'color' => 'red']);
                 return; // Salir de la función
             }
 
-            $email_coordinador = $result_coordinador['email']; // El Gmail del coordinador
-            $nombre_coordinador = $result_coordinador['full_name']; // El nombre del coordinador
+            $email_area = $result_email_area['email_area']; // El Gmail del AREA
+            $nombre_area = $result_email_area['name_area']; // El nombre del AREA
 
             // 2. Obtener datos del ticket
             $result_ticket = $repository->GetDataTicket2();
@@ -391,75 +393,132 @@ class email extends Controller {
             $ticketaccion = $result_ticket['name_accion_ticket'];
             $ticketserial = $result_ticket['serial_pos'];
             $ticketnro = $result_ticket['nro_ticket'] ?? 'N/A'; // Asegúrate de que este campo exista en tu base de datos
-            $ticketpaymnet    = $result_ticket['name_status_payment'];
+            $ticketpaymnet = $result_ticket['name_status_payment'];
 
+            // Funcion para obtener el id del ticket con el nro de ticket
+            $resultgetid_ticket = $repository->GetTicketId($ticketnro);
+            $ticketid = $resultgetid_ticket['get_ticket_id'];
+
+            // Funcion para obtener el nobre de la coordinacion por el id_ticket
+            $resultCoordinacion = $repository->GetCoordinacion($ticketid);
+            $name_coordinador = $resultCoordinacion['get_department_name']?? 'N/A';
+
+            $embeddedImages = [];
+            if (defined('FIRMA_CORREO')) {
+                $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
+            }
 
             // 3. Obtener información del cliente
             $result_client = $repository->GetClientInfo($ticketserial);
             $clientName = $result_client['razonsocial'] ?? 'N/A'; // Usar null coalescing para seguridad
             $clientRif = $result_client['coddocumento'] ?? 'N/A';
 
-            // --- Configuración y envío del correo para el COORDINADOR ---
-            $subject_coordinador = 'Notificación de Ticket Asignado';
-            $body_coordinador = '
-                <!DOCTYPE html>
-                <html lang="es">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Ticket Asignado</title>
-                    <style>
-                        body { font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 30px; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-                        .ticket-container { background-color: #fff; border: 1px solid #ced4da; border-radius: 10px; padding: 30px; max-width: 600px; width: 100%; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); }
-                        .ticket-header { background-color: #0035F6; color: #fff; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin-bottom: 25px; }
-                        .ticket-title { font-size: 1.8em; margin-bottom: 10px; font-weight: bold; }
-                        .greeting { margin-bottom: 20px; color: #495057; font-size: 1.1em; }
-                        .info-list { list-style: none; padding-left: 0; margin-bottom: 20px; }
-                        .info-item { margin-bottom: 12px; color: #343a40; font-size: 1em; display: flex; align-items: baseline; }
-                        .info-item strong { font-weight: bold; color: #007bff; margin-right: 10px; width: 150px; display: inline-block; }
-                        .footer { text-align: center; margin-top: -12px; color: #6c757d; font-size: 0.9em; }
-                        .logo { display: block; margin: 20px auto 0; max-width: 150px; margin-top: -40px; }
-                        hr { border-top: 1px solid #dee2e6; margin: 20px 0; margin-top: -50px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="ticket-container">
-                        <div class="ticket-header">
-                            <h2 class="ticket-title">¡Ticket Asignado!</h2>
-                        </div>
-                        <p class="greeting">Hola, ' . htmlspecialchars($nombre_coordinador) . '</p>
-                        <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">Nos complace informarle que el Técnico <strong>' . htmlspecialchars($nombre_tecnico_ticket) . '</strong> te ha asignado el siguiente ticket:</p>
-                        <ul class="info-list">
-                            <li class="info-item"><strong>Nro. Ticket:</strong> ' . htmlspecialchars($ticketnro) . '</li>
-                            <li class="info-item"><strong>RIF Cliente:</strong> ' . htmlspecialchars($clientRif) . '</li>
-                            <li class="info-item"><strong>Nombre Cliente:</strong> ' . htmlspecialchars($clientName) . '</li>
-                            <li class="info-item"><strong>Serial POS:</strong> ' . htmlspecialchars($ticketserial) . '</li>
-                            <li class="info-item"><strong>Nivel Falla:</strong> ' . htmlspecialchars($ticketNivelFalla) . '</li>
-                            <li class="info-item"><strong>Falla:</strong> '. htmlspecialchars($name_failure).'</li>
-                            <li class="info-item"><strong>Fecha de Creación:</strong> '. htmlspecialchars($ticketfinished).'</li>
-                            <li class="info-item"><strong>Estatus:</strong><span style=" color: #28a745;">'. htmlspecialchars($ticketstatus).'</span></li>
-                            <li class="info-item"><strong>Acción:</strong> '.$ticketaccion.'</li>
-                            <li class="info-item"><strong>Estatus Carga Documento:</strong> <span style= "color: darkblue;">'. htmlspecialchars($ticketpaymnet).'</span></li>
-                        </ul>
-                        <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
-                        <hr>
-                        <p class="footer" >Atentamente,</p>
-                        <p class="footer">El equipo de InteliSoft</p>
-                        ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
+           $subject_coordinador = 'Notificación de Ticket Asignado';
+           $body_coordinador = '
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Notificación de Ticket</title>
+                <style>
+                    /* Estilos generales para compatibilidad */
+                    body { margin: 0; padding: 0; background-color: #f4f7f6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+                    .container { max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-top: 5px solid #0035F6; }
+                    .header { text-align: center; padding-bottom: 20px; }
+                    .header h1 { color: #0035F6; font-size: 24px; margin: 0; }
+                    .ticket-info { margin-top: 20px; border-top: 1px solid #e0e0e0; padding-top: 20px; }
+                    .info-row { margin-bottom: 15px; }
+                    .info-label { color: #555; font-weight: bold; width: 140px; display: inline-block; }
+                    .info-value { color: #333; }
+                    .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: bold; color: #fff; text-align: center; }
+                    .status-badge-open { background-color: #007bff; }
+                    .status-badge-proceso { background-color: #28a745; }
+                    .status-badge-closed { background-color: #dc3545; }
+                    .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #999; }
+                    .link-button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Nueva Asignación de Ticket</h1>
+                        <p style="color: #666; font-size: 16px; margin: 10px 0 0;">Hola, <strong><span style="color: black;">' . htmlspecialchars($nombre_area) . '</strong></span>.</p>
                     </div>
-                </body>
-                </html>
+                    <p style="color: #444; font-size: 15px; line-height: 1.6;">
+                        El técnico u operador <strong><span style="color: black;">' . htmlspecialchars($nombre_tecnico_ticket) . '</strong></span> ha asignado el siguiente ticket a su área para su gestión.
+                    </p>
+                    
+                    <div class="ticket-info">
+                        <div class="info-row">
+                            <span class="info-label" style="color: black;">Nro. de Ticket:</span>
+                            <span class="info-value" style="font-size: 1.2em; color: #0035F6; font-weight: bold;">' . htmlspecialchars($ticketnro) . '</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label" style="color: black;">Fecha de Creación:</span>
+                            <span class="info-value">' . htmlspecialchars($ticketfinished) . '</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label" style="color: black;">RIF Cliente:</span>
+                            <span class="info-value">' . htmlspecialchars($clientRif) . '</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label" style="color: black;">Razón Social:</span>
+                            <span class="info-value">' . htmlspecialchars($clientName) . '</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label" style="color: black;">Serial POS:</span>
+                            <span class="info-value">' . htmlspecialchars($ticketserial) . '</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label" style="color: black;">Nivel de Falla:</span>
+                            <span class="info-value">' . htmlspecialchars($ticketNivelFalla) . '</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label" style="color: black;">Falla Reportada:</span>
+                            <span class="info-value">' . htmlspecialchars($name_failure) . '</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label" style="color: black;">Estatus Ticket:</span>
+                            <span class="status-badge status-badge-open">' . htmlspecialchars($ticketstatus) . '</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label" style="color: black;">Estatus Pago:</span>
+                            <span class="info-value">' . htmlspecialchars($ticketpaymnet) . '</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label" style="color: black;">Acción Ticket:</span>
+                            <span class="info-value">' . htmlspecialchars($ticketaccion) . '</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label" style="color: black;">Coordinación</span>
+                            <span class="info-value">' . htmlspecialchars($name_coordinador) . '</span>
+                        </div>    
+                    </div>
+
+                    <p style="text-align: center; margin-top: 30px;">
+                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
+                            Ver Detalles del Ticket
+                        </a>
+                    </p>
+
+                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 28%; margin-top: 3%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
+
+                    <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                        <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
             ';
 
-            $embeddedImages = [];
-            if (defined('FIRMA_CORREO')) {
-                $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
-            }
+            
             $mensaje_final = ''; // Variable para mensajes de error
             $correo_tecnico_enviado = false; // Variable para verificar si el correo al técnico
 
             $correo_coordinador_enviado = false;
-            if ($this->emailService->sendEmail($email_coordinador, $subject_coordinador, $body_coordinador, [], $embeddedImages)) {
+            if ($this->emailService->sendEmail($email_area, $subject_coordinador, $body_coordinador, [], $embeddedImages)) {
                 // --- Configuración y envío del correo para el TÉCNICO ---
                 $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
                 $result_tecnico = $repository->GetEmailUserDataById($id_user); // Asegúrate de que este método exista
@@ -564,8 +623,8 @@ class email extends Controller {
                 <div class="ticket-header">
                     <h2 class="ticket-title">¡Ticket Actualizado!</h2>
                 </div>
-                <p class="greeting">Hola, ' . htmlspecialchars($nombre_tecnico) . '</p>
-                <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">Te informamos que el ticket con serial <strong>' . htmlspecialchars($ticketserial) . '</strong>, que gestionaste, ha sido <strong>Asignado</strong> y se ha notificado al coordinador <strong>' . htmlspecialchars($nombre_coordinador) . '</strong>.</p>
+                <p class="greeting">Hola, <span style = "color: black;"><strong>' . htmlspecialchars($nombre_tecnico) . '</strong></span></p>
+                <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">Te informamos que el ticket con serial <span style = "color: black;"><strong>' . htmlspecialchars($ticketserial) . '</strong></span>, que gestionaste, ha sido <span style = "color: black;"><strong>Asignado</strong></span> y se ha notificado al área de <span style = "color: black;"><strong>' . htmlspecialchars($nombre_area) . '</strong></span>.</p>
                 <ul class="info-list">
                     <li class="info-item"><strong>Nro. Ticket:</strong> ' . htmlspecialchars($ticketnro) . '</li>
                     <li class="info-item"><strong>RIF Cliente:</strong> ' . htmlspecialchars($clientRif) . '</li>
