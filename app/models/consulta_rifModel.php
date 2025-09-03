@@ -443,13 +443,16 @@ class consulta_rifModel extends Model
             $escaped_mime_type = pg_escape_literal($db_conn, $mime_type);
             $escaped_document_type = pg_escape_literal($db_conn, $document_type);
 
+            // ⭐️ CORRECCIÓN: Usar pg_escape_literal y %s para tratarlo como string ⭐️
+            $escaped_Nr_ticket = pg_escape_literal($db_conn, $Nr_ticket);
+
             // También puedes almacenar Nr_ticket si lo necesitas en la tabla archivos_adjuntos,
             // aunque el ticket_id (ID de la clave primaria) es la relación principal.
             // Para este ejemplo, lo añadiremos como un campo adicional si lo consideras útil,
             // pero no es estrictamente necesario para la relación.
             $sql = sprintf(
-                "INSERT INTO public.archivos_adjuntos (nro_ticket, original_filename, stored_filename, file_path, mime_type, file_size_bytes, uploaded_by_user_id, document_type) VALUES (%d, %s, %s, %s, %s, %d, %d, %s);",
-                $Nr_ticket,
+                "INSERT INTO public.archivos_adjuntos (nro_ticket, original_filename, stored_filename, file_path, mime_type, file_size_bytes, uploaded_by_user_id, document_type) VALUES (%s, %s, %s, %s, %s, %d, %d, %s);",
+            $escaped_Nr_ticket, // ⭐️ Aquí pasamos el valor escapado y la referencia de string (%s) ⭐️
                 $escaped_original_filename,
                 $escaped_stored_filename,
                 $escaped_file_path,
