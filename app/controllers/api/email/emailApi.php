@@ -451,47 +451,47 @@ class email extends Controller {
                     
                     <div class="ticket-info">
                         <div class="info-row">
-                            <span class="info-label" style="color: black;">Nro. de Ticket:</span>
+                            <span class="info-label" style="color: black;">🎫  Nro. de Ticket:</span>
                             <span class="info-value" style="font-size: 1.2em; color: #0035F6; font-weight: bold;">' . htmlspecialchars($ticketnro) . '</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label" style="color: black;">Fecha de Creación:</span>
+                            <span class="info-label" style="color: black;">📅  Fecha de Creación:</span>
                             <span class="info-value">' . htmlspecialchars($ticketfinished) . '</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label" style="color: black;">RIF Cliente:</span>
+                            <span class="info-label" style="color: black;">🏢  RIF Cliente:</span>
                             <span class="info-value">' . htmlspecialchars($clientRif) . '</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label" style="color: black;">Razón Social:</span>
+                            <span class="info-label" style="color: black;">🏢  Razón Social:</span>
                             <span class="info-value">' . htmlspecialchars($clientName) . '</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label" style="color: black;">Serial POS:</span>
+                            <span class="info-label" style="color: black;">⚙️  Serial POS:</span>
                             <span class="info-value">' . htmlspecialchars($ticketserial) . '</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label" style="color: black;">Nivel de Falla:</span>
+                            <span class="info-label" style="color: black;">🔍  Nivel de Falla:</span>
                             <span class="info-value">' . htmlspecialchars($ticketNivelFalla) . '</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label" style="color: black;">Falla Reportada:</span>
+                            <span class="info-label" style="color: black;">❌  Falla Reportada:</span>
                             <span class="info-value">' . htmlspecialchars($name_failure) . '</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label" style="color: black;">Estatus Ticket:</span>
+                            <span class="info-label" style="color: black;">🔄  Estatus Ticket:</span>
                             <span class="status-badge status-badge-open">' . htmlspecialchars($ticketstatus) . '</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label" style="color: black;">Estatus Pago:</span>
+                            <span class="info-label" style="color: black;">💰  Estatus Pago:</span>
                             <span class="info-value">' . htmlspecialchars($ticketpaymnet) . '</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label" style="color: black;">Acción Ticket:</span>
+                            <span class="info-label" style="color: black;">📋  Acción Ticket:</span>
                             <span class="info-value">' . htmlspecialchars($ticketaccion) . '</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label" style="color: black;">Coordinación</span>
+                            <span class="info-label" style="color: black;">🧑‍💻  Coordinación</span>
                             <span class="info-value">' . htmlspecialchars($name_coordinador) . '</span>
                         </div>    
                     </div>
@@ -626,16 +626,16 @@ class email extends Controller {
                 <p class="greeting">Hola, <span style = "color: black;"><strong>' . htmlspecialchars($nombre_tecnico) . '</strong></span></p>
                 <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">Te informamos que el ticket con serial <span style = "color: black;"><strong>' . htmlspecialchars($ticketserial) . '</strong></span>, que gestionaste, ha sido <span style = "color: black;"><strong>Asignado</strong></span> y se ha notificado al área de <span style = "color: black;"><strong>' . htmlspecialchars($nombre_area) . '</strong></span>.</p>
                 <ul class="info-list">
-                    <li class="info-item"><strong>Nro. Ticket:</strong> ' . htmlspecialchars($ticketnro) . '</li>
-                    <li class="info-item"><strong>RIF Cliente:</strong> ' . htmlspecialchars($clientRif) . '</li>
-                    <li class="info-item"><strong>Nombre Cliente:</strong> ' . htmlspecialchars($clientName) . '</li>
-                    <li class="info-item"><strong>Serial POS:</strong> ' . htmlspecialchars($ticketserial) . '</li>
-                    <li class="info-item"><strong>Nivel Falla:</strong> ' . htmlspecialchars($ticketNivelFalla ?? 'N/A') . '</li> 
-                    <li class ="info-item"><strong>Falla:</strong> '. htmlspecialchars($name_failure ?? 'N/A') . '</li> 
-                    <li class="info-item"><strong>Estatus:</strong><span style=" color: #28a745;">'. htmlspecialchars($ticketstatus).'</span></li>
-                    <li class="info-item"><strong>Acción:</strong> '. htmlspecialchars($ticketaccion ?? 'N/A') . '</li> 
-                    <li class="info-item"><strong>Fecha de Creacion:</strong> ' . htmlspecialchars($ticketfinished) . '</li>
-                    <li class="info-item"><strong>Estatus Carga Documento:</strong> <span style= "color: darkblue;">'. htmlspecialchars($ticketpaymnet).'</span></li>
+                    <li class="info-item"><strong> 🎫  Nro. Ticket:</strong> ' . htmlspecialchars($ticketnro) . '</li>
+                    <li class="info-item"><strong> 🏢  RIF Cliente:</strong> ' . htmlspecialchars($clientRif) . '</li>
+                    <li class="info-item"><strong> 🏢  Razón Social:</strong> ' . htmlspecialchars($clientName) . '</li>
+                    <li class="info-item"><strong> ⚙️  Serial POS:</strong> ' . htmlspecialchars($ticketserial) . '</li>
+                    <li class="info-item"><strong> 🔍  Nivel Falla:</strong> ' . htmlspecialchars($ticketNivelFalla ?? 'N/A') . '</li> 
+                    <li class ="info-item"><strong> ❌  Falla:</strong> '. htmlspecialchars($name_failure ?? 'N/A') . '</li> 
+                    <li class="info-item"><strong> 🔄  Estatus:</strong><span style=" color: #28a745;">'. htmlspecialchars($ticketstatus).'</span></li>
+                    <li class="info-item"><strong> 📋  Acción:</strong> '. htmlspecialchars($ticketaccion ?? 'N/A') . '</li> 
+                    <li class="info-item"><strong> 📅  Fecha de Creacion:</strong> ' . htmlspecialchars($ticketfinished) . '</li>
+                    <li class="info-item"><strong>💰   Estatus Carga Documento:</strong> <span style= "color: darkblue;">'. htmlspecialchars($ticketpaymnet).'</span></li>
                 </ul>
                 <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess ?? '') . '&id_level_failure=' . urlencode($ticketNivelFalla ?? '') . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                 <hr>
