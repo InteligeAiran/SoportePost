@@ -1001,13 +1001,77 @@ document.addEventListener('DOMContentLoaded', function () {
       
     const ticketImagePreview = document.getElementById('ticketImagePreview'); // El elemento img
     const mediaViewerContainer = document.getElementById('mediaViewerContainer'); // El div contenedor
+    const botonCerrarmotivo = document.getElementById('CerrarModalMotivoRechazo');
 
     const currentTicketIdDisplay = document.getElementById('currentTicketIdDisplay');
     const currentImageTypeDisplay = document.getElementById('currentImageTypeDisplay');
     const approveTicketFromImage = document.getElementById('approveTicketFromImage');
+    
+    const rechazoDocumentoBtn = document.getElementById('RechazoDocumento');
+    const modalConfirmacionRechazoBtn = document.getElementById('modalConfirmacionRechazoBtn');
+   const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'), {keyboard: false});
 
-    // Instancias de Bootstrap Modal
+
+    const modalRechazoInstance = new bootstrap.Modal(document.getElementById('modalRechazo'));
+
+      // Instancias de Bootstrap Modal
     const visualizarImagenModal = new bootstrap.Modal(visualizarImagenModalElement);
+
+    // 1. Manejar el evento de clic en el botón "Rechazar Documento"
+    // La lógica es: cerrar el modal actual y luego abrir el nuevo.
+    if (rechazoDocumentoBtn) {
+        rechazoDocumentoBtn.addEventListener('click', function () {
+        // Cierra el modal de visualización
+        visualizarImagenModal.hide();
+
+        // Abre el modal de rechazo
+        modalRechazoInstance.show();
+        });
+    }
+
+    if(modalConfirmacionRechazoBtn){
+        modalConfirmacionRechazoBtn.addEventListener('click', function () {
+        confirmarRechazoModal.hide();
+        });
+    }
+
+    document.getElementById("confirmarRechazoBtn").addEventListener("click", function() {
+        // Opcional: Obtén el texto del motivo seleccionado para mostrarlo en el modal
+        const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
+        const motivoSeleccionadoTexto = motivoRechazoSelect.options[motivoRechazoSelect.selectedIndex].text;
+
+
+        document.getElementById("motivoSeleccionadoTexto").textContent = motivoSeleccionadoTexto;
+    });
+
+    if (botonCerrarmotivo) {
+        botonCerrarmotivo.addEventListener('click', function () {
+        // Ocultar el modal de rechazo
+        modalRechazoInstance.hide();
+        })
+    }
+
+    // Evento click para el botón "Confirmar Rechazo"
+  $("#confirmarRechazoBtn").off("click").on("click", function() {
+    const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
+
+    if (!motivoRechazoSelect.value) {
+      // Si no hay motivo seleccionado, muestra una alerta de SweetAlert2
+      Swal.fire({
+        icon: 'warning',
+        title: 'No puede haber campos vacíos.',
+        text: `Seleccione un motivo de rechazo.`,
+        confirmButtonText: 'Ok',
+        color: 'black',
+        confirmButtonColor: '#003594'
+      });
+    } else {
+      const motivoSeleccionadoTexto = motivoRechazoSelect.options[motivoRechazoSelect.selectedIndex].text;
+      document.getElementById("motivoSeleccionadoTexto").textContent = motivoSeleccionadoTexto;
+      confirmarRechazoModal.show();
+    }
+  });
+  
 
     // Event listener para el botón "Aprobar Documento"
     btnVisualizarImagen.addEventListener('click', function() {
@@ -1045,6 +1109,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         // Mostrar el documento en el modal de aprobación
                         showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName, serialPos, documentoRechazado);
+                        getMotivos(selectedOption);
 
                         // Ocultar el modal de selección
                         visualizarImagenModal.hide();
@@ -1125,6 +1190,97 @@ document.addEventListener("DOMContentLoaded", function () {
             uploadDocumentModal.show();
         }
     });
+});
+
+const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
+
+// Crea una instancia del modal de confirmación de rechazo (si no lo has hecho ya)
+const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'));
+
+// Evento para el botón de confirmar la acción de rechazo dentro del modal
+document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', function () {
+    const ticketId = currentTicketIdForImage; // Usamos el ID del ticket actual
+    const nroticket = currentTicketNroForImage; // Usamos el número de ticket actual
+    const motivoId = motivoRechazoSelect.value; // Obtenemos el ID del motivo seleccionado
+    const id_user = document.getElementById('id_user').value; // Obtenemos el ID del usuario
+    const documentType = DocumentType; // Aquí usamos la variable global
+
+
+    // Opcional: Cerrar el modal de confirmación mientras se procesa la solicitud
+    confirmarRechazoModal.hide();
+
+    // Verificación final para asegurar que tenemos los datos necesarios
+    if (!ticketId || !motivoId || !nroticket || !id_user || !documentType) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Datos incompletos para el rechazo.',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    const xhr = new XMLHttpRequest();
+    const datos = `action=rechazarDocumento&ticketId=${encodeURIComponent(ticketId)}&motivoId=${encodeURIComponent(motivoId)}&nroTicket=${encodeURIComponent(nroticket)}&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`; // Ajusta los datos a tu script de backend
+    console.log('Datos enviados:', datos);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/rechazarDocumento`); // Ajusta la URL a tu script de backend
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Rechazado!',
+                        text: response.message,
+                        confirmButtonColor: '#003594',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        keydownListenerCapture: true,
+                        color: 'black'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message,
+                        confirmButtonColor: '#003594'
+                    });
+                }
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Respuesta del servidor no válida.',
+                    confirmButtonColor: '#003594'
+                });
+            }
+        } else {
+            console.error("Error:", xhr.status, xhr.statusText);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'Hubo un problema al conectar con el servidor.',
+                confirmButtonColor: '#003594'
+            });
+        }
+    };
+
+    xhr.onerror = function () {
+        console.error("Error de red");
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de red',
+            text: 'Verifique su conexión a internet.',
+            confirmButtonColor: '#003594'
+        });
+    };
+    xhr.send(datos);
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -2024,4 +2180,58 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
         imageApprovalModalElement.removeEventListener('hidden.bs.modal', cleanupHandler);
     };
     imageApprovalModalElement.addEventListener('hidden.bs.modal', cleanupHandler);
+}
+
+function getMotivos(documentType) {
+  const xhr = new XMLHttpRequest();
+
+  // Muestra un mensaje de carga en el select
+  const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
+  motivoRechazoSelect.innerHTML = '<option value="">Cargando...</option>';
+
+  DocumentType = documentType;
+
+  // Aquí cambiamos el endpoint para apuntar a la API de motivos
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetMotivos`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          // Apuntamos al select de motivos
+          const select = document.getElementById("motivoRechazoSelect");
+
+          // Limpiamos el select antes de agregar nuevas opciones
+          select.innerHTML = '<option value="">Seleccione</option>';
+
+          // La respuesta debe tener un array llamado 'motivos'
+          if (Array.isArray(response.motivos) && response.motivos.length > 0) {
+            response.motivos.forEach((motivo) => {
+              const option = document.createElement("option");
+              option.value = motivo.id_motivo_rechazo;
+              option.textContent = motivo.name_motivo_rechazo;
+              select.appendChild(option);
+            });
+          } else {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No hay Motivos Disponibles";
+            select.appendChild(option);
+          }
+        } else {
+          console.error("Error al obtener los motivos:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  // ¡Aquí se envía el documentType!
+  const datos = `action=GetMotivos&documentType=${documentType}`;
+  xhr.send(datos);
 }
