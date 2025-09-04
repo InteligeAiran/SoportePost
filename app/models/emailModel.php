@@ -198,5 +198,37 @@ class emailModel extends Model{
             // Handle exception
         }
     }
+
+    public function GetEmailUser1gestionDataById($ticketid){
+        try{
+            $sql = "SELECT * FROM get_email_user_gestion_by_id(".$ticketid.");";
+            var_dump($sql);
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetDocumentoRechazado($ticketnro){
+        try{
+            $sql = "SELECT * FROM get_ticket_reject_attachments('".$ticketnro."');";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function resultUserreject($id_user){
+        try{
+            $sql = "SELECT * FROM get_user_role_info(".$id_user.");";
+            var_dump($sql);
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
 ?>

@@ -88,6 +88,11 @@ class email extends Controller {
                     }
                 break;
 
+                case 'send_reject_document':
+                    // Manejo del envío de ticket de rechazo de documento
+                    $this->handleSendRejectDocument();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en email'], 404);
                 break;
@@ -621,7 +626,7 @@ class email extends Controller {
         <body>
             <div class="ticket-container">
                 <div class="ticket-header">
-                    <h2 class="ticket-title">¡Ticket Actualizado!</h2>
+                    <h2 class="ticket-title">¡Ticket Asignado!</h2>
                 </div>
                 <p class="greeting">Hola, <span style = "color: black;"><strong>' . htmlspecialchars($nombre_tecnico) . '</strong></span></p>
                 <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">Te informamos que el ticket con serial <span style = "color: black;"><strong>' . htmlspecialchars($ticketserial) . '</strong></span>, que gestionaste, ha sido <span style = "color: black;"><strong>Asignado</strong></span> y se ha notificado al área de <span style = "color: black;"><strong>' . htmlspecialchars($nombre_area) . '</strong></span>.</p>
@@ -1105,5 +1110,294 @@ class email extends Controller {
         }
     }
     // ... otras funciones handleSearchSerialData, etc.
+
+    public function handleSendRejectDocument(){
+        $repository = new EmailRepository(); // Inicialización aquí si no se hace en el constructor
+
+        // 1. Obtener ID del coordinador desde el POST y sus datos
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
+
+        // EMAIL DEL AREA
+        $result_email_area = $repository->GetEmailArea();
+
+        // Si no se encuentra información del coordinador, no podemos continuar
+        if (!$result_email_area) {
+            $this->response(['success' => false, 'message' => 'Correo del coordinador no existe o no se encontraron datos.', 'color' => 'red']);
+            return; // Salir de la función
+        }
+
+        $email_area = $result_email_area['email_area']; // El Gmail del AREA
+        $nombre_area = $result_email_area['name_area']; // El nombre del AREA
+
+        // 2. Obtener datos del ticket
+        $result_ticket = $repository->GetDataTicket2();
+        // Verifica si se obtuvieron datos del ticket. Si no, algo anda mal.
+        if (!$result_ticket) {
+            $this->response(['success' => false, 'message' => 'No se encontraron datos del ticket.', 'color' => 'red']);
+            return;
+        }
+
+        $nombre_tecnico_ticket = $result_ticket['full_name_tecnico'];
+        $ticketNivelFalla = $result_ticket['id_level_failure'];
+        $name_failure = $result_ticket['name_failure'];
+        $ticketfinished = $result_ticket['create_ticket'];
+        $ticketstatus = $result_ticket['name_status_ticket'];
+        $ticketprocess = $result_ticket['name_process_ticket'];
+        $ticketaccion = $result_ticket['name_accion_ticket'];
+        $ticketserial = $result_ticket['serial_pos'];
+        $ticketnro = $result_ticket['nro_ticket'] ?? 'N/A';
+        $ticketpaymnet = $result_ticket['name_status_payment'];
+
+        // Funcion para obtener el id del ticket con el nro de ticket
+        $resultgetid_ticket = $repository->GetTicketId($ticketnro);
+        $ticketid = $resultgetid_ticket['get_ticket_id'];
+
+        // Funcion para obtener el nobre de la coordinacion por el id_ticket
+        $resultCoordinacion = $repository->GetCoordinacion($ticketid);
+        $name_coordinador = $resultCoordinacion['get_department_name'];
+
+        //Funcion para traer los datos del documento rechazado
+        $resultDocumentoRechazado = $repository->GetDocumentoRechazado($ticketnro);
+        $motivoTexto = $resultDocumentoRechazado['name_motivo_rechazo'];
+        $documentType = $resultDocumentoRechazado['document_type'];
+        $idrejectby = $resultDocumentoRechazado['changed_by']?? 'N/A';
+        $rejectedBy = $resultDocumentoRechazado['usuario_gestion'];
+        $ticketdatereject = $resultDocumentoRechazado['fecha_rechazo'];
+
+        // Datos del que gestionó el ticket
+        $result_tecnico = $repository->GetEmailUser1gestionDataById( $ticketid);
+        $email_tecnico = $result_tecnico['user_email'] ?? '';
+        $nombre_tecnico = $result_tecnico['full_name'] ?? 'Técnico';
+        $id_rol = $result_tecnico['id_rolusr'] ?? '';
+        $name_rol = $result_tecnico['name_rol'] ?? '';
+
+        // Datos del que rechazó el documento
+        $resultUserreject = $repository->resultUserreject($idrejectby);
+        $rolTecnico = $resultUserreject['name_rol'];
+        $idrol = $resultUserreject['id_rol'];
+        $nombre_person_reject = $resultUserreject['full_name'];
+        $email_person_reject = $resultUserreject['email'];
+
+        $embeddedImages = [];
+        if (defined('FIRMA_CORREO')) {
+            $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
+        }
+
+        // 3. Obtener información del cliente
+        $result_client = $repository->GetClientInfo($ticketserial);
+        $clientName = $result_client['razonsocial'] ?? 'N/A';
+        $clientRif = $result_client['coddocumento'] ?? 'N/A';
+
+        // ========== CORREO 1: PARA COORDINACIÓN ==========
+        $subject_coordinador = 'Documento RECHAZADO  Ticket ' . $ticketnro;
+        $body_coordinador = '
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+            <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Documento Rechazado</title>
+            <style>
+            body{margin:0;padding:0;background:#f6f8fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+            .container{max-width:600px;margin:24px auto;background:#ffffff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);overflow:hidden;border-top:6px solid #dc3545}
+            .header{background:linear-gradient(135deg,#ff6b6b,#dc3545);color:#fff;text-align:center;padding:22px}
+            .header h1{margin:0;font-size:22px}
+            .pill{display:inline-block;background:#fff;color:#dc3545;border-radius:999px;padding:6px 12px;font-weight:700;margin-top:10px}
+            .section{padding:22px}
+            .row{margin-bottom:12px}
+            .label{display:inline-block;width:165px;color:#6b7280;font-weight:600}
+            .value{color:#111827}
+            .badge{display:inline-block;padding:4px 10px;border-radius:999px;color:#fff;font-weight:700}
+            .badge-warning{background:#f59e0b}
+            .alert{background:#fff3f3;border:1px solid #ffe0e0;color:#b91c1c;border-radius:10px;padding:14px;margin:14px 0}
+            .btn{display:inline-block;background:#0035F6;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;margin-top:12px}
+            .footer{background:#f3f4f6;text-align:center;color:#6b7280;font-size:12px;padding:14px 10px}
+            .logo{display:block;margin:20px auto 0;max-width:150px}
+            </style>
+            </head>
+            <body>
+            <div class="container">
+                <div class="header">
+                <h1>Documento Rechazado</h1>
+                <div class="pill">Ticket ' . htmlspecialchars($ticketnro) . '</div>
+                </div>
+
+                <div class="section">
+                <div class="alert"><strong>Motivo del rechazo:</strong> ' . htmlspecialchars($motivoTexto) . '</div>
+                <div class="row"><span class="label">Documento:</span> <span class="value"><strong>' . htmlspecialchars($documentType) . '</strong></span></div>
+                <div class="row"><span class="label">Rechazado por:</span> <span class="value">' . htmlspecialchars($rejectedBy) . '</span></div>
+                <div class="row"><span class="label">Fecha:</span> <span class="value">' . htmlspecialchars($ticketdatereject) . '</span></div>
+
+                <hr style="border:none;border-top:1px solid #e5e7eb;margin:18px 0">
+
+                <div class="row"><span class="label">RIF Cliente:</span> <span class="value">' . htmlspecialchars($clientRif) . '</span></div>
+                <div class="row"><span class="label">Razón Social:</span> <span class="value">' . htmlspecialchars($clientName) . '</span></div>
+                <div class="row"><span class="label">Serial POS:</span> <span class="value">' . htmlspecialchars($ticketserial) . '</span></div>
+                <div class="row"><span class="label">Estatus Ticket:</span> <span class="value"><span class="badge badge-warning">' . htmlspecialchars($ticketstatus) . '</span></span></div>
+
+                <p style="text-align:center;margin-top:16px">
+                    <a class="btn" href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '" style = "color: white;">Ver historial del ticket</a>
+                </p>
+                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo" class="logo">' : '') . '
+                </div>
+
+                <div class="footer">Correo automático • al Área: ' . htmlspecialchars($nombre_area) . '</div>
+            </div>
+            </body>
+            </html>
+        ';
+
+        // ========== CORREO 2: PARA LA PERSONA QUE RECHAZÓ ==========
+        $subject_persona_reject = 'Has rechazado un documento - Ticket ' . $ticketnro;
+        $body_persona_reject = '
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+            <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Documento Rechazado</title>
+            <style>
+            body{margin:0;padding:0;background:#f6f8fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+            .container{max-width:600px;margin:24px auto;background:#ffffff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);overflow:hidden;border-top:6px solid #10b981}
+            .header{background:linear-gradient(135deg,#34d399,#10b981);color:#fff;text-align:center;padding:22px}
+            .header h1{margin:0;font-size:22px}
+            .pill{display:inline-block;background:#fff;color:#10b981;border-radius:999px;padding:6px 12px;font-weight:700;margin-top:10px}
+            .section{padding:22px}
+            .row{margin-bottom:12px}
+            .label{display:inline-block;width:165px;color:#6b7280;font-weight:600}
+            .value{color:#111827}
+            .badge{display:inline-block;padding:4px 10px;border-radius:999px;color:#fff;font-weight:700}
+            .badge-success{background:#10b981}
+            .alert{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:10px;padding:14px;margin:14px 0}
+            .btn{display:inline-block;background:#0035F6;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;margin-top:12px}
+            .footer{background:#f3f4f6;text-align:center;color:#6b7280;font-size:12px;padding:14px 10px}
+            .logo{display:block;margin:20px auto 0;max-width:150px}
+            </style>
+            </head>
+            <body>
+            <div class="container">
+                <div class="header">
+                <h1>Documento Rechazado</h1>
+                <div class="pill">Ticket ' . htmlspecialchars($ticketnro) . '</div>
+                </div>
+
+                <div class="section">
+                <p>Hola, <strong>' . htmlspecialchars($nombre_person_reject) . '</strong>.</p>
+                <div class="alert"><strong>Has rechazado el documento:</strong> ' . htmlspecialchars($documentType) . '<br><strong>Motivo:</strong> ' . htmlspecialchars($motivoTexto) . '</div>
+                <div class="row"><span class="label">Tu rol:</span> <span class="value">' . htmlspecialchars($rolTecnico) . '</span></div>
+                <div class="row"><span class="label">Fecha:</span> <span class="value">' . htmlspecialchars($ticketdatereject) . '</span></div>
+
+                <hr style="border:none;border-top:1px solid #e5e7eb;margin:18px 0">
+
+                <div class="row"><span class="label">RIF Cliente:</span> <span class="value">' . htmlspecialchars($clientRif) . '</span></div>
+                <div class="row"><span class="label">Razón Social:</span> <span class="value">' . htmlspecialchars($clientName) . '</span></div>
+                <div class="row"><span class="label">Serial POS:</span> <span class="value">' . htmlspecialchars($ticketserial) . '</span></div>
+                <div class="row"><span class="label">Estatus Ticket:</span> <span class="value"><span class="badge badge-success">' . htmlspecialchars($ticketstatus) . '</span></span></div>
+
+                <p style="text-align:center;margin-top:16px">
+                    <a class="btn" href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '" style = "color: white;">Ver historial del ticket</a>
+                </p>
+                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo" class="logo">' : '') . '
+                </div>
+
+                <div class="footer">Correo automático • Confirmación de rechazo</div>
+            </div>
+            </body>
+            </html>
+        ';
+
+        // ========== CORREO 3: PARA EL TÉCNICO QUE GESTIONÓ ==========
+        $subject_tecnico = 'Se rechazó un documento del Ticket ' . $ticketnro;
+        $body_tecnico = '
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+            <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Documento Rechazado</title>
+            <style>
+            body{margin:0;padding:0;background:#f6f8fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+            .container{max-width:600px;margin:24px auto;background:#ffffff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);overflow:hidden;border-top:6px solid #f59e0b}
+            .header{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#111827;text-align:center;padding:22px}
+            .header h1{margin:0;font-size:22px}
+            .pill{display:inline-block;background:#111827;color:#fff;border-radius:999px;padding:6px 12px;font-weight:700;margin-top:10px}
+            .section{padding:22px}
+            .row{margin-bottom:12px}
+            .label{display:inline-block;width:165px;color:#6b7280;font-weight:600}
+            .value{color:#111827}
+            .alert{background:#fff8e1;border:1px solid #ffe8a3;color:#92400e;border-radius:10px;padding:14px;margin:14px 0}
+            .btn{display:inline-block;background:#0035F6;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;margin-top:12px}
+            .footer{background:#f3f4f6;text-align:center;color:#6b7280;font-size:12px;padding:14px 10px}
+            .logo{display:block;margin:20px auto 0;max-width:150px}
+            </style>
+            </head>
+            <body>
+            <div class="container">
+                <div class="header">
+                <h1>Aviso para Técnico</h1>
+                <div class="pill">Ticket ' . htmlspecialchars($ticketnro) . '</div>
+                </div>
+
+                <div class="section">
+                <p>Hola, <strong>' . htmlspecialchars($nombre_tecnico) . '</strong>.</p>
+                <div class="alert"><strong>Se rechazó el documento:</strong> ' . htmlspecialchars($documentType) . '<br><strong>Motivo:</strong> ' . htmlspecialchars($motivoTexto) . '</div>
+                <div class="row"><span class="label">Rechazado por:</span> <span class="value">' . htmlspecialchars($rejectedBy) . '</span></div>
+                <div class="row"><span class="label">Tu rol:</span> <span class="value">' . htmlspecialchars($name_rol) . '</span></div>
+                <div class="row"><span class="label">Fecha:</span> <span class="value">' . htmlspecialchars($ticketdatereject) . '</span></div>
+
+                <hr style="border:none;border-top:1px solid #e5e7eb;margin:18px 0">
+
+                <div class="row"><span class="label">RIF Cliente:</span> <span class="value">' . htmlspecialchars($clientRif) . '</span></div>
+                <div class="row"><span class="label">Razón Social:</span> <span class="value">' . htmlspecialchars($clientName) . '</span></div>
+                <div class="row"><span class="label">Serial POS:</span> <span class="value">' . htmlspecialchars($ticketserial) . '</span></div>
+
+                <p style="text-align:center;margin-top:16px">
+                    <a class="btn" href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '" style = "color: white;">Ver historial del ticket</a>
+                </p>
+                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo" class="logo">' : '') . '
+                </div>
+
+                <div class="footer">Correo automático • Técnico notificado</div>
+            </div>
+            </body>
+            </html>
+        ';
+
+        // Variables de control
+        $correo_coordinador_enviado = false;
+        $correo_persona_reject_enviado = false;
+        $correo_tecnico_enviado = false;
+        $mensaje_final = '';
+
+        // Enviar correo al coordinador
+        if ($this->emailService->sendEmail($email_area, $subject_coordinador, $body_coordinador, [], $embeddedImages)) {
+            $correo_coordinador_enviado = true;
+        }
+
+        // Enviar correo a la persona que rechazó
+        if ($email_person_reject && $resultUserreject) {
+            if ($this->emailService->sendEmail($email_person_reject, $subject_persona_reject, $body_persona_reject, [], $embeddedImages)) {
+                $correo_persona_reject_enviado = true;
+            }
+        }
+
+        // Enviar correo al técnico que gestionó
+        if ($email_tecnico && $result_tecnico) {
+            if ($this->emailService->sendEmail($email_tecnico, $subject_tecnico, $body_tecnico, [], $embeddedImages)) {
+                $correo_tecnico_enviado = true;
+            }
+        }
+
+        // Respuesta final
+        $correos_enviados = [];
+        if ($correo_coordinador_enviado) $correos_enviados[] = 'coordinación';
+        if ($correo_persona_reject_enviado) $correos_enviados[] = 'persona que rechazó';
+        if ($correo_tecnico_enviado) $correos_enviados[] = 'técnico';
+
+        if (count($correos_enviados) == 3) {
+            $this->response(['success' => true, 'message' => 'Correos enviados exitosamente a coordinación, persona que rechazó y técnico.', 'color' => 'green']);
+        } elseif (count($correos_enviados) > 0) {
+            $this->response(['success' => true, 'message' => 'Correos enviados a: ' . implode(', ', $correos_enviados) . '.', 'color' => 'orange']);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al enviar todos los correos.', 'color' => 'red']);
+        }
+    }
 }
 ?>

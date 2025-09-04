@@ -157,4 +157,20 @@ class EmailRepository
         //var_dump($result);
         return $result ? $result['row'] : null;
     }
+
+    public function GetEmailUser1gestionDataById($ticketid){
+        $result = $this->model->GetEmailUser1gestionDataById( $ticketid);
+        //var_dump($result);
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetDocumentoRechazado($ticketnro){
+        $result = $this->model->GetDocumentoRechazado($ticketnro);
+        return $result ? $result['row'] : null;
+    }
+
+    public function resultUserreject($id_user){
+        $result = $this->model->resultUserreject($id_user);
+        return $result ? $result['row'] : null;
+    }
 }

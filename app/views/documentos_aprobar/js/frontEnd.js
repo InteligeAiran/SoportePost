@@ -1202,7 +1202,7 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
     const ticketId = currentTicketIdForImage; // Usamos el ID del ticket actual
     const nroticket = currentTicketNroForImage; // Usamos el número de ticket actual
     const motivoId = motivoRechazoSelect.value; // Obtenemos el ID del motivo seleccionado
-    const id_user = document.getElementById('id_user').value; // Obtenemos el ID del usuario
+    const id_user = document.getElementById('userId').value; // Obtenemos el ID del usuario
     const documentType = DocumentType; // Aquí usamos la variable global
 
 
@@ -1222,7 +1222,6 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
 
     const xhr = new XMLHttpRequest();
     const datos = `action=rechazarDocumento&ticketId=${encodeURIComponent(ticketId)}&motivoId=${encodeURIComponent(motivoId)}&nroTicket=${encodeURIComponent(nroticket)}&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`; // Ajusta los datos a tu script de backend
-    console.log('Datos enviados:', datos);
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/rechazarDocumento`); // Ajusta la URL a tu script de backend
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 

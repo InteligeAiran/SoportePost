@@ -1757,7 +1757,7 @@ class Consulta extends Controller
         $result = $repository->RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type);
 
         if ($result) {
-            $this->response(['success' => true,'message' => 'El Documento ha sido rechazados correctamente.'], 200);
+            $this->response(['success' => true,'message' => 'El Documento ha sido rechazado correctamente.'], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }

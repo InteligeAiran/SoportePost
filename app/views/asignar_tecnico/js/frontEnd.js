@@ -356,7 +356,7 @@ function getTicketDataCoordinator() {
                 </button>
               `;
             } else if (
-              data.name_accion_ticket === "Recibido por el Coordinador"
+              data.name_accion_ticket === "Recibido por la Coordinación"
             ) {
               // Acción 3
               actionButtonsHtml += `
@@ -545,9 +545,9 @@ function getTicketDataCoordinator() {
               function findFirstButtonWithData() {
                 const searchTerms = [
                   { button: "btn-por-asignar", term: "Asignado a la Coordinación" , status: "Abierto", action: "Asignado a la Coordinación"},
-                  { button: "btn-recibidos", term: "Recibido por el Coordinador",  status: "Abierto", action: "Recibido por el Coordinador"},
+                  { button: "btn-recibidos", term: "Recibido por la Coordinación",  status: "Abierto", action: "Recibido por la Coordinación"},
                   // CORREGIDO: Usar expresión que funcione para ambos
-                  { button: "btn-asignados", term: "Asignado al Técnico|Recibido por el Técnico", status: "En proceso", action: ["En espera de confirmar recibido en Región", "Recibido por el Coordinador"]},
+                  { button: "btn-asignados", term: "Asignado al Técnico|Recibido por el Técnico", status: "En proceso", action: ["En espera de confirmar recibido en Región", "Recibido por la Coordinación"]},
                   { button: "btn-reasignado", term: "Reasignado al Técnico", status: "En proceso", action: "Reasignado al Técnico"}
                 ];
 
@@ -625,13 +625,13 @@ function getTicketDataCoordinator() {
               });
 
               $("#btn-recibidos").on("click", function () {
-                if (checkDataExists("Recibido por el Coordinador")) {
+                if (checkDataExists("Recibido por la Coordinación")) {
                   api.columns().search('').draw(false);
                   api.column(6).visible(false);
                   api.column(7).visible(true);
-                  api.column(5).search("Recibido por el Coordinador").draw();
+                  api.column(5).search("Recibido por la Coordinación").draw();
                   setActiveButton("btn-recibidos");
-                  showTicketStatusIndicator("Abierto", "Recibido por el Coordinador");
+                  showTicketStatusIndicator("Abierto", "Recibido por la Coordinación");
                 } else {
                   findFirstButtonWithData();
                 }
@@ -926,8 +926,14 @@ function getTicketDataCoordinator() {
                 });
             });
     });
+
     // MOSTRAR el modal
     visualizarImagenModal.show();
+
+    const btnCancelar = document.getElementById('BotonCerrarSelectDocument');
+    btnCancelar.addEventListener('click', function () {
+      visualizarImagenModal.hide();
+    });
   });
         } else {
           hideTicketStatusIndicator();
@@ -2370,6 +2376,7 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
   const BotonCerrarModal = document.getElementById("CerrarModalVizualizar");
   const BotonCerrarModalSelect = document.getElementById("BotonCerrarSelectDocument");
 
+
   currentTicketId = ticketId;
   currentNroTicket = nroTicket;
   modalTicketIdSpanView.textContent = currentNroTicket;
@@ -2426,15 +2433,14 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
 
   viewDocumentModal.show();
   
-
-     BotonCerrarModal.addEventListener('click', function () {
-                // Ocultar el modal de visualización
-                viewDocumentModal.hide();
+  BotonCerrarModal.addEventListener('click', function () {
+    // Ocultar el modal de visualización
+    viewDocumentModal.hide();
                 
-                // Mostrar nuevamente el modal de selección
-                setTimeout(() => {
-                    visualizarImagenModal.show();
-                }, 300); //
+    // Mostrar nuevamente el modal de selección
+    setTimeout(() => {
+      visualizarImagenModal.show();
+    }, 300); //
   });
 
   BotonCerrarModalSelect.addEventListener('click', function () {
@@ -2442,8 +2448,6 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     visualizarImagenModal.hide();
     
   });
-
-  
 };
 
 const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
@@ -2476,7 +2480,6 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
 
     const xhr = new XMLHttpRequest();
     const datos = `action=rechazarDocumento&ticketId=${encodeURIComponent(ticketId)}&motivoId=${encodeURIComponent(motivoId)}&nroTicket=${encodeURIComponent(nroticket)}&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`; // Ajusta los datos a tu script de backend
-    console.log('Datos enviados:', datos);
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/rechazarDocumento`); // Ajusta la URL a tu script de backend
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -2484,7 +2487,41 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
         if (xhr.status === 200) {
             try {
                 const response = JSON.parse(xhr.responseText);
-                if (response.success) {
+                if (response.success) {                  // Disparar envío de correos (no bloqueante) – MISMA ESTRUCTURA QUE send_ticket2
+                  (function sendRejectionEmails() {
+                    try {
+                      const xhrEmail = new XMLHttpRequest();
+                      xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_reject_document`);
+                      xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+                      xhrEmail.onload = function () {
+                        if (xhrEmail.status === 200) {
+                          try {
+                            const responseEmail = JSON.parse(xhrEmail.responseText);
+                            if (responseEmail.success) {
+                              console.log('Correo rechazo enviado:', responseEmail.message || 'OK');
+                            } else {
+                              console.error('Error correo rechazo:', responseEmail.message);
+                            }
+                          } catch (e) {
+                            console.error('Error parseando respuesta correo rechazo:', e, xhrEmail.responseText);
+                          }
+                        } else {
+                          console.error('Error HTTP correo rechazo:', xhrEmail.status, xhrEmail.responseText);
+                        }
+                      };
+
+                      xhrEmail.onerror = function () {
+                        console.error('Error de red al enviar correo de rechazo');
+                      };
+                      // Parámetros necesarios para PHP
+                      const params =  `action=send_reject_document&id_user=${encodeURIComponent(id_user)}`
+
+                      xhrEmail.send(params);
+                    } catch (err) {
+                      console.error('Fallo al disparar correo rechazo:', err);
+                    }
+                  })();
                     Swal.fire({
                         icon: 'success',
                         title: '¡Rechazado!',

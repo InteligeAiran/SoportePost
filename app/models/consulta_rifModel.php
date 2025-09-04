@@ -2690,71 +2690,90 @@ class consulta_rifModel extends Model
             $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
             $escaped_document_type = pg_escape_literal($db_conn, $document_type);
 
-            $sql = "UPDATE archivos_adjuntos SET id_motivo_rechazo = $id_motivo, rechazado = 'TRUE' WHERE nro_ticket = ".$escaped_nro_ticket." AND document_type = ".$escaped_document_type.";";
+            $sql = "UPDATE archivos_adjuntos 
+        SET id_motivo_rechazo = $id_motivo, rechazado = 'TRUE' 
+        WHERE id = (
+            SELECT id 
+            FROM archivos_adjuntos 
+            WHERE nro_ticket = ".$escaped_nro_ticket." 
+              AND document_type = ".$escaped_document_type."
+            ORDER BY uploaded_at DESC 
+            LIMIT 1
+        );";
             $result = Model::getResult($sql, $this->db);
 
             if($result){
                 $sql1 = "UPDATE tickets SET id_status_payment = ".$id_new_status_payment." WHERE id_ticket = ".$escaped_id_ticket.";";
                 $result1 = Model::getResult($sql1, $this->db);
-            
-                
-                if ($result1 === false) {
-                    error_log("Error al rechazar documentos: ". pg_last_error($db_conn));
-                    return false;
-                }else{
-                    $id_status_lab = 0;
-                $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". (int)$id_ticket. ";";
-                $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
-                if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
-                    $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab')?? 0;
-                }
 
-                $new_status_domiciliacion = 'NULL';
-                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = ". (int)$id_ticket. ";";
-                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
-                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
-                    $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion')!== null? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
-                }
+                if ($result1) {
+                    // VALIDACIÓN: Solo actualizar id_coordinador si está vacío o NULL
+                    $sqlgetcoordinador = "UPDATE users_tickets SET id_coordinador = $id_user WHERE id_ticket = ".$escaped_id_ticket." AND (id_coordinador IS NULL OR id_coordinador = 0);";
+                    $result2 = Model::getResult($sqlgetcoordinador, $this->db);
+                    
+                    if ($result2 === false) {
+                        error_log("Error al rechazar documentos: ". pg_last_error($db_conn));
+                        return false;
+                    }else{
+                        // ... resto del código igual ...
+                        $id_status_lab = 0;
+                        $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". (int)$id_ticket. ";";
+                        $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+                        if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                            $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab')?? 0;
+                        }
 
-                $id_status_ticket = 'NULL';
-                $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
-                $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
-                if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
-                    $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket')!== null? (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') : 'NULL';
-                }
+                        $new_status_domiciliacion = 'NULL';
+                        $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = ". (int)$id_ticket. ";";
+                        $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+                        if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                            $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion')!== null? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
+                        }
 
-                $id_accion_ticket = 'NULL';
-                $accion_ticket_sql = "SELECT id_accion_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
-                $accion_ticket_result = pg_query($this->db->getConnection(), $accion_ticket_sql);
-                if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
-                    $id_accion_ticket = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket')!== null? (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') : 'NULL';
-                }
+                        $id_status_ticket = 'NULL';
+                        $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
+                        $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
+                        if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
+                            $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket')!== null? (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') : 'NULL';
+                        }
 
-                 $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
-                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
-                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
-                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
-                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
-                        pg_free_result($resultcoordinador);
-                    }else{ 
-                        $id_coordinador = null;
+                        $id_accion_ticket = 'NULL';
+                        $accion_ticket_sql = "SELECT id_accion_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
+                        $accion_ticket_result = pg_query($this->db->getConnection(), $accion_ticket_sql);
+                        if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
+                            $id_accion_ticket = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket')!== null? (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') : 'NULL';
+                        }
+
+                        $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                            $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                            if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                                $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                                $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                                pg_free_result($resultcoordinador);
+                            }else{ 
+                                $id_coordinador = null;
+                            }
+
+                        $sqlInsertHistory = sprintf(
+                            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
+                            (int)$id_ticket,
+                            (int)$id_user,
+                            (int)$id_status_ticket,
+                            (int)$id_accion_ticket,
+                            $id_status_lab,
+                            $id_new_status_payment,
+                            $new_status_domiciliacion,
+                            $id_coordinador
+                        );
+                        $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
+                        }
                     }
-
-                $sqlInsertHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
-                    (int)$id_ticket,
-                    (int)$id_user,
-                    (int)$id_status_ticket,
-                    (int)$id_accion_ticket,
-                    $id_status_lab,
-                    $id_new_status_payment,
-                    $new_status_domiciliacion,
-                    $id_coordinador
-                );
-               $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
+                } else {
+                    error_log("Error al insertar en ticket_status_history para ticket ID: {$id_ticket}. PG Error: ". pg_last_error($this->db->getConnection()));
+                    return false;
                 }
-            }
-            return true;
+    
+                return true;
             } catch (Throwable $e) {
             error_log("Excepción en RechazarDocumentos: ". $e->getMessage());
             return false;
