@@ -199,10 +199,9 @@ class emailModel extends Model{
         }
     }
 
-    public function GetEmailUser1gestionDataById($ticketid){
+    public function GetEmailUser1gestionDataById($ticketid, $document_type){
         try{
-            $sql = "SELECT * FROM get_email_user_gestion_by_id(".$ticketid.");";
-            var_dump($sql);
+            $sql = "SELECT * FROM get_email_user_gestion_by_id(".$ticketid.", '".$document_type."');";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -223,7 +222,16 @@ class emailModel extends Model{
     public function resultUserreject($id_user){
         try{
             $sql = "SELECT * FROM get_user_role_info(".$id_user.");";
-            var_dump($sql);
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+    
+    public function GetEmailAreaAdmin(){
+       try{
+            $sql = "SELECT ar.name_area, ar.email_area from areas ar WHERE ar.id_area = 2";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

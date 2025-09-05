@@ -158,8 +158,8 @@ class EmailRepository
         return $result ? $result['row'] : null;
     }
 
-    public function GetEmailUser1gestionDataById($ticketid){
-        $result = $this->model->GetEmailUser1gestionDataById( $ticketid);
+    public function GetEmailUser1gestionDataById($ticketid, $document_type){
+        $result = $this->model->GetEmailUser1gestionDataById( $ticketid, $document_type);
         //var_dump($result);
         return $result ? $result['row'] : null;
     }
@@ -171,6 +171,11 @@ class EmailRepository
 
     public function resultUserreject($id_user){
         $result = $this->model->resultUserreject($id_user);
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetEmailAreaAdmin(){
+         $result = $this->model->GetEmailAreaAdmin();
         return $result ? $result['row'] : null;
     }
 }

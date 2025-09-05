@@ -2515,7 +2515,7 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
                         console.error('Error de red al enviar correo de rechazo');
                       };
                       // Parámetros necesarios para PHP
-                      const params =  `action=send_reject_document&id_user=${encodeURIComponent(id_user)}`
+                      const params =  `action=send_reject_document&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`
 
                       xhrEmail.send(params);
                     } catch (err) {

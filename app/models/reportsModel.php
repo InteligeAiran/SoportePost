@@ -283,7 +283,6 @@ class reportsModel extends Model
             " . ((int) $id_user) . ",
             " . $escapedDocumentType . "
         )";
-        
         $result = Model::getResult($sql, $this->db);
 
         if($result){

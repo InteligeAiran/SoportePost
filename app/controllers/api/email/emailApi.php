@@ -314,9 +314,18 @@ class email extends Controller {
                     </ul>
                     <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . $ticketserial . '&Proceso=' . $ticketprocess . '&id_level_failure=' . $ticketNivelFalla . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                     <hr>
-                    <p class="footer" >Atentamente,</p>
-                    <p class="footer">El equipo de InteliSoft</p>
-                    ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
+                    <p style="text-align: center; margin-top: 30px;">
+                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
+                            Ver Detalles del Ticket
+                        </a>
+                    </p>
+
+                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 28%; margin-top: 3%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
+
+                    <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                        <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                    </div>
                 </div>
             </body>
             </html>
@@ -448,10 +457,10 @@ class email extends Controller {
                 <div class="container">
                     <div class="header">
                         <h1>Nueva Asignación de Ticket</h1>
-                        <p style="color: #666; font-size: 16px; margin: 10px 0 0;">Hola, <strong><span style="color: black;">' . htmlspecialchars($nombre_area) . '</strong></span>.</p>
+                        <p style="color: #666; font-size: 16px; margin: 10px 0 0;">Hola, <strong><span style="color: black;">Gerencia de ' . htmlspecialchars($nombre_area) . '</strong></span>.</p>
                     </div>
                     <p style="color: #444; font-size: 15px; line-height: 1.6;">
-                        El técnico u operador <strong><span style="color: black;">' . htmlspecialchars($nombre_tecnico_ticket) . '</strong></span> ha asignado el siguiente ticket a su área para su gestión.
+                        El técnico u operador <strong><span style="color: black;">' . htmlspecialchars($nombre_tecnico_ticket) . '</strong></span> ha creado el siguiente ticket para su gestión.
                     </p>
                     
                     <div class="ticket-info">
@@ -626,10 +635,10 @@ class email extends Controller {
         <body>
             <div class="ticket-container">
                 <div class="ticket-header">
-                    <h2 class="ticket-title">¡Ticket Asignado!</h2>
+                    <h2 class="ticket-title">¡Ticket Creado!</h2>
                 </div>
                 <p class="greeting">Hola, <span style = "color: black;"><strong>' . htmlspecialchars($nombre_tecnico) . '</strong></span></p>
-                <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">Te informamos que el ticket con serial <span style = "color: black;"><strong>' . htmlspecialchars($ticketserial) . '</strong></span>, que gestionaste, ha sido <span style = "color: black;"><strong>Asignado</strong></span> y se ha notificado al área de <span style = "color: black;"><strong>' . htmlspecialchars($nombre_area) . '</strong></span>.</p>
+                <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">Te informamos que el ticket asociado al serial <span style = "color: black;"><strong>' . htmlspecialchars($ticketserial) . '</strong></span>, que gestionaste, ha sido <span style = "color: black;"><strong>Creado con Éxito</strong></span> y se ha notificado al área de <span style = "color: black;"><strong>' . htmlspecialchars($nombre_area) . '</strong></span>.</p>
                 <ul class="info-list">
                     <li class="info-item"><strong> 🎫  Nro. Ticket:</strong> ' . htmlspecialchars($ticketnro) . '</li>
                     <li class="info-item"><strong> 🏢  RIF Cliente:</strong> ' . htmlspecialchars($clientRif) . '</li>
@@ -644,9 +653,18 @@ class email extends Controller {
                 </ul>
                 <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess ?? '') . '&id_level_failure=' . urlencode($ticketNivelFalla ?? '') . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                 <hr>
-                <p class="footer">Atentamente,</p>
-            <p class="footer">El equipo de InteliSoft</p>
-                        ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
+                <p style="text-align: center; margin-top: 30px;">
+                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
+                            Ver Detalles del Ticket
+                        </a>
+                    </p>
+
+                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 28%; margin-top: 3%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
+
+                    <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                        <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                    </div>
                     </div>
             </div>
         </body>
@@ -784,9 +802,18 @@ class email extends Controller {
             </ul>
             <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
             <hr>
-            <p class="footer">Atentamente,</p>
-            <p class="footer">El equipo de InteliSoft</p>
-            ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
+            <p style="text-align: center; margin-top: 30px;">
+                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
+                            Ver Detalles del Ticket
+                        </a>
+                    </p>
+
+                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 28%; margin-top: 3%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
+
+                    <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                        <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                    </div>
         </div>
             </body>
             </html>
@@ -853,9 +880,18 @@ class email extends Controller {
                         </ul>
                         <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                         <hr>
-                        <p class="footer">Atentamente,</p>
-                        <p class="footer">El equipo de InteliSoft</p>
-                        ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
+                        <p style="text-align: center; margin-top: 30px;">
+                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
+                            Ver Detalles del Ticket
+                        </a>
+                    </p>
+
+                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 28%; margin-top: 3%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
+
+                    <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                        <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                    </div>
                     </div>
                 </body>
                 </html>
@@ -977,9 +1013,18 @@ class email extends Controller {
                 </ul>
                 <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                 <hr>
-                <p class="footer">Atentamente,</p>
-                <p class="footer">El equipo de InteliSoft</p>
-                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
+                <p style="text-align: center; margin-top: 30px;">
+                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
+                            Ver Detalles del Ticket
+                        </a>
+                    </p>
+
+                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 28%; margin-top: 3%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
+
+                    <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                        <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                    </div>
             </div>
         </body>
         </html>
@@ -1046,9 +1091,18 @@ class email extends Controller {
                     </ul>
                     <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                     <hr>
-                    <p class="footer">Atentamente,</p>
-                    <p class="footer">El equipo de InteliSoft</p>
-                    ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
+                    <p style="text-align: center; margin-top: 30px;">
+                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
+                            Ver Detalles del Ticket
+                        </a>
+                    </p>
+
+                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 28%; margin-top: 3%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
+
+                    <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                        <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                    </div>
                 </div>
             </body>
             </html>
@@ -1111,11 +1165,12 @@ class email extends Controller {
     }
     // ... otras funciones handleSearchSerialData, etc.
 
-    public function handleSendRejectDocument(){
+   public function handleSendRejectDocument(){
         $repository = new EmailRepository(); // Inicialización aquí si no se hace en el constructor
 
         // 1. Obtener ID del coordinador desde el POST y sus datos
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
+        $documentType = isset($_POST['documentType']) ? $_POST['documentType'] : '';
 
         // EMAIL DEL AREA
         $result_email_area = $repository->GetEmailArea();
@@ -1136,6 +1191,10 @@ class email extends Controller {
             $this->response(['success' => false, 'message' => 'No se encontraron datos del ticket.', 'color' => 'red']);
             return;
         }
+
+        $result_email_areaAdmin = $repository->GetEmailAreaAdmin();
+        $email_area_admin = $result_email_areaAdmin['email_area'];
+        $name_area_admin = $result_email_areaAdmin['name_area'];
 
         $nombre_tecnico_ticket = $result_ticket['full_name_tecnico'];
         $ticketNivelFalla = $result_ticket['id_level_failure'];
@@ -1165,7 +1224,7 @@ class email extends Controller {
         $ticketdatereject = $resultDocumentoRechazado['fecha_rechazo'];
 
         // Datos del que gestionó el ticket
-        $result_tecnico = $repository->GetEmailUser1gestionDataById( $ticketid);
+        $result_tecnico = $repository->GetEmailUser1gestionDataById( $ticketid, $documentType);
         $email_tecnico = $result_tecnico['user_email'] ?? '';
         $nombre_tecnico = $result_tecnico['full_name'] ?? 'Técnico';
         $id_rol = $result_tecnico['id_rolusr'] ?? '';
@@ -1212,6 +1271,7 @@ class email extends Controller {
             .btn{display:inline-block;background:#0035F6;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;margin-top:12px}
             .footer{background:#f3f4f6;text-align:center;color:#6b7280;font-size:12px;padding:14px 10px}
             .logo{display:block;margin:20px auto 0;max-width:150px}
+            .note{background:#e3f2fd;border:1px solid #90caf9;color:#1565c0;border-radius:10px;padding:14px;margin:14px 0;font-weight:500}
             </style>
             </head>
             <body>
@@ -1227,6 +1287,10 @@ class email extends Controller {
                 <div class="row"><span class="label">Rechazado por:</span> <span class="value">' . htmlspecialchars($rejectedBy) . '</span></div>
                 <div class="row"><span class="label">Fecha:</span> <span class="value">' . htmlspecialchars($ticketdatereject) . '</span></div>
 
+                <div class="note">
+                    <strong>📢 Nota:</strong> Se le ha avisado al técnico <strong>' . htmlspecialchars($nombre_tecnico) . '</strong> para que cargue el documento correspondiente.
+                </div>
+
                 <hr style="border:none;border-top:1px solid #e5e7eb;margin:18px 0">
 
                 <div class="row"><span class="label">RIF Cliente:</span> <span class="value">' . htmlspecialchars($clientRif) . '</span></div>
@@ -1240,7 +1304,10 @@ class email extends Controller {
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo" class="logo">' : '') . '
                 </div>
 
-                <div class="footer">Correo automático • al Área: ' . htmlspecialchars($nombre_area) . '</div>
+                <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                    <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                </div>
             </div>
             </body>
             </html>
@@ -1270,6 +1337,7 @@ class email extends Controller {
             .btn{display:inline-block;background:#0035F6;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;margin-top:12px}
             .footer{background:#f3f4f6;text-align:center;color:#6b7280;font-size:12px;padding:14px 10px}
             .logo{display:block;margin:20px auto 0;max-width:150px}
+            .note{background:#e8f5e8;border:1px solid #a5d6a7;color:#2e7d32;border-radius:10px;padding:14px;margin:14px 0;font-weight:500}
             </style>
             </head>
             <body>
@@ -1282,8 +1350,11 @@ class email extends Controller {
                 <div class="section">
                 <p>Hola, <strong>' . htmlspecialchars($nombre_person_reject) . '</strong>.</p>
                 <div class="alert"><strong>Has rechazado el documento:</strong> ' . htmlspecialchars($documentType) . '<br><strong>Motivo:</strong> ' . htmlspecialchars($motivoTexto) . '</div>
-                <div class="row"><span class="label">Tu rol:</span> <span class="value">' . htmlspecialchars($rolTecnico) . '</span></div>
                 <div class="row"><span class="label">Fecha:</span> <span class="value">' . htmlspecialchars($ticketdatereject) . '</span></div>
+
+                <div class="note">
+                    <strong>📢 Nota:</strong> Se le ha informado al técnico para que cargue el documento correspondiente.
+                </div>
 
                 <hr style="border:none;border-top:1px solid #e5e7eb;margin:18px 0">
 
@@ -1298,7 +1369,11 @@ class email extends Controller {
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo" class="logo">' : '') . '
                 </div>
 
-                <div class="footer">Correo automático • Confirmación de rechazo</div>
+                <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                    <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                </div>
+            </div>
             </div>
             </body>
             </html>
@@ -1326,6 +1401,7 @@ class email extends Controller {
             .btn{display:inline-block;background:#0035F6;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;margin-top:12px}
             .footer{background:#f3f4f6;text-align:center;color:#6b7280;font-size:12px;padding:14px 10px}
             .logo{display:block;margin:20px auto 0;max-width:150px}
+            .note{background:#fff3e0;border:1px solid #ffcc02;color:#e65100;border-radius:10px;padding:14px;margin:14px 0;font-weight:500}
             </style>
             </head>
             <body>
@@ -1339,8 +1415,11 @@ class email extends Controller {
                 <p>Hola, <strong>' . htmlspecialchars($nombre_tecnico) . '</strong>.</p>
                 <div class="alert"><strong>Se rechazó el documento:</strong> ' . htmlspecialchars($documentType) . '<br><strong>Motivo:</strong> ' . htmlspecialchars($motivoTexto) . '</div>
                 <div class="row"><span class="label">Rechazado por:</span> <span class="value">' . htmlspecialchars($rejectedBy) . '</span></div>
-                <div class="row"><span class="label">Tu rol:</span> <span class="value">' . htmlspecialchars($name_rol) . '</span></div>
                 <div class="row"><span class="label">Fecha:</span> <span class="value">' . htmlspecialchars($ticketdatereject) . '</span></div>
+
+                <div class="note">
+                    <strong>⚠️ IMPORTANTE:</strong> DEBES CARGAR EL DOCUMENTO CORRESPONDIENTE.
+                </div>
 
                 <hr style="border:none;border-top:1px solid #e5e7eb;margin:18px 0">
 
@@ -1354,7 +1433,78 @@ class email extends Controller {
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo" class="logo">' : '') . '
                 </div>
 
-                <div class="footer">Correo automático • Técnico notificado</div>
+               <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                    <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                    </div>
+            </div>
+            </div>
+            </body>
+            </html>
+        ';
+
+        // ========== CORREO 4: PARA ADMINISTRACIÓN (SOLO SI idrol == 5) ==========
+        $subject_admin = 'Usuario de Administración rechazó documento - Ticket ' . $ticketnro;
+        $body_admin = '
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+            <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Documento Rechazado por Administración</title>
+            <style>
+            body{margin:0;padding:0;background:#f6f8fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+            .container{max-width:600px;margin:24px auto;background:#ffffff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);overflow:hidden;border-top:6px solid #8b5cf6}
+            .header{background:linear-gradient(135deg,#a78bfa,#8b5cf6);color:#fff;text-align:center;padding:22px}
+            .header h1{margin:0;font-size:22px}
+            .pill{display:inline-block;background:#fff;color:#8b5cf6;border-radius:999px;padding:6px 12px;font-weight:700;margin-top:10px}
+            .section{padding:22px}
+            .row{margin-bottom:12px}
+            .label{display:inline-block;width:165px;color:#6b7280;font-weight:600}
+            .value{color:#111827}
+            .badge{display:inline-block;padding:4px 10px;border-radius:999px;color:#fff;font-weight:700}
+            .badge-admin{background:#8b5cf6}
+            .alert{background:#faf5ff;border:1px solid #e9d5ff;color:#7c3aed;border-radius:10px;padding:14px;margin:14px 0}
+            .btn{display:inline-block;background:#0035F6;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;margin-top:12px}
+            .footer{background:#f3f4f6;text-align:center;color:#6b7280;font-size:12px;padding:14px 10px}
+            .logo{display:block;margin:20px auto 0;max-width:150px}
+            .note{background:#f3e5f5;border:1px solid #ce93d8;color:#7b1fa2;border-radius:10px;padding:14px;margin:14px 0;font-weight:500}
+            </style>
+            </head>
+            <body>
+            <div class="container">
+                <div class="header">
+                <h1>Documento Rechazado por Administración</h1>
+                <div class="pill">Ticket ' . htmlspecialchars($ticketnro) . '</div>
+                </div>
+
+                <div class="section">
+                <div class="alert"><strong>El usuario <span style="color:#7c3aed;">' . htmlspecialchars($nombre_person_reject) . '</span> del área de Administración ha rechazado este documento.</strong></div>
+                <div class="row"><span class="label">Documento:</span> <span class="value"><strong>' . htmlspecialchars($documentType) . '</strong></span></div>
+                <div class="row"><span class="label">Motivo:</span> <span class="value">' . htmlspecialchars($motivoTexto) . '</span></div>
+                <div class="row"><span class="label">Usuario Administración:</span> <span class="value">' . htmlspecialchars($rejectedBy) . '</span></div>
+                <div class="row"><span class="label">Fecha:</span> <span class="value">' . htmlspecialchars($ticketdatereject) . '</span></div>
+
+                <div class="note">
+                    <strong>📢 Nota:</strong> Se le ha informado al técnico y al área de operaciones.
+                </div>
+
+                <hr style="border:none;border-top:1px solid #e5e7eb;margin:18px 0">
+
+                <div class="row"><span class="label">RIF Cliente:</span> <span class="value">' . htmlspecialchars($clientRif) . '</span></div>
+                <div class="row"><span class="label">Razón Social:</span> <span class="value">' . htmlspecialchars($clientName) . '</span></div>
+                <div class="row"><span class="label">Serial POS:</span> <span class="value">' . htmlspecialchars($ticketserial) . '</span></div>
+                <div class="row"><span class="label">Estatus Ticket:</span> <span class="value"><span class="badge badge-admin">' . htmlspecialchars($ticketstatus) . '</span></span></div>
+
+                <p style="text-align:center;margin-top:16px">
+                    <a class="btn" href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '" style = "color: white;">Ver historial del ticket</a>
+                </p>
+                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo" class="logo">' : '') . '
+                </div>
+
+                <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                    <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                </div>
             </div>
             </body>
             </html>
@@ -1364,6 +1514,7 @@ class email extends Controller {
         $correo_coordinador_enviado = false;
         $correo_persona_reject_enviado = false;
         $correo_tecnico_enviado = false;
+        $correo_admin_enviado = false;
         $mensaje_final = '';
 
         // Enviar correo al coordinador
@@ -1385,15 +1536,29 @@ class email extends Controller {
             }
         }
 
+        // Enviar correo a administración SOLO si el que rechazó es de administración (idrol == 5)
+        if ($idrol == 5 && $email_area_admin && $result_email_areaAdmin) {
+            if ($this->emailService->sendEmail($email_area_admin, $subject_admin, $body_admin, [], $embeddedImages)) {
+                $correo_admin_enviado = true;
+            }
+        }
+
         // Respuesta final
         $correos_enviados = [];
         if ($correo_coordinador_enviado) $correos_enviados[] = 'coordinación';
         if ($correo_persona_reject_enviado) $correos_enviados[] = 'persona que rechazó';
         if ($correo_tecnico_enviado) $correos_enviados[] = 'técnico';
+        if ($correo_admin_enviado) $correos_enviados[] = 'administración';
 
-        if (count($correos_enviados) == 3) {
-            $this->response(['success' => true, 'message' => 'Correos enviados exitosamente a coordinación, persona que rechazó y técnico.', 'color' => 'green']);
-        } elseif (count($correos_enviados) > 0) {
+        $total_correos = count($correos_enviados);
+        $correos_esperados = ($idrol == 5) ? 4 : 3;
+
+        if ($total_correos == $correos_esperados) {
+            $mensaje = ($idrol == 5) 
+                ? 'Correos enviados exitosamente a coordinación, persona que rechazó, técnico y administración.' 
+                : 'Correos enviados exitosamente a coordinación, persona que rechazó y técnico.';
+            $this->response(['success' => true, 'message' => $mensaje, 'color' => 'green']);
+        } elseif ($total_correos > 0) {
             $this->response(['success' => true, 'message' => 'Correos enviados a: ' . implode(', ', $correos_enviados) . '.', 'color' => 'orange']);
         } else {
             $this->response(['success' => false, 'message' => 'Error al enviar todos los correos.', 'color' => 'red']);
