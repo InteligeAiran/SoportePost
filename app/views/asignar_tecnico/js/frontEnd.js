@@ -491,7 +491,7 @@ function getTicketDataCoordinator() {
                   </svg>
                 </button>
 
-                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Coordinador">
+                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por la Coordinación">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
                     <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
                   </svg>
@@ -926,14 +926,8 @@ function getTicketDataCoordinator() {
                 });
             });
     });
-
     // MOSTRAR el modal
     visualizarImagenModal.show();
-
-    const btnCancelar = document.getElementById('BotonCerrarSelectDocument');
-    btnCancelar.addEventListener('click', function () {
-      visualizarImagenModal.hide();
-    });
   });
         } else {
           hideTicketStatusIndicator();
@@ -1652,7 +1646,7 @@ function markTicketAsReceived(ticketId, nroTicket, serialPos) {
                 html: `El ticket Nr: <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido marcado como recibido.`,
                 icon: "success",
                 color: "black",
-                confirmButtonColor: "#2703f4ff",
+                confirmButtonColor: "#003594",
               });
               getTicketDataCoordinator();
               if (modalInstanceCoordinator) {
@@ -2376,7 +2370,6 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
   const BotonCerrarModal = document.getElementById("CerrarModalVizualizar");
   const BotonCerrarModalSelect = document.getElementById("BotonCerrarSelectDocument");
 
-
   currentTicketId = ticketId;
   currentNroTicket = nroTicket;
   modalTicketIdSpanView.textContent = currentNroTicket;
@@ -2433,14 +2426,15 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
 
   viewDocumentModal.show();
   
-  BotonCerrarModal.addEventListener('click', function () {
-    // Ocultar el modal de visualización
-    viewDocumentModal.hide();
+
+     BotonCerrarModal.addEventListener('click', function () {
+                // Ocultar el modal de visualización
+                viewDocumentModal.hide();
                 
-    // Mostrar nuevamente el modal de selección
-    setTimeout(() => {
-      visualizarImagenModal.show();
-    }, 300); //
+                // Mostrar nuevamente el modal de selección
+                setTimeout(() => {
+                    visualizarImagenModal.show();
+                }, 300); //
   });
 
   BotonCerrarModalSelect.addEventListener('click', function () {
@@ -2448,6 +2442,8 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     visualizarImagenModal.hide();
     
   });
+
+  
 };
 
 const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
@@ -2480,6 +2476,7 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
 
     const xhr = new XMLHttpRequest();
     const datos = `action=rechazarDocumento&ticketId=${encodeURIComponent(ticketId)}&motivoId=${encodeURIComponent(motivoId)}&nroTicket=${encodeURIComponent(nroticket)}&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`; // Ajusta los datos a tu script de backend
+    console.log('Datos enviados:', datos);
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/rechazarDocumento`); // Ajusta la URL a tu script de backend
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -2487,41 +2484,7 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
         if (xhr.status === 200) {
             try {
                 const response = JSON.parse(xhr.responseText);
-                if (response.success) {                  // Disparar envío de correos (no bloqueante) – MISMA ESTRUCTURA QUE send_ticket2
-                  (function sendRejectionEmails() {
-                    try {
-                      const xhrEmail = new XMLHttpRequest();
-                      xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_reject_document`);
-                      xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-                      xhrEmail.onload = function () {
-                        if (xhrEmail.status === 200) {
-                          try {
-                            const responseEmail = JSON.parse(xhrEmail.responseText);
-                            if (responseEmail.success) {
-                              console.log('Correo rechazo enviado:', responseEmail.message || 'OK');
-                            } else {
-                              console.error('Error correo rechazo:', responseEmail.message);
-                            }
-                          } catch (e) {
-                            console.error('Error parseando respuesta correo rechazo:', e, xhrEmail.responseText);
-                          }
-                        } else {
-                          console.error('Error HTTP correo rechazo:', xhrEmail.status, xhrEmail.responseText);
-                        }
-                      };
-
-                      xhrEmail.onerror = function () {
-                        console.error('Error de red al enviar correo de rechazo');
-                      };
-                      // Parámetros necesarios para PHP
-                      const params =  `action=send_reject_document&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`
-
-                      xhrEmail.send(params);
-                    } catch (err) {
-                      console.error('Fallo al disparar correo rechazo:', err);
-                    }
-                  })();
+                if (response.success) {
                     Swal.fire({
                         icon: 'success',
                         title: '¡Rechazado!',

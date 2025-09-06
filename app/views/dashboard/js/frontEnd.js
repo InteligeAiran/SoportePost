@@ -2480,6 +2480,7 @@ function formatOpenDetails(details) {
         let markReceivedButtonHtml = ''; // Variable para el botón "Marcar como Recibido"
 
         const statusPaymentId = parseInt(ticket.id_status_payment, 10);
+        const accionTicket = ticket.name_accion_ticket;
 
         // Los IDs de status_payment 10, 11, 1 y 3 se asocian con botones de "ver documento".
         // El `data-ticket-id` se usa para pasar el ID del ticket a `handleViewDocumentClick`.
@@ -2509,13 +2510,20 @@ function formatOpenDetails(details) {
         }
 
         ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
-          if (currentUserRole === 1 || currentUserRole === 4) { 
+            // Lógica corregida para el botón "Marcar como Recibido"
+        if (accionTicket === 'Recibido por la Coordinación') {
             markReceivedButtonHtml = `
-              <button type="button" class="btn btn-success ms-2 mark-received-btn" id="mark-received-btn-${ticket.id_ticket}">
+              <button type="button" class="btn btn-success ms-2 mark-received-btn" disabled>
+                Ya estan recibidos
+              </button>
+            `;
+        } else if (currentUserRole === 1 || currentUserRole === 4) {
+            markReceivedButtonHtml = `
+              <button type="button" class="btn btn-success ms-2 mark-received-btn" data-ticket-id="${ticket.id_ticket}" data-nro-ticket = "${ticket.nro_ticket}" data-serial-pos = ${ticket.serial_pos_cliente}>
                 Marcar como Recibido
               </button>
             `;
-          }
+        }
         ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
 
         
@@ -2577,7 +2585,6 @@ function attachViewDocumentListeners() {
     });
 }
 
-
 // NUEVA función para adjuntar los event listeners (reconfirmada)
 function attachMarkReceivedListeners() {
     // Eliminar listeners previos para evitar duplicados si se llama varias veces
@@ -2592,40 +2599,123 @@ function attachMarkReceivedListeners() {
 
 // Wrapper para pasar el ticketId directamente
 function handleMarkTicketReceivedClick() {
-    const ticketId = this.dataset.ticketId;
-    handleMarkTicketReceived(ticketId);
+  const ticketId = $(this).data("ticket-id");
+  const nroTicket = $(this).data("nro-ticket");
+  const serialPos = $(this).data("serial-pos");
+  markTicketAsReceived(ticketId, nroTicket, serialPos);
 }
 
 // Función para manejar la lógica de marcar como recibido (como antes)
-async function handleMarkTicketReceived(ticketId) {
-    if (!confirm(`¿Estás seguro de que quieres marcar el Ticket #${ticketId} como recibido?`)) {
-        return; // El usuario canceló
-    }
+function markTicketAsReceived(ticketId, nroTicket, serialPos) {
+  // Asegúrate de que nroTicket esté como parámetro
+  const id_user = document.getElementById("userIdForPassword").value;
+  // SVG que quieres usar
+  const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+  Swal.fire({
+    // El nuevo texto del header va aquí
+    title: `Confirmación de recibido`, // Texto fijo para el encabezado
+    // El contenido del cuerpo (SVG y texto explicativo) va en 'html'
+    html: `${customWarningSvg}<p class="mt-3" id = "textConfirm">¿Deseas Marcar el ticket Nro: <span id = "NroTicketConfirReceiCoord">${nroTicket}</span> Asociado el Pos: <span id = "NroTicketConfirReceiCoord">${serialPos}</span> como recibido? 
+    </p><p id = "textConfirmp">Esta acción registrará la fecha de recepción y habilitará la asignación de técnico en el módulo Gestión Coordinador.</p>`,
+    showCancelButton: true,
+    confirmButtonColor: "#003594",
+    cancelButtonColor: "#6c757d",
+    confirmButtonText: "Recibir Pos",
+    cancelButtonText: "Cancelar",
+    color: "black",
+    customClass: {
+      popup: "swal2-custom-header-popup", // Clase principal para el popup
+      title: "swal2-custom-title", // Clase para el título (para estilizarlo en CSS)
+      content: "custom-content", // Puedes mantener esta si la usas para el contenido del cuerpo
+      actions: "custom-actions",
+      confirmButton: "swal2-confirm-receive-ticket-class",
+      cancelButton: "swal2-cancel-receive-ticket-class",
+    },
+    didOpen: (popup) => {
+      const confirmBtn = popup.querySelector(
+        ".swal2-confirm-receive-ticket-class"
+      );
+      const cancelBtn = popup.querySelector(
+        ".swal2-cancel-receive-ticket-class"
+      );
 
-    try {
-        const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/tickets/markReceived`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ ticket_id: ticketId })
-        });
+      if (confirmBtn) {
+        confirmBtn.id = "swal2-confirm-receive-ticket-id";
+      }
+      if (cancelBtn) {
+        cancelBtn.id = "swal2-cancel-receive-ticket-id";
+      }
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const xhr = new XMLHttpRequest();
+      xhr.open(
+        "POST",
+        `${ENDPOINT_BASE}${APP_PATH}api/historical/MarkTicketReceived`
+      ); // Necesitas una nueva ruta de API para esto
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            alert(`Ticket #${ticketId} marcado como recibido exitosamente.`);
-            $('#OpenTicketModal').modal('hide'); // Cierra el modal
-            loadOpenTicketDetails(); // Recarga los tickets abiertos para reflejar el cambio
-            // También podrías necesitar recargar el conteo de tickets si tienes un dashboard
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            if (response.success) {
+              Swal.fire({
+                title: "¡Recibido!",
+                html: `El ticket Nr: <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido marcado como recibido.`,
+                icon: "success",
+                color: "black", 
+                confirmButtonColor: "#003594",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                keydownListenerCapture: true
+              }).then(() => {
+                window.location.reload();
+              });
+            } else {
+              Swal.fire(
+                "Error",
+                response.message ||
+                "Hubo un error al marcar el ticket como recibido.",
+                "error"
+              );
+            }
+          } catch (error) {
+            Swal.fire(
+              "Error",
+              "Error al procesar la respuesta del servidor.",
+              "error"
+            );
+            console.error(
+              "Error parsing JSON for markTicketAsReceived:",
+              error
+            );
+          }
         } else {
-            alert(`Error al marcar el Ticket #${ticketId} como recibido: ${data.message || 'Error desconocido'}`);
-            console.error('Error marking ticket received:', data.message);
+          Swal.fire(
+            "Error",
+            `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
+            "error"
+          );
+          console.error(
+            "Error en markTicketAsReceived:",
+            xhr.status,
+            xhr.statusText
+          );
         }
-    } catch (error) {
-        alert('Error de red al intentar marcar el ticket como recibido.');
-        console.error('Network error marking ticket received:', error);
+      };
+      xhr.onerror = function () {
+        Swal.fire(
+          "Error",
+          "Error de red al intentar marcar el ticket como recibido.",
+          "error"
+        );
+        console.error("Network error for markTicketAsReceived");
+      };
+      const data = `action=MarkTicketReceived&ticket_id=${ticketId}&id_user=${encodeURIComponent(id_user)}`;
+      xhr.send(data);
     }
+  });
 }
 
 
