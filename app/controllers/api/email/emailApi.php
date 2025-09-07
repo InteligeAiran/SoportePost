@@ -648,7 +648,6 @@ class email extends Controller {
                     <li class="info-item"><strong> 📅  Fecha de Creacion:</strong> ' . htmlspecialchars($ticketfinished) . '</li>
                     <li class="info-item"><strong>💰   Estatus Carga Documento:</strong> <span style= "color: darkblue;">'. htmlspecialchars($ticketpaymnet).'</span></li>
                 </ul>
-                <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess ?? '') . '&id_level_failure=' . urlencode($ticketNivelFalla ?? '') . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                 <hr>
                 <p style="text-align: center; margin-top: 30px;">
                         <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
@@ -698,21 +697,22 @@ class email extends Controller {
             }
     }
 
-    public function handleSendEndTicket() {
+     public function handleSendEndTicket() {
         $repository = new EmailRepository();
 
         // 1. Obtener ID del coordinador desde el POST y sus datos
-        $id_coordinador = isset($_POST['id_coordinador']) ? $_POST['id_coordinador'] : '';
-        $result_coordinador = $repository->GetEmailCoorDataById($id_coordinador);
+
+        // EMAIL DEL AREA
+        $result_email_area = $repository->GetEmailArea();
 
         // Si no se encuentra información del coordinador, no podemos continuar
-        if (!$result_coordinador) {
+        if (!$result_email_area) {
             $this->response(['success' => false, 'message' => 'Correo del coordinador no existe o no se encontraron datos.', 'color' => 'red']);
-            return;
+            return; // Salir de la función
         }
 
-        $email_coordinador = $result_coordinador['email'];
-        $nombre_coordinador = $result_coordinador['full_name'];
+        $email_area = $result_email_area['email_area']; // El Gmail del AREA
+        $nombre_area = $result_email_area['name_area']; // El nombre del AREA
 
         // 2. Obtener datos del ticket cerrado
         $result_ticket = $repository->GetDataTicketClosed();
@@ -736,6 +736,14 @@ class email extends Controller {
         $fecha_entrega = $result_ticket['date_delivered'] ?? 'N/A';
         $comentario_entrega = $result_ticket['customer_delivery_comment'] ?? 'N/A';
 
+         // Funcion para obtener el id del ticket con el nro de ticket
+        $resultgetid_ticket = $repository->GetTicketId($ticketnro);
+        $ticketid = $resultgetid_ticket['get_ticket_id'];
+
+            // Funcion para obtener el nobre de la coordinacion por el id_ticket
+        $resultCoordinacion = $repository->GetCoordinacion($ticketid);
+        $name_coordinador = $resultCoordinacion['get_department_name']?? 'N/A';
+
         // 3. Obtener información del cliente
         $result_client = $repository->GetClientInfo($ticketserial);
         $clientName = $result_client['razonsocial'] ?? 'N/A';
@@ -757,30 +765,32 @@ class email extends Controller {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Ticket Cerrado</title>
                 <style>
-                    body { font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 30px; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-                    .ticket-container { background-color: #fff; border: 1px solid #ced4da; border-radius: 10px; padding: 30px; max-width: 600px; width: 100%; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); }
+                    body { font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 20px; margin: 0; }
+                    .email-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+                    .ticket-container { background-color: #fff; border: 1px solid #ced4da; border-radius: 10px; padding: 30px; max-width: 600px; width: 100%; margin-left: 26%; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); }
                     .ticket-header { background-color: #28a745; color: #fff; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin-bottom: 25px; }
                     .ticket-title { font-size: 1.8em; margin-bottom: 10px; font-weight: bold; }
-                    .greeting { margin-bottom: 20px; color: #495057; font-size: 1.1em; }
+                    .greeting { margin-bottom: 20px; color: #495057; font-size: 1.1em; text-align: center; }
+                    .message { color: #495057; font-size: 1.1em; margin-bottom: 20px; text-align: center; }
                     .info-list { list-style: none; padding-left: 0; margin-bottom: 20px; }
                     .info-item { margin-bottom: 12px; color: #343a40; font-size: 1em; display: flex; align-items: baseline; }
                     .info-item strong { font-weight: bold; color: #007bff; margin-right: 10px; width: 150px; display: inline-block; }
-                    .footer { text-align: center; margin-top: -12px; color: #6c757d; font-size: 0.9em; }
-                    .logo { display: block; margin: 20px auto 0; max-width: 150px; margin-top: -40px; }
-                    hr { border-top: 1px solid #dee2e6; margin: 20px 0; margin-top: -50px; }
+                    .link-section { text-align: center; margin: 20px 0; }
+                    .footer { text-align: center; margin-top: 20px; color: #6c757d; font-size: 0.9em; }
+                    .logo { display: block; margin: 20px auto 0; max-width: 50%; }
+                    hr { border-top: 1px solid #dee2e6; margin: 20px 0; }
                     .status-closed { color: #28a745; font-weight: bold; }
                     .status-pending { color: #ffc107; font-weight: bold; }
                 </style>
             </head>
             <body>
-            </head>
-    <body>
-        <div class="ticket-container">
-            <div class="ticket-header">
-                <h2 class="ticket-title">✅ ¡Ticket Cerrado! ✅</h2>
-            </div>
-            <p class="greeting">Hola, ' . htmlspecialchars($nombre_coordinador) . '</p>
-            <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">Nos complace informarle que el Técnico <strong>' . htmlspecialchars($nombre_tecnico_ticket) . '</strong> ha <strong>cerrado exitosamente</strong> el siguiente ticket:</p>
+                <div class="email-wrapper">
+                    <div class="ticket-container">
+                        <div class="ticket-header">
+                            <h2 class="ticket-title">✅ ¡Ticket Cerrado! ✅</h2>
+                        </div>
+                        <p class="greeting">Hola, ' . htmlspecialchars($name_coordinador) . '</p>
+                        <p class="message">Nos complace informarle que el Técnico <strong>' . htmlspecialchars($nombre_tecnico_ticket) . '</strong> ha <strong>cerrado exitosamente</strong> el siguiente ticket:</p>
             <ul class="info-list">
                 <li class="info-item"><strong>Nro. Ticket:</strong> ' . htmlspecialchars($ticketnro) . '</li>
                 <li class="info-item"><strong>RIF Cliente:</strong> ' . htmlspecialchars($clientRif) . '</li>
@@ -797,21 +807,24 @@ class email extends Controller {
                 <li class="info-item"><strong>Estado del Laboratorio:</strong> ' . htmlspecialchars($ticketlab) . '</li>
                 <li class="info-item"><strong>Comentario de Entrega:</strong> ' . htmlspecialchars($comentario_entrega) . '</li>
             </ul>
-            <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
-            <hr>
-            <p style="text-align: center; margin-top: 30px;">
-                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
-                            Ver Detalles del Ticket
-                        </a>
-                    </p>
+                        <div class="link-section">
+                            <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a>
+                        </div>
+                        <hr>
+                        <div class="link-section">
+                            <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
+                                Ver Detalles del Ticket
+                            </a>
+                        </div>
 
-                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 28%; margin-top: 3%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
+                        ' . (defined('FIRMA_CORREO') ? '<img st src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
 
-                    <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
-                        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
-                        <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                        <div class="footer" style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                            <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                            <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                        </div>
                     </div>
-        </div>
+                </div>
             </body>
             </html>
         ';
@@ -826,7 +839,7 @@ class email extends Controller {
         $mensaje_final = '';
 
         // Enviar correo al coordinador
-        if ($this->emailService->sendEmail($email_coordinador, $subject_coordinador, $body_coordinador, [], $embeddedImages)) {
+        if ($this->emailService->sendEmail($email_area, $subject_coordinador, $body_coordinador, [], $embeddedImages)) {
             $correo_coordinador_enviado = true;
         }
 
@@ -841,27 +854,31 @@ class email extends Controller {
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>Ticket Cerrado</title>
                     <style>
-                        body { font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 30px; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-                        .ticket-container { background-color: #fff; border: 1px solid #ced4da; border-radius: 10px; padding: 30px; max-width: 600px; width: 100%; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); }
+                        body { font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 20px; margin: 0; }
+                        .email-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+                        .ticket-container { background-color: #fff; border: 1px solid #ced4da; border-radius: 10px; padding: 30px; max-width: 600px; width: 100%; margin-left: 26%; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); }
                         .ticket-header { background-color: #28a745; color: #fff; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin-bottom: 25px; }
                         .ticket-title { font-size: 1.8em; margin-bottom: 10px; font-weight: bold; }
-                        .greeting { margin-bottom: 20px; color: #495057; font-size: 1.1em; }
+                        .greeting { margin-bottom: 20px; color: #495057; font-size: 1.1em; text-align: center; }
+                        .message { color: #495057; font-size: 1.1em; margin-bottom: 20px; text-align: center; }
                         .info-list { list-style: none; padding-left: 0; margin-bottom: 20px; }
                         .info-item { margin-bottom: 12px; color: #343a40; font-size: 1em; display: flex; align-items: baseline; }
                         .info-item strong { font-weight: bold; color: #007bff; margin-right: 10px; width: 150px; display: inline-block; }
-                        .footer { text-align: center; margin-top: -12px; color: #6c757d; font-size: 0.9em; }
-                        .logo { display: block; margin: 20px auto 0; max-width: 150px; margin-top: -40px; }
-                        hr { border-top: 1px solid #dee2e6; margin: 20px 0; margin-top: -50px; }
+                        .link-section { text-align: center; margin: 20px 0; }
+                        .footer { text-align: center; margin-top: 20px; color: #6c757d; font-size: 0.9em; }
+                        .logo { display: block; margin: 20px auto 0; max-width: 50%; }
+                        hr { border-top: 1px solid #dee2e6; margin: 20px 0; }
                         .status-closed { color: #28a745; font-weight: bold; }
                     </style>
                 </head>
                 <body>
-                    <div class="ticket-container">
-                        <div class="ticket-header">
-                            <h2 class="ticket-title">✅ ¡Ticket Cerrado! ✅</h2>
-                        </div>
-                        <p class="greeting">Hola, ' . htmlspecialchars($nombre_tecnico) . '</p>
-                        <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">¡Felicitaciones! Has <strong>cerrado exitosamente</strong> el siguiente ticket:</p>
+                    <div class="email-wrapper">
+                        <div class="ticket-container">
+                            <div class="ticket-header">
+                                <h2 class="ticket-title">✅ ¡Ticket Cerrado! ✅</h2>
+                            </div>
+                            <p class="greeting">Hola, ' . htmlspecialchars($nombre_tecnico) . '</p>
+                            <p class="message">¡Felicitaciones! Has <strong>cerrado exitosamente</strong> el siguiente ticket:</p>
                         <ul class="info-list">
                             <li class="info-item"><strong>Nro. Ticket:</strong> ' . htmlspecialchars($ticketnro) . '</li>
                             <li class="info-item"><strong>RIF Cliente:</strong> ' . htmlspecialchars($clientRif) . '</li>
@@ -875,20 +892,23 @@ class email extends Controller {
                             <li class="info-item"><strong>Acción:</strong> ' . htmlspecialchars($ticketaccion) . '</li>
                             <li class="info-item"><strong>Comentario de Entrega:</strong> ' . htmlspecialchars($comentario_entrega) . '</li>
                         </ul>
-                        <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
-                        <hr>
-                        <p style="text-align: center; margin-top: 30px;">
-                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
-                            Ver Detalles del Ticket
-                        </a>
-                    </p>
+                            <div class="link-section">
+                                <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a>
+                            </div>
+                            <hr>
+                            <div class="link-section">
+                                <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
+                                    Ver Detalles del Ticket
+                                </a>
+                            </div>
 
-                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 28%; margin-top: 3%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
+                            ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
 
-                    <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
-                        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
-                        <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-                    </div>
+                            <div class="footer" style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                                <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                                <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                            </div>
+                        </div>
                     </div>
                 </body>
                 </html>
@@ -910,7 +930,7 @@ class email extends Controller {
             $this->response(['success' => false, 'message' => 'Error al enviar ambos correos.', 'color' => 'red']);
         }
     }
-
+    
     public function handleSendDevolutionTicket() {
     $repository = new EmailRepository();
 

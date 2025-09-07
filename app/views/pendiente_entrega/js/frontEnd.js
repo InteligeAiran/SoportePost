@@ -1631,7 +1631,7 @@ function enviarCorreoTicketCerrado(ticketData) {
     const coordinador = ticketData.user_coordinator_id || ticketData.id_coordinator || '';
     const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
     
-    const params = `id_coordinador=${encodeURIComponent(coordinador)}&id_user=${encodeURIComponent(id_user)}`;
+    const params = `id_user=${encodeURIComponent(id_user)}`;
     xhrEmail.send(params);
 }
 
