@@ -570,7 +570,17 @@ function loadIndividualProceess() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>No hay data.</p>";
+         `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en proceso.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching taller details:", error);
     });
 }
@@ -769,7 +779,17 @@ function loadIndividualIrreparable(){
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Sin datos disponibles</p>";
+        `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en Taller con estatus irreparable.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching taller details:", error);
     }); 
 }
@@ -1001,7 +1021,17 @@ function loadIndividualPendienteRepuesto(){
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Sin datos disponibles</p>";
+        `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en Taller con estatus de pendiente por respuesto.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching taller details:", error);
     });
 }
@@ -1104,7 +1134,17 @@ function loadIndividualReparado(){
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Sin datos disponibles</p>";
+        `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en Taller con estatus reparado.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching taller details:", error);
     });
 }
@@ -1326,7 +1366,17 @@ function loadIndividualProceessReparacion() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Sin datos disponibles</p>";
+        `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en Taller con estatus en proceso de reparación.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching taller details:", error);
     });
 }
@@ -1427,7 +1477,17 @@ function loadTallerTicketDetails() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Sin datos disponibles</p>";
+        `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en Taller.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching taller details:", error);
     });
   // TODO: Agregar más lógica para mostrar los detalles de tickets de taller
@@ -1526,7 +1586,17 @@ function loadResolveTicketDetails() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Sin datos disponibles.</p>";
+        `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets cerrados.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching regional details:", error);
     });
 }
@@ -2282,7 +2352,17 @@ function loadOpenTicketDetails() {
         })
         .catch((error) => {
             contentDiv.innerHTML =
-                "<p>Error de red al cargar los detalles de tickets. Por favor, intente de nuevo más tarde.</p>";
+                `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en Abiertos.</p>
+          </div>
+        </td>
+      </tr>`
             console.error("Error fetching open ticket details:", error);
             allOpenTickets = []; // Limpiar por si hubo error
             searchInput.removeEventListener('input', handleTicketSearch);
