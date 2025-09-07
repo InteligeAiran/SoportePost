@@ -658,7 +658,7 @@ class email extends Controller {
 
                     ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 38%; margin-top: -10%; width: 70%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
 
-                    <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                    <div class="footer" style = "margin-top: -9%; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
                         <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
                         <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
                     </div>
