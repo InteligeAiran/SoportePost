@@ -647,7 +647,7 @@ function formatProcessTicketsDetails(details){
     html += `
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                    Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
@@ -689,7 +689,7 @@ function formatProcessTicketsDetails(details){
                           ticket.date_create_ticket
                         }</dd> <!-- Usar la variable formateada -->
                     </dl>
-                      <button class="btn btn-info btn-sm mt-3 view-timeline-btn" data-id-ticket="${ticket.id_ticket}">Ver Flujo del Ticket</button>
+                      <button class="btn btn-info btn-sm mt-3 view-timeline-btn" data-id-ticket="${ticket.id_ticket}" disabled>Ver Flujo del Ticket</button>
                 </div>
             </div>
         `;
@@ -2594,7 +2594,7 @@ function formatOpenDetails(details) {
         if (accionTicket === 'Recibido por la Coordinación') {
             markReceivedButtonHtml = `
               <button type="button" class="btn btn-success ms-2 mark-received-btn" disabled>
-                Ya estan recibidos
+                Ya está recibido
               </button>
             `;
         } else if (currentUserRole === 1 || currentUserRole === 4) {
@@ -2610,7 +2610,7 @@ function formatOpenDetails(details) {
         htmlContent += `
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.id_ticket || 'N/A'}</strong>
+                    Ticket #<strong>${ticket.nro_ticket || 'N/A'}</strong>
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
@@ -4319,17 +4319,6 @@ function getTicketCounts() {
                         return;
                     }
 
-                    // Puedes definir un orden de visualización si lo necesitas,
-                    // o simplemente iterar sobre los datos tal como vienen de la DB (ya ordenados por ID).
-                    const displayOrderMap = {
-                        4: 'Gestión Técnico',
-                        6: 'Gestión Técnico (Secundario)', // Si 6 es diferente de 4, asigna un nombre claro
-                        7: 'Gestión Taller',
-                        8: 'Proceso Carga Llaves',
-                        9: 'Llaves Cargadas',
-                        5: 'Cerrados'
-                    };
-
                     // Si quieres ordenar por un orden específico, puedes crear un array de los IDs
                     // y luego buscar en 'counts'. De lo contrario, simplemente itera 'counts'.
                     // Por simplicidad, iteraremos directamente sobre 'counts' ya que el SQL lo ordena por ID.
@@ -4338,7 +4327,6 @@ function getTicketCounts() {
                         // Usamos name_accion_ticket directamente, pero puedes usar displayOrderMap[item.id_accion_ticket]
                         // si quieres sobrescribir el nombre de la DB o asegurarte de un orden específico.
                         const moduleName = item.name_accion_ticket; 
-                        
                         tr.innerHTML = `
                             <td class="px-5 py-5 border-b border-gray-200 text-sm">${moduleName}</td>
                             <td class="px-5 py-5 border-b border-gray-200 text-sm">${item.total_tickets}</td>

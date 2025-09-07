@@ -197,12 +197,10 @@ function mi_navbar() {}
                         aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
-                                <div class="modal-header bg-gradient-info text-white">
+                                <div class="modal-header bg-gradient-primary text-white">
                                     <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
                                         de Tickets Abiertos
                                     </h5>
-                                    <button type="button" class="btn-close" id="ModalOpenIcon" data-bs-dismiss="modal"
-                                            aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
@@ -245,9 +243,8 @@ function mi_navbar() {}
                     <div class="modal fade" id="ProcessTicketsModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
-                                <div class="modal-header bg-gradient-info text-white">
+                                <div class="modal-header bg-gradient-primary text-white">
                                     <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle de Tickets En Proceso</h5>
-                                    <button type="button" class="btn-close" id="ModalProcessIcon" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div id="ProcessTicketsContent"></div>
@@ -330,12 +327,10 @@ function mi_navbar() {}
                         aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
-                                <div class="modal-header bg-gradient-info text-white">
+                                <div class="modal-header bg-gradient-primary text-white">
                                     <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
                                         de Tickets Resueltos
                                     </h5>
-                                    <button type="button" class="btn-close" id="ModalResolveIcon"
-                                        data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div id="ResolveTicketsContent"></div>
@@ -432,12 +427,10 @@ function mi_navbar() {}
                         aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
-                                <div class="modal-header bg-gradient-info text-white">
+                                <div class="modal-header bg-gradient-primary text-white">
                                     <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
                                         de Tickets En Taller
                                     </h5>
-                                    <button type="button" class="btn-close" id="ModalTallerIcon" data-bs-dismiss="modal"
-                                        aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div id="TallerTicketsContent"></div>
@@ -597,7 +590,7 @@ function mi_navbar() {}
 
                     <div class="col-lg-5">
                         <div class="card shadow-md rounded-xl">
-                            <div class="card-header pb-0 p-4 border-b border-gray-200">
+                            <div class="card-header pb-0 p-4 border-b border-gray-200 bg-gradient-info">
                                 <h6 class="text-2xl font-semibold text-gray-800">Categorías de Tickets</h6>
                             </div>
                             <div class="card-body p-4">

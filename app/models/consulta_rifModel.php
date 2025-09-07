@@ -1356,26 +1356,9 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function getTicketCountsGroupedByAction(): array
-    {
+    public function getTicketCountsGroupedByAction(){
         try {
-            $sql = "
-                SELECT
-                    t.id_accion_ticket,
-                    a.name_accion_ticket,
-                    COUNT(t.id_accion_ticket) AS total_tickets
-                FROM
-                    tickets t
-                JOIN
-                    accions_tickets a ON t.id_accion_ticket = a.id_accion_ticket
-                WHERE
-                    t.id_accion_ticket IN (4, 5, 6, 7, 8, 9) -- Filtra solo las acciones que te interesan
-                GROUP BY
-                    t.id_accion_ticket, a.name_accion_ticket
-                ORDER BY
-                    t.id_accion_ticket;";
-            
-            // Suponiendo que Model::getResult($sql, $this->db) devuelve un array de filas
+            $sql = "SELECT * FROM get_tickets_by_action()";            
             $result = $this->db->pgquery($sql); // O Model::getResult($sql, $this->db); si eso es lo que usas
             
             $counts = [];
