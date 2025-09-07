@@ -1625,7 +1625,7 @@ function SendDataFailure2(idStatusPayment) {
     Swal.fire({
       icon: "warning",
       title: "Campos requeridos",
-      text: "Por favor, complete todos los campos obligatorios (Falla y Coordinador).",
+      text: "Por favor, complete todos los campos obligatorios (Falla).",
       color: "black",
       confirmButtonText: "Ok",
       confirmButtonColor: "#003594",

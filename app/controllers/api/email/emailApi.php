@@ -516,9 +516,9 @@ class email extends Controller {
                         </a>
                     </p>
 
-                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 28%; margin-top: 3%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
+                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 21%; margin-top: -10%; width: 58%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
 
-                    <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
+                    <div class="footer" style = "margin-top: -10%; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
                         <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
                         <p style="margin-top: 5px;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
                     </div>
@@ -552,22 +552,19 @@ class email extends Controller {
             <style>
                 body {
                     font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif;
-                    background-color: #f8f9fa;
-                    padding: 30px;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    min-height: 100vh;
+                    background-color: #f4f7f6;
                     margin: 0;
+                    padding: 0;
                 }
                 .ticket-container {
                     background-color: #fff;
                     border: 1px solid #ced4da;
-                    border-radius: 10px;
+                    border-radius: 8px;
                     padding: 30px;
                     max-width: 600px;
-                    width: 100%;
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+                    margin: 20px auto;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                    border-top: 5px solid #0035F6;
                 }
                 .ticket-header {
                     background-color: #003594; /* Color azul de tu diseño */
@@ -659,7 +656,7 @@ class email extends Controller {
                         </a>
                     </p>
 
-                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 28%; margin-top: 3%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
+                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 38%; margin-top: -10%; width: 70%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
 
                     <div class="footer" style = "margin-top: -9%; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">
                         <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
