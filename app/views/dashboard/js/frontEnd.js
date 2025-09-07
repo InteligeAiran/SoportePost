@@ -2359,7 +2359,7 @@ function loadOpenTicketDetails() {
               <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
             </svg>
             <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-            <p class="text-muted mb-0">No hay tickets en Abiertos.</p>
+            <p class="text-muted mb-0">No hay tickets Abiertos.</p>
           </div>
         </td>
       </tr>`
@@ -3397,7 +3397,17 @@ function loadRegionTicketDetails() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Error de red al cargar los detalles regionales. Por favor, intente de nuevo más tarde.</p>";
+         `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets para mostrar gráfica regional.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching regional details:", error);
     });
 }
@@ -3743,7 +3753,17 @@ function loadMonthlyTicketDetails() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Error de red al cargar los detalles. Por favor, intente de nuevo más tarde.</p>";
+  `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets Abiertos para cargar la gráfica mensual.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching monthly details:", error);
     });
 }
