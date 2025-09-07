@@ -929,18 +929,48 @@ function mi_navbar() {}
         <input type="hidden" id="userIdForPassword" value="<?php echo $_SESSION['id_user']; ?>">
         <!-- END ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
 
-        <footer class="footer pt-3  ">
+        <footer class="footer" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 0; margin-top: 3rem;">
             <div class="container-fluid">
-                <div class="row align-items-center justify-content-lg-between">
-                    <div class="col-lg-6 mb-lg-0 mb-4">
-                        <div class="copyright text-center text-sm text-muted text-lg-start">
-                            ©
-                            <script>
-                                document.write(new Date().getFullYear())
-                            </script>,
-                            made with <i class="fa fa-heart"></i> by
-                            <a href="https://www.inteligensa.com/" class="font-weight-bold" target="_blank">Plataforma Creada por Intelisoft</a> para una mejor web.
+                <div class="row align-items-center justify-content-between">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-copyright" style="font-size: 1.2rem; opacity: 0.8;"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0" style="font-size: 0.9rem; opacity: 0.9;">
+                                    <script>document.write(new Date().getFullYear())</script>
+                                    <strong>InteliSoft</strong> - Todos los derechos reservados
+                                </p>
+                                <p class="mb-0" style="font-size: 0.8rem; opacity: 0.7;">
+                                    Soluciones tecnológicas innovadoras
+                                </p>
+                            </div>
                         </div>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
+                            <a href="https://www.inteligensa.com/" target="_blank" 
+                            style="color: white; text-decoration: none; margin: 0 1rem; transition: all 0.3s ease;"
+                            onmouseover="this.style.transform='translateY(-2px)'" 
+                            onmouseout="this.style.transform='translateY(0)'">
+                                <i class="fas fa-globe me-1"></i> Sitio Web
+                            </a>
+                            <a href="https://www.inteligensa.com/#contactanos" 
+                            style="color: white; text-decoration: none; margin: 0 1rem; transition: all 0.3s ease;"
+                            onmouseover="this.style.transform='translateY(-2px)'" 
+                            onmouseout="this.style.transform='translateY(0)'">
+                                <i class="fas fa-envelope me-1"></i> Contacto
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <hr style="border-color: rgba(255,255,255,0.2); margin: 1.5rem 0 0;">
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <p class="mb-0" style="font-size: 0.8rem; opacity: 0.7;">
+                            Desarrollado con ❤️ por el equipo de InteliSoft
+                        </p>
                     </div>
                 </div>
             </div>
