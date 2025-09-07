@@ -690,7 +690,7 @@ function mi_navbar() {}
                                             </div>
                                             <div class="text-content-wrapper">
                                                 <h6 class="item-title">POS Entregado a Cliente</h6>
-                                                <span class="item-count"></span>
+                                                <span class="item-count" id = "EntregadosCliente"></span>
                                             </div>
                                         </div>
                                         <div class="arrow-wrapper">

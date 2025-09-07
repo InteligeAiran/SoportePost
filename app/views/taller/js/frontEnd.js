@@ -921,7 +921,6 @@ function sendTicketToRosal1(id, nro, withoutKeys, serialPos) {
             xhr.send(dataToSendString); // Envía la solicitud solo si se confirmó
 }
 
-
 function updateTicketStatusInTaller(ticketId) {
   const id_user = document.getElementById("userId").value;
 

@@ -112,16 +112,6 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/approve-document`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-    // Mostrar indicador de carga
-    Swal.fire({
-        title: 'Procesando...',
-        text: 'Aprobando documento del ticket',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
-
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300) {
             try {

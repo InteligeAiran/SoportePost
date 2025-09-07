@@ -64,7 +64,6 @@ function getRegionsByTechnician(technicianId) {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success && response.regions && response.regions.length > 0) {
                     regionsData = response.regions; // Almacena toda la respuesta
-                    console.log("Regiones obtenidas para el técnico:", regionsData);
                     
                     const uniqueRegionNames = [...new Set(regionsData.map(r => r.name_region))];
                     document.getElementById("region-name").textContent = uniqueRegionNames.join(', ');
@@ -91,29 +90,6 @@ function getRegionsByTechnician(technicianId) {
     const datos = `action=GetRegionsByTechnician&id_tecnico=${technicianId}`; 
     xhr.send(datos);
 }
-
-// Evento de clic para mostrar los estados (este código está bien)
-document.getElementById('region-display').addEventListener('click', function() {
-    const statesContainer = document.getElementById("states-container");
-    const statesList = document.getElementById("states-list");
-
-    if (regionsData.length === 0) {
-        return;
-    }
-
-    if (statesContainer.style.display === "none") {
-        statesList.innerHTML = '';
-        regionsData.forEach(region => {
-            const li = document.createElement("li");
-            li.className = "list-group-item";
-            li.textContent = region.name_state;
-            statesList.appendChild(li);
-        });
-        statesContainer.style.display = "block";
-    } else {
-        statesContainer.style.display = "none";
-    }
-});
 
 // AÑADE ESTE CÓDIGO para cargar los datos del técnico al inicio
 document.addEventListener("DOMContentLoaded", function() {
@@ -342,7 +318,7 @@ function getTicketDataFinaljs() {
                  if (hasAnyDocument) {
                     return `<button type="button" class="btn btn-success btn-sm btn-document-actions-modal"
                         data-bs-toggle="tooltip" data-bs-placement="top"
-                        title="Acciones de Documentos"
+                        title="Vizualizar Documentos"
                         data-nombre-estado="${nombre_estado_cliente}"
                         data-ticket-id="${idTicket}"
                         data-nro-ticket="${nroTicket}"
@@ -355,7 +331,6 @@ function getTicketDataFinaljs() {
                         data-envio-destino="${row.envio_destino_document_url || ''}"
                         data-envio-destino-filename="${row.envio_destino_original_filename || ''}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M8.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
-                        Ver Documentos
                     </button>`;
                 
             

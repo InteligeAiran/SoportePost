@@ -1309,6 +1309,36 @@ function getTicketPendienteRepuesto() {
   xhr.send(datos);
 }
 
+function getTicketEntregadoCliente() {
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketEntregadoCliente`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          document.getElementById("EntregadosCliente").textContent =
+            response.count; // Selecciona por ID
+        } else {
+          console.error("Error:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  const datos = "action=getTicketEntregadoCliente";
+  xhr.send(datos);
+}
+
 function getTicketIrreparables() {
   const xhr = new XMLHttpRequest();
   xhr.open(
@@ -4366,4 +4396,5 @@ document.addEventListener("DOMContentLoaded", function () {
   getTicketCounts(); // Para la tabla de conteos
   getTicketsgestionComercialporcent();
   getTicketGestionComercial();
+  getTicketEntregadoCliente();
 });

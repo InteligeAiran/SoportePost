@@ -1167,6 +1167,16 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
             // Handle exception
         }
     }
+
+     public function handlegetTicketEntregadoCliente(){
+        try {
+            $sql = "SELECT * FROM get_entregado_cliente()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
 ?>
 
