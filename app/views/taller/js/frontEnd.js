@@ -2365,7 +2365,7 @@ document.addEventListener("DOMContentLoaded", () => {
                               Swal.fire({
                                   icon: 'success',
                                   title: 'Éxito',
-                                  text: `El ticket Nro: ${ticket.nro_ticket} ha sido enviado a Gestión Comercial`,
+                                  text: `El ticket Nro: <span style = "border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"">${ticket.nro_ticket}</span> ha sido enviado a Gestión Comercial`,
                                   confirmButtonText: 'Aceptar', 
                                   color: 'black',
                                   confirmButtonColor: '#003594',
@@ -2575,18 +2575,23 @@ document.addEventListener("DOMContentLoaded", () => {
                         xhr.onload = function() {
                             if (xhr.status >= 200 && xhr.status < 300) {
                                 // Solicitud exitosa
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Éxito',
-                                    text: `la Fecha de la llegada de repuesto para el Ticket Nro: ${ticket.nro_ticket} fue renovada correctamente.`,
-                                    confirmButtonText: 'Aceptar', 
-                                    color: 'black',
-                                    confirmButtonColor: '#003594',
-                                    allowOutsideClick: false, 
-                                    allowEscapeKey: false,
-                                    showCloseButton: true,
-                                    keydownListenerCapture: true,
-                                });
+                              Swal.fire({
+                              icon: 'success',
+                              title: '¡Éxito en la renovación de la fecha!',
+                              html: `La fecha de llegada de repuesto para el Ticket Nro:
+                                    <span style="border-radius:0.3rem; background-color:#e0f7fa; color:#007bff;">
+                                      ${ticket.nro_ticket}
+                                    </span> fue renovada correctamente.`,
+                              confirmButtonText: 'Aceptar',
+                              color: 'black',
+                              confirmButtonColor: '#003594',
+                              allowOutsideClick: false,
+                              allowEscapeKey: false,
+                              keydownListenerCapture: true,
+                            }).then(() => {
+                              window.location.reload();
+                            });
+
                             } else {
                                 // Error en la solicitud HTTP
                                 Swal.fire({
@@ -2959,7 +2964,7 @@ document.addEventListener("DOMContentLoaded", () => {
               Swal.fire({
                 icon: "success",
                 title: "¡Fecha Registrada Correctamente!",
-                html: `La fecha de repuesto ha sido guardada con éxito: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"${selectedDate}</span>.`,
+                html: `La fecha de repuesto ha sido guardada con éxito: <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${selectedDate}</span>.`,
                 showConfirmButton: true, // Asegura que el botón de confirmación sea visible
                 confirmButtonText: 'Cerrar', // Opcional: Personaliza el texto del botón
                 confirmButtonColor: '#003594', // Opcional: Personaliza el color del botón
