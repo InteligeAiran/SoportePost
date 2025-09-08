@@ -2476,7 +2476,6 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
 
     const xhr = new XMLHttpRequest();
     const datos = `action=rechazarDocumento&ticketId=${encodeURIComponent(ticketId)}&motivoId=${encodeURIComponent(motivoId)}&nroTicket=${encodeURIComponent(nroticket)}&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`; // Ajusta los datos a tu script de backend
-    console.log('Datos enviados:', datos);
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/rechazarDocumento`); // Ajusta la URL a tu script de backend
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -2485,6 +2484,40 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
+                     (function sendRejectionEmails() {
+                    try {
+                      const xhrEmail = new XMLHttpRequest();
+                      xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_reject_document`);
+                      xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+                      xhrEmail.onload = function () {
+                        if (xhrEmail.status === 200) {
+                          try {
+                            const responseEmail = JSON.parse(xhrEmail.responseText);
+                            if (responseEmail.success) {
+                              console.log('Correo rechazo enviado:', responseEmail.message || 'OK');
+                            } else {
+                              console.error('Error correo rechazo:', responseEmail.message);
+                            }
+                          } catch (e) {
+                            console.error('Error parseando respuesta correo rechazo:', e, xhrEmail.responseText);
+                          }
+                        } else {
+                          console.error('Error HTTP correo rechazo:', xhrEmail.status, xhrEmail.responseText);
+                        }
+                      };
+
+                      xhrEmail.onerror = function () {
+                        console.error('Error de red al enviar correo de rechazo');
+                      };
+                      // Parámetros necesarios para PHP
+                      const params =  `action=send_reject_document&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`
+
+                      xhrEmail.send(params);
+                    } catch (err) {
+                      console.error('Fallo al disparar correo rechazo:', err);
+                    }
+                  })();
                     Swal.fire({
                         icon: 'success',
                         title: '¡Rechazado!',
@@ -2524,6 +2557,7 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
             });
         }
     };
+
 
     xhr.onerror = function () {
         console.error("Error de red");

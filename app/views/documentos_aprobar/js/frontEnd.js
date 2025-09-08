@@ -1293,7 +1293,6 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
             });
         }
     };
-
     xhr.onerror = function () {
         console.error("Error de red");
         Swal.fire({

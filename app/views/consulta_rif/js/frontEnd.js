@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var file = this.files[0];
       if (
         file &&
-        !["application/pdf", "image/jpeg", "image/jpg"].includes(file.type)
+        !["application/pdf", "image/jpeg", "image/jpg", "image/png"].includes(file.type)
       ) {
         Swal.fire({
           icon: "warning",
@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var file = this.files[0];
       if (
         file &&
-        !["application/pdf", "image/jpeg", "image/jpg"].includes(file.type)
+        !["application/pdf", "image/jpeg", "image/jpg", "image/png"].includes(file.type)
       ) {
         Swal.fire({
           icon: "warning",

@@ -627,6 +627,21 @@ class email extends Controller {
                 a:hover {
                     text-decoration: underline;
                 }
+                .link-button { 
+                            display: inline-block; 
+                            padding: 12px 25px; 
+                            background-color: #007bff; 
+                            color: #ffffff; 
+                            text-decoration: none; 
+                            border-radius: 5px; 
+                            margin-top: 20px; 
+                            font-weight: bold;
+                            transition: background-color 0.3s ease;
+                        }
+                        .link-button:hover { 
+                            background-color: #0056b3; 
+                            text-decoration: none; 
+                        }
             </style>
         </head>
         <body>
@@ -781,6 +796,21 @@ class email extends Controller {
                     hr { border-top: 1px solid #dee2e6; margin: 20px 0; }
                     .status-closed { color: #28a745; font-weight: bold; }
                     .status-pending { color: #ffc107; font-weight: bold; }
+                    .link-button { 
+                        display: inline-block; 
+                        padding: 12px 25px; 
+                        background-color: #007bff; 
+                        color: #ffffff; 
+                        text-decoration: none; 
+                        border-radius: 5px; 
+                        margin-top: 20px; 
+                        font-weight: bold;
+                        transition: background-color 0.3s ease;
+                    }
+                    .link-button:hover { 
+                        background-color: #0056b3; 
+                        text-decoration: none; 
+                    }
                 </style>
             </head>
             <body>
@@ -789,8 +819,8 @@ class email extends Controller {
                         <div class="ticket-header">
                             <h2 class="ticket-title">✅ ¡Ticket Cerrado! ✅</h2>
                         </div>
-                        <p class="greeting">Hola, ' . htmlspecialchars($name_coordinador) . '</p>
-                        <p class="message">Nos complace informarle que el Técnico <strong>' . htmlspecialchars($nombre_tecnico_ticket) . '</strong> ha <strong>cerrado exitosamente</strong> el siguiente ticket:</p>
+                        <p class="greeting">Hola, Coordinación de <strong><span style = "color: black;">' . htmlspecialchars($name_coordinador) . '</p></strong></span>
+                        <p class="message">Nos complace informarle que el Técnico <strong><span style = "color: black;">' . htmlspecialchars($nombre_tecnico_ticket) . '</span></strong> ha <strong><span style = "color: black;">cerrado exitosamente</span></strong> el siguiente ticket:</p>
             <ul class="info-list">
                 <li class="info-item"><strong>Nro. Ticket:</strong> ' . htmlspecialchars($ticketnro) . '</li>
                 <li class="info-item"><strong>RIF Cliente:</strong> ' . htmlspecialchars($clientRif) . '</li>
@@ -807,10 +837,8 @@ class email extends Controller {
                 <li class="info-item"><strong>Estado del Laboratorio:</strong> ' . htmlspecialchars($ticketlab) . '</li>
                 <li class="info-item"><strong>Comentario de Entrega:</strong> ' . htmlspecialchars($comentario_entrega) . '</li>
             </ul>
-                        <div class="link-section">
-                            <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a>
-                        </div>
-                        <hr>
+                            <hr>
+
                         <div class="link-section">
                             <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
                                 Ver Detalles del Ticket
@@ -869,6 +897,21 @@ class email extends Controller {
                         .logo { display: block; margin: 20px auto 0; max-width: 50%; }
                         hr { border-top: 1px solid #dee2e6; margin: 20px 0; }
                         .status-closed { color: #28a745; font-weight: bold; }
+                        .link-button { 
+                            display: inline-block; 
+                            padding: 12px 25px; 
+                            background-color: #007bff; 
+                            color: #ffffff; 
+                            text-decoration: none; 
+                            border-radius: 5px; 
+                            margin-top: 20px; 
+                            font-weight: bold;
+                            transition: background-color 0.3s ease;
+                        }
+                        .link-button:hover { 
+                            background-color: #0056b3; 
+                            text-decoration: none; 
+                        }
                     </style>
                 </head>
                 <body>
@@ -877,8 +920,8 @@ class email extends Controller {
                             <div class="ticket-header">
                                 <h2 class="ticket-title">✅ ¡Ticket Cerrado! ✅</h2>
                             </div>
-                            <p class="greeting">Hola, ' . htmlspecialchars($nombre_tecnico) . '</p>
-                            <p class="message">¡Felicitaciones! Has <strong>cerrado exitosamente</strong> el siguiente ticket:</p>
+                            <p class="greeting">Hola, técnico <strong><span style = "color: black;">' . htmlspecialchars($nombre_tecnico) . '</strong></span></p>
+                            <p class="message">¡Felicitaciones! Has <strong><span style = "color: black;">cerrado exitosamente</strong></span> el siguiente ticket:</p>
                         <ul class="info-list">
                             <li class="info-item"><strong>Nro. Ticket:</strong> ' . htmlspecialchars($ticketnro) . '</li>
                             <li class="info-item"><strong>RIF Cliente:</strong> ' . htmlspecialchars($clientRif) . '</li>
@@ -892,10 +935,8 @@ class email extends Controller {
                             <li class="info-item"><strong>Acción:</strong> ' . htmlspecialchars($ticketaccion) . '</li>
                             <li class="info-item"><strong>Comentario de Entrega:</strong> ' . htmlspecialchars($comentario_entrega) . '</li>
                         </ul>
-                            <div class="link-section">
-                                <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a>
-                            </div>
-                            <hr>
+                                        <hr>
+
                             <div class="link-section">
                                 <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
                                     Ver Detalles del Ticket
@@ -930,7 +971,7 @@ class email extends Controller {
             $this->response(['success' => false, 'message' => 'Error al enviar ambos correos.', 'color' => 'red']);
         }
     }
-    
+
     public function handleSendDevolutionTicket() {
     $repository = new EmailRepository();
 

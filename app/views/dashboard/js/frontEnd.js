@@ -2594,7 +2594,7 @@ function formatOpenDetails(details) {
 
         // Los IDs de status_payment 10, 11, 1 y 3 se asocian con botones de "ver documento".
         // El `data-ticket-id` se usa para pasar el ID del ticket a `handleViewDocumentClick`.
-      if (showDocumentButtons) {
+      /*if (showDocumentButtons) {
           if (statusPaymentId === 10) { 
               documentButtonsHtml = `
                   <button class="btn btn-info btn-sm view-document-btn"
@@ -2617,7 +2617,7 @@ function formatOpenDetails(details) {
                   </button>
               `;
           }
-        }
+        }*/
 
         ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
             // Lógica corregida para el botón "Marcar como Recibido"
@@ -2680,31 +2680,28 @@ function formatOpenDetails(details) {
   return htmlContent;
 }
 
-
-// Nueva función para adjuntar listeners a los botones de ver documento
 // Es CRUCIAL que esta función se llame CADA VEZ que el contenido de los tickets se recarga en el DOM.
 function attachViewDocumentListeners() {
-    // Selecciona todos los botones con la clase 'view-document-btn' dentro del contenedor de tickets abiertos
-    const viewDocumentButtons = document.querySelectorAll("#OpenTicketModalContent .view-document-btn");
+  // Selecciona todos los botones con la clase 'view-document-btn' dentro del contenedor de tickets abiertos
+  const viewDocumentButtons = document.querySelectorAll("#OpenTicketModalContent .view-document-btn");
 
-    viewDocumentButtons.forEach(button => {
-        // Es una buena práctica remover el listener antes de añadirlo para evitar duplicados,
-        // especialmente si esta función se llama varias veces (ej. al recargar la lista de tickets).
-        button.removeEventListener('click', handleViewDocumentClick); // Remover si ya existe
-        button.addEventListener('click', handleViewDocumentClick); // Adjuntar el nuevo
-    });
+  viewDocumentButtons.forEach(button => {
+    // Es una buena práctica remover el listener antes de añadirlo para evitar duplicados,
+    // especialmente si esta función se llama varias veces (ej. al recargar la lista de tickets).
+    button.removeEventListener('click', handleViewDocumentClick); // Remover si ya existe
+    button.addEventListener('click', handleViewDocumentClick); // Adjuntar el nuevo
+  });
 }
 
 // NUEVA función para adjuntar los event listeners (reconfirmada)
 function attachMarkReceivedListeners() {
-    // Eliminar listeners previos para evitar duplicados si se llama varias veces
-    document.querySelectorAll('.mark-received-btn').forEach(button => {
-        button.removeEventListener('click', handleMarkTicketReceivedClick);
-    });
-    // Adjuntar nuevos listeners
-    document.querySelectorAll('.mark-received-btn').forEach(button => {
-        button.addEventListener('click', handleMarkTicketReceivedClick);
-    });
+  document.querySelectorAll('.mark-received-btn').forEach(button => {
+    button.removeEventListener('click', handleMarkTicketReceivedClick);
+  });
+
+  document.querySelectorAll('.mark-received-btn').forEach(button => {
+    button.addEventListener('click', handleMarkTicketReceivedClick);
+  });
 }
 
 // Wrapper para pasar el ticketId directamente
