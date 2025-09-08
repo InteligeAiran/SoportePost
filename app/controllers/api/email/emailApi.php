@@ -975,18 +975,17 @@ class email extends Controller {
     public function handleSendDevolutionTicket() {
     $repository = new EmailRepository();
 
-    // 1. Obtener ID del coordinador desde el POST y sus datos
-    $id_coordinador = isset($_POST['id_coordinador']) ? $_POST['id_coordinador'] : '';
-    $result_coordinador = $repository->GetEmailCoorDataById($id_coordinador);
+    // EMAIL DEL AREA
+    $result_email_area = $repository->GetEmailArea();
 
     // Si no se encuentra información del coordinador, no podemos continuar
-    if (!$result_coordinador) {
+    if (!$result_email_area) {
         $this->response(['success' => false, 'message' => 'Correo del coordinador no existe o no se encontraron datos.', 'color' => 'red']);
-        return;
+        return; // Salir de la función
     }
 
-    $email_coordinador = $result_coordinador['email'];
-    $nombre_coordinador = $result_coordinador['full_name'];
+    $email_area = $result_email_area['email_area']; // El Gmail del AREA
+    $nombre_area = $result_email_area['name_area']; // El nombre del AREA
 
     // 2. Obtener datos del ticket cerrado
     $result_ticket = $repository->GetDataTicketClosed();
@@ -1007,8 +1006,16 @@ class email extends Controller {
     $ticketpayment = $result_ticket['name_status_payment'];
     $ticketdomiciliacion = $result_ticket['name_status_domiciliacion'] ?? 'N/A';
     $ticketlab = $result_ticket['name_status_lab'] ?? 'N/A';
-    $fecha_entrega = $result_ticket['date_end_ticket'] ?? 'N/A';
+    $fecha_entrega = $result_ticket['date_delivered'] ?? 'N/A';
     $comentario_entrega =  $result_ticket['comment_devolution'] ?? 'Sin comentarios';
+
+    // Funcion para obtener el id del ticket con el nro de ticket
+    $resultgetid_ticket = $repository->GetTicketId($ticketnro);
+    $ticketid = $resultgetid_ticket['get_ticket_id'];
+
+    // Funcion para obtener el nobre de la coordinacion por el id_ticket
+    $resultCoordinacion = $repository->GetCoordinacion($ticketid);
+    $name_coordinador = $resultCoordinacion['get_department_name']?? 'N/A';
 
     // 3. Obtener información del cliente
     $result_client = $repository->GetClientInfo($ticketserial);
@@ -1044,6 +1051,21 @@ class email extends Controller {
                 hr { border-top: 1px solid #dee2e6; margin: 20px 0; margin-top: -50px; }
                 .status-closed { color: #28a745; font-weight: bold; }
                 .status-pending { color: #ffc107; font-weight: bold; }
+                .link-button { 
+                            display: inline-block; 
+                            padding: 12px 25px; 
+                            background-color: #007bff; 
+                            color: #ffffff; 
+                            text-decoration: none; 
+                            border-radius: 5px; 
+                            margin-top: 20px; 
+                            font-weight: bold;
+                            transition: background-color 0.3s ease;
+                        }
+                        .link-button:hover { 
+                            background-color: #0056b3; 
+                            text-decoration: none; 
+                        }
             </style>
         </head>
         <body>
@@ -1051,7 +1073,7 @@ class email extends Controller {
                 <div class="ticket-header">
                     <h2 class="ticket-title">↩️ ¡Ticket Devuelto! ↩️</h2>
                 </div>
-                <p class="greeting">Hola, ' . htmlspecialchars($nombre_coordinador) . '</p>
+                <p class="greeting">Hola, Coordinación de ' . htmlspecialchars($name_coordinador) . '</p>
                 <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">Nos complace informarle que el Técnico <strong>' . htmlspecialchars($nombre_tecnico_ticket) . '</strong> ha <strong>Devuelto el Pos exitosamente</strong> el siguiente ticket:</p>
                 <ul class="info-list">
                     <li class="info-item"><strong>Nro. Ticket:</strong> ' . htmlspecialchars($ticketnro) . '</li>
@@ -1069,7 +1091,6 @@ class email extends Controller {
                     <li class="info-item"><strong>Estado del Laboratorio:</strong> ' . htmlspecialchars($ticketlab) . '</li>
                     <li class="info-item"><strong>Comentario Devolución:</strong> ' . htmlspecialchars($comentario_entrega) . '</li>
                 </ul>
-                <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                 <hr>
                 <p style="text-align: center; margin-top: 30px;">
                         <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
@@ -1098,7 +1119,7 @@ class email extends Controller {
     $mensaje_final = '';
 
     // Enviar correo al coordinador
-    if ($this->emailService->sendEmail($email_coordinador, $subject_coordinador, $body_coordinador, [], $embeddedImages)) {
+    if ($this->emailService->sendEmail($email_area, $subject_coordinador, $body_coordinador, [], $embeddedImages)) {
         $correo_coordinador_enviado = true;
     }
 
@@ -1125,6 +1146,21 @@ class email extends Controller {
                     .logo { display: block; margin: 20px auto 0; max-width: 150px; margin-top: -40px; }
                     hr { border-top: 1px solid #dee2e6; margin: 20px 0; margin-top: -50px; }
                     .status-closed { color: #28a745; font-weight: bold; }
+                     .link-button { 
+                            display: inline-block; 
+                            padding: 12px 25px; 
+                            background-color: #007bff; 
+                            color: #ffffff; 
+                            text-decoration: none; 
+                            border-radius: 5px; 
+                            margin-top: 20px; 
+                            font-weight: bold;
+                            transition: background-color 0.3s ease;
+                        }
+                        .link-button:hover { 
+                            background-color: #0056b3; 
+                            text-decoration: none; 
+                        }
                 </style>
             </head>
             <body>
@@ -1147,7 +1183,6 @@ class email extends Controller {
                         <li class="info-item"><strong>Acción:</strong> ' . htmlspecialchars($ticketaccion) . '</li>
                         <li class="info-item"><strong>Comentario Devolución:</strong> ' . htmlspecialchars($comentario_entrega) . '</li>
                     </ul>
-                    <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
                     <hr>
                     <p style="text-align: center; margin-top: 30px;">
                         <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
