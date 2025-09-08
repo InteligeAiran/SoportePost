@@ -2284,7 +2284,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     icon: 'success',
                                     title: '¡Fecha Actualizada con Éxito!',
                                     html: `la Fecha de la llegada de repuesto para el Ticket Nro: <span span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span> fue renovada correctamente.`,
-                                    confirmButtonText: 'Aceptar', 
+                                    confirmButtonText: 'Ok', 
                                     color: 'black',
                                     confirmButtonColor: '#003594',
                                     allowOutsideClick: false, 
@@ -2364,14 +2364,13 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (xhr.status >= 200 && xhr.status < 300) {
                               Swal.fire({
                                   icon: 'success',
-                                  title: 'Éxito',
-                                  text: `El ticket Nro: <span style = "border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"">${ticket.nro_ticket}</span> ha sido enviado a Gestión Comercial`,
-                                  confirmButtonText: 'Aceptar', 
+                                  title: '¡Enviado a Gestión Comercial!',
+                                  html: `El ticket Nro: <span style = "border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span> ha sido enviado a Gestión Comercial`,
+                                  confirmButtonText: 'Ok', 
                                   color: 'black',
                                   confirmButtonColor: '#003594',
                                   allowOutsideClick: false, 
                                   allowEscapeKey: false,
-                                  showCloseButton: true,
                                   keydownListenerCapture: true,
                               }).then((result) => {
                                 if (result.isConfirmed) {
@@ -2582,7 +2581,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <span style="border-radius:0.3rem; background-color:#e0f7fa; color:#007bff;">
                                       ${ticket.nro_ticket}
                                     </span> fue renovada correctamente.`,
-                              confirmButtonText: 'Aceptar',
+                              confirmButtonText: 'Ok',
                               color: 'black',
                               confirmButtonColor: '#003594',
                               allowOutsideClick: false,
@@ -2662,14 +2661,13 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (xhr.status >= 200 && xhr.status < 300) {
                               Swal.fire({
                                   icon: 'success',
-                                  title: 'Éxito',
-                                  text: `El ticket Nro: ${ticket.nro_ticket} ha sido enviado a Gestión Comercial`,
-                                  confirmButtonText: 'Aceptar', 
+                                  title: '¡Enviado a Gestión Comercial!',
+                                  html: `El ticket Nro: <span style = "border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span> ha sido enviado correctamente a Gestión Comercial`,
+                                  confirmButtonText: 'Ok', 
                                   color: 'black',
                                   confirmButtonColor: '#003594',
                                   allowOutsideClick: false, 
                                   allowEscapeKey: false,
-                                  showCloseButton: true,
                                   keydownListenerCapture: true,
                               }).then((result) => {
                                   if (result.isConfirmed) {
