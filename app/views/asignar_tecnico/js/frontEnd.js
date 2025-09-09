@@ -773,162 +773,164 @@ function getTicketDataCoordinator() {
 
           // Evento click para el nuevo botón "Visualizar Imagen"
         $("#tabla-ticket tbody")
-  .off("click", ".btn-view-image")
-  .on("click", ".btn-view-image", function (e) {
-    e.stopPropagation();
+          .off("click", ".btn-view-image")
+          .on("click", ".btn-view-image", function (e) {
+          e.stopPropagation();
 
-    // Obtener datos del botón
-    const ticketId = $(this).data("ticket-id");
-    const nroTicket = $(this).data("nro-ticket");
-    const envioValor = $(this).data("envio");
-    const exoValor = $(this).data("exoneracion");
-    const pagoValor = $(this).data("pago");
+          // Obtener datos del botón
+          const ticketId = $(this).data("ticket-id");
+          const nroTicket = $(this).data("nro-ticket");
+          const envioValor = $(this).data("envio");
+          const exoValor = $(this).data("exoneracion");
+          const pagoValor = $(this).data("pago");
 
-    // Datos de rechazo
-    const Enviorechazo = $(this).data("envio_rechazado");
-    const Exoneracionrechazo = $(this).data("exo_rechazado");
-    const PagoRechazo = $(this).data("pago_rechazado");
-    const EnvdestinoRechazo = $(this).data("envdestino_rechazado");
-    
-    // NUEVA VALIDACIÓN: Usar la columna de la función SQL
-    const ticketTieneDocumentosRechazados = $(this).data("ticket-rechazados");
-    const ticketRechazado = $(this).data("rechazado");
+          // Datos de rechazo
+          const Enviorechazo = $(this).data("envio_rechazado");
+          const Exoneracionrechazo = $(this).data("exo_rechazado");
+          const PagoRechazo = $(this).data("pago_rechazado");
+          const EnvdestinoRechazo = $(this).data("envdestino_rechazado");
+          
+          // NUEVA VALIDACIÓN: Usar la columna de la función SQL
+          const ticketTieneDocumentosRechazados = $(this).data("ticket-rechazados");
+          const ticketRechazado = $(this).data("rechazado");
 
-    const BotonRechazo = document.getElementById('RechazoDocumento');
-    
-    // --- INICIO CÓDIGO CORREGIDO PARA MOSTRAR/OCULTAR EL BOTÓN ---
-    // Al abrir el modal, ocultamos el botón por defecto para luego mostrarlo si es necesario
-    BotonRechazo.style.display = 'none';
+          const BotonRechazo = document.getElementById('RechazoDocumento');
+          
+          // --- INICIO CÓDIGO CORREGIDO PARA MOSTRAR/OCULTAR EL BOTÓN ---
+          // Al abrir el modal, ocultamos el botón por defecto para luego mostrarlo si es necesario
+          BotonRechazo.style.display = 'none';
 
-    // Guardar en variables globales
-    currentTicketIdForImage = ticketId;
-    currentTicketNroForImage = nroTicket;
+          // Guardar en variables globales
+          currentTicketIdForImage = ticketId;
+          currentTicketNroForImage = nroTicket;
 
-    const VizualizarImage = document.getElementById('visualizarImagenModal');
-    const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
+          const VizualizarImage = document.getElementById('visualizarImagenModal');
+          const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
 
-    const EnvioInputModal = document.getElementById('imagenEnvio');
-    const EnvioLabelModal = document.getElementById('labelEnvio');
-    const ExoInputModal = document.getElementById('imagenExoneracion');
-    const ExoLabelModal = document.getElementById('labelExo');
-    const PagoInputModal = document.getElementById('imagenPago');
-    const PagoLabelModal = document.getElementById('labelPago');
+          document.getElementById('BotonCerrarSelectDocument').onclick = () => visualizarImagenModal.hide();
 
-    // Muestra u oculta los radio buttons basándose en los valores del botón
-    if (envioValor === 'Sí') {
-        EnvioLabelModal.style.display = 'block';
-        EnvioInputModal.style.display = 'block';
-    } else {
-        EnvioLabelModal.style.display = 'none';
-        EnvioInputModal.style.display = 'none';
-    }
+          const EnvioInputModal = document.getElementById('imagenEnvio');
+          const EnvioLabelModal = document.getElementById('labelEnvio');
+          const ExoInputModal = document.getElementById('imagenExoneracion');
+          const ExoLabelModal = document.getElementById('labelExo');
+          const PagoInputModal = document.getElementById('imagenPago');
+          const PagoLabelModal = document.getElementById('labelPago');
 
-    if (exoValor === 'Sí') {
-        ExoInputModal.style.display = 'block';
-        ExoLabelModal.style.display = 'block';
-    } else {
-        ExoInputModal.style.display = 'none';
-        ExoLabelModal.style.display = 'none';
-    }
+          // Muestra u oculta los radio buttons basándose en los valores del botón
+          if (envioValor === 'Sí') {
+              EnvioLabelModal.style.display = 'block';
+              EnvioInputModal.style.display = 'block';
+          } else {
+              EnvioLabelModal.style.display = 'none';
+              EnvioInputModal.style.display = 'none';
+          }
 
-    if (pagoValor === 'Sí') {
-        PagoInputModal.style.display = 'block';
-        PagoLabelModal.style.display = 'block';
-    } else {
-        PagoInputModal.style.display = 'none';
-        PagoLabelModal.style.display = 'none';
-    }
+          if (exoValor === 'Sí') {
+              ExoInputModal.style.display = 'block';
+              ExoLabelModal.style.display = 'block';
+          } else {
+              ExoInputModal.style.display = 'none';
+              ExoLabelModal.style.display = 'none';
+          }
 
-    // REMOVER event listeners anteriores para evitar duplicados
-    const btnConfirmar = document.getElementById('btnConfirmarVisualizacion');
+          if (pagoValor === 'Sí') {
+              PagoInputModal.style.display = 'block';
+              PagoLabelModal.style.display = 'block';
+          } else {
+              PagoInputModal.style.display = 'none';
+              PagoLabelModal.style.display = 'none';
+          }
 
-    // Clonar elementos para remover event listeners
-    const btnConfirmarClone = btnConfirmar.cloneNode(true);
+          // REMOVER event listeners anteriores para evitar duplicados
+          const btnConfirmar = document.getElementById('btnConfirmarVisualizacion');
 
-    btnConfirmar.parentNode.replaceChild(btnConfirmarClone, btnConfirmar);
+          // Clonar elementos para remover event listeners
+          const btnConfirmarClone = btnConfirmar.cloneNode(true);
 
-    // Botón para cerrar el modal de visualización
+          btnConfirmar.parentNode.replaceChild(btnConfirmarClone, btnConfirmar);
 
-    // Evento para el botón confirmar visualización
-    btnConfirmarClone.addEventListener('click', function () {
-        const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
+          // Botón para cerrar el modal de visualización
 
-        if (!selectedOption) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Selección Requerida',
-                text: `Por favor, elija un tipo de documento para visualizar.`,
-                confirmButtonText: 'Ok',
-                color: 'black',
-                confirmButtonColor: '#003594'
-            });
-            return;
-        }
-        
-        // NUEVA VALIDACIÓN SIMPLIFICADA: Verificar si el ticket tiene documentos rechazados
-        if (ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
-            // Si el ticket ya tiene documentos rechazados, NO mostrar botón de rechazo
-            BotonRechazo.style.display = 'none';
-        } else {
-            // Si el ticket NO tiene documentos rechazados, SÍ mostrar botón de rechazo
-            BotonRechazo.style.display = 'block';
-        }
-        
-        getMotivos(selectedOption);
+          // Evento para el botón confirmar visualización
+          btnConfirmarClone.addEventListener('click', function () {
+              const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
 
-        // Llamar a la API para obtener el documento
-        fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `action=GetDocumentByType&ticketId=${currentTicketNroForImage}&documentType=${selectedOption}`
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const document = data.document;
-                    const filePath = document.file_path;
-                    const mimeType = document.mime_type;
-                    const fileName = document.original_filename;
+              if (!selectedOption) {
+                  Swal.fire({
+                      icon: 'warning',
+                      title: 'Selección Requerida',
+                      text: `Por favor, elija un tipo de documento para visualizar.`,
+                      confirmButtonText: 'Ok',
+                      color: 'black',
+                      confirmButtonColor: '#003594'
+                  });
+                  return;
+              }
+              
+              // NUEVA VALIDACIÓN SIMPLIFICADA: Verificar si el ticket tiene documentos rechazados
+              if (ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
+                  // Si el ticket ya tiene documentos rechazados, NO mostrar botón de rechazo
+                  BotonRechazo.style.display = 'none';
+              } else {
+                  // Si el ticket NO tiene documentos rechazados, SÍ mostrar botón de rechazo
+                  BotonRechazo.style.display = 'block';
+              }
+              
+              getMotivos(selectedOption);
 
-                    // Determinar si es imagen o PDF
-                    if (mimeType.startsWith('image/')) {
-                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, filePath, null, fileName);
-                    } else if (mimeType === 'application/pdf') {
-                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, filePath, fileName);
-                    } else {
-                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, null, "Tipo de documento no soportado");
-                    }
+              // Llamar a la API para obtener el documento
+              fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded',
+                  },
+                  body: `action=GetDocumentByType&ticketId=${currentTicketNroForImage}&documentType=${selectedOption}`
+              })
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          const document = data.document;
+                          const filePath = document.file_path;
+                          const mimeType = document.mime_type;
+                          const fileName = document.original_filename;
 
-                    // Ocultar el modal de selección
-                    visualizarImagenModal.hide();
-                } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Error',
-                        text: `No se pudo obtener el documento: ${data.message || 'Error desconocido'}`,
-                        confirmButtonText: 'Ok',
-                        color: 'black',
-                        confirmButtonColor: '#003594'
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Error al obtener el documento',
-                    confirmButtonText: 'Ok',
-                    color: 'black',
-                    confirmButtonColor: '#003594'
-                });
-            });
-    });
-    // MOSTRAR el modal
-    visualizarImagenModal.show();
-  });
+                          // Determinar si es imagen o PDF
+                          if (mimeType.startsWith('image/')) {
+                              showViewModal(currentTicketIdForImage, currentTicketNroForImage, filePath, null, fileName);
+                          } else if (mimeType === 'application/pdf') {
+                              showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, filePath, fileName);
+                          } else {
+                              showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, null, "Tipo de documento no soportado");
+                          }
+
+                          // Ocultar el modal de selección
+                          visualizarImagenModal.hide();
+                      } else {
+                          Swal.fire({
+                              icon: 'warning',
+                              title: 'Error',
+                              text: `No se pudo obtener el documento: ${data.message || 'Error desconocido'}`,
+                              confirmButtonText: 'Ok',
+                              color: 'black',
+                              confirmButtonColor: '#003594'
+                          });
+                      }
+                  })
+                  .catch(error => {
+                      console.error('Error:', error);
+                      Swal.fire({
+                          icon: 'error',
+                          title: 'Error',
+                          text: 'Error al obtener el documento',
+                          confirmButtonText: 'Ok',
+                          color: 'black',
+                          confirmButtonColor: '#003594'
+                      });
+                  });
+          });
+          // MOSTRAR el modal
+          visualizarImagenModal.show();
+        });
         } else {
           hideTicketStatusIndicator();
           tbody.innerHTML = '<tr><td>Error al cargar</td></tr>';
@@ -2423,18 +2425,16 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
   const viewDocumentModal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
   const VizualizarImage = document.getElementById('visualizarImagenModal');
   const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
-
   viewDocumentModal.show();
   
-
-     BotonCerrarModal.addEventListener('click', function () {
-                // Ocultar el modal de visualización
-                viewDocumentModal.hide();
+  BotonCerrarModal.addEventListener('click', function () {
+    // Ocultar el modal de visualización
+    viewDocumentModal.hide();
                 
-                // Mostrar nuevamente el modal de selección
-                setTimeout(() => {
-                    visualizarImagenModal.show();
-                }, 300); //
+    // Mostrar nuevamente el modal de selección
+    setTimeout(() => {
+      visualizarImagenModal.show();
+    }, 300); //
   });
 
   BotonCerrarModalSelect.addEventListener('click', function () {
@@ -2442,8 +2442,6 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     visualizarImagenModal.hide();
     
   });
-
-  
 };
 
 const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
