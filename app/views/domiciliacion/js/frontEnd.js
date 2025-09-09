@@ -339,11 +339,11 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <strong><div>Estatus POS:</div></strong>
-                          ${d.estatus_inteliservices}
+                          ${d.desc_estatus}
                         </div><br>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Fecha Instalación:</div></strong>
-                          ${d.fecha_instalacion ||  'No posee'}
+                          ${d.fechainstalacion ||  'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div  style = "font-size: 77%;" >Fecha último ticket:</div></strong>
