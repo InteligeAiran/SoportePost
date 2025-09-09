@@ -306,48 +306,42 @@ function getTicketData() {
               // Función para buscar automáticamente el primer botón con datos
               // Función para buscar automáticamente el primer botón con datos
               function findFirstButtonWithData() {
-                // No auto-buscar si hay tickets en espera de confirmar llaves
-                const hasLlavesPendientes = TicketData.some(t =>
-                  /llaves/i.test(t.name_accion_ticket || '')
-                );
-                if (hasLlavesPendientes) {
-                  hideTicketStatusIndicator();
-                  return false;
-                }
+                  const searchTerms = [
+                      { button: "btn-asignados", term: "Asignado al Técnico", status: "En proceso", action: "Asignado al Técnico" },
+                      { button: "btn-recibidos", term: "Recibido por el Técnico", status: "En proceso", action: "Recibido por el Técnico" },
+                      { button: "btn-por-asignar", term: "Enviado a taller|En Taller", status: "En proceso",  action: "Enviado a taller|En Taller"},
+                      { button: "btn-devuelto", term: "Entregado a Cliente", status: "Cerrado", action: "Entregado a Cliente" }
+                  ];
 
-                // No auto-buscar si hay tickets "en el rosal"
-                const hasEnRosal = TicketData.some(t =>
-                  /rosal/i.test(t.name_accion_ticket || '')
-                );
-                if (hasEnRosal) {
-                  hideTicketStatusIndicator();
-                  return false;
-                }
-
-                // Solo auto-buscar cuando hay “En Taller / Enviado a taller / Espera Confirmar en Taller”
-                const searchTerms = [
-                  { button: "btn-por-asignar", term: "Enviado a taller|En Taller|Espera Confirmar en Taller", status: "En proceso", action: "Enviado a taller|En Taller" }
-                ];
-
-                for (let i = 0; i < searchTerms.length; i++) {
-                  const { button, term, status, action } = searchTerms[i];
-
-                  if (checkDataExists(term)) {
-                    dataTableInstance.columns().search('').draw(false);
-                    dataTableInstance.column(5).search(term, true, false).draw();
-
-                    // Oculta acciones solo si se filtra “devuelto”
-                    dataTableInstance.column(6).visible(true);
-
-                    setActiveButton(button);
-                    showTicketStatusIndicator(status, action);
-                    return true;
+                  for (let i = 0; i < searchTerms.length; i++) {
+                      const { button, term, status, action } = searchTerms[i];
+                      
+                      if (checkDataExists(term)) {
+                          // Si hay datos, aplicar la búsqueda y activar el botón
+                          dataTableInstance.columns().search('').draw(false);
+                          dataTableInstance.column(5).search(term, true, false).draw();
+                          
+                          // NUEVO: Ocultar columna 6 solo si es btn-devuelto
+                          if (button === "btn-devuelto") {
+                              dataTableInstance.column(6).visible(false);
+                          } else {
+                              dataTableInstance.column(6).visible(true);
+                          }
+                          
+                          setActiveButton(button);
+                          
+                          // EJECUTAR showTicketStatusIndicator con los datos correspondientes
+                          showTicketStatusIndicator(status, action);
+                          
+                          return true; // Encontramos datos
+                      }
                   }
-                }
-
-                hideTicketStatusIndicator();
-                return false;
+                  
+                  // Si no se encontraron datos en ningún botón, ocultar el indicador
+                  hideTicketStatusIndicator();
+                  return false;
               }
+
               // Ejecutar la búsqueda automática al inicializar
               findFirstButtonWithData();
 
