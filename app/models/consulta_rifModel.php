@@ -902,71 +902,164 @@ class consulta_rifModel extends Model
             $resultsqlInsertHistory1 = null;
             $resultsqlInsertHistory2 = null;
 
-            // Llama al procedimiento almacenado principal
-            $sql = "CALL UpdateTicketStatus(" . $id_ticket . ", " . $id_new_status . ")";
-            $result = Model::getResult($sql, $this->db);
+            $Sqlupdaterespuestodate = "UPDATE tickets_status_lab SET confirm_date = FALSE WHERE id_ticket = ".$id_ticket.";";
+            $resultSqlupdaterespuestodate = Model::getResult($Sqlupdaterespuestodate, $this->db);
 
-            // Verifica si la llamada al procedimiento almacenado fue exitosa
-            if (!$result) {
-                error_log("Error al ejecutar UpdateTicketStatus (SP): " . pg_last_error($this->db->getConnection()));
-                $this->db->closeConnection();
-                return array('error' => 'Error al actualizar ticket (SP): ' . pg_last_error($this->db->getConnection()));
-            }
+            if($resultSqlupdaterespuestodate){
 
-            $id_accion_ticket1 = 7; // Define esto una sola vez
+                // Llama al procedimiento almacenado principal
+                $sql = "CALL UpdateTicketStatus(" . $id_ticket . ", " . $id_new_status . ")";
+                $result = Model::getResult($sql, $this->db);
 
-            if ($id_new_status == 2) {
-                /*$sqlInserttickets = "UPDATE tickets SET date_sendkey = NOW(), id_status_key = TRUE, id_accion_ticket = " . $id_accion_ticket1 . " WHERE id_ticket = " . $id_ticket . ";";
-                $resultsqlInserttickets = $this->db->pgquery($sqlInserttickets);
-
-                if (!$resultsqlInserttickets) {
-                    error_log("Error al actualizar tickets (status 2): " . pg_last_error($this->db->getConnection()));
+                // Verifica si la llamada al procedimiento almacenado fue exitosa
+                if (!$result) {
+                    error_log("Error al ejecutar UpdateTicketStatus (SP): " . pg_last_error($this->db->getConnection()));
                     $this->db->closeConnection();
-                    return array('error' => 'Error al actualizar tickets (status 2): ' . pg_last_error($this->db->getConnection()));
-                }*/
-
-                 $id_new_status_payment = 'NULL'; 
-                $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . $id_ticket . ";";
-                $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
-                if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
-                    $status_payment_data = pg_fetch_assoc($status_payment_status_result, 0);
-                    $id_new_status_payment = $status_payment_data['id_status_payment'] !== null ? (int)$status_payment_data['id_status_payment'] : 'NULL';
+                    return array('error' => 'Error al actualizar ticket (SP): ' . pg_last_error($this->db->getConnection()));
                 }
 
-                $new_status_domiciliacion = 'NULL'; 
-                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . $id_ticket . ";";
-                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
-                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
-                    $domiciliacion_data = pg_fetch_assoc($status_domiciliacion_result, 0);
-                    $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
-                }
+                $id_accion_ticket1 = 7; // Define esto una sola vez
 
-                  $accion_ticket_sql = "SELECT new_action FROM tickets_status_history WHERE id_ticket = ".$id_ticket." ORDER BY id_history DESC LIMIT 1;";
-                    $accion_ticket_result = pg_query($this->db->getConnection(), $accion_ticket_sql);
+                if ($id_new_status == 2) {
+                    /*$sqlInserttickets = "UPDATE tickets SET date_sendkey = NOW(), id_status_key = TRUE, id_accion_ticket = " . $id_accion_ticket1 . " WHERE id_ticket = " . $id_ticket . ";";
+                    $resultsqlInserttickets = $this->db->pgquery($sqlInserttickets);
 
-                    if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
-                        $row = [];
-                        for ($i = 0; $i < pg_num_rows($accion_ticket_result); $i++) {
-                            $row[] = pg_fetch_assoc($accion_ticket_result, $i);
-                        }
-                        $id_accion_ticket = $row[0]['new_action'] ?? null;
-                    } else {
-                        $id_accion_ticket = null;
+                    if (!$resultsqlInserttickets) {
+                        error_log("Error al actualizar tickets (status 2): " . pg_last_error($this->db->getConnection()));
+                        $this->db->closeConnection();
+                        return array('error' => 'Error al actualizar tickets (status 2): ' . pg_last_error($this->db->getConnection()));
+                    }*/
+
+                    $id_new_status_payment = 'NULL'; 
+                    $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . $id_ticket . ";";
+                    $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
+                    if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
+                        $status_payment_data = pg_fetch_assoc($status_payment_status_result, 0);
+                        $id_new_status_payment = $status_payment_data['id_status_payment'] !== null ? (int)$status_payment_data['id_status_payment'] : 'NULL';
                     }
 
-                    
-                    $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $id_ticket. ";";
-                    $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
-
-                    if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
-                        $row = [];
-                        for ($i = 0; $i < pg_num_rows($status_lab_result); $i++) {
-                            $row[] = pg_fetch_assoc($status_lab_result, $i);
-                        }
-                        $id_new_status_lab = $row[0]['id_status_lab'] ?? null;
-                    } else {
-                        $id_new_status_lab = 0;
+                    $new_status_domiciliacion = 'NULL'; 
+                    $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . $id_ticket . ";";
+                    $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+                    if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                        $domiciliacion_data = pg_fetch_assoc($status_domiciliacion_result, 0);
+                        $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
                     }
+
+                    $accion_ticket_sql = "SELECT new_action FROM tickets_status_history WHERE id_ticket = ".$id_ticket." ORDER BY id_history DESC LIMIT 1;";
+                        $accion_ticket_result = pg_query($this->db->getConnection(), $accion_ticket_sql);
+
+                        if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
+                            $row = [];
+                            for ($i = 0; $i < pg_num_rows($accion_ticket_result); $i++) {
+                                $row[] = pg_fetch_assoc($accion_ticket_result, $i);
+                            }
+                            $id_accion_ticket = $row[0]['new_action'] ?? null;
+                        } else {
+                            $id_accion_ticket = null;
+                        }
+
+                        
+                        $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $id_ticket. ";";
+                        $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+
+                        if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                            $row = [];
+                            for ($i = 0; $i < pg_num_rows($status_lab_result); $i++) {
+                                $row[] = pg_fetch_assoc($status_lab_result, $i);
+                            }
+                            $id_new_status_lab = $row[0]['id_status_lab'] ?? null;
+                        } else {
+                            $id_new_status_lab = 0;
+                        }
+
+                        $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                        $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                        if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                            $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                            $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                            pg_free_result($resultcoordinador);
+                        }else{ 
+                            $id_coordinador = null;
+                        }
+
+
+                    // Mueve la lógica del historial a donde realmente se ejecute la actualización correspondiente
+                    $sqlInsertHistory1 = sprintf(
+                        "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                        (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
+                        (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
+                        2, // Usamos la acción específica para el historial
+                    (int)$id_accion_ticket, // Usamos la acción específica para el historial
+                        (int)$id_new_status_lab,
+                        $id_new_status_payment,
+                        $new_status_domiciliacion,
+                        $id_coordinador
+                    );
+                    $resultsqlInsertHistory1 = $this->db->pgquery($sqlInsertHistory1);
+
+                    if (!$resultsqlInsertHistory1) {
+                        error_log("Error en insert_ticket_status_history (status 2): " . pg_last_error($this->db->getConnection()));
+                        $this->db->closeConnection();
+                        return array('error' => 'Error al insertar historial (status 2): ' . pg_last_error($this->db->getConnection()));
+                    }
+
+                } else {
+                    // CUIDADO AQUÍ: Corrección de la sintaxis SQL. Se asume que no quieres date_sendkey aquí.
+                    $sqlInserttickets1 = "UPDATE tickets SET id_status_key = FALSE, id_accion_ticket = " . $id_accion_ticket1 . " WHERE id_ticket = " . $id_ticket . ";";
+                    $resultsqlInserttickets1 = $this->db->pgquery($sqlInserttickets1);
+
+                    if (!$resultsqlInserttickets1) {
+                        error_log("Error al actualizar tickets (otros status): " . pg_last_error($this->db->getConnection()));
+                        $this->db->closeConnection();
+                        return array('error' => 'Error al actualizar tickets (otros status): ' . pg_last_error($this->db->getConnection()));
+                    }
+
+                    $id_new_status_payment = 'NULL'; 
+                    $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . $id_ticket . ";";
+                    $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
+                    if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
+                        $status_payment_data = pg_fetch_assoc($status_payment_status_result, 0);
+                        $id_new_status_payment = $status_payment_data['id_status_payment'] !== null ? (int)$status_payment_data['id_status_payment'] : 'NULL';
+                    }
+
+                    $new_status_domiciliacion = 'NULL'; 
+                    $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . $id_ticket . ";";
+                    $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+                    if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                        $domiciliacion_data = pg_fetch_assoc($status_domiciliacion_result, 0);
+                        $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
+                    }
+
+                    $accion_ticket_sql = "SELECT new_action FROM tickets_status_history WHERE id_ticket = ".$id_ticket." ORDER BY id_history DESC LIMIT 1;";
+                        $accion_ticket_result = pg_query($this->db->getConnection(), $accion_ticket_sql);
+
+                        if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
+                            $row = [];
+                            for ($i = 0; $i < pg_num_rows($accion_ticket_result); $i++) {
+                                $row[] = pg_fetch_assoc($accion_ticket_result, $i);
+                            }
+                            $id_accion_ticket = $row[0]['new_action'] ?? null;
+                        } else {
+                            $id_accion_ticket = null;
+                        }
+
+                        
+                        $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $id_ticket. ";";
+                        $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+
+                        if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                            $row = [];
+                            for ($i = 0; $i < pg_num_rows($status_lab_result); $i++) {
+                                $row[] = pg_fetch_assoc($status_lab_result, $i);
+                            }
+                            $id_new_status_lab = $row[0]['id_status_lab'] ?? null;
+                        } else {
+                            $id_new_status_lab = 0;
+                        }
+
+                    // Mueve la lógica del historial a donde realmente se ejecute la actualización correspondiente
+                    $id_status_ticket = 2; // Asignar un valor predeterminado o dinámico según tu lógica (¿Es siempre 1 o debería ser $id_new_status?)
 
                     $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
                     $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
@@ -979,126 +1072,43 @@ class consulta_rifModel extends Model
                     }
 
 
-                // Mueve la lógica del historial a donde realmente se ejecute la actualización correspondiente
-                $sqlInsertHistory1 = sprintf(
-                     "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
-                    (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
-                    (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
-                    2, // Usamos la acción específica para el historial
-                   (int)$id_accion_ticket, // Usamos la acción específica para el historial
-                    (int)$id_new_status_lab,
-                    $id_new_status_payment,
-                    $new_status_domiciliacion,
-                    $id_coordinador
-                );
-                $resultsqlInsertHistory1 = $this->db->pgquery($sqlInsertHistory1);
+                    $sqlInsertHistory2 = sprintf(
+                        "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                        (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
+                        (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
+                        2, // Usamos la acción específica para el historial
+                    (int)$id_accion_ticket, // Usamos la acción específica para el historial
+                        (int)$id_new_status_lab,
+                        $id_new_status_payment,
+                        $new_status_domiciliacion,
+                        $id_coordinador
+                    );
 
-                if (!$resultsqlInsertHistory1) {
-                    error_log("Error en insert_ticket_status_history (status 2): " . pg_last_error($this->db->getConnection()));
-                    $this->db->closeConnection();
-                    return array('error' => 'Error al insertar historial (status 2): ' . pg_last_error($this->db->getConnection()));
-                }
+                    $resultsqlInsertHistory2 = $this->db->pgquery($sqlInsertHistory2);
 
-            } else {
-                // CUIDADO AQUÍ: Corrección de la sintaxis SQL. Se asume que no quieres date_sendkey aquí.
-                $sqlInserttickets1 = "UPDATE tickets SET id_status_key = FALSE, id_accion_ticket = " . $id_accion_ticket1 . " WHERE id_ticket = " . $id_ticket . ";";
-                $resultsqlInserttickets1 = $this->db->pgquery($sqlInserttickets1);
-
-                if (!$resultsqlInserttickets1) {
-                    error_log("Error al actualizar tickets (otros status): " . pg_last_error($this->db->getConnection()));
-                    $this->db->closeConnection();
-                    return array('error' => 'Error al actualizar tickets (otros status): ' . pg_last_error($this->db->getConnection()));
-                }
-
-                   $id_new_status_payment = 'NULL'; 
-                $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . $id_ticket . ";";
-                $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
-                if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
-                    $status_payment_data = pg_fetch_assoc($status_payment_status_result, 0);
-                    $id_new_status_payment = $status_payment_data['id_status_payment'] !== null ? (int)$status_payment_data['id_status_payment'] : 'NULL';
-                }
-
-                $new_status_domiciliacion = 'NULL'; 
-                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . $id_ticket . ";";
-                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
-                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
-                    $domiciliacion_data = pg_fetch_assoc($status_domiciliacion_result, 0);
-                    $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
-                }
-
-                  $accion_ticket_sql = "SELECT new_action FROM tickets_status_history WHERE id_ticket = ".$id_ticket." ORDER BY id_history DESC LIMIT 1;";
-                    $accion_ticket_result = pg_query($this->db->getConnection(), $accion_ticket_sql);
-
-                    if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
-                        $row = [];
-                        for ($i = 0; $i < pg_num_rows($accion_ticket_result); $i++) {
-                            $row[] = pg_fetch_assoc($accion_ticket_result, $i);
-                        }
-                        $id_accion_ticket = $row[0]['new_action'] ?? null;
-                    } else {
-                        $id_accion_ticket = null;
+                    if (!$resultsqlInsertHistory2) {
+                        error_log("Error en insert_ticket_status_history (otros status): " . pg_last_error($this->db->getConnection()));
+                        $this->db->closeConnection();
+                        return array('error' => 'Error al insertar historial (otros status): ' . pg_last_error($this->db->getConnection()));
                     }
-
-                    
-                    $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $id_ticket. ";";
-                    $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
-
-                    if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
-                        $row = [];
-                        for ($i = 0; $i < pg_num_rows($status_lab_result); $i++) {
-                            $row[] = pg_fetch_assoc($status_lab_result, $i);
-                        }
-                        $id_new_status_lab = $row[0]['id_status_lab'] ?? null;
-                    } else {
-                        $id_new_status_lab = 0;
-                    }
-
-                // Mueve la lógica del historial a donde realmente se ejecute la actualización correspondiente
-                $id_status_ticket = 2; // Asignar un valor predeterminado o dinámico según tu lógica (¿Es siempre 1 o debería ser $id_new_status?)
-
-                $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
-                $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
-                if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
-                    $row_coordinador = pg_fetch_assoc($resultcoordinador);
-                    $id_coordinador = (int) $row_coordinador['id_coordinador'];
-                    pg_free_result($resultcoordinador);
-                }else{ 
-                    $id_coordinador = null;
                 }
 
+                // Ya no necesitas var_dump($resultsqlInserttickets1); aquí si lo quieres solo para debug
+                // var_dump($resultsqlInserttickets1); // Si lo necesitas para depuración, déjalo, pero no en producción.
 
-                $sqlInsertHistory2 = sprintf(
-                     "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
-                    (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
-                    (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
-                    2, // Usamos la acción específica para el historial
-                   (int)$id_accion_ticket, // Usamos la acción específica para el historial
-                    (int)$id_new_status_lab,
-                    $id_new_status_payment,
-                    $new_status_domiciliacion,
-                    $id_coordinador
+                // Retorna todos los resultados
+                return array(
+                    'save_result' => $result,
+                    'tickets_result' => $resultsqlInserttickets, // Este será null si se ejecutó el 'else'
+                    'tickets_result1' => $resultsqlInserttickets1, // Este será null si se ejecutó el 'if'
+                    'history_result1' => $resultsqlInsertHistory1, // Este será null si se ejecutó el 'else'
+                    'history_result2' => $resultsqlInsertHistory2  // Este será null si se ejecutó el 'if'
                 );
-
-                $resultsqlInsertHistory2 = $this->db->pgquery($sqlInsertHistory2);
-
-                if (!$resultsqlInsertHistory2) {
-                    error_log("Error en insert_ticket_status_history (otros status): " . pg_last_error($this->db->getConnection()));
-                    $this->db->closeConnection();
-                    return array('error' => 'Error al insertar historial (otros status): ' . pg_last_error($this->db->getConnection()));
-                }
+            }else{
+                error_log("Error al ejecutar UpdateTicketStatus (SP): " . pg_last_error($this->db->getConnection()));
+                $this->db->closeConnection();
+                return array('error' => 'Error al actualizar ticket (SP): ' . pg_last_error($this->db->getConnection()));
             }
-
-            // Ya no necesitas var_dump($resultsqlInserttickets1); aquí si lo quieres solo para debug
-            // var_dump($resultsqlInserttickets1); // Si lo necesitas para depuración, déjalo, pero no en producción.
-
-            // Retorna todos los resultados
-            return array(
-                'save_result' => $result,
-                'tickets_result' => $resultsqlInserttickets, // Este será null si se ejecutó el 'else'
-                'tickets_result1' => $resultsqlInserttickets1, // Este será null si se ejecutó el 'if'
-                'history_result1' => $resultsqlInsertHistory1, // Este será null si se ejecutó el 'else'
-                'history_result2' => $resultsqlInsertHistory2  // Este será null si se ejecutó el 'if'
-            );
 
         } catch (Throwable $e) {
             // Manejo de la excepción
@@ -1534,7 +1544,7 @@ class consulta_rifModel extends Model
 
     public function UpdateRepuestoDate($ticketId, $repuesto_date, $id_user, $id_status_lab){
         try {
-                $sql = "UPDATE tickets_status_lab SET repuesto_date = '".$repuesto_date."',  id_status_lab = ".$id_status_lab." WHERE id_ticket = ".$ticketId.";";
+                $sql = "UPDATE tickets_status_lab SET repuesto_date = '".$repuesto_date."',  id_status_lab = ".$id_status_lab.", confirm_date = TRUE WHERE id_ticket = ".$ticketId.";";
                 $result = Model::getResult($sql, $this->db);
 
                 if ($result) {

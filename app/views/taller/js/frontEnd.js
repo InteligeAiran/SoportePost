@@ -178,6 +178,7 @@ function getTicketData() {
                                 const nroTicket = row.nro_ticket;
                                 const confirmTaller = row.confirmreceive;
                                 const serialPos = row.serial_pos || ""; // Asegúrate de que serial_pos esté definido
+                                const confirm_date_repuesto = row.confirm_date;
 
                                 let buttonsHtml = "";
 
@@ -197,6 +198,16 @@ function getTicketData() {
                                             </svg>
                                         </button>
                                     `;
+                                }else if(confirm_date_repuesto === "t"){
+                                   `<button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-btn ms-2" title = "Espere la llegada de los repuesto para cambiar el estatus"
+                                          data-bs-toggle="modal"
+                                          data-bs-target="#changeStatusModal"
+                                          data-id="${idTicket}"
+                                          data-current-status="${currentStatus}"
+                                          disabled>
+                                      Cambiar Estatus
+                                  </button>`
+                                
                                 } else {
                                     buttonsHtml += `
                                         <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-btn ms-2"

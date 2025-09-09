@@ -282,7 +282,6 @@ function getTicketDataCoordinator() {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
           const TicketData = response.ticket;
-            
           // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente)
           if (TicketData && TicketData.length > 0) {
             const firstTicket = TicketData[0];
@@ -330,10 +329,11 @@ function getTicketDataCoordinator() {
           const dataForDataTable = [];
 
           TicketData.forEach((data) => {
+            console.log(data)
             let actionButtonsHtml = ""; // Variable para construir los botones de acción
             // Lógica para los botones de acción
-            if (data.name_accion_ticket === "Asignado a la Coordinación") {
-              // Acción 4
+            if (data.id_accion_ticket === '4' ) {
+              // Acción = Asignado a la Coordinación
               actionButtonsHtml += `
                 <button id = "confirmreceived" class="btn btn-sm btn-info btn-received-coord mr-2"
                   data-bs-toggle="tooltip"
@@ -356,9 +356,9 @@ function getTicketDataCoordinator() {
                 </button>
               `;
             } else if (
-              data.name_accion_ticket === "Recibido por la Coordinación"
+              data.id_accion_ticket === '3'
             ) {
-              // Acción 3
+              // Acción = Recibido por la Coordinación
               actionButtonsHtml += `
                 <button id="myUniqueAssingmentButton"
                   class="btn btn-sm btn-assign-tech"
@@ -371,7 +371,10 @@ function getTicketDataCoordinator() {
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/></svg>
                 </button>
               `;
-            } else if (data.name_accion_ticket === "Asignado al Técnico" || data.name_accion_ticket === "Recibido por el Técnico") {
+            } else if (data.id_accion_ticket === '6' || data.id_accion_ticket === '10') {
+
+              // "Asignado al Técnico" &  "Recibido por el Técnico"
+
               actionButtonsHtml += `
                 <button id="reasingButton" class="btn btn-sm btn-primary btn-reassign-tech"
                   data-bs-toggle="tooltip"
