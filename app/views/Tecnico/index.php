@@ -661,6 +661,7 @@ function mi_navbar()
                                 <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
                                     Documento para el Nro Ticket: <span id="modalTicketId"></span></h5>
                                 <input type="hidden" id="id_ticket"></input>
+                                <input type="hidden" id="type_document"></input>
                             </strong>
                         </div>
                         <div class="modal-body">
@@ -680,6 +681,7 @@ function mi_navbar()
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" id="CerrarBoton" data-bs-dismiss="modal">Cerrar</button>
                             <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
+                            <button type="button" class="btn btn-warning" id="generateNotaEntregaBtn">Generar Nota de Entrega</button>
                         </div>
                     </div>
                 </div>
@@ -802,6 +804,89 @@ function mi_navbar()
                     </div>
             </div>
         <!-- END PARA SELECCIONAR LOS COMPONENTES ASOCIADOS AL SERIAL DEL POS -->
+
+        <!-- MODAL DE NOTA DE ENTREGA -->
+            <div class="modal fade" id="htmlTemplateModal" tabindex="-1" aria-labelledby="htmlTemplateModalLabel" aria-hidden="true" style="background-color: rgba(0,0,0,.4); backdrop-filter: blur(8px);">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-gradient-primary">
+                            <h5 class="modal-title" id="htmlTemplateModalLabel">Generar Nota de Entrega (HTML)</h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row g-3">
+                            <input type="hidden" id="htmlTemplateTicketId" value="">
+                            <div class="col-md-6">
+                                <label class="form-label">Fecha</label>
+                                <input type="text" id="ne_fecha" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">N° de Nota</label>
+                                <input type="text" id="ne_numero" class="form-control" readonly>
+                            </div>
+
+                            <div class="col-12"><strong>Datos del Cliente</strong></div>
+                            <div class="col-md-6">
+                                <label class="form-label">RIF/Identificación</label>
+                                <input type="text" id="ne_rif" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Razón Social</label>
+                                <input type="text" id="ne_razon" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Responsable</label>
+                                <input type="text" id="ne_responsable" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Contacto</label>
+                                <input type="text" id="ne_contacto" class="form-control" readonly>
+                            </div>
+
+                            <div class="col-12"><strong>Detalles del Equipo</strong></div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tipo de Equipo</label>
+                                <input type="text" id="ne_tipo_equipo" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Modelo</label>
+                                <input type="text" id="ne_modelo" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Número de Serie</label>
+                                <input type="text" id="ne_serial" class="form-control" readonly>
+                            </div>
+
+                            <div class="col-12"><strong>Información del Envío</strong></div>
+                            <div class="col-md-6">
+                                <label class="form-label">Región de Origen</label>
+                                <input type="text" id="ne_region_origen" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Región de Destino</label>
+                                <input type="text" id="ne_region_destino" class="form-control" readonly>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Observaciones de Envío</label>
+                                <textarea id="ne_observaciones" class="form-control" rows="3" placeholder="Opcional"></textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <button type="button" class="btn btn-secondary" id="previewHtmlTemplateBtn">Previsualizar</button>
+                                <button type="button" class="btn btn-success" id="printHtmlTemplateBtn">Imprimir / Guardar PDF</button>
+                            </div>
+                            <div class="col-12" style="height: 400px;">
+                                <iframe id="htmlTemplatePreview" style="width:100%; height:100%; border:1px solid #ddd;"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeHtmlTemplateBtn">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="generateAndUploadHtmlBtn">Generar y Subir</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        <!-- END MODAL DE NOTA DE ENTREGA-->
 
         <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 

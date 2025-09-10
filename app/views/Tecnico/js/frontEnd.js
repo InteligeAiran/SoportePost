@@ -529,6 +529,9 @@ function getTicketData() {
               // Por ejemplo, establecer el ticketId y el tipo de documento en algún campo oculto del modal
               $("#uploadDocumentModal").data("ticket-id", ticketId);
               $("#uploadDocumentModal").data("document-type", documentType);
+              $("#type_document").val(documentType);
+              $('#generateNotaEntregaBtn').hide();
+
               uploadDocumentModalInstance.show(); // Abre el modal de subida
             }
           });
@@ -543,23 +546,30 @@ function getTicketData() {
             if (uploadDocumentModalInstance) {
               $("#uploadDocumentModal").data("ticket-id", ticketId);
               $("#uploadDocumentModal").data("document-type", documentType);
+              $("#type_document").val(documentType);
+              $('#generateNotaEntregaBtn').hide();
               uploadDocumentModalInstance.show(); // Abre el modal de subida
             }
           });
 
         // Listener para el botón "Cargar PDF ZOOM"
         $("#tabla-ticket tbody")
-          .off("click", ".btn-zoom-pdf")
-          .on("click", ".btn-zoom-pdf", function (e) {
-            e.stopPropagation();
-            const ticketId = $(this).data("ticket-id");
-            const documentType = $(this).data("document-type"); // 'zoom'
-            if (uploadDocumentModalInstance) {
-              $("#uploadDocumentModal").data("ticket-id", ticketId);
-              $("#uploadDocumentModal").data("document-type", documentType);
-              uploadDocumentModalInstance.show(); // Abre el modal de subida
-            }
-          });
+        .off("click", ".btn-zoom-pdf")
+        .on("click", ".btn-zoom-pdf", function (e) {
+          e.stopPropagation();
+          const ticketId = $(this).data("ticket-id");
+          const documentType = $(this).data("document-type"); // 'Envio'
+
+          if (uploadDocumentModalInstance) {
+            const $modal = $("#uploadDocumentModal");
+            $modal.data("ticket-id", ticketId);
+            $modal.data("document-type", documentType);
+            $("#id_ticket").val(ticketId);
+            $("#type_document").val(documentType);
+            $("#htmlTemplateTicketId").val(ticketId);
+            uploadDocumentModalInstance.show();
+          }
+        });
 
         // Listener para el botón "Ver Documento"
         $("#tabla-ticket tbody")
@@ -1174,9 +1184,7 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
     
     // Obtener el estatus correcto
     const nuevoEstatus = getStatusForDocument(documentType, estadoCliente);
-    
-    console.log(`Documento: ${documentType}, Estado: ${estadoCliente}, Nuevo Estatus: ${nuevoEstatus}`);
-    
+        
     // Aquí puedes enviar el nuevo estatus al backend
     // updateTicketStatus(ticketId, nuevoEstatus);
 });
@@ -1189,6 +1197,14 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
         const documentType = $(this).data('document-type');
         const nro_ticket = $(this).data('nro-ticket');
         const fileName = $(this).data('file-name') || '';
+
+        console.log(ticketId);
+
+       if (documentType == 'Envio'){  
+          // Mostrar el botón solo para Envio
+          $('#htmlTemplateTicketId').val(ticketId); 
+          $('#generateNotaEntregaBtn').show();
+       }
 
         uploadForm[0].reset();
         $('#imagePreview').attr('src', '#').hide();
@@ -1318,7 +1334,478 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
             confirmButtonColor: '#003594'
         });
     }
-   });
+  });
+
+$(document).ready(function () {
+  $('#generateNotaEntregaBtn').hide();
+});
+
+
+$(document).on('click', '#generateNotaEntregaBtn', function () {
+  const ticketId = document.getElementById('htmlTemplateTicketId').value;
+  if (!ticketId) {
+    Swal.fire({ icon: 'warning', title: 'Ticket no disponible' });
+    return;
+  }
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/documents/GetDeliveryNoteData`);
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== 4) return;
+
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const res = JSON.parse(xhr.responseText);
+        if (!res || !res.success || !res.rows) {
+          Swal.fire({ icon: 'warning', title: 'No se encontraron datos' });
+          return;
+        }
+
+        const d = res.rows[0];
+
+        // Get the serial number, handling both possible property names
+        const serialPos = d.serialpos || d.serial_pos || '';
+
+        // Extract the last 4 digits of the serial number
+        const lastFourSerialDigits = serialPos.slice(-4);
+
+        // Create the new delivery note number
+        const notaNumero = `NE-${ticketId}-${lastFourSerialDigits}`;
+        const regDes = 'Caracas';
+
+        $('#htmlTemplateTicketId').val(ticketId);
+        $('#ne_fecha').val(d.fecha_actual || new Date().toLocaleDateString());
+        $('#ne_numero').val(notaNumero);
+
+        $('#ne_rif').val(d.coddocumento || '');
+        $('#ne_razon').val(d.razonsocial || '');
+        $('#ne_responsable').val(d.rlegal || d.rlegal || '');
+        $('#ne_contacto').val(d.telf1 || 'Sin número de Contacto')
+
+        $('#ne_tipo_equipo').val(d.tipo_equipo || d.tipo_pos || 'POS');
+        $('#ne_modelo').val(d.modelo || d.desc_modelo || '');
+        $('#ne_serial').val(d.serialpos || d.serial_pos || '');
+
+        $('#ne_region_origen').val(d.estado_final || d.estado_final || '');
+        $('#ne_region_destino').val(regDes);
+        $('#ne_observaciones').val('');
+
+        new bootstrap.Modal(document.getElementById('htmlTemplateModal')).show();
+      } catch (e) {
+        Swal.fire({ icon: 'error', title: 'Respuesta inválida del servidor' });
+      }
+    } else {
+      Swal.fire({ icon: 'error', title: 'Error de red/servidor' });
+    }
+  };
+
+  const params = `action=GetDeliveryNoteData&id_ticket=${encodeURIComponent(ticketId)}`;
+  console.log(params);
+  xhr.send(params);
+});
+
+// Previsualizar y enviar (si usas un modal separado #htmlTemplateModal)
+$(document).on('click', '#previewHtmlTemplateBtn', function () {
+  const data = {
+    fecha: $('#ne_fecha').val(),
+    numero: $('#ne_numero').val(),
+    rif: $('#ne_rif').val(),
+    razon: $('#ne_razon').val(),
+    responsable: $('#ne_responsable').val(),
+    tipo_equipo: $('#ne_tipo_equipo').val(),
+    modelo: $('#ne_modelo').val(),
+    serial: $('#ne_serial').val(),
+    region_origen: $('#ne_region_origen').val(),
+    region_destino: $('#ne_region_destino').val(),
+    observaciones: $('#ne_observaciones').val()
+  };
+
+  const html = buildDeliveryNoteHtml(data);
+  const iframe = document.getElementById('htmlTemplatePreview');
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+});
+
+function buildDeliveryNoteHtml(d) {
+  const safe = (s) => (s || '').toString();
+  return `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota de Entrega y Envío de Equipo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #333;
+        background: #fff;
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 20px 0;
+        border-bottom: 3px solid #2c5aa0;
+        position: relative;
+      }
+      
+      .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #2c5aa0 0%, #4a90e2 50%, #2c5aa0 100%);
+      }
+      
+      .company-logo {
+        font-size: 18px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin-bottom: 5px;
+      }
+      
+      .document-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin: 10px 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      
+      .document-subtitle {
+        font-size: 16px;
+        color: #666;
+        font-weight: 500;
+      }
+      
+      .document-info {
+        display: flex;
+        justify-content: space-between;
+        margin: 20px 0;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #2c5aa0;
+      }
+      
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+      }
+      
+      .info-label {
+        font-size: 12px;
+        color: #666;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+      
+      .info-value {
+        font-size: 16px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      .section {
+        margin: 25px 0;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .section-header {
+        background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%);
+        color: white;
+        padding: 12px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .section-content {
+        padding: 20px;
+      }
+      
+      .field-row {
+        display: flex;
+        margin-bottom: 15px;
+        align-items: flex-start;
+      }
+      
+      .field-row:last-child {
+        margin-bottom: 0;
+      }
+      
+      .field-label {
+        font-weight: 600;
+        color: #555;
+        min-width: 200px;
+        margin-right: 15px;
+        font-size: 13px;
+      }
+      
+      .field-value {
+        flex: 1;
+        color: #333;
+        font-weight: 500;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        border-left: 3px solid #2c5aa0;
+      }
+      
+      .field-value.observations {
+        background: #fff;
+        border: 1px solid #ddd;
+        min-height: 60px;
+        font-style: italic;
+      }
+      
+      .constancy {
+        background: #e8f4fd;
+        border: 1px solid #b3d9ff;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: center;
+        font-size: 15px;
+        line-height: 1.8;
+        color: #2c5aa0;
+        font-weight: 500;
+      }
+      
+      .signature-section {
+        margin-top: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+      
+      .signature-box {
+        flex: 1;
+        margin: 0 10px;
+        text-align: center;
+        padding: 20px;
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        background: #fafafa;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      
+      .signature-line {
+        border-top: 2px solid #333;
+        margin: 20px 0 10px 0;
+        width: 200px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      
+      .signature-label {
+        font-weight: bold;
+        color: #2c5aa0;
+        margin-bottom: 5px;
+      }
+      
+      .signature-field {
+        color: #666;
+        font-size: 13px;
+      }
+      
+      .footer {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+        text-align: center;
+        color: #666;
+        font-size: 12px;
+      }
+      
+      @media print {
+        body { padding: 0; }
+        .section { box-shadow: none; border: 1px solid #ddd; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="company-logo">SOPORTE POST VENTA</div>
+      <div class="document-title">Nota de Entrega y Envío de Equipo</div>
+      <div class="document-subtitle">Documento Oficial de Entrega</div>
+    </div>
+    
+    <div class="document-info">
+      <div class="info-item">
+        <div class="info-label">Fecha</div>
+        <div class="info-value">${safe(d.fecha)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">N° de Nota</div>
+        <div class="info-value">${safe(d.numero)}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <i class="fas fa-user"></i> Datos del Cliente
+      </div>
+      <div class="section-content">
+        <div class="field-row">
+          <div class="field-label">R.I.F. / Identificación:</div>
+          <div class="field-value">${safe(d.rif)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Razón Social de la Empresa:</div>
+          <div class="field-value">${safe(d.razon)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Responsable:</div>
+          <div class="field-value">${safe(d.responsable)}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <i class="fas fa-desktop"></i> Detalles del Equipo
+      </div>
+      <div class="section-content">
+        <div class="field-row">
+          <div class="field-label">Tipo de Equipo:</div>
+          <div class="field-value">${safe(d.tipo_equipo)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Modelo del Equipo:</div>
+          <div class="field-value">${safe(d.modelo)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Número de Serie:</div>
+          <div class="field-value">${safe(d.serial)}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <i class="fas fa-truck"></i> Información del Envío
+      </div>
+      <div class="section-content">
+        <div class="field-row">
+          <div class="field-label">Región de Origen:</div>
+          <div class="field-value">${safe(d.region_origen)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Región de Destino:</div>
+          <div class="field-value">${safe(d.region_destino)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Observaciones de Envío:</div>
+          <div class="field-value observations">${safe(d.observaciones) || 'Sin observaciones adicionales'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="constancy">
+      <strong>CONSTANCIA DE ENTREGA</strong><br>
+      El equipo detallado en la presente nota ha sido entregado en perfectas condiciones de embalaje y funcionamiento al responsable designado.
+    </div>
+
+    <div class="signature-section">
+      <div class="signature-box">
+        <div class="signature-label">Firma de Conformidad</div>
+        <div class="signature-line"></div>
+        <div class="signature-field">Nombre: ${safe(d.responsable)}</div>
+        <div class="signature-field">C.I./DNI: __________________________</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Este documento es válido como constancia oficial de entrega del equipo especificado.</p>
+      <p>Fecha de generación: ${new Date().toLocaleString('es-ES')}</p>
+    </div>
+  </body>
+  </html>`;
+}
+
+document.getElementById('generateAndUploadHtmlBtn').addEventListener('click', function () {
+  const ticketId = document.getElementById('htmlTemplateTicketId').value;
+  const iframe = document.getElementById('htmlTemplatePreview');
+  const doc = (iframe && (iframe.contentDocument || iframe.contentWindow.document)) || null;
+  const html = (doc && doc.documentElement) ? doc.documentElement.outerHTML : '';
+
+  if (!html) {
+    Swal.fire({ icon: 'warning', title: 'Previsualiza antes de generar' });
+    return;
+  }
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/generateAndUploadNotaEntrega`);
+
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== 4) return;
+
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const res = JSON.parse(xhr.responseText);
+        if (res && res.success) {
+          Swal.fire({ icon: 'success', title: 'Nota generada y cargada' });
+          const htmlModal = document.getElementById('htmlTemplateModal');
+          const uploadModal = document.getElementById('uploadDocumentModal');
+          if (htmlModal) bootstrap.Modal.getInstance(htmlModal)?.hide();
+          if (uploadModal) bootstrap.Modal.getInstance(uploadModal)?.hide();
+        } else {
+          Swal.fire({ icon: 'error', title: 'Error', text: (res && res.message) || 'No se pudo generar/subir.' });
+        }
+      } catch (e) {
+        Swal.fire({ icon: 'error', title: 'Respuesta inválida del servidor' });
+      }
+    } else {
+      Swal.fire({ icon: 'error', title: 'Error de red/servidor' });
+    }
+  };
+
+  // Usa FormData para no truncar el HTML
+  const fd = new FormData();
+  fd.append('action', 'generateAndUploadNotaEntrega');
+  fd.append('id_ticket', ticketId);
+  fd.append('document_type', 'Envio');
+  fd.append('html', html);
+
+  xhr.send(fd);
+});
+
+$(document).on('click', '#printHtmlTemplateBtn', function () {
+  const iframe = document.getElementById('htmlTemplatePreview');
+  if (!iframe || !iframe.contentWindow) return;
+  iframe.contentWindow.focus();
+  iframe.contentWindow.print(); // Abre diálogo del navegador (imprimir/guardar PDF)
+});
 
 // Función para mostrar el modal de selección de documento
 function showDocumentSelectionModal(ticketId, nroTicket) {
@@ -1582,6 +2069,8 @@ $(document).on('click', '#CerrarBoton', function() {
     // 1. Oculta el modal de visualización actual
     uploadDocumentModal.hide();
     viewDocumentModal.hide();
+    $('#generateNotaEntregaBtn').hide();
+    $("#type_document").val('');
 
     // 2. Muestra el modal de acciones de nuevo
     // Usamos un pequeño retraso para evitar problemas de superposición y animaciones

@@ -3255,7 +3255,7 @@ function SendRif() {
             enlaceSerial.style.textDecoration = "underline";
             enlaceSerial.style.cursor = "pointer";
             serial_posCell.appendChild(enlaceSerial);
-            desc_posCell.textContent = item.desc_po
+            desc_posCell.textContent = item.desc_pos;
 
             // Modal de detalles del serial (tu código existente)
             const modalSerial = document.getElementById("ModalSerial");
@@ -3691,6 +3691,7 @@ function SendSerial() {
                 return `<a href="#" class="serial-link">${data}</a>`;
               },
             },
+            {data: "desc_pos", title: "Estatus del Equipo"},
             { data: "afiliacion", title: "N° Afiliación" },
             { 
               data: "fechainstalacion", 
@@ -3712,6 +3713,7 @@ function SendSerial() {
 
           $(newTable).DataTable({
             responsive: false,
+            fixedHeader: true,
             data: data,
             columns: columnsConfig,
             pagingType: "simple_numbers",
@@ -4134,6 +4136,7 @@ function SendRazon() {
             scrollCollapse: true, // Permite que la tabla se ajuste si hay pocos datos
             fixedHeader: true, // Fija el encabezado durante el scroll
             autoWidth: false,
+            fixedHeader: true,
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",

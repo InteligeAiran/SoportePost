@@ -6,7 +6,6 @@ require_once __DIR__ . '/../../../../libs/database_cn.php';
 require_once __DIR__ . '/../../../../libs/View.php';
 require_once __DIR__ . '/../../../../libs/database.php';
 require_once __DIR__ . '/../../../repositories/ReportRepository.php';
-
 require_once __DIR__ . '/../../../../config/paths.php';
 
 ini_set('display_errors', 1);
