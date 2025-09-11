@@ -364,7 +364,6 @@ class Consulta extends Controller
         $result = $repository->SearchtypePos($serial);
         if ($result !== false) {
             $codrepositoryopos = $result;
-            //var_dump($codrepositoryopos);
 
             /*  AGREGAR CSS */
             $claseImagen = "imagen-predeterminada"; // Valor predeterminado
@@ -372,47 +371,83 @@ class Consulta extends Controller
                 case 1:
                     $nombreArchivo = "ingenico-ict220.png";
                     $claseImagen = "ingenico-ict220";
-                    break;
+                break;
 
                 case 2:
                     $nombreArchivo = "ingenico-ict250.png";
                     $claseImagen = "ingenico-ict250";
-                    break;
+                break;
 
                 case 3:
                     $nombreArchivo = "ingenico-iwl220.png";
                     $claseImagen = "ingenico-iwl220";
-                    break;
+                break;
+
+                case 10: 
+                    $nombreArchivo = "D200T.png";
+                    $claseImagen = "D200T";
+                break;
 
                 case 11:
                     $nombreArchivo = "move-2500.png";
                     $claseImagen = "move-2500";
-                    break;
+                break;
 
                 case 14:
                     $nombreArchivo = "sunmi-P2.png";
                     $claseImagen = "sunmi-P2";
-                    break;
+                break;
 
                 case 15:
                     $nombreArchivo = "sunmi-P2mini.png";
                     $claseImagen = "sunmi-P2mini";
-                    break;
+                break;
+
+                 case 16:
+                    $nombreArchivo = "New-7210.png";
+                    $claseImagen = "New-7210";
+                break;
 
                 case 17:
                     $nombreArchivo = "sunmi-P2SE.png";
                     $claseImagen = "sunmi-P2SE";
-                    break;
+                break;
+
+                case 18:
+                    $nombreArchivo = "CUADRA-MINI-POS.png";
+                    $claseImagen = "cuadra-mini-pos";
+                break;
+
+                case 19:
+                    $nombreArchivo = "New-9220.png";
+                    $claseImagen = "New-9220";
+                break;
+
+                case 21:
+                    $nombreArchivo = "New-6210.png";
+                    $claseImagen = "New-6210";
+                break;
 
                 case 22:
                     $nombreArchivo = "Kozen-P10.png";
                     $claseImagen = "Kozen-P10";
-                    break;
+                break;
+
+                case 25: 
+                    $nombreArchivo = "P10-ZIO.png";
+                    $claseImagen = "P10-ZIO";
+                break;
+
+                case 26: 
+                    $nombreArchivo = "SUNMI-P2-LITE.png";
+                    $claseImagen = "SUNMI-P2-LITE";
+                break;
 
                 default:
                     $nombreArchivo = "mantainment.png";
+                    $claseImagen = "mantainment";
 
-                    break;
+                break;
             }
             /* ENDF AGREGAR CSS */
 
