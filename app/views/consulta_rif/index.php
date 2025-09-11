@@ -910,7 +910,7 @@ function mi_navbar() {}
         <script src="<?php echo APP; ?>app/views/consulta_rif/js/frontEnd.js"></script>
 
         <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-        <?php
+<!--         <?php
         $expired_sessions = json_encode($this->expired_sessions);
         $message = json_encode($this->message);
         $redirect = json_encode($this->redirect);
@@ -953,9 +953,11 @@ function mi_navbar() {}
                     location.reload(true); // Forzar recarga desde el servidor
                 }, sessionLifetime * 1000); // sessionLifetime está en segundos
             }
-        </script>
+        </script> -->
         <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-
+<?php
+    require 'app/footer.php';
+?>
 
     </body>
 
