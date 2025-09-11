@@ -1121,7 +1121,7 @@ function formatTicketDetailsPanel(d) {
             <div class="row mb-3 align-items-center">
                 <div class="col-md-3 text-center">
                     <div id="device-image-container" class="p-2">
-                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" class="img-fluid rounded" style="max-width: 120px; height: auto; object-fit: contain;">
+                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}">
                     </div>
                 </div>
                 <div class="col-md-9">
@@ -1202,94 +1202,50 @@ function formatTicketDetailsPanel(d) {
     `;
 }
 
-// =============================================================================
-// Función para descargar y mostrar la imagen del dispositivo
-// Ahora adaptada para actualizar la imagen en el panel de detalles del ticket.
-// =============================================================================
+
 function downloadImageModal(serial) {
-  // Considera renombrar a loadDeviceImage(serial) para mayor claridad
   const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhoto`);
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhotoDashboard`);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log("Respuesta de GetPhoto:", response); // Descomenta para depuración
-
-        // ***** CAMBIO CLAVE AQUÍ *****
-        // Selecciona el elemento de imagen en el panel de detalles, NO en un modal
-        const imgElement = document.getElementById("device-ticket-image");
-
-        if (imgElement) {
-          if (response.success && response.rutaImagen) {
-            const srcImagen = response.rutaImagen;
-            const claseImagen = response.claseImagen || ""; // Obtener la clase CSS, si no hay, usar cadena vacía
-
+        //console.log(response);
+        if (response.success) {
+          const srcImagen = response.rutaImagen;
+          const claseImagen = response.claseImagen; // Obtener la clase CSS
+          const imgElement = document.getElementById("device-ticket-image");
+            if (imgElement) {
             imgElement.src = srcImagen;
-            imgElement.alt = `Imagen del dispositivo ${serial}`; // Actualiza el alt text
-
-            // Opcional: Si 'claseImagen' trae clases CSS específicas que quieres añadir
-            // y no colisionan con img-fluid o rounded, puedes hacer:
-            // if (claseImagen) {
-            //     imgElement.classList.add(claseImagen);
-            // }
-            // Si 'claseImagen' es una clase para reemplazar el estilo (lo cual no es común aquí),
-            // entonces tendrías que asegurarte de que la clase de tu backend incluya
-            // las propiedades de img-fluid y rounded, o volver a añadirlas.
-            // Para este caso, con Bootstrap, probablemente no necesites asignar `className` aquí
-            // ya que `max-height` y `width: auto` en el style ya controlan el tamaño.
+            imgElement.className = claseImagen; // Aplicar la clase CSS
           } else {
-            // Si no hay éxito o rutaImagen, carga una imagen de "no disponible"
-            imgElement.src = "assets/img/image-not-found.png"; // Crea esta imagen
-            imgElement.alt = `Imagen no disponible para serial ${serial}`;
-            console.warn(
-              "No se obtuvo ruta de imagen o éxito de la API para el serial:",
-              serial,
-              response.message
-            );
+            console.error("No se encontró el elemento img en el modal.");
+          }
+          if (imgElement) {
+            imgElement.src = rutaImagen;
+                        imgElement.className = claseImagen; // Aplicar la clase CSS
+
+          } else {
+            console.error("No se encontró el elemento img en el modal.");
           }
         } else {
-          console.error(
-            'Error: No se encontró el elemento <img> con ID "device-ticket-image" en el DOM.'
-          );
+          console.error("Error al obtener la imagen:", response.message);
         }
       } catch (error) {
-        console.error("Error parsing JSON response for image:", error);
-        const imgElement = document.getElementById("device-ticket-image");
-        if (imgElement) {
-          imgElement.src = "assets/img/error-loading-image.png"; // Crea esta imagen
-          imgElement.alt = "Error al cargar imagen";
-        }
+        console.error("Error parsing JSON:", error);
       }
     } else {
-      console.error(
-        "Error al obtener la imagen (HTTP):",
-        xhr.status,
-        xhr.statusText
-      );
-      const imgElement = document.getElementById("device-ticket-image");
-      if (imgElement) {
-        imgElement.src = "assets/img/error-loading-image.png";
-        imgElement.alt = "Error de servidor al cargar imagen";
-      }
+      console.error("Error:", xhr.status, xhr.statusText);
     }
   };
 
   xhr.onerror = function () {
-    console.error(
-      "Error de red al intentar obtener la imagen para el serial:",
-      serial
-    );
-    const imgElement = document.getElementById("device-ticket-image");
-    if (imgElement) {
-      imgElement.src = "assets/img/network-error-image.png"; // Crea esta imagen
-      imgElement.alt = "Error de red";
-    }
+    console.error("Error de red");
   };
 
-  const datos = `action=GetPhoto&serial=${encodeURIComponent(serial)}`;
+  const datos = `action=GetPhotoDashboard&serial=${encodeURIComponent(serial)}`;
   xhr.send(datos);
 }
 

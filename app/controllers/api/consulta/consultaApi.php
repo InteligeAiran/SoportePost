@@ -62,6 +62,9 @@ class Consulta extends Controller
                     $this->handleGetPhoto();
                     break;
 
+                case 'GetPhotoDashboard':
+                    $this->handleGetPhotoDashboard();
+
                 case 'ValidateRif':
                     $this->handleVlidateRif();
                     break;
@@ -446,6 +449,114 @@ class Consulta extends Controller
                 default:
                     $nombreArchivo = "mantainment.png";
                     $claseImagen = "mantainment";
+
+                break;
+            }
+            /* ENDF AGREGAR CSS */
+
+            $rutaImagen = __DIR__ . "/../../../public/img/consulta_rif/POS/" . $nombreArchivo; // Ruta absoluta
+            $tipoImagen = mime_content_type($rutaImagen);
+            $datosImagen = file_get_contents($rutaImagen);
+            $imagenBase64 = base64_encode($datosImagen);
+            $srcImagen = "data:" . $tipoImagen . ";base64," . $imagenBase64;
+
+            $this->response(['success' => true, 'id_tipopos' => $codrepositoryopos, 'rutaImagen' => $srcImagen, 'claseImagen' => $claseImagen], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener el tipo del POS'], 404);
+        }
+    }
+
+    
+    public function handleGetPhotoDashboard()
+    {
+        $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
+        $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        //var_dump($serial);
+        $result = $repository->SearchtypePos($serial);
+        if ($result !== false) {
+            $codrepositoryopos = $result;
+
+            /*  AGREGAR CSS */
+            $claseImagen = "imagen-predeterminada"; // Valor predeterminado
+            switch ($codrepositoryopos) {
+                case 1:
+                    $nombreArchivo = "ingenico-ict220.png";
+                    $claseImagen = "ingenico-ict220Dashboard";
+                break;
+
+                case 2:
+                    $nombreArchivo = "ingenico-ict250.png";
+                    $claseImagen = "ingenico-ict250Dashboard";
+                break;
+
+                case 3:
+                    $nombreArchivo = "ingenico-iwl220.png";
+                    $claseImagen = "ingenico-iwl220Dashboard";
+                break;
+
+                case 10: 
+                    $nombreArchivo = "D200T.png";
+                    $claseImagen = "D200TDashboard";
+                break;
+
+                case 11:
+                    $nombreArchivo = "move-2500.png";
+                    $claseImagen = "move-2500Dashboard";
+                break;
+
+                case 14:
+                    $nombreArchivo = "sunmi-P2.png";
+                    $claseImagen = "sunmi-P2Dashboard";
+                break;
+
+                case 15:
+                    $nombreArchivo = "sunmi-P2mini.png";
+                    $claseImagen = "sunmi-P2miniDashboard";
+                break;
+
+                 case 16:
+                    $nombreArchivo = "New-7210.png";
+                    $claseImagen = "New-7210Dashboard";
+                break;
+
+                case 17:
+                    $nombreArchivo = "sunmi-P2SE.png";
+                    $claseImagen = "sunmi-P2SEDashboard";
+                break;
+
+                case 18:
+                    $nombreArchivo = "CUADRA-MINI-POS.png";
+                    $claseImagen = "cuadra-mini-posDashboard";
+                break;
+
+                case 19:
+                    $nombreArchivo = "New-9220.png";
+                    $claseImagen = "New-9220Dashboard";
+                break;
+
+                case 21:
+                    $nombreArchivo = "New-6210.png";
+                    $claseImagen = "New-6210Dashboard";
+                break;
+
+                case 22:
+                    $nombreArchivo = "Kozen-P10.png";
+                    $claseImagen = "Kozen-P10Dashboard";
+                break;
+
+                case 25: 
+                    $nombreArchivo = "P10-ZIO.png";
+                    $claseImagen = "P10-ZIODashboard";
+                break;
+
+                case 26: 
+                    $nombreArchivo = "SUNMI-P2-LITEDashboard.png";
+                    $claseImagen = "SUNMI-P2-LITEDashboard";
+                break;
+
+                default:
+                    $nombreArchivo = "mantainment.png";
+                    $claseImagen = "mantainmentDashboard";
 
                 break;
             }
