@@ -60,7 +60,11 @@ function searchDomiciliacionTickets() {
                         },
                         { data: 'rif', title: 'Rif' },
                         { data: 'serial_pos', title: 'Serial POS' },
-                        { data: 'name_status_domiciliacion', title: 'Estado de Domiciliación' },
+                        { 
+                            data: 'id_status_domiciliacion', 
+                            title: 'ID Domiciliación',
+                            visible: false  // OCULTA LA COLUMNA PERO MANTIENE LOS DATOS PARA FILTROS
+                        },
                         {
                             data: 'name_accion_ticket',
                             title: 'Acción Realizada',
@@ -85,9 +89,9 @@ function searchDomiciliacionTickets() {
                                 const currentStatusDomiciliacion = row.id_status_domiciliacion;
                                 const currentNameStatusDomiciliacion = row.name_status_domiciliacion;
 
-                                if (currentStatusDomiciliacion === '2') {
+                               /* if (currentStatusDomiciliacion == 2) {
                                     return `<button class="btn btn-secondary btn-sm" disabled>Solvente</button>`;
-                                } else {
+                                } else {*/
                                     return `
                                         <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-domiciliacion-btn"
                                             data-bs-toggle="modal"
@@ -97,7 +101,7 @@ function searchDomiciliacionTickets() {
                                             data-current-status-name="${currentNameStatusDomiciliacion}">
                                             Verificar Solvencia
                                         </button>`;
-                                }
+                                /*}*/
                             }
                         }
                     ];
@@ -136,6 +140,199 @@ function searchDomiciliacionTickets() {
                                     "next": "Siguiente",
                                     "previous": "Anterior"
                                 }
+                            },
+                            dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+                            initComplete: function (settings, json) {
+                                const dataTableInstance = this.api();
+                                const buttonsHtml = `
+                                    <button id="btn-pendiente-revisar" class="btn btn-secondary me-2" title="Pendiente Por revisar domiciliacion">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-clock-history" viewBox="0 0 16 16">
+                                            <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .979.654l-.615.789a6.996 6.996 0 0 0-.418-.302zm1.834 1.79a6.99 6.99 0 0 0-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7.08 7.08 0 0 0-.214-.468l.893-.45a7.976 7.976 0 0 1 .45 1.088l-.95.313a7.023 7.023 0 0 0-.179-.483zm.53 2.507a6.991 6.991 0 0 0-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1.001.025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.957 7.957 0 0 1-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.417.41-.879.66-1.254l.866.5a7.98 7.98 0 0 1-.724 1.4l-.802-.646zm-.964 1.205c.122-.103.246-.198.369-.283l.758.653a8.073 8.073 0 0 1-.401.432l-.706-.707z"/>
+                                            <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0v1z"/>
+                                            <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
+                                        </svg>
+                                    </button>
+
+                                    <button id="btn-solvente" class="btn btn-secondary me-2" title="Tickets Solventes">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                        </svg>
+                                    </button>
+
+                                    <button id="btn-gestion-comercial" class="btn btn-secondary me-2" title="Gestión Comercial (Deuda Domiciliación)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bank" viewBox="0 0 16 16">
+                                            <path d="m8 0 6.61 3h.89a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H15v7a.5.5 0 0 1 .485.38l.5 2a.498.498 0 0 1-.485.62H.5a.498.498 0 0 1-.485-.62l.5-2A.501.501 0 0 1 1 13V6H.5a.5.5 0 0 1-.5-.5v-2A.5.5 0 0 1 .5 3h.89L8 0ZM3.777 3h8.447L8 1 3.777 3ZM2 6v7h1V6H2Zm2 0v7h2.5V6H4Zm3.5 0v7H10V6H7.5ZM11 6v7h1V6h-1Zm1-1V3H4v2h8Z"/>
+                                        </svg>
+                                    </button>
+                                `;
+                                $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+
+                                // Aplicar estilos iniciales a todos los botones
+                                function initializeButtonStyles() {
+                                    $("#btn-solvente, #btn-gestion-comercial, #btn-pendiente-revisar")
+                                        .css({
+                                            'background-color': '#B0B0B0',
+                                            'border-color': '#B0B0B0',
+                                            'color': 'white',
+                                            'transition': 'all 0.3s ease'
+                                        });
+                                }
+
+                                // Inicializar estilos
+                                initializeButtonStyles();
+
+                                // Agregar estilos CSS personalizados para los botones
+                                function addCustomButtonStyles() {
+                                    const style = document.createElement('style');
+                                    style.textContent = `
+                                        #btn-solvente, #btn-gestion-comercial, #btn-pendiente-revisar {
+                                            transition: all 0.3s ease !important;
+                                        }
+                                        
+                                        #btn-pendiente-revisar:hover {
+                                            background-color: #e55a2b !important;
+                                            border-color: #e55a2b !important;
+                                            color: white !important;
+                                            transform: translateY(-1px);
+                                            box-shadow: 0 2px 4px rgba(255, 107, 53, 0.4);
+                                        }
+                                        
+                                        #btn-solvente:hover {
+                                            background-color: #218838 !important;
+                                            border-color: #218838 !important;
+                                            color: white !important;
+                                            transform: translateY(-1px);
+                                            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.4);
+                                        }
+                                        
+                                        #btn-gestion-comercial:hover {
+                                            background-color: #5a2d91 !important;
+                                            border-color: #5a2d91 !important;
+                                            color: white !important;
+                                            transform: translateY(-1px);
+                                            box-shadow: 0 2px 4px rgba(111, 66, 193, 0.4);
+                                        }
+                                        
+                                        #btn-solvente:focus, #btn-gestion-comercial:focus, #btn-pendiente-revisar:focus {
+                                            box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25) !important;
+                                        }
+                                        
+                                        #btn-pendiente-revisar.btn-primary {
+                                            background-color: #ff6b35 !important;
+                                            border-color: #ff6b35 !important;
+                                            color: white !important;
+                                            box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+                                        }
+                                        
+                                        #btn-solvente.btn-primary {
+                                            background-color: #28a745 !important;
+                                            border-color: #28a745 !important;
+                                            color: white !important;
+                                            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+                                        }
+                                        
+                                        #btn-gestion-comercial.btn-primary {
+                                            background-color: #6f42c1 !important;
+                                            border-color: #6f42c1 !important;
+                                            color: white !important;
+                                            box-shadow: 0 2px 4px rgba(111, 66, 193, 0.3);
+                                        }
+                                        
+                                        #btn-solvente.btn-secondary, #btn-gestion-comercial.btn-secondary, #btn-pendiente-revisar.btn-secondary {
+                                            background-color: #B0B0B0 !important;
+                                            border-color: #B0B0B0 !important;
+                                            color: white !important;
+                                        }
+                                    `;
+                                    document.head.appendChild(style);
+                                }
+
+                                // Aplicar estilos personalizados
+                                addCustomButtonStyles();
+
+                                // Función para manejar la selección de botones
+                                function setActiveButton(activeButtonId) {
+                                    // Remover estilos activos de todos los botones
+                                    $("#btn-solvente").removeClass("btn-primary").addClass("btn-secondary");
+                                    $("#btn-gestion-comercial").removeClass("btn-primary").addClass("btn-secondary");
+                                    $("#btn-pendiente-revisar").removeClass("btn-primary").addClass("btn-secondary");
+                                    
+                                    // Aplicar estilos activos al botón seleccionado
+                                    $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
+                                }
+
+                                // Función para verificar si hay datos en una búsqueda específica
+                                function checkDataExists(searchTerm, columnIndex) {
+                                    dataTableInstance.columns().search('').draw(false);
+                                    
+                                    const filteredData = dataTableInstance.column(columnIndex).search(searchTerm, true, false).draw();
+                                    const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
+                                    
+                                    return rowCount > 0;
+                                }
+
+                                // Función para buscar automáticamente el primer botón con datos
+                                function findFirstButtonWithData() {
+                                    // Buscar ID 1 (Pendiente Por revisar domiciliacion) en la columna de ID de Domiciliación (índice 5 - oculta)
+                                    if (checkDataExists("^1$", 5)) {
+                                        dataTableInstance.columns().search('').draw(false);
+                                        dataTableInstance.column(5).search("^1$", true, false).draw();
+                                        setActiveButton("btn-pendiente-revisar");
+                                        return true;
+                                    }
+
+                                    // Buscar ID 2 (Solvente) en la columna de ID de Domiciliación (índice 5 - oculta)
+                                    if (checkDataExists("^2$", 5)) {
+                                        dataTableInstance.columns().search('').draw(false);
+                                        dataTableInstance.column(5).search("^2$", true, false).draw();
+                                        setActiveButton("btn-solvente");
+                                        return true;
+                                    }
+
+                                    // Buscar ID 3 (Gestión Comercial) en la columna de ID de Domiciliación (índice 5 - oculta)
+                                    if (checkDataExists("^3$", 5)) {
+                                        dataTableInstance.columns().search('').draw(false);
+                                        dataTableInstance.column(5).search("^3$", true, false).draw();
+                                        setActiveButton("btn-gestion-comercial");
+                                        return true;
+                                    }
+
+                                    return false;
+                                }
+
+                                // Ejecutar la búsqueda automática al inicializar
+                                findFirstButtonWithData();
+
+                                // Event listeners para los botones
+                                $("#btn-solvente").on("click", function () {
+                                    if (checkDataExists("^2$", 5)) {
+                                        dataTableInstance.columns().search('').draw(false);
+                                        dataTableInstance.column(5).search("^2$", true, false).draw();
+                                        setActiveButton("btn-solvente");
+                                    } else {
+                                        findFirstButtonWithData();
+                                    }
+                                });
+
+                                $("#btn-gestion-comercial").on("click", function () {
+                                    if (checkDataExists("^3$", 5)) {
+                                        dataTableInstance.columns().search('').draw(false);
+                                        dataTableInstance.column(5).search("^3$", true, false).draw();
+                                        setActiveButton("btn-gestion-comercial");
+                                    } else {
+                                        findFirstButtonWithData();
+                                    }
+                                });
+
+                                $("#btn-pendiente-revisar").on("click", function () {
+                                    if (checkDataExists("^1$", 5)) {
+                                        dataTableInstance.columns().search('').draw(false);
+                                        dataTableInstance.column(5).search("^1$", true, false).draw();
+                                        setActiveButton("btn-pendiente-revisar");
+                                    } else {
+                                        findFirstButtonWithData();
+                                    }
+                                });
                             }
                         });
 
@@ -326,7 +523,7 @@ function formatTicketDetailsPanel(d) {
             <div class="row mb-3 align-items-center">
                 <div class="col-md-3 text-center">
                     <div id="device-image-container" class="p-2">
-                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" class="img-fluid rounded" style="max-width: 120px; height: auto; object-fit: contain;">
+                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}">
                     </div>
                 </div>
                 <div class="col-md-9">
@@ -339,11 +536,11 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <strong><div>Estatus POS:</div></strong>
-                          ${d.estatus_inteliservices}
+                          ${d.desc_estatus}
                         </div><br>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Fecha Instalación:</div></strong>
-                          ${d.fecha_instalacion ||  'No posee'}
+                          ${d.fechainstalacion ||  'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div  style = "font-size: 77%;" >Fecha último ticket:</div></strong>
@@ -403,89 +600,48 @@ function formatTicketDetailsPanel(d) {
 }
 
 function downloadImageModal(serial) {
-  // Considera renombrar a loadDeviceImage(serial) para mayor claridad
   const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhoto`);
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhotoDashboard`);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log("Respuesta de GetPhoto:", response); // Descomenta para depuración
-
-        // ***** CAMBIO CLAVE AQUÍ *****
-        // Selecciona el elemento de imagen en el panel de detalles, NO en un modal
-        const imgElement = document.getElementById("device-ticket-image");
-
-        if (imgElement) {
-          if (response.success && response.rutaImagen) {
-            const srcImagen = response.rutaImagen;
-            const claseImagen = response.claseImagen || ""; // Obtener la clase CSS, si no hay, usar cadena vacía
-
+        //console.log(response);
+        if (response.success) {
+          const srcImagen = response.rutaImagen;
+          const claseImagen = response.claseImagen; // Obtener la clase CSS
+          const imgElement = document.getElementById("device-ticket-image");
+            if (imgElement) {
             imgElement.src = srcImagen;
-            imgElement.alt = `Imagen del dispositivo ${serial}`; // Actualiza el alt text
-
-            // Opcional: Si 'claseImagen' trae clases CSS específicas que quieres añadir
-            // y no colisionan con img-fluid o rounded, puedes hacer:
-            // if (claseImagen) {
-            //     imgElement.classList.add(claseImagen);
-            // }
-            // Si 'claseImagen' es una clase para reemplazar el estilo (lo cual no es común aquí),
-            // entonces tendrías que asegurarte de que la clase de tu backend incluya
-            // las propiedades de img-fluid y rounded, o volver a añadirlas.
-            // Para este caso, con Bootstrap, probablemente no necesites asignar `className` aquí
-            // ya que `max-height` y `width: auto` en el style ya controlan el tamaño.
+            imgElement.className = claseImagen; // Aplicar la clase CSS
           } else {
-            // Si no hay éxito o rutaImagen, carga una imagen de "no disponible"
-            imgElement.src = "assets/img/image-not-found.png"; // Crea esta imagen
-            imgElement.alt = `Imagen no disponible para serial ${serial}`;
-            console.warn(
-              "No se obtuvo ruta de imagen o éxito de la API para el serial:",
-              serial,
-              response.message
-            );
+            console.error("No se encontró el elemento img en el modal.");
+          }
+          if (imgElement) {
+            imgElement.src = rutaImagen;
+                        imgElement.className = claseImagen; // Aplicar la clase CSS
+
+          } else {
+            console.error("No se encontró el elemento img en el modal.");
           }
         } else {
-          console.error(
-            'Error: No se encontró el elemento <img> con ID "device-ticket-image" en el DOM.'
-          );
+          console.error("Error al obtener la imagen:", response.message);
         }
       } catch (error) {
-        console.error("Error parsing JSON response for image:", error);
-        const imgElement = document.getElementById("device-ticket-image");
-        if (imgElement) {
-          imgElement.src = "assets/img/error-loading-image.png"; // Crea esta imagen
-          imgElement.alt = "Error al cargar imagen";
-        }
+        console.error("Error parsing JSON:", error);
       }
     } else {
-      console.error(
-        "Error al obtener la imagen (HTTP):",
-        xhr.status,
-        xhr.statusText
-      );
-      const imgElement = document.getElementById("device-ticket-image");
-      if (imgElement) {
-        imgElement.src = "assets/img/error-loading-image.png";
-        imgElement.alt = "Error de servidor al cargar imagen";
-      }
+      console.error("Error:", xhr.status, xhr.statusText);
     }
   };
 
   xhr.onerror = function () {
-    console.error(
-      "Error de red al intentar obtener la imagen para el serial:",
-      serial
-    );
-    const imgElement = document.getElementById("device-ticket-image");
-    if (imgElement) {
-      imgElement.src = "assets/img/network-error-image.png"; // Crea esta imagen
-      imgElement.alt = "Error de red";
-    }
+    console.error("Error de red");
   };
 
-  const datos = `action=GetPhoto&serial=${encodeURIComponent(serial)}`;
+  const datos = `action=GetPhotoDashboard&serial=${encodeURIComponent(serial)}`;
   xhr.send(datos);
 }
 
@@ -999,4 +1155,3 @@ function getStatusDom(currentStatusNameToExclude = null) {
 }
 
 document.addEventListener("DOMContentLoaded", getStatusDom);
-

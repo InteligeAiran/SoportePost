@@ -357,9 +357,8 @@ function mi_navbar() {}
             <div class="modal fade" id="changeStatusDomiciliacionModal" tabindex="-1" aria-labelledby="changeStatusDomiciliacionModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="changeStatusDomiciliacionModalLabel" style="color: grey;">Cambiar Estatus de Domiciliación</h5>
-                            <button type="button" id="Close-icon" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="modal-header bg-gradient-primary">
+                            <h5 class="modal-title" id="changeStatusDomiciliacionModalLabel">Cambiar Estatus de Domiciliación</h5>
                         </div>
                         <div class="modal-body">
                             <form id="changeStatusDomiciliacionForm">

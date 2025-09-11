@@ -282,7 +282,6 @@ function getTicketDataCoordinator() {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
           const TicketData = response.ticket;
-            
           // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente)
           if (TicketData && TicketData.length > 0) {
             const firstTicket = TicketData[0];
@@ -330,10 +329,11 @@ function getTicketDataCoordinator() {
           const dataForDataTable = [];
 
           TicketData.forEach((data) => {
+            console.log(data)
             let actionButtonsHtml = ""; // Variable para construir los botones de acción
             // Lógica para los botones de acción
-            if (data.name_accion_ticket === "Asignado a la Coordinación") {
-              // Acción 4
+            if (data.id_accion_ticket === '4' ) {
+              // Acción = Asignado a la Coordinación
               actionButtonsHtml += `
                 <button id = "confirmreceived" class="btn btn-sm btn-info btn-received-coord mr-2"
                   data-bs-toggle="tooltip"
@@ -356,9 +356,9 @@ function getTicketDataCoordinator() {
                 </button>
               `;
             } else if (
-              data.name_accion_ticket === "Recibido por el Coordinador"
+              data.id_accion_ticket === '3'
             ) {
-              // Acción 3
+              // Acción = Recibido por la Coordinación
               actionButtonsHtml += `
                 <button id="myUniqueAssingmentButton"
                   class="btn btn-sm btn-assign-tech"
@@ -371,7 +371,10 @@ function getTicketDataCoordinator() {
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/></svg>
                 </button>
               `;
-            } else if (data.name_accion_ticket === "Asignado al Técnico" || data.name_accion_ticket === "Recibido por el Técnico") {
+            } else if (data.id_accion_ticket === '6' || data.id_accion_ticket === '10') {
+
+              // "Asignado al Técnico" &  "Recibido por el Técnico"
+
               actionButtonsHtml += `
                 <button id="reasingButton" class="btn btn-sm btn-primary btn-reassign-tech"
                   data-bs-toggle="tooltip"
@@ -491,7 +494,7 @@ function getTicketDataCoordinator() {
                   </svg>
                 </button>
 
-                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Coordinador">
+                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por la Coordinación">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
                     <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
                   </svg>
@@ -545,9 +548,9 @@ function getTicketDataCoordinator() {
               function findFirstButtonWithData() {
                 const searchTerms = [
                   { button: "btn-por-asignar", term: "Asignado a la Coordinación" , status: "Abierto", action: "Asignado a la Coordinación"},
-                  { button: "btn-recibidos", term: "Recibido por el Coordinador",  status: "Abierto", action: "Recibido por el Coordinador"},
+                  { button: "btn-recibidos", term: "Recibido por la Coordinación",  status: "Abierto", action: "Recibido por la Coordinación"},
                   // CORREGIDO: Usar expresión que funcione para ambos
-                  { button: "btn-asignados", term: "Asignado al Técnico|Recibido por el Técnico", status: "En proceso", action: ["En espera de confirmar recibido en Región", "Recibido por el Coordinador"]},
+                  { button: "btn-asignados", term: "Asignado al Técnico|Recibido por el Técnico", status: "En proceso", action: ["En espera de confirmar recibido en Región", "Recibido por la Coordinación"]},
                   { button: "btn-reasignado", term: "Reasignado al Técnico", status: "En proceso", action: "Reasignado al Técnico"}
                 ];
 
@@ -625,13 +628,13 @@ function getTicketDataCoordinator() {
               });
 
               $("#btn-recibidos").on("click", function () {
-                if (checkDataExists("Recibido por el Coordinador")) {
+                if (checkDataExists("Recibido por la Coordinación")) {
                   api.columns().search('').draw(false);
                   api.column(6).visible(false);
                   api.column(7).visible(true);
-                  api.column(5).search("Recibido por el Coordinador").draw();
+                  api.column(5).search("Recibido por la Coordinación").draw();
                   setActiveButton("btn-recibidos");
-                  showTicketStatusIndicator("Abierto", "Recibido por el Coordinador");
+                  showTicketStatusIndicator("Abierto", "Recibido por la Coordinación");
                 } else {
                   findFirstButtonWithData();
                 }
@@ -773,162 +776,164 @@ function getTicketDataCoordinator() {
 
           // Evento click para el nuevo botón "Visualizar Imagen"
         $("#tabla-ticket tbody")
-  .off("click", ".btn-view-image")
-  .on("click", ".btn-view-image", function (e) {
-    e.stopPropagation();
+          .off("click", ".btn-view-image")
+          .on("click", ".btn-view-image", function (e) {
+          e.stopPropagation();
 
-    // Obtener datos del botón
-    const ticketId = $(this).data("ticket-id");
-    const nroTicket = $(this).data("nro-ticket");
-    const envioValor = $(this).data("envio");
-    const exoValor = $(this).data("exoneracion");
-    const pagoValor = $(this).data("pago");
+          // Obtener datos del botón
+          const ticketId = $(this).data("ticket-id");
+          const nroTicket = $(this).data("nro-ticket");
+          const envioValor = $(this).data("envio");
+          const exoValor = $(this).data("exoneracion");
+          const pagoValor = $(this).data("pago");
 
-    // Datos de rechazo
-    const Enviorechazo = $(this).data("envio_rechazado");
-    const Exoneracionrechazo = $(this).data("exo_rechazado");
-    const PagoRechazo = $(this).data("pago_rechazado");
-    const EnvdestinoRechazo = $(this).data("envdestino_rechazado");
-    
-    // NUEVA VALIDACIÓN: Usar la columna de la función SQL
-    const ticketTieneDocumentosRechazados = $(this).data("ticket-rechazados");
-    const ticketRechazado = $(this).data("rechazado");
+          // Datos de rechazo
+          const Enviorechazo = $(this).data("envio_rechazado");
+          const Exoneracionrechazo = $(this).data("exo_rechazado");
+          const PagoRechazo = $(this).data("pago_rechazado");
+          const EnvdestinoRechazo = $(this).data("envdestino_rechazado");
+          
+          // NUEVA VALIDACIÓN: Usar la columna de la función SQL
+          const ticketTieneDocumentosRechazados = $(this).data("ticket-rechazados");
+          const ticketRechazado = $(this).data("rechazado");
 
-    const BotonRechazo = document.getElementById('RechazoDocumento');
-    
-    // --- INICIO CÓDIGO CORREGIDO PARA MOSTRAR/OCULTAR EL BOTÓN ---
-    // Al abrir el modal, ocultamos el botón por defecto para luego mostrarlo si es necesario
-    BotonRechazo.style.display = 'none';
+          const BotonRechazo = document.getElementById('RechazoDocumento');
+          
+          // --- INICIO CÓDIGO CORREGIDO PARA MOSTRAR/OCULTAR EL BOTÓN ---
+          // Al abrir el modal, ocultamos el botón por defecto para luego mostrarlo si es necesario
+          BotonRechazo.style.display = 'none';
 
-    // Guardar en variables globales
-    currentTicketIdForImage = ticketId;
-    currentTicketNroForImage = nroTicket;
+          // Guardar en variables globales
+          currentTicketIdForImage = ticketId;
+          currentTicketNroForImage = nroTicket;
 
-    const VizualizarImage = document.getElementById('visualizarImagenModal');
-    const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
+          const VizualizarImage = document.getElementById('visualizarImagenModal');
+          const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
 
-    const EnvioInputModal = document.getElementById('imagenEnvio');
-    const EnvioLabelModal = document.getElementById('labelEnvio');
-    const ExoInputModal = document.getElementById('imagenExoneracion');
-    const ExoLabelModal = document.getElementById('labelExo');
-    const PagoInputModal = document.getElementById('imagenPago');
-    const PagoLabelModal = document.getElementById('labelPago');
+          document.getElementById('BotonCerrarSelectDocument').onclick = () => visualizarImagenModal.hide();
 
-    // Muestra u oculta los radio buttons basándose en los valores del botón
-    if (envioValor === 'Sí') {
-        EnvioLabelModal.style.display = 'block';
-        EnvioInputModal.style.display = 'block';
-    } else {
-        EnvioLabelModal.style.display = 'none';
-        EnvioInputModal.style.display = 'none';
-    }
+          const EnvioInputModal = document.getElementById('imagenEnvio');
+          const EnvioLabelModal = document.getElementById('labelEnvio');
+          const ExoInputModal = document.getElementById('imagenExoneracion');
+          const ExoLabelModal = document.getElementById('labelExo');
+          const PagoInputModal = document.getElementById('imagenPago');
+          const PagoLabelModal = document.getElementById('labelPago');
 
-    if (exoValor === 'Sí') {
-        ExoInputModal.style.display = 'block';
-        ExoLabelModal.style.display = 'block';
-    } else {
-        ExoInputModal.style.display = 'none';
-        ExoLabelModal.style.display = 'none';
-    }
+          // Muestra u oculta los radio buttons basándose en los valores del botón
+          if (envioValor === 'Sí') {
+              EnvioLabelModal.style.display = 'block';
+              EnvioInputModal.style.display = 'block';
+          } else {
+              EnvioLabelModal.style.display = 'none';
+              EnvioInputModal.style.display = 'none';
+          }
 
-    if (pagoValor === 'Sí') {
-        PagoInputModal.style.display = 'block';
-        PagoLabelModal.style.display = 'block';
-    } else {
-        PagoInputModal.style.display = 'none';
-        PagoLabelModal.style.display = 'none';
-    }
+          if (exoValor === 'Sí') {
+              ExoInputModal.style.display = 'block';
+              ExoLabelModal.style.display = 'block';
+          } else {
+              ExoInputModal.style.display = 'none';
+              ExoLabelModal.style.display = 'none';
+          }
 
-    // REMOVER event listeners anteriores para evitar duplicados
-    const btnConfirmar = document.getElementById('btnConfirmarVisualizacion');
+          if (pagoValor === 'Sí') {
+              PagoInputModal.style.display = 'block';
+              PagoLabelModal.style.display = 'block';
+          } else {
+              PagoInputModal.style.display = 'none';
+              PagoLabelModal.style.display = 'none';
+          }
 
-    // Clonar elementos para remover event listeners
-    const btnConfirmarClone = btnConfirmar.cloneNode(true);
+          // REMOVER event listeners anteriores para evitar duplicados
+          const btnConfirmar = document.getElementById('btnConfirmarVisualizacion');
 
-    btnConfirmar.parentNode.replaceChild(btnConfirmarClone, btnConfirmar);
+          // Clonar elementos para remover event listeners
+          const btnConfirmarClone = btnConfirmar.cloneNode(true);
 
-    // Botón para cerrar el modal de visualización
+          btnConfirmar.parentNode.replaceChild(btnConfirmarClone, btnConfirmar);
 
-    // Evento para el botón confirmar visualización
-    btnConfirmarClone.addEventListener('click', function () {
-        const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
+          // Botón para cerrar el modal de visualización
 
-        if (!selectedOption) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Selección Requerida',
-                text: `Por favor, elija un tipo de documento para visualizar.`,
-                confirmButtonText: 'Ok',
-                color: 'black',
-                confirmButtonColor: '#003594'
-            });
-            return;
-        }
-        
-        // NUEVA VALIDACIÓN SIMPLIFICADA: Verificar si el ticket tiene documentos rechazados
-        if (ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
-            // Si el ticket ya tiene documentos rechazados, NO mostrar botón de rechazo
-            BotonRechazo.style.display = 'none';
-        } else {
-            // Si el ticket NO tiene documentos rechazados, SÍ mostrar botón de rechazo
-            BotonRechazo.style.display = 'block';
-        }
-        
-        getMotivos(selectedOption);
+          // Evento para el botón confirmar visualización
+          btnConfirmarClone.addEventListener('click', function () {
+              const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
 
-        // Llamar a la API para obtener el documento
-        fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `action=GetDocumentByType&ticketId=${currentTicketNroForImage}&documentType=${selectedOption}`
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const document = data.document;
-                    const filePath = document.file_path;
-                    const mimeType = document.mime_type;
-                    const fileName = document.original_filename;
+              if (!selectedOption) {
+                  Swal.fire({
+                      icon: 'warning',
+                      title: 'Selección Requerida',
+                      text: `Por favor, elija un tipo de documento para visualizar.`,
+                      confirmButtonText: 'Ok',
+                      color: 'black',
+                      confirmButtonColor: '#003594'
+                  });
+                  return;
+              }
+              
+              // NUEVA VALIDACIÓN SIMPLIFICADA: Verificar si el ticket tiene documentos rechazados
+              if (ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
+                  // Si el ticket ya tiene documentos rechazados, NO mostrar botón de rechazo
+                  BotonRechazo.style.display = 'none';
+              } else {
+                  // Si el ticket NO tiene documentos rechazados, SÍ mostrar botón de rechazo
+                  BotonRechazo.style.display = 'block';
+              }
+              
+              getMotivos(selectedOption);
 
-                    // Determinar si es imagen o PDF
-                    if (mimeType.startsWith('image/')) {
-                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, filePath, null, fileName);
-                    } else if (mimeType === 'application/pdf') {
-                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, filePath, fileName);
-                    } else {
-                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, null, "Tipo de documento no soportado");
-                    }
+              // Llamar a la API para obtener el documento
+              fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded',
+                  },
+                  body: `action=GetDocumentByType&ticketId=${currentTicketNroForImage}&documentType=${selectedOption}`
+              })
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          const document = data.document;
+                          const filePath = document.file_path;
+                          const mimeType = document.mime_type;
+                          const fileName = document.original_filename;
 
-                    // Ocultar el modal de selección
-                    visualizarImagenModal.hide();
-                } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Error',
-                        text: `No se pudo obtener el documento: ${data.message || 'Error desconocido'}`,
-                        confirmButtonText: 'Ok',
-                        color: 'black',
-                        confirmButtonColor: '#003594'
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Error al obtener el documento',
-                    confirmButtonText: 'Ok',
-                    color: 'black',
-                    confirmButtonColor: '#003594'
-                });
-            });
-    });
-    // MOSTRAR el modal
-    visualizarImagenModal.show();
-  });
+                          // Determinar si es imagen o PDF
+                          if (mimeType.startsWith('image/')) {
+                              showViewModal(currentTicketIdForImage, currentTicketNroForImage, filePath, null, fileName);
+                          } else if (mimeType === 'application/pdf') {
+                              showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, filePath, fileName);
+                          } else {
+                              showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, null, "Tipo de documento no soportado");
+                          }
+
+                          // Ocultar el modal de selección
+                          visualizarImagenModal.hide();
+                      } else {
+                          Swal.fire({
+                              icon: 'warning',
+                              title: 'Error',
+                              text: `No se pudo obtener el documento: ${data.message || 'Error desconocido'}`,
+                              confirmButtonText: 'Ok',
+                              color: 'black',
+                              confirmButtonColor: '#003594'
+                          });
+                      }
+                  })
+                  .catch(error => {
+                      console.error('Error:', error);
+                      Swal.fire({
+                          icon: 'error',
+                          title: 'Error',
+                          text: 'Error al obtener el documento',
+                          confirmButtonText: 'Ok',
+                          color: 'black',
+                          confirmButtonColor: '#003594'
+                      });
+                  });
+          });
+          // MOSTRAR el modal
+          visualizarImagenModal.show();
+        });
         } else {
           hideTicketStatusIndicator();
           tbody.innerHTML = '<tr><td>Error al cargar</td></tr>';
@@ -1116,7 +1121,7 @@ function formatTicketDetailsPanel(d) {
             <div class="row mb-3 align-items-center">
                 <div class="col-md-3 text-center">
                     <div id="device-image-container" class="p-2">
-                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" class="img-fluid rounded" style="max-width: 120px; height: auto; object-fit: contain;">
+                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}">
                     </div>
                 </div>
                 <div class="col-md-9">
@@ -1197,94 +1202,50 @@ function formatTicketDetailsPanel(d) {
     `;
 }
 
-// =============================================================================
-// Función para descargar y mostrar la imagen del dispositivo
-// Ahora adaptada para actualizar la imagen en el panel de detalles del ticket.
-// =============================================================================
+
 function downloadImageModal(serial) {
-  // Considera renombrar a loadDeviceImage(serial) para mayor claridad
   const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhoto`);
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhotoDashboard`);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log("Respuesta de GetPhoto:", response); // Descomenta para depuración
-
-        // ***** CAMBIO CLAVE AQUÍ *****
-        // Selecciona el elemento de imagen en el panel de detalles, NO en un modal
-        const imgElement = document.getElementById("device-ticket-image");
-
-        if (imgElement) {
-          if (response.success && response.rutaImagen) {
-            const srcImagen = response.rutaImagen;
-            const claseImagen = response.claseImagen || ""; // Obtener la clase CSS, si no hay, usar cadena vacía
-
+        //console.log(response);
+        if (response.success) {
+          const srcImagen = response.rutaImagen;
+          const claseImagen = response.claseImagen; // Obtener la clase CSS
+          const imgElement = document.getElementById("device-ticket-image");
+            if (imgElement) {
             imgElement.src = srcImagen;
-            imgElement.alt = `Imagen del dispositivo ${serial}`; // Actualiza el alt text
-
-            // Opcional: Si 'claseImagen' trae clases CSS específicas que quieres añadir
-            // y no colisionan con img-fluid o rounded, puedes hacer:
-            // if (claseImagen) {
-            //     imgElement.classList.add(claseImagen);
-            // }
-            // Si 'claseImagen' es una clase para reemplazar el estilo (lo cual no es común aquí),
-            // entonces tendrías que asegurarte de que la clase de tu backend incluya
-            // las propiedades de img-fluid y rounded, o volver a añadirlas.
-            // Para este caso, con Bootstrap, probablemente no necesites asignar `className` aquí
-            // ya que `max-height` y `width: auto` en el style ya controlan el tamaño.
+            imgElement.className = claseImagen; // Aplicar la clase CSS
           } else {
-            // Si no hay éxito o rutaImagen, carga una imagen de "no disponible"
-            imgElement.src = "assets/img/image-not-found.png"; // Crea esta imagen
-            imgElement.alt = `Imagen no disponible para serial ${serial}`;
-            console.warn(
-              "No se obtuvo ruta de imagen o éxito de la API para el serial:",
-              serial,
-              response.message
-            );
+            console.error("No se encontró el elemento img en el modal.");
+          }
+          if (imgElement) {
+            imgElement.src = rutaImagen;
+                        imgElement.className = claseImagen; // Aplicar la clase CSS
+
+          } else {
+            console.error("No se encontró el elemento img en el modal.");
           }
         } else {
-          console.error(
-            'Error: No se encontró el elemento <img> con ID "device-ticket-image" en el DOM.'
-          );
+          console.error("Error al obtener la imagen:", response.message);
         }
       } catch (error) {
-        console.error("Error parsing JSON response for image:", error);
-        const imgElement = document.getElementById("device-ticket-image");
-        if (imgElement) {
-          imgElement.src = "assets/img/error-loading-image.png"; // Crea esta imagen
-          imgElement.alt = "Error al cargar imagen";
-        }
+        console.error("Error parsing JSON:", error);
       }
     } else {
-      console.error(
-        "Error al obtener la imagen (HTTP):",
-        xhr.status,
-        xhr.statusText
-      );
-      const imgElement = document.getElementById("device-ticket-image");
-      if (imgElement) {
-        imgElement.src = "assets/img/error-loading-image.png";
-        imgElement.alt = "Error de servidor al cargar imagen";
-      }
+      console.error("Error:", xhr.status, xhr.statusText);
     }
   };
 
   xhr.onerror = function () {
-    console.error(
-      "Error de red al intentar obtener la imagen para el serial:",
-      serial
-    );
-    const imgElement = document.getElementById("device-ticket-image");
-    if (imgElement) {
-      imgElement.src = "assets/img/network-error-image.png"; // Crea esta imagen
-      imgElement.alt = "Error de red";
-    }
+    console.error("Error de red");
   };
 
-  const datos = `action=GetPhoto&serial=${encodeURIComponent(serial)}`;
+  const datos = `action=GetPhotoDashboard&serial=${encodeURIComponent(serial)}`;
   xhr.send(datos);
 }
 
@@ -1646,7 +1607,7 @@ function markTicketAsReceived(ticketId, nroTicket, serialPos) {
                 html: `El ticket Nr: <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido marcado como recibido.`,
                 icon: "success",
                 color: "black",
-                confirmButtonColor: "#2703f4ff",
+                confirmButtonColor: "#003594",
               });
               getTicketDataCoordinator();
               if (modalInstanceCoordinator) {
@@ -2423,18 +2384,16 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
   const viewDocumentModal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
   const VizualizarImage = document.getElementById('visualizarImagenModal');
   const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
-
   viewDocumentModal.show();
   
-
-     BotonCerrarModal.addEventListener('click', function () {
-                // Ocultar el modal de visualización
-                viewDocumentModal.hide();
+  BotonCerrarModal.addEventListener('click', function () {
+    // Ocultar el modal de visualización
+    viewDocumentModal.hide();
                 
-                // Mostrar nuevamente el modal de selección
-                setTimeout(() => {
-                    visualizarImagenModal.show();
-                }, 300); //
+    // Mostrar nuevamente el modal de selección
+    setTimeout(() => {
+      visualizarImagenModal.show();
+    }, 300); //
   });
 
   BotonCerrarModalSelect.addEventListener('click', function () {
@@ -2442,8 +2401,6 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     visualizarImagenModal.hide();
     
   });
-
-  
 };
 
 const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
@@ -2476,7 +2433,6 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
 
     const xhr = new XMLHttpRequest();
     const datos = `action=rechazarDocumento&ticketId=${encodeURIComponent(ticketId)}&motivoId=${encodeURIComponent(motivoId)}&nroTicket=${encodeURIComponent(nroticket)}&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`; // Ajusta los datos a tu script de backend
-    console.log('Datos enviados:', datos);
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/rechazarDocumento`); // Ajusta la URL a tu script de backend
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -2485,6 +2441,40 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
+                     (function sendRejectionEmails() {
+                    try {
+                      const xhrEmail = new XMLHttpRequest();
+                      xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_reject_document`);
+                      xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+                      xhrEmail.onload = function () {
+                        if (xhrEmail.status === 200) {
+                          try {
+                            const responseEmail = JSON.parse(xhrEmail.responseText);
+                            if (responseEmail.success) {
+                              console.log('Correo rechazo enviado:', responseEmail.message || 'OK');
+                            } else {
+                              console.error('Error correo rechazo:', responseEmail.message);
+                            }
+                          } catch (e) {
+                            console.error('Error parseando respuesta correo rechazo:', e, xhrEmail.responseText);
+                          }
+                        } else {
+                          console.error('Error HTTP correo rechazo:', xhrEmail.status, xhrEmail.responseText);
+                        }
+                      };
+
+                      xhrEmail.onerror = function () {
+                        console.error('Error de red al enviar correo de rechazo');
+                      };
+                      // Parámetros necesarios para PHP
+                      const params =  `action=send_reject_document&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`
+
+                      xhrEmail.send(params);
+                    } catch (err) {
+                      console.error('Fallo al disparar correo rechazo:', err);
+                    }
+                  })();
                     Swal.fire({
                         icon: 'success',
                         title: '¡Rechazado!',
@@ -2524,6 +2514,7 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
             });
         }
     };
+
 
     xhr.onerror = function () {
         console.error("Error de red");

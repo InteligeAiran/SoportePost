@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var file = this.files[0];
       if (
         file &&
-        !["application/pdf", "image/jpeg", "image/jpg"].includes(file.type)
+        !["application/pdf", "image/jpeg", "image/jpg", "image/png"].includes(file.type)
       ) {
         Swal.fire({
           icon: "warning",
@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var file = this.files[0];
       if (
         file &&
-        !["application/pdf", "image/jpeg", "image/jpg"].includes(file.type)
+        !["application/pdf", "image/jpeg", "image/jpg", "image/png"].includes(file.type)
       ) {
         Swal.fire({
           icon: "warning",
@@ -1625,7 +1625,7 @@ function SendDataFailure2(idStatusPayment) {
     Swal.fire({
       icon: "warning",
       title: "Campos requeridos",
-      text: "Por favor, complete todos los campos obligatorios (Falla y Coordinador).",
+      text: "Por favor, complete todos los campos obligatorios (Falla).",
       color: "black",
       confirmButtonText: "Ok",
       confirmButtonColor: "#003594",
@@ -1787,7 +1787,6 @@ function SendDataFailure2(idStatusPayment) {
 
     formData.append("action", "SaveDataFalla2");
 
-
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveDataFalla2`);
     xhr.onload = function () {
@@ -1835,9 +1834,7 @@ function SendDataFailure2(idStatusPayment) {
                 );
               }
             };
-            const params = `id_coordinador=${encodeURIComponent(
-              coordinador
-            )}&id_user=${encodeURIComponent(id_user)}`;
+            const params = `id_user=${encodeURIComponent(id_user)}`;
             xhrEmail.send(params);
 
             // Mostrar el primer modal (Guardado exitoso)
@@ -2790,104 +2787,6 @@ function SendDataFailure1() {
   }
 }
 
-// --- tiene problema borrando la coordinacion
-  /*function clearFormFields() {
-  // --- Limpiar checkboxes ---
-  const checkEnvio = document.getElementById("checkEnvio");
-  const checkExoneracion = document.getElementById("checkExoneracion");
-  const checkAnticipo = document.getElementById("checkAnticipo");
-
-  if (checkEnvio) checkEnvio.checked = false;
-  if (checkExoneracion) checkExoneracion.checked = false;
-  if (checkAnticipo) checkAnticipo.checked = false;
-
-  // --- Limpiar los elementos DIV que muestran el nombre del archivo ---
-  clearFileSpan(fileChosenSpanEnvio);
-  clearFileSpan(fileChosenSpanExo);
-  clearFileSpan(fileChosenSpanAntici);
-
-  // --- Limpiar campos de Modal Nivel 2 (miModal) ---
-  const fallaSelect2 = document.getElementById("FallaSelect2");
-  if (fallaSelect2) {
-    fallaSelect2.value = "";
-  }
-
-  const inputRif = document.getElementById("InputRif");
-  if (inputRif) inputRif.value = "";
-
-  const serialSelect = document.getElementById("serialSelect");
-  if (serialSelect) serialSelect.value = "";
-
-  const asignarCoordinador = document.getElementById("AsiganrCoordinador");
-  if (asignarCoordinador) {
-    asignarCoordinador.value = "";
-  }
-
-  const fallaSelectt2 = document.getElementById("FallaSelectt2");
-  if (fallaSelectt2) fallaSelectt2.value = "2";
-
-  const rifMensaje1 = document.getElementById("rifMensaje1");
-  if (rifMensaje1) rifMensaje1.innerHTML = "";
-
-  const rifMensaje = document.getElementById("rifMensaje");
-  if (rifMensaje) rifMensaje.innerHTML = "";
-
-  const inputRazon = document.getElementById("InputRazon");
-  if (inputRazon) inputRazon.value = "";
-
-  // --- Limpiar campos de Modal Nivel 1 (miModal1) ---
-  const fallaSelect1 = document.getElementById("FallaSelect1");
-  if (fallaSelect1) fallaSelect1.value = "";
-
-  const inputRif1 = document.getElementById("InputRif1");
-  if (inputRif1) inputRif1.value = "";
-
-  const serialSelect1 = document.getElementById("serialSelect1");
-  if (serialSelect1) serialSelect1.value = "";
-
-  const fallaSelectt1 = document.getElementById("FallaSelectt1");
-  if (fallaSelectt1) fallaSelectt1.value = "1";
-
-  // --- Restablecer radio buttons y checkboxes ---
-  const uploadNowRadio = document.getElementById("uploadNow");
-  const uploadLaterRadio = document.getElementById("uploadLater");
-
-  if (uploadLaterRadio) uploadLaterRadio.checked = true;
-  if (uploadNowRadio) uploadNowRadio.checked = false;
-
-  // --- NUEVO: RESTAURAR COMPLETAMENTE LA VISIBILIDAD DE TODOS LOS ELEMENTOS ---
-  restaurarVisibilidadCompleta();
-
-  // --- Actualizar visibilidad de documentos ---
-  if (typeof updateDocumentUploadVisibility === "function") {
-    updateFileUploadButtonVisibility();
-  } else {
-    // Fallback
-    const documentUploadOptions = document.getElementById("documentUploadOptions");
-    if (documentUploadOptions) documentUploadOptions.style.display = "none";
-    
-    const botonCargaPDFEnv = document.getElementById("botonCargaPDFEnv");
-    const botonCargaExoneracion = document.getElementById("botonCargaExoneracion");
-    const botonCargaAnticipo = document.getElementById("botonCargaAnticipo");
-    
-    if (botonCargaPDFEnv) botonCargaPDFEnv.style.display = "none";
-    if (botonCargaExoneracion) botonCargaExoneracion.style.display = "none";
-    if (botonCargaAnticipo) botonCargaAnticipo.style.display = "none";
-  }
-
-  // --- Limpiar status divs ---
-  const envioStatusDiv = document.getElementById("envioStatus");
-  const exoneracionStatusDiv = document.getElementById("exoneracionStatus");
-  const anticipoStatusDiv = document.getElementById("anticipoStatus");
-  
-  if (envioStatusDiv) envioStatusDiv.textContent = "";
-  if (exoneracionStatusDiv) exoneracionStatusDiv.textContent = "";
-  if (anticipoStatusDiv) anticipoStatusDiv.textContent = "";
-
-  console.log("Campos limpiados correctamente"); // Para debugging
-}*/
-//---
-
 function clearFormFields() {
   // --- Limpiar checkboxes ---
   const checkEnvio = document.getElementById("checkEnvio");
@@ -3258,7 +3157,7 @@ function SendRif() {
             enlaceSerial.style.textDecoration = "underline";
             enlaceSerial.style.cursor = "pointer";
             serial_posCell.appendChild(enlaceSerial);
-            desc_posCell.textContent = item.desc_po
+            desc_posCell.textContent = item.desc_pos;
 
             // Modal de detalles del serial (tu código existente)
             const modalSerial = document.getElementById("ModalSerial");
@@ -3694,6 +3593,7 @@ function SendSerial() {
                 return `<a href="#" class="serial-link">${data}</a>`;
               },
             },
+            {data: "desc_pos", title: "Estatus del Equipo"},
             { data: "afiliacion", title: "N° Afiliación" },
             { 
               data: "fechainstalacion", 
@@ -3715,6 +3615,7 @@ function SendSerial() {
 
           $(newTable).DataTable({
             responsive: false,
+            fixedHeader: true,
             data: data,
             columns: columnsConfig,
             pagingType: "simple_numbers",
@@ -4137,6 +4038,7 @@ function SendRazon() {
             scrollCollapse: true, // Permite que la tabla se ajuste si hay pocos datos
             fixedHeader: true, // Fija el encabezado durante el scroll
             autoWidth: false,
+            fixedHeader: true,
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",

@@ -570,7 +570,17 @@ function loadIndividualProceess() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>No hay data.</p>";
+         `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en proceso.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching taller details:", error);
     });
 }
@@ -637,7 +647,7 @@ function formatProcessTicketsDetails(details){
     html += `
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                    Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
@@ -679,7 +689,7 @@ function formatProcessTicketsDetails(details){
                           ticket.date_create_ticket
                         }</dd> <!-- Usar la variable formateada -->
                     </dl>
-                      <button class="btn btn-info btn-sm mt-3 view-timeline-btn" data-id-ticket="${ticket.id_ticket}">Ver Flujo del Ticket</button>
+                      <button class="btn btn-info btn-sm mt-3 view-timeline-btn" data-id-ticket="${ticket.id_ticket}" disabled>Ver Flujo del Ticket</button>
                 </div>
             </div>
         `;
@@ -769,7 +779,17 @@ function loadIndividualIrreparable(){
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Sin datos disponibles</p>";
+        `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en Taller con estatus irreparable.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching taller details:", error);
     }); 
 }
@@ -1001,7 +1021,17 @@ function loadIndividualPendienteRepuesto(){
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Sin datos disponibles</p>";
+        `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en Taller con estatus de pendiente por respuesto.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching taller details:", error);
     });
 }
@@ -1104,7 +1134,17 @@ function loadIndividualReparado(){
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Sin datos disponibles</p>";
+        `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en Taller con estatus reparado.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching taller details:", error);
     });
 }
@@ -1269,6 +1309,36 @@ function getTicketPendienteRepuesto() {
   xhr.send(datos);
 }
 
+function getTicketEntregadoCliente() {
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketEntregadoCliente`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          document.getElementById("EntregadosCliente").textContent =
+            response.count; // Selecciona por ID
+        } else {
+          console.error("Error:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  const datos = "action=getTicketEntregadoCliente";
+  xhr.send(datos);
+}
+
 function getTicketIrreparables() {
   const xhr = new XMLHttpRequest();
   xhr.open(
@@ -1326,7 +1396,17 @@ function loadIndividualProceessReparacion() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Sin datos disponibles</p>";
+        `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en Taller con estatus en proceso de reparación.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching taller details:", error);
     });
 }
@@ -1427,7 +1507,17 @@ function loadTallerTicketDetails() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Sin datos disponibles</p>";
+        `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets en Taller.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching taller details:", error);
     });
   // TODO: Agregar más lógica para mostrar los detalles de tickets de taller
@@ -1526,7 +1616,17 @@ function loadResolveTicketDetails() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Sin datos disponibles.</p>";
+        `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets cerrados.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching regional details:", error);
     });
 }
@@ -2282,7 +2382,17 @@ function loadOpenTicketDetails() {
         })
         .catch((error) => {
             contentDiv.innerHTML =
-                "<p>Error de red al cargar los detalles de tickets. Por favor, intente de nuevo más tarde.</p>";
+                `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets Abiertos.</p>
+          </div>
+        </td>
+      </tr>`
             console.error("Error fetching open ticket details:", error);
             allOpenTickets = []; // Limpiar por si hubo error
             searchInput.removeEventListener('input', handleTicketSearch);
@@ -2480,10 +2590,11 @@ function formatOpenDetails(details) {
         let markReceivedButtonHtml = ''; // Variable para el botón "Marcar como Recibido"
 
         const statusPaymentId = parseInt(ticket.id_status_payment, 10);
+        const accionTicket = ticket.name_accion_ticket;
 
         // Los IDs de status_payment 10, 11, 1 y 3 se asocian con botones de "ver documento".
         // El `data-ticket-id` se usa para pasar el ID del ticket a `handleViewDocumentClick`.
-      if (showDocumentButtons) {
+      /*if (showDocumentButtons) {
           if (statusPaymentId === 10) { 
               documentButtonsHtml = `
                   <button class="btn btn-info btn-sm view-document-btn"
@@ -2506,23 +2617,30 @@ function formatOpenDetails(details) {
                   </button>
               `;
           }
-        }
+        }*/
 
         ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
-          if (currentUserRole === 1 || currentUserRole === 4) { 
+            // Lógica corregida para el botón "Marcar como Recibido"
+        if (accionTicket === 'Recibido por la Coordinación') {
             markReceivedButtonHtml = `
-              <button type="button" class="btn btn-success ms-2 mark-received-btn" id="mark-received-btn-${ticket.id_ticket}">
+              <button type="button" class="btn btn-success ms-2 mark-received-btn" disabled>
+                Ya está recibido
+              </button>
+            `;
+        } else if (currentUserRole === 1 || currentUserRole === 4) {
+            markReceivedButtonHtml = `
+              <button type="button" class="btn btn-success ms-2 mark-received-btn" data-ticket-id="${ticket.id_ticket}" data-nro-ticket = "${ticket.nro_ticket}" data-serial-pos = ${ticket.serial_pos_cliente}>
                 Marcar como Recibido
               </button>
             `;
-          }
+        }
         ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
 
         
         htmlContent += `
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.id_ticket || 'N/A'}</strong>
+                    Ticket #<strong>${ticket.nro_ticket || 'N/A'}</strong>
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
@@ -2562,70 +2680,149 @@ function formatOpenDetails(details) {
   return htmlContent;
 }
 
-
-// Nueva función para adjuntar listeners a los botones de ver documento
 // Es CRUCIAL que esta función se llame CADA VEZ que el contenido de los tickets se recarga en el DOM.
 function attachViewDocumentListeners() {
-    // Selecciona todos los botones con la clase 'view-document-btn' dentro del contenedor de tickets abiertos
-    const viewDocumentButtons = document.querySelectorAll("#OpenTicketModalContent .view-document-btn");
+  // Selecciona todos los botones con la clase 'view-document-btn' dentro del contenedor de tickets abiertos
+  const viewDocumentButtons = document.querySelectorAll("#OpenTicketModalContent .view-document-btn");
 
-    viewDocumentButtons.forEach(button => {
-        // Es una buena práctica remover el listener antes de añadirlo para evitar duplicados,
-        // especialmente si esta función se llama varias veces (ej. al recargar la lista de tickets).
-        button.removeEventListener('click', handleViewDocumentClick); // Remover si ya existe
-        button.addEventListener('click', handleViewDocumentClick); // Adjuntar el nuevo
-    });
+  viewDocumentButtons.forEach(button => {
+    // Es una buena práctica remover el listener antes de añadirlo para evitar duplicados,
+    // especialmente si esta función se llama varias veces (ej. al recargar la lista de tickets).
+    button.removeEventListener('click', handleViewDocumentClick); // Remover si ya existe
+    button.addEventListener('click', handleViewDocumentClick); // Adjuntar el nuevo
+  });
 }
-
 
 // NUEVA función para adjuntar los event listeners (reconfirmada)
 function attachMarkReceivedListeners() {
-    // Eliminar listeners previos para evitar duplicados si se llama varias veces
-    document.querySelectorAll('.mark-received-btn').forEach(button => {
-        button.removeEventListener('click', handleMarkTicketReceivedClick);
-    });
-    // Adjuntar nuevos listeners
-    document.querySelectorAll('.mark-received-btn').forEach(button => {
-        button.addEventListener('click', handleMarkTicketReceivedClick);
-    });
+  document.querySelectorAll('.mark-received-btn').forEach(button => {
+    button.removeEventListener('click', handleMarkTicketReceivedClick);
+  });
+
+  document.querySelectorAll('.mark-received-btn').forEach(button => {
+    button.addEventListener('click', handleMarkTicketReceivedClick);
+  });
 }
 
 // Wrapper para pasar el ticketId directamente
 function handleMarkTicketReceivedClick() {
-    const ticketId = this.dataset.ticketId;
-    handleMarkTicketReceived(ticketId);
+  const ticketId = $(this).data("ticket-id");
+  const nroTicket = $(this).data("nro-ticket");
+  const serialPos = $(this).data("serial-pos");
+  markTicketAsReceived(ticketId, nroTicket, serialPos);
 }
 
 // Función para manejar la lógica de marcar como recibido (como antes)
-async function handleMarkTicketReceived(ticketId) {
-    if (!confirm(`¿Estás seguro de que quieres marcar el Ticket #${ticketId} como recibido?`)) {
-        return; // El usuario canceló
-    }
+function markTicketAsReceived(ticketId, nroTicket, serialPos) {
+  // Asegúrate de que nroTicket esté como parámetro
+  const id_user = document.getElementById("userIdForPassword").value;
+  // SVG que quieres usar
+  const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+  Swal.fire({
+    // El nuevo texto del header va aquí
+    title: `Confirmación de recibido`, // Texto fijo para el encabezado
+    // El contenido del cuerpo (SVG y texto explicativo) va en 'html'
+    html: `${customWarningSvg}<p class="mt-3" id = "textConfirm">¿Deseas Marcar el ticket Nro: <span id = "NroTicketConfirReceiCoord">${nroTicket}</span> Asociado el Pos: <span id = "NroTicketConfirReceiCoord">${serialPos}</span> como recibido? 
+    </p><p id = "textConfirmp">Esta acción registrará la fecha de recepción y habilitará la asignación de técnico en el módulo Gestión Coordinador.</p>`,
+    showCancelButton: true,
+    confirmButtonColor: "#003594",
+    cancelButtonColor: "#6c757d",
+    confirmButtonText: "Recibir Pos",
+    cancelButtonText: "Cancelar",
+    color: "black",
+    customClass: {
+      popup: "swal2-custom-header-popup", // Clase principal para el popup
+      title: "swal2-custom-title", // Clase para el título (para estilizarlo en CSS)
+      content: "custom-content", // Puedes mantener esta si la usas para el contenido del cuerpo
+      actions: "custom-actions",
+      confirmButton: "swal2-confirm-receive-ticket-class",
+      cancelButton: "swal2-cancel-receive-ticket-class",
+    },
+    didOpen: (popup) => {
+      const confirmBtn = popup.querySelector(
+        ".swal2-confirm-receive-ticket-class"
+      );
+      const cancelBtn = popup.querySelector(
+        ".swal2-cancel-receive-ticket-class"
+      );
 
-    try {
-        const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/tickets/markReceived`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ ticket_id: ticketId })
-        });
+      if (confirmBtn) {
+        confirmBtn.id = "swal2-confirm-receive-ticket-id";
+      }
+      if (cancelBtn) {
+        cancelBtn.id = "swal2-cancel-receive-ticket-id";
+      }
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const xhr = new XMLHttpRequest();
+      xhr.open(
+        "POST",
+        `${ENDPOINT_BASE}${APP_PATH}api/historical/MarkTicketReceived`
+      ); // Necesitas una nueva ruta de API para esto
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            alert(`Ticket #${ticketId} marcado como recibido exitosamente.`);
-            $('#OpenTicketModal').modal('hide'); // Cierra el modal
-            loadOpenTicketDetails(); // Recarga los tickets abiertos para reflejar el cambio
-            // También podrías necesitar recargar el conteo de tickets si tienes un dashboard
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            if (response.success) {
+              Swal.fire({
+                title: "¡Recibido!",
+                html: `El ticket Nr: <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido marcado como recibido.`,
+                icon: "success",
+                color: "black", 
+                confirmButtonColor: "#003594",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                keydownListenerCapture: true
+              }).then(() => {
+                window.location.reload();
+              });
+            } else {
+              Swal.fire(
+                "Error",
+                response.message ||
+                "Hubo un error al marcar el ticket como recibido.",
+                "error"
+              );
+            }
+          } catch (error) {
+            Swal.fire(
+              "Error",
+              "Error al procesar la respuesta del servidor.",
+              "error"
+            );
+            console.error(
+              "Error parsing JSON for markTicketAsReceived:",
+              error
+            );
+          }
         } else {
-            alert(`Error al marcar el Ticket #${ticketId} como recibido: ${data.message || 'Error desconocido'}`);
-            console.error('Error marking ticket received:', data.message);
+          Swal.fire(
+            "Error",
+            `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
+            "error"
+          );
+          console.error(
+            "Error en markTicketAsReceived:",
+            xhr.status,
+            xhr.statusText
+          );
         }
-    } catch (error) {
-        alert('Error de red al intentar marcar el ticket como recibido.');
-        console.error('Network error marking ticket received:', error);
+      };
+      xhr.onerror = function () {
+        Swal.fire(
+          "Error",
+          "Error de red al intentar marcar el ticket como recibido.",
+          "error"
+        );
+        console.error("Network error for markTicketAsReceived");
+      };
+      const data = `action=MarkTicketReceived&ticket_id=${ticketId}&id_user=${encodeURIComponent(id_user)}`;
+      xhr.send(data);
     }
+  });
 }
 
 
@@ -3227,7 +3424,17 @@ function loadRegionTicketDetails() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Error de red al cargar los detalles regionales. Por favor, intente de nuevo más tarde.</p>";
+         `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets para mostrar gráfica regional.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching regional details:", error);
     });
 }
@@ -3573,7 +3780,17 @@ function loadMonthlyTicketDetails() {
     })
     .catch((error) => {
       contentDiv.innerHTML =
-        "<p>Error de red al cargar los detalles. Por favor, intente de nuevo más tarde.</p>";
+  `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets Abiertos para cargar la gráfica mensual.</p>
+          </div>
+        </td>
+      </tr>`
       console.error("Error fetching monthly details:", error);
     });
 }
@@ -4129,17 +4346,6 @@ function getTicketCounts() {
                         return;
                     }
 
-                    // Puedes definir un orden de visualización si lo necesitas,
-                    // o simplemente iterar sobre los datos tal como vienen de la DB (ya ordenados por ID).
-                    const displayOrderMap = {
-                        4: 'Gestión Técnico',
-                        6: 'Gestión Técnico (Secundario)', // Si 6 es diferente de 4, asigna un nombre claro
-                        7: 'Gestión Taller',
-                        8: 'Proceso Carga Llaves',
-                        9: 'Llaves Cargadas',
-                        5: 'Cerrados'
-                    };
-
                     // Si quieres ordenar por un orden específico, puedes crear un array de los IDs
                     // y luego buscar en 'counts'. De lo contrario, simplemente itera 'counts'.
                     // Por simplicidad, iteraremos directamente sobre 'counts' ya que el SQL lo ordena por ID.
@@ -4148,7 +4354,6 @@ function getTicketCounts() {
                         // Usamos name_accion_ticket directamente, pero puedes usar displayOrderMap[item.id_accion_ticket]
                         // si quieres sobrescribir el nombre de la DB o asegurarte de un orden específico.
                         const moduleName = item.name_accion_ticket; 
-                        
                         tr.innerHTML = `
                             <td class="px-5 py-5 border-b border-gray-200 text-sm">${moduleName}</td>
                             <td class="px-5 py-5 border-b border-gray-200 text-sm">${item.total_tickets}</td>
@@ -4188,4 +4393,5 @@ document.addEventListener("DOMContentLoaded", function () {
   getTicketCounts(); // Para la tabla de conteos
   getTicketsgestionComercialporcent();
   getTicketGestionComercial();
+  getTicketEntregadoCliente();
 });

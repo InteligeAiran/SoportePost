@@ -178,6 +178,7 @@ function getTicketData() {
                                 const nroTicket = row.nro_ticket;
                                 const confirmTaller = row.confirmreceive;
                                 const serialPos = row.serial_pos || ""; // Asegúrate de que serial_pos esté definido
+                                const confirm_date_repuesto = row.confirm_date;
 
                                 let buttonsHtml = "";
 
@@ -197,6 +198,16 @@ function getTicketData() {
                                             </svg>
                                         </button>
                                     `;
+                                }else if(confirm_date_repuesto === "t"){
+                                   `<button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-btn ms-2" title = "Espere la llegada de los repuesto para cambiar el estatus"
+                                          data-bs-toggle="modal"
+                                          data-bs-target="#changeStatusModal"
+                                          data-id="${idTicket}"
+                                          data-current-status="${currentStatus}"
+                                          disabled>
+                                      Cambiar Estatus
+                                  </button>`
+                                
                                 } else {
                                     buttonsHtml += `
                                         <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-btn ms-2"
@@ -921,7 +932,6 @@ function sendTicketToRosal1(id, nro, withoutKeys, serialPos) {
             xhr.send(dataToSendString); // Envía la solicitud solo si se confirmó
 }
 
-
 function updateTicketStatusInTaller(ticketId) {
   const id_user = document.getElementById("userId").value;
 
@@ -1037,7 +1047,7 @@ function formatTicketDetailsPanel(d) {
             <div class="row mb-3 align-items-center">
                 <div class="col-md-3 text-center">
                     <div id="device-image-container" class="p-2">
-                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" class="img-fluid rounded" style="max-width: 120px; height: auto; object-fit: contain;">
+                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}">
                     </div>
                 </div>
                 <div class="col-md-9">
@@ -1114,89 +1124,48 @@ function formatTicketDetailsPanel(d) {
 }
 
 function downloadImageModal(serial) {
-  // Considera renombrar a loadDeviceImage(serial) para mayor claridad
   const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhoto`);
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhotoDashboard`);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log("Respuesta de GetPhoto:", response); // Descomenta para depuración
-
-        // ***** CAMBIO CLAVE AQUÍ *****
-        // Selecciona el elemento de imagen en el panel de detalles, NO en un modal
-        const imgElement = document.getElementById("device-ticket-image");
-
-        if (imgElement) {
-          if (response.success && response.rutaImagen) {
-            const srcImagen = response.rutaImagen;
-            const claseImagen = response.claseImagen || ""; // Obtener la clase CSS, si no hay, usar cadena vacía
-
+        //console.log(response);
+        if (response.success) {
+          const srcImagen = response.rutaImagen;
+          const claseImagen = response.claseImagen; // Obtener la clase CSS
+          const imgElement = document.getElementById("device-ticket-image");
+            if (imgElement) {
             imgElement.src = srcImagen;
-            imgElement.alt = `Imagen del dispositivo ${serial}`; // Actualiza el alt text
-
-            // Opcional: Si 'claseImagen' trae clases CSS específicas que quieres añadir
-            // y no colisionan con img-fluid o rounded, puedes hacer:
-            // if (claseImagen) {
-            //     imgElement.classList.add(claseImagen);
-            // }
-            // Si 'claseImagen' es una clase para reemplazar el estilo (lo cual no es común aquí),
-            // entonces tendrías que asegurarte de que la clase de tu backend incluya
-            // las propiedades de img-fluid y rounded, o volver a añadirlas.
-            // Para este caso, con Bootstrap, probablemente no necesites asignar `className` aquí
-            // ya que `max-height` y `width: auto` en el style ya controlan el tamaño.
+            imgElement.className = claseImagen; // Aplicar la clase CSS
           } else {
-            // Si no hay éxito o rutaImagen, carga una imagen de "no disponible"
-            imgElement.src = "assets/img/image-not-found.png"; // Crea esta imagen
-            imgElement.alt = `Imagen no disponible para serial ${serial}`;
-            console.warn(
-              "No se obtuvo ruta de imagen o éxito de la API para el serial:",
-              serial,
-              response.message
-            );
+            console.error("No se encontró el elemento img en el modal.");
+          }
+          if (imgElement) {
+            imgElement.src = rutaImagen;
+                        imgElement.className = claseImagen; // Aplicar la clase CSS
+
+          } else {
+            console.error("No se encontró el elemento img en el modal.");
           }
         } else {
-          console.error(
-            'Error: No se encontró el elemento <img> con ID "device-ticket-image" en el DOM.'
-          );
+          console.error("Error al obtener la imagen:", response.message);
         }
       } catch (error) {
-        console.error("Error parsing JSON response for image:", error);
-        const imgElement = document.getElementById("device-ticket-image");
-        if (imgElement) {
-          imgElement.src = "assets/img/error-loading-image.png"; // Crea esta imagen
-          imgElement.alt = "Error al cargar imagen";
-        }
+        console.error("Error parsing JSON:", error);
       }
     } else {
-      console.error(
-        "Error al obtener la imagen (HTTP):",
-        xhr.status,
-        xhr.statusText
-      );
-      const imgElement = document.getElementById("device-ticket-image");
-      if (imgElement) {
-        imgElement.src = "assets/img/error-loading-image.png";
-        imgElement.alt = "Error de servidor al cargar imagen";
-      }
+      console.error("Error:", xhr.status, xhr.statusText);
     }
   };
 
   xhr.onerror = function () {
-    console.error(
-      "Error de red al intentar obtener la imagen para el serial:",
-      serial
-    );
-    const imgElement = document.getElementById("device-ticket-image");
-    if (imgElement) {
-      imgElement.src = "assets/img/network-error-image.png"; // Crea esta imagen
-      imgElement.alt = "Error de red";
-    }
+    console.error("Error de red");
   };
 
-  const datos = `action=GetPhoto&serial=${encodeURIComponent(serial)}`;
+  const datos = `action=GetPhotoDashboard&serial=${encodeURIComponent(serial)}`;
   xhr.send(datos);
 }
 
@@ -2285,7 +2254,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     icon: 'success',
                                     title: '¡Fecha Actualizada con Éxito!',
                                     html: `la Fecha de la llegada de repuesto para el Ticket Nro: <span span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span> fue renovada correctamente.`,
-                                    confirmButtonText: 'Aceptar', 
+                                    confirmButtonText: 'Ok', 
                                     color: 'black',
                                     confirmButtonColor: '#003594',
                                     allowOutsideClick: false, 
@@ -2365,14 +2334,13 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (xhr.status >= 200 && xhr.status < 300) {
                               Swal.fire({
                                   icon: 'success',
-                                  title: 'Éxito',
-                                  text: `El ticket Nro: ${ticket.nro_ticket} ha sido enviado a Gestión Comercial`,
-                                  confirmButtonText: 'Aceptar', 
+                                  title: '¡Enviado a Gestión Comercial!',
+                                  html: `El ticket Nro: <span style = "border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span> ha sido enviado a Gestión Comercial`,
+                                  confirmButtonText: 'Ok', 
                                   color: 'black',
                                   confirmButtonColor: '#003594',
                                   allowOutsideClick: false, 
                                   allowEscapeKey: false,
-                                  showCloseButton: true,
                                   keydownListenerCapture: true,
                               }).then((result) => {
                                 if (result.isConfirmed) {
@@ -2576,18 +2544,23 @@ document.addEventListener("DOMContentLoaded", () => {
                         xhr.onload = function() {
                             if (xhr.status >= 200 && xhr.status < 300) {
                                 // Solicitud exitosa
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Éxito',
-                                    text: `la Fecha de la llegada de repuesto para el Ticket Nro: ${ticket.nro_ticket} fue renovada correctamente.`,
-                                    confirmButtonText: 'Aceptar', 
-                                    color: 'black',
-                                    confirmButtonColor: '#003594',
-                                    allowOutsideClick: false, 
-                                    allowEscapeKey: false,
-                                    showCloseButton: true,
-                                    keydownListenerCapture: true,
-                                });
+                              Swal.fire({
+                              icon: 'success',
+                              title: '¡Éxito en la renovación de la fecha!',
+                              html: `La fecha de llegada de repuesto para el Ticket Nro:
+                                    <span style="border-radius:0.3rem; background-color:#e0f7fa; color:#007bff;">
+                                      ${ticket.nro_ticket}
+                                    </span> fue renovada correctamente.`,
+                              confirmButtonText: 'Ok',
+                              color: 'black',
+                              confirmButtonColor: '#003594',
+                              allowOutsideClick: false,
+                              allowEscapeKey: false,
+                              keydownListenerCapture: true,
+                            }).then(() => {
+                              window.location.reload();
+                            });
+
                             } else {
                                 // Error en la solicitud HTTP
                                 Swal.fire({
@@ -2658,14 +2631,13 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (xhr.status >= 200 && xhr.status < 300) {
                               Swal.fire({
                                   icon: 'success',
-                                  title: 'Éxito',
-                                  text: `El ticket Nro: ${ticket.nro_ticket} ha sido enviado a Gestión Comercial`,
-                                  confirmButtonText: 'Aceptar', 
+                                  title: '¡Enviado a Gestión Comercial!',
+                                  html: `El ticket Nro: <span style = "border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticket.nro_ticket}</span> ha sido enviado correctamente a Gestión Comercial`,
+                                  confirmButtonText: 'Ok', 
                                   color: 'black',
                                   confirmButtonColor: '#003594',
                                   allowOutsideClick: false, 
                                   allowEscapeKey: false,
-                                  showCloseButton: true,
                                   keydownListenerCapture: true,
                               }).then((result) => {
                                   if (result.isConfirmed) {
@@ -2960,7 +2932,7 @@ document.addEventListener("DOMContentLoaded", () => {
               Swal.fire({
                 icon: "success",
                 title: "¡Fecha Registrada Correctamente!",
-                html: `La fecha de repuesto ha sido guardada con éxito: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;"${selectedDate}</span>.`,
+                html: `La fecha de repuesto ha sido guardada con éxito: <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${selectedDate}</span>.`,
                 showConfirmButton: true, // Asegura que el botón de confirmación sea visible
                 confirmButtonText: 'Cerrar', // Opcional: Personaliza el texto del botón
                 confirmButtonColor: '#003594', // Opcional: Personaliza el color del botón
