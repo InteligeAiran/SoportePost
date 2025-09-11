@@ -4,6 +4,7 @@ let modalInstance;
 let currentnroTicket;
 let currentSerial;
 let currentDocument;
+let currentDomiciliacion
 let currentEstado;
 
 let url_envio;
@@ -186,8 +187,9 @@ function getTicketData() {
                         data-bs-toggle="tooltip" data-bs-placement="top"
                         title="Enviar a Taller"
                         data-ticket-id="${ticket.id_ticket}"
-                        data-nro_ticket="${ticket.nro_ticket}",
+                        data-nro_ticket="${ticket.nro_ticket}"
                         data-id_document="${ticket.id_status_payment}"
+                        data-id_domiciliacion="${ticket.id_status_domiciliacion}"
                         data-serial_pos="${ticket.serial_pos || ''}"
                         data-url_zoom="${ticket.pdf_zoom_url || ''}"
                         data-url_exo="${ticket.img_exoneracion_url || ''}"
@@ -598,6 +600,7 @@ function getTicketData() {
             const ticketId = $(this).data("ticket-id");
             const nroTicket = $(this).data("nro_ticket");
             const id_document = $(this).data("id_document");
+            const id_domiciliacion = $(this).data("id_domiciliacion");
             const pdfZoomUrl = $(this).data("url_zoom") || "";
             const imgExoneracionUrl = $(this).data("url_exo") || "";
             const pdfPagoUrl = $(this).data("url_pago") || "";
@@ -608,6 +611,7 @@ function getTicketData() {
             currentnroTicket = nroTicket;
             currentSerial = serialPos; // Asigna el serial al currentSerial
             currentDocument = id_document; // Asigna el serial al currentSerial
+            currentDomiciliacion = id_domiciliacion;
             currentEstado = estado; // Asigna el estado al currentSerial
 
             url_envio = pdfZoomUrl;
@@ -625,6 +629,7 @@ function getTicketData() {
 
        $("#ButtonSendToTaller").off("click").on("click", function () {
     const id_document = currentDocument;
+    const id_domiciliacion = currentDomiciliacion;
     let showButton = false;
 
     // NUEVO: Verificar si es de estados que no necesitan envío
@@ -680,25 +685,35 @@ function getTicketData() {
 
     if (showButton) {
         Swal.fire({
+          icon: 'warning',
+          title: '¡Advertencia!',
+          text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
+          confirmButtonText: 'Ok', 
+          confirmButtonColor: '#003594', // Color del botón
+          color: 'black',
+        });
+        return;
+          }else if (id_document == 5 || id_document == 7) {
+          Swal.fire({
             icon: 'warning',
             title: '¡Advertencia!',
-            text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
+            text: ' Se encuentran documentos pendientes por revisar.',
             confirmButtonText: 'Ok', 
             confirmButtonColor: '#003594', // Color del botón
             color: 'black',
-        });
+          });  
         return;
-            }else if (id_document == 5 || id_document == 7) {
-              Swal.fire({
-                icon: 'warning',
-                title: '¡Advertencia!',
-                text: ' Se encuentran documentos pendientes por revisar.',
-                confirmButtonText: 'Ok', 
-                confirmButtonColor: '#003594', // Color del botón
-                color: 'black',
-              });
-              return;
-            } else { 
+          }else if(id_domiciliacion == 1){
+            Swal.fire({
+            icon: 'warning',
+            title: '¡Advertencia!',
+            text: 'Tiene que revisar la domiciliación del cliente.',
+            confirmButtonText: 'Ok', 
+            confirmButtonColor: '#003594', // Color del botón
+            color: 'black',
+          });
+        return;
+          } else { 
 
                 const modalTicketNrSpan = document.getElementById("modalTicketNr");
                 const modalSerialPosSpan = document.getElementById("serialpos");
