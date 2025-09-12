@@ -1645,7 +1645,6 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
 
                     let timeElapsed = null;
                     let timeBadge = '';
-                    let creationBadge = '';
 
                     if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
                         timeElapsed = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
@@ -1670,14 +1669,13 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
                             timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
                         }
                     }
-
+                    
                     const cleanString = (str) => str && str.replace(/\s/g, ' ').trim() || null;
                     const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
 
                     const isCreation = cleanString(item.name_accion_ticket) === 'Ticket Creado';
-                    if (isCreation && item.fecha_de_cambio) {
-                        creationBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: help; background-color: #17a2b8 !important; color: white !important;" title="Fecha de creación">${item.fecha_de_cambio}</span>`;
-                    }
+                    const creationBadge = isCreation && item.fecha_de_cambio ? 
+                        `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: help; background-color: #17a2b8 !important; color: white !important;" title="Fecha de creación">${item.fecha_de_cambio}</span>` : '';
 
                     const accionChanged = getChange(item.name_accion_ticket, prevItem.name_accion_ticket);
                     const coordChanged = getChange(item.full_name_coordinador, prevItem.full_name_coordinador);
@@ -1711,6 +1709,11 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
                         statusHeaderText = cleanString(item.name_status_lab) || "Desconocido";
                     }
 
+                    // Se define el texto del botón aquí con la condición ternaria
+                    const buttonText = isCreation
+                        ? `${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`
+                        : `${item.fecha_de_cambio || "N/A"} - ${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`;
+
                     historyHtml += `
                         <div class="card mb-3 custom-history-card position-relative">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
@@ -1721,7 +1724,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
                                         data-toggle="collapse" data-target="#${collapseId}"
                                         aria-expanded="false" aria-controls="${collapseId}"
                                         style="${textColor}">
-                                        ${item.fecha_de_cambio || "N/A"} - ${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})
+                                        ${buttonText}
                                     </button>
                                 </h2>
                             </div>

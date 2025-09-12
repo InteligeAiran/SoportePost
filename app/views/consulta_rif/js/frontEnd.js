@@ -1856,6 +1856,9 @@ function SendDataFailure2(idStatusPayment) {
                     <p style="font-size: 1.1em; margin-bottom: 10px;">
                         <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.Nr_ticket}</span>
                     </p>
+                   <p style="margin-bottom: 8px;">
+                        <strong>📅 Fecha de Creación:</strong> ${ticketData.date_create_ticket}
+                    </p>
                     <p style="margin-bottom: 8px;">
                         <strong>⚙️ Serial del Equipo:</strong> ${ticketData.serial}
                     </p>
@@ -2608,54 +2611,61 @@ function SendDataFailure1() {
               // Construcción del contenido HTML para el modal de detalles
               // Usaremos un estilo más visual
 
-              const beautifulHtmlContent = `
-                                <div style="text-align: left; padding: 15px;">
-                                    <h3 style="color: #0056b3; margin-bottom: 15px; text-align: center;">🔧 ¡Ticket Generado! 🔧</h3>
-                                    <p style="font-size: 1.1em; margin-bottom: 10px;">
-                                          <strong style = "color: black;">🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${
-                                          ticketData.Nr_ticket
-                                        }</span>
-                                    </p>
-                                    <p style="margin-bottom: 8px;">
-                                          <strong style = "color: black;">👤 Usuario Gesti&oacuten:</strong> ${
-                                          ticketData.user_gestion || "N/A"
-                                        }
-                                    </p>
-                                    <p style="margin-bottom: 8px;">
-                                          <strong style = "color: black;">⚙️ Serial del Equipo:</strong> ${
-                                          ticketData.serial
-                                        }
-                                    </p>
-                                    <p style="margin-bottom: 8px;">
-                                          <strong style = "color: black;">🚨 Falla Reportada:</strong> ${
-                                          ticketData.falla_text
-                                        }
-                                    </p>
-                                    <p style="margin-bottom: 8px;">
-                                          <strong style = "color: black;">📊 Nivel de Falla:</strong> ${
-                                          ticketData.nivelFalla_text
-                                        }
-                                    </p>
-                                    <p style="margin-bottom: 8px;">
-                                          <strong style = "color: black;">🏢 RIF Cliente:</strong> ${
-                                          ticketData.rif || "N/A"
-                                        }
-                                    </p>
-                                   <p style="margin-bottom: 8px;">
-                                        <strong style = "color: black;">🏢Razon Social:</strong> ${globalRazon || "N/A"}
-                                    </p>
-                                    </p>
-                                    <strong><p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
-                                        Se ha enviado una notificación por correo electrónico.<br>
-                                          <h7 style = "color: black;">El Estatus del Ticket es: <span style = "color: red";>${ticketData.status_text}</h7></span>
-                                    </p></strong>
-                                </div>`;
+             const beautifulHtmlContent = `
+              <div style="text-align: left; padding: 15px;">
+                  <h3 style="color: #0056b3; margin-bottom: 15px; text-align: center;">🔧 ¡Ticket Generado! 🔧</h3>
+                  <p style="font-size: 1.1em; margin-bottom: 10px;">
+                      <strong style="color: black;">🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${
+                          ticketData.Nr_ticket
+                      }</span>
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                      <strong style="color: black;">📅 Fecha de Creación:</strong> <span>${
+                          ticketData.date_create_ticket
+                      }</span>
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                      <strong style="color: black;">👤 Usuario Gestión:</strong>  <span>${
+                          ticketData.user_gestion || "N/A"
+                      }</span>
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                      <strong style="color: black;">⚙️ Serial del Equipo:</strong>  <span>${
+                          ticketData.serial
+                      }</span>
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                      <strong style="color: black;">🚨 Falla Reportada:</strong>  <span>${
+                          ticketData.falla_text
+                      }</span>
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                      <strong style="color: black;">📊 Nivel de Falla:</strong>  <span>${
+                          ticketData.nivelFalla_text
+                      }</span>
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                      <strong style="color: black;">🏢 RIF Cliente:</strong>  <span>${
+                          ticketData.rif || "N/A"
+                      }</span>
+                  </p>
+                  <p style="margin-bottom: 8px;">
+                      <strong style="color: black;">🏢Razon Social:</strong>  <span>${globalRazon || "N/A"}</span>
+                  </p>
+                  <strong>
+                      <p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
+                          Se ha enviado una notificación por correo electrónico.<br>
+                          <h7 style="color: black;" font-weight: bold;>El Estatus del Ticket es: <span style="color: red;">${ticketData.status_text}</span></h7>
+                      </p>
+                  </strong>
+              </div>`;
               Swal.fire({
                 icon: "success", // Un icono de éxito también para este modal
                 title: "Detalles del Ticket",
                 html: beautifulHtmlContent, // Contenido HTML personalizado
                 confirmButtonText: "Cerrar",
                 confirmButtonColor: "#003594", // Botón de confirmación AZUL
+                color: 'black',
                 showClass: {
                   popup: "animate__animated animate__fadeInDown",
                 },

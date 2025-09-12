@@ -707,7 +707,8 @@ class Consulta extends Controller
                     'user_gestion' => $_SESSION['nombres'] . ' ' . $_SESSION['apellidos'],
                     'id_ticket_creado' => $id_ticket_creado,
                     'status_id' => $status_id,
-                    'status_text' => $status_text // ¡Aquí está el estado!
+                    'status_text' => $status_text, // ¡Aquí está el estado!
+                    'date_create_ticket' => date('Y-m-d H:i') // ✨ Agrega esta línea para incluir la fecha y hora de creación
                 ]
             ], 200);
         } else {
@@ -926,7 +927,9 @@ class Consulta extends Controller
                 'id_ticket_creado' => $idTicketReal,          // ID real de la BD (ej: 12345)
                 'status_id' => $status_id,                    // Incluye el ID del estado
                 'status_text' => $status_text,                // **¡El nombre del estado aquí!**
-                'status_payment' => $status_payment_text
+                'status_payment' => $status_payment_text,
+                'date_create_ticket' => date('Y-m-d H:i') // ✨ Agrega esta línea para incluir la fecha y hora de creación
+
             ]
         ], 200);
         return;
