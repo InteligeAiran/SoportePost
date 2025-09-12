@@ -621,11 +621,6 @@ function formatTicketDetailsPanel(d) {
                               <br><strong><div>Falla Reportada:</div></strong>
                              <span class="falla-reportada-texto">${d.name_failure}</span>
                         </div>
-                        <div class="col-sm-6 mb-2">
-                          <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = ${d.id_ticket}" data-serial-pos = ${d.serial_pos}>
-                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Componentes del Dispositivo
-                          </button>
-                        </div>    
                     </div>
                 </div>
             </div>
