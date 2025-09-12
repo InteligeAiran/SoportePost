@@ -426,6 +426,11 @@ class Consulta extends Controller
                     $claseImagen = "New-9220";
                 break;
 
+                case 20:
+                    $nombreArchivo = "New-9310.png";
+                    $claseImagen = "New-9310";
+                break;
+
                 case 21:
                     $nombreArchivo = "New-6210.png";
                     $claseImagen = "New-6210";
@@ -532,6 +537,11 @@ class Consulta extends Controller
                 case 19:
                     $nombreArchivo = "New-9220.png";
                     $claseImagen = "New-9220Dashboard";
+                break;
+
+                case 20:
+                    $nombreArchivo = "New-9310.png";
+                    $claseImagen = "New-9310Dashboard";
                 break;
 
                 case 21:
