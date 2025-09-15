@@ -142,3 +142,114 @@ tr:nth-child(even) {
     #table-user .dataTables_paginate{
         margin-left: 86%;
     }
+
+/* Estilos para los badges de tiempo transcurrido en el historial de tickets */
+.custom-history-card {
+    position: relative;
+    overflow: visible;
+}
+
+.custom-history-card .card-header {
+    position: relative;
+}
+
+/* Badges de tiempo transcurrido */
+.badge-success {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.badge-purple {
+    background-color: #6f42c1 !important;
+    color: white !important;
+}
+
+.badge-orange {
+    background-color: #fd7e14 !important;
+    color: white !important;
+}
+
+.badge-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.badge-danger {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+/* Forzar estilos de badges */
+.custom-history-card .badge.badge-orange {
+    background-color: #fd7e14 !important;
+    color: white !important;
+    border: none !important;
+}
+
+.custom-history-card .badge.badge-purple {
+    background-color: #6f42c1 !important;
+    color: white !important;
+    border: none !important;
+}
+
+.custom-history-card .badge.badge-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+    border: none !important;
+}
+
+/* Estilos adicionales para asegurar que se apliquen */
+.custom-history-card .badge-orange {
+    background-color: #fd7e14 !important;
+    color: white !important;
+}
+
+.custom-history-card .badge-purple {
+    background-color: #6f42c1 !important;
+    color: white !important;
+}
+
+.custom-history-card .badge-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+/* Estilo inline para forzar el color */
+.badge[class*="badge-orange"] {
+    background-color: #fd7e14 !important;
+    color: white !important;
+}
+
+.badge[class*="badge-purple"] {
+    background-color: #6f42c1 !important;
+    color: white !important;
+}
+
+.badge[class*="badge-warning"] {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+/* Asegurar que el badge sea visible */
+.custom-history-card .badge {
+    font-weight: 600;
+    border-radius: 12px;
+    min-width: 24px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+.custom-history-card .badge:hover {
+    transform: scale(1.1);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .custom-history-card .badge {
+        font-size: 0.65rem !important;
+        padding: 2px 6px;
+        top: 4px !important;
+        right: 4px !important;
+    }
+}

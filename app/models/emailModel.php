@@ -33,9 +33,39 @@ class emailModel extends Model{
         }
     }
     
-    public function GetEmailCoordById($id_coordinador){
+    public function GetEmailCoordById($id_ticket){
         try{
-            $sql = "SELECT email, CONCAT(name, ' ', surname) as full_name FROM users where id_user = ".$id_coordinador.";";
+            $sql = "SELECT * FROM get_coordinador_info(".$id_ticket.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetEmailArea(){
+        try{
+            $sql = "SELECT ar.name_area, ar.email_area from areas ar WHERE ar.id_area = 6";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetCoordinacion($id_ticket){
+        try{
+            $sql = "SELECT * FROM get_department_name(".$id_ticket.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetTicketId($nro_ticket){
+        try{
+            $sql = "SELECT * FROM get_ticket_id('".$nro_ticket."')";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -162,6 +192,46 @@ class emailModel extends Model{
     public function GetEmailUserDataById($id_user){
         try{
             $sql = "SELECT * FROM get_email_user_by_id(".$id_user.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetEmailUser1gestionDataById($ticketid, $document_type){
+        try{
+            $sql = "SELECT * FROM get_email_user_gestion_by_id(".$ticketid.", '".$document_type."');";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetDocumentoRechazado($ticketnro){
+        try{
+            $sql = "SELECT * FROM get_ticket_reject_attachments('".$ticketnro."');";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function resultUserreject($id_user){
+        try{
+            $sql = "SELECT * FROM get_user_role_info(".$id_user.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+    
+    public function GetEmailAreaAdmin(){
+       try{
+            $sql = "SELECT ar.name_area, ar.email_area from areas ar WHERE ar.id_area = 2";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

@@ -730,7 +730,7 @@ background-color: #17a2b8; /* Azul info */
 }
 
 div.dataTables_wrapper div.dataTables_filter input {
-  width: 36% !important;
+  width: 36%;
 }
 
 .falla-reportada-texto {
@@ -1389,3 +1389,106 @@ div.dataTables_wrapper div.dataTables_filter input {
         transform: scale(1);
     }
 }
+
+/* IMAGES STYLES DASHBOARD*/
+  .ingenico-ict250Dashboard{
+    width: 500%;
+    height: 100%;
+    /* border-radius: 10%; */
+    margin-left: -200%;
+  }
+
+  .sunmi-P2Dashboard{
+    margin-bottom: -17%;
+    height: 82%;
+    margin-left: -98%;
+    width: 311%;
+  }
+
+  .ingenico-ict220Dashboard{
+    margin-left: -125%;
+    margin-bottom: 24%;
+    width: 351%;
+  }
+
+  .move-2500Dashboard{
+    margin-left: -127px;
+    margin-bottom: 4%;
+    width: 360%;
+  }
+
+  .ingenico-iwl220Dashboard{
+    margin-top: -59%;
+    margin-left: -130%;
+    width: 353%;
+  }
+
+  .sunmi-P2miniDashboard{
+    margin-left: -101px;
+    width: 319%;
+  }
+
+  .D200TDashboard{
+    margin-left: -111%;
+    margin-bottom: 1%;
+    width: 326%;
+  }
+
+  .New-7210Dashboard{
+    margin-left: -88%;
+    margin-bottom: 10%;
+    width: 278%;
+  }
+
+  .sunmi-P2SEDashboard{
+    margin-left: -126%;
+    width: 378%;
+  }
+
+  .cuadra-mini-posDashboard{
+    margin-left: -68%;
+    margin-bottom: 17%;
+    width: 243%;
+  }
+
+  .New-9220Dashboard{
+    margin-left: -123%;
+    margin-bottom: -12%;
+    width: 346%;
+  }
+
+  .New-6210Dashboard{
+    margin-left: -118%;
+    margin-bottom: -32%;
+    width: 350%;
+  }
+
+  .P10-ZIODashboard{
+    margin-left: -109%;
+    margin-bottom: 10%;
+    width: 350%;
+  }
+
+  .SUNMI-P2-LITEDashboard{
+    margin-left: -108%;
+    width: 335%;
+    margin-bottom: 13%;
+  }
+
+  .mantainment{
+    margin-left: -307%;
+    height: 131%;
+    margin-top: -48%;
+  }
+        
+  .Kozen-P10Dashboard{
+    margin-left: -24px;
+    height: 331px;
+  }
+
+ 
+  .New-9310Dashboard{
+    margin-left: -114%;
+    width: 333%;
+  }
+/*  END IMAGES STYLES DASHBOARD*/

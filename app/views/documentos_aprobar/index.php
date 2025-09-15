@@ -26,6 +26,8 @@ function mi_navbar()
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+
     <style>
 
         .highlighted-change {
@@ -367,6 +369,235 @@ function mi_navbar()
             border: 1px solid #ccc;
             box-shadow: 0 0 5px rgba(0,0,0,0.2);
         }
+
+        #RechazoDocumento{
+            color: white;
+            background-color: #FF0000;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        /* Modal de Confirmación de Rechazo - Estilos Personalizados */
+        #modalConfirmacionRechazo .modal-dialog {
+            max-width: 500px;
+            margin: 1.75rem auto;
+        }
+
+        #modalConfirmacionRechazo .modal-content {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        }
+
+        /* Header del Modal */
+        #modalConfirmacionRechazo .modal-header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 50%, #bd2130 100%);
+            border-bottom: none;
+            padding: 1.5rem 2rem;
+            position: relative;
+        }
+
+        #modalConfirmacionRechazo .modal-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            pointer-events: none;
+        }
+
+        #modalConfirmacionRechazo .modal-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.25rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        #modalConfirmacionRechazo .modal-title::before {
+            content: '⚠️';
+            font-size: 1.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        /* Body del Modal */
+        #modalConfirmacionRechazo .modal-body {
+            padding: 2rem;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        }
+
+        #modalConfirmacionRechazo .modal-body p {
+            margin-bottom: 1rem;
+            color: #495057;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        #modalConfirmacionRechazo .modal-body p:first-child {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #dc3545;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+            padding: 1rem;
+            border-radius: 12px;
+            border-left: 4px solid #dc3545;
+            margin-bottom: 1.5rem;
+        }
+
+        #modalConfirmacionRechazo .modal-body p:nth-child(2) {
+            color: #6c757d;
+            font-style: italic;
+            background: #f8f9fa;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        #modalConfirmacionRechazo .modal-body p:last-child {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid #90caf9;
+            margin-bottom: 0;
+        }
+
+        #modalConfirmacionRechazo #motivoSeleccionadoTexto {
+            color: #1976d2;
+            font-weight: 600;
+            background: rgba(25, 118, 210, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            border: 1px solid rgba(25, 118, 210, 0.2);
+        }
+
+        /* Footer del Modal */
+        #modalConfirmacionRechazo .modal-footer {
+            border-top: 1px solid #e9ecef;
+            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            gap: 1rem;
+        }
+
+        /* Botones */
+        #modalConfirmacionRechazo .btn {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.875rem;
+            min-width: 120px;
+        }
+
+        #modalConfirmacionRechazo .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+
+        #modalConfirmacionRechazo .btn-secondary:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        #modalConfirmacionRechazo .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        #modalConfirmacionRechazo .btn-danger:hover {
+            background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        #modalConfirmacionRechazo .btn:active {
+            transform: translateY(0);
+            transition: transform 0.1s;
+        }
+
+        /* Animaciones */
+        #modalConfirmacionRechazo .modal.fade .modal-dialog {
+            transform: scale(0.8) translateY(-50px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #modalConfirmacionRechazo .modal.show .modal-dialog {
+            transform: scale(1) translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            #modalConfirmacionRechazo .modal-dialog {
+                margin: 1rem;
+                max-width: calc(100% - 2rem);
+            }
+            
+            #modalConfirmacionRechazo .modal-header,
+            #modalConfirmacionRechazo .modal-body,
+            #modalConfirmacionRechazo .modal-footer {
+                padding: 1rem;
+            }
+            
+            #modalConfirmacionRechazo .btn {
+                padding: 0.625rem 1.25rem;
+                font-size: 0.8rem;
+                min-width: 100px;
+            }
+        }
+
+        /* Efectos de hover adicionales */
+        #modalConfirmacionRechazo .modal-content:hover {
+            transform: translateY(-2px);
+            transition: transform 0.3s ease;
+        }
+
+        /* Scrollbar personalizado para el modal */
+        #modalConfirmacionRechazo .modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #modalConfirmacionRechazo .modal-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        #modalConfirmacionRechazo .modal-body::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            border-radius: 4px;
+        }
+
+        #modalConfirmacionRechazo .modal-body::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+        }
+
+        #confirmarRechazoBtn{
+            color: white;
+            background-color: #003594;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #confirmarRechazoBtn:hover{
+            color: white;
+            background-color: red;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
     </style>
     </head>
 
@@ -524,11 +755,63 @@ function mi_navbar()
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" id="closeImageApprovalModalBtn">Cerrar</button>
                             <button type="button" class="btn btn-success" id="approveTicketFromImage">Aprobar Documento</button>
+                            <button type="button" class="btn btn-danger" id="RechazoDocumento">Rechazar Documento</button>
                         </div>
                     </div>
                 </div>
             </div>
         <!--END MODAL PARA VIZUALIZAR LOS DOCUMENTOS -->
+
+         <!-- MODAL PARA SELECCIONAR EL MOTIVO DE RECHAZO -->
+            <div class="modal fade" id="modalRechazo" tabindex="-1" aria-labelledby="modalRechazoLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-gradient-primary">
+                            <h5 class="modal-title" id="modalRechazoLabel">Motivo de Rechazo</h5>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="motivoRechazoSelect" class="form-label">Selecciona el motivo del rechazo:</label>
+                                    <select class="form-select" id="motivoRechazoSelect" aria-label="Motivo de Rechazo">
+                                    
+                                    </select>
+                                </div>
+                                <div class="mb-3" id="otroMotivoContainer" style="display: none;">
+                                    <label for="otroMotivoInput" class="form-label">Especifica el motivo:</label>
+                                    <input type="text" class="form-control" id="otroMotivoInput" placeholder = "Especifique el Motivo">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="CerrarModalMotivoRechazo">Cancelar</button>
+                            <button type="button" class="btn btn-danger" id="confirmarRechazoBtn">Confirmar Rechazo</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <!-- END MODAL PARA SELECCIONAR EL MOTIVO DE RECHAZO -->
+
+        <!-- CONFIRMACION MOTIVO DE RECHAZO -->
+            <div class="modal fade" id="modalConfirmacionRechazo" tabindex="-1" aria-labelledby="modalConfirmacionRechazoLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                    <div class="modal-header bg-gradient-primary">
+                        <h5 class="modal-title" id="modalConfirmacionRechazoLabel">Confirmar Rechazo de Documento</h5>
+                    </div>
+                    <div class="modal-body">
+                        <p>¿Estás seguro de que deseas <strong>rechazar</strong> el documento?</p>
+                        <p>Esta acción no se puede deshacer.</p>
+                        <p>Motivo seleccionado: <strong id="motivoSeleccionadoTexto"></strong></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id = "modalConfirmacionRechazoBtn">Cancelar</button>
+                        <button type="button" class="btn btn-danger" id="btnConfirmarAccionRechazo">Rechazar</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        <!--END CONFIRMACION MOTIVO DE RECHAZO -->
 
         <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 

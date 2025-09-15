@@ -25,7 +25,7 @@ function mi_navbar()
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
-
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
     <style>
         div.dataTables_wrapper div.dataTables_length label {
             font-weight: bold;
@@ -146,6 +146,7 @@ function mi_navbar()
             /* Ejemplo: Color de fondo del input */
             transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
             /* Ejemplo: Transiciones suaves */
+            width: 600% !important;
         }
 
         /* Estilizar el input de búsqueda al enfocarlo */

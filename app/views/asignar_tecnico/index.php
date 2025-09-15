@@ -606,7 +606,7 @@ function mi_navbar() {}
                         </div>
                         <div class="row mb-4">
                             <label for="InputRegionUser2" class="form-label fw-bold">Región del Técnico Seleccionado:</label>
-                            <input class="form-control" id="InputRegionUser2" disabled></input>
+                            <input class="form-control" id="InputRegionUser2" placeholder="Seleccione un Técnico" disabled></input>
                         </div>
                         <div class="mb-3">
                             <label for="reassignObservation" class="form-label fw-bold">Observación (Opcional):</label>
@@ -719,7 +719,7 @@ function mi_navbar() {}
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="BotonCerrarSelectDocument">Cerrar</button>
+                        <button type="button" class="btn btn-secondary" id="BotonCerrarSelectDocument">Cerrar</button>
                         <button type="button" class="btn btn-primary" id="btnConfirmarVisualizacion">Visualizar</button>
                     </div>
                 </div>

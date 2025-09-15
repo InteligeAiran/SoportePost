@@ -24,7 +24,7 @@ class EmailService
             'secure' => SMTP_SECURE ?? '',
             'port' => SMTP_PORT ?? 587,
             'from_email' => SMTP_USERNAME ?? '',
-            'from_name' => 'SOPORTE POST-VENTA INTELIGENSA', // Puedes hacerlo configurable
+            'from_name' => 'SOPORTE POST-VENTA', // Puedes hacerlo configurable
             'debug' => SMTP::DEBUG_OFF,
         ];
 
