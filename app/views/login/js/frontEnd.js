@@ -125,7 +125,7 @@ function SendForm() {
                                     const forceResponse = JSON.parse(forceLoginXHR.responseText);
                                   if (forceResponse.success) {
                                         Swal.fire({
-                                            title: '¡Sesión Cerrada y Abierta!', // Título
+                                            title: '¡Sesión Cerrada!', // Título
                                             text: 'La sesión anterior ha sido cerrada y se ha iniciado una nueva.', // Mensaje
                                             icon: 'success', // Icono
                                             // Para el color del texto, se recomienda usar customClass y CSS:
