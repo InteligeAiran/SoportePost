@@ -1,3 +1,7 @@
+// Sugerir nombre de archivo al imprimir la Nota de Entrega desde el iframe
+// El nombre sugerido se basa en el <title> del documento del iframe.
+// Ajustamos temporalmente el title antes de llamar a window.print().
+
 let dataTableInstance;
 let currentTicketId;
 let modalInstance;
@@ -11,7 +15,6 @@ let currentEstado;
 let url_envio;
 let url_exoneracion;
 let url_pago;
-
 
 function getTicketData() {
   const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
@@ -333,13 +336,9 @@ function getTicketData() {
                           } else {
                               dataTableInstance.column(6).visible(true);
                           }
-                          
                           setActiveButton(button);
-                          
-                          // EJECUTAR showTicketStatusIndicator con los datos correspondientes
                           showTicketStatusIndicator(status, action);
-                          
-                          return true; // Encontramos datos
+                        return true; // Encontramos datos
                       }
                   }
                   
@@ -1174,6 +1173,73 @@ function getTicketData() {
     documentActionsModal.show();
 });
 
+$(document).on('click', '#printHtmlTemplateBtn', function () {
+    try {
+        const iframe = document.getElementById('htmlTemplatePreview');
+        if (!iframe || !iframe.contentWindow) return;
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        if (!doc) return;
+
+        const originalIframeTitle = doc.title || '';
+        const originalWindowTitle = window.document.title || ''; // Guardar el título de la ventana principal
+
+        const ticketId = (document.getElementById('htmlTemplateTicketId') || {}).value || 'Ticket';
+        const neNumero = (document.getElementById('ne_numero') || {}).value || '';
+        const fecha = new Date();
+        const y = fecha.getFullYear();
+        const m = String(fecha.getMonth() + 1).padStart(2, '0');
+        const d = String(fecha.getDate()).padStart(2, '0');
+        const fechaStr = `${y}${m}${d}`;
+        const sanitizedNumero = String(neNumero).replace(/[^A-Za-z0-9_-]+/g, '');
+        
+        // Crear el nombre del archivo
+        const filename = `NotaEntrega_${ticketId}${sanitizedNumero ? '_' + sanitizedNumero : ''}_${fechaStr}`;
+        
+        // Asignar el nombre del archivo al título de la ventana principal
+        window.document.title = filename;
+
+        // Llamar a la función de impresión
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+
+        // Usa setTimeout para restaurar el título después de que el diálogo de impresión se lance
+        setTimeout(() => {
+            doc.title = originalIframeTitle; // Restaurar el título del iframe
+            window.document.title = originalWindowTitle; // Restaurar el título de la ventana principal
+            
+            const ticketIdValue = (document.getElementById('htmlTemplateTicketId') || {}).value || '';
+            const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
+            const uploadDocumentModal = new bootstrap.Modal(document.getElementById('uploadDocumentModal'));
+            
+            const idTicketInput = document.getElementById('id_ticket');
+            const typeDocInput = document.getElementById('type_document');
+            const modalTicketIdSpan = document.getElementById('modalTicketId');
+            
+            if (idTicketInput) idTicketInput.value = ticketIdValue;
+            if (typeDocInput) typeDocInput.value = 'Envio';
+            if (modalTicketIdSpan) modalTicketIdSpan.textContent = ticketIdValue;
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Nota de Entrega Guardada',
+                text: 'El archivo se generó correctamente. Puedes subirlo ahora.',
+                confirmButtonColor: '#003594',
+                color: 'black'
+            }).then(() => {
+             window.location.reload();
+            });
+        }, 600);
+    } catch (e) {
+        console.error('Error:', e);
+        // Si hay un error, aún intenta imprimir sin cambiar el nombre
+        const iframe = document.getElementById('htmlTemplatePreview');
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        }
+    }
+});
+
 // Función para determinar el estatus según el tipo de documento y estado del cliente
 function getStatusForDocument(documentType, estadoCliente) {
     const estadosSinEnvio = ['Caracas', 'Miranda', 'Vargas', 'Distrito Capital'];
@@ -1208,40 +1274,37 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
     // updateTicketStatus(ticketId, nuevoEstatus);
 });
 
-    // 3. Manejador de eventos para los botones de "Cargar Documento" (desde el modal de acciones)
-    $(document).on('click', '.btn-zoom-pdf, .btn-exoneracion-img, .btn-pago-pdf', function() {
-        documentActionsModal.hide(); // Oculta el modal de acciones
+  // 3. Manejador de eventos para los botones de "Cargar Documento" (desde el modal de acciones)
+  $(document).on('click', '.btn-zoom-pdf, .btn-exoneracion-img, .btn-pago-pdf', function() {
+    documentActionsModal.hide(); // Oculta el modal de acciones
         
-        const ticketId = $(this).data('ticket-id');
-        const documentType = $(this).data('document-type');
-        const nro_ticket = $(this).data('nro-ticket');
-        const fileName = $(this).data('file-name') || '';
+    const ticketId = $(this).data('ticket-id');
+    const documentType = $(this).data('document-type');
+    const nro_ticket = $(this).data('nro-ticket');
+    const fileName = $(this).data('file-name') || '';
 
-        console.log(ticketId);
+    if (documentType == 'Envio'){  
+      // Mostrar el botón solo para Envio
+      $('#htmlTemplateTicketId').val(ticketId); 
+      $('#generateNotaEntregaBtn').show();
+    }
 
-       if (documentType == 'Envio'){  
-          // Mostrar el botón solo para Envio
-          $('#htmlTemplateTicketId').val(ticketId); 
-          $('#generateNotaEntregaBtn').show();
-       }
-
-        uploadForm[0].reset();
-        $('#imagePreview').attr('src', '#').hide();
-        $('#uploadMessage').removeClass('alert-success alert-danger').addClass('hidden').text('');
+    uploadForm[0].reset();
+    $('#imagePreview').attr('src', '#').hide();
+    $('#uploadMessage').removeClass('alert-success alert-danger').addClass('hidden').text('');
+    $('#uploadDocumentModal .modal-title h5').html(`Subir Documento para Ticket: <span id="modalTicketId">${ticketId}</span>`);
         
-        $('#uploadDocumentModal .modal-title h5').html(`Subir Documento para Ticket: <span id="modalTicketId">${ticketId}</span>`);
-        
-        $('#uploadForm').data('document-type', documentType);
-        $('#uploadForm').data('nro_ticket', nro_ticket);
-        $('#uploadForm').data('file-name', fileName);
-        $('#uploadForm').data('ticket-id', ticketId);
+    $('#uploadForm').data('document-type', documentType);
+    $('#uploadForm').data('nro_ticket', nro_ticket);
+    $('#uploadForm').data('file-name', fileName);
+    $('#uploadForm').data('ticket-id', ticketId);
 
-        setTimeout(() => {
-            uploadDocumentModal.show();
-        }, 300);
-    });
+    setTimeout(() => {
+      uploadDocumentModal.show();
+    }, 300);
+  });
 
-   $(document).on('click', '.btn-view-document', function() {
+  $(document).on('click', '.btn-view-document', function() {
     documentActionsModal.hide();
 
     const ticketId = $(this).data('ticket-id');
@@ -1361,68 +1424,67 @@ $(document).ready(function () {
 
 
 $(document).on('click', '#generateNotaEntregaBtn', function () {
-  const ticketId = document.getElementById('htmlTemplateTicketId').value;
-  if (!ticketId) {
-    Swal.fire({ icon: 'warning', title: 'Ticket no disponible' });
-    return;
-  }
-
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/documents/GetDeliveryNoteData`);
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState !== 4) return;
-
-    if (xhr.status >= 200 && xhr.status < 300) {
-      try {
-        const res = JSON.parse(xhr.responseText);
-        if (!res || !res.success || !res.rows) {
-          Swal.fire({ icon: 'warning', title: 'No se encontraron datos' });
-          return;
-        }
-
-        const d = res.rows[0];
-
-        // Get the serial number, handling both possible property names
-        const serialPos = d.serialpos || d.serial_pos || '';
-
-        // Extract the last 4 digits of the serial number
-        const lastFourSerialDigits = serialPos.slice(-4);
-
-        // Create the new delivery note number
-        const notaNumero = `NE-${ticketId}-${lastFourSerialDigits}`;
-        const regDes = 'Caracas';
-
-        $('#htmlTemplateTicketId').val(ticketId);
-        $('#ne_fecha').val(d.fecha_actual || new Date().toLocaleDateString());
-        $('#ne_numero').val(notaNumero);
-
-        $('#ne_rif').val(d.coddocumento || '');
-        $('#ne_razon').val(d.razonsocial || '');
-        $('#ne_responsable').val(d.rlegal || d.rlegal || '');
-        $('#ne_contacto').val(d.telf1 || 'Sin número de Contacto')
-
-        $('#ne_tipo_equipo').val(d.tipo_equipo || d.tipo_pos || 'POS');
-        $('#ne_modelo').val(d.modelo || d.desc_modelo || '');
-        $('#ne_serial').val(d.serialpos || d.serial_pos || '');
-
-        $('#ne_region_origen').val(d.estado_final || d.estado_final || '');
-        $('#ne_region_destino').val(regDes);
-        $('#ne_observaciones').val('');
-
-        new bootstrap.Modal(document.getElementById('htmlTemplateModal')).show();
-      } catch (e) {
-        Swal.fire({ icon: 'error', title: 'Respuesta inválida del servidor' });
-      }
-    } else {
-      Swal.fire({ icon: 'error', title: 'Error de red/servidor' });
+    const ticketId = document.getElementById('htmlTemplateTicketId').value;
+    if (!ticketId) {
+        Swal.fire({ icon: 'warning', title: 'Ticket no disponible' });
+        return;
     }
-  };
 
-  const params = `action=GetDeliveryNoteData&id_ticket=${encodeURIComponent(ticketId)}`;
-  console.log(params);
-  xhr.send(params);
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/documents/GetDeliveryNoteData`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState !== 4) return;
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const res = JSON.parse(xhr.responseText);
+                if (!res || !res.success || !res.rows) {
+                    Swal.fire({ icon: 'warning', title: 'No se encontraron datos' });
+                    return;
+                }
+
+                const d = res.rows[0];
+                const serialPos = d.serialpos || d.serial_pos || '';
+                const lastFourSerialDigits = serialPos.slice(-4);
+                const notaNumero = `NE-${ticketId}-${lastFourSerialDigits}`;
+                const regDes = 'Caracas';
+
+                $('#htmlTemplateTicketId').val(ticketId);
+                $('#ne_fecha').val(d.fecha_actual || new Date().toLocaleDateString());
+                $('#ne_numero').val(notaNumero);
+                $('#ne_rif').val(d.coddocumento || '');
+                $('#ne_razon').val(d.razonsocial || '');
+                $('#ne_responsable').val(d.rlegal || d.rlegal || '');
+                $('#ne_contacto').val(d.telf1 || 'Sin número de Contacto');
+                $('#ne_tipo_equipo').val(d.tipo_equipo || d.tipo_pos || 'POS');
+                $('#ne_modelo').val(d.modelo || d.desc_modelo || '');
+                $('#ne_serial').val(d.serialpos || d.serial_pos || '');
+                $('#ne_region_origen').val(d.estado_final || d.estado_final || '');
+                $('#ne_region_destino').val(regDes);
+                $('#ne_observaciones').val('');
+
+                // 1. Obtiene la instancia del modal o la crea si no existe
+                const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
+                htmlModal.show();
+                
+                // 2. Adjunta el evento de clic al botón de cerrar
+                // Es mejor usar jQuery para unificar el manejo de eventos
+                $('#closeHtmlTemplateBtn').on('click', function () {
+                     htmlModal.hide();
+                });
+
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'Respuesta inválida del servidor' });
+            }
+        } else {
+            Swal.fire({ icon: 'error', title: 'Error de red/servidor' });
+        }
+    };
+
+    const params = `action=GetDeliveryNoteData&id_ticket=${encodeURIComponent(ticketId)}`;
+    xhr.send(params);
 });
 
 // Previsualizar y enviar (si usas un modal separado #htmlTemplateModal)
@@ -1771,60 +1833,6 @@ function buildDeliveryNoteHtml(d) {
   </body>
   </html>`;
 }
-
-document.getElementById('generateAndUploadHtmlBtn').addEventListener('click', function () {
-  const ticketId = document.getElementById('htmlTemplateTicketId').value;
-  const iframe = document.getElementById('htmlTemplatePreview');
-  const doc = (iframe && (iframe.contentDocument || iframe.contentWindow.document)) || null;
-  const html = (doc && doc.documentElement) ? doc.documentElement.outerHTML : '';
-
-  if (!html) {
-    Swal.fire({ icon: 'warning', title: 'Previsualiza antes de generar' });
-    return;
-  }
-
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/generateAndUploadNotaEntrega`);
-
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState !== 4) return;
-
-    if (xhr.status >= 200 && xhr.status < 300) {
-      try {
-        const res = JSON.parse(xhr.responseText);
-        if (res && res.success) {
-          Swal.fire({ icon: 'success', title: 'Nota generada y cargada' });
-          const htmlModal = document.getElementById('htmlTemplateModal');
-          const uploadModal = document.getElementById('uploadDocumentModal');
-          if (htmlModal) bootstrap.Modal.getInstance(htmlModal)?.hide();
-          if (uploadModal) bootstrap.Modal.getInstance(uploadModal)?.hide();
-        } else {
-          Swal.fire({ icon: 'error', title: 'Error', text: (res && res.message) || 'No se pudo generar/subir.' });
-        }
-      } catch (e) {
-        Swal.fire({ icon: 'error', title: 'Respuesta inválida del servidor' });
-      }
-    } else {
-      Swal.fire({ icon: 'error', title: 'Error de red/servidor' });
-    }
-  };
-
-  // Usa FormData para no truncar el HTML
-  const fd = new FormData();
-  fd.append('action', 'generateAndUploadNotaEntrega');
-  fd.append('id_ticket', ticketId);
-  fd.append('document_type', 'Envio');
-  fd.append('html', html);
-
-  xhr.send(fd);
-});
-
-$(document).on('click', '#printHtmlTemplateBtn', function () {
-  const iframe = document.getElementById('htmlTemplatePreview');
-  if (!iframe || !iframe.contentWindow) return;
-  iframe.contentWindow.focus();
-  iframe.contentWindow.print(); // Abre diálogo del navegador (imprimir/guardar PDF)
-});
 
 // Función para mostrar el modal de selección de documento
 function showDocumentSelectionModal(ticketId, nroTicket) {
@@ -3536,7 +3544,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function abrirModalComponentes(boton) {
-
     const modalCerrarComponnets = document.getElementById('BotonCerrarModal');
     const ticketId = boton.dataset.idTicket;
     const serialPos = boton.dataset.serialPos;

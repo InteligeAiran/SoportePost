@@ -810,7 +810,7 @@ function mi_navbar()
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header bg-gradient-primary">
-                            <h5 class="modal-title" id="htmlTemplateModalLabel">Generar Nota de Entrega (HTML)</h5>
+                            <h5 class="modal-title" id="htmlTemplateModalLabel">Generar Nota de Entrega</h5>
                         </div>
                         <div class="modal-body">
                             <div class="row g-3">
@@ -880,8 +880,7 @@ function mi_navbar()
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeHtmlTemplateBtn">Cerrar</button>
-                        <button type="button" class="btn btn-primary" id="generateAndUploadHtmlBtn">Generar y Subir</button>
+                        <button type="button" class="btn btn-secondary" id="closeHtmlTemplateBtn">Cerrar</button>
                     </div>
                     </div>
                 </div>
