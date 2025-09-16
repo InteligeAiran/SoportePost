@@ -1916,6 +1916,9 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
             text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
         } else if (diffHours > 0) {
             text = `${diffHours}H ${diffMinutes % 60}M`;
+        } else if (diffMinutes > 0) {
+            // Mostrar minutos cuando es al menos 1 minuto
+            text = `${diffMinutes}M`;
         } else {
             // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
             text = `N/A`;
@@ -1995,7 +1998,6 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
     printWindow.print();
     printWindow.close();
 }
-
 function showElapsedLegend(e) {
     try { if (e && e.stopPropagation) e.stopPropagation(); } catch (_) {}
     const legendHtml = `

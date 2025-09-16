@@ -814,5 +814,25 @@ class TechnicalConsultionRepository
         }
         return $tipousers;
     }
+
+    public function SendBackToTaller($id_ticket, $id_user){
+        $result = $this->model->SendBackToTaller($id_ticket, $id_user);
+        return $result;
+    }
+
+    public function GetSimpleFailure($id_ticket){
+        $result = $this->model->GetSimpleFailure($id_ticket);
+
+        if ($result) {
+            $failure = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $failure[] = $agente;
+                //var_dump($agente);
+            }
+            return $failure;
+        }
+        return false;
+    }
 }
 ?>

@@ -284,6 +284,18 @@ class Consulta extends Controller
                 case 'getRegionTicket':
                     $this->handleGetRegionTicket();
                     break;    
+                
+                case 'SendBackToTaller':
+                    $this->handleSendBackToTaller();
+                    break;
+
+                case 'GetSimpleFailure':
+                    $this->handleGetSimpleFailure();
+                    break;
+
+                case 'CloseTicket':
+                    $this->handelCloseTicket();
+                    break;
 
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
@@ -1893,7 +1905,7 @@ class Consulta extends Controller
         $result = $repository->GetMotivos($documentType);
 
         if ($result) {
-            $this->response(['success' => true,'motivos' => $result], 200);
+            $this->response(['success' => true, 'motivos' => $result], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }
@@ -1968,7 +1980,7 @@ class Consulta extends Controller
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetRegionTicket();
        // var_dump($result);
-               if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'regionusers' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay coordinadores disponibles o No ha seleccionado ningun coordinador'], 404); // Código 404 Not Found
@@ -1976,6 +1988,62 @@ class Consulta extends Controller
             $this->response(['success' => false, 'message' => 'Error al obtener los coordinadores'], 500); // Código 500 Internal Server Error
         }
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
+    }
+
+    public function handleSendBackToTaller(){
+        $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+
+        if (!$id_ticket || !$id_user) {
+            $this->response(['success' => false, 'message' => 'Faltan los datos necesarios(id_user o id_ticket).'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->SendBackToTaller($id_ticket, $id_user);
+
+       if ($result) {
+            $this->response(['success' => true, 'message' => 'El pos ha sido devuelto al Taller.'], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleGetSimpleFailure(){
+        $id_ticket = isset($_POST['ticketId'])? $_POST['ticketId'] : '';
+    
+        if (!$id_ticket) {
+            $this->response(['success' => false, 'message' => 'Faltan el Id_ticket.'], 400);
+            return;
+        }
+    
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetSimpleFailure($id_ticket);
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Se ha encontralo la falla del pos.',   'failure' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handelCloseTicket(){
+         $id_ticket = isset($_POST['ticketId'])? $_POST['ticketId'] : '';
+    
+     
+        if (!$id_ticket) {
+            $this->response(['success' => false, 'message' => 'Faltan el Id_ticket.'], 400);
+            return;
+        }
+    
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetSimpleFailure($id_ticket);
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Se ha encontralo la falla del pos.',   'failure' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
+        }
     }
 
 }

@@ -2117,7 +2117,7 @@ function showConfirmationModalForReceived(ticketId, currentnroTicket, serialPos)
             <div class="mb-4">
                 ${customWarningSvg}
             </div>
-            <p class="h4 mb-3">¿Marcar el Pos asociado <span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> al ticket Nro:<span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentnroTicket}</span>como recibido?</p>
+            <p class="h4 mb-3">¿Marcar el Pos con el serial <span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> asociado al ticket Nro:<span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentnroTicket}</span>como recibido?</p>
             <p class="h5 text-muted">Esta acción registrará la fecha de recepción y habilitará la opción Envío a Taller.</p>
         </div>
     `,
@@ -2916,6 +2916,9 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
             text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
         } else if (diffHours > 0) {
             text = `${diffHours}H ${diffMinutes % 60}M`;
+        } else if (diffMinutes > 0) {
+            // Mostrar minutos cuando es al menos 1 minuto
+            text = `${diffMinutes}M`;
         } else {
             // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
             text = `N/A`;

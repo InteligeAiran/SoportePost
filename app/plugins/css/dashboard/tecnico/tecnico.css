@@ -1354,7 +1354,7 @@ div.dataTables_wrapper div.dataTables_filter input {
 }
 
 /* Specific button styles */
-.custom-confirm-button {
+.custom-confirm-button{
    /* background-color: #007bff !important; /* Bootstrap primary blue */
   /*  border-color: #007bff !important;*/
     font-weight: 500 !important; /* Adjust font weight */

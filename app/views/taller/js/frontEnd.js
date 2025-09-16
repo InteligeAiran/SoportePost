@@ -368,13 +368,18 @@ function getTicketData() {
                                   $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
                               }
 
-                              // Función para verificar si hay datos en una búsqueda específica
+                              function clearFilters() {
+                                  dataTableInstance.search('');
+                                  dataTableInstance.columns().every(function () { this.search(''); });
+                                  dataTableInstance.draw(false);
+                              }
+
+                              // Función para verificar si hay datos en una búsqueda específica (sin dejar filtros activos)
                               function checkDataExists(searchColumn, searchTerm) {
-                                  dataTableInstance.columns().search('').draw(false);
-                                  
-                                  const filteredData = dataTableInstance.column(searchColumn).search(searchTerm, true, false).draw();
+                                  clearFilters();
+                                  dataTableInstance.column(searchColumn).search(searchTerm, true, false).draw(false);
                                   const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
-                                  
+                                  clearFilters();
                                   return rowCount > 0;
                               }
 
@@ -389,13 +394,12 @@ function getTicketData() {
 
                                   for (let i = 0; i < searchTerms.length; i++) {
                                       const { button, column, term, status, action} = searchTerms[i];
-                                      
                                       if (checkDataExists(column, term)) {
-                                          // Si hay datos, aplicar la búsqueda y activar el botón
-                                          dataTableInstance.columns().search('').draw(false);
-                                          dataTableInstance.column(column).search(term, true).draw();
-                                          
-                                          // Aplicar configuración específica para cada botón
+                                          // aplica filtro definitivo limpio
+                                          clearFilters();
+                                          dataTableInstance.column(column).search(term, true, false).draw(false);
+
+                                          // Aplicar configuración específica para cada botón (visibilidades coherentes)
                                           if (button === "btn-por-asignar") {
                                               dataTableInstance.column('carga_de_llave:name').visible(false);
                                               dataTableInstance.column('Enviar_AlRosal:name').visible(false);
@@ -408,7 +412,7 @@ function getTicketData() {
                                               dataTableInstance.column(11).visible(false);
                                               dataTableInstance.column(10).visible(false);
                                               // Aplicar segunda búsqueda para este botón
-                                              dataTableInstance.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto", true, false, true).draw();
+                                              dataTableInstance.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto", true, false).draw(false);
                                               showTicketStatusIndicator(status, ["En proceso de Reparación", "Reparado|Pendiente por repuesto", "Reparado"]);
                                           } else if (button === "btn-recibidos") {
                                               dataTableInstance.column('carga_de_llave:name').visible(false);
@@ -449,70 +453,58 @@ function getTicketData() {
 
                               // Event listeners para los botones (mantener la funcionalidad manual)
                               $("#btn-por-asignar").on("click", function () {
-                                  if (checkDataExists(9, "Recibido en Taller")) {
-                                      dataTableInstance.columns().search('').draw(false);
-                                      dataTableInstance.column(9).search("Recibido en Taller", true).draw();
-                                      dataTableInstance.column('carga_de_llave:name').visible(false);
-                                      dataTableInstance.column('Enviar_AlRosal:name').visible(false);
-                                      dataTableInstance.column(11).visible(false);
-                                      dataTableInstance.column(10).visible(false);
-                                      setActiveButton("btn-por-asignar");
-                                      showTicketStatusIndicator('En proceso', 'Recibido en Taller');
-                                  } else {
-                                      findFirstButtonWithData();
-                                  }
+                                  clearFilters();
+                                  dataTableInstance.column(9).search("^Recibido en Taller$", true, false).draw(false);
+                                  const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
+                                  if (rowCount === 0) return findFirstButtonWithData();
+                                  dataTableInstance.column('carga_de_llave:name').visible(false);
+                                  dataTableInstance.column('Enviar_AlRosal:name').visible(false);
+                                  dataTableInstance.column(11).visible(false);
+                                  dataTableInstance.column(10).visible(false);
+                                  setActiveButton("btn-por-asignar");
+                                  showTicketStatusIndicator('En proceso', 'Recibido en Taller');
                               });
 
                               // Tus event listeners de clic están correctos
                               $("#btn-asignados").on("click", function () {
-                                  if (checkDataExists(8, "En Taller")) {
-                                      dataTableInstance.columns().search('').draw(false);
-                                      dataTableInstance.column(8).search("En Taller", true).draw();
-                                      dataTableInstance.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto", true, false, true).draw();
-                                      dataTableInstance.column('carga_de_llave:name').visible(true);
-                                      dataTableInstance.column('Enviar_AlRosal:name').visible(true);
-                                      dataTableInstance.column(11).visible(false);
-                                      dataTableInstance.column(10).visible(false);
-                                      setActiveButton("btn-asignados");
-                                      showTicketStatusIndicator('En proceso', ['En proceso de Reparación', 'Reparado', 'Pendiente por repuesto']);
-                                  } else {
-                                      findFirstButtonWithData();
-                                  }
+                                  clearFilters();
+                                  dataTableInstance.column(8).search("^En Taller$|^Enviado a taller$", true, false).draw(false);
+                                  // refinamiento por estado del lab
+                                  dataTableInstance.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto", true, false).draw(false);
+                                  const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
+                                  if (rowCount === 0) return findFirstButtonWithData();
+                                  dataTableInstance.column('carga_de_llave:name').visible(true);
+                                  dataTableInstance.column('Enviar_AlRosal:name').visible(true);
+                                  dataTableInstance.column(11).visible(false);
+                                  dataTableInstance.column(10).visible(false);
+                                  setActiveButton("btn-asignados");
+                                  showTicketStatusIndicator('En proceso', ['En proceso de Reparación', 'Reparado', 'Pendiente por repuesto']);
                               });
 
                               $("#btn-recibidos").on("click", function () {
-                                  if (checkDataExists(8, "En espera confirmación carga de llaves")) {
-                                      dataTableInstance.columns().search('').draw(false);
-                                      dataTableInstance.column(8).search("En espera confirmación carga de llaves", true).draw();
-                                      dataTableInstance.column(11).visible(true);
-                                      dataTableInstance.column('carga_de_llave:name').visible(false);
-                                      dataTableInstance.column('Enviar_AlRosal:name').visible(true);
-                                      setActiveButton("btn-recibidos");
-                                      showTicketStatusIndicator('En proceso', 'Confirmación carga de llaves');
-                                  } else {
-                                      findFirstButtonWithData();
-                                  }
+                                  clearFilters();
+                                  dataTableInstance.column(8).search("^En espera confirmación carga de llaves$", true, false).draw(false);
+                                  const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
+                                  if (rowCount === 0) return findFirstButtonWithData();
+                                  dataTableInstance.column(11).visible(true);
+                                  dataTableInstance.column('carga_de_llave:name').visible(false);
+                                  dataTableInstance.column('Enviar_AlRosal:name').visible(true);
+                                  setActiveButton("btn-recibidos");
+                                  showTicketStatusIndicator('En proceso', 'Confirmación carga de llaves');
                               });
 
                               $("#btn-devuelto").on("click", function () {
-                                  if (checkDataExists(8, "En el Rosal")) {
-                                      dataTableInstance.columns().search('').draw(false);
-                                      dataTableInstance.column(8).search("En el Rosal").draw();
+                                  clearFilters();
+                                  dataTableInstance.column(8).search("^En el Rosal$", true, false).draw(false);
+                                  const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
+                                  if (rowCount === 0) return findFirstButtonWithData();
 
-                                      // Obtener todos los botones de carga de llave y ocultarlos
-                                      document.querySelectorAll(".load-key-button").forEach(button => {
-                                          button.style.display = "none";
-                                      });
+                                  // Ocultar controles de llaves
+                                  document.querySelectorAll(".load-key-button").forEach(button => { button.style.display = "none"; });
+                                  document.querySelectorAll(".receive-key-checkbox").forEach(checkbox => { checkbox.style.display = "none"; });
 
-                                      document.querySelectorAll(".receive-key-checkbox").forEach(checkbox => {
-                                          checkbox.style.display = "none"; // Ocultar checkboxes
-                                      });
-
-                                      setActiveButton("btn-devuelto");
-                                      showTicketStatusIndicator('En proceso', 'En el Rosal');
-                                  } else {
-                                      findFirstButtonWithData();
-                                  }
+                                  setActiveButton("btn-devuelto");
+                                  showTicketStatusIndicator('En proceso', 'En el Rosal');
                               });
 
                           },
@@ -1542,6 +1534,9 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
             text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
         } else if (diffHours > 0) {
             text = `${diffHours}H ${diffMinutes % 60}M`;
+        } else if (diffMinutes > 0) {
+            // Mostrar minutos cuando es al menos 1 minuto
+            text = `${diffMinutes}M`;
         } else {
             // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
             text = `N/A`;

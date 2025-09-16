@@ -418,12 +418,8 @@ function getTicketDataFinaljs() {
   const detailsPanel = document.getElementById("ticket-details-panel");
 
   const tableElement = document.getElementById("tabla-ticket");
-  const theadElement = tableElement
-    ? tableElement.getElementsByTagName("thead")[0]
-    : null;
-  const tbodyElement = tableElement
-    ? tableElement.getElementsByTagName("tbody")[0]
-    : null;
+  const theadElement = tableElement ? tableElement.getElementsByTagName("thead")[0] : null;
+  const tbodyElement = tableElement ? tableElement.getElementsByTagName("tbody")[0] : null;
   const tableContainer = document.querySelector(".table-responsive");
 
   // Define column titles strictly based on your SQL function's output
@@ -512,30 +508,6 @@ function getTicketDataFinaljs() {
                   visible: isVisible,
                 };
 
-                // Lógica para aplicar estilo al estado del ticket
-               /* if (key === "name_status_ticket") {
-                  columnDef.render = function (data, type, row) {
-                    let statusText = String(data || "").trim();
-                    let statusColor = "gray";
-
-                    switch (statusText) {
-                      case "Abierto":
-                        statusColor = "#4CAF50"; // Verde
-                        break;
-                      case "En proceso":
-                        statusColor = "#2196F3"; // Azul
-                        break;
-                      default:
-                        if (statusText === "") {
-                          return "";
-                        }
-                        statusColor = "#9E9E9E"; // Gris si no hay match
-                        break;
-                    }
-                    return `<span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
-                  };
-                }*/
-
                 const displayLengthForTruncate = 25; // Define la longitud a la que truncar el texto
 
                 // ************* APLICAR LÓGICA DE TRUNCADO A FALLA *************
@@ -574,11 +546,7 @@ function getTicketDataFinaljs() {
               }
             }
 
-            // Añadir la columna "Acción" al final
-           // ... (código anterior hasta la columna "Acción")
-
-            // Añadir la columna "Acción" al final
-           columnsConfig.push({
+          columnsConfig.push({
                   data: null,
                   title: "Acción",
                   orderable: false,
@@ -649,10 +617,55 @@ function getTicketDataFinaljs() {
                       }
                       return actionButton;
                   },
-              });
+          });
+
+          columnsConfig.push({
+                  data: null,
+                  title: "Taller",
+                  orderable: false,
+                  searchable: false,
+                  className: "dt-body-center",
+                  render: function (data, type, row) {
+                      const idTicket = row.id_ticket;
+                      const serialPos = row.serial_pos;
+                      const nroTicket = row.nro_ticket;
+                      const name_accion_ticket = (row.name_accion_ticket || "").trim();
+                      const reentry_lab = row.reentry_lab;
+                  
+                      console.log(reentry_lab);
+                      let actionButton = '';
+
+                      // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
+                      if (name_accion_ticket === "En espera de confirmar recibido en el Rosal") {
+                        actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
+                          data-id-ticket="${idTicket}"
+                          data-serial-pos="${serialPos}"
+                          data-nro-ticket="${nroTicket}">
+                          <i class="fas fa-hand-holding-box"></i> Recibido
+                        </button>`;
+                      }else if(reentry_lab === null || reentry_lab ===  'f' || reentry_lab === ""){
+                        actionButton = `<button type="button"
+                          class="btn btn-warning btn-sm send-back-to-lab-btn"
+                          data-id-ticket="${idTicket}"
+                          data-serial-pos="${serialPos}"
+                          data-nro-ticket="${nroTicket}">
+                          Devolver a Taller
+                        </button>`;
+                      }else{
+                       actionButton =  `<button type="button"
+                          class="btn btn-warning btn-sm send-back-to-lab-btn"
+                          data-id-ticket="${idTicket}"
+                          data-serial-pos="${serialPos}"
+                          data-nro-ticket="${nroTicket}" disabled>
+                          Ya has devuelto este ticket 1 vez
+                        </button>`;
+                      }
+                     return actionButton;
+                  },
+          });
 
             // Añadir la columna "Llaves"
-            columnsConfig.push({
+          columnsConfig.push({
                 data: null,
                 title: "Llaves",
                 orderable: false,
@@ -697,10 +710,10 @@ function getTicketDataFinaljs() {
                                     title="Confirmar Carga De llaves">`;
                         }
                 },
-            });
+          });
 
             // Añadir la columna "Imagen"
-            columnsConfig.push({
+          columnsConfig.push({
               data: null,
               title: "Vizualizar Documentos",
               orderable: false,
@@ -747,7 +760,7 @@ function getTicketDataFinaljs() {
                     return `<button type="button" class="btn btn-secondary btn-sm" title="No hay documento disponible" disabled>No hay documento disponible</button>`;
                 }
              },
-            });
+          });
 
             // Initialize DataTables
             const dataTableInstance = $(tableElement).DataTable({
@@ -1361,55 +1374,57 @@ function getTicketDataFinaljs() {
               });
 
 
-           // ************* INICIO: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
-           $("#tabla-ticket tbody")
-                .off("change", ".receive-key-checkbox") // <--- Usamos 'change' para checkboxes
-                .on("change", ".receive-key-checkbox", function (e) {
-                    e.stopPropagation(); // Evita propagación del evento
+          // ************* INICIO: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
+            $("#tabla-ticket tbody")
+              .off("change", ".receive-key-checkbox") // <--- Usamos 'change' para checkboxes
+              .on("change", ".receive-key-checkbox", function (e) {
+                      e.stopPropagation(); // Evita propagación del evento
 
-                    const ticketId = $(this).data("id-ticket");
-                    const nroTicket = $(this).data("nro-ticket");
-                    const serialPos = $(this).data("serial-pos") || ""; // Asegúrate de que serial_pos esté definido
-                    const isChecked = $(this).is(":checked"); // Verifica si el checkbox está marcado
-                    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+                      const ticketId = $(this).data("id-ticket");
+                      const nroTicket = $(this).data("nro-ticket");
+                      const serialPos = $(this).data("serial-pos") || ""; // Asegúrate de que serial_pos esté definido
+                      const isChecked = $(this).is(":checked"); // Verifica si el checkbox está marcado
+                      const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
 
-                    if (isChecked) {
-                        Swal.fire({
-                              title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
-                                        <div class="custom-modal-header-content">Confirmación de Carga de Llaves</div>
-                                      </div>`,
-                          html: `<div class="custom-modal-body-content">
-                                  <div class="mb-4">
-                                      ${customWarningSvg}
-                                  </div> 
-                                   <p class="h4 mb-3" style = "color: black;">¿Desea marcar el Ticket Nro: ${nroTicket} como "Llaves Cargadas".?</p> 
-                                   <p class="h5" style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de la carga de llaves</p>`,
-                              confirmButtonText: "Confirmar",
-                            color: "black",
-                            confirmButtonColor: "#003594",
-                            cancelButtonText: "Cancelar",
-                            focusConfirm: false,
-                            allowOutsideClick: false,
-                            showCancelButton: true,
-                            allowEscapeKey: false,
-                            keydownListenerCapture: true,
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                MarkDateKey(ticketId, nroTicket, serialPos); // `false` indica que se cargaron las llaves
-                                $(this).prop('checked', true);
-                            } else {
-                                $(this).prop('checked', false);
-                            }
-                        });
-                    } else {
-                        // Si el checkbox se desmarca, puedes añadir lógica aquí si es necesario
-                        // Por ahora, no hace nada si se desmarca.
-                    }
-                });
+                      if (isChecked) {
+                          Swal.fire({
+                                title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                                          <div class="custom-modal-header-content">Confirmación de Carga de Llaves</div>
+                                        </div>`,
+                            html: `<div class="custom-modal-body-content">
+                                    <div class="mb-4">
+                                        ${customWarningSvg}
+                                    </div> 
+                                    <p class="h4 mb-3" style = "color: black;">¿Desea marcar el Ticket Nro: ${nroTicket} como "Llaves Cargadas".?</p> 
+                                    <p class="h5" style = "padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">Esta acción registrará la fecha de la carga de llaves</p>`,
+                                confirmButtonText: "Confirmar",
+                              color: "black",
+                              confirmButtonColor: "#003594",
+                              cancelButtonText: "Cancelar",
+                              focusConfirm: false,
+                              allowOutsideClick: false,
+                              showCancelButton: true,
+                              allowEscapeKey: false,
+                              keydownListenerCapture: true,
+                          }).then((result) => {
+                              if (result.isConfirmed) {
+                                  MarkDateKey(ticketId, nroTicket, serialPos); // `false` indica que se cargaron las llaves
+                                  $(this).prop('checked', true);
+                              } else {
+                                  $(this).prop('checked', false);
+                              }
+                          });
+                      } else {
+                          // Si el checkbox se desmarca, puedes añadir lógica aquí si es necesario
+                          // Por ahora, no hace nada si se desmarca.
+                      }
+            });
+          // ************* FIN: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
 
-               $("#tabla-ticket tbody")
-                .off("click", ".send-to-region-btn")
-                .on("click", ".send-to-region-btn", function (e) {
+
+          $("#tabla-ticket tbody")
+            .off("click", ".send-to-region-btn")
+            .on("click", ".send-to-region-btn", function (e) {
                     e.stopPropagation();
 
                     const ticketId = $(this).data("id-ticket");
@@ -1445,11 +1460,11 @@ function getTicketDataFinaljs() {
                             checkTicketComponents(ticketId, serialPos, regionName);
                         }
                     });
-                });
+          });
 
-                $("#tabla-ticket tbody")
-                  .off("click", ".received-ticket-btn")
-                   .on("click", ".received-ticket-btn", function (e) {
+          $("#tabla-ticket tbody")
+            .off("click", ".received-ticket-btn")
+            .on("click", ".received-ticket-btn", function (e) {
                                 e.stopPropagation();
                                 const ticketId = $(this).data("id-ticket");
                                 const nroTicket = $(this).data("nro-ticket");
@@ -1472,8 +1487,123 @@ function getTicketDataFinaljs() {
                                         "La instancia del modal 'confirmInTallerModal' no está disponible."
                                     );
                                 }
+          });
+
+          $("#tabla-ticket tbody")
+            .off("click", ".send-back-to-lab-btn")
+            .on("click", ".send-back-to-lab-btn", function (e){
+               e.stopPropagation();
+
+                  const ticketId = $(this).data("id-ticket");
+    const nroTicket = $(this).data("nro-ticket");
+    const serialPos = $(this).data("serial-pos") || "";
+
+    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+
+    Swal.fire({
+        title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+            <div class="custom-modal-header-content">Confirmar devolución a Taller</div>
+        </div>`,
+        html: `
+            <div class="custom-modal-body-content">
+                <div class="mb-4">
+                    ${customWarningSvg}
+                </div>
+                <p class="h4 mb-3">¿Deseas enviar el Pos con el serial <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> asociado al ticket Nro:<span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> devuelta al Taller?</p>
+                <p class="h5 text-muted">Esta acción asume que en el trayecto el POS se averió.</p>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: "Enviar Pos",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#003594",
+        showLoaderOnConfirm: true,
+        showCloseButton: false,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        focusConfirm: false,
+        customClass: {
+            confirmButton: 'custom-confirm-button',
+            cancelButton: 'custom-cancel-button',
+        },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.showLoading();
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetSimpleFailure`);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    Swal.hideLoading();
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            const falla = response.failure[0] || {};
+                            const fallaTexto = falla.name_failure || 'No se encontró una falla asociada.';
+
+                            // --- Modal de Falla con estilo mejorado ---
+                            Swal.fire({
+                                title: '',
+                                html: `
+                                    <div style="margin:-6px -6px 14px -6px; width: 100%;">
+                                        <div style="background:linear-gradient(90deg,#000,#0056d6);border-radius:10px;padding:12px 16px;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 2px 6px rgba(0,0,0,.1)">
+                                            <span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.15);font-size:18px;">🛠️</span>
+                                            <div style="font-size:18px;font-weight:700;letter-spacing:.2px;">Detalles de la Falla</div>
+                                        </div>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <div style="background:#fff3cd;border:1px solid #ffeeba;color:#856404;border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start;">
+                                            <span style="font-size:20px;line-height:1">⚠️</span>
+                                            <div>
+                                                <div style="font-weight:600;margin-bottom:2px;">Reingreso con misma falla</div>
+                                                <div style="font-size:13px;color:#5c5c5c;">Si es un reingreso, el POS debe tener la misma falla del ticket. De lo contrario, cierre el ticket.</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-2" style="display:flex;flex-direction:column;gap:6px;">
+                                            <label class="form-label" style="margin:0;font-weight:600;color:#333; width: 40%;">Falla del POS</label>
+                                            <div class="input-group" style="display:flex;align-items:center;gap:8px;">
+                                                <span style="background:#e9ecef;border:1px solid #ced4da;border-radius:6px;padding:6px 10px;color:#495057; margin-top: -2%;">🔧</span>
+                                                <input type="text" class="form-control" style="border-radius:30px;" value="${fallaTexto}" disabled>
+                                            </div>
+                                            <small class="text-muted" style="color:#6c757d;">Información obtenida del último diagnóstico del ticket.</small>
+                                        </div>
+                                    </div>
+                                `,
+                                icon: undefined,
+                                showCancelButton: true,
+                                confirmButtonText: 'Aceptar',
+                                cancelButtonText: 'Cerrar Ticket',
+                                confirmButtonColor: '#003594',
+                                cancelButtonColor: '#dc3545',
+                                color: 'black',
+                                width: 560
+                            }).then((resultFalla) => {
+                                if (resultFalla.isConfirmed) {
+                                  SendBacktoTaller(ticketId, nroTicket);
+                                } else if (resultFalla.dismiss === Swal.DismissReason.cancel) {
+                                  CloseTicket(ticketId, nroTicket);
+                                }
                             });
-            // ************* FIN: LÓGICA PARA EL CHECKBOX "CARGAR LLAVE" *************
+                            // --- Fin del Nuevo Modal ---
+                            
+                        } catch (e) {
+                            Swal.fire('Error', 'No se pudo procesar la respuesta del servidor.', 'error');
+                            console.error('Error parsing JSON:', e);
+                        }
+                    } else {
+                        Swal.fire('Error de Conexión', 'Hubo un problema al intentar obtener la información de la falla.', 'error');
+                    }
+                }
+            };
+
+            const params = `action=GetSimpleFailure&ticketId=${encodeURIComponent(ticketId)}`;
+            xhr.send(params);
+        }
+    });
+});
 
             $("#tabla-ticket tbody").on("click", ".truncated-cell", function (e) {
               // Detiene la propagación del evento para que no se active el clic en la fila
@@ -2570,7 +2700,7 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Usuario Gestión:</div></strong>
-                          ${d.full_name_tecnico}
+                          ${d.full_name_tecnico1}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Dirección Instalación:</div></strong>
@@ -2985,6 +3115,9 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
             text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
         } else if (diffHours > 0) {
             text = `${diffHours}H ${diffMinutes % 60}M`;
+        } else if (diffMinutes > 0) {
+            // Mostrar minutos cuando es al menos 1 minuto
+            text = `${diffMinutes}M`;
         } else {
             // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
             text = `N/A`;
@@ -3157,3 +3290,144 @@ function onTicketSelect(ticketData) {
   // ... resto de tu código para mostrar detalles del ticket ...
 }
 
+function SendBacktoTaller(ticketId, nroTicket){
+  const id_user = document.getElementById("userId").value;
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/consulta/SendBackToTaller`
+  ); // Necesitas una nueva ruta de API para esto
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          Swal.fire({
+                title: "¡Enviado Al Taller!",
+                html: `El Pos asociado al ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido enviado devuelta al taller.`, // <-- CAMBIO AQUÍ
+                icon: "success",
+                color: "black",
+                confirmButtonColor: "#003594",
+                focusConfirm: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                keydownListenerCapture: true,
+            }).then(() => {
+               window.location.reload(); // Volver a cargar la tabla para reflejar los cambios
+            });
+        } else {
+          Swal.fire(
+            "Error",
+            response.message ||
+              "Hubo un error al marcar el ticket como recibido.",
+            "error"
+          );
+        }
+      } catch (error) {
+        Swal.fire(
+          "Error",
+          "Error al procesar la respuesta del servidor.",
+          "error"
+        );
+        console.error("Error parsing JSON for markTicketAsReceived:", error);
+      }
+    } else {
+      Swal.fire(
+        "Error",
+        `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
+        "error"
+      );
+      console.error(
+        "Error en markTicketAsReceived:",
+        xhr.status,
+        xhr.statusText
+      );
+    }
+  };
+  xhr.onerror = function () {
+    Swal.fire(
+      "Error",
+      "Error de red al intentar marcar el ticket como recibido.",
+      "error"
+    );
+    console.error("Network error for markTicketAsReceived");
+  };
+
+  const data = `action=SendBackToTaller&id_ticket=${ticketId}&id_user=${encodeURIComponent(
+    id_user
+  )}`;
+  xhr.send(data);
+}
+
+function CloseTicket(ticketId, nroTicket){
+  const id_user = document.getElementById("userId").value;
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/consulta/CloseTicket`
+  ); // Necesitas una nueva ruta de API para esto
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          Swal.fire({
+                title: "¡Enviado Al Taller!",
+                html: `El Pos asociado al ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido enviado devuelta al taller.`, // <-- CAMBIO AQUÍ
+                icon: "success",
+                color: "black",
+                confirmButtonColor: "#003594",
+                focusConfirm: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                keydownListenerCapture: true,
+            }).then(() => {
+               window.location.reload(); // Volver a cargar la tabla para reflejar los cambios
+            });
+        } else {
+          Swal.fire(
+            "Error",
+            response.message ||
+              "Hubo un error al marcar el ticket como recibido.",
+            "error"
+          );
+        }
+      } catch (error) {
+        Swal.fire(
+          "Error",
+          "Error al procesar la respuesta del servidor.",
+          "error"
+        );
+        console.error("Error parsing JSON for markTicketAsReceived:", error);
+      }
+    } else {
+      Swal.fire(
+        "Error",
+        `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
+        "error"
+      );
+      console.error(
+        "Error en markTicketAsReceived:",
+        xhr.status,
+        xhr.statusText
+      );
+    }
+  };
+  xhr.onerror = function () {
+    Swal.fire(
+      "Error",
+      "Error de red al intentar marcar el ticket como recibido.",
+      "error"
+    );
+    console.error("Network error for markTicketAsReceived");
+  };
+
+  const data = `action=CloseTicket&id_ticket=${ticketId}&id_user=${encodeURIComponent(
+    id_user
+  )}`;
+  xhr.send(data);
+}
