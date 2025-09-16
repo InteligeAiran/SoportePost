@@ -283,6 +283,7 @@ class reportsModel extends Model
             " . ((int) $id_user) . ",
             " . $escapedDocumentType . "
         )";
+        
         $result = Model::getResult($sql, $this->db);
 
         if($result){
@@ -1035,40 +1036,31 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
                 $idticket = (int)$id_ticket;
                 $id_user = (int)$id_user;
                 
+                $modulo_insertcolumn = 'coordinador';
+
                 // Inicia transacción
-               pg_query($this->db->getConnection(), "BEGIN");
+                pg_query($this->db->getConnection(), "BEGIN");
 
-                try {
-                if (!is_array($components) || empty($components)) {
-                    throw new Exception('Lista de componentes vacía');
-                }
+                // Inserta componentes
+                if (is_array($components) && !empty($components)) {
+                    foreach ($components as $comp_id) {
+                        $sqlcomponents = "INSERT INTO tickets_componets (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert) 
+                                        VALUES ($1, $2, $3, $4, NOW(), $5);";
 
-                $sqlcomponents = "INSERT INTO tickets_componets
-                    (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert)
-                    VALUES ($1, $2, $3, $4, NOW(), $5)";  // parámetros, sin concatenar
+                        $resultcomponent = pg_query_params(
+                            $this->db->getConnection(),
+                            $sqlcomponents,
+                            array($serial_pos, $idticket, (int)$comp_id, $id_user, $modulo_insertcolumn)
+                        );
 
-                foreach ($components as $comp_id) {
-                    $params = [
-                    $serial_pos,           // text/varchar
-                    (int)$idticket,        // int
-                    (int)$comp_id,         // int (debe existir en tabla components)
-                    (int)$id_user,         // int (debe existir en users)
-                    'coordinador'          // text/varchar (verifica tipo de modulo_insert)
-                    ];
-
-                    $res = pg_query_params($this->db->getConnection(), $sqlcomponents, $params);
-                    if ($res === false) {
-                    throw new Exception('INSERT componentes: ' . pg_last_error($this->db->getConnection()));
+                        if ($resultcomponent === false) {
+                            pg_query($this->db->getConnection(), "ROLLBACK");
+                            return false;
+                        }
                     }
-                    pg_free_result($res);
-                }
-
-                // … resto de tu lógica …
-                pg_query($this->db->getConnection(), "COMMIT");
-                } catch (Throwable $e) {
-                error_log('SaveComponents fallo: ' . $e->getMessage());
-                pg_query($this->db->getConnection(), "ROLLBACK");
-                return false;
+                } else {
+                    pg_query($this->db->getConnection(), "ROLLBACK");
+                    return false;
                 }
 
                 // Obtiene estados para el historial (FUERA del foreach)
@@ -1099,34 +1091,20 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
                 if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
                     $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') !== null ? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
                 }
+
                 
                 $id_accion_ticket = 20;
-               
-                $selectCoord = "
-                    SELECT id_coordinador
-                    FROM users_tickets
-                    WHERE id_ticket = {$idticket}
-                    ORDER BY id_user_ticket DESC
-                    LIMIT 1
-                    ";
-                    $resSel = $this->db->pgquery($selectCoord);
-                    $id_coordinador = null;
-                    if ($resSel && pg_num_rows($resSel) > 0) {
-                    $row = pg_fetch_assoc($resSel);
-                    $id_coordinador = $row['id_coordinador'] !== null ? (int)$row['id_coordinador'] : null;
-                    pg_free_result($resSel);
-                    }
-                    $selectCoord = $this->db->pgquery($selectCoord);
 
-                    if ($selectCoord && pg_num_rows($selectCoord) > 0) {
-                        $row = pg_fetch_assoc($selectCoord);
-                        $id_coordinador = (int)$row['id_coordinador'];
-                        pg_free_result($selectCoord);
-                    } else {
-                        error_log('UPDATE users_tickets no retornó filas. ' . pg_last_error($this->db->getConnection()));
+                 $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
                         $id_coordinador = null;
                     }
-             
+
                 $sqlInsertHistory = sprintf(
                     "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
                     (int)$idticket,
@@ -1184,16 +1162,6 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
     public function getTicketagestioncomercialCount(){
         try {
             $sql = "SELECT * FROM getticketagestioncomercialcount()";
-            $result = Model::getResult($sql, $this->db);
-            return $result;
-        } catch (Throwable $e) {
-            // Handle exception
-        }
-    }
-
-     public function handlegetTicketEntregadoCliente(){
-        try {
-            $sql = "SELECT * FROM get_entregado_cliente()";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

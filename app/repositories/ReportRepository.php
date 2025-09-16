@@ -593,10 +593,4 @@ class ReportRepository
         $result = $this->model->getTicketagestioncomercialCount(); // Asumiendo que tienes este método en tu modelo
         return $result['row']['getticketagestioncomercialcount'];
     }
-
-    public function handlegetTicketEntregadoCliente(){
-        // Lógica para obtener todos los usuarios
-        $result = $this->model->handlegetTicketEntregadoCliente(); // Asumiendo que tienes este método en tu modelo
-        return $result['row']['get_entregado_cliente'];
-    }
 }

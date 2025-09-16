@@ -2211,7 +2211,6 @@ function SendRango() {
               id_ticket: "ID Ticket",
               create_ticket: "Create Ticket",
               name_status_ticket: "Status Ticket",
-              date_closed: "Cierre Ticket",
               rif_empresa: "Rif",
               razonsocial_cliente: "Razón Social",
               name_process_ticket: "Process Ticket",

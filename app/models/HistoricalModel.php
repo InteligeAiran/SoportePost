@@ -67,7 +67,7 @@ class HistoricalModel extends Model
             // --- 2. Llamar a la función SQL para actualizar el estado principal del ticket ---
             // Esta función `update_ticket_to_received` debería encargarse de actualizar
             // `id_status_ticket` y `date_received_coordinator` en la tabla `tickets`.
-            $sqlCallFunction = "SELECT public.update_ticket_to_received({$id_ticket}, {$id_user});";
+            $sqlCallFunction = "SELECT public.update_ticket_to_received({$id_ticket});";
             $resultUpdate = $this->db->pgquery($sqlCallFunction);
 
             if ($resultUpdate === false) {

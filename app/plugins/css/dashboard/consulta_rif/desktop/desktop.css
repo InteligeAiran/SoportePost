@@ -548,110 +548,56 @@
     }
 
     /* IMAGES STYLES */
-        .ingenico-ict250 {
-           width: 363%;
-            height: 95%;
-            border-radius: 10%;
-            margin-left: -176%;
-            margin-top: -1%;
-        }
+    .ingenico-ict250 {
+        width: 150px;
+        border: 2px solid green;
+        border-radius: 10px;
+        margin-left: 10px;
 
-        .sunmi-P2{
-            margin-bottom: -17%;
-            height: 82%;
-            margin-left: -150%;
-            width: 311%;
-        }
+    }
 
-        .ingenico-ict220{
-            margin-left: -120%;
-            margin-bottom: -72%;
-            height: 88%;
-        }
+    .sunmi-P2{
+        margin-top: -5%;
+        height: 95%;
+        margin-left: -171%;
+        width: 307%;
+    }
 
-        .move-2500{
-            margin-left: -153px;
-            height: 69%;
-            margin-bottom: -86%;
-            height: 100%;
-        }
+    .ingenico-ict220{
+        margin-left: -152%;
+        margin-top: -8%;
+        height: 99%;
+    }
 
-        .ingenico-iwl220{
-            margin-top: -43%;
-            margin-left: -179%;
-            height: 110%;
-        }
+    .move-2500{
+        margin-left: -93px;
+        height: 71%;
+    }
 
-        .New-9310{
-            margin-left: -110%;
-            width: 220%;
-        }
+    .ingenico-iwl220{
+        margin-top: -43%;
+        margin-left: -179%;
+        height: 110%;
+    }
 
-        .sunmi-P2mini{
-            margin-left: -157px;
-            margin-bottom: -137px;
-            height: 93%;
-        }
+    .sunmi-P2mini{
+        margin-left: -263px;
+        margin-top: 30px;
+    }
 
-        .D200T{
-            margin-left: -111%;
-            height: 92%;
-            margin-bottom: -74%;
-        }
+    .sunmi-P2SE{
+        width: 376%; 
+        margin-left: -197%;
+        margin-top: -5%;
 
-        .New-7210{
-            margin-left: -104%;
-            height: 85%;
-            margin-bottom: -88%;
-        }
-
-        .sunmi-P2SE{
-            margin-left: -144%;
-            margin-bottom: 7%;
-            width: 272%;
-        }
-
-        .cuadra-mini-pos{
-            margin-left: -118%;
-            margin-bottom: -82%;
-            height: 100%;
-        }
-
-        .New-9220{
-            margin-left: -104%;
-            margin-bottom: -96%;
-            height: 95%;
-        }
-
-        .New-6210{
-            margin-left: -107%;
-            margin-bottom: -104%;
-            height: 102%;
-        }
-
-        .P10-ZIO{
-            margin-left: -109%;
-            margin-bottom: -83%;
-            height: 86%;
-        }
-
-        .SUNMI-P2-LITE{
-            margin-left: -92%;
-            height: 89%;
-            margin-bottom: -103%;
-        }
-
-        .mantainment{
-            margin-left: -307%;
-            height: 131%;
-            margin-top: -48%;
-        }
-        
-        .Kozen-P10{
-            margin-left: -94px;
-            height: 331px;
-        }
+    }
+    
+    .Kozen-P10{
+        margin-left: -156px;
+        height: 525px;
+    }
     /*  END IMAGES STYLES */
+    
 
     /*#ModalSerial-content img {
         border: 1px solid #eee;

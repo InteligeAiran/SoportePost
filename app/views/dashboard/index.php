@@ -197,10 +197,12 @@ function mi_navbar() {}
                         aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
-                                <div class="modal-header bg-gradient-primary text-white">
+                                <div class="modal-header bg-gradient-info text-white">
                                     <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
                                         de Tickets Abiertos
                                     </h5>
+                                    <button type="button" class="btn-close" id="ModalOpenIcon" data-bs-dismiss="modal"
+                                            aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
@@ -243,8 +245,9 @@ function mi_navbar() {}
                     <div class="modal fade" id="ProcessTicketsModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
-                                <div class="modal-header bg-gradient-primary text-white">
+                                <div class="modal-header bg-gradient-info text-white">
                                     <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle de Tickets En Proceso</h5>
+                                    <button type="button" class="btn-close" id="ModalProcessIcon" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div id="ProcessTicketsContent"></div>
@@ -327,10 +330,12 @@ function mi_navbar() {}
                         aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
-                                <div class="modal-header bg-gradient-primary text-white">
+                                <div class="modal-header bg-gradient-info text-white">
                                     <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
                                         de Tickets Resueltos
                                     </h5>
+                                    <button type="button" class="btn-close" id="ModalResolveIcon"
+                                        data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div id="ResolveTicketsContent"></div>
@@ -427,10 +432,12 @@ function mi_navbar() {}
                         aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
-                                <div class="modal-header bg-gradient-primary text-white">
+                                <div class="modal-header bg-gradient-info text-white">
                                     <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
                                         de Tickets En Taller
                                     </h5>
+                                    <button type="button" class="btn-close" id="ModalTallerIcon" data-bs-dismiss="modal"
+                                        aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div id="TallerTicketsContent"></div>
@@ -590,7 +597,7 @@ function mi_navbar() {}
 
                     <div class="col-lg-5">
                         <div class="card shadow-md rounded-xl">
-                            <div class="card-header pb-0 p-4 border-b border-gray-200 bg-gradient-info">
+                            <div class="card-header pb-0 p-4 border-b border-gray-200">
                                 <h6 class="text-2xl font-semibold text-gray-800">Categorías de Tickets</h6>
                             </div>
                             <div class="card-body p-4">
@@ -690,7 +697,7 @@ function mi_navbar() {}
                                             </div>
                                             <div class="text-content-wrapper">
                                                 <h6 class="item-title">POS Entregado a Cliente</h6>
-                                                <span class="item-count" id = "EntregadosCliente"></span>
+                                                <span class="item-count">9</span>
                                             </div>
                                         </div>
                                         <div class="arrow-wrapper">
@@ -922,58 +929,18 @@ function mi_navbar() {}
         <input type="hidden" id="userIdForPassword" value="<?php echo $_SESSION['id_user']; ?>">
         <!-- END ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
 
-        <footer class="footer" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2.5rem 0; margin-top: 3rem; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
+        <footer class="footer pt-3  ">
             <div class="container-fluid">
-                <div class="row align-items-center justify-content-between">
-                    <div class="col-lg-6 mb-3 mb-lg-0">
-                        <div class="d-flex align-items-center">
-                            <div class="me-3">
-                                <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box" viewBox="0 0 16 16">
-                                        <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5 8 5.961 14.154 3.5zM15 4.239l-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464z"/>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div>
-                                <h5 class="mb-1" style="color: #fff; font-weight: 700; font-size: 1.3rem;">
-                                    InteliSoft
-                                </h5>
-                                <p class="mb-0" style="font-size: 0.9rem; opacity: 0.9;">
-                                    Soluciones tecnológicas innovadoras
-                                </p>
-                            </div>
+                <div class="row align-items-center justify-content-lg-between">
+                    <div class="col-lg-6 mb-lg-0 mb-4">
+                        <div class="copyright text-center text-sm text-muted text-lg-start">
+                            ©
+                            <script>
+                                document.write(new Date().getFullYear())
+                            </script>,
+                            made with <i class="fa fa-heart"></i> by
+                            <a href="https://www.inteligensa.com/" class="font-weight-bold" target="_blank">Plataforma Creada por Intelisoft</a> para una mejor web.
                         </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="d-flex justify-content-lg-end justify-content-center flex-wrap">
-                            <a href="https://www.inteligensa.com/" target="_blank" 
-                            style="background: rgba(255,255,255,0.15); color: white; padding: 0.7rem 1.5rem; border-radius: 25px; text-decoration: none; margin: 0.25rem; font-size: 0.9rem; font-weight: 500; transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                            onmouseover="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.2)'" 
-                            onmouseout="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                                <i class="fas fa-globe me-2"></i>Sitio Web
-                            </a>
-                            <a href="https://www.inteligensa.com/#contactanos" 
-                            style="background: rgba(255,255,255,0.15); color: white; padding: 0.7rem 1.5rem; border-radius: 25px; text-decoration: none; margin: 0.25rem; font-size: 0.9rem; font-weight: 500; transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                            onmouseover="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.2)'" 
-                            onmouseout="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                                <i class="fas fa-envelope me-2"></i>Contacto
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                
-                <hr style="border: none; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); margin: 2rem 0 1.5rem;">
-                
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <p class="mb-0" style="font-size: 0.9rem; opacity: 0.9;">
-                            © <script>document.write(new Date().getFullYear())</script> InteliSoft - Todos los derechos reservados
-                        </p>
-                    </div>
-                    <div class="col-md-4 text-md-end">
-                        <p class="mb-0" style="font-size: 0.8rem; opacity: 0.8;">
-                            <i class="fas fa-heart" style="color: #ff6b6b;"></i> Desarrollado con pasión
-                        </p>
                     </div>
                 </div>
             </div>

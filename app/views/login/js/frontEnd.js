@@ -109,8 +109,8 @@ function SendForm() {
                     text: response.message + ' ¿Deseas cerrar la sesión anterior y abrir una nueva?',
                     color: 'black',
                     showCancelButton: true,
-                    confirmButtonColor: '#003594',
-                    cancelButtonColor: 'rgba(195, 43, 43, 1)',
+                    confirmButtonColor: '#0000ff',
+                    cancelButtonColor: '#d33',
                     confirmButtonText: 'Sí, Abrir Nueva Sesión',
                     cancelButtonText: 'No, Mantener Anterior'
                 }).then((result) => {
@@ -125,7 +125,7 @@ function SendForm() {
                                     const forceResponse = JSON.parse(forceLoginXHR.responseText);
                                   if (forceResponse.success) {
                                         Swal.fire({
-                                            title: '¡Sesión Cerrada!', // Título
+                                            title: '¡Sesión Cerrada y Abierta!', // Título
                                             text: 'La sesión anterior ha sido cerrada y se ha iniciado una nueva.', // Mensaje
                                             icon: 'success', // Icono
                                             // Para el color del texto, se recomienda usar customClass y CSS:
@@ -138,7 +138,7 @@ function SendForm() {
                                             color: 'black', // Esto cambia el color del texto del título.
 
                                             confirmButtonText: 'Ok', // Texto del botón de confirmación
-                                            confirmButtonColor: '#003594 ' // Color del botón de confirmación
+                                            confirmButtonColor: '#0000ff' // Color del botón de confirmación
                                         }).then(() => {
                                             // Esta función se ejecuta después de que el usuario hace clic en "Ok"
                                             window.location.href = forceResponse.redirect;
@@ -185,7 +185,7 @@ function SendForm() {
                             text: 'Se mantendrá la sesión anterior activa.', // El texto ya está bien
                             color: 'black', // <-- Esto es una propiedad del objeto de configuración
                             confirmButtonText: 'Ok', // <-- Esto es una propiedad del objeto de configuración
-                            confirmButtonColor: '#003594' // <-- Esto es una propiedad del objeto de configuración
+                            confirmButtonColor: '#0000ff' // <-- Esto es una propiedad del objeto de configuración
                         }); // <-- Cierra el objeto de configuración
                     }
                 });
