@@ -62,6 +62,9 @@ class Consulta extends Controller
                     $this->handleGetPhoto();
                     break;
 
+                case 'GetPhotoDashboard':
+                    $this->handleGetPhotoDashboard();
+
                 case 'ValidateRif':
                     $this->handleVlidateRif();
                     break;
@@ -364,7 +367,6 @@ class Consulta extends Controller
         $result = $repository->SearchtypePos($serial);
         if ($result !== false) {
             $codrepositoryopos = $result;
-            //var_dump($codrepositoryopos);
 
             /*  AGREGAR CSS */
             $claseImagen = "imagen-predeterminada"; // Valor predeterminado
@@ -372,47 +374,201 @@ class Consulta extends Controller
                 case 1:
                     $nombreArchivo = "ingenico-ict220.png";
                     $claseImagen = "ingenico-ict220";
-                    break;
+                break;
 
                 case 2:
                     $nombreArchivo = "ingenico-ict250.png";
                     $claseImagen = "ingenico-ict250";
-                    break;
+                break;
 
                 case 3:
                     $nombreArchivo = "ingenico-iwl220.png";
                     $claseImagen = "ingenico-iwl220";
-                    break;
+                break;
+
+                case 10: 
+                    $nombreArchivo = "D200T.png";
+                    $claseImagen = "D200T";
+                break;
 
                 case 11:
                     $nombreArchivo = "move-2500.png";
                     $claseImagen = "move-2500";
-                    break;
+                break;
 
                 case 14:
                     $nombreArchivo = "sunmi-P2.png";
                     $claseImagen = "sunmi-P2";
-                    break;
+                break;
 
                 case 15:
                     $nombreArchivo = "sunmi-P2mini.png";
                     $claseImagen = "sunmi-P2mini";
-                    break;
+                break;
+
+                 case 16:
+                    $nombreArchivo = "New-7210.png";
+                    $claseImagen = "New-7210";
+                break;
 
                 case 17:
                     $nombreArchivo = "sunmi-P2SE.png";
                     $claseImagen = "sunmi-P2SE";
-                    break;
+                break;
+
+                case 18:
+                    $nombreArchivo = "CUADRA-MINI-POS.png";
+                    $claseImagen = "cuadra-mini-pos";
+                break;
+
+                case 19:
+                    $nombreArchivo = "New-9220.png";
+                    $claseImagen = "New-9220";
+                break;
+
+                case 20:
+                    $nombreArchivo = "New-9310.png";
+                    $claseImagen = "New-9310";
+                break;
+
+                case 21:
+                    $nombreArchivo = "New-6210.png";
+                    $claseImagen = "New-6210";
+                break;
 
                 case 22:
                     $nombreArchivo = "Kozen-P10.png";
                     $claseImagen = "Kozen-P10";
-                    break;
+                break;
+
+                case 25: 
+                    $nombreArchivo = "P10-ZIO.png";
+                    $claseImagen = "P10-ZIO";
+                break;
+
+                case 26: 
+                    $nombreArchivo = "SUNMI-P2-LITE.png";
+                    $claseImagen = "SUNMI-P2-LITE";
+                break;
 
                 default:
                     $nombreArchivo = "mantainment.png";
+                    $claseImagen = "mantainment";
 
-                    break;
+                break;
+            }
+            /* ENDF AGREGAR CSS */
+
+            $rutaImagen = __DIR__ . "/../../../public/img/consulta_rif/POS/" . $nombreArchivo; // Ruta absoluta
+            $tipoImagen = mime_content_type($rutaImagen);
+            $datosImagen = file_get_contents($rutaImagen);
+            $imagenBase64 = base64_encode($datosImagen);
+            $srcImagen = "data:" . $tipoImagen . ";base64," . $imagenBase64;
+
+            $this->response(['success' => true, 'id_tipopos' => $codrepositoryopos, 'rutaImagen' => $srcImagen, 'claseImagen' => $claseImagen], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener el tipo del POS'], 404);
+        }
+    }
+
+    
+    public function handleGetPhotoDashboard()
+    {
+        $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
+        $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        //var_dump($serial);
+        $result = $repository->SearchtypePos($serial);
+        if ($result !== false) {
+            $codrepositoryopos = $result;
+
+            /*  AGREGAR CSS */
+            $claseImagen = "imagen-predeterminada"; // Valor predeterminado
+            switch ($codrepositoryopos) {
+                case 1:
+                    $nombreArchivo = "ingenico-ict220.png";
+                    $claseImagen = "ingenico-ict220Dashboard";
+                break;
+
+                case 2:
+                    $nombreArchivo = "ingenico-ict250.png";
+                    $claseImagen = "ingenico-ict250Dashboard";
+                break;
+
+                case 3:
+                    $nombreArchivo = "ingenico-iwl220.png";
+                    $claseImagen = "ingenico-iwl220Dashboard";
+                break;
+
+                case 10: 
+                    $nombreArchivo = "D200T.png";
+                    $claseImagen = "D200TDashboard";
+                break;
+
+                case 11:
+                    $nombreArchivo = "move-2500.png";
+                    $claseImagen = "move-2500Dashboard";
+                break;
+
+                case 14:
+                    $nombreArchivo = "sunmi-P2.png";
+                    $claseImagen = "sunmi-P2Dashboard";
+                break;
+
+                case 15:
+                    $nombreArchivo = "sunmi-P2mini.png";
+                    $claseImagen = "sunmi-P2miniDashboard";
+                break;
+
+                 case 16:
+                    $nombreArchivo = "New-7210.png";
+                    $claseImagen = "New-7210Dashboard";
+                break;
+
+                case 17:
+                    $nombreArchivo = "sunmi-P2SE.png";
+                    $claseImagen = "sunmi-P2SEDashboard";
+                break;
+
+                case 18:
+                    $nombreArchivo = "CUADRA-MINI-POS.png";
+                    $claseImagen = "cuadra-mini-posDashboard";
+                break;
+
+                case 19:
+                    $nombreArchivo = "New-9220.png";
+                    $claseImagen = "New-9220Dashboard";
+                break;
+
+                case 20:
+                    $nombreArchivo = "New-9310.png";
+                    $claseImagen = "New-9310Dashboard";
+                break;
+
+                case 21:
+                    $nombreArchivo = "New-6210.png";
+                    $claseImagen = "New-6210Dashboard";
+                break;
+
+                case 22:
+                    $nombreArchivo = "Kozen-P10.png";
+                    $claseImagen = "Kozen-P10Dashboard";
+                break;
+
+                case 25: 
+                    $nombreArchivo = "P10-ZIO.png";
+                    $claseImagen = "P10-ZIODashboard";
+                break;
+
+                case 26: 
+                    $nombreArchivo = "SUNMI-P2-LITEDashboard.png";
+                    $claseImagen = "SUNMI-P2-LITEDashboard";
+                break;
+
+                default:
+                    $nombreArchivo = "mantainment.png";
+                    $claseImagen = "mantainmentDashboard";
+
+                break;
             }
             /* ENDF AGREGAR CSS */
 
@@ -551,7 +707,8 @@ class Consulta extends Controller
                     'user_gestion' => $_SESSION['nombres'] . ' ' . $_SESSION['apellidos'],
                     'id_ticket_creado' => $id_ticket_creado,
                     'status_id' => $status_id,
-                    'status_text' => $status_text // ¡Aquí está el estado!
+                    'status_text' => $status_text, // ¡Aquí está el estado!
+                    'date_create_ticket' => date('Y-m-d H:i') // ✨ Agrega esta línea para incluir la fecha y hora de creación
                 ]
             ], 200);
         } else {
@@ -770,7 +927,9 @@ class Consulta extends Controller
                 'id_ticket_creado' => $idTicketReal,          // ID real de la BD (ej: 12345)
                 'status_id' => $status_id,                    // Incluye el ID del estado
                 'status_text' => $status_text,                // **¡El nombre del estado aquí!**
-                'status_payment' => $status_payment_text
+                'status_payment' => $status_payment_text,
+                'date_create_ticket' => date('Y-m-d H:i') // ✨ Agrega esta línea para incluir la fecha y hora de creación
+
             ]
         ], 200);
         return;
@@ -1757,7 +1916,7 @@ class Consulta extends Controller
         $result = $repository->RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type);
 
         if ($result) {
-            $this->response(['success' => true,'message' => 'El Documento ha sido rechazados correctamente.'], 200);
+            $this->response(['success' => true,'message' => 'El Documento ha sido rechazado correctamente.'], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }

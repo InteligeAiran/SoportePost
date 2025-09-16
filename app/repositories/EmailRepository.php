@@ -50,8 +50,26 @@ class EmailRepository
         return $result ? $result['row'] : null;
     }
 
-    public function GetEmailCoorDataById($id_coordinador){
-        $result = $this->model->GetEmailCoordById($id_coordinador);
+    public function GetEmailCoorDataById($id_ticket){
+        $result = $this->model->GetEmailCoordById($id_ticket);
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetEmailArea(){
+        // Lógica para obtener datos de usuario
+        $result = $this->model->GetEmailArea();
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetCoordinacion($id_ticket){
+        // Lógica para obtener datos de usuario
+        $result = $this->model->GetCoordinacion($id_ticket);
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetTicketId($nro_ticket){
+        // Lógica para obtener datos de usuario
+        $result = $this->model->GetTicketId($nro_ticket);
         return $result ? $result['row'] : null;
     }
 
@@ -137,6 +155,27 @@ class EmailRepository
     public function GetEmailUserDataById($id_user){
         $result = $this->model->GetEmailUserDataById($id_user);
         //var_dump($result);
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetEmailUser1gestionDataById($ticketid, $document_type){
+        $result = $this->model->GetEmailUser1gestionDataById( $ticketid, $document_type);
+        //var_dump($result);
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetDocumentoRechazado($ticketnro){
+        $result = $this->model->GetDocumentoRechazado($ticketnro);
+        return $result ? $result['row'] : null;
+    }
+
+    public function resultUserreject($id_user){
+        $result = $this->model->resultUserreject($id_user);
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetEmailAreaAdmin(){
+         $result = $this->model->GetEmailAreaAdmin();
         return $result ? $result['row'] : null;
     }
 }

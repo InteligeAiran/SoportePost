@@ -2,8 +2,10 @@ let dataTableInstance;
 let currentTicketId;
 let modalInstance;
 let currentnroTicket;
+let currentTicketNroForImage = null;
 let currentSerial;
 let currentDocument;
+let currentDomiciliacion
 let currentEstado;
 
 let url_envio;
@@ -113,6 +115,7 @@ function getTicketData() {
     if (data.success && data.ticket) {
         const TicketData = data.ticket;
 
+
         // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente)
         if (TicketData && TicketData.length > 0) {
           const firstTicket = TicketData[0];
@@ -125,6 +128,8 @@ function getTicketData() {
             "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
 
         const dataForDataTable = TicketData.map((ticket) => {
+          currentTicketNroForImage = ticket.nro_ticket
+
             let actionButtonsHTML = '<div class="d-flex align-items-center">';
 
             const fullRazonSocial = ticket.razonsocial_cliente || "";
@@ -186,8 +191,9 @@ function getTicketData() {
                         data-bs-toggle="tooltip" data-bs-placement="top"
                         title="Enviar a Taller"
                         data-ticket-id="${ticket.id_ticket}"
-                        data-nro_ticket="${ticket.nro_ticket}",
+                        data-nro_ticket="${ticket.nro_ticket}"
                         data-id_document="${ticket.id_status_payment}"
+                        data-id_domiciliacion="${ticket.id_status_domiciliacion}"
                         data-serial_pos="${ticket.serial_pos || ''}"
                         data-url_zoom="${ticket.pdf_zoom_url || ''}"
                         data-url_exo="${ticket.img_exoneracion_url || ''}"
@@ -496,7 +502,7 @@ function getTicketData() {
               detailsPanel.innerHTML = formatTicketDetailsPanel(
                 selectedTicketDetails
               );
-              loadTicketHistory(ticketId);
+              loadTicketHistory(ticketId, currentTicketNroForImage);
               if (selectedTicketDetails.serial_pos) {
                 downloadImageModal(selectedTicketDetails.serial_pos);
               } else {
@@ -529,6 +535,9 @@ function getTicketData() {
               // Por ejemplo, establecer el ticketId y el tipo de documento en algún campo oculto del modal
               $("#uploadDocumentModal").data("ticket-id", ticketId);
               $("#uploadDocumentModal").data("document-type", documentType);
+              $("#type_document").val(documentType);
+              $('#generateNotaEntregaBtn').hide();
+
               uploadDocumentModalInstance.show(); // Abre el modal de subida
             }
           });
@@ -543,23 +552,30 @@ function getTicketData() {
             if (uploadDocumentModalInstance) {
               $("#uploadDocumentModal").data("ticket-id", ticketId);
               $("#uploadDocumentModal").data("document-type", documentType);
+              $("#type_document").val(documentType);
+              $('#generateNotaEntregaBtn').hide();
               uploadDocumentModalInstance.show(); // Abre el modal de subida
             }
           });
 
         // Listener para el botón "Cargar PDF ZOOM"
         $("#tabla-ticket tbody")
-          .off("click", ".btn-zoom-pdf")
-          .on("click", ".btn-zoom-pdf", function (e) {
-            e.stopPropagation();
-            const ticketId = $(this).data("ticket-id");
-            const documentType = $(this).data("document-type"); // 'zoom'
-            if (uploadDocumentModalInstance) {
-              $("#uploadDocumentModal").data("ticket-id", ticketId);
-              $("#uploadDocumentModal").data("document-type", documentType);
-              uploadDocumentModalInstance.show(); // Abre el modal de subida
-            }
-          });
+        .off("click", ".btn-zoom-pdf")
+        .on("click", ".btn-zoom-pdf", function (e) {
+          e.stopPropagation();
+          const ticketId = $(this).data("ticket-id");
+          const documentType = $(this).data("document-type"); // 'Envio'
+
+          if (uploadDocumentModalInstance) {
+            const $modal = $("#uploadDocumentModal");
+            $modal.data("ticket-id", ticketId);
+            $modal.data("document-type", documentType);
+            $("#id_ticket").val(ticketId);
+            $("#type_document").val(documentType);
+            $("#htmlTemplateTicketId").val(ticketId);
+            uploadDocumentModalInstance.show();
+          }
+        });
 
         // Listener para el botón "Ver Documento"
         $("#tabla-ticket tbody")
@@ -588,6 +604,7 @@ function getTicketData() {
             const ticketId = $(this).data("ticket-id");
             const nroTicket = $(this).data("nro_ticket");
             const id_document = $(this).data("id_document");
+            const id_domiciliacion = $(this).data("id_domiciliacion");
             const pdfZoomUrl = $(this).data("url_zoom") || "";
             const imgExoneracionUrl = $(this).data("url_exo") || "";
             const pdfPagoUrl = $(this).data("url_pago") || "";
@@ -598,6 +615,7 @@ function getTicketData() {
             currentnroTicket = nroTicket;
             currentSerial = serialPos; // Asigna el serial al currentSerial
             currentDocument = id_document; // Asigna el serial al currentSerial
+            currentDomiciliacion = id_domiciliacion;
             currentEstado = estado; // Asigna el estado al currentSerial
 
             url_envio = pdfZoomUrl;
@@ -615,6 +633,7 @@ function getTicketData() {
 
        $("#ButtonSendToTaller").off("click").on("click", function () {
     const id_document = currentDocument;
+    const id_domiciliacion = currentDomiciliacion;
     let showButton = false;
 
     // NUEVO: Verificar si es de estados que no necesitan envío
@@ -670,25 +689,35 @@ function getTicketData() {
 
     if (showButton) {
         Swal.fire({
+          icon: 'warning',
+          title: '¡Advertencia!',
+          text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
+          confirmButtonText: 'Ok', 
+          confirmButtonColor: '#003594', // Color del botón
+          color: 'black',
+        });
+        return;
+          }else if (id_document == 5 || id_document == 7) {
+          Swal.fire({
             icon: 'warning',
             title: '¡Advertencia!',
-            text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
+            text: ' Se encuentran documentos pendientes por revisar.',
             confirmButtonText: 'Ok', 
             confirmButtonColor: '#003594', // Color del botón
             color: 'black',
-        });
+          });  
         return;
-            }else if (id_document == 5 || id_document == 7) {
-              Swal.fire({
-                icon: 'warning',
-                title: '¡Advertencia!',
-                text: ' Se encuentran documentos pendientes por revisar.',
-                confirmButtonText: 'Ok', 
-                confirmButtonColor: '#003594', // Color del botón
-                color: 'black',
-              });
-              return;
-            } else { 
+          }else if(id_domiciliacion == 1){
+            Swal.fire({
+            icon: 'warning',
+            title: '¡Advertencia!',
+            text: 'Tiene que revisar la domiciliación del cliente.',
+            confirmButtonText: 'Ok', 
+            confirmButtonColor: '#003594', // Color del botón
+            color: 'black',
+          });
+        return;
+          } else { 
 
                 const modalTicketNrSpan = document.getElementById("modalTicketNr");
                 const modalSerialPosSpan = document.getElementById("serialpos");
@@ -1174,9 +1203,7 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
     
     // Obtener el estatus correcto
     const nuevoEstatus = getStatusForDocument(documentType, estadoCliente);
-    
-    console.log(`Documento: ${documentType}, Estado: ${estadoCliente}, Nuevo Estatus: ${nuevoEstatus}`);
-    
+        
     // Aquí puedes enviar el nuevo estatus al backend
     // updateTicketStatus(ticketId, nuevoEstatus);
 });
@@ -1189,6 +1216,14 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
         const documentType = $(this).data('document-type');
         const nro_ticket = $(this).data('nro-ticket');
         const fileName = $(this).data('file-name') || '';
+
+        console.log(ticketId);
+
+       if (documentType == 'Envio'){  
+          // Mostrar el botón solo para Envio
+          $('#htmlTemplateTicketId').val(ticketId); 
+          $('#generateNotaEntregaBtn').show();
+       }
 
         uploadForm[0].reset();
         $('#imagePreview').attr('src', '#').hide();
@@ -1318,7 +1353,478 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
             confirmButtonColor: '#003594'
         });
     }
-   });
+  });
+
+$(document).ready(function () {
+  $('#generateNotaEntregaBtn').hide();
+});
+
+
+$(document).on('click', '#generateNotaEntregaBtn', function () {
+  const ticketId = document.getElementById('htmlTemplateTicketId').value;
+  if (!ticketId) {
+    Swal.fire({ icon: 'warning', title: 'Ticket no disponible' });
+    return;
+  }
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/documents/GetDeliveryNoteData`);
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== 4) return;
+
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const res = JSON.parse(xhr.responseText);
+        if (!res || !res.success || !res.rows) {
+          Swal.fire({ icon: 'warning', title: 'No se encontraron datos' });
+          return;
+        }
+
+        const d = res.rows[0];
+
+        // Get the serial number, handling both possible property names
+        const serialPos = d.serialpos || d.serial_pos || '';
+
+        // Extract the last 4 digits of the serial number
+        const lastFourSerialDigits = serialPos.slice(-4);
+
+        // Create the new delivery note number
+        const notaNumero = `NE-${ticketId}-${lastFourSerialDigits}`;
+        const regDes = 'Caracas';
+
+        $('#htmlTemplateTicketId').val(ticketId);
+        $('#ne_fecha').val(d.fecha_actual || new Date().toLocaleDateString());
+        $('#ne_numero').val(notaNumero);
+
+        $('#ne_rif').val(d.coddocumento || '');
+        $('#ne_razon').val(d.razonsocial || '');
+        $('#ne_responsable').val(d.rlegal || d.rlegal || '');
+        $('#ne_contacto').val(d.telf1 || 'Sin número de Contacto')
+
+        $('#ne_tipo_equipo').val(d.tipo_equipo || d.tipo_pos || 'POS');
+        $('#ne_modelo').val(d.modelo || d.desc_modelo || '');
+        $('#ne_serial').val(d.serialpos || d.serial_pos || '');
+
+        $('#ne_region_origen').val(d.estado_final || d.estado_final || '');
+        $('#ne_region_destino').val(regDes);
+        $('#ne_observaciones').val('');
+
+        new bootstrap.Modal(document.getElementById('htmlTemplateModal')).show();
+      } catch (e) {
+        Swal.fire({ icon: 'error', title: 'Respuesta inválida del servidor' });
+      }
+    } else {
+      Swal.fire({ icon: 'error', title: 'Error de red/servidor' });
+    }
+  };
+
+  const params = `action=GetDeliveryNoteData&id_ticket=${encodeURIComponent(ticketId)}`;
+  console.log(params);
+  xhr.send(params);
+});
+
+// Previsualizar y enviar (si usas un modal separado #htmlTemplateModal)
+$(document).on('click', '#previewHtmlTemplateBtn', function () {
+  const data = {
+    fecha: $('#ne_fecha').val(),
+    numero: $('#ne_numero').val(),
+    rif: $('#ne_rif').val(),
+    razon: $('#ne_razon').val(),
+    responsable: $('#ne_responsable').val(),
+    tipo_equipo: $('#ne_tipo_equipo').val(),
+    modelo: $('#ne_modelo').val(),
+    serial: $('#ne_serial').val(),
+    region_origen: $('#ne_region_origen').val(),
+    region_destino: $('#ne_region_destino').val(),
+    observaciones: $('#ne_observaciones').val()
+  };
+
+  const html = buildDeliveryNoteHtml(data);
+  const iframe = document.getElementById('htmlTemplatePreview');
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+});
+
+function buildDeliveryNoteHtml(d) {
+  const safe = (s) => (s || '').toString();
+  return `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota de Entrega y Envío de Equipo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #333;
+        background: #fff;
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 20px 0;
+        border-bottom: 3px solid #2c5aa0;
+        position: relative;
+      }
+      
+      .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #2c5aa0 0%, #4a90e2 50%, #2c5aa0 100%);
+      }
+      
+      .company-logo {
+        font-size: 18px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin-bottom: 5px;
+      }
+      
+      .document-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin: 10px 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      
+      .document-subtitle {
+        font-size: 16px;
+        color: #666;
+        font-weight: 500;
+      }
+      
+      .document-info {
+        display: flex;
+        justify-content: space-between;
+        margin: 20px 0;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #2c5aa0;
+      }
+      
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+      }
+      
+      .info-label {
+        font-size: 12px;
+        color: #666;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+      
+      .info-value {
+        font-size: 16px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      .section {
+        margin: 25px 0;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .section-header {
+        background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%);
+        color: white;
+        padding: 12px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .section-content {
+        padding: 20px;
+      }
+      
+      .field-row {
+        display: flex;
+        margin-bottom: 15px;
+        align-items: flex-start;
+      }
+      
+      .field-row:last-child {
+        margin-bottom: 0;
+      }
+      
+      .field-label {
+        font-weight: 600;
+        color: #555;
+        min-width: 200px;
+        margin-right: 15px;
+        font-size: 13px;
+      }
+      
+      .field-value {
+        flex: 1;
+        color: #333;
+        font-weight: 500;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        border-left: 3px solid #2c5aa0;
+      }
+      
+      .field-value.observations {
+        background: #fff;
+        border: 1px solid #ddd;
+        min-height: 60px;
+        font-style: italic;
+      }
+      
+      .constancy {
+        background: #e8f4fd;
+        border: 1px solid #b3d9ff;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: center;
+        font-size: 15px;
+        line-height: 1.8;
+        color: #2c5aa0;
+        font-weight: 500;
+      }
+      
+      .signature-section {
+        margin-top: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+      
+      .signature-box {
+        flex: 1;
+        margin: 0 10px;
+        text-align: center;
+        padding: 20px;
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        background: #fafafa;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      
+      .signature-line {
+        border-top: 2px solid #333;
+        margin: 20px 0 10px 0;
+        width: 200px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      
+      .signature-label {
+        font-weight: bold;
+        color: #2c5aa0;
+        margin-bottom: 5px;
+      }
+      
+      .signature-field {
+        color: #666;
+        font-size: 13px;
+      }
+      
+      .footer {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+        text-align: center;
+        color: #666;
+        font-size: 12px;
+      }
+      
+      @media print {
+        body { padding: 0; }
+        .section { box-shadow: none; border: 1px solid #ddd; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="company-logo">SOPORTE POST VENTA</div>
+      <div class="document-title">Nota de Entrega y Envío de Equipo</div>
+      <div class="document-subtitle">Documento Oficial de Entrega</div>
+    </div>
+    
+    <div class="document-info">
+      <div class="info-item">
+        <div class="info-label">Fecha</div>
+        <div class="info-value">${safe(d.fecha)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">N° de Nota</div>
+        <div class="info-value">${safe(d.numero)}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <i class="fas fa-user"></i> Datos del Cliente
+      </div>
+      <div class="section-content">
+        <div class="field-row">
+          <div class="field-label">R.I.F. / Identificación:</div>
+          <div class="field-value">${safe(d.rif)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Razón Social de la Empresa:</div>
+          <div class="field-value">${safe(d.razon)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Responsable:</div>
+          <div class="field-value">${safe(d.responsable)}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <i class="fas fa-desktop"></i> Detalles del Equipo
+      </div>
+      <div class="section-content">
+        <div class="field-row">
+          <div class="field-label">Tipo de Equipo:</div>
+          <div class="field-value">${safe(d.tipo_equipo)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Modelo del Equipo:</div>
+          <div class="field-value">${safe(d.modelo)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Número de Serie:</div>
+          <div class="field-value">${safe(d.serial)}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <i class="fas fa-truck"></i> Información del Envío
+      </div>
+      <div class="section-content">
+        <div class="field-row">
+          <div class="field-label">Región de Origen:</div>
+          <div class="field-value">${safe(d.region_origen)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Región de Destino:</div>
+          <div class="field-value">${safe(d.region_destino)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Observaciones de Envío:</div>
+          <div class="field-value observations">${safe(d.observaciones) || 'Sin observaciones adicionales'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="constancy">
+      <strong>CONSTANCIA DE ENTREGA</strong><br>
+      El equipo detallado en la presente nota ha sido entregado en perfectas condiciones de embalaje y funcionamiento al responsable designado.
+    </div>
+
+    <div class="signature-section">
+      <div class="signature-box">
+        <div class="signature-label">Firma de Conformidad</div>
+        <div class="signature-line"></div>
+        <div class="signature-field">Nombre: ${safe(d.responsable)}</div>
+        <div class="signature-field">C.I./DNI: __________________________</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Este documento es válido como constancia oficial de entrega del equipo especificado.</p>
+      <p>Fecha de generación: ${new Date().toLocaleString('es-ES')}</p>
+    </div>
+  </body>
+  </html>`;
+}
+
+document.getElementById('generateAndUploadHtmlBtn').addEventListener('click', function () {
+  const ticketId = document.getElementById('htmlTemplateTicketId').value;
+  const iframe = document.getElementById('htmlTemplatePreview');
+  const doc = (iframe && (iframe.contentDocument || iframe.contentWindow.document)) || null;
+  const html = (doc && doc.documentElement) ? doc.documentElement.outerHTML : '';
+
+  if (!html) {
+    Swal.fire({ icon: 'warning', title: 'Previsualiza antes de generar' });
+    return;
+  }
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/generateAndUploadNotaEntrega`);
+
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== 4) return;
+
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const res = JSON.parse(xhr.responseText);
+        if (res && res.success) {
+          Swal.fire({ icon: 'success', title: 'Nota generada y cargada' });
+          const htmlModal = document.getElementById('htmlTemplateModal');
+          const uploadModal = document.getElementById('uploadDocumentModal');
+          if (htmlModal) bootstrap.Modal.getInstance(htmlModal)?.hide();
+          if (uploadModal) bootstrap.Modal.getInstance(uploadModal)?.hide();
+        } else {
+          Swal.fire({ icon: 'error', title: 'Error', text: (res && res.message) || 'No se pudo generar/subir.' });
+        }
+      } catch (e) {
+        Swal.fire({ icon: 'error', title: 'Respuesta inválida del servidor' });
+      }
+    } else {
+      Swal.fire({ icon: 'error', title: 'Error de red/servidor' });
+    }
+  };
+
+  // Usa FormData para no truncar el HTML
+  const fd = new FormData();
+  fd.append('action', 'generateAndUploadNotaEntrega');
+  fd.append('id_ticket', ticketId);
+  fd.append('document_type', 'Envio');
+  fd.append('html', html);
+
+  xhr.send(fd);
+});
+
+$(document).on('click', '#printHtmlTemplateBtn', function () {
+  const iframe = document.getElementById('htmlTemplatePreview');
+  if (!iframe || !iframe.contentWindow) return;
+  iframe.contentWindow.focus();
+  iframe.contentWindow.print(); // Abre diálogo del navegador (imprimir/guardar PDF)
+});
 
 // Función para mostrar el modal de selección de documento
 function showDocumentSelectionModal(ticketId, nroTicket) {
@@ -1582,6 +2088,8 @@ $(document).on('click', '#CerrarBoton', function() {
     // 1. Oculta el modal de visualización actual
     uploadDocumentModal.hide();
     viewDocumentModal.hide();
+    $('#generateNotaEntregaBtn').hide();
+    $("#type_document").val('');
 
     // 2. Muestra el modal de acciones de nuevo
     // Usamos un pequeño retraso para evitar problemas de superposición y animaciones
@@ -1879,6 +2387,52 @@ async function handleUploadButtonClick(ticketId, documentType, uploadModalBootst
 // Llama a la función para cargar los datos cuando el DOM esté completamente cargado
 document.addEventListener("DOMContentLoaded", getTicketData);
 
+function downloadImageModal(serial) {
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhotoDashboard`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        //console.log(response);
+        if (response.success) {
+          const srcImagen = response.rutaImagen;
+          const claseImagen = response.claseImagen; // Obtener la clase CSS
+          const imgElement = document.getElementById("device-ticket-image");
+            if (imgElement) {
+            imgElement.src = srcImagen;
+            imgElement.className = claseImagen; // Aplicar la clase CSS
+          } else {
+            console.error("No se encontró el elemento img en el modal.");
+          }
+          if (imgElement) {
+            imgElement.src = rutaImagen;
+                        imgElement.className = claseImagen; // Aplicar la clase CSS
+
+          } else {
+            console.error("No se encontró el elemento img en el modal.");
+          }
+        } else {
+          console.error("Error al obtener la imagen:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  xhr.onerror = function () {
+    console.error("Error de red");
+  };
+
+  const datos = `action=GetPhotoDashboard&serial=${encodeURIComponent(serial)}`;
+  xhr.send(datos);
+}
+
 function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
   // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
@@ -1901,7 +2455,7 @@ function formatTicketDetailsPanel(d) {
             <div class="row mb-3 align-items-center">
                 <div class="col-md-3 text-center">
                     <div id="device-image-container" class="p-2">
-                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" class="img-fluid rounded" style="max-width: 120px; height: auto; object-fit: contain;">
+                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}">
                     </div>
                 </div>
                 <div class="col-md-9">
@@ -1921,8 +2475,8 @@ function formatTicketDetailsPanel(d) {
                           ${d.fecha_instalacion || 'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div>Fecha de último ticket:</div></strong>
-                          ${d.fecha_cierre_anterior ||  'No posee'}
+                          <br><strong><div>Fecha último ticket:</div></strong>
+                          ${d.fecha_cierre_anterior || 'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Garantía:</div></strong>
@@ -1938,7 +2492,7 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Dirección Instalación:</div></strong>
-                          ${d.nombre_estado_cliente ||  'No posee'}
+                          ${d.nombre_estado_cliente || 'Sin datos'}
                         </div><br>
                          <div class="col-sm-6 mb-2">
                             <br><strong><div>Estatus Ticket:</div></strong>
@@ -1956,20 +2510,7 @@ function formatTicketDetailsPanel(d) {
                     </div>
                 </div>
             </div>
-            <div class="row mb-3" style="margin-top: -7%; positipn: relative;">
-                <div class="col-12">
-                    <div class="row">
-                        <div class="col-sm-4 mb-2">
-                            <strong><div>Acción:</div></strong>
-                            <span class = "Accion-ticket">${d.name_accion_ticket}</span>
-                        </div>
-                           
-                    </div>
-                </div>
-            </div>
-
             <hr class="mt-2 mb-3">
-
             <div class="row">
                 <div class="col-12">
                     <h5 style = "color: black;" >Gestión / Historial:</h5>
@@ -1982,245 +2523,204 @@ function formatTicketDetailsPanel(d) {
     `;
 }
 
-function downloadImageModal(serial) {
-  // Considera renombrar a loadDeviceImage(serial) para mayor claridad
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhoto`);
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+// Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
+function loadTicketHistory(ticketId, currentTicketNroForImage) {
+    const historyPanel = $("#ticket-history-content");
+    historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
 
-  xhr.onload = function () {
-    if (xhr.status >= 200 && xhr.status < 300) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        //console.log("Respuesta de GetPhoto:", response); // Descomenta para depuración
+    const parseCustomDate = (dateStr) => {
+        const parts = dateStr.split(' ');
+        if (parts.length !== 2) return null;
+        const [day, month, year] = parts[0].split('-');
+        const [hours, minutes] = parts[1].split(':');
+        return new Date(year, month - 1, day, hours, minutes);
+    };
 
-        // ***** CAMBIO CLAVE AQUÍ *****
-        // Selecciona el elemento de imagen en el panel de detalles, NO en un modal
-        const imgElement = document.getElementById("device-ticket-image");
+    const calculateTimeElapsed = (startDateStr, endDateStr) => {
+        if (!startDateStr || !endDateStr) return null;
 
-        if (imgElement) {
-          if (response.success && response.rutaImagen) {
-            const srcImagen = response.rutaImagen;
-            const claseImagen = response.claseImagen || ""; // Obtener la clase CSS, si no hay, usar cadena vacía
+        const start = parseCustomDate(startDateStr);
+        const end = parseCustomDate(endDateStr);
 
-            imgElement.src = srcImagen;
-            imgElement.alt = `Imagen del dispositivo ${serial}`; // Actualiza el alt text
+        if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return null;
+        }
 
-            // Opcional: Si 'claseImagen' trae clases CSS específicas que quieres añadir
-            // y no colisionan con img-fluid o rounded, puedes hacer:
-            // if (claseImagen) {
-            //     imgElement.classList.add(claseImagen);
-            // }
-            // Si 'claseImagen' es una clase para reemplazar el estilo (lo cual no es común aquí),
-            // entonces tendrías que asegurarte de que la clase de tu backend incluya
-            // las propiedades de img-fluid y rounded, o volver a añadirlas.
-            // Para este caso, con Bootstrap, probablemente no necesites asignar `className` aquí
-            // ya que `max-height` y `width: auto` en el style ya controlan el tamaño.
-          } else {
-            // Si no hay éxito o rutaImagen, carga una imagen de "no disponible"
-            imgElement.src = "assets/img/image-not-found.png"; // Crea esta imagen
-            imgElement.alt = `Imagen no disponible para serial ${serial}`;
-            console.warn(
-              "No se obtuvo ruta de imagen o éxito de la API para el serial:",
-              serial,
-              response.message
-            );
-          }
+        const diffMs = end - start;
+        if (diffMs <= 0) {
+            return null;
+        }
+
+        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        const diffWeeks = Math.floor(diffDays / 7);
+        const diffMonths = Math.floor(diffDays / 30.44);
+
+        const calculateBusinessDays = (startDateObj, endDateObj) => {
+            const holidays2025 = [
+                '2025-01-01', '2025-01-06', '2025-02-17', '2025-02-18', '2025-03-24', '2025-03-25', '2025-03-26', '2025-03-27', '2025-03-28', '2025-04-19', '2025-05-01', '2025-06-24', '2025-07-05', '2025-07-24', '2025-10-12', '2025-12-25'
+            ];
+            let businessDays = 0;
+            const current = new Date(startDateObj);
+            const end = new Date(endDateObj);
+
+            while (current <= end) {
+                const dayOfWeek = current.getDay();
+                const dateString = current.toISOString().split('T')[0];
+                if (dayOfWeek >= 1 && dayOfWeek <= 5 && !holidays2025.includes(dateString)) {
+                    businessDays++;
+                }
+                current.setDate(current.getDate() + 1);
+            }
+            return businessDays;
+        };
+
+        const businessDays = calculateBusinessDays(start, end);
+        let timeText = '';
+
+        if (diffMonths > 0) {
+            const remainingDays = diffDays % 30.44;
+            timeText = `${diffMonths}M ${Math.floor(remainingDays)}D`;
+        } else if (diffWeeks > 0) {
+            const remainingDays = diffDays % 7;
+            timeText = `${diffWeeks}W ${remainingDays}D`;
+        } else if (diffDays > 0) {
+            const remainingHours = diffHours % 24;
+            const remainingMinutes = diffMinutes % 60;
+            timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}M`;
+        } else if (diffHours > 0) {
+            const remainingMinutes = diffMinutes % 60;
+            timeText = `${diffHours}H ${remainingMinutes}M`;
+        } else if (diffMinutes > 0) {
+            timeText = `${diffMinutes}M`;
         } else {
-          console.error(
-            'Error: No se encontró el elemento <img> con ID "device-ticket-image" en el DOM.'
-          );
+            return null;
         }
-      } catch (error) {
-        console.error("Error parsing JSON response for image:", error);
-        const imgElement = document.getElementById("device-ticket-image");
-        if (imgElement) {
-          imgElement.src = "assets/img/error-loading-image.png"; // Crea esta imagen
-          imgElement.alt = "Error al cargar imagen";
-        }
-      }
-    } else {
-      console.error(
-        "Error al obtener la imagen (HTTP):",
-        xhr.status,
-        xhr.statusText
-      );
-      const imgElement = document.getElementById("device-ticket-image");
-      if (imgElement) {
-        imgElement.src = "assets/img/error-loading-image.png";
-        imgElement.alt = "Error de servidor al cargar imagen";
-      }
-    }
-  };
 
-  xhr.onerror = function () {
-    console.error(
-      "Error de red al intentar obtener la imagen para el serial:",
-      serial
-    );
-    const imgElement = document.getElementById("device-ticket-image");
-    if (imgElement) {
-      imgElement.src = "assets/img/network-error-image.png"; // Crea esta imagen
-      imgElement.alt = "Error de red";
-    }
-  };
+        return {
+            text: timeText,
+            ms: diffMs,
+            minutes: diffMinutes,
+            hours: diffHours,
+            days: diffDays,
+            weeks: diffWeeks,
+            months: diffMonths,
+            businessDays: businessDays
+        };
+    };
 
-  const datos = `action=GetPhoto&serial=${encodeURIComponent(serial)}`;
-  xhr.send(datos);
-}
+    $.ajax({
+        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
+        type: "POST",
+        data: {
+            action: "GetTicketHistory",
+            id_ticket: ticketId,
+        },
+        dataType: "json",
+        success: function(response) {
+            if (response.success && response.history && response.history.length > 0) {
+                let historyHtml = `
+                    <div class="d-flex justify-content-end mb-2">
+                        <button class="btn btn-secondary" onclick="printHistory('${ticketId}', '${encodeURIComponent(JSON.stringify(response.history))}', '${currentTicketNroForImage}')">
+                            <i class="fas fa-print"></i> Imprimir Historial
+                        </button>
+                    </div>
+                    <div class="accordion" id="ticketHistoryAccordion">
+                `;
 
-function loadTicketHistory(ticketId) {
-  const historyPanel = $("#ticket-history-content");
-  historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
+                response.history.forEach((item, index) => {
+                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
+                    const isLatest = index === 0;
+                    const prevItem = response.history[index + 1] || {};
 
-  $.ajax({
-    url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
-    type: "POST",
-    data: {
-      action: "GetTicketHistory",
-      id_ticket: ticketId,
-    },
-    dataType: "json",
-    success: function (response) {
-      if (response.success && response.history && response.history.length > 0) {
-        let historyHtml = '<div class="accordion" id="ticketHistoryAccordion">';
+                    let timeElapsed = null;
+                    let timeBadge = '';
 
-        response.history.forEach((item, index) => {
-          const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
-          const headingId = `headingHistoryItem_${ticketId}_${index}`;
+                    if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
+                        timeElapsed = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
+                        if (timeElapsed) {
+                            let badgeColor = 'success';
+                            if (timeElapsed.months > 0 || timeElapsed.businessDays > 5) {
+                                badgeColor = 'danger';
+                            } else if (timeElapsed.weeks > 0 || timeElapsed.businessDays > 2) {
+                                badgeColor = 'warning';
+                            } else if (timeElapsed.days > 0 || timeElapsed.hours > 8) {
+                                badgeColor = 'orange';
+                            } else if (timeElapsed.hours >= 1) {
+                                badgeColor = 'purple';
+                            }
 
-          const isLatest = index === 0;
-          const isExpanded = false;
+                            let backgroundColor = '#28a745';
+                            if (badgeColor === 'purple') backgroundColor = '#6f42c1';
+                            else if (badgeColor === 'orange') backgroundColor = '#fd7e14';
+                            else if (badgeColor === 'warning') backgroundColor = '#ffc107';
+                            else if (badgeColor === 'danger') backgroundColor = '#dc3545';
 
-          const prevItem = response.history[index + 1] || {};
+                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
+                        }
+                    }
+                    
+                    const cleanString = (str) => str && str.replace(/\s/g, ' ').trim() || null;
+                    const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
 
-          const cleanString = (str) => {
-            if (!str) return null;
-            const trimmed = str.replace(/\s/g, ' ').trim();
-            return trimmed === '' ? null : trimmed;
-          };
+                    const isCreation = cleanString(item.name_accion_ticket) === 'Ticket Creado';
+                    const creationBadge = isCreation && item.fecha_de_cambio ? 
+                        `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: help; background-color: #17a2b8 !important; color: white !important;" title="Fecha de creación">${item.fecha_de_cambio}</span>` : '';
 
-          const itemAccion = cleanString(item.name_accion_ticket);
-          const prevAccion = cleanString(prevItem.name_accion_ticket);
-          const accionChanged = prevAccion && itemAccion !== prevAccion;
+                    const accionChanged = getChange(item.name_accion_ticket, prevItem.name_accion_ticket);
+                    const coordChanged = getChange(item.full_name_coordinador, prevItem.full_name_coordinador);
+                    const usuarioGestionChanged = getChange(item.usuario_gestion, prevItem.usuario_gestion);
+                    const tecnicoChanged = getChange(item.full_name_tecnico_n2_history, prevItem.full_name_tecnico_n2_history);
+                    const statusLabChanged = getChange(item.name_status_lab, prevItem.name_status_lab);
+                    const statusDomChanged = getChange(item.name_status_domiciliacion, prevItem.name_status_domiciliacion);
+                    const statusPaymentChanged = getChange(item.name_status_payment, prevItem.name_status_payment);
+                    const estatusTicketChanged = getChange(item.name_status_ticket, prevItem.name_status_ticket);
+                    const componentsChanged = getChange(item.components_list, prevItem.components_list);
+                    const motivoRechazoChanged = getChange(item.name_motivo_rechazo, prevItem.name_motivo_rechazo);
+                    const pagoChanged = getChange(item.pago, prevItem.pago);
+                    const exoneracionChanged = getChange(item.exoneracion, prevItem.exoneracion);
+                    const envioChanged = getChange(item.envio, prevItem.envio);
+                    const envioDestinoChanged = getChange(item.envio_destino, prevItem.envio_destino);
 
-          // CORRECCIÓN: Lógica para Coordinador
-          const itemCoord = cleanString(item.full_name_coordinador);
-          const prevCoord = cleanString(prevItem.full_name_coordinador);
-          const coordChanged = (prevCoord && itemCoord && prevCoord !== itemCoord) ||
-                                (prevCoord && !itemCoord) ||
-                                (!prevCoord && itemCoord);
+                    const showComponents = cleanString(item.name_accion_ticket) === 'Actualización de Componentes' && cleanString(item.components_list);
+                    const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
-          // CORRECCIÓN: Lógica para Usuario Gestión
-          const itemUsuarioGestion = cleanString(item.usuario_gestion);
-          const prevUsuarioGestion = cleanString(prevItem.usuario_gestion);
-          const usuarioGestionChanged = (prevUsuarioGestion && itemUsuarioGestion && prevUsuarioGestion !== itemUsuarioGestion) ||
-                                         (prevUsuarioGestion && !itemUsuarioGestion) ||
-                                         (!prevUsuarioGestion && itemUsuarioGestion);
-          
-          const itemTecnico = cleanString(item.full_name_tecnico_n2_history);
-          const prevTecnico = cleanString(prevItem.full_name_tecnico_n2_history);
-          const tecnicoChanged = (prevTecnico && itemTecnico && prevTecnico !== itemTecnico) || 
-                                 (prevTecnico && !itemTecnico) || 
-                                 (!prevTecnico && itemTecnico);
+                    const rejectedActions = ['Documento de Exoneracion Rechazado', 'Documento de Anticipo Rechazado'];
+                    const showMotivoRechazo = rejectedActions.includes(cleanString(item.name_status_payment)) && cleanString(item.name_motivo_rechazo);
 
-          const itemStatusLab = cleanString(item.name_status_lab);
-          const prevStatusLab = cleanString(prevItem.name_status_lab);
-          const statusLabChanged = prevStatusLab && itemStatusLab !== prevStatusLab;
+                    const showCommentDevolution = cleanString(item.name_accion_ticket) === 'En espera de Confirmar Devolución' && cleanString(item.comment_devolution) && cleanString(item.envio_destino) !== 'Sí';
+                    const showCommentReasignation = cleanString(item.name_accion_ticket) === 'Reasignado al Técnico' && cleanString(item.comment_reasignation);
 
-          const itemStatusDom = cleanString(item.name_status_domiciliacion);
-          const prevStatusDom = cleanString(prevItem.name_status_domiciliacion);
-          const statusDomChanged = prevStatusDom && itemStatusDom !== prevStatusDom;
+                    const headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    const textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
 
-          const itemStatusPayment = cleanString(item.name_status_payment);
-          const prevStatusPayment = cleanString(prevItem.name_status_payment);
-          const statusPaymentChanged = prevStatusPayment && itemStatusPayment !== prevStatusPayment;
+                    let statusHeaderText = cleanString(item.name_status_ticket) || "Desconocido";
+                    if (cleanString(item.name_accion_ticket) === "Enviado a taller" || cleanString(item.name_accion_ticket) === "En Taller") {
+                        statusHeaderText = cleanString(item.name_status_lab) || "Desconocido";
+                    }
 
-          const itemStatusTicket = cleanString(item.name_status_ticket);
-          const prevStatusTicket = cleanString(prevItem.name_status_ticket);
-          const estatusTicketChanged = prevStatusTicket && itemStatusTicket !== prevStatusTicket;
+                    // Se define el texto del botón aquí con la condición ternaria
+                    const buttonText = isCreation
+                        ? `${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`
+                        : `${item.fecha_de_cambio || "N/A"} - ${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`;
 
-          const itemComponents = cleanString(item.components_list);
-          const prevComponents = cleanString(prevItem.components_list);
-          const componentsChanged = prevComponents && itemComponents !== prevComponents;
-
-          const itemMotivoRechazo = cleanString(item.name_motivo_rechazo);
-          const prevMotivoRechazo = cleanString(prevItem.name_motivo_rechazo);
-          const motivoRechazoChanged = prevMotivoRechazo && itemMotivoRechazo !== prevMotivoRechazo;
-
-          const showComponents = itemAccion === 'Actualización de Componentes' && itemComponents;
-          const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
-
-          const itemPago = cleanString(item.pago);
-          const itemExoneracion = cleanString(item.exoneracion);
-          const itemEnvio = cleanString(item.envio);
-          const itemEnvioDestino = cleanString(item.envio_destino);
-
-          const prevPago = cleanString(prevItem.pago);
-          const prevExoneracion = cleanString(prevItem.exoneracion);
-          const prevEnvio = cleanString(prevItem.envio);
-          const prevEnvioDestino = cleanString(prevItem.envio_destino);
-
-          const pagoChanged = prevPago && itemPago !== prevPago;
-          const exoneracionChanged = prevExoneracion && itemExoneracion !== prevExoneracion;
-          const envioChanged = prevEnvio && itemEnvio !== prevEnvio;
-          const envioDestinoChanged = prevEnvioDestino && itemEnvioDestino !== prevEnvioDestino;
-
-          const rejectedActions = [
-            'Documento de Exoneracion Rechazado',
-            'Documento de Anticipo Rechazado'         
-         ];
-          const showMotivoRechazo = rejectedActions.includes(cleanString(item.name_status_payment)) && itemMotivoRechazo;
-
-          // Solo mostrar comentario de devolución si:
-          // 1. La acción es "En espera de Confirmar Devolución"
-          // 2. Existe el comentario
-          // 3. NO hay documento de envío a destino (envio_destino !== 'Sí')
-          const showCommentDevolution = itemAccion === 'En espera de Confirmar Devolución' && 
-                                       item.comment_devolution && 
-                                       itemEnvioDestino !== 'Sí';
-          const showCommentReasignation = itemAccion === 'Reasignado al Técnico' && item.comment_reasignation && item.comment_reasignation.trim() !== '';
-
-          let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-          let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
-          
-          let statusHeaderText;
-          if (itemAccion === "Enviado a taller" || itemAccion === "En Taller") {
-            statusHeaderText = ` (${item.name_status_lab || "Desconocido"})`;
-          } else {
-            statusHeaderText = ` (${item.name_status_ticket || "Desconocido"})`;
-          }
-
-          if (showCommentDevolution) {
-            historyHtml += `
-              <div class="alert alert-warning alert-sm mb-2" style="color: white;">
-                <strong>Comentario de Devolución:</strong> ${item.comment_devolution}
-              </div>
-            `;
-          }
-
-          if (showCommentReasignation) {
-            historyHtml += `
-              <div class="alert alert-info alert-sm mb-2" style="color: white;">
-                <strong>Comentario de Reasignación:</strong> ${item.comment_reasignation}
-              </div>
-            `;
-          }
-         
-          historyHtml += `
-                        <div class="card mb-3 custom-history-card">
+                    historyHtml += `
+                        <div class="card mb-3 custom-history-card position-relative">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
+                                ${creationBadge}
+                                ${timeBadge}
                                 <h2 class="mb-0">
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
                                         data-toggle="collapse" data-target="#${collapseId}"
-                                        aria-expanded="${isExpanded}" aria-controls="${collapseId}"
+                                        aria-expanded="false" aria-controls="${collapseId}"
                                         style="${textColor}">
-                                        ${item.fecha_de_cambio} - ${item.name_accion_ticket}${statusHeaderText}
+                                        ${buttonText}
                                     </button>
                                 </h2>
                             </div>
-                            <div id="${collapseId}" class="collapse"
-                                aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
+                            <div id="${collapseId}" class="collapse" aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <table class="table table-sm table-borderless mb-0">
@@ -2231,140 +2731,283 @@ function loadTicketHistory(ticketId) {
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Acción:</th>
-                                                    <td class="${accionChanged ? "highlighted-change" : ""}">${item.name_accion_ticket || "N/A"}</td>
+                                                    <td class="${accionChanged ? "highlighted-change" : ""}">${cleanString(item.name_accion_ticket) || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Operador Ticket:</th>
-                                                    <td>${item.operador_ticket || "N/A"}</td>
+                                                    <td>${cleanString(item.operador_ticket) || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Usuario Gestión:</th>
-                                                    <td class="${usuarioGestionChanged ? "highlighted-change" : ""}">${item.usuario_gestion || "N/A"}</td>
+                                                    <td class="${usuarioGestionChanged ? "highlighted-change" : ""}">${cleanString(item.usuario_gestion) || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Coordinador:</th>
-                                                    <td class="${coordChanged ? "highlighted-change" : ""}">${item.full_name_coordinador || "N/A"}</td>
+                                                    <td class="${coordChanged ? "highlighted-change" : ""}">${cleanString(item.full_name_coordinador) || "N/A"}</td>
                                                 </tr>
                                                 <tr>
-                                                  <th class="text-start">Coordinación:</th>
-                                                  <td>${item.nombre_coordinacion || "N/A"}</td>
+                                                    <th class="text-start">Coordinación:</th>
+                                                    <td>${cleanString(item.nombre_coordinacion) || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Técnico Asignado:</th>
                                                     <td class="${tecnicoChanged ? "highlighted-change" : ""}">
-                                                        ${item.full_name_tecnico_n2_history && item.full_name_tecnico_n2_history.trim() !== "" ? item.full_name_tecnico_n2_history : "Pendiente por Asignar"}
+                                                        ${cleanString(item.full_name_tecnico_n2_history) || "Pendiente por Asignar"}
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Ticket:</th>
-                                                    <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${item.name_status_ticket || "N/A"}</td>
+                                                    <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_ticket) || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Laboratorio:</th>
-                                                    <td class="${statusLabChanged ? "highlighted-change" : ""}">${item.name_status_lab || "N/A"}</td>
+                                                    <td class="${statusLabChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_lab) || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
-                                                    <td class="${statusDomChanged ? "highlighted-change" : ""}">${item.name_status_domiciliacion || "N/A"}</td>
+                                                    <td class="${statusDomChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_domiciliacion) || "N/A"}</td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-start">Estatus Pago:</th>
-                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${item.name_status_payment || "N/A"}</td>
+                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_payment) || "N/A"}</td>
                                                 </tr>
                                                 ${showComponents ? `
                                                     <tr>
                                                         <th class="text-start">Componentes Asociados:</th>
-                                                        <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${item.components_list}</td>
+                                                        <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
-                                                  <tr>
-                                                    <th class="text-start">Motivo Rechazo Documento:</th>
-                                                    <td class="${motivoRechazoChanged ? "highlighted-change" : ""}">${item.name_motivo_rechazo || "N/A"}</td>
-                                                  </tr>
-                                             ` : ''}
+                                                    <tr>
+                                                        <th class="text-start">Motivo Rechazo Documento:</th>
+                                                        <td class="${motivoRechazoChanged ? "highlighted-change" : ""}">${cleanString(item.name_motivo_rechazo) || "N/A"}</td>
+                                                    </tr>
+                                                ` : ''}
                                                 ${showCommentDevolution ? `
-                                                  <tr>
-                                                    <th class="text-start">Comentario de Devolución:</th>
-                                                    <td class="highlighted-change">${item.comment_devolution || "N/A"}</td>
-                                                  </tr>
-                                             ` : ''}
+                                                    <tr>
+                                                        <th class="text-start">Comentario de Devolución:</th>
+                                                        <td class="highlighted-change">${cleanString(item.comment_devolution) || "N/A"}</td>
+                                                    </tr>
+                                                ` : ''}
                                                 ${showCommentReasignation ? `
-                                                  <tr>
-                                                    <th class="text-start">Comentario de Reasignación:</th>
-                                                    <td class="highlighted-change">${item.comment_reasignation || "N/A"}</td>
-                                                  </tr>
-                                             ` : ''}
-                                                ${itemPago === 'Sí' ? `
-                                                  <tr>
-                                                    <th class="text-start">Documento de Pago:</th>
-                                                    <td class="${pagoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
-                                                  </tr>
-                                             ` : ''}
-                                                ${itemExoneracion === 'Sí' ? `
-                                                  <tr>
-                                                    <th class="text-start">Documento de Exoneración:</th>
-                                                    <td class="${exoneracionChanged ? "highlighted-change" : ""}">✓ Cargado</td>
-                                                  </tr>
-                                             ` : ''}
-                                                ${itemEnvio === 'Sí' ? `
-                                                  <tr>
-                                                    <th class="text-start">Documento de Envío:</th>
-                                                    <td class="${envioChanged ? "highlighted-change" : ""}">✓ Cargado</td>
-                                                  </tr>
-                                             ` : ''}
-                                                ${itemEnvioDestino === 'Sí' ? `
-                                                  <tr>
-                                                    <th class="text-start">Documento de Envío a Destino:</th>
-                                                    <td class="${envioDestinoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
-                                                  </tr>
-                                             ` : ''}
+                                                    <tr>
+                                                        <th class="text-start">Comentario de Reasignación:</th>
+                                                        <td class="highlighted-change">${cleanString(item.comment_reasignation) || "N/A"}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${cleanString(item.pago) === 'Sí' ? `
+                                                    <tr>
+                                                        <th class="text-start">Documento de Pago:</th>
+                                                        <td class="${pagoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${cleanString(item.exoneracion) === 'Sí' ? `
+                                                    <tr>
+                                                        <th class="text-start">Documento de Exoneración:</th>
+                                                        <td class="${exoneracionChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${cleanString(item.envio) === 'Sí' ? `
+                                                    <tr>
+                                                        <th class="text-start">Documento de Envío:</th>
+                                                        <td class="${envioChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${cleanString(item.envio_destino) === 'Sí' ? `
+                                                    <tr>
+                                                        <th class="text-start">Documento de Envío a Destino:</th>
+                                                        <td class="${envioDestinoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                    </tr>
+                                                ` : ''}
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
                             </div>
                         </div>`;
-        });
+                });
 
-        historyHtml += "</div>";
-        historyPanel.html(historyHtml);
-      } else {
-        historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
-      }
-    },
-    error: function (jqXHR, textStatus, errorThrown) {
-      console.error("Error completo de AJAX:", {
-        jqXHR: jqXHR,
-        textStatus: textStatus,
-        errorThrown: errorThrown,
-      });
-      let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
-      if (jqXHR.status === 0) {
-        errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
-      } else if (jqXHR.status == 404) {
-        errorMessage = `<div class="text-center text-muted py-5">
-          <div class="d-flex flex-column align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-            </svg>
-            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-            <p class="text-muted mb-0">No hay datos en el historial.</p>
-          </div>
+                historyHtml += "</div>";
+                historyPanel.html(historyHtml);
+            } else {
+                historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("Error completo de AJAX:", { jqXHR, textStatus, errorThrown });
+            let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
+            if (jqXHR.status === 0) {
+                errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+            } else if (jqXHR.status == 404) {
+                errorMessage = `<div class="text-center text-muted py-5">
+                    <div class="d-flex flex-column align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                        </svg>
+                        <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                        <p class="text-muted mb-0">No hay datos en el historial.</p>
+                    </div>
+                </div>`;
+            } else if (jqXHR.status == 500) {
+                errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+            } else if (textStatus === "parsererror") {
+                errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+            } else if (textStatus === "timeout") {
+                errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+            } else if (textStatus === "abort") {
+                errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+            }
+            historyPanel.html(errorMessage);
+            console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+        },
+    });
+}
+
+function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
+    const decodeHistorySafe = (encoded) => {
+        try {
+            if (!encoded) return [];
+            return JSON.parse(decodeURIComponent(encoded));
+        } catch (e) {
+            console.error('Error decoding history:', e);
+            return [];
+        }
+    };
+
+    const cleanString = (str) => (typeof str === 'string' ? str.replace(/\s/g, ' ').trim() : (str ?? ''));
+
+    const parseCustomDate = (dateStr) => {
+        if (!dateStr) return null;
+        const parts = String(dateStr).split(' ');
+        if (parts.length !== 2) return null;
+        const [day, month, year] = parts[0].split('-');
+        const [hours, minutes] = parts[1].split(':');
+        const d = new Date(year, (Number(month) || 1) - 1, Number(day) || 1, Number(hours) || 0, Number(minutes) || 0);
+        return isNaN(d.getTime()) ? null : d;
+    };
+
+    const calculateTimeElapsed = (startDateStr, endDateStr) => {
+        if (!startDateStr || !endDateStr) return null;
+        const start = parseCustomDate(startDateStr);
+        const end = parseCustomDate(endDateStr);
+        if (!start || !end) return null;
+        const diffMs = end - start;
+        if (diffMs <= 0) return null;
+        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        const diffWeeks = Math.floor(diffDays / 7);
+        const diffMonths = Math.floor(diffDays / 30.44);
+        let text = '';
+        if (diffMonths > 0) {
+            const remainingDays = Math.floor(diffDays % 30.44);
+            text = `${diffMonths}M ${remainingDays}D`;
+        } else if (diffWeeks > 0) {
+            text = `${diffWeeks}W ${diffDays % 7}D`;
+        } else if (diffDays > 0) {
+            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
+        } else if (diffHours > 0) {
+            text = `${diffHours}H ${diffMinutes % 60}M`;
+        } else {
+            // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
+            text = `N/A`;
+        }
+        return { text, ms: diffMs, minutes: diffMinutes, hours: diffHours, days: diffDays, weeks: diffWeeks, months: diffMonths };
+    };
+
+    const history = decodeHistorySafe(historyEncoded);
+
+    let itemsHtml = '';
+    history.forEach((item, index) => {
+        const previous = history[index + 1] || null;
+        const elapsed = previous ? calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio) : null;
+        const elapsedText = elapsed ? elapsed.text : 'N/A';
+
+        itemsHtml += `
+            <div style="border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 12px;">
+                <div style="font-weight: bold; color: #003594; margin-bottom: 6px;">${cleanString(item.fecha_de_cambio) || 'N/A'} - ${cleanString(item.name_accion_ticket) || 'N/A'} (${cleanString(item.name_status_ticket) || 'N/A'})</div>
+                <table style="width:100%; border-collapse: collapse; font-size: 12px;">
+                    <tbody>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Ticket</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.nro_ticket) || nro_ticket}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Acción</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_accion_ticket) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Ticket</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_ticket) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Fecha Cambio</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.fecha_de_cambio) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo desde gestión anterior</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${elapsedText}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Coordinador</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_coordinador) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Coordinación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.nombre_coordinacion) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Operador Ticket (Técnico N1)</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.operador_ticket) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Usuario Gestión</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.usuario_gestion) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Rol en Gestión</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_gestion) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Técnico Asignado (N2)</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_n2_history) || 'No Asignado'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Laboratorio</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_lab) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
+                        ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Componentes</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
+                        ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Exoneración</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.exoneracion) || 'No'}</td></tr>
+                        ${cleanString(item.exoneracion_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Exoneración Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.exoneracion_fecha)}</td></tr>` : ''}
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Envío</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.envio) || 'No'}</td></tr>
+                        ${cleanString(item.envio_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Envío Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.envio_fecha)}</td></tr>` : ''}
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Envío a Destino</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.envio_destino) || 'No'}</td></tr>
+                        ${cleanString(item.envio_destino_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Envío Destino Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.envio_destino_fecha)}</td></tr>` : ''}
+                        ${cleanString(item.comment_devolution) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Devolución</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_devolution)}</td></tr>` : ''}
+                        ${cleanString(item.comment_reasignation) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Reasignación</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_reasignation)}</td></tr>` : ''}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    });
+
+    const printContent = `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <div style="text-align:center;">
+                <h2 style="color: #003594; margin-bottom: 6px;">Historial del Ticket</h2>
+                <p style="margin: 0 0 8px 0;"><strong>Ticket Nro:</strong> ${currentTicketNroForImage}</p>
+                <p style="margin: 0 0 14px 0; color: #555;">Fecha de Impresión: ${new Date().toLocaleString()}</p>
+                <p style="margin: 0 0 14px 0; color: #6c757d; font-size: 12px;">Nota: En la columna "Tiempo desde gestión anterior" con un valor "N/A" indica que la gestión se realizó en menos de 1 minuto.</p>
+            </div>
+            ${itemsHtml || '<p style="text-align:center; color:#666;">Sin historial disponible.</p>'}
+        </div>
+    `;
+
+    const printWindow = window.open('', '', 'height=800,width=1024');
+    printWindow.document.write('<html><head><title>Historial del Ticket</title>');
+    printWindow.document.write('<style>');
+    printWindow.document.write('body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; }');
+    printWindow.document.write('h2 { color: #003594; }');
+    printWindow.document.write('@media print { body { -webkit-print-color-adjust: exact; } }');
+    printWindow.document.write('</style>');
+    printWindow.document.write('</head><body>');
+    printWindow.document.write(printContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+}
+
+function showElapsedLegend(e) {
+    try { if (e && e.stopPropagation) e.stopPropagation(); } catch (_) {}
+    const legendHtml = `
+        <div style="font-size: 0.95rem; text-align: left;">
+            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#28a745; color:#fff; min-width:64px;">Verde</span><span class="ml-2">Menos de 1 hora</span></div>
+            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#6f42c1; color:#fff; min-width:64px;">Morado</span><span class="ml-2">Entre 1 y 8 horas</span></div>
+            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#fd7e14; color:#fff; min-width:64px;">Naranja</span><span class="ml-2">Más de 8 horas o al menos 1 día</span></div>
+            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#ffc107; color:#212529; min-width:64px;">Amarillo</span><span class="ml-2">Una semana o más, o más de 2 días hábiles</span></div>
+            <div class="d-flex align-items-center"><span class="badge" style="background-color:#dc3545; color:#fff; min-width:64px;">Rojo</span><span class="ml-2">Un mes o más, o más de 5 días hábiles</span></div>
         </div>`;
-      } else if (jqXHR.status == 500) {
-        errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
-      } else if (textStatus === "parsererror") {
-        errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
-      } else if (textStatus === "timeout") {
-        errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
-      } else if (textStatus === "abort") {
-        errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
-      }
-      historyPanel.html(errorMessage);
-      console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-    },
-  });
+
+    Swal.fire({
+        title: 'Agenda de colores',
+        html: legendHtml,
+        icon: 'info',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#003594',
+        color: 'black',
+        width: 520,
+    });
 }
 
 document.addEventListener("DOMContentLoaded", function () {
