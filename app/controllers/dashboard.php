@@ -12,12 +12,9 @@ class dashboard extends Controller {
         parent::__construct();
 
         if (empty($_SESSION["id_user"])) {
-            // Si no hay una sesión activa, redirigir a la página de inicio de sesión
-            // Set the message to be displayed
-            $this->view->message = 'Por favor inicie sesión para acceder al sistema.';
-            $this->view->redirectURL = self::getURL() . 'login'; // URL for JavaScript redirection
-            // Load a specific view that will display the message and then redirect
-            exit(); // Stop further execution of the dashboard controller
+            // Redirigir siempre con header para evitar respuestas vacías
+            header('Location: ' . self::getURL() . 'login');
+            exit();
         }
 
         Model::exists('user'); // Si Model::exists() carga la clase, esto es bueno.
@@ -43,7 +40,7 @@ class dashboard extends Controller {
             session_unset();
             session_destroy();
             setcookie(session_name(), '', time() - 3600, '/');
-            header('Location: /login.php?message=session_invalid');
+            header('Location: ' . self::getURL() . 'login');
             exit();
         }
     }
