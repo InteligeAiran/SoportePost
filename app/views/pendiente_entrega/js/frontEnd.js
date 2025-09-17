@@ -1509,7 +1509,7 @@ function getTicketDataFinaljs() {
                 <div class="mb-4">
                     ${customWarningSvg}
                 </div>
-                <p class="h4 mb-3">¿Deseas enviar el Pos con el serial <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> asociado al ticket Nro:<span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> devuelta al Taller?</p>
+                <p class="h4 mb-3">¿Deseas enviar el Pos con el serial <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> asociado al ticket Nro:<span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> de vuelto al Taller?</p>
                 <p class="h5 text-muted">Esta acción asume que en el trayecto el POS se averió.</p>
             </div>
         `,
@@ -1558,7 +1558,7 @@ function getTicketDataFinaljs() {
                                             <span style="font-size:20px;line-height:1">⚠️</span>
                                             <div>
                                                 <div style="font-weight:600;margin-bottom:2px;">Reingreso con misma falla</div>
-                                                <div style="font-size:13px;color:#5c5c5c;">Si es un reingreso, el POS debe tener la misma falla del ticket. De lo contrario, cierre el ticket.</div>
+                                                <div style="font-size:13px;color:#5c5c5c;">Si es un reingreso, el POS debe tener la misma falla del ticket. De lo contrario, cierre el ticket, y proceda a crear uno nuevo.</div>
                                             </div>
                                         </div>
 
@@ -3306,7 +3306,7 @@ function SendBacktoTaller(ticketId, nroTicket){
         if (response.success) {
           Swal.fire({
                 title: "¡Enviado Al Taller!",
-                html: `El Pos asociado al ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido enviado devuelta al taller.`, // <-- CAMBIO AQUÍ
+                html: `El Pos asociado al ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido enviado de vuelto al taller.`, // <-- CAMBIO AQUÍ
                 icon: "success",
                 color: "black",
                 confirmButtonColor: "#003594",
@@ -3376,8 +3376,8 @@ function CloseTicket(ticketId, nroTicket){
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
           Swal.fire({
-                title: "¡Enviado Al Taller!",
-                html: `El Pos asociado al ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido enviado devuelta al taller.`, // <-- CAMBIO AQUÍ
+                title: "¡Cerrado Correctamente!",
+                html: `El Pos asociado al ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido cerrado Correctamente. Proceda a generar el ticket con la falla que corresponda.`, // <-- CAMBIO AQUÍ
                 icon: "success",
                 color: "black",
                 confirmButtonColor: "#003594",

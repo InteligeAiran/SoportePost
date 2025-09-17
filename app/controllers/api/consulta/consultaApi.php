@@ -1304,7 +1304,7 @@ class Consulta extends Controller
         }
     }
 
-     public function handleGetAttachments(){
+    public function handleGetAttachments(){
         // Recupera el ticketId enviado por POST
         $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
 
@@ -2028,22 +2028,25 @@ class Consulta extends Controller
     }
 
     public function handelCloseTicket(){
-         $id_ticket = isset($_POST['ticketId'])? $_POST['ticketId'] : '';
+        $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
     
-     
-        if (!$id_ticket) {
-            $this->response(['success' => false, 'message' => 'Faltan el Id_ticket.'], 400);
+        if (!$id_ticket || !$id_user) {
+            $this->response(['success' => false, 'message' => 'Faltan el Id_ticket o el id_user.'], 400);
             return;
         }
     
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
-        $result = $repository->GetSimpleFailure($id_ticket);
+        $result = $repository->ClosedTicket($id_ticket, $id_user);
 
-        if ($result) {
-            $this->response(['success' => true, 'message' => 'Se ha encontralo la falla del pos.',   'failure' => $result], 200);
+         if ($result) {
+            // Obtener los datos del ticket para el modal
+            $ticketData = $repository->GetTicketDataForDelivery($id_ticket);
+            
+            $this->response(['success' => true, 'message' => 'El ticket ha sido cerrado exitosamente.', 'ticket_data' => $ticketData], 200);
         } else {
-            $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
-        }
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        } 
     }
 
 }

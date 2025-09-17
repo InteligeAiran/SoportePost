@@ -834,5 +834,10 @@ class TechnicalConsultionRepository
         }
         return false;
     }
+
+    public function ClosedTicket($id_ticket, $id_user){
+        $result = $this->model->ClosedTicket($id_ticket, $id_user);
+        return $result;  
+    }
 }
 ?>
