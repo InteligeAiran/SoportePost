@@ -7,6 +7,44 @@
 
 let ModalTimelineInstance = null; // Variable para la instancia del modal de línea de tiempo
 
+// --- Helpers de API: construcción de URL y parseo seguro de JSON ---
+function buildApiUrl(actionPath) {
+  // Si el servidor NO tiene habilitado mod_rewrite, usa index.php?url=
+  const base = `${ENDPOINT_BASE}${APP_PATH}`;
+  const direct = `${base}api/reportes/${actionPath}`;
+  if (window.SERVER_REWRITE_DISABLED === true) {
+    return `${base}index.php?url=api/reportes/${actionPath}`;
+  }
+  return direct;
+}
+
+async function fetchJsonByAction(actionPath, fetchOptions = {}) {
+  const url = buildApiUrl(actionPath);
+  let res;
+  try {
+    res = await fetch(url, fetchOptions);
+  } catch (e) {
+    throw e;
+  }
+
+  // Si 404 y no usamos index.php, reintenta con index.php?url=
+  if (res.status === 404 && window.SERVER_REWRITE_DISABLED !== true) {
+    const fallbackUrl = `${ENDPOINT_BASE}${APP_PATH}api/reportes/${actionPath}`;
+    res = await fetch(fallbackUrl, fetchOptions);
+  }
+
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`HTTP error! Status: ${res.status}`);
+  }
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    console.error(`Respuesta no-JSON para ${actionPath}:`, text);
+    throw new Error('Invalid JSON');
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   // --- Referencias a los elementos HTML de los Modales ---
   const monthlyTicketsModalElement = document.getElementById("monthlyTicketsModal");
@@ -540,9 +578,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-
-
-
 function loadIndividualProceess() {
   const contentDiv = document.getElementById("ProcessTicketsContent");
   contentDiv.innerHTML = "<p>Cargando información de los POS en Proceso..</p>";
@@ -585,7 +620,6 @@ function loadIndividualProceess() {
     });
 }
 
-
 function cerrarModalViewDocument(){
   const ModalViewImageElement = document.getElementById("viewDocumentModal"); // Modal para ver documentos de tickets
   let ModalView = null; // Modal para ver imagenes de tickets
@@ -623,8 +657,6 @@ function cerrarModalViewDocument(){
     }
 
 }
-
-
 
 function formatProcessTicketsDetails(details){
   if (!Array.isArray(details)) {
@@ -749,8 +781,6 @@ function loadTicketTimeline(ticketId) {
     },
   });
 }
-
-// 8. NUEVO: Función para formatear los datos de la línea de tiempo en HTML
 
 function loadIndividualIrreparable(){
   const contentDiv = document.getElementById("IrreparableTikModalTicketsContent");
@@ -902,7 +932,6 @@ drawTimelineLine()
     return html;
 }
 
-
 // ---- NUEVA FUNCIÓN PARA INICIALIZAR LISTENERS ----
 function initializeTimelineClickHandlers() {
     const timelineContainer = document.querySelector('.timeline');
@@ -930,8 +959,6 @@ function initializeTimelineClickHandlers() {
         });
     }
 }
-
-
 
 $('#flowTicketModal').on('shown.bs.modal', function () {
     // Aquí es donde obtienes tus datos y llamas a formatTimeline
@@ -1219,154 +1246,97 @@ if (!Array.isArray(details)) {
   return html;
 }
 
-function getTicketProcessReparacion() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsProcessReparacionCount`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTicketProcessReparacion() {
+    try {
+        const data = await fetchJsonByAction('getTicketsProcessReparacionCount', {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "action=getTicketsProcessReparacionCount",
+        });
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          document.getElementById("CountProcessReparacion").textContent =
-            response.count; // Selecciona por ID
+        if (data.success) {
+            document.getElementById("CountProcessReparacion").textContent = data.count;
         } else {
-          console.error("Error:", response.message);
+            console.error("Error:", data.message);
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
+    } catch (error) {
+        console.error("Error al obtener el conteo de tickets:", error);
     }
-  };
-
-  const datos = "action=getTicketsProcessReparacionCount";
-  xhr.send(datos);
 }
 
-function getTicketReparados() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsReparadosCount`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTicketReparados() {
+    try {
+        const data = await fetchJsonByAction('getTicketsReparadosCount', {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "action=getTicketsReparadosCount",
+        });
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          document.getElementById("ReparadopsCount").textContent =
-            response.count; // Selecciona por ID
+        if (data.success) {
+            document.getElementById("ReparadopsCount").textContent = data.count;
         } else {
-          console.error("Error:", response.message);
+            console.error("Error:", data.message);
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
+    } catch (error) {
+        console.error("Error al obtener el conteo de tickets reparados:", error);
     }
-  };
-
-  const datos = "action=getTicketsReparadosCount";
-  xhr.send(datos);
 }
 
-function getTicketPendienteRepuesto() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketPendienteRepuestoCount`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTicketPendienteRepuesto() {
+    try {
+        const body = new URLSearchParams({ action: 'getTicketPendienteRepuestoCount' });
+        const data = await fetchJsonByAction('getTicketPendienteRepuestoCount', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+        });
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          document.getElementById("PendientePorRepuesto").textContent =
-            response.count; // Selecciona por ID
+        if (data.success) {
+            document.getElementById("PendientePorRepuesto").textContent = data.count;
         } else {
-          console.error("Error:", response.message);
+            console.error("Server Error:", data.message);
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
+    } catch (error) {
+        console.error("Failed to fetch pending ticket count:", error);
     }
-  };
-
-  const datos = "action=getTicketPendienteRepuestoCount";
-  xhr.send(datos);
 }
 
-function getTicketEntregadoCliente() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketEntregadoCliente`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTicketEntregadoCliente() {
+    try {
+        const body = new URLSearchParams({ action: 'getTicketEntregadoCliente' });
+        const data = await fetchJsonByAction('getTicketEntregadoCliente', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+        });
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          document.getElementById("EntregadosCliente").textContent =
-            response.count; // Selecciona por ID
+        if (data.success) {
+            document.getElementById("EntregadosCliente").textContent = data.count;
         } else {
-          console.error("Error:", response.message);
+            console.error("Server Error:", data.message);
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
+    } catch (error) {
+        console.error("Failed to fetch tickets delivered to client:", error);
     }
-  };
-
-  const datos = "action=getTicketEntregadoCliente";
-  xhr.send(datos);
 }
 
-function getTicketIrreparables() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketIrreparablesCount`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTicketIrreparables() {
+    try {
+        const body = new URLSearchParams({ action: 'getTicketIrreparablesCount' });
+        const data = await fetchJsonByAction('getTicketIrreparablesCount', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+        });
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          document.getElementById("CountIrreparable").textContent =
-            response.count; // Selecciona por ID
+        if (data.success) {
+            document.getElementById("CountIrreparable").textContent = data.count;
         } else {
-          console.error("Error:", response.message);
+            console.error("Server Error:", data.message);
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
+    } catch (error) {
+        console.error("Failed to fetch irreparable ticket count:", error);
     }
-  };
-
-  const datos = "action=getTicketIrreparablesCount";
-  xhr.send(datos);
 }
 
 function loadIndividualProceessReparacion() {
@@ -1630,9 +1600,6 @@ function loadResolveTicketDetails() {
       console.error("Error fetching regional details:", error);
     });
 }
-
-// Para el campo "Nueva Contraseña"
-
 
 function formatResolveDetails(details) {
   if (!Array.isArray(details)) {
@@ -2279,35 +2246,25 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+async function getTicketOpen() {
+    try {
+        const body = new URLSearchParams({ action: 'getTicketAbiertoCount' });
+        const data = await fetchJsonByAction('getTicketAbiertoCount', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body
+        });
 
-function getTicketOpen() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketAbiertoCount`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          document.getElementById("TicketsAbiertos").textContent =
-            response.count; // Selecciona por ID
+        if (data.success) {
+            document.getElementById("TicketsAbiertos").textContent = data.count;
         } else {
-          console.error("Error:", response.message);
+            console.error("Server Error:", data.message);
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
+    } catch (error) {
+        console.error("Failed to fetch open ticket count:", error);
     }
-  };
-
-  const datos = "action=getTicketAbiertoCount";
-  xhr.send(datos);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -2841,558 +2798,381 @@ document.getElementById('Card-Ticket-open').addEventListener('click', function()
     // Si lo abres con JS, asegúrate de llamar a $('#OpenTicketModal').modal('show');
 });
 
-function getTicketPercentage() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketPercentage`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTicketPercentage() {
+    try {
+        const actionPath = 'getTicketPercentage';
+        const fetchOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                action: 'getTicketPercentage'
+            })
+        };
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          // Convertir el string a número y redondear a 2 decimales
-          // parseFloat convierte el string a un número flotante
-          // toFixed(2) redondea a 2 decimales y devuelve un string
-          const percentage = parseFloat(response.count);
-          const displayPercentage = percentage.toFixed(2); // Redondea a 2 decimales
+        // Usa fetchJsonByAction para manejar la llamada a la API
+        const data = await fetchJsonByAction(actionPath, fetchOptions);
 
-          const percentageSpan = document.getElementById("TicketPorcentOpen");
+        if (data.success) {
+            const percentage = parseFloat(data.count);
+            const displayPercentage = percentage.toFixed(2);
+            const percentageSpan = document.getElementById("TicketPorcentOpen");
+            
+            // Lógica para el signo y el texto
+            percentageSpan.textContent = `${percentage > 0 ? "+" : ""}${displayPercentage}%`;
 
-          // Aquí usamos displayPercentage para mostrar, pero percentage (el número original) para la lógica del signo y color
-          percentageSpan.textContent =
-            (percentage > 0 ? "+" : "") + displayPercentage + "%";
-
-          if (percentage >= 50) {
-            // Usamos el número original para la comparación
-            percentageSpan.classList.remove("text-success");
-            percentageSpan.classList.add("text-danger");
-          } else {
-            percentageSpan.classList.remove("text-danger");
-            percentageSpan.classList.add("text-success");
-          }
+            // Lógica para el color
+            if (percentage >= 50) {
+                percentageSpan.classList.remove("text-success");
+                percentageSpan.classList.add("text-danger");
+            } else {
+                percentageSpan.classList.remove("text-danger");
+                percentageSpan.classList.add("text-success");
+            }
         } else {
-          console.error("Error:", response.message);
+            console.error("Server Error:", data.message);
         }
-      } catch (error) {
-        console.error("Error parsing JSON for percentage:", error);
-      }
-    } else {
-      console.error("Error fetching percentage:", xhr.status, xhr.statusText);
+    } catch (error) {
+        // En caso de error (red, JSON, etc.), establecemos un valor por defecto
+        const percentageSpan = document.getElementById("TicketPorcentOpen");
+        percentageSpan.textContent = "+0.00%";
+        percentageSpan.classList.remove("text-success");
+        percentageSpan.classList.add("text-danger");
+        console.error("Failed to fetch ticket percentage:", error);
     }
-  };
-
-  const datos = "action=getTicketPercentage";
-  xhr.send(datos);
 }
 
 // Llama a la función getTicketPercentage() cuando la página se cargue
-window.addEventListener("load", () => {
-  getTicketOpen();
-  getTicketPercentage(); // Agrega esta línea
+window.addEventListener("load", async () => {
+    await getTicketOpen();
+    await getTicketPercentage();
 });
 
-function getTicketResolve() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsResueltosCount`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          document.getElementById("TicketsResuelto").textContent =
-            response.count; // Selecciona por ID
+async function getTicketResolve() {
+    try {
+        const actionPath = 'getTicketsResueltosCount';
+        const fetchOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                action: 'getTicketsResueltosCount'
+            })
+        };
+
+        // Usa fetchJsonByAction para manejar la llamada a la API
+        const data = await fetchJsonByAction(actionPath, fetchOptions);
+
+        if (data.success) {
+            document.getElementById("TicketsResuelto").textContent = data.count;
         } else {
-          console.error("Error:", response.message);
+            console.error("Server Error:", data.message);
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
+    } catch (error) {
+        console.error("Failed to fetch resolved ticket count:", error);
     }
-  };
-
-  const datos = "action=getTicketsResueltosCount";
-  xhr.send(datos);
 }
 
-function getTicketsResueltosPercentage() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsResueltosPercentage`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTicketsResueltosPercentage() {
+    const percentageSpan = document.getElementById("ticketResueltoPercentage");
+    const thresholdForGood = 50;
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          // 1. Verificar si hay datos válidos
-          let percentage;
-          let displayPercentage;
-          
-          if (response.count === null || response.count === undefined || response.count === '') {
-            // No hay datos: mostrar 0.00%
-            percentage = 0;
-            displayPercentage = "0.00";
-          } else {
-            // Convertir el string a número
-            percentage = parseFloat(response.count);
-            
-            // Verificar si es un número válido
-            if (isNaN(percentage)) {
-              percentage = 0;
-              displayPercentage = "0.00";
-            } else {
-              // Redondear a 2 decimales
-              displayPercentage = percentage.toFixed(2);
+    try {
+        const body = new URLSearchParams({ action: 'getTicketsResueltosPercentage' });
+        const data = await fetchJsonByAction('getTicketsResueltosPercentage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+        });
+
+        let percentage = 0;
+        let displayPercentage = "0.00";
+
+        if (data.success && data.count !== null && data.count !== undefined && data.count !== '') {
+            const parsedPercentage = parseFloat(data.count);
+            if (!isNaN(parsedPercentage)) {
+                percentage = parsedPercentage;
+                displayPercentage = percentage.toFixed(2);
             }
-          }
+        }
 
-          const percentageSpan = document.getElementById(
-            "ticketResueltoPercentage"
-          );
+        percentageSpan.textContent = `+${displayPercentage}%`;
 
-          // Mostrar el porcentaje (siempre con + para 0.00%)
-          percentageSpan.textContent = "+" + displayPercentage + "%";
-
-          // === LÓGICA DE COLOR ===
-          const thresholdForGood = 50; // Verde si es >= 50%
-
-          if (percentage < thresholdForGood) {
-            // Si es MENOR que el umbral (50%), es "malo" (rojo)
+        if (percentage < thresholdForGood) {
             percentageSpan.classList.remove("text-success");
             percentageSpan.classList.add("text-danger");
-          } else {
-            // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
+        } else {
             percentageSpan.classList.remove("text-danger");
             percentageSpan.classList.add("text-success");
-          }
-        } else {
-          // Si response.success es false, mostrar 0.00% en rojo
-          const percentageSpan = document.getElementById(
-            "ticketResueltoPercentage"
-          );
-          percentageSpan.textContent = "+0.00%";
-          percentageSpan.classList.remove("text-success");
-          percentageSpan.classList.add("text-danger");
-          console.error("Error:", response.message);
         }
-      } catch (error) {
-        // Si hay error parsing JSON, mostrar 0.00% en rojo
-        const percentageSpan = document.getElementById(
-          "ticketResueltoPercentage"
-        );
+
+        if (!data.success) {
+            console.error("Server Error:", data.message);
+        }
+
+    } catch (error) {
+        // En caso de error, mostramos 0.00% y aplicamos el estilo de error
         percentageSpan.textContent = "+0.00%";
         percentageSpan.classList.remove("text-success");
         percentageSpan.classList.add("text-danger");
-        console.error(
-          "Error parsing JSON for Tickets Resueltos percentage:",
-          error
-        );
-      }
-    } else {
-      // Si hay error HTTP, mostrar 0.00% en rojo
-      const percentageSpan = document.getElementById(
-        "ticketResueltoPercentage"
-      );
-      percentageSpan.textContent = "+0.00%";
-      percentageSpan.classList.remove("text-success");
-      percentageSpan.classList.add("text-danger");
-      console.error(
-        "Error fetching Tickets Resueltos percentage:",
-        xhr.status,
-        xhr.statusText
-      );
+        console.error("Failed to fetch resolved ticket percentage:", error);
     }
-  };
-
-  xhr.onerror = function() {
-    // Si hay error de red, mostrar 0.00% en rojo
-    const percentageSpan = document.getElementById(
-      "ticketResueltoPercentage"
-    );
-    percentageSpan.textContent = "+0.00%";
-    percentageSpan.classList.remove("text-success");
-    percentageSpan.classList.add("text-danger");
-    console.error("Network error occurred");
-  };
-
-  const datos = "action=getTicketsResueltosPercentage";
-  xhr.send(datos);
 }
 
-function getTicketsgestionComercialporcent() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsgestioncomercialPorcent`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTicketsgestionComercialporcent() {
+    const percentageSpan = document.getElementById("PorcentGestionComercial");
+    const thresholdForGood = 50;
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          // 1. Verificar si hay datos válidos
-          let percentage;
-          let displayPercentage;
-          
-          if (response.count === null || response.count === undefined || response.count === '') {
-            // No hay datos: mostrar 0.00%
-            percentage = 0;
-            displayPercentage = "0.00";
-          } else {
-            // Convertir el string a número
-            percentage = parseFloat(response.count);
-            
-            // Verificar si es un número válido
-            if (isNaN(percentage)) {
-              percentage = 0;
-              displayPercentage = "0.00";
-            } else {
-              // Redondear a 2 decimales
-              displayPercentage = percentage.toFixed(2);
+    try {
+        const body = new URLSearchParams({ action: 'getTicketsgestioncomercialPorcent' });
+        const data = await fetchJsonByAction('getTicketsgestioncomercialPorcent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+        });
+
+        let percentage = 0;
+        let displayPercentage = "0.00";
+
+        if (data.success && data.count !== null && data.count !== undefined && data.count !== '') {
+            const parsedPercentage = parseFloat(data.count);
+            if (!isNaN(parsedPercentage)) {
+                percentage = parsedPercentage;
+                displayPercentage = percentage.toFixed(2);
             }
-          }
+        }
 
-          const percentageSpan = document.getElementById(
-            "PorcentGestionComercial"
-          );
+        percentageSpan.textContent = `+${displayPercentage}%`;
 
-          // Mostrar el porcentaje (siempre con + para 0.00%)
-          percentageSpan.textContent = "+" + displayPercentage + "%";
-
-          // === LÓGICA DE COLOR ===
-          const thresholdForGood = 50; // Verde si es >= 50%
-
-          if (percentage < thresholdForGood) {
-            // Si es MENOR que el umbral (50%), es "malo" (rojo)
+        if (percentage < thresholdForGood) {
             percentageSpan.classList.remove("text-success");
             percentageSpan.classList.add("text-danger");
-          } else {
-            // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
+        } else {
             percentageSpan.classList.remove("text-danger");
             percentageSpan.classList.add("text-success");
-          }
-        } else {
-          // Si response.success es false, mostrar 0.00% en rojo
-          const percentageSpan = document.getElementById(
-            "PorcentGestionComercial"
-          );
-          percentageSpan.textContent = "+0.00%";
-          percentageSpan.classList.remove("text-success");
-          percentageSpan.classList.add("text-danger");
-          console.error("Error:", response.message);
         }
-      } catch (error) {
-        // Si hay error parsing JSON, mostrar 0.00% en rojo
-        const percentageSpan = document.getElementById(
-          "PorcentGestionComercial"
-        );
+
+        if (!data.success) {
+            console.error("Server Error:", data.message);
+        }
+
+    } catch (error) {
         percentageSpan.textContent = "+0.00%";
         percentageSpan.classList.remove("text-success");
         percentageSpan.classList.add("text-danger");
-        console.error(
-          "Error parsing JSON for Tickets Resueltos percentage:",
-          error
-        );
-      }
-    } else {
-      // Si hay error HTTP, mostrar 0.00% en rojo
-      const percentageSpan = document.getElementById(
-        "PorcentGestionComercial"
-      );
-      percentageSpan.textContent = "+0.00%";
-      percentageSpan.classList.remove("text-success");
-      percentageSpan.classList.add("text-danger");
-      console.error(
-        "Error fetching Tickets Resueltos percentage:",
-        xhr.status,
-        xhr.statusText
-      );
+        console.error("Failed to fetch commercial management percentage:", error);
     }
-  };
-
-  xhr.onerror = function() {
-    // Si hay error de red, mostrar 0.00% en rojo
-    const percentageSpan = document.getElementById(
-      "ticketResueltoPercentage"
-    );
-    percentageSpan.textContent = "+0.00%";
-    percentageSpan.classList.remove("text-success");
-    percentageSpan.classList.add("text-danger");
-    console.error("Network error occurred");
-  };
-
-  const datos = "action=getTicketsgestioncomercialPorcent";
-  xhr.send(datos);
 }
 
 // Llama a las funciones cuando la página se cargue
-window.addEventListener("load", () => {
-  getTicketResolve();
-  getTicketsResueltosPercentage(); // Agrega esta línea
+window.addEventListener("load", async () => {
+  await getTicketResolve();
+  await getTicketsResueltosPercentage(); // Agrega esta línea
 });
 
-function getTicketTotal() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsTotalCount`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTicketTotal() {
+    try {
+        const body = new URLSearchParams({ action: 'getTicketsTotalCount' });
+        const data = await fetchJsonByAction('getTicketsTotalCount', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body
+        });
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          document.getElementById("TotalTicket").textContent = response.count; // Selecciona por ID
+        if (data.success) {
+            document.getElementById("TotalTicket").textContent = data.count;
         } else {
-          console.error("Error:", response.message);
+            console.error("Server Error:", data.message);
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
+    } catch (error) {
+        console.error("Failed to fetch total ticket count:", error);
     }
-  };
-
-  const datos = "action=getTicketsTotalCount";
-  xhr.send(datos);
 }
 
-function getTicketGestionComercial() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketGestionComercialCount`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTicketGestionComercial() {
+    try {
+        const actionPath = 'getTicketGestionComercialCount';
+        const fetchOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                action: 'getTicketGestionComercialCount'
+            })
+        };
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          document.getElementById("ticketGestionComercialCount").textContent = response.count; // Selecciona por ID
+        // Usa fetchJsonByAction para manejar la llamada a la API
+        const data = await fetchJsonByAction(actionPath, fetchOptions);
+
+        if (data.success) {
+            document.getElementById("ticketGestionComercialCount").textContent = data.count;
         } else {
-          console.error("Error:", response.message);
+            console.error("Server Error:", data.message);
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
+    } catch (error) {
+        console.error("Failed to fetch commercial management ticket count:", error);
     }
-  };
-
-  const datos = "action=getTicketGestionComercialCount";
-  xhr.send(datos);
 }
 
-function getTicketTotalSendTotaller() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsSendTallerTotalCount`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTicketTotalSendTotaller() {
+    try {
+        const body = new URLSearchParams({ action: 'getTicketsSendTallerTotalCount' });
+        const data = await fetchJsonByAction('getTicketsSendTallerTotalCount', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body
+        });
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          document.getElementById("TotalEnviadoTaller").textContent =
-            response.count; // Selecciona por ID
+        if (data.success) {
+            document.getElementById("TotalEnviadoTaller").textContent = data.count;
         } else {
-          console.error("Error:", response.message);
+            console.error("Server Error:", data.message);
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
+    } catch (error) {
+        console.error("Failed to fetch total tickets sent to shop:", error);
     }
-  };
-
-  const datos = "action=getTicketsSendTallerTotalCount";
-  xhr.send(datos);
 }
 
-function getTotalTicketsPercentageOFSendTaller() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTotalTicketsPercentageSendToTaller`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTotalTicketsPercentageOFSendTaller() {
+    const percentageSpan = document.getElementById("PorcentSendToTaller");
+    const thresholdForGood = 50;
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          const percentage = parseFloat(response.porcent);
+    try {
+        const actionPath = 'getTotalTicketsPercentageSendToTaller';
+        const fetchOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                action: 'getTotalTicketsPercentageSendToTaller'
+            })
+        };
 
-          // 2. Redondear a 2 decimales y almacenar en displayPercentage
-          const displayPercentage = percentage.toFixed(2);
+        // Use fetchJsonByAction to handle the fetch call and JSON parsing
+        const data = await fetchJsonByAction(actionPath, fetchOptions);
 
-          const percentageSpan = document.getElementById("PorcentSendToTaller");
+        let percentage = 0;
+        let displayPercentage = "0.00";
 
-          // Usar displayPercentage para mostrar y percentage (el número original) para la lógica de color
-          percentageSpan.textContent =
-            (percentage > 0 ? "+" : "") + displayPercentage + "%";
-
-          // === CAMBIO CLAVE AQUÍ ===
-          // Definir el umbral: si el porcentaje de tickets resueltos es menor que esto, será rojo.
-          // Si es igual o mayor, será verde.
-          const thresholdForGood = 50; // Quieres que sea verde si es >= 50%
-
-          if (percentage < thresholdForGood) {
-            // Si es MENOR que el umbral (50%), es "malo" (rojo)
-            percentageSpan.classList.remove("text-success"); // Asegúrate de quitar la clase verde
-            percentageSpan.classList.add("text-danger"); // Añadir la clase roja
-          } else {
-            // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
-            percentageSpan.classList.remove("text-danger"); // Asegúrate de quitar la clase roja
-            percentageSpan.classList.add("text-success"); // Añadir la clase verde
-          }
-          // =========================
-        } else {
-          console.error("Error:", response.message);
+        if (data.success && data.porcent !== null && data.porcent !== undefined && data.porcent !== '') {
+            const parsedPercentage = parseFloat(data.porcent);
+            if (!isNaN(parsedPercentage)) {
+                percentage = parsedPercentage;
+                displayPercentage = percentage.toFixed(2);
+            }
         }
-      } catch (error) {
-        console.error(
-          "Error parsing JSON for Total Tickets percentage:",
-          error
-        );
-      }
-    } else {
-      console.error(
-        "Error fetching Total Tickets percentage:",
-        xhr.status,
-        xhr.statusText
-      );
-    }
-  };
 
-  const datos = "action=getTotalTicketsPercentageSendToTaller";
-  xhr.send(datos);
+        percentageSpan.textContent = `+${displayPercentage}%`;
+
+        if (percentage < thresholdForGood) {
+            percentageSpan.classList.remove("text-success");
+            percentageSpan.classList.add("text-danger");
+        } else {
+            percentageSpan.classList.remove("text-danger");
+            percentageSpan.classList.add("text-success");
+        }
+
+        if (!data.success) {
+            console.error("Server Error:", data.message);
+        }
+
+    } catch (error) {
+        percentageSpan.textContent = "+0.00%";
+        percentageSpan.classList.remove("text-success");
+        percentageSpan.classList.add("text-danger");
+        console.error("Failed to fetch total tickets percentage sent to shop:", error);
+    }
 }
 
-function getTotalPorcentageticket_in_process() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTotalTicketsPercentageinprocess`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTotalPorcentageticket_in_process() {
+    const percentageSpan = document.getElementById("Process_Tickets");
+    const thresholdForGood = 50;
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          const percentage = parseFloat(response.porcent);
+    try {
+        const actionPath = 'getTotalTicketsPercentageinprocess';
+        const fetchOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                action: 'getTotalTicketsPercentageinprocess'
+            })
+        };
 
-          // 2. Redondear a 2 decimales y almacenar en displayPercentage
-          const displayPercentage = percentage.toFixed(2);
+        // Use fetchJsonByAction to handle the fetch call and JSON parsing
+        const data = await fetchJsonByAction(actionPath, fetchOptions);
 
-          const percentageSpan = document.getElementById("Process_Tickets");
+        let percentage = 0;
+        let displayPercentage = "0.00";
 
-          // Usar displayPercentage para mostrar y percentage (el número original) para la lógica de color
-          percentageSpan.textContent =
-            (percentage > 0 ? "+" : "") + displayPercentage + "%";
-
-          // === CAMBIO CLAVE AQUÍ ===
-          // Definir el umbral: si el porcentaje de tickets resueltos es menor que esto, será rojo.
-          // Si es igual o mayor, será verde.
-          const thresholdForGood = 50; // Quieres que sea verde si es >= 50%
-
-          if (percentage < thresholdForGood) {
-            // Si es MENOR que el umbral (50%), es "malo" (rojo)
-            percentageSpan.classList.remove("text-success"); // Asegúrate de quitar la clase verde
-            percentageSpan.classList.add("text-danger"); // Añadir la clase roja
-          } else {
-            // Si es MAYOR O IGUAL que el umbral (50%), es "bueno" (verde)
-            percentageSpan.classList.remove("text-danger"); // Asegúrate de quitar la clase roja
-            percentageSpan.classList.add("text-success"); // Añadir la clase verde
-          }
-          // =========================
-        } else {
-          console.error("Error:", response.message);
+        if (data.success && data.porcent !== null && data.porcent !== undefined && data.porcent !== '') {
+            const parsedPercentage = parseFloat(data.porcent);
+            if (!isNaN(parsedPercentage)) {
+                percentage = parsedPercentage;
+                displayPercentage = percentage.toFixed(2);
+            }
         }
-      } catch (error) {
-        console.error(
-          "Error parsing JSON for Total Tickets percentage:",
-          error
-        );
-      }
-    } else {
-      console.error(
-        "Error fetching Total Tickets percentage:",
-        xhr.status,
-        xhr.statusText
-      );
-    }
-  };
 
-  const datos = "action=getTotalTicketsPercentageinprocess";
-  xhr.send(datos);
+        percentageSpan.textContent = `+${displayPercentage}%`;
+
+        if (percentage < thresholdForGood) {
+            percentageSpan.classList.remove("text-success");
+            percentageSpan.classList.add("text-danger");
+        } else {
+            percentageSpan.classList.remove("text-danger");
+            percentageSpan.classList.add("text-success");
+        }
+
+        if (!data.success) {
+            console.error("Server Error:", data.message);
+        }
+
+    } catch (error) {
+        percentageSpan.textContent = "+0.00%";
+        percentageSpan.classList.remove("text-success");
+        percentageSpan.classList.add("text-danger");
+        console.error("Failed to fetch tickets in process percentage:", error);
+    }
 }
 
-function getTotalTicketsInProcess() {
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/getTotalTicketsInProcess`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+async function getTotalTicketsInProcess() {
+    try {
+        const body = new URLSearchParams({ action: 'getTotalTicketsInProcess' });
+        const data = await fetchJsonByAction('getTotalTicketsInProcess', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body
+        });
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          document.getElementById("ProcessTicketNumber").textContent = response.count; // Selecciona por ID
+        if (data.success) {
+            document.getElementById("ProcessTicketNumber").textContent = data.count;
         } else {
-          console.error("Error:", response.message);
+            console.error("Server Error:", data.message);
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
+    } catch (error) {
+        console.error("Failed to fetch tickets in process count:", error);
     }
-  };
-
-  const datos = "action=getTotalTicketsInProcess";
-  xhr.send(datos);
 }
 
 // Llama a las funciones cuando la página se cargue
-window.addEventListener("load", () => {
-  getTicketTotal();
-  getTicketTotalSendTotaller();
-  getTotalTicketsPercentageOFSendTaller();
-  getTotalTicketsInProcess();
-  getTotalPorcentageticket_in_process();
+window.addEventListener("load", async () => {
+  await getTicketTotal();
+  await getTicketTotalSendTotaller();
+  await getTotalTicketsPercentageOFSendTaller();
+  await getTotalTicketsInProcess();
+  await getTotalPorcentageticket_in_process();
 });
 
 function loadRegionTicketDetails() {
@@ -3438,8 +3218,6 @@ function loadRegionTicketDetails() {
       console.error("Error fetching regional details:", error);
     });
 }
-
-// Función para cargar los detalles de tickets individuales por región (sin estado inicial)
 
 // Función para formatear la tabla de tickets por región (ajustada)
 function formatRegionDetails(details) {
@@ -3918,191 +3696,128 @@ function hideChartErrorMessage(chartId) {
     }
 }
 
-function loadMonthlyCreatedTicketsChart() {
-  // Array para los colores de fondo con degradado (ej. para Chart.js)
-  // Cada objeto contiene los colores de inicio y fin para el degradado de una barra.
-  const gradientColors = [
-    // Enero: Azul Oscuro a Azul Medio
-    { start: "rgba(41, 128, 185, 0.9)", end: "rgba(52, 152, 219, 0.9)" },
-    // Febrero: Azul Marino Oscuro a Azul Grisáceo
-    { start: "rgba(44, 62, 80, 0.9)", end: "rgba(52, 73, 94, 0.9)" },
-    // Marzo: Verde Esmeralda Oscuro a Verde Esmeralda
-    { start: "rgba(39, 174, 96, 0.9)", end: "rgba(46, 204, 113, 0.9)" },
-    // Abril: Turquesa Oscuro a Turquesa Brillante
-    { start: "rgba(22, 160, 133, 0.9)", end: "rgba(26, 188, 156, 0.9)" },
-    // Mayo: Naranja-Amarillo a Amarillo Dorado
-    { start: "rgba(243, 156, 18, 0.9)", end: "rgba(241, 196, 15, 0.9)" },
-    // Junio: Naranja a Naranja Oscuro
-    { start: "rgba(230, 126, 34, 0.9)", end: "rgba(211, 84, 0, 0.9)" },
-    // Julio: Púrpura Profundo a Púrpura Medio
-    { start: "rgba(142, 68, 173, 0.9)", end: "rgba(155, 89, 182, 0.9)" },
-    // Agosto: Rojo-Rosa a Rojo Oscuro
-    { start: "rgba(231, 76, 60, 0.9)", end: "rgba(192, 57, 43, 0.9)" },
-    // Septiembre: Verde Bosque Oscuro a Verde Bosque
-    { start: "rgba(39, 174, 96, 0.9)", end: "rgba(46, 204, 113, 0.9)" },
-    // Octubre: Gris Oscuro Azulado a Gris Claro Azulado
-    { start: "rgba(127, 140, 141, 0.9)", end: "rgba(149, 165, 166, 0.9)" },
-    // Noviembre: Azul Muy Oscuro a Azul Más Oscuro
-    { start: "rgba(31, 44, 58, 0.9)", end: "rgba(41, 61, 81, 0.9)" },
-    // Diciembre: Azul Brillante a Azul Más Claro
-    { start: "rgba(52, 152, 219, 0.9)", end: "rgba(93, 173, 226, 0.9)" },
-  ];
+async function loadMonthlyCreatedTicketsChart() {
+    // Array para los colores de fondo con degradado
+    const gradientColors = [
+        { start: "rgba(41, 128, 185, 0.9)", end: "rgba(52, 152, 219, 0.9)" },
+        { start: "rgba(44, 62, 80, 0.9)", end: "rgba(52, 73, 94, 0.9)" },
+        { start: "rgba(39, 174, 96, 0.9)", end: "rgba(46, 204, 113, 0.9)" },
+        { start: "rgba(22, 160, 133, 0.9)", end: "rgba(26, 188, 156, 0.9)" },
+        { start: "rgba(243, 156, 18, 0.9)", end: "rgba(241, 196, 15, 0.9)" },
+        { start: "rgba(230, 126, 34, 0.9)", end: "rgba(211, 84, 0, 0.9)" },
+        { start: "rgba(142, 68, 173, 0.9)", end: "rgba(155, 89, 182, 0.9)" },
+        { start: "rgba(231, 76, 60, 0.9)", end: "rgba(192, 57, 43, 0.9)" },
+        { start: "rgba(39, 174, 96, 0.9)", end: "rgba(46, 204, 113, 0.9)" },
+        { start: "rgba(127, 140, 141, 0.9)", end: "rgba(149, 165, 166, 0.9)" },
+        { start: "rgba(31, 44, 58, 0.9)", end: "rgba(41, 61, 81, 0.9)" },
+        { start: "rgba(52, 152, 219, 0.9)", end: "rgba(93, 173, 226, 0.9)" },
+    ];
 
-  // Array para los colores del borde (generalmente un tono más oscuro o el color inicial del degradado)
-  const borderColors = [
-    "rgba(41, 128, 185, 1)", // Enero
-    "rgba(44, 62, 80, 1)", // Febrero
-    "rgba(39, 174, 96, 1)", // Marzo
-    "rgba(22, 160, 133, 1)", // Abril
-    "rgba(243, 156, 18, 1)", // Mayo
-    "rgba(230, 126, 34, 1)", // Junio
-    "rgba(142, 68, 173, 1)", // Julio
-    "rgba(231, 76, 60, 1)", // Agosto
-    "rgba(39, 174, 96, 1)", // Septiembre
-    "rgba(127, 140, 141, 1)", // Octubre
-    "rgba(31, 44, 58, 1)", // Noviembre
-    "rgba(52, 152, 219, 1)", // Diciembre
-  ];
+    // Array para los colores del borde
+    const borderColors = [
+        "rgba(41, 128, 185, 1)", "rgba(44, 62, 80, 1)", "rgba(39, 174, 96, 1)",
+        "rgba(22, 160, 133, 1)", "rgba(243, 156, 18, 1)", "rgba(230, 126, 34, 1)",
+        "rgba(142, 68, 173, 1)", "rgba(231, 76, 60, 1)", "rgba(39, 174, 96, 1)",
+        "rgba(127, 140, 141, 1)", "rgba(31, 44, 58, 1)", "rgba(52, 152, 219, 1)",
+    ];
 
-  const chartCanvasId = "chart-line";
-  const ctx = document.getElementById(chartCanvasId).getContext("2d");
+    const chartCanvasId = "chart-line";
+    const ctx = document.getElementById(chartCanvasId).getContext("2d");
 
-  // Ocultar mensaje de error previo
-  hideChartErrorMessage(chartCanvasId);
+    // Ocultar mensaje de error previo
+    hideChartErrorMessage(chartCanvasId);
 
-  fetch(
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChart`
-  )
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (data.success && data.details && data.details.length > 0) {
-        const labels = data.details.map(
-          (item) => `${item.month_name} ${item.year_month.substring(0, 4)}`
-        ); // "Enero 2024"
-        const chartData = data.details.map(
-          (item) => item.total_tickets_creados_mes
-        );
+    try {
+        // Usa fetchJsonByAction para manejar la llamada a la API
+        const data = await fetchJsonByAction('GetMonthlyCreatedTicketsForChart');
 
-        // Si ya existe una instancia del gráfico, la destruimos antes de crear una nueva
-        if (monthlyTicketsChartInstance) {
-          monthlyTicketsChartInstance.destroy();
+        if (data.success && data.details && data.details.length > 0) {
+            const labels = data.details.map((item) => `${item.month_name} ${item.year_month.substring(0, 4)}`);
+            const chartData = data.details.map((item) => item.total_tickets_creados_mes);
+
+            // Destruir el gráfico si ya existe una instancia
+            if (monthlyTicketsChartInstance) {
+                monthlyTicketsChartInstance.destroy();
+            }
+
+            monthlyTicketsChartInstance = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Total de Tickets Creados",
+                        data: chartData,
+                        backgroundColor: function (context) {
+                            const chart = context.chart;
+                            const { ctx, chartArea } = chart;
+                            if (!chartArea) {
+                                // Fallback sólido en el primer render para evitar barras invisibles
+                                const fallbackColors = [
+                                    "rgba(52, 152, 219, 0.7)", "rgba(52, 73, 94, 0.7)", "rgba(46, 204, 113, 0.7)",
+                                    "rgba(26, 188, 156, 0.7)", "rgba(241, 196, 15, 0.7)", "rgba(211, 84, 0, 0.7)",
+                                    "rgba(155, 89, 182, 0.7)", "rgba(192, 57, 43, 0.7)", "rgba(46, 204, 113, 0.7)",
+                                    "rgba(149, 165, 166, 0.7)", "rgba(41, 61, 81, 0.7)", "rgba(93, 173, 226, 0.7)"
+                                ];
+                                return fallbackColors[context.dataIndex % fallbackColors.length];
+                            }
+
+                            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                            const index = context.dataIndex;
+                            const colorInfo = gradientColors[index % gradientColors.length];
+
+                            if (colorInfo) {
+                                gradient.addColorStop(0, colorInfo.start);
+                                gradient.addColorStop(1, colorInfo.end);
+                            } else {
+                                gradient.addColorStop(0, "rgba(0,0,0,0.7)");
+                                gradient.addColorStop(1, "rgba(0,0,0,0.5)");
+                            }
+                            return gradient;
+                        },
+                        borderColor: borderColors,
+                        borderWidth: 1,
+                        categoryPercentage: 0.7,
+                        barPercentage: 0.8,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: "#6c757d", font: { size: 12 } },
+                            grid: { color: "rgba(0,0,0,0.05)", drawBorder: false },
+                        },
+                        x: {
+                            ticks: { color: "#6c757d", font: { size: 12 } },
+                            grid: { color: "rgba(0,0,0,0.05)", drawBorder: false },
+                        },
+                    },
+                    plugins: {
+                        legend: { display: true, labels: { color: "#343a40" } },
+                        tooltip: { backgroundColor: "rgba(0,0,0,0.7)", titleColor: "white", bodyColor: "white" },
+                    },
+                },
+            });
+            // Forzar actualización tras el primer layout para asegurar degradados
+            setTimeout(() => {
+                try { monthlyTicketsChartInstance.update(); } catch (_) {}
+            }, 200);
+        } else {
+            console.warn("No hay datos disponibles para el gráfico de tickets creados por mes o la respuesta no fue exitosa.");
+            if (monthlyTicketsChartInstance) {
+                monthlyTicketsChartInstance.destroy();
+            }
+            displayChartErrorMessage(chartCanvasId, "No hay tickets creados este mes", 'info');
         }
-
-        monthlyTicketsChartInstance = new Chart(ctx, {
-          type: "bar", // Puedes probar 'line' para ver la tendencia también
-          data: {
-            labels: labels, // Nombres de los meses como etiquetas
-            datasets: [
-              {
-                label: "Total de Tickets Creados",
-                data: chartData, // Los totales de tickets creados por mes
-                backgroundColor: function (context) {
-                  // Aquí es donde creamos el degradado para cada barra
-                  const chart = context.chart;
-                  const { ctx, chartArea } = chart;
-
-                  if (!chartArea) {
-                    // Esto sucede en la carga inicial del gráfico
-                    return;
-                  }
-
-                  // Crea el degradado vertical desde la parte inferior de la barra hasta la superior
-                  const gradient = ctx.createLinearGradient(
-                    0,
-                    chartArea.bottom,
-                    0,
-                    chartArea.top
-                  );
-
-                  const index = context.dataIndex; // Índice del mes actual
-                  const colorInfo =
-                    gradientColors[index % gradientColors.length]; // Usamos % para repetir los colores si hay más de 12 meses
-
-                  if (colorInfo) {
-                    gradient.addColorStop(0, colorInfo.start); // Color de inicio (abajo)
-                    gradient.addColorStop(1, colorInfo.end); // Color final (arriba)
-                  } else {
-                    // Color de fallback si no se encuentra información de color
-                    gradient.addColorStop(0, "rgba(0,0,0,0.7)");
-                    gradient.addColorStop(1, "rgba(0,0,0,0.5)");
-                  }
-
-                  return gradient;
-                },
-                borderColor: borderColors, // Los bordes pueden ser colores sólidos
-                borderWidth: 1,
-                categoryPercentage: 0.7,
-                barPercentage: 0.8,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  color: "#6c757d",
-                  font: { size: 12 },
-                },
-                grid: {
-                  color: "rgba(0,0,0,0.05)",
-                  drawBorder: false,
-                },
-              },
-              x: {
-                ticks: {
-                  color: "#6c757d",
-                  font: { size: 12 },
-                },
-                grid: {
-                  color: "rgba(0,0,0,0.05)",
-                  drawBorder: false,
-                },
-              },
-            },
-            plugins: {
-              legend: {
-                display: true, // Mostrar la leyenda para el nombre del dataset
-                labels: { color: "#343a40" },
-              },
-              tooltip: {
-                backgroundColor: "rgba(0,0,0,0.7)",
-                titleColor: "white",
-                bodyColor: "white",
-              },
-            },
-          },
-        });
-      } else {
-        console.warn(
-          "No hay datos disponibles para el gráfico de tickets creados por mes o la respuesta no fue exitosa."
-        );
-        // Destruir el gráfico si no hay datos para mostrar un lienzo vacío
+    } catch (error) {
+        console.error("Error al cargar los datos del gráfico de tickets creados por mes:", error);
         if (monthlyTicketsChartInstance) {
-          monthlyTicketsChartInstance.destroy();
+            monthlyTicketsChartInstance.destroy();
         }
-        // Mostrar mensaje de "no data" con mejor formato
-        displayChartErrorMessage(chartCanvasId, "No hay tickets creados este mes", 'info');
-      }
-    })
-    .catch((error) => {
-      console.error(
-        "Error al cargar los datos del gráfico de tickets creados por mes:",
-        error
-      );
-      if (monthlyTicketsChartInstance) {
-        monthlyTicketsChartInstance.destroy();
-      }
-      // Mostrar mensaje de error con mejor formato
-      displayChartErrorMessage(chartCanvasId, "No hay datos en la gráfica", 'error');
-    });
+        displayChartErrorMessage(chartCanvasId, "No hay datos en la gráfica", 'error');
+    }
 }
 
 async function updateTicketMonthlyPercentageChange() {
@@ -4111,13 +3826,10 @@ async function updateTicketMonthlyPercentageChange() {
   if (porcentElement) porcentElement.textContent = "Cargando...";
 
   try {
-    const response = await fetch(
-      `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyTicketPercentageChange`
-    );
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
+    // Usa fetchJsonByAction para obtener los datos de la API
+    // La función se encarga de la llamada fetch, la validación de la respuesta
+    // y el análisis del JSON.
+    const data = await fetchJsonByAction("GetMonthlyTicketPercentageChange");
 
     // ** CAMBIO CRÍTICO AQUÍ: Accede directamente a data.porcent **
     let percentage = data.porcent; // Toma el número directamente
@@ -4126,7 +3838,6 @@ async function updateTicketMonthlyPercentageChange() {
     let color = "gray";
 
     if (percentage === null || isNaN(percentage)) {
-      // Aunque ya verificamos que es número, mantenemos isNaN por si acaso
       textContent = `N/A`;
     } else {
       const roundedPercentage = Math.round(percentage); // Redondea al entero más cercano
@@ -4149,182 +3860,133 @@ async function updateTicketMonthlyPercentageChange() {
       porcentElement.textContent = "0%"; // Valor por defecto en caso de error
       porcentElement.style.color = "grey";
     }
+    console.error("Failed to fetch monthly ticket percentage:", error);
   }
 }
 
-function loadMonthlyCreatedTicketsChartForState() {
-  // Array para los colores de fondo con degradado para los estados/regiones (7 colores distintos)
-  const gradientColorsForState = [
-    // Región 1: Azul Profundo a Azul Cielos
-    { start: "rgba(46, 116, 181, 0.9)", end: "rgba(74, 160, 217, 0.9)" },
-    // Región 2: Verde Esmeralda a Verde Claro
-    { start: "rgba(46, 204, 113, 0.9)", end: "rgba(77, 219, 137, 0.9)" },
-    // Región 3: Púrpura Vibrante a Lavanda
-    { start: "rgba(155, 89, 182, 0.9)", end: "rgba(189, 119, 218, 0.9)" },
-    // Región 4: Cian Oscuro a Cian Claro
-    { start: "rgba(0, 128, 128, 0.9)", end: "rgba(0, 178, 178, 0.9)" },
-    // Región 5: Oro Oxidado a Amarillo Naranja
-    { start: "rgba(204, 102, 0, 0.9)", end: "rgba(255, 153, 51, 0.9)" },
-    // Región 6: Gris Azulado Profundo a Gris Claro
-    { start: "rgba(90, 100, 110, 0.9)", end: "rgba(130, 140, 150, 0.9)" },
-    // Región 7: Rojo Vivo a Rosa Salmón
-    { start: "rgba(231, 76, 60, 0.9)", end: "rgba(241, 148, 138, 0.9)" },
-  ];
+async function loadMonthlyCreatedTicketsChartForState() {
+    // Array para los colores de fondo con degradado para los estados/regiones (7 colores distintos)
+    const gradientColorsForState = [
+        { start: "rgba(46, 116, 181, 0.9)", end: "rgba(74, 160, 217, 0.9)" },
+        { start: "rgba(46, 204, 113, 0.9)", end: "rgba(77, 219, 137, 0.9)" },
+        { start: "rgba(155, 89, 182, 0.9)", end: "rgba(189, 119, 218, 0.9)" },
+        { start: "rgba(0, 128, 128, 0.9)", end: "rgba(0, 178, 178, 0.9)" },
+        { start: "rgba(204, 102, 0, 0.9)", end: "rgba(255, 153, 51, 0.9)" },
+        { start: "rgba(90, 100, 110, 0.9)", end: "rgba(130, 140, 150, 0.9)" },
+        { start: "rgba(231, 76, 60, 0.9)", end: "rgba(241, 148, 138, 0.9)" },
+    ];
 
-  // Array para los colores del borde para los estados/regiones
-  const borderColorsForState = [
-    "rgba(46, 116, 181, 1)",
-    "rgba(46, 204, 113, 1)",
-    "rgba(155, 89, 182, 1)",
-    "rgba(0, 128, 128, 1)",
-    "rgba(204, 102, 0, 1)",
-    "rgba(90, 100, 110, 1)",
-    "rgba(231, 76, 60, 1)",
-  ];
+    // Array para los colores del borde para los estados/regiones
+    const borderColorsForState = [
+        "rgba(46, 116, 181, 1)",
+        "rgba(46, 204, 113, 1)",
+        "rgba(155, 89, 182, 1)",
+        "rgba(0, 128, 128, 1)",
+        "rgba(204, 102, 0, 1)",
+        "rgba(90, 100, 110, 1)",
+        "rgba(231, 76, 60, 1)",
+    ];
 
-  const chartCanvasId = "ticketsChart";
-  const ctx = document.getElementById(chartCanvasId).getContext("2d");
+    const chartCanvasId = "ticketsChart";
+    const ctx = document.getElementById(chartCanvasId).getContext("2d");
 
-  // Ocultar mensaje de error previo
-  hideChartErrorMessage(chartCanvasId);
+    // Ocultar mensaje de error previo
+    hideChartErrorMessage(chartCanvasId);
 
-  fetch(
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChartForState`
-  ) // <-- Asegúrate de que tu API exponga esta función SQL
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (data.success && data.details && data.details.length > 0) {
-        const labels = data.details.map((item) => `${item.region_name}`);
-        const chartData = data.details.map((item) => item.total_tickets);
+    try {
+        // Use fetchJsonByAction to handle the API call
+        const data = await fetchJsonByAction('GetMonthlyCreatedTicketsForChartForState');
 
-        // Si ya existe una instancia del gráfico, la destruimos antes de crear una nueva
-        if (monthlyTicketsChartInstanceForState) {
-          monthlyTicketsChartInstanceForState.destroy();
+        if (data.success && data.details && data.details.length > 0) {
+            const labels = data.details.map((item) => `${item.region_name}`);
+            const chartData = data.details.map((item) => item.total_tickets);
+
+            // If a chart instance already exists, destroy it before creating a new one
+            if (monthlyTicketsChartInstanceForState) {
+                monthlyTicketsChartInstanceForState.destroy();
+            }
+
+            monthlyTicketsChartInstanceForState = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Total de Tickets Creados por Región",
+                        data: chartData,
+                        backgroundColor: function (context) {
+                            const chart = context.chart;
+                            const { ctx, chartArea } = chart;
+                            if (!chartArea) {
+                                const fallbackColors = [
+                                    "rgba(74, 160, 217, 0.7)", "rgba(77, 219, 137, 0.7)", "rgba(189, 119, 218, 0.7)",
+                                    "rgba(0, 178, 178, 0.7)", "rgba(255, 153, 51, 0.7)", "rgba(130, 140, 150, 0.7)",
+                                    "rgba(241, 148, 138, 0.7)"
+                                ];
+                                return fallbackColors[context.dataIndex % fallbackColors.length];
+                            }
+
+                            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                            const index = context.dataIndex;
+                            const colorInfo = gradientColorsForState[index % gradientColorsForState.length];
+
+                            if (colorInfo) {
+                                gradient.addColorStop(0, colorInfo.start);
+                                gradient.addColorStop(1, colorInfo.end);
+                            } else {
+                                gradient.addColorStop(0, "rgba(100,100,100,0.7)");
+                                gradient.addColorStop(1, "rgba(150,150,150,0.5)");
+                            }
+                            return gradient;
+                        },
+                        borderColor: borderColorsForState,
+                        borderWidth: 1,
+                        categoryPercentage: 0.7,
+                        barPercentage: 0.8,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: "#6c757d", font: { size: 12 } },
+                            grid: { color: "rgba(0,0,0,0.05)", drawBorder: false },
+                        },
+                        x: {
+                            ticks: { color: "#6c757d", font: { size: 12 } },
+                            grid: { color: "rgba(0,0,0,0.05)", drawBorder: false },
+                        },
+                    },
+                    plugins: {
+                        legend: { display: true, labels: { color: "#343a40" } },
+                        tooltip: { backgroundColor: "rgba(0,0,0,0.7)", titleColor: "white", bodyColor: "white" },
+                    },
+                },
+            });
+            setTimeout(() => {
+                try { monthlyTicketsChartInstanceForState.update(); } catch (_) {}
+            }, 200);
+        } else {
+            console.warn("No hay datos disponibles para el gráfico de tickets creados por región o la respuesta no fue exitosa.");
+            if (monthlyTicketsChartInstanceForState) {
+                monthlyTicketsChartInstanceForState.destroy();
+            }
+            displayChartErrorMessage(chartCanvasId, "No hay tickets por región disponibles", 'info');
         }
-
-        monthlyTicketsChartInstanceForState = new Chart(ctx, {
-          type: "bar", // Puedes probar 'line' para ver la tendencia también
-          data: {
-            labels: labels, // Nombres de las regiones como etiquetas
-            datasets: [
-              {
-                label: "Total de Tickets Creados por Región",
-                data: chartData, // Los totales de tickets creados por región
-                backgroundColor: function (context) {
-                  const chart = context.chart;
-                  const { ctx, chartArea } = chart;
-
-                  if (!chartArea) {
-                    return;
-                  }
-
-                  const gradient = ctx.createLinearGradient(
-                    0,
-                    chartArea.bottom,
-                    0,
-                    chartArea.top
-                  );
-
-                  const index = context.dataIndex;
-                  // Usamos el operador módulo para ciclar a través de los colores si hay más regiones que colores definidos
-                  const colorInfo =
-                    gradientColorsForState[
-                      index % gradientColorsForState.length
-                    ];
-
-                  if (colorInfo) {
-                    gradient.addColorStop(0, colorInfo.start);
-                    gradient.addColorStop(1, colorInfo.end);
-                  } else {
-                    // Color de fallback
-                    gradient.addColorStop(0, "rgba(100,100,100,0.7)");
-                    gradient.addColorStop(1, "rgba(150,150,150,0.5)");
-                  }
-
-                  return gradient;
-                },
-                borderColor: borderColorsForState, // Los bordes pueden ser colores sólidos
-                borderWidth: 1,
-                categoryPercentage: 0.7,
-                barPercentage: 0.8,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  color: "#6c757d",
-                  font: { size: 12 },
-                },
-                grid: {
-                  color: "rgba(0,0,0,0.05)",
-                  drawBorder: false,
-                },
-              },
-              x: {
-                ticks: {
-                  color: "#6c757d",
-                  font: { size: 12 },
-                },
-                grid: {
-                  color: "rgba(0,0,0,0.05)",
-                  drawBorder: false,
-                },
-              },
-            },
-            plugins: {
-              legend: {
-                display: true, // Mostrar la leyenda para el nombre del dataset
-                labels: { color: "#343a40" },
-              },
-              tooltip: {
-                backgroundColor: "rgba(0,0,0,0.7)",
-                titleColor: "white",
-                bodyColor: "white",
-              },
-            },
-          },
-        });
-      } else {
-        console.warn(
-          "No hay datos disponibles para el gráfico de tickets creados por región o la respuesta no fue exitosa."
-        );
-        // Destruir el gráfico si no hay datos para mostrar un lienzo vacío
+    } catch (error) {
+        console.error("Error al cargar los datos del gráfico de tickets creados por región:", error);
         if (monthlyTicketsChartInstanceForState) {
-          monthlyTicketsChartInstanceForState.destroy();
-        }
-        // Mostrar mensaje de "no data" con mejor formato
-        displayChartErrorMessage(chartCanvasId, "No hay tickets por región disponibles", 'info');
-      }
-    })
-    .catch((error) => {
-      console.error(
-        "Error al cargar los datos del gráfico de tickets creados por región:",
-        error
-      );
-      if (monthlyTicketsChartInstanceForState) {
-        monthlyTicketsChartInstanceForState.destroy();
-      }
-      // Mostrar mensaje de error con mejor formato
-      displayChartErrorMessage(chartCanvasId, "No hay tickes en la gráfica", 'error');
-    });
+                monthlyTicketsChartInstanceForState.destroy();
+            }
+        displayChartErrorMessage(chartCanvasId, "No hay tickets en la gráfica", 'error');
+    }
 }
 
-function getTicketCounts() {
-    const xhrCounts = new XMLHttpRequest();
-    xhrCounts.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketCounts`);
-
+async function getTicketCounts() {
     const tbodyCounts = document.getElementById("ticketCountsBody");
-    
+
+    // Mostrar estado de carga
     tbodyCounts.innerHTML = `
         <tr>
             <td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">
@@ -4333,65 +3995,62 @@ function getTicketCounts() {
         </tr>
     `;
 
-    xhrCounts.onload = function () {
-        if (xhrCounts.status >= 200 && xhrCounts.status < 300) {
-            try {
-                const response = JSON.parse(xhrCounts.responseText);
-                if (response.success && Array.isArray(response.counts)) { // Asegúrate de que es un array
-                    const counts = response.counts;
-                    tbodyCounts.innerHTML = ''; 
+    try {
+        const data = await fetchJsonByAction('GetTicketCounts');
 
-                    if (counts.length === 0) {
-                        tbodyCounts.innerHTML = '<tr><td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">No hay tickets en los módulos seleccionados.</td></tr>';
-                        return;
-                    }
 
-                    // Si quieres ordenar por un orden específico, puedes crear un array de los IDs
-                    // y luego buscar en 'counts'. De lo contrario, simplemente itera 'counts'.
-                    // Por simplicidad, iteraremos directamente sobre 'counts' ya que el SQL lo ordena por ID.
-                    counts.forEach(item => {
-                        const tr = document.createElement('tr');
-                        // Usamos name_accion_ticket directamente, pero puedes usar displayOrderMap[item.id_accion_ticket]
-                        // si quieres sobrescribir el nombre de la DB o asegurarte de un orden específico.
-                        const moduleName = item.name_accion_ticket; 
-                        tr.innerHTML = `
-                            <td class="px-5 py-5 border-b border-gray-200 text-sm">${moduleName}</td>
-                            <td class="px-5 py-5 border-b border-gray-200 text-sm">${item.total_tickets}</td>
-                        `;
-                        tbodyCounts.appendChild(tr);
-                    });
+        // Limpiar el contenido de la tabla antes de renderizar
+        tbodyCounts.innerHTML = '';
 
-                } else {
-                    tbodyCounts.innerHTML = '<tr><td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">Error al cargar conteos.</td></tr>';
-                    console.error("Error al cargar conteos:", response.message);
-                }
-            } catch (error) {
-                tbodyCounts.innerHTML = '<tr><td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">Error al procesar conteos.</td></tr>';
-                console.error("Error parsing JSON for counts:", error);
-            }
+        if (data.success && Array.isArray(data.counts) && data.counts.length > 0) {
+            data.counts.forEach(item => {
+                const tr = document.createElement('tr');
+                const moduleName = item.name_accion_ticket;
+                tr.innerHTML = `
+                    <td class="px-5 py-5 border-b border-gray-200 text-sm">${moduleName}</td>
+                    <td class="px-5 py-5 border-b border-gray-200 text-sm">${item.total_tickets}</td>
+                `;
+                tbodyCounts.appendChild(tr);
+            });
         } else {
-            tbodyCounts.innerHTML = '<tr><td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">No hay tickets en los módulos.</td></tr>';
-            console.error("Error al obtener conteos:", xhrCounts.status, xhrCounts.statusText);
+            // Manejar caso sin datos o error de servidor
+            const errorMessage = data.success ?
+                "No hay tickets en los módulos seleccionados." :
+                "Error al cargar conteos.";
+
+            tbodyCounts.innerHTML = `
+                <tr>
+                    <td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">
+                        ${errorMessage}
+                    </td>
+                </tr>
+            `;
+            console.error("Server Error:", data.message || errorMessage);
         }
-    };
-    xhrCounts.onerror = function () {
-        tbodyCounts.innerHTML = '<tr><td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">Error de red al obtener conteos.</td></tr>';
-        console.error("Error de red al obtener conteos.");
-    };
-    xhrCounts.send();
+    } catch (error) {
+        // Manejar errores de red o de parseo de JSON
+        tbodyCounts.innerHTML = `
+            <tr>
+                <td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">
+                    Error al obtener datos.
+                </td>
+            </tr>
+        `;
+        console.error("Failed to fetch ticket counts:", error);
+    }
 }
 
 // Llama a esta función para cargar el gráfico cuando el DOM esté listo
-document.addEventListener("DOMContentLoaded", function () {
-  loadMonthlyCreatedTicketsChart();
-  loadMonthlyCreatedTicketsChartForState();
-  updateTicketMonthlyPercentageChange();
-  getTicketProcessReparacion();
-  getTicketReparados();
-  getTicketPendienteRepuesto();
-  getTicketIrreparables();
-  getTicketCounts(); // Para la tabla de conteos
-  getTicketsgestionComercialporcent();
-  getTicketGestionComercial();
-  getTicketEntregadoCliente();
+document.addEventListener("DOMContentLoaded", async  function () {
+  await loadMonthlyCreatedTicketsChart();
+  await loadMonthlyCreatedTicketsChartForState();
+  await updateTicketMonthlyPercentageChange();
+  await getTicketProcessReparacion();
+  await getTicketReparados();
+  await getTicketPendienteRepuesto();
+  await  getTicketIrreparables();
+  await getTicketCounts(); // Para la tabla de conteos
+  await getTicketsgestionComercialporcent();
+  await getTicketGestionComercial();
+  await getTicketEntregadoCliente();
 });
