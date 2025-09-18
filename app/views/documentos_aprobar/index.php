@@ -4,7 +4,6 @@ function mi_navbar() {}
 ?>
 <!DOCTYPE html>
 <lang="en">
-
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -14,12 +13,11 @@ function mi_navbar() {}
             <?php echo tituloPagina; ?>
         </title>
 
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-
 
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
@@ -932,18 +930,17 @@ function mi_navbar() {}
         <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
 
         <?php
-        if (isset($this->js)) {
-            foreach ($this->js as $js) {
-                echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '"></script>';
+            if (isset($this->js)) {
+                foreach ($this->js as $js) {
+                    echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '"></script>';
+                }
             }
-        }
         ?>
+
         <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-    <?php
-
-    require 'app/footer.php';
-
-    ?>
+            <?php
+                require 'app/footer.php';
+            ?>
         <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
     </body>
-    </html>
+</html>

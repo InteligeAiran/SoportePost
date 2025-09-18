@@ -188,6 +188,13 @@ class UserRepository
         return $result;
     }
 
+    public function UpdateSessionExpiry($session_id, $new_expiry_time, $id_user) {
+        if (!method_exists($this->model, 'UpdateSessionExpiry')) {
+            return false;
+        }
+        return $this->model->UpdateSessionExpiry($session_id, $new_expiry_time, $id_user);
+    }
+
     public function GetPasswordUser($username, $password){
         // Lógica para obtener un usuario por su nombre de usuario
         $result = $this->model->GetPasswordUser($username, $password); // Asumiendo que tienes este método en tu modelo
@@ -215,7 +222,7 @@ class UserRepository
     }
 
 
-public function AsignacionSubModulo($id_modulo, $id_submodulo, $id_usuario,$idchecksub_value){
+    public function AsignacionSubModulo($id_modulo, $id_submodulo, $id_usuario,$idchecksub_value){
         $result = $this->model->AsignacionSubModulo($id_modulo, $id_submodulo,$id_usuario,$idchecksub_value);
         return $result;
     }
@@ -265,6 +272,11 @@ public function AsignacionSubModulo($id_modulo, $id_submodulo, $id_usuario,$idch
 
     public function ReassignTicket($id_ticket, $id_technician, $id_user, $comment){
         $result = $this->model->ReassignTicket($id_ticket, $id_technician, $id_user, $comment);  
+        return $result;
+    }
+
+    public function UpdateSessionExpiredBySessionId($session_id, $user_id){
+        $result = $this->model->UpdateSessionExpired($session_id, $user_id);  
         return $result;
     }
 }

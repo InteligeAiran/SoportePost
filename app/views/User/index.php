@@ -214,12 +214,10 @@ function mi_navbar() {}
         }
 
         #inputsDate{
-                margin-left: -190%;
-    margin-top: -18%;
-
+            margin-left: -190%;
+            margin-top: -18%;
         }
-
-        </style>
+    </style>
     </head>
     <body class="g-sidenav-show bg-gray-100">
         <div class="min-height-300 bg-dark position-absolute w-100"></div>
@@ -274,7 +272,6 @@ function mi_navbar() {}
                 </div>   
             </div>
         </main>
-
 
         <div class="modal fade" id="ModalAggUsers" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"
      data-keyboard="false">
@@ -385,8 +382,6 @@ function mi_navbar() {}
     </div>
    </div>
 
-
-
     <div class="modal fade" id="ModalEditUsers" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"
      data-keyboard="false">
          <div class="modal-dialog modal-dialog-scrollable"  role="document">
@@ -491,7 +486,6 @@ function mi_navbar() {}
     </div>
    </div>
 
-
     <div class="modal fade" id="ModalModulos" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"  data-keyboard="false">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -537,9 +531,6 @@ function mi_navbar() {}
         </div>
     </div>
    </div>
-
-
-
 
         <!-- <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
@@ -638,7 +629,6 @@ function mi_navbar() {}
         <script src="<?php echo APP;?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
 
-
         <!-- Bootstrap-->
         <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/bootstrap/js/bootstrap.min.js"></script>
@@ -670,109 +660,26 @@ function mi_navbar() {}
         <script src="<?php echo APP;?>app/plugins/alertify/lib/alertify.min.js"></script>
         <script src="<?php echo APP;?>app/plugins/alertify/src/alertify.js"></script>
 
-
         <!--MASCARAS JQUERY-->
         <script src = "<?php echo APP;?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
 
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP;?>app/plugins/js/sb-admin-2.min.js"></script>
 
-        
         <?php
-    if (isset($this->js)){
-      foreach ($this->js as $js){
-        echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'"></script>'; 
-      }
-    }
-  ?>
-    <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-<!--     <?php
-        $expired_sessions = json_encode($this->expired_sessions);
-        $message = json_encode($this->message);
-        $redirect = json_encode($this->redirect);
-        $usuario_id = json_encode($this->usuario_id);
-        $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
-
-    ?>
-
-
-
-    <script>
-        
-        var expired_sessions = <?php echo $expired_sessions; ?>;
-        var message = <?php echo $message; ?>;
-        var redirect = <?php echo $redirect; ?>;
-        var usuario_id = <?php echo $usuario_id; ?>;
-        var sessionLifetime = <?php echo $sessionLifetime; ?>; // Asegúrate de que esto esté presente
-
-
-        // Verificar si hay sesiones expiradas
-        if (expired_sessions) {
-           // Este es el SweetAlert que aparecerá cuando la sesión esté a punto de expirar
-Swal.fire({
-    title: '¿Deseas extender la sesión?',
-    text: 'Tu sesión está a punto de expirar. ¿Quieres continuar?',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Sí, extender',
-    cancelButtonText: 'No, cerrar sesión'
-}).then((result) => {
-    // La promesa (then) se ejecuta después de que el usuario hace clic en un botón
-    if (result.isConfirmed) {
-         const forceLoginXHR = new XMLHttpRequest();
-        forceLoginXHR.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/access`);
-        forceLoginXHR.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        
-        // El usuario hizo clic en "Sí, extender"
-        // Aquí debes agregar el código para extender la sesión en el servidor
-        // Por ejemplo, haciendo una llamada AJAX
-        Swal.fire({
-            icon: 'success',
-            title: 'Sesión Extendida',
-            text: 'Tu sesión ha sido extendida con éxito.',
-            timer: 1500,
-            showConfirmButton: false
-        });
-    } else {
-        // El usuario hizo clic en "No, cerrar sesión" o cerró el modal
-        // Se ejecuta el SweetAlert original para notificar del cierre
-        if (expired_sessions) { // O puedes usar la lógica que necesites
-            Swal.fire({
-                icon: 'warning',
-                title: 'Sesión Expiró.',
-                text: message,
-                color: 'black',
-                showConfirmButton: false,
-                timer: 2000,
-                timerProgressBar: true,
-                didOpen: () => {
-                    Swal.showLoading();
-                },
-                willClose: () => {
-                    setTimeout(() => {
-                        window.location.href = redirect;
-                    }, 500);
+            if (isset($this->js)){
+                foreach ($this->js as $js){
+                    echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'"></script>'; 
                 }
-            });
-        }
-    }
-});
-        }
+            }
+        ?>
 
-        // Agregar lógica de recarga automática
-        if (sessionLifetime) {
-            setTimeout(function() {
-                location.reload(true); // Forzar recarga desde el servidor
-            }, sessionLifetime * 1000); // sessionLifetime está en segundos
-        }
-    </script> -->
-    <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-<?php
-    require 'app/footer.php';
-?>
-</body>
+        <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
+            <?php
+                require 'app/footer.php';
+            ?>
+        <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
+    </body>
 </html>
 
 

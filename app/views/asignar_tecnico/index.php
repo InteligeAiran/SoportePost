@@ -933,66 +933,22 @@ function mi_navbar() {}
         <script src="<?php echo APP; ?>js/Datatablebuttonsprint.min.js"></script>
         <script src="<?php echo APP; ?>js/datatables.js"></script>
 
-
         <!--  SweetAlert   -->
         <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
         <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
 
         <?php
-        if (isset($this->js)) {
-            foreach ($this->js as $js) {
-                echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '"></script>';
+            if (isset($this->js)) {
+                foreach ($this->js as $js) {
+                    echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '"></script>';
+                }
             }
-        }
         ?>
+
         <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-      <!--   <?php
-        $expired_sessions = json_encode($this->expired_sessions);
-        $message = json_encode($this->message);
-        $redirect = json_encode($this->redirect);
-        $usuario_id = json_encode($this->usuario_id);
-        $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
-
-        ?>
-        <script>
-            var expired_sessions = <?php echo $expired_sessions; ?>;
-            var message = <?php echo $message; ?>;
-            var redirect = <?php echo $redirect; ?>;
-            var usuario_id = <?php echo $usuario_id; ?>;
-            var sessionLifetime = <?php echo $sessionLifetime; ?>; // Asegúrate de que esto esté presente
-
-
-            // Verificar si hay sesiones expiradas
-            if (expired_sessions) {
-                Swal.fire({
-                    icon: 'warning', // Puedes cambiar el icono (warning, error, success, info, question)
-                    title: 'Session Expiró.', // Título del SweetAlert
-                    text: message, // Mensaje del SweetAlert
-                    color: 'black', // Color del texto
-                    showConfirmButton: false, // Oculta el botón "Aceptar"
-                    timer: 2000, // Cierra el modal después de 2 segundos (2000 ms)
-                    timerProgressBar: true, // Opcional: muestra una barra de progreso del tiempo
-                    didOpen: () => {
-                        Swal.showLoading();
-                    },
-                    willClose: () => {
-                        setTimeout(() => {
-                            window.location.href = redirect; // Recarga la página después del temporizador
-                        }, 500); // Espera 0.5 segundos (igual que el temporizador)
-                    }
-                }) // Programar la recarga después de que el SweetAlert se cierre
-            }
-
-            // Agregar lógica de recarga automática
-            if (sessionLifetime) {
-                setTimeout(function() {
-                    location.reload(true); // Forzar recarga desde el servidor
-                }, sessionLifetime * 1000); // sessionLifetime está en segundos
-            }
-        </script> -->
-<?php
-    require 'app/footer.php';
-?>
+            <?php
+                require 'app/footer.php';
+            ?>
         <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-</body>
+    </body>
 </html>

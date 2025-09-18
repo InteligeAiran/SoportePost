@@ -19,6 +19,7 @@ function mi_navbar() {}
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/carts.css" />
+        <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/animate-css/animate.min.css"/>
         <!-- Font Awesome Icons -->
         <script> var currentUserRole = <?php echo $_SESSION['id_rol'] ?? 'guest'; ?>;</script>
         <!-- CSS Files -->
@@ -26,6 +27,77 @@ function mi_navbar() {}
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
 
         <style>
+            /* Custom styles for SweetAlert2 modal */
+            /* Custom styles for SweetAlert2 session expired modal */
+            .modern-swal-popup1 {
+                border-radius: 12px !important;
+                padding: 20px !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+                background: linear-gradient(145deg, #ffffff, #f0f4f8) !important;
+            }
+
+            .modern-swal-title1 {
+                font-size: 1.5rem !important;
+                color: #1e3a8a !important;
+                font-weight: 600 !important;
+                margin-bottom: 10px !important;
+            }
+
+            .modern-swal-content1 {
+                font-size: 1rem !important;
+                color: #374151 !important;
+                line-height: 1.5 !important;
+            }
+
+            .modern-swal-progress-bar1 {
+                background-color: #1e3a8a !important; /* Deep blue progress bar */
+                height: 4px !important;
+            }
+
+            .modern-swal-popup {
+                border-radius: 12px !important;
+                padding: 20px !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+                background: linear-gradient(145deg, #ffffff, #f0f4f8) !important;
+            }
+
+            .modern-swal-title {
+                font-size: 1.5rem !important;
+                color: #1e3a8a !important;
+                font-weight: 600 !important;
+                margin-bottom: 10px !important;
+            }
+
+            .modern-swal-content {
+                font-size: 1rem !important;
+                color: #374151 !important;
+                line-height: 1.5 !important;
+            }
+
+            .modern-swal-confirm {
+                border-radius: 8px !important;
+                padding: 10px 20px !important;
+                font-size: 1rem !important;
+                font-weight: 500 !important;
+                transition: transform 0.2s ease !important;
+            }
+
+            .modern-swal-confirm:hover {
+                transform: translateY(-2px) !important;
+            }
+
+            .modern-swal-cancel {
+                border-radius: 8px !important;
+                padding: 10px 20px !important;
+                font-size: 1rem !important;
+                font-weight: 500 !important;
+                transition: transform 0.2s ease !important;
+            }
+
+            .modern-swal-cancel:hover {
+                transform: translateY(-2px) !important;
+            }
+
             input[type="text"], input[type="password"]{
                 width: calc(100% - 1rem);
                 padding: 0.5rem 0.75rem;
@@ -1091,89 +1163,19 @@ function mi_navbar() {}
         <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
+
         <?php
-        if (isset($this->js)) {
-            foreach ($this->js as $js) {
-                echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '"></script>';
-            }
-        }
-        ?>
-        <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-        <?php
-        // $expired_sessions = json_encode($this->expired_sessions);
-        // $message = json_encode($this->message);
-        // $redirect = json_encode($this->redirect);
-        // $usuario_id = json_encode($this->usuario_id);
-        // $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
-                require 'app/footer.php';
-        ?>
-<!--         <script>
-            var expired_sessions = <?php echo $expired_sessions; ?>;
-            var message = <?php echo $message; ?>;
-            var redirect = <?php echo $redirect; ?>;
-            var usuario_id = <?php echo $usuario_id; ?>;
-            var sessionLifetime = <?php echo $sessionLifetime; ?>; // Asegúrate de que esto esté presente
-
-
-            // Verificar si hay sesiones expiradas
-            if (expired_sessions) {
-            Swal.fire({
-                title: '¿Deseas extender la sesión?',
-                text: 'Tu sesión está a punto de expirar. ¿Quieres continuar?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, extender',
-                cancelButtonText: 'No, cerrar sesión'
-            }).then((result) => {
-                // La promesa (then) se ejecuta después de que el usuario hace clic en un botón
-                if (result.isConfirmed) {
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Sesión Extendida',
-                        text: 'Tu sesión ha sido extendida con éxito.',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                } else {
-                    // El usuario hizo clic en "No, cerrar sesión" o cerró el modal
-                    // Se ejecuta el SweetAlert original para notificar del cierre
-                    if (expired_sessions) { // O puedes usar la lógica que necesites
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Sesión Expiró.',
-                            text: message,
-                            color: 'black',
-                            showConfirmButton: false,
-                            timer: 2000,
-                            timerProgressBar: true,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            },
-                            willClose: () => {
-                                setTimeout(() => {
-                                    window.location.href = redirect;
-                                }, 500);
-                            }
-                        });
-                    }
+            if (isset($this->js)) {
+                foreach ($this->js as $js) {
+                    echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '"></script>';
                 }
-            });
             }
+        ?>
 
-            // Agregar lógica de recarga automática
-            if (sessionLifetime) {
-                setTimeout(function() {
-                    location.reload(true); // Forzar recarga desde el servidor
-                }, sessionLifetime * 1000); // sessionLifetime está en segundos
-            }
-        </script> -->
+        <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
+            <?php
+                require 'app/footer.php';
+            ?>
         <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-<?php
-    require 'app/footer.php';
-?>        
     </body>
-
-    </html>
+</html>

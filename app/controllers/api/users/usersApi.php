@@ -37,6 +37,10 @@ class users extends Controller {
         if (isset($urlSegments[1])) {
             $action = $urlSegments[1];
             switch ($action) {
+                case 'extendSession':
+                    $this->handleExtendSession();
+                break;
+
                 case 'permissions':
                     $userId = (int) $urlSegments[2];
                     if ($userId > 0) {
@@ -58,12 +62,10 @@ class users extends Controller {
                     $this->handleLogin(); 
                 break;
 
-                /*case 'logout':
+                case 'logout':
                     // Manejo de la sesión de cierre de sesión
-                    session_start();
-                    session_destroy();
-                    $this->response(['success' => true, 'message' => 'Sesión cerrada correctamente'], 200);
-                break;*/
+                    $this->handleLogout(); 
+                break;
 
                 case 'checkUser':
                     // Manejo de la verificación de nombre de usuario
@@ -128,9 +130,7 @@ class users extends Controller {
                     } else {
                         $this->response(['error' => 'Método no permitido para /api/AsignacionModulo'], 405);
                     }
-
                 break; 
-
 
                 case 'AsignacionSubModulo':
                     if($method === 'POST'){
@@ -138,17 +138,14 @@ class users extends Controller {
                     } else {
                         $this->response(['error' => 'Método no permitido para /api/AsignacionSubModulo'], 405);
                     }
-
                 break; 
 
-                
                 case 'checkUsernameAvailability':
                     if($method === 'POST'){
                         $this->handleCheckUsernameAvailability();
                     } else {
                         $this->response(['error' => 'Método no permitido para /api/AsignacionModulo'], 405);
                     }
-
                 break; 
 
                 case 'checkStatus':
@@ -288,7 +285,7 @@ class users extends Controller {
     $_SESSION['name_rol']     = $userData['name_rol'];
     $_SESSION['status']       = (int) $userData['status'];
     
-    $session_lifetime = 3600; // Ejemplo: 1200seg = 20 minutos
+    $session_lifetime = 10; // Ejemplo: 1200seg = 20 minutos
                               //          1800seg = 30 minutos
                               //          3600seg = 1 hora
     $_SESSION['session_lifetime'] = $session_lifetime;
@@ -330,7 +327,6 @@ class users extends Controller {
         $this->response(['error' => 'Error al guardar la información de la sesión'], 500);
     }
     }
-
 
     function handleUsers($method, $urlSegments) {
         // var_dump($repository); // Para depuración     
@@ -490,7 +486,6 @@ class users extends Controller {
         }
     }
 
-
     public function handleGetMostrarUsuarioEdit($id_user){
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
             
@@ -507,7 +502,6 @@ class users extends Controller {
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
     }
     
-
     public function handleEditarUsuarios(){
         $repository = new UserRepository(); // Inicializa el repositorio
             
@@ -526,15 +520,14 @@ class users extends Controller {
 
         //var_dump($edit_idnivel);
 
-         $result = $repository->Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user);
+        $result = $repository->Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user);
     
         if ($result) {
             $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
         } else {
             $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
         }
- }
-
+    }
 
     public function handleGetUsersModulos(){
 
@@ -593,49 +586,44 @@ class users extends Controller {
         }
     }
 
+    public function handleCheckUsernameAvailability() {
+        header('Content-Type: application/json');
+        
+        $nombre = $_POST['nombre'] ?? '';   // Nuevo parámetro
+        $apellido = $_POST['apellido'] ?? ''; // Nuevo parámetro
 
-
-
-
-public function handleCheckUsernameAvailability() {
-    header('Content-Type: application/json');
-    
-    $nombre = $_POST['nombre'] ?? '';   // Nuevo parámetro
-    $apellido = $_POST['apellido'] ?? ''; // Nuevo parámetro
-
-    if (empty($nombre) || empty($apellido)) {
-        $this->response(['available' => false, 'message' => 'Nombre o apellido vacío.', 'suggested_username' => null], 400);
-    }
-
-    $repository = new UserRepository();
-    $check_result = $repository->VerificaUsuario($nombre, $apellido); // Llama con nombre y apellido
-
-    if (is_array($check_result) && isset($check_result['status'])) {
-        if ($check_result['status'] === 'available') {
-            $this->response([
-                'available' => true,
-                'message' => $check_result['message'],
-                'suggested_username' => $check_result['suggested_username']
-            ], 200);
-        } elseif ($check_result['status'] === 'exists') {
-            $this->response([
-                'available' => false,
-                'message' => $check_result['message'],
-                'suggested_username' => $check_result['suggested_username']
-            ], 200);
-        } else { // status === 'error'
-            $this->response([
-                'available' => false,
-                'message' => $check_result['message'],
-                'suggested_username' => null
-            ], 500);
+        if (empty($nombre) || empty($apellido)) {
+            $this->response(['available' => false, 'message' => 'Nombre o apellido vacío.', 'suggested_username' => null], 400);
         }
-    } else {
-        error_log("VerificaUsuario no devolvió el formato esperado: " . print_r($check_result, true));
-        $this->response(['available' => false, 'message' => 'Error interno al procesar la verificación.', 'suggested_username' => null], 500);
-    }
-}
 
+        $repository = new UserRepository();
+        $check_result = $repository->VerificaUsuario($nombre, $apellido); // Llama con nombre y apellido
+
+        if (is_array($check_result) && isset($check_result['status'])) {
+            if ($check_result['status'] === 'available') {
+                $this->response([
+                    'available' => true,
+                    'message' => $check_result['message'],
+                    'suggested_username' => $check_result['suggested_username']
+                ], 200);
+            } elseif ($check_result['status'] === 'exists') {
+                $this->response([
+                    'available' => false,
+                    'message' => $check_result['message'],
+                    'suggested_username' => $check_result['suggested_username']
+                ], 200);
+            } else { // status === 'error'
+                $this->response([
+                    'available' => false,
+                    'message' => $check_result['message'],
+                    'suggested_username' => null
+                ], 500);
+            }
+        } else {
+            error_log("VerificaUsuario no devolvió el formato esperado: " . print_r($check_result, true));
+            $this->response(['available' => false, 'message' => 'Error interno al procesar la verificación.', 'suggested_username' => null], 500);
+        }
+    }
 
     public function handlecheckUserStatus(){
         $id_user = isset($_POST['userId']) ? $_POST['userId'] : '';
@@ -699,6 +687,61 @@ public function handleCheckUsernameAvailability() {
             $this->response(['success' => true,'message' => 'Ticket reasignado'], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al reasignar el ticket'], 500);
+        }
+    }
+
+    private function handleExtendSession() {
+        if (!isset($_SESSION['id_user']) || !isset($_SESSION['session_id'])) {
+            $this->response(['success' => false, 'message' => 'No hay sesión activa'], 401);
+        }
+
+        $repository = new UserRepository();
+
+        // Usa el mismo lifetime configurado en login; por defecto 100 si no existe
+        $session_lifetime = isset($_SESSION['session_lifetime']) && is_numeric($_SESSION['session_lifetime'])
+            ? (int) $_SESSION['session_lifetime']
+            : 100;
+
+        // Refresca en memoria
+        $_SESSION['session_lifetime'] = $session_lifetime;
+        $id_user = $_SESSION['id_user'];
+        // Calcula nueva expiración
+        $expiry_time_unix = time() + $session_lifetime;
+        $expiry_time = date('Y-m-d H:i:s', $expiry_time_unix);
+
+        // Actualiza en BD si el modelo lo soporta
+        if (method_exists($repository, 'UpdateSessionExpiry')) {
+            $repository->UpdateSessionExpiry($_SESSION['session_id'], $expiry_time, $id_user);
+        }
+
+        $this->response([
+            'success' => true,
+            'message' => 'Sesión extendida',
+            'session_lifetime' => $session_lifetime
+        ], 200);
+    }
+
+    // En tu API Controller, por ejemplo, UsersController.php
+    private function handleLogout() {
+        if (isset($_SESSION['session_id']) && isset($_SESSION['id_user'])) {
+            $repository = new UserRepository();
+            $session_id = $_SESSION['session_id'];
+            $user_id = $_SESSION['id_user'];
+            
+            // Llama a la función que invalida la sesión en la base de datos
+            $success = $repository->UpdateSessionExpiredBySessionId($session_id, $user_id);
+            
+            if ($success) {
+                // Destruye la sesión de PHP
+                session_unset();
+                session_destroy();
+                // Responde al frontend que el cierre fue exitoso
+                $this->response(['success' => true, 'message' => 'Sesión cerrada con éxito.'], 200);
+            } else {
+                $this->response(['success' => false, 'message' => 'No se pudo cerrar la sesión.'], 500);
+            }
+        } else {
+            $this->response(['success' => true, 'message' => 'No hay sesión activa para cerrar.'], 200);
         }
     }
 }

@@ -5,6 +5,8 @@ require_once __DIR__ . "/../../libs/Controller.php";
 session_start();
 
 class documentos_aprobar extends Controller {
+    
+    public $view;
 
     private $userModel; 
 
@@ -12,18 +14,13 @@ class documentos_aprobar extends Controller {
         parent::__construct();
 
         if (empty($_SESSION["id_user"])) {
-            // Si no hay una sesión activa, redirigir a la página de inicio de sesión
-            // Set the message to be displayed
-            $this->view->message = 'Por favor inicie sesión para acceder al sistema.';
-            $this->view->redirectURL = self::getURL() . 'login'; // URL for JavaScript redirection
-            // Load a specific view that will display the message and then redirect
-            exit(); // Stop further execution of the dashboard controller
+            // Redirigir siempre con header para evitar respuestas vacías
+            header('Location: ' . self::getURL() . 'login');
+            exit();
         }
 
         Model::exists('user'); // Si Model::exists() carga la clase, esto es bueno.
-        Model::exists('reports');
         $this->userModel = new UserModel(); 
-        
     
         if (isset($_SESSION['id_user']) && isset($_SESSION['session_id'])) {
             $model = new UserModel(); // O pásalo por inyección de dependencias
@@ -45,7 +42,7 @@ class documentos_aprobar extends Controller {
             session_unset();
             session_destroy();
             setcookie(session_name(), '', time() - 3600, '/');
-            header('Location: /login.php?message=session_invalid');
+            header('Location: ' . self::getURL() . 'login');
             exit();
         }
     }
@@ -67,29 +64,10 @@ class documentos_aprobar extends Controller {
         // Validar sesiones expiradas
         $this->validataExpiresSessions($usuario_id);
     
-         //Incorpora el FrontEnd Controller
-      $this->view->js=array('documentos_aprobar/js/frontEnd.js');
-      $this->view->render('/documentos_aprobar/index',1);
+        //Incorpora el FrontEnd Controller
+        $this->view->js=array('documentos_aprobar/js/frontEnd.js');
+        $this->view->render('/documentos_aprobar/index',1);
     }
-
-    /*private function validataExpiresSessions($usuario_id) {
-        $usuarioModel = new loginModel();
-        // Obtener la fecha y hora actual
-        $ahora = date('Y-m-d H:i:s');
-        // Obtener las sesiones expiradas del usuario
-        $expires_session = $usuarioModel->GetExpiredSessions($usuario_id, $ahora);
-        // Verificar si hay sesiones expiradas
-        if ($expires_session && $expires_session['numRows'] > 0) {
-            for ($i=0; $i < $expires_session['numRows']; $i++) { 
-                $session = pg_fetch_assoc($expires_session['query'], $i); 
-                // Realizar las acciones necesarias para las sesiones expiradas
-                // Ejemplo: Actualizar el estado de la sesión
-                $usuarioModel->UpdateSessionExpired($session['id_session']);
-            }
-            // Redirigir a la página de inicio de sesión
-            header('Location: ' . self::getURL());
-        }
-    }*/
 
     private function validataExpiresSessions($usuario_id) {
         $usuarioModel = new loginModel();
@@ -97,22 +75,16 @@ class documentos_aprobar extends Controller {
         $ahora = date('Y-m-d H:i:s');
         // Obtener las sesiones expiradas del usuario
         $expires_session = $usuarioModel->GetExpiredSessions($usuario_id, $ahora);
-        //var_dump($expires_session);
+
         // Verificar si hay sesiones expiradas
         if ($expires_session && $expires_session['numRows'] > 0) {
             for ($i = 0; $i < $expires_session['numRows']; $i++) {
-                $session = pg_fetch_assoc($expires_session['query'], $i);
-                // Realizar las acciones necesarias para las sesiones expiradas
-                // Ejemplo: Actualizar el estado de la sesión
-                $usuarioModel->UpdateSessionExpired($session['id_session']);
-            }
-            // Pasar los datos a la vista
             $this->view->expired_sessions = true;
-            $this->view->message = 'Por su seguridad la seccion fue cerrada.';
+            $this->view->message = 'Su sesión está a punto de expirar.';
             $this->view->redirect = 'login';
             $this->view->usuario_id = $usuario_id;
+            }
         } else {
-            // Pasar datos por defecto a la vista
             $this->view->expired_sessions = false;
         }
     }

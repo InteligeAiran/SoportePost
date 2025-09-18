@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/../../libs/Model.php";
 require_once __DIR__ . "/../../libs/session.php";
+
 class userModel extends Model{
     
     public $db;
@@ -292,7 +293,7 @@ class userModel extends Model{
         }
     }*/
 
-   /*public function UpdateSessionExpired($id_session) {
+    public function UpdateSessionExpired($id_session) {
         try {
             $sql = "UPDATE sessions_users SET active = 0, end_date = NOW() WHERE id_session = '".$id_session."';";
             //var_dump($sql);
@@ -301,7 +302,7 @@ class userModel extends Model{
         } catch (Throwable $e) {
             // Manejar excepciones
         }
-    }*/
+    }
 
     public function getUserPermission($userId, $viewName) {
         try {
@@ -692,6 +693,16 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
             return ['success' => false, 'message' => 'Error interno del servidor al procesar la reasignación: ' . $e->getMessage()];
         }
     }
+
+    public function UpdateSessionExpiry($session_id, $new_expiry_time, $id_user) {
+        $sql = "UPDATE public.sessions_users
+                SET expiry_time = '".$new_expiry_time."'
+                WHERE id_session = '".$session_id."'
+                AND id_user = '".$id_user."'
+                AND active = 1";
+         $result = $this->db->pgquery($sql);
+    return $result; // usa tu método de ejecución preferido
+}
 
 }   
 ?>

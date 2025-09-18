@@ -37,6 +37,77 @@ function mi_navbar() {}
 
 
         <style>
+              /* Custom styles for SweetAlert2 modal */
+            /* Custom styles for SweetAlert2 session expired modal */
+            .modern-swal-popup1 {
+                border-radius: 12px !important;
+                padding: 20px !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+                background: linear-gradient(145deg, #ffffff, #f0f4f8) !important;
+            }
+
+            .modern-swal-title1 {
+                font-size: 1.5rem !important;
+                color: #1e3a8a !important;
+                font-weight: 600 !important;
+                margin-bottom: 10px !important;
+            }
+
+            .modern-swal-content1 {
+                font-size: 1rem !important;
+                color: #374151 !important;
+                line-height: 1.5 !important;
+            }
+
+            .modern-swal-progress-bar1 {
+                background-color: #1e3a8a !important; /* Deep blue progress bar */
+                height: 4px !important;
+            }
+
+            .modern-swal-popup {
+                border-radius: 12px !important;
+                padding: 20px !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+                background: linear-gradient(145deg, #ffffff, #f0f4f8) !important;
+            }
+
+            .modern-swal-title {
+                font-size: 1.5rem !important;
+                color: #1e3a8a !important;
+                font-weight: 600 !important;
+                margin-bottom: 10px !important;
+            }
+
+            .modern-swal-content {
+                font-size: 1rem !important;
+                color: #374151 !important;
+                line-height: 1.5 !important;
+            }
+
+            .modern-swal-confirm {
+                border-radius: 8px !important;
+                padding: 10px 20px !important;
+                font-size: 1rem !important;
+                font-weight: 500 !important;
+                transition: transform 0.2s ease !important;
+            }
+
+            .modern-swal-confirm:hover {
+                transform: translateY(-2px) !important;
+            }
+
+            .modern-swal-cancel {
+                border-radius: 8px !important;
+                padding: 10px 20px !important;
+                font-size: 1rem !important;
+                font-weight: 500 !important;
+                transition: transform 0.2s ease !important;
+            }
+
+            .modern-swal-cancel:hover {
+                transform: translateY(-2px) !important;
+            }
+            
            /* Estilos para el botón Excel usando ID */
             #btn-excel-modern-id {
                 background: linear-gradient(45deg, #217346, #28a745) !important;
@@ -909,56 +980,18 @@ function mi_navbar() {}
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
         <script src="<?php echo APP; ?>app/views/consulta_rif/js/frontEnd.js"></script>
 
-        <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-<!--         <?php
-        $expired_sessions = json_encode($this->expired_sessions);
-        $message = json_encode($this->message);
-        $redirect = json_encode($this->redirect);
-        $usuario_id = json_encode($this->usuario_id);
-        $sessionLifetime = json_encode($this->sessionLifetime); // Asegúrate de que esto esté presente
-
+        <?php
+            if (isset($this->js)) {
+                foreach ($this->js as $js) {
+                    echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '"></script>';
+                }
+            }
         ?>
-        <script>
-            var expired_sessions = <?php echo $expired_sessions; ?>;
-            var message = <?php echo $message; ?>;
-            var redirect = <?php echo $redirect; ?>;
-            var usuario_id = <?php echo $usuario_id; ?>;
-            var sessionLifetime = <?php echo $sessionLifetime; ?>; // Asegúrate de que esto esté presente
 
-
-            // Verificar si hay sesiones expiradas
-            if (expired_sessions) {
-                Swal.fire({
-                    icon: 'warning', // Puedes cambiar el icono (warning, error, success, info, question)
-                    title: 'Session Expiró.', // Título del SweetAlert
-                    text: message, // Mensaje del SweetAlert
-                    color: 'black', // Color del texto
-                    showConfirmButton: false, // Oculta el botón "Aceptar"
-                    timer: 2000, // Cierra el modal después de 2 segundos (2000 ms)
-                    timerProgressBar: true, // Opcional: muestra una barra de progreso del tiempo
-                    didOpen: () => {
-                        Swal.showLoading();
-                    },
-                    willClose: () => {
-                        setTimeout(() => {
-                            window.location.href = redirect; // Recarga la página después del temporizador
-                        }, 500); // Espera 0.5 segundos (igual que el temporizador)
-                    }
-                }) // Programar la recarga después de que el SweetAlert se cierre
-            }
-
-            // Agregar lógica de recarga automática
-            if (sessionLifetime) {
-                setTimeout(function() {
-                    location.reload(true); // Forzar recarga desde el servidor
-                }, sessionLifetime * 1000); // sessionLifetime está en segundos
-            }
-        </script> -->
+        <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
+            <?php
+                require 'app/footer.php';
+            ?>
         <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-<?php
-    require 'app/footer.php';
-?>
-
     </body>
-
-    </html>
+</html>

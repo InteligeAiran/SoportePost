@@ -3361,7 +3361,7 @@ function SendBacktoTaller(ticketId, nroTicket){
   xhr.send(data);
 }
 
-function CloseTicket(ticketId, nroTicket) {
+function CloseTicket(ticketId) {
     const id_user = document.getElementById("userId").value;
     const xhr = new XMLHttpRequest();
     xhr.open(
@@ -3381,16 +3381,17 @@ function CloseTicket(ticketId, nroTicket) {
                         title: "¡Ticket Cerrado por Falla en el Camino! ⚠️",
                         text: "El POS ha presentado una falla durante el traslado. El ticket se cerrará y se deberá abrir uno nuevo para el reingreso a laboratorio.",
                         color: "black",
-                        showConfirmButton: true,
+                        showConfirmButton: false,
                         confirmButtonText: "Ok",
                         confirmButtonColor: "#003594 ", // Color rojo para advertencia
+                        timer: 2200,
+                        timerProgressBar: true,
                         didOpen: () => {
-                            Swal.showLoading();
+                          Swal.showLoading();
                         },
                         willClose: () => {
                             // Cuando el primer modal se cierra, mostramos el segundo modal con los detalles
-                            const ticketData = response.ticket_data;
-
+                            const ticketData = response.ticket_data[0];
                             if (ticketData) {
                                 const beautifulHtmlContent = `
                                     <div style="text-align: left; padding: 15px;">
@@ -3399,19 +3400,25 @@ function CloseTicket(ticketId, nroTicket) {
                                             <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.nro_ticket}</span>
                                         </p>
                                         <p style="margin-bottom: 8px;">
+                                          <strong style="color: black;">📅 Fecha de Creación:</strong> <span>${ticketData.create_ticket}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
                                             <strong>⚙️ Serial del Equipo:</strong> <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticketData.serial_pos}</span>
                                         </p>
                                         <p style="margin-bottom: 8px;">
-                                            <strong>📝 Comentario de Falla:</strong> ${ticketData.comment_devolution || "Sin comentarios"}
+                                            <strong>🚨 Falla:</strong> <span style="color: #dc3545; font-weight: bold;">${ticketData.name_failure || "Sin comentarios"}</span>
                                         </p>
                                         <p style="margin-bottom: 8px;">
                                             <strong>📋 Acción Original:</strong> <span style="color: #007bff; font-weight: bold;">${ticketData.name_accion_ticket}</span>
                                         </p>
                                         <p style="margin-bottom: 8px;">
-                                            <strong>🔬 Estado del Laboratorio:</strong> <span style="color: #20c997; font-weight: bold;">${ticketData.name_status_lab || "N/A"}</span>
+                                            <strong>🔬 Estado del Taller:</strong> <span style="color: #20c997; font-weight: bold;">${ticketData.name_status_lab || "N/A"}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                          <strong>📝 Estado del Ticket:</strong> <span style="color: #4d20c9ff; font-weight: bold;">${ticketData.name_status_ticket || "N/A"}</span>
                                         </p>
                                         <p style="font-size: 0.9em; color: green; margin-top: 20px; text-align: center;">
-                                            El ticket ha sido cerrado. Debe generar un nuevo ticket para reingresar al laboratorio.
+                                            El ticket ha sido cerrado. Debe generar un nuevo ticket para reingresar al Taller con la falla correspondiente.
                                         </p>
                                     </div>`;
 

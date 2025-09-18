@@ -477,18 +477,6 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function GetExpiredSessions($usuario_id, $ahora)
-    {
-        try {
-            $sql = "SELECT id_session FROM sessions_users WHERE id_user = " . $usuario_id . " AND active = 1 AND expiry_time <= '" . $ahora . "';";
-            //var_dump($sql);
-            $result = Model::getResult($sql, $this->db);
-            return $result;
-        } catch (Throwable $e) {
-            // Manejar excepciones
-        }
-    }
-
     public function UpdateSessionExpired($id_session)
     {
         try {
@@ -3171,7 +3159,7 @@ class consulta_rifModel extends Model
         try {
             $db_conn = $this->db->getConnection();
             $escaped_id_ticket = pg_escape_literal($db_conn, $id_ticket);
-             $sql = "SELECT * FROM GetTicketReingreLab(".$escaped_id_ticket.");";
+            $sql = "SELECT * FROM GetTicketReingreLab(".$escaped_id_ticket.");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
