@@ -78,6 +78,9 @@
                 echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'"></script>'; 
             }
         }
+
+    require 'app/footer.php';
+
     ?>
 </body>
 </html>

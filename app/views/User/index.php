@@ -1,8 +1,5 @@
 <?php
-function mi_navbar() {
-
-
-}
+function mi_navbar() {}
 ?>
 <!DOCTYPE html>
 <lang="en">
@@ -430,7 +427,7 @@ function mi_navbar() {
                             <option value="J">J</option>
                         </select>
                           <span class="input-group-addon"></span>
-                          <input style="width: 70%;" class="form-control" type="text" name="edit_documento" id="edit_documento"  maxlength="9" onkeypress="return soloNumeros(event)" >
+                          <input style="width: 80%;" class="form-control" type="text" name="edit_documento" id="edit_documento"  maxlength="9" onkeypress="return soloNumeros(event)" >
                         </div>
                     </div>
                       <div class="col-md-6">
@@ -689,7 +686,7 @@ function mi_navbar() {
     }
   ?>
     <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-    <?php
+<!--     <?php
         $expired_sessions = json_encode($this->expired_sessions);
         $message = json_encode($this->message);
         $redirect = json_encode($this->redirect);
@@ -711,23 +708,57 @@ function mi_navbar() {
 
         // Verificar si hay sesiones expiradas
         if (expired_sessions) {
+           // Este es el SweetAlert que aparecerá cuando la sesión esté a punto de expirar
+Swal.fire({
+    title: '¿Deseas extender la sesión?',
+    text: 'Tu sesión está a punto de expirar. ¿Quieres continuar?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sí, extender',
+    cancelButtonText: 'No, cerrar sesión'
+}).then((result) => {
+    // La promesa (then) se ejecuta después de que el usuario hace clic en un botón
+    if (result.isConfirmed) {
+         const forceLoginXHR = new XMLHttpRequest();
+        forceLoginXHR.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/access`);
+        forceLoginXHR.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        
+        // El usuario hizo clic en "Sí, extender"
+        // Aquí debes agregar el código para extender la sesión en el servidor
+        // Por ejemplo, haciendo una llamada AJAX
+        Swal.fire({
+            icon: 'success',
+            title: 'Sesión Extendida',
+            text: 'Tu sesión ha sido extendida con éxito.',
+            timer: 1500,
+            showConfirmButton: false
+        });
+    } else {
+        // El usuario hizo clic en "No, cerrar sesión" o cerró el modal
+        // Se ejecuta el SweetAlert original para notificar del cierre
+        if (expired_sessions) { // O puedes usar la lógica que necesites
             Swal.fire({
-                icon: 'warning', // Puedes cambiar el icono (warning, error, success, info, question)
-                title: 'Session Expiró.', // Título del SweetAlert
-                text: message, // Mensaje del SweetAlert
-                color: 'black', // Color del texto
-                showConfirmButton: false, // Oculta el botón "Aceptar"
-                timer: 2000, // Cierra el modal después de 2 segundos (2000 ms)
-                timerProgressBar: true, // Opcional: muestra una barra de progreso del tiempo
+                icon: 'warning',
+                title: 'Sesión Expiró.',
+                text: message,
+                color: 'black',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
                 didOpen: () => {
                     Swal.showLoading();
                 },
                 willClose: () => {
                     setTimeout(() => {
-                        window.location.href = redirect; // Recarga la página después del temporizador
-                    }, 500); // Espera 0.5 segundos (igual que el temporizador)
+                        window.location.href = redirect;
+                    }, 500);
                 }
-            })// Programar la recarga después de que el SweetAlert se cierre
+            });
+        }
+    }
+});
         }
 
         // Agregar lógica de recarga automática
@@ -736,9 +767,11 @@ function mi_navbar() {
                 location.reload(true); // Forzar recarga desde el servidor
             }, sessionLifetime * 1000); // sessionLifetime está en segundos
         }
-    </script>
+    </script> -->
     <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-
+<?php
+    require 'app/footer.php';
+?>
 </body>
 </html>
 
