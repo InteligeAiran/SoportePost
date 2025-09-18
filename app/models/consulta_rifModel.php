@@ -1381,15 +1381,7 @@ class consulta_rifModel extends Model
                     ];
                 }
             }
-            
-            // Opcional: Asegurar que todos los IDs deseados estén presentes, incluso si no tienen tickets.
-            // Esto es más complejo y quizás no necesario si el frontend maneja la ausencia.
-            // Si necesitas que los 0s aparezcan para IDs que no tienen tickets,
-            // tendrías que hacer un LEFT JOIN desde acciones_tickets o unirlos manualmente en PHP.
-            // Para simplificar, la consulta actual solo traerá los IDs que tienen tickets.
-            
             return $counts;
-
         } catch (Throwable $e) {
             error_log("Excepción en getTicketCountsGroupedByAction: " . $e->getMessage());
             return []; // Retorna un array vacío en caso de error
@@ -1476,8 +1468,7 @@ class consulta_rifModel extends Model
                     (int)$id_coordinador
                 );
                 $sqlresultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
-                return array('save_result' => $result, 'history_result' => $sqlInsertHistory);
-
+                return array('save_result' => $result, 'history_result' => $sqlresultsqlInsertHistory);
             }
         } catch (Throwable $e) {
             // Log the error (e.g., error_log($e->getMessage());)
@@ -3172,6 +3163,19 @@ class consulta_rifModel extends Model
             }
         } catch (Throwable $e) {
             error_log("Error al aprobar documentos: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function GetTicketReentry_lab($id_ticket){
+        try {
+            $db_conn = $this->db->getConnection();
+            $escaped_id_ticket = pg_escape_literal($db_conn, $id_ticket);
+             $sql = "SELECT * FROM GetTicketReingreLab(".$escaped_id_ticket.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetTicketReentry_lab: " . $e->getMessage());
             return false;
         }
     }

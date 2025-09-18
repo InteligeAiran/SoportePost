@@ -379,7 +379,7 @@ class Consulta extends Controller
         $result = $repository->SearchtypePos($serial);
         if ($result !== false) {
             $codrepositoryopos = $result;
-
+            
             /*  AGREGAR CSS */
             $claseImagen = "imagen-predeterminada"; // Valor predeterminado
             switch ($codrepositoryopos) {
@@ -483,7 +483,6 @@ class Consulta extends Controller
         }
     }
 
-    
     public function handleGetPhotoDashboard()
     {
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
@@ -2041,13 +2040,12 @@ class Consulta extends Controller
 
          if ($result) {
             // Obtener los datos del ticket para el modal
-            $ticketData = $repository->GetTicketDataForDelivery($id_ticket);
+            $ticketData = $repository->GetTicketReentry_lab($id_ticket);
             
             $this->response(['success' => true, 'message' => 'El ticket ha sido cerrado exitosamente.', 'ticket_data' => $ticketData], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         } 
     }
-
 }
 ?>

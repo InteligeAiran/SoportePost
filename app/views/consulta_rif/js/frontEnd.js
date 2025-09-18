@@ -4497,12 +4497,7 @@ function downloadImageModal(serial) {
           const imgElement = document.querySelector("#ModalSerial img");
           if (imgElement) {
             imgElement.src = srcImagen;
-            imgElement.className = claseImagen; // Aplicar la clase CSS
-          } else {
-            console.error("No se encontró el elemento img en el modal.");
-          }
-          if (imgElement) {
-            imgElement.src = rutaImagen;
+            imgElement.className = claseImagen; // Aplicar la clase CSS  
           } else {
             console.error("No se encontró el elemento img en el modal.");
           }

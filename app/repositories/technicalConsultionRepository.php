@@ -534,7 +534,6 @@ class TechnicalConsultionRepository
         }
     }
 
-
     public function GetTicketCounts(){
         $result = $this->model->getTicketCountsGroupedByAction();
         if ($result) {
@@ -543,7 +542,6 @@ class TechnicalConsultionRepository
             return null;
         }
     }
-
 
     public function GetModulesUsers($id_usuario){
         $result = $this->model->GetModulesUsers($id_usuario);
@@ -560,6 +558,7 @@ class TechnicalConsultionRepository
             return null;
         }
     }
+
     public function getTicketAttachmentsDetails($id_ticket){
         $result = $this->model->GetAttachments($id_ticket);
         
@@ -838,6 +837,21 @@ class TechnicalConsultionRepository
     public function ClosedTicket($id_ticket, $id_user){
         $result = $this->model->ClosedTicket($id_ticket, $id_user);
         return $result;  
+    }
+
+    public function GetTicketReentry_lab($id_ticket){
+        $result = $this->model->GetTicketReentry_lab($id_ticket);
+
+        if ($result) {
+            $reentries = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $reentries[] = $agente;
+                //var_dump($agente);
+            }
+            return $reentries;
+        }
+        return false;
     }
 }
 ?>

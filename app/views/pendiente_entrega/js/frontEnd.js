@@ -3361,73 +3361,132 @@ function SendBacktoTaller(ticketId, nroTicket){
   xhr.send(data);
 }
 
-function CloseTicket(ticketId, nroTicket){
-  const id_user = document.getElementById("userId").value;
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/consulta/CloseTicket`
-  ); // Necesitas una nueva ruta de API para esto
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-  xhr.onload = function () {
-    if (xhr.status >= 200 && xhr.status < 300) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          Swal.fire({
-                title: "¡Cerrado Correctamente!",
-                html: `El Pos asociado al ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido cerrado Correctamente. Proceda a generar el ticket con la falla que corresponda.`, // <-- CAMBIO AQUÍ
-                icon: "success",
-                color: "black",
-                confirmButtonColor: "#003594",
-                focusConfirm: false,
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                keydownListenerCapture: true,
-            }).then(() => {
-               window.location.reload(); // Volver a cargar la tabla para reflejar los cambios
-            });
-        } else {
-          Swal.fire(
-            "Error",
-            response.message ||
-              "Hubo un error al marcar el ticket como recibido.",
-            "error"
-          );
-        }
-      } catch (error) {
-        Swal.fire(
-          "Error",
-          "Error al procesar la respuesta del servidor.",
-          "error"
-        );
-        console.error("Error parsing JSON for markTicketAsReceived:", error);
-      }
-    } else {
-      Swal.fire(
-        "Error",
-        `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
-        "error"
-      );
-      console.error(
-        "Error en markTicketAsReceived:",
-        xhr.status,
-        xhr.statusText
-      );
-    }
-  };
-  xhr.onerror = function () {
-    Swal.fire(
-      "Error",
-      "Error de red al intentar marcar el ticket como recibido.",
-      "error"
+function CloseTicket(ticketId, nroTicket) {
+    const id_user = document.getElementById("userId").value;
+    const xhr = new XMLHttpRequest();
+    xhr.open(
+        "POST",
+        `${ENDPOINT_BASE}${APP_PATH}api/consulta/CloseTicket`
     );
-    console.error("Network error for markTicketAsReceived");
-  };
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-  const data = `action=CloseTicket&id_ticket=${ticketId}&id_user=${encodeURIComponent(
-    id_user
-  )}`;
-  xhr.send(data);
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    // Primer modal: Notificación de falla en el camino
+                    Swal.fire({
+                        icon: "warning",
+                        title: "¡Ticket Cerrado por Falla en el Camino! ⚠️",
+                        text: "El POS ha presentado una falla durante el traslado. El ticket se cerrará y se deberá abrir uno nuevo para el reingreso a laboratorio.",
+                        color: "black",
+                        showConfirmButton: true,
+                        confirmButtonText: "Ok",
+                        confirmButtonColor: "#003594 ", // Color rojo para advertencia
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        willClose: () => {
+                            // Cuando el primer modal se cierra, mostramos el segundo modal con los detalles
+                            const ticketData = response.ticket_data;
+
+                            if (ticketData) {
+                                const beautifulHtmlContent = `
+                                    <div style="text-align: left; padding: 15px;">
+                                        <h3 style="color: #dc3545; margin-bottom: 15px; text-align: center;">❌ ¡Ticket Cerrado! ❌</h3>
+                                        <p style="font-size: 1.1em; margin-bottom: 10px;">
+                                            <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.nro_ticket}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>⚙️ Serial del Equipo:</strong> <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticketData.serial_pos}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>📝 Comentario de Falla:</strong> ${ticketData.comment_devolution || "Sin comentarios"}
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>📋 Acción Original:</strong> <span style="color: #007bff; font-weight: bold;">${ticketData.name_accion_ticket}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>🔬 Estado del Laboratorio:</strong> <span style="color: #20c997; font-weight: bold;">${ticketData.name_status_lab || "N/A"}</span>
+                                        </p>
+                                        <p style="font-size: 0.9em; color: green; margin-top: 20px; text-align: center;">
+                                            El ticket ha sido cerrado. Debe generar un nuevo ticket para reingresar al laboratorio.
+                                        </p>
+                                    </div>`;
+
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Detalles del Reingreso a Lab",
+                                    html: beautifulHtmlContent,
+                                    color: "black",
+                                    confirmButtonText: "Cerrar",
+                                    confirmButtonColor: "#003594",
+                                    showConfirmButton: true,
+                                    showClass: {
+                                        popup: "animate__animated animate__fadeInDown",
+                                    },
+                                    hideClass: {
+                                        popup: "animate__animated animate__fadeOutUp",
+                                    },
+                                    allowOutsideClick: false,
+                                    allowEscapeKey: false,
+                                    width: '700px'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Error al Obtener Datos",
+                                    text: "El ticket ha sido cerrado, pero no se pudieron obtener los datos de reingreso.",
+                                    confirmButtonText: "Cerrar",
+                                    confirmButtonColor: "#003594"
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            }
+                        },
+                    });
+                } else {
+                    Swal.fire(
+                        "Error",
+                        response.message || "Hubo un error al marcar el ticket como recibido.",
+                        "error"
+                    );
+                }
+            } catch (error) {
+                Swal.fire(
+                    "Error",
+                    "Error al procesar la respuesta del servidor.",
+                    "error"
+                );
+                console.error("Error parsing JSON for markTicketAsReceived:", error);
+            }
+        } else {
+            Swal.fire(
+                "Error",
+                `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
+                "error"
+            );
+            console.error(
+                "Error en markTicketAsReceived:",
+                xhr.status,
+                xhr.statusText
+            );
+        }
+    };
+    xhr.onerror = function () {
+        Swal.fire(
+            "Error",
+            "Error de red al intentar marcar el ticket como recibido.",
+            "error"
+        );
+        console.error("Network error for markTicketAsReceived");
+    };
+
+    const data = `action=CloseTicket&id_ticket=${ticketId}&id_user=${encodeURIComponent(
+        id_user
+    )}`;
+    xhr.send(data);
 }
