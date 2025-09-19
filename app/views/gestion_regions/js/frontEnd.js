@@ -372,6 +372,16 @@ function getTicketDataFinaljs() {
                 infoEmpty: "No hay datos disponibles",
                 infoFiltered: " de _MAX_ Disponibles",
                 search: "Buscar:",
+                language: {
+                emptyTable: `
+                  <div class="d-flex flex-column align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                      <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                    </svg>
+                    <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                    <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
+                  </div>`
+                },
                 loadingRecords: "Cargando...",
                 processing: "Procesando...",
                 paginate: {
@@ -495,7 +505,7 @@ function getTicketDataFinaljs() {
                             <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
                           </svg>
                           <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                          <p class="text-muted mb-0">No hay tickets en taller para mostrar en este momento.</p>
+                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
                         </div>
                       </td>
                     </tr>`;
@@ -929,76 +939,96 @@ function getTicketDataFinaljs() {
               });
 
             if (tableContainer) {
+                tableContainer.innerHTML =  `<tr>
+                      <td colspan="16" class="text-center text-muted py-5">
+                        <div class="d-flex flex-column align-items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                          </svg>
+                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
+                        </div>
+                      </td>
+                    </tr>`;
               tableContainer.style.display = "";
             }
           } else {
             if (tableContainer) {
-              tableContainer.innerHTML = `<div class="text-center text-muted py-5">
-                <div class="d-flex flex-column align-items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                    <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                  </svg>
-                  <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                  <p class="text-muted mb-0">No hay tickets en taller para mostrar en este momento.</p>
-                </div>
-              </div>`;
+              tableContainer.innerHTML =  `<tr>
+                      <td colspan="16" class="text-center text-muted py-5">
+                        <div class="d-flex flex-column align-items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                          </svg>
+                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
+                        </div>
+                      </td>
+                    </tr>`;
               tableContainer.style.display = "";
             }
           }
         } else {
           if (tableContainer) {
-            tableContainer.innerHTML = `<div class="text-center text-muted py-5">
-              <div class="d-flex flex-column align-items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                  <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                </svg>
-                <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                <p class="text-muted mb-0">No hay tickets en taller para mostrar en este momento.</p>
-              </div>
-            </div>`;
+            tableContainer.innerHTML =  `<tr>
+                      <td colspan="16" class="text-center text-muted py-5">
+                        <div class="d-flex flex-column align-items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                          </svg>
+                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
+                        </div>
+                      </td>
+                    </tr>`;
             tableContainer.style.display = "";
           }
           console.error("Error from API:", response.message);
         }
       } catch (error) {
         if (tableContainer) {
-          tableContainer.innerHTML = `<div class="text-center text-muted py-5">
-            <div class="d-flex flex-column align-items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-              </svg>
-              <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-              <p class="text-muted mb-0">No hay tickets en taller para mostrar en este momento.</p>
-            </div>
-          </div>`;
+          tableContainer.innerHTML = `<tr>
+                      <td colspan="16" class="text-center text-muted py-5">
+                        <div class="d-flex flex-column align-items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                          </svg>
+                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
+                        </div>
+                      </td>
+                    </tr>`;
           tableContainer.style.display = "";
         }
         console.error("Error parsing JSON:", error);
       }
     } else if (xhr.status === 404) {
-      if (tableContainer) {
-        tableContainer.innerHTML = `<div class="text-center text-muted py-5">
-          <div class="d-flex flex-column align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-            </svg>
-            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-            <p class="text-muted mb-0">No hay tickets en taller para mostrar en este momento.</p>
-          </div>
-        </div>`;
+      if (tableContainer) { `<tr>
+                      <td colspan="16" class="text-center text-muted py-5">
+                        <div class="d-flex flex-column align-items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                          </svg>
+                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
+                        </div>
+                      </td>
+                    </tr>`;
         tableContainer.style.display = "";
       }
     } else {
       if (tableContainer) {
-        tableContainer.innerHTML = `<div class="text-center text-muted py-5">
-          <div class="d-flex flex-column align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-            </svg>
-            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-            <p class="text-muted mb-0">No hay tickets en taller para mostrar en este momento.</p>
-          </div>
-        </div>`;
+        tableContainer.innerHTML =  `<tr>
+                      <td colspan="16" class="text-center text-muted py-5">
+                        <div class="d-flex flex-column align-items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                          </svg>
+                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
+                        </div>
+                      </td>
+                    </tr>`;
         tableContainer.style.display = "";
       }
       console.error("Error:", xhr.status, xhr.statusText);
@@ -1031,7 +1061,7 @@ document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
     
   
     // 2. Manejador de eventos para el botón principal de la tabla (abre el modal de acciones)
-    $(document).on('click', '.btn-document-actions-modal', function() {
+  $(document).on('click', '.btn-document-actions-modal', function() {
     const ticketId = $(this).data('ticket-id');
     const statusPayment = $(this).data('status-payment');
 

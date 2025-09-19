@@ -588,7 +588,17 @@ function getTicketDataCoordinator() {
                 // Mostrar mensaje de que no hay datos
                 const tbody = document.querySelector("#tabla-ticket tbody");
                 if (tbody) {
-                  tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No hay tickets disponibles en ningún estado</td></tr>';
+                  tbody.innerHTML = `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets para Asignar a Técnico en este momento.</p>
+          </div>
+        </td>
+      </tr>`;
                 }
                 
                 return false;

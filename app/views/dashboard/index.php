@@ -276,7 +276,7 @@ function mi_navbar() {}
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
-                                        <input type="text" id="ticketSearchInput" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                        <input type="text" id="ticketSearchInputOpen" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
                                     </div>
                                     <div id="OpenTicketModalContent"></div>
                                 </div>
@@ -319,6 +319,9 @@ function mi_navbar() {}
                                     <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle de Tickets En Proceso</h5>
                                 </div>
                                 <div class="modal-body">
+                                    <div class="mb-3">
+                                        <input type="text" id="ticketSearchInputProcess" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                    </div>
                                     <div id="ProcessTicketsContent"></div>
                                 </div>
                                 <div class="modal-footer">
@@ -405,6 +408,9 @@ function mi_navbar() {}
                                     </h5>
                                 </div>
                                 <div class="modal-body">
+                                    <div class="mb-3">
+                                        <input type="text" id="ticketSearchInputResolved" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                    </div>
                                     <div id="ResolveTicketsContent"></div>
                                 </div>
                                 <div class="modal-footer">
@@ -505,6 +511,9 @@ function mi_navbar() {}
                                     </h5>
                                 </div>
                                 <div class="modal-body">
+                                    <div class="mb-3">
+                                        <input type="text" id="ticketSearchInputTaller" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                    </div>
                                     <div id="TallerTicketsContent"></div>
                                 </div>
                                 <div class="modal-footer">

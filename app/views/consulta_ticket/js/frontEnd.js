@@ -420,8 +420,6 @@ function getEstatusTicket() {
 
 document.addEventListener("DOMContentLoaded", getEstatusTicket);
 
-
-
 function SendRegions() {
   // Get the welcome message element and show it at the start
   const welcomeMessage = document.getElementById("welcomeMessage");
@@ -533,6 +531,7 @@ function SendRegions() {
           
           const columnTitles = {
             id_ticket: "ID Ticket",
+            nro_ticket: "Nro Ticket",
             create_ticket: "Create Ticket",
             name_status_ticket: "Status Ticket",
             rif_empresa: "Rif",
@@ -958,6 +957,7 @@ function SendRif() {
           const columnTitles = {
               // ... Tus títulos de columna
               id_ticket: "ID Ticket",
+              nro_ticket: "Nro Ticket",
               create_ticket: "Fecha Creación Ticket",
               name_status_ticket: "Estatus Ticket",
               rif_empresa: "Rif",
@@ -1379,6 +1379,7 @@ function SendSerial() {
           const columnTitles = {
               // ... Tus títulos de columna
               id_ticket: "ID Ticket",
+              nro_ticket: "Nro Ticket",
               create_ticket: "Create Ticket",
               name_status_ticket: "Status Ticket",
               rif_empresa: "Rif",
@@ -1805,6 +1806,7 @@ function SendStatus() {
           const columnTitles = {
               // ... Tus títulos de columna
               id_ticket: "ID Ticket",
+              nro_ticket: "Nro Ticket",
               create_ticket: "Create Ticket",
               name_status_ticket: "Status Ticket",
               rif_empresa: "Rif",
@@ -2209,6 +2211,7 @@ function SendRango() {
           const columnTitles = {
               // ... Tus títulos de columna
               id_ticket: "ID Ticket",
+              nro_ticket: "Nro Ticket",
               create_ticket: "Create Ticket",
               name_status_ticket: "Status Ticket",
               date_closed: "Cierre Ticket",
