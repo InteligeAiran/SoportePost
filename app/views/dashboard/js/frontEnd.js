@@ -11,8 +11,15 @@ let ModalTimelineInstance = null; // Variable para la instancia del modal de lí
 let allOpenTickets = [];
 let allProcessTickets = []; // Separar datos para tickets en proceso
 let allResolvedTickets = [];
-let allTallerTickets = [];
+let allTallerTickets = [];// Variables globales para almacenar los tickets comerciales y manejar la búsqueda
+let allComercialTickets = [];
+let allIndividualTickets = [];
 
+let currentMonth = null;
+let currentStatus = null;
+
+let monthlyTicketSearchHandler = null;
+let comercialTicketSearchHandler = null;
 let tallerTicketSearchHandler = null;
 let ticketSearchHandler = null;
 let resolvedTicketSearchHandler = null;
@@ -79,6 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const resolveTicketsModalElement = document.getElementById("ResolveTicketsModal");
   const sendTallerTicketsModalElement = document.getElementById("SendTallerTicketsModal"); // ¡NUEVO MODAL!
   const processTicketModalElement = document.getElementById("ProcessTicketsModal"); // ��NUEVO MODAL!
+  const gestionCoordinadorModalElement = document.getElementById("DetalleTicketComercial"); // ��NUEVO MODAL!
 
 
   const ModalReparacion = document.getElementById("procesoReparacionModal"); // ��NUEVO ELEMENTO!
@@ -98,7 +106,12 @@ document.addEventListener("DOMContentLoaded", function () {
   let ModalPendiRepuesto = null; // ��NUEVO ELEMENTO!
   let ModalIrreparable = null; // ��NUEVO ELEMENTO!
   let ModalprocessTicketsModalInstance = null; // ��NUEVO ELEMENTO!
+  let modal_gestionCoordinadorInstance = null; // ��NUEVO ELEMENTO!
 
+
+  if(gestionCoordinadorModalElement){
+    modal_gestionCoordinadorInstance = new bootstrap.Modal(gestionCoordinadorModalElement);
+  }
 
   if (timelineModalElement) {
       ModalTimelineInstance = new bootstrap.Modal(timelineModalElement);
@@ -263,6 +276,20 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   }
 
+  const openModalGestionComercial = document.getElementById("Card-Comercial-Ticket");
+  if (openModalGestionComercial && modal_gestionCoordinadorInstance) {
+    openModalGestionComercial.addEventListener("click", function (event) {
+      event.preventDefault();
+      modal_gestionCoordinadorInstance.show();
+      loadDetalleTicketComercial(); // Nueva función para cargar detalles del ticket de reparación
+      // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
+    });
+  } else {
+    console.error(
+      "openModalGestionComercial o modal_gestionCoordinadorInstance no encontrados."
+    );
+  }
+
   function forceCloseTimelineModal() {
     const modalElement = document.getElementById("TimelineModal");
     if (modalElement) {
@@ -362,9 +389,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   // --- Event Listeners para CERRAR Modales (desde botones dentro del modal) ---
 
+  const cerrarModalComecial = document.getElementById("ModalComercialDetalle");
+
+  if(cerrarModalComecial && modal_gestionCoordinadorInstance) {
+    cerrarModalComecial.addEventListener("click", function() {
+      modal_gestionCoordinadorInstance.hide();
+    });
+  }
+
   // 1. Botones de cierre para monthlyTicketsModal
   const cerrarMonthly = document.getElementById("ModalStadisticMonth");
-  const iconMonthly = document.getElementById("ModalStadisticMonthIcon");
 
   if (cerrarMonthly && monthlyTicketsModalInstance) {
     cerrarMonthly.addEventListener("click", function () {
@@ -372,15 +406,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (iconMonthly && monthlyTicketsModalInstance) {
-    iconMonthly.addEventListener("click", function () {
-      monthlyTicketsModalInstance.hide();
-    });
-  }
-
   // 2. Botones de cierre para RegionTicketsModal
   const cerrarRegion = document.getElementById("ModalStadisticRegion");
-  const iconRegion = document.getElementById("ModalStadisticRegionIcon");
 
   if (cerrarRegion && regionTicketsModalInstance) {
     cerrarRegion.addEventListener("click", function () {
@@ -388,15 +415,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (iconRegion && regionTicketsModalInstance) {
-    iconRegion.addEventListener("click", function () {
-      regionTicketsModalInstance.hide();
-    });
-  }
-
   // 3. Botones de cierre para OpenTicketModal
   const cerrarOpen = document.getElementById("ModalOpen");
-  const iconOpen = document.getElementById("ModalOpenIcon");
 
   if (cerrarOpen && openTicketsModalInstance) {
         cerrarOpen.addEventListener("click", function () {
@@ -406,17 +426,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    if (iconOpen && openTicketsModalInstance) {
-        iconOpen.addEventListener("click", function () {
-            openTicketsModalInstance.hide();
-            // AÑADE ESTE CÓDIGO AQUÍ PARA QUE SE EJECUTE AL CLIC DEL ICONO "X"
-            forceCleanupAfterModalClose();
-        });
-    }
-
   // 4. Botones de cierre para ResolveTicketsModal
   const cerrarResolve = document.getElementById("ModalResolveRegion");
-  const iconResolve = document.getElementById("ModalResolveIcon");
 
   if (cerrarResolve && resolveTicketsModalInstance) {
     cerrarResolve.addEventListener("click", function () {
@@ -424,15 +435,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (iconResolve && resolveTicketsModalInstance) {
-    iconResolve.addEventListener("click", function () {
-      resolveTicketsModalInstance.hide();
-    });
-  }
-
   // 5. Botones de cierre para SendTallerTicketsModal (¡NUEVO!)
   const cerrarTaller = document.getElementById("ModalTallerRegion"); // El ID de tu botón "Cerrar" en el footer
-  const iconTaller = document.getElementById("ModalTallerIcon"); // El ID de tu botón "x" en el header
 
   if (cerrarTaller && sendTallerTicketsModalInstance) {
     cerrarTaller.addEventListener("click", function () {
@@ -440,15 +444,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (iconTaller && sendTallerTicketsModalInstance) {
-    iconTaller.addEventListener("click", function () {
-      sendTallerTicketsModalInstance.hide();
-    });
-  }
-
   // 6. Botones de cierre para processTicketModalElement (��NUEVO!)
   const cerrarProcess = document.getElementById("ModalProcess"); // El ID de tu botón "Cerrar" en el footer
-  const iconProcess = document.getElementById("ModalProcessIcon"); // El ID de tu botón "x" en el header
 
   if (cerrarProcess && ModalprocessTicketsModalInstance) {
     cerrarProcess.addEventListener("click", function () {
@@ -457,17 +454,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (iconProcess && ModalprocessTicketsModalInstance) {
-    iconProcess.addEventListener("click", function () {
-      ModalprocessTicketsModalInstance.hide();
-      forceCleanupAfterModalClose(); // <-- Se llama aquí
-    });
-  }
-
   const cerrarPenReparacion = document.getElementById("ModalProcessReparacion");
-  const iconPenReparacion = document.getElementById(
-    "ModalProcessReparacionIcon"
-  );
 
   if (cerrarPenReparacion && ModalProcesoReparacion) {
     cerrarPenReparacion.addEventListener("click", function () {
@@ -475,16 +462,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (iconPenReparacion && ModalProcesoReparacion) {
-    iconPenReparacion.addEventListener("click", function () {
-      ModalProcesoReparacion.hide();
-    });
-  }
-
   const cerrarPenReparado = document.getElementById("ModalReparado");
-  const iconPenReparado = document.getElementById(
-    "ModalReparadoIcon"
-  );
 
   if (cerrarPenReparado && ModalReparados) {
     cerrarPenReparado.addEventListener("click", function () {
@@ -492,17 +470,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (iconPenReparado && ModalReparados) {
-    iconPenReparado.addEventListener("click", function () {
-      ModalReparados.hide();
-    });
-  }
-
   const cerrarPenPendienteRepuesto = document.getElementById(
     "ModalPendiRespuu"
-  );
-  const iconPenPendienteRepuesto = document.getElementById(
-    "ModalpendiRespIcon"
   );
 
   if(cerrarPenPendienteRepuesto && modalPendienteRepa) {
@@ -511,27 +480,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (iconPenPendienteRepuesto && modalPendienteRepa) {
-    iconPenPendienteRepuesto.addEventListener("click", function () {
-      modalPendienteRepa.hide();
-    });
-  }
-
   const cerrarPenIrreparable = document.getElementById(
     "ModalIrreparableTik"
-  );
-  const iconPenIrreparable = document.getElementById(
-    "ModalIrreparabltikIcon"
   );
 
   if (cerrarPenIrreparable && ModalIrreparable) {
     cerrarPenIrreparable.addEventListener("click", function () {
-      ModalIrreparable.hide();
-    });
-  }
-
-  if (iconPenIrreparable && ModalIrreparable) {
-    iconPenIrreparable.addEventListener("click", function () {
       ModalIrreparable.hide();
     });
   }
@@ -614,20 +568,25 @@ function handleTicketSearch(event, ticketArray, containerId) {
     let filteredTickets = [];
 
     if (searchTerm === '') {
-        filteredTickets = ticketArray || [];
+        // Usa las variables globales para el mes y el estado
+        const contentDiv = document.getElementById(containerId);
+        if (contentDiv) {
+            contentDiv.innerHTML = formatIndividualTickets(ticketArray, currentMonth, currentStatus);
+        }
+        return;
     } else {
         filteredTickets = (ticketArray || []).filter(ticket => {
             // Construir variantes de fecha
-            const originalDate = (ticket.date_create_ticket || '').trim(); // "18-09-2025 03:53"
+            const originalDate = (ticket.date_create_ticket || '').trim();
             const originalDateLower = originalDate.toLowerCase();
-            const dateOnly = originalDateLower.substring(0, 10); // "18-09-2025"
-            const dateOnlySlashes = dateOnly.replace(/-/g, '/'); // "18/09/2025"
+            const dateOnly = originalDateLower.substring(0, 10);
+            const dateOnlySlashes = dateOnly.replace(/-/g, '/');
             const localizedDate = originalDate
                 ? new Date(originalDate.replace(/-/g, '/')).toLocaleDateString('es-ES', {
                     day: '2-digit', month: '2-digit', year: 'numeric'
                 }).toLowerCase()
                 : '';
-            const dateDigits = originalDate.replace(/\D/g, ''); // "18092025..."
+            const dateDigits = originalDate.replace(/\D/g, '');
 
             const matchesDate = (
                 dateOnly.includes(searchTermLower) ||
@@ -636,26 +595,29 @@ function handleTicketSearch(event, ticketArray, containerId) {
                 (searchTermDigits !== '' && dateDigits.includes(searchTermDigits))
             );
 
-           return (
-               (ticket.nro_ticket || '').toLowerCase().includes(searchTermLower) ||
-               (ticket.serial_pos || ticket.serial_pos_cliente || '').toLowerCase().includes(searchTermLower) ||
-               (ticket.razon_social_cliente || '').toLowerCase().includes(searchTermLower) ||
-               (ticket.rif_empresa || ticket.rif_cliente || '').toLowerCase().includes(searchTermLower) ||
-               (ticket.name_modelopos_cliente || '').toLowerCase().includes(searchTermLower) ||
-               (ticket.name_status_payment || '').toLowerCase().includes(searchTermLower) ||
-               (ticket.name_accion_ticket || '').toLowerCase().includes(searchTermLower) ||
-               (ticket.status_name_ticket || '').toLowerCase().includes(searchTermLower) ||
-               (ticket.name_status_domiciliacion || '').toLowerCase().includes(searchTermLower) ||
-               (ticket.name_status_lab || '').toLowerCase().includes(searchTermLower) ||
-               matchesDate
-          );
+            return (
+                (ticket.nro_ticket || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.serial_pos || ticket.serial_pos_cliente || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.razon_social_cliente || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.rif_empresa || ticket.rif_cliente || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.name_modelopos_cliente || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.name_status_payment || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.name_accion_ticket || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.status_name_ticket || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.name_status_domiciliacion || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.name_status_lab || '').toLowerCase().includes(searchTermLower) ||
+                matchesDate
+            );
         });
     }
-    displayFilteredTickets(filteredTickets, containerId);
+
+    // Pasa los parámetros a displayFilteredTickets
+    displayFilteredTickets(filteredTickets, containerId, currentMonth, currentStatus);
 }
 
 // Función para mostrar los tickets (llamada por loadOpenTicketDetails y handleTicketSearch)
-function displayFilteredTickets(ticketsToDisplay, containerId) {
+// Ahora, tu función displayFilteredTickets puede usar esta nueva estructura
+function displayFilteredTickets(ticketsToDisplay, containerId, month = null, status = null) {
   const contentDiv = document.getElementById(containerId);
 
   if (!contentDiv) {
@@ -664,9 +626,13 @@ function displayFilteredTickets(ticketsToDisplay, containerId) {
   }
 
   if (!ticketsToDisplay || ticketsToDisplay.length === 0) {
-    // La función showNoDataMessage debe estar definida en tu código
     showNoDataMessage(contentDiv, "No se encontraron tickets con los criterios de búsqueda.");
     return;
+  }
+
+  // Aquí usamos el formato correcto
+  if (containerId === 'monthlyTicketsContent') {
+    contentDiv.innerHTML = formatIndividualTickets(ticketsToDisplay, month, status);
   }
 
   // Usar la función de formato adecuada según el contenedor
@@ -676,13 +642,173 @@ function displayFilteredTickets(ticketsToDisplay, containerId) {
     contentDiv.innerHTML = formatResolveDetails(ticketsToDisplay);
   } else if (containerId === 'TallerTicketsContent') {
     contentDiv.innerHTML = formatTallerDetails(ticketsToDisplay);
+  } else if(containerId === 'ComercialTicketsContent') {
+    contentDiv.innerHTML = formatDetalleTicketComercial(ticketsToDisplay);
+  } else if(containerId === 'monthlyTicketsContent') {
+    // Si se llama desde la búsqueda, usa la función de formato individual
+    if (month && status) {
+         contentDiv.innerHTML = formatIndividualTickets(ticketsToDisplay, month, status);
+    } else {
+         // Si no se han pasado mes y status, probablemente sea la carga inicial
+         contentDiv.innerHTML = formatMonthlyDetails(ticketsToDisplay);
+    }
   } else {
     // Si no coincide con ninguno, usa el formato predeterminado
     contentDiv.innerHTML = formatOpenDetails(ticketsToDisplay);
   }
 
-  // Se asume que estos listeners son relevantes para todos los tipos de tickets
   attachMarkReceivedListeners();
+}
+
+function loadIndividualTicketDetails(month, status) {
+  const contentDiv = document.getElementById("monthlyTicketsContent");
+  const searchInput = document.getElementById("ticketSearchInputMensual");
+
+  // Almacenar el mes y el estado en variables globales
+  currentMonth = month;
+  currentStatus = status;
+
+  contentDiv.innerHTML = `<p>Cargando tickets ${status.toLowerCase()}s en la fecha ${month}...</p>`;
+  
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.style.display = "inline-block";
+  }
+
+  // Usar la API fetch para la petición
+  const dataToSend = new URLSearchParams({
+    action: "GetIndividualTicketDetails",
+    month: month,
+    status: status,
+  }).toString();
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetIndividualTicketDetails`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: dataToSend,
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        allIndividualTickets = data.details;
+        displayFilteredTickets(allIndividualTickets, 'monthlyTicketsContent', currentMonth, currentStatus);
+        
+        if (searchInput) {
+            if (monthlyTicketSearchHandler) {
+                searchInput.removeEventListener('input', monthlyTicketSearchHandler);
+            }
+            monthlyTicketSearchHandler = (e) => {
+                // Ya no necesitas pasar month y status, ya que son variables globales
+                handleTicketSearch(e, allIndividualTickets, 'monthlyTicketsContent');
+            };
+            searchInput.addEventListener('input', monthlyTicketSearchHandler);
+        }
+
+      } else {
+        contentDiv.innerHTML = `<p>Error al cargar el detalle de tickets ${status.toLowerCase()}s: ` + (data.message || "Error desconocido") + `</p>`;
+        console.error("Error en los datos de la API para tickets individuales:", data.message);
+        allIndividualTickets = [];
+        if (searchInput && monthlyTicketSearchHandler) {
+            searchInput.removeEventListener('input', monthlyTicketSearchHandler);
+            monthlyTicketSearchHandler = null;
+        }
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching individual ticket details:", error);
+      contentDiv.innerHTML = `<p>Error de red al cargar el detalle de tickets ${status.toLowerCase()}s. Por favor, intente de nuevo más tarde.</p>`;
+      allIndividualTickets = [];
+      if (searchInput && monthlyTicketSearchHandler) {
+          searchInput.removeEventListener('input', monthlyTicketSearchHandler);
+          monthlyTicketSearchHandler = null;
+      }
+    });
+}
+
+
+function handleTicketSearch(event, ticketArray, containerId) {
+    const inputEl = event && event.target ? event.target : null;
+    if (!inputEl) return;
+
+    const searchTerm = inputEl.value.trim();
+    const searchTermLower = searchTerm.toLowerCase();
+    const searchTermDigits = searchTerm.replace(/\D/g, '');
+    let filteredTickets = [];
+
+    if (searchTerm === '') {
+        // Usa las variables globales para el mes y el estado
+        const contentDiv = document.getElementById(containerId);
+        if (contentDiv) {
+            contentDiv.innerHTML = formatIndividualTickets(ticketArray, currentMonth, currentStatus);
+        }
+        return;
+    } else {
+        filteredTickets = (ticketArray || []).filter(ticket => {
+            // Construir variantes de fecha
+            const originalDate = (ticket.date_create_ticket || '').trim();
+            const originalDateLower = originalDate.toLowerCase();
+            const dateOnly = originalDateLower.substring(0, 10);
+            const dateOnlySlashes = dateOnly.replace(/-/g, '/');
+            const localizedDate = originalDate
+                ? new Date(originalDate.replace(/-/g, '/')).toLocaleDateString('es-ES', {
+                    day: '2-digit', month: '2-digit', year: 'numeric'
+                }).toLowerCase()
+                : '';
+            const dateDigits = originalDate.replace(/\D/g, '');
+
+            const matchesDate = (
+                dateOnly.includes(searchTermLower) ||
+                dateOnlySlashes.includes(searchTermLower) ||
+                localizedDate.includes(searchTermLower) ||
+                (searchTermDigits !== '' && dateDigits.includes(searchTermDigits))
+            );
+
+            return (
+                (ticket.nro_ticket || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.serial_pos || ticket.serial_pos_cliente || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.razon_social_cliente || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.rif_empresa || ticket.rif_cliente || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.name_modelopos_cliente || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.name_status_payment || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.name_accion_ticket || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.status_name_ticket || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.name_status_domiciliacion || '').toLowerCase().includes(searchTermLower) ||
+                (ticket.name_status_lab || '').toLowerCase().includes(searchTermLower) ||
+                matchesDate
+            );
+        });
+    }
+
+    // Pasa los parámetros a displayFilteredTickets
+    displayFilteredTickets(filteredTickets, containerId, currentMonth, currentStatus);
+}
+
+// La función displayFilteredTickets debe ser capaz de recibir month y status
+function displayFilteredTickets(ticketsToDisplay, containerId, month = null, status = null) {
+  const contentDiv = document.getElementById(containerId);
+  if (!contentDiv) {
+    console.error(`El elemento ${containerId} no se encuentra en el DOM.`);
+    return;
+  }
+
+  // Lógica para mostrar el mensaje "No hay datos"
+  if (!ticketsToDisplay || ticketsToDisplay.length === 0) {
+    showNoDataMessage(contentDiv, "No se encontraron tickets con los criterios de búsqueda.");
+    return;
+  }
+  
+  // Aquí usamos el formato correcto
+  if (containerId === 'monthlyTicketsContent') {
+    contentDiv.innerHTML = formatIndividualTickets(ticketsToDisplay, month, status);
+  }
+  // ... (el resto de las condiciones)
 }
 
 function loadOpenTicketDetails() {
@@ -916,6 +1042,70 @@ function loadResolveTicketDetails() {
       if (resolvedTicketSearchHandler) {
         searchInput.removeEventListener('input', resolvedTicketSearchHandler);
         resolvedTicketSearchHandler = null;
+      }
+    });
+}
+
+function loadDetalleTicketComercial() {
+  const contentDiv = document.getElementById("ComercialTicketsContent");
+  const searchInput = document.getElementById("ticketSearchInputComercial");
+
+  contentDiv.innerHTML = "<p>Cargando información de tickets Comerciales...</p>"; // Mensaje de carga
+  searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetDetalleTicketComercial`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        allComercialTickets = data.details; // Almacenar todos los tickets
+        displayFilteredTickets(allComercialTickets, 'ComercialTicketsContent'); // Mostrar todos al principio
+
+        // Añadir event listener para el input de búsqueda con referencia estable
+        if (comercialTicketSearchHandler) {
+          searchInput.removeEventListener('input', comercialTicketSearchHandler);
+        }
+        comercialTicketSearchHandler = (e) => {
+          handleTicketSearch(e, allComercialTickets, 'ComercialTicketsContent');
+        };
+        searchInput.addEventListener('input', comercialTicketSearchHandler);
+
+      } else {
+        contentDiv.innerHTML =
+          "<p>Error al cargar los detalles de tickets: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error(
+          "Error en los datos de la API para tickets comerciales:",
+          data.message
+        );
+        allComercialTickets = []; // Limpiar por si hubo error
+        if (comercialTicketSearchHandler) {
+          searchInput.removeEventListener('input', comercialTicketSearchHandler);
+          comercialTicketSearchHandler = null;
+        }
+      }
+    })
+    .catch((error) => {
+      contentDiv.innerHTML =
+        `<div class="text-center text-muted py-5">
+            <div class="d-flex flex-column align-items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                    <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                </svg>
+                <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                <p class="text-muted mb-0">No hay tickets comerciales.</p>
+            </div>
+        </div>`;
+      console.error("Error fetching commercial ticket details:", error);
+      allComercialTickets = []; // Limpiar por si hubo error
+      if (comercialTicketSearchHandler) {
+        searchInput.removeEventListener('input', comercialTicketSearchHandler);
+        comercialTicketSearchHandler = null;
       }
     });
 }
@@ -3528,6 +3718,10 @@ function formatIndividualRegionTickets(tickets, region) {
 function loadIndividualRegionTicketDetails(region) {
   // status es opcional ahora
   const contentDiv = document.getElementById("RegionTicketsContent");
+
+  
+
+
   let loadingMessage = `Cargando tickets para la región ${region}...`;
   if (region) {
     loadingMessage = `Cargando tickets para la región ${region}...`;
@@ -3593,73 +3787,6 @@ function loadIndividualRegionTicketDetails(region) {
   xhr.send(dataToSend);
 }
 
-// *** NUEVA FUNCIÓN: Para cargar los detalles de tickets individuales ***
-function loadIndividualTicketDetails(month, status) {
-  const contentDiv = document.getElementById("monthlyTicketsContent");
-  contentDiv.innerHTML = `<p>Cargando tickets ${status.toLowerCase()}s en la fecha ${month}...</p>`; // Mensaje de carga
-
-  const xhr = new XMLHttpRequest();
-  // Use POST as requested, so the parameters will be sent in the request body
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetIndividualTicketDetails`
-  );
-  // Set the Content-Type header to indicate that we're sending URL-encoded data
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success && response.details) {
-          // Función para formatear los tickets individuales
-          contentDiv.innerHTML = formatIndividualTickets(
-            response.details,
-            month,
-            status
-          );
-        } else {
-          // Check for data.message in case of API error, or provide a generic one
-          contentDiv.innerHTML =
-            `<p>Error al cargar el detalle de tickets ${status.toLowerCase()}s: ` +
-            (response.message || "Error desconocido") +
-            `</p>`;
-          console.error(
-            "Error en los datos de la API para tickets individuales:",
-            response.message
-          );
-        }
-      } catch (error) {
-        console.error(
-          "Error parsing JSON for individual ticket details:",
-          error
-        );
-        contentDiv.innerHTML = `<p>Error de procesamiento de datos al cargar el detalle de tickets ${status.toLowerCase()}s.</p>`;
-      }
-    } else {
-      console.error(
-        "Error fetching individual ticket details:",
-        xhr.status,
-        xhr.statusText
-      );
-      contentDiv.innerHTML = `<p>Error de red al cargar el detalle de tickets ${status.toLowerCase()}s. Por favor, intente de nuevo más tarde.</p>`;
-    }
-  };
-
-  // Handle network errors
-  xhr.onerror = function () {
-    console.error("Network error during individual ticket details fetch.");
-    contentDiv.innerHTML = `<p>Error de conexión al cargar el detalle de tickets ${status.toLowerCase()}s.</p>`;
-  };
-
-  // Prepare the data to be sent in the request body
-  // encodeURIComponent is crucial for sending parameters in URL-encoded format
-  const dataToSend = `action=GetIndividualTicketDetails&month=${encodeURIComponent(
-    month
-  )}&status=${encodeURIComponent(status)}`;
-  xhr.send(dataToSend);
-}
-
 // *** NUEVA FUNCIÓN: Para formatear la tabla de tickets individuales (VERTICAL) ***
 function formatIndividualTickets(tickets, month, status) {
   if (tickets.length === 0) {
@@ -3668,7 +3795,7 @@ function formatIndividualTickets(tickets, month, status) {
   }
 
   let html = `
-        <h5>Tickets ${status}s para ${month}</h5>
+        <h5 style = "color:black;">Tickets ${status}s para ${month}</h5>
         <div class="ticket-details-list mt-3">
     `;
 
@@ -3681,10 +3808,15 @@ function formatIndividualTickets(tickets, month, status) {
     html += `
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                    Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
+                    <dt class="col-sm-4">Nivel Falla:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_level_failure || "N/A"
+                        }</dd>
+
                         <dt class="col-sm-4">Serial POS:</dt>
                         <dd class="col-sm-8">${
                           ticket.serial_pos_cliente || "N/A"
@@ -3703,9 +3835,24 @@ function formatIndividualTickets(tickets, month, status) {
                           ticket.name_modelopos_cliente || "N/A"
                         }</dd>
 
-                        <dt class="col-sm-4">Estado Ticket:</dt>
+                        <dt class="col-sm-4">Estatus Documento:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_payment || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Ticket:</dt>
                         <dd class="col-sm-8">${
                           ticket.status_name_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Domiciliación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_domiciliacion || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Taller:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
                         }</dd>
                         
                         <dt class="col-sm-4">Accion Ticket:</dt>
@@ -3769,6 +3916,14 @@ function loadMonthlyTicketDetails() {
 
 // *** FUNCIÓN CORREGIDA: Para formatear la tabla de tickets mensuales ***
 function formatMonthlyDetails(details) {
+
+  const SearchInput = document.getElementById('ticketSearchInputMensual');
+
+  if (SearchInput) {
+    SearchInput.style.display = 'none'; // Limpiar el campo de búsqueda
+  }
+
+
   let html = `
         <p>Haz clic en el número de tickets para ver el detalle.</p>
         <table class="table table-striped table-bordered mt-3">
@@ -3823,7 +3978,7 @@ function formatMonthlyDetails(details) {
   html += `
             </tbody>
         </table>
-        <p class="text-muted mt-3">Información extra sobre tendencias y análisis.</p>
+        <p class="text-muted mt-3">Información extra sobre los tickets.</p>
     `;
   return html;
 }
@@ -3889,6 +4044,92 @@ function hideChartErrorMessage(chartId) {
         errorMessageDiv.style.display = 'none';
     }
 }
+
+
+function formatDetalleTicketComercial(details) {
+  if (!Array.isArray(details)) {
+    console.error("Expected 'details' to be an array, but received:", details);
+    return "<p>Formato de datos inesperado.</p>";
+  }
+
+  let html = `
+        <div class="ticket-details-list mt-3">
+    `;
+
+  details.forEach((ticket) => {
+    // <-- ¡Corregido aquí! Ahora usa 'details'
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
+
+    html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                      <dt class="col-sm-4">Nivel Falla:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_level_failure || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Documento:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_payment || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Taller:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Domiciliación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_domiciliacion || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.date_create_ticket
+                        }</dd> <!-- Usar la variable formateada -->
+                    </dl>
+                </div>
+            </div>
+        `;
+  });
+  return html;
+}
+
 
 async function loadMonthlyCreatedTicketsChart() {
     // Array para los colores de fondo con degradado

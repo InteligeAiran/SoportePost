@@ -526,7 +526,7 @@ function mi_navbar() {}
 
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
-                            <div class="card">
+                            <div class="card"  id="Card-Comercial-Ticket">
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
@@ -547,6 +547,25 @@ function mi_navbar() {}
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="DetalleTicketComercial" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header bg-gradient-primary text-white">
+                                <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle de Tickets En Gesti&oacuten Comercial</h5>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <input type="text" id="ticketSearchInputComercial" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                </div>
+                                <div id="ComercialTicketsContent"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" id="ModalComercialDetalle" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                             </div>
                         </div>
                     </div>
@@ -578,10 +597,11 @@ function mi_navbar() {}
                                     <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
                                         de Tickets Mensuales
                                     </h5>
-                                    <button type="button" class="btn-close" id="ModalStadisticMonthIcon"
-                                        data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
+                                    <div class="mb-3">
+                                        <input type="text" id="ticketSearchInputMensual" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                    </div>
                                     <div id="monthlyTicketsContent"></div>
                                 </div>
                                 <div class="modal-footer">
@@ -600,8 +620,6 @@ function mi_navbar() {}
                                     <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
                                         de Tickets Regionales
                                     </h5>
-                                    <button type="button" class="btn-close" id="ModalStadisticRegionIcon"
-                                        data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div id="RegionTicketsContent"></div>
