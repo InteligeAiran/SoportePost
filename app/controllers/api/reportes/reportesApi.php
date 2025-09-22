@@ -228,6 +228,9 @@ class reportes extends Controller {
                     $this->handleGetDetalleTicketComercial();
                 break;
 
+                case 'GetTicketEntregadoClienteDetails':
+                    $this->handleEntregadoClienteDetails();
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -1264,6 +1267,18 @@ class reportes extends Controller {
             $this->response(['success' => false, 'message' => 'No hay tickets disponibles'], 404);
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los tickets'], 500);
+        }
+    }
+
+    public function handleEntregadoClienteDetails(){
+        $repository = new ReportRepository();
+        $result = $repository->EntregadoClienteDetails();
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'details' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 }

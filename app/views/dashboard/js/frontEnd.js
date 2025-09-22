@@ -11,11 +11,15 @@ let allRegionTickets = [];
 let allInporceesReparacionTickets = []; // ��NUEVO: Tickets en proceso de reparación
 let allReparadoTickets = []; // Global variable to store all repaired tickets
 let allPendienteRepuestoTickets = []; // Global variable to store all pending spare parts tickets
+let allEntregadoClienteTickets = []; // Global variable to store all tickets delivered to client
+let allIrreparableTickets = []; // Global variable to store all irreparable tickets
 
 let currentRegion = null; // Variable global para almacenar la región actual en el modal de región
 let currentMonth = null;
 let currentStatus = null;
 
+let allIrreparableTicketsSearchHandler = null; // Global variable for search handler
+let allEntregadoClienteTicketsSearchHandler = null; // Global variable for search handler
 let allPendienteRepuestoTicketsSearchHandler = null; // Global variable for search handler
 let allReparadoTicketsSearchHandler = null; // Global variable for search handler
 let allInporceesReparacionTicketsSearchHandler = null; // ��NUEVO: Tickets en proceso de reparación
@@ -96,6 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const sendTallerTicketsModalElement = document.getElementById("SendTallerTicketsModal"); // ¡NUEVO MODAL!
   const processTicketModalElement = document.getElementById("ProcessTicketsModal"); // ��NUEVO MODAL!
   const gestionCoordinadorModalElement = document.getElementById("DetalleTicketComercial"); // ��NUEVO MODAL!
+  const EntregadoClienteModalElement = document.getElementById("entregadoClienteModal"); // ��NUEVO MODAL!
 
 
   const ModalReparacion = document.getElementById("procesoReparacionModal"); // ��NUEVO ELEMENTO!
@@ -116,8 +121,12 @@ document.addEventListener("DOMContentLoaded", function () {
   let ModalIrreparable = null; // ��NUEVO ELEMENTO!
   let ModalprocessTicketsModalInstance = null; // ��NUEVO ELEMENTO!
   let modal_gestionCoordinadorInstance = null; // ��NUEVO ELEMENTO!
+  let EntregadoClienteModalInstance = null; // ��NUEVO ELEMENTO!
 
-
+  if(EntregadoClienteModalElement) {
+    EntregadoClienteModalInstance = new bootstrap.Modal(EntregadoClienteModalElement);
+  }
+  
   if(gestionCoordinadorModalElement){
     modal_gestionCoordinadorInstance = new bootstrap.Modal(gestionCoordinadorModalElement);
   }
@@ -176,22 +185,33 @@ document.addEventListener("DOMContentLoaded", function () {
   // --- Event Listeners para ABRIR Modales (desde tarjetas/botones) ---
 
   document.body.addEventListener('click', function (event) {
-        if (event.target.classList.contains('view-timeline-btn')) {
-            event.preventDefault(); // Evita el comportamiento predeterminado del enlace/botón
+    if (event.target.classList.contains('view-timeline-btn')) {
+      event.preventDefault(); // Evita el comportamiento predeterminado del enlace/botón
 
-            const ticketId = event.target.dataset.idTicket;
-            document.getElementById('timelineTicketId').textContent = ticketId;
-            loadTicketTimeline(ticketId); // Carga los datos específicos del ticket en el modal
+      const ticketId = event.target.dataset.idTicket;
+      document.getElementById('timelineTicketId').textContent = ticketId;
+     loadTicketTimeline(ticketId); // Carga los datos específicos del ticket en el modal
 
-            const timelineModalElement = document.getElementById("TimelineModal");
-            if (timelineModalElement) {
-                ModalTimelineInstance = new bootstrap.Modal(timelineModalElement); // ¡Aquí se recrea la instancia!
-                ModalTimelineInstance.show();
-            } else {
-                console.error("Error: Elemento TimelineModal no encontrado para crear instancia. No se puede mostrar el modal de línea de tiempo.");
-            }
-        }
+      const timelineModalElement = document.getElementById("TimelineModal");
+      if (timelineModalElement) {
+        ModalTimelineInstance = new bootstrap.Modal(timelineModalElement); // ¡Aquí se recrea la instancia!
+        ModalTimelineInstance.show();
+      } else {
+        console.error("Error: Elemento TimelineModal no encontrado para crear instancia. No se puede mostrar el modal de línea de tiempo.");
+      }
+    }
+  });
+
+  const EntregadoClienteCard = document.getElementById("OpenModalEntregadoCliente");
+  if(EntregadoClienteCard && EntregadoClienteModalInstance) {
+    EntregadoClienteCard.addEventListener("click", function(event) {
+      event.preventDefault();
+      EntregadoClienteModalInstance.show();
+      loadEntregadoClienteDetails();
     });
+  } else {
+    console.error("Error: EntregadoClienteCard o EntregadoClienteModalInstance no encontrados.");
+  }
 
   // 1. Abrir monthlyTicketsModal
   const monthlyTicketsCard = document.getElementById("monthlyTicketsCard");
@@ -327,6 +347,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  const cerrarModalEntregadoacliente = document.getElementById("ModalEntregadoClienteCerrar");
+  if(cerrarModalEntregadoacliente && EntregadoClienteModalInstance) {
+    cerrarModalEntregadoacliente.addEventListener("click", function() {
+      EntregadoClienteModalInstance.hide();
+    });
+  }
+
   const cerraTimeLineModal = document.getElementById("CloseCerrarTimeline");
   const iconCerrarTimeLine = document.getElementById("IconCloseTimeline");
   // Cómo usarla en tus listeners (reemplazando ModalTimelineInstance.hide()):
@@ -355,6 +382,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const OpenModalIrreparable = document.getElementById("OpenModalIrreparable");
+
   if (OpenModalIrreparable && ModalIrreparable) {
     OpenModalIrreparable.addEventListener("click", function (event) {
       event.preventDefault();
@@ -365,6 +393,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const OpenModalProcess = document.getElementById("Card-Ticket-process");
+
   if (OpenModalProcess && ModalprocessTicketsModalInstance) {
     OpenModalProcess.addEventListener("click", function (event) {
       event.preventDefault();
@@ -378,24 +407,23 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   }
   
-    function forceCleanupAfterModalClose() {
-
-        // Quitar la clase 'modal-open' del body si persiste
-        if (document.body.classList.contains('modal-open')) {
-            document.body.classList.remove('modal-open');
-            // Restablecer overflow y padding-right si fueron modificados por Bootstrap
-            document.body.style.overflow = ''; 
-            document.body.style.paddingRight = ''; 
-        }
-
-        // Eliminar cualquier backdrop residual que tenga la clase 'show' (visible)
-        const backdrops = document.querySelectorAll('.modal-backdrop.show');
-        if (backdrops.length > 0) {
-            backdrops.forEach(backdrop => {
-                backdrop.remove();
-            });
-        }
+  function forceCleanupAfterModalClose() {
+    // Quitar la clase 'modal-open' del body si persiste
+    if (document.body.classList.contains('modal-open')) {
+      document.body.classList.remove('modal-open');
+      // Restablecer overflow y padding-right si fueron modificados por Bootstrap
+      document.body.style.overflow = ''; 
+      document.body.style.paddingRight = ''; 
     }
+
+    // Eliminar cualquier backdrop residual que tenga la clase 'show' (visible)
+    const backdrops = document.querySelectorAll('.modal-backdrop.show');
+    if (backdrops.length > 0) {
+      backdrops.forEach(backdrop => {
+        backdrop.remove();
+      });
+    }
+  }
   // --- Event Listeners para CERRAR Modales (desde botones dentro del modal) ---
 
   const cerrarModalComecial = document.getElementById("ModalComercialDetalle");
@@ -659,6 +687,10 @@ function displayFilteredTickets(ticketsToDisplay, containerId, month = null, sta
     contentDiv.innerHTML = formatPendinRespueTicketsDetails(ticketsToDisplay);
   }else if (containerId === 'ReparadoModalTicketsContent') {
     contentDiv.innerHTML = formatReparadoTicketsDetails(ticketsToDisplay);
+  }else if (containerId === 'EntregadoClienteModalTicketsContent') {
+    contentDiv.innerHTML = formatEntregadoClienteDetails(ticketsToDisplay);
+  }else if (containerId === 'IrreparableTikModalTicketsContent') {
+    contentDiv.innerHTML = formatIrreparableTicketsDetails(ticketsToDisplay);
   } else if(containerId === 'ComercialTicketsContent') {
     contentDiv.innerHTML = formatDetalleTicketComercial(ticketsToDisplay);
   } else if(containerId === 'RegionTicketsContent') {
@@ -687,6 +719,153 @@ function displayFilteredTickets(ticketsToDisplay, containerId, month = null, sta
     contentDiv.innerHTML = htmlContent;
   }
   attachMarkReceivedListeners();
+}
+
+function loadIndividualIrreparable() {
+    const contentDiv = document.getElementById("IrreparableTikModalTicketsContent");
+    const searchInput = document.getElementById("ticketSearchInputIrreparable");
+
+    contentDiv.innerHTML = "<p>Cargando información de los POS Irreparables...</p>"; // Loading message
+    searchInput.value = ''; // Clear the search input on reload
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsIrreparables`)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (data.success) {
+                allIrreparableTickets = data.details; // Store all irreparable tickets
+                displayFilteredTickets(allIrreparableTickets, 'IrreparableTikModalTicketsContent'); // Display all tickets initially
+
+                // Add event listener for search input with stable reference
+                if (allIrreparableTicketsSearchHandler) {
+                    searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
+                }
+                allIrreparableTicketsSearchHandler = (e) => {
+                    handleTicketSearch(e, allIrreparableTickets, 'IrreparableTikModalTicketsContent');
+                };
+                searchInput.addEventListener('input', allIrreparableTicketsSearchHandler);
+            } else {
+                contentDiv.innerHTML =
+                    "<p>Error al cargar los detalles de tickets irreparables: " +
+                    (data.message || "Error desconocido") +
+                    "</p>";
+                console.error(
+                    "Error en los datos de la API para tickets irreparables:",
+                    data.message
+                );
+                allIrreparableTickets = []; // Clear on error
+                if (allIrreparableTicketsSearchHandler) {
+                    searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
+                    allIrreparableTicketsSearchHandler = null;
+                }
+            }
+        })
+        .catch((error) => {
+            contentDiv.innerHTML =
+                `<div class="text-center text-muted py-5">
+                    <div class="d-flex flex-column align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                        </svg>
+                        <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                        <p class="text-muted mb-0">No hay tickets en Taller con estatus irreparable.</p>
+                    </div>
+                </div>`;
+            console.error("Error fetching irreparable ticket details:", error);
+            allIrreparableTickets = []; // Clear on error
+            if (allIrreparableTicketsSearchHandler) {
+                searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
+                allIrreparableTicketsSearchHandler = null;
+            }
+        });
+}
+
+function formatIrreparableTicketsDetails(details){
+if (!Array.isArray(details)) {
+    console.error("Expected 'details' to be an array, but received:", details);
+    return "<p>Formato de datos inesperado.</p>";
+  }
+
+  let html = `
+        <div class="ticket-details-list mt-3">
+    `;
+
+  details.forEach((ticket) => {
+    // <-- ¡Corregido aquí! Ahora usa 'details'
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
+
+    html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Documento:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_payment || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Domiciliación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_domiciliacion || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Taller:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Taller:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
+                        
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.date_create_ticket
+                        }</dd> <!-- Usar la variable formateada -->
+                    </dl>
+                </div>
+            </div>
+        `;
+  });
+  return html;
 }
 
 function loadIndividualPendienteRepuesto() {
@@ -1464,6 +1643,130 @@ function loadOpenTicketDetails() {
         });
 }
 
+function loadEntregadoClienteDetails() {
+    const contentDiv = document.getElementById("EntregadoClienteModalTicketsContent");
+    const searchInput = document.getElementById("ticketSearchInputEntregadoCliente");
+
+    if(searchInput){
+      searchInput.style.display = 'inline-block'; // Show the search input for this modal
+   }
+
+    if (!contentDiv || !searchInput) {
+        console.error("DOM elements not found:", { contentDiv, searchInput });
+        return;
+    }
+
+    contentDiv.innerHTML = "<p>Cargando información de tickets entregados al cliente...</p>"; // Loading message
+    searchInput.value = ''; // Clear the search input on reload
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketEntregadoClienteDetails`)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (data.success) {
+                allEntregadoClienteTickets = data.details || []; // Store all tickets, default to empty array
+                displayFilteredTickets(allEntregadoClienteTickets, 'EntregadoClienteModalTicketsContent'); // Display all tickets initially
+                attachMarkReceivedListeners(); // Attach listeners to "Mark as Received" buttons
+
+                // Add event listener for search input with stable reference
+                if (allEntregadoClienteTicketsSearchHandler) {
+                    searchInput.removeEventListener('input', allEntregadoClienteTicketsSearchHandler);
+                }
+                allEntregadoClienteTicketsSearchHandler = (e) => {
+                    handleTicketSearch(e, allEntregadoClienteTickets, 'EntregadoClienteModalTicketsContent');
+                };
+                searchInput.addEventListener('input', allEntregadoClienteTicketsSearchHandler);
+            } else {
+                contentDiv.innerHTML =
+                    "<p>Error al cargar los detalles de tickets entregados al cliente: " +
+                    (data.message || "Error desconocido") +
+                    "</p>";
+                console.error(
+                    "Error en los datos de la API para tickets entregados al cliente:",
+                    data.message
+                );
+                allEntregadoClienteTickets = []; // Clear on error
+                if (allEntregadoClienteTicketsSearchHandler) {
+                    searchInput.removeEventListener('input', allEntregadoClienteTicketsSearchHandler);
+                    allEntregadoClienteTicketsSearchHandler = null;
+                }
+            }
+        })
+        .catch((error) => {
+            contentDiv.innerHTML =
+                `<div class="text-center text-muted py-5">
+                    <div class="d-flex flex-column align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                        </svg>
+                        <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                        <p class="text-muted mb-0">No hay tickets entregados al cliente.</p>
+                    </div>
+                </div>`;
+            console.error("Error fetching entregado cliente ticket details:", error);
+            allEntregadoClienteTickets = []; // Clear on error
+            if (allEntregadoClienteTicketsSearchHandler) {
+                searchInput.removeEventListener('input', allEntregadoClienteTicketsSearchHandler);
+                allEntregadoClienteTicketsSearchHandler = null;
+            }
+        });
+}
+
+function formatEntregadoClienteDetails(tickets) {
+    if (!Array.isArray(tickets)) {
+        console.error("Expected 'tickets' to be an array, but received:", tickets);
+        return "<p>Formato de datos inesperado.</p>";
+    }
+
+    let html = `
+        <div class="ticket-details-list mt-3">
+    `;
+
+    tickets.forEach((ticket) => {
+        // Use the date as provided by the API (DD-MM-YYYY HH12:MI)
+        const creationDate = ticket.date_create_ticket || "N/A";
+
+        html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${ticket.serial_pos_cliente || "N/A"}</dd>
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.razon_social_cliente || "N/A"}</dd>
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${ticket.name_modelopos_cliente || "N/A"}</dd>
+                        <dt class="col-sm-4">Estatus Documento:</dt>
+                        <dd class="col-sm-8">${ticket.name_status_payment || "N/A"}</dd>
+                        <dt class="col-sm-4">Estatus Ticket:</dt>
+                        <dd class="col-sm-8">${ticket.status_name_ticket || "N/A"}</dd>
+                        <dt class="col-sm-4">Estatus Domiciliación:</dt>
+                        <dd class="col-sm-8">${ticket.name_status_domiciliacion || "N/A"}</dd>
+                        <dt class="col-sm-4">Estatus Taller:</dt>
+                        <dd class="col-sm-8">${ticket.name_status_lab || "N/A"}</dd>
+                        <dt class="col-sm-4">Acción Ticket:</dt>
+                        <dd class="col-sm-8">${ticket.name_accion_ticket || "N/A"}</dd>
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${creationDate}</dd>
+                    </dl>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+    return html;
+}
+
 function loadIndividualProceess() {
     const contentDiv = document.getElementById("ProcessTicketsContent");
     const searchInput = document.getElementById("ticketSearchInputProcess");
@@ -1891,48 +2194,6 @@ function loadTicketTimeline(ticketId) {
       console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
     },
   });
-}
-
-function loadIndividualIrreparable(){
-  const contentDiv = document.getElementById("IrreparableTikModalTicketsContent");
-  contentDiv.innerHTML =
-    "<p>Cargando información de los POS Irreparables..</p>"; // Mensaje de carga
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsIrreparables`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-      })
-    .then((data) => {
-      if (data.success) {
-        contentDiv.innerHTML = formatIrreparableTicketsDetails(data.details); // Renderizar los datos
-        } else {
-          contentDiv.innerHTML =
-            "<p>Error al cargar los detalles de Taller: " +
-            (data.message || "Error desconocido") +
-            "</p>";
-        console.error(
-          "Error en los datos de la API para Taller:",
-          data.message
-        );
-         }
-    })
-    .catch((error) => {
-      contentDiv.innerHTML =
-        `<tr>
-        <td colspan="14" class="text-center text-muted py-5">
-          <div class="d-flex flex-column align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-            </svg>
-            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-            <p class="text-muted mb-0">No hay tickets en Taller con estatus irreparable.</p>
-          </div>
-        </td>
-      </tr>`
-      console.error("Error fetching taller details:", error);
-    }); 
 }
 
 function formatTimeline(timelineData) {

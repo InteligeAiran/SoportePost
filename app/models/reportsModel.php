@@ -1228,6 +1228,16 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
             return false;
         }
     }
+
+    public function EntregadoClienteDetails(){
+        try {
+            $sql = "SELECT * FROM get_individual_entregadoCliente_tickets_details()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 }
 ?>
 

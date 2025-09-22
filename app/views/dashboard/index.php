@@ -812,7 +812,7 @@ function mi_navbar() {}
                                             </div>
                                         </li>
 
-                                        <li class="list-group-item list-group-item-custom">
+                                        <li class="list-group-item list-group-item-custom" id ="OpenModalEntregadoCliente">
                                             <div class="item-content-wrapper">
                                                 <div class="icon-wrapper">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
@@ -944,9 +944,11 @@ function mi_navbar() {}
                                 <div class="modal-header bg-gradient-primary">
                                     <h5 class="modal-title text-white" id="entregadoClienteModalLabel">POS Entregado a Cliente</h5>
                                 </div>
-                                <div class="modal-body" id="entregadoClienteContent">
-                                    <p class="chart-subtitle text-gray-700 mb-4">Listado de tickets de Puntos de Venta (POS)
-                                        que ya han sido entregados al cliente.</p>
+                                <div class="modal-body">  
+                                    <div class="mb-3">
+                                        <input type="text" id="ticketSearchInputEntregadoCliente" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                    </div>
+                                    <div id="EntregadoClienteModalTicketsContent"></div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
@@ -965,6 +967,9 @@ function mi_navbar() {}
                                     <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalles de los POS Irreparables</h5>
                                 </div>
                                 <div class="modal-body">
+                                    <div class="mb-3">
+                                        <input type="text" id="ticketSearchInputIrreparable" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                    </div>
                                     <div id="IrreparableTikModalTicketsContent"></div>
                                 </div>
                                 <div class="modal-footer">
