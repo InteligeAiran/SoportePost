@@ -111,6 +111,11 @@ function getTicketDataFinaljs() {
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   const detailsPanel = document.getElementById("ticket-details-panel");
 
+  // Read nro_ticket from URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const nroTicket = urlParams.get('nro_ticket');
+    console.log('nroTicket extraído de la URL:', nroTicket);
+
   const tableElement = document.getElementById("tabla-ticket");
   const theadElement = tableElement
     ? tableElement.getElementsByTagName("thead")[0]
@@ -446,6 +451,34 @@ function getTicketDataFinaljs() {
                   return rowCount > 0;
                 }
 
+                 function applyNroTicketSearch() {
+                                    if (nroTicket) {
+                                        api.search(nroTicket).draw(false);
+                                        let ticketFound = false;
+                                        api.rows({ filter: 'applied' }).every(function () {
+                                            const rowData = this.data();
+                                            if (rowData.nro_ticket === nroTicket) {
+                                                $(this.node()).addClass('table-active');
+                                                this.node().scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                ticketFound = true;
+                                            } else {
+                                                $(this.node()).removeClass('table-active');
+                                            }
+                                        });
+                                        if (!ticketFound) {
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'Ticket no encontrado',
+                                                text: `El ticket ${nroTicket} no se encuentra en este filtro.`,
+                                                confirmButtonText: 'Ok',
+                                                color: 'black',
+                                                confirmButtonColor: '#003594'
+                                            });
+                                            api.search('').draw(false);
+                                        }
+                                    }
+                                  }
+
                 // Función para buscar automáticamente el primer botón con datos
                 function findFirstButtonWithData() {
                   const searchTerms = [
@@ -484,7 +517,9 @@ function getTicketDataFinaljs() {
                         // Actualizar indicador de estado
                         showTicketStatusIndicator('En proceso', 'En la región');
                       }
+
                       setActiveButton(button);
+                      applyNroTicketSearch(); // Aplicar búsqueda por nro_ticket si está en la URL
                       return true; // Encontramos datos
                     }
                   }
@@ -525,9 +560,10 @@ function getTicketDataFinaljs() {
                     api.column(13).visible(true);
                     api.column(9).search("^En espera de confirmar recibido en Región$", true, false).draw();
                     setActiveButton("btn-por-asignar");
-                    
                     // Actualizar indicador de estado para "En espera de confirmar recibido en Región"
                     showTicketStatusIndicator('En proceso', 'En espera de confirmar recibido en Región');
+                                                                            applyNroTicketSearch();
+
                   } else {
                     findFirstButtonWithData();
                   }
@@ -539,9 +575,10 @@ function getTicketDataFinaljs() {
                     api.column(15).visible(true);
                     api.column(9).search("^En la región$", true, false).draw();
                     setActiveButton("btn-recibidos");
-                    
                     // Actualizar indicador de estado para "En la región"
                     showTicketStatusIndicator('En proceso', 'En la región');
+                                                                            applyNroTicketSearch();
+
                   } else {
                     findFirstButtonWithData();
                   }
@@ -552,10 +589,13 @@ function getTicketDataFinaljs() {
                     api.columns().search('').draw(false);
                     api.column(15).visible(false);
                     api.column(9).search("^Entregado a Cliente$", true, false).draw();
+
                     setActiveButton("btn-asignados");
                     
                     // Actualizar indicador de estado para "Entregado a Cliente"
                     showTicketStatusIndicator('Cerrado', 'Entregado a Cliente');
+                                                                            applyNroTicketSearch();
+
                   } else {
                     findFirstButtonWithData();
                   }

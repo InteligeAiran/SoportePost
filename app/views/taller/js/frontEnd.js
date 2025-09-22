@@ -52,21 +52,21 @@ function getTicketData() {
     xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketDataLab`);
 
     const tableElement = document.getElementById("tabla-ticket");
-    const theadElement = tableElement
-        ? tableElement.getElementsByTagName("thead")[0]
-        : null;
-    const tbodyElement = tableElement
-        ? tableElement.getElementsByTagName("tbody")[0]
-        : null;
+    const theadElement = tableElement ? tableElement.getElementsByTagName("thead")[0] : null;
+    const tbodyElement = tableElement ? tableElement.getElementsByTagName("tbody")[0] : null;
     const tableContainer = document.querySelector("#tabla-ticket tbody");
 
-    // Define column titles strictly based on your SQL function's output
+    // Read nro_ticket from URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const nroTicket = urlParams.get('nro_ticket');
+
+    // Define column titles based on your SQL function's output
     const columnTitles = {
         id_ticket: "ID Ticket",
         nro_ticket: "Nro Ticket",
         rif: "Rif",
         serial_pos: "Serial",
-        razonsocial_cliente: "Razón Social", // Columna donde aplicaremos el truncado
+        razonsocial_cliente: "Razón Social",
         full_name_tecnicoassignado: "Técnico Asignado",
         fecha_envio_a_taller: "Fecha Envío a Taller",
         name_status_payment: "Estatus Pago",
@@ -83,61 +83,46 @@ function getTicketData() {
 
                 if (response.success) {
                     const TicketData = response.ticket;
-                    currentTicketNroForImage = TicketData[0].nro_ticket;
+                    currentTicketNroForImage = TicketData[0]?.nro_ticket;
 
-                    // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente)
+                    // Show status of the first ticket (or most recent)
                     if (TicketData && TicketData.length > 0) {
-                      const firstTicket = TicketData[0];
-                      showTicketStatusIndicator(firstTicket.name_status_ticket, firstTicket.name_accion_ticket);
+                        const firstTicket = TicketData[0];
+                        showTicketStatusIndicator(firstTicket.name_status_ticket, firstTicket.name_accion_ticket);
                     } else {
-                      hideTicketStatusIndicator();
+                        hideTicketStatusIndicator();
                     }
 
                     const detailsPanel = document.getElementById("ticket-details-panel");
-
-                    // Limpiar el panel de detalles al cargar nuevos datos de la tabla
-                    detailsPanel.innerHTML =
-                        "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
+                    detailsPanel.innerHTML = "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
 
                     if (TicketData && TicketData.length > 0) {
-                        // Destroy DataTables if it's already initialized on this table
+                        // Destroy DataTables if already initialized
                         if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
                             $("#tabla-ticket").DataTable().destroy();
-                            if (theadElement) theadElement.innerHTML = ""; // Clear old headers
-                            if (tbodyElement) tbodyElement.innerHTML = ""; // Clear old body
+                            if (theadElement) theadElement.innerHTML = "";
+                            if (tbodyElement) tbodyElement.innerHTML = "";
                         }
 
                         const allDataKeys = Object.keys(TicketData[0] || {});
                         const columnsConfig = [];
-                        const displayLengthForTruncate = 25; // Define la longitud a la que truncar el texto
+                        const displayLengthForTruncate = 25;
 
-                        // === LÓGICA PARA DETERMINAR SI LA COLUMNA "CARGA DE LLAVE" DEBE SER VISIBLE ===
-                        // Por defecto, asumimos que no debe ser visible a menos que encontremos un ticket que la necesite
+                        // Determine if "Carga de Llave" column should be visible
                         let shouldShowCargaLlaveColumn = false;
                         for (const ticket of TicketData) {
-                            const hasSendKeyDate =
-                                ticket.date_sendkey !== null &&
-                                ticket.date_sendkey !== undefined &&
-                                String(ticket.date_sendkey).trim() !== "";
-
-                            // Si encontramos al menos un ticket que está "Reparado"
-                            // Y NO tiene `date_sendkey` (es decir, necesita el checkbox)
+                            const hasSendKeyDate = ticket.date_sendkey && String(ticket.date_sendkey).trim() !== "";
                             if (ticket.name_status_lab === "Reparado" && !hasSendKeyDate) {
                                 shouldShowCargaLlaveColumn = true;
-                                break; // No necesitamos buscar más, la columna debe ser visible
+                                break;
                             }
                         }
-                        // === FIN LÓGICA PARA DETERMINAR VISIBILIDAD DE COLUMNA ===
 
                         for (const key in columnTitles) {
                             if (allDataKeys.includes(key)) {
                                 const isVisible = TicketData.some((item) => {
                                     const value = item[key];
-                                    return (
-                                        value !== null &&
-                                        value !== undefined &&
-                                        String(value).trim() !== ""
-                                    );
+                                    return value !== null && value !== undefined && String(value).trim() !== "";
                                 });
 
                                 const columnDef = {
@@ -147,16 +132,12 @@ function getTicketData() {
                                     visible: isVisible,
                                 };
 
-                                // Lógica para aplicar truncado/expansión a 'razonsocial_cliente'
                                 if (key === "razonsocial_cliente") {
                                     columnDef.render = function (data, type, row) {
                                         if (type === "display" || type === "filter") {
                                             const fullText = String(data || "").trim();
                                             if (fullText.length > displayLengthForTruncate) {
-                                                return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(
-                                                    0,
-                                                    displayLengthForTruncate
-                                                )}...</span>`;
+                                                return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(0, displayLengthForTruncate)}...</span>`;
                                             }
                                             return fullText;
                                         }
@@ -167,7 +148,7 @@ function getTicketData() {
                             }
                         }
 
-                        // Añadir la columna de "Acciones" al final
+                        // Add "Acciones" column
                         columnsConfig.push({
                             data: null,
                             title: "Acciones",
@@ -179,492 +160,441 @@ function getTicketData() {
                                 const currentStatus = row.name_status_lab;
                                 const nroTicket = row.nro_ticket;
                                 const confirmTaller = row.confirmreceive;
-                                const serialPos = row.serial_pos || ""; // Asegúrate de que serial_pos esté definido
+                                const serialPos = row.serial_pos || "";
                                 const confirm_date_repuesto = row.confirm_date;
 
                                 let buttonsHtml = "";
-
                                 if (currentStatus === "Reparado") {
                                     buttonsHtml += `<button class="btn btn-warning btn-sm" disabled>Reparado</button>`;
                                 } else if (currentStatus === "Irreparable") {
                                     buttonsHtml += `<button class="btn btn-danger btn-sm" disabled>Irreparable</button>`;
-                                } else if (
-                                    currentStatus === "Recibido en Taller" ||
-                                    confirmTaller === "f"
-                                ) {
+                                } else if (currentStatus === "Recibido en Taller" || confirmTaller === "f") {
                                     buttonsHtml += `
-                                        <button type="button" id = "CheckConfirmTaller"  class="btn btn-warning btn-sm confirm-waiting-btn"
-                                            title="En espera de confirmar en el taller" data-serial-pos = "${serialPos}"  data-id-ticket="${idTicket}" data-nro-ticket="${nroTicket}">
+                                        <button type="button" id="CheckConfirmTaller" class="btn btn-warning btn-sm confirm-waiting-btn"
+                                            title="En espera de confirmar en el taller" data-serial-pos="${serialPos}" data-id-ticket="${idTicket}" data-nro-ticket="${nroTicket}">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-all" viewBox="0 0 16 16">
                                                 <path d="M8.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L2.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093L8.95 4.992zm-.92 5.14.92.92a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 1 0-1.091-1.028L9.477 9.417l-.485-.486z"/>
                                             </svg>
                                         </button>
                                     `;
-                                }else if(confirm_date_repuesto === "t"){
-                                   `<button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-btn ms-2" title = "Espere la llegada de los repuesto para cambiar el estatus"
-                                          data-bs-toggle="modal"
-                                          data-bs-target="#changeStatusModal"
-                                          data-id="${idTicket}"
-                                          data-current-status="${currentStatus}"
-                                          disabled>
-                                      Cambiar Estatus
-                                  </button>`
-                                
                                 } else {
                                     buttonsHtml += `
                                         <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-btn ms-2"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#changeStatusModal"
-                                            data-id="${idTicket}"
-                                            data-current-status="${currentStatus}">
+                                            data-bs-toggle="modal" data-bs-target="#changeStatusModal" data-id="${idTicket}" data-current-status="${currentStatus}"
+                                            ${confirm_date_repuesto === "t" ? 'disabled' : ''}>
                                             Cambiar Estatus
-                                        </button>
-                                    `;
+                                        </button>`;
                                 }
                                 return buttonsHtml;
                             },
                         });
 
-                        // === ADD "CARGA DE LLAVE" COLUMN (CHECKBOX) ===
+                        // Add "Carga de Llave" column
                         columnsConfig.push({
                             data: null,
                             title: "Carga de Llave",
-                            name: "carga_de_llave", // <-- Añade esta línea para darle un nombre
+                            name: "carga_de_llave",
                             orderable: false,
                             searchable: false,
-                            visible: shouldShowCargaLlaveColumn, // <--- APLICA LA VISIBILIDAD AQUI
+                            visible: shouldShowCargaLlaveColumn,
                             className: "dt-body-center",
                             render: function (data, type, row) {
-                                const hasSendKeyDate =
-                                    row.date_sendkey !== null &&
-                                    row.date_sendkey !== undefined &&
-                                    String(row.date_sendkey).trim() !== "";
-
+                                const hasSendKeyDate = row.date_sendkey && String(row.date_sendkey).trim() !== "";
                                 if (row.name_status_lab === "Reparado" && !hasSendKeyDate) {
                                     return `<input type="checkbox" class="receive-key-checkbox" data-id-ticket="${row.id_ticket}" data-nro-ticket="${row.nro_ticket}">`;
                                 } else if (hasSendKeyDate) {
-                                    // Si la columna es visible y tiene fecha, puedes mostrar el ícono de check
                                     return '<i class="bi bi-check-circle-fill text-success" title="Llave Recibida"></i>';
                                 }
                                 return "";
                             },
                         });
 
-                        // === ADD "CARGA DE LLAVE (BOTÓN)" COLUMN ===
+                        // Add "Enviar Al Rosal" column
                         columnsConfig.push({
                             data: null,
-                            title: "Acción", // Nuevo título para la columna del botón
-                            name: "Enviar_AlRosal", // Nombre para la columna del botón
+                            title: "Acción",
+                            name: "Enviar_AlRosal",
                             orderable: false,
                             searchable: false,
-                            visible: true, // El botón SIEMPRE es visible si la columna es visible
+                            visible: true,
                             className: "dt-body-center",
                             render: function (data, type, row) {
-                                // El botón solo se muestra si el estado es 'Reparado'.
-                                // La lógica de si la llave ya fue enviada se maneja en el event listener del botón.
                                 if (row.name_status_lab === "Reparado") {
-                                    // Añadimos un data-attribute para la fecha de envío para verificarla en el click
-                                    const hasSendKeyDate =
-                                        row.date_sendkey !== null &&
-                                        row.date_sendkey !== undefined &&
-                                        String(row.date_sendkey).trim() !== "";
-
-                                    // Pasamos la información de si ya fue enviada al botón
+                                    const hasSendKeyDate = row.date_sendkey && String(row.date_sendkey).trim() !== "";
                                     const dataSent = hasSendKeyDate ? 'true' : 'false';
-
-                                                          return `<button class="btn btn-info btn-sm load-key-button" 
-                                                                    title="Enviar Al Rosal" 
-                                                                    data-id-ticket="${row.id_ticket}" 
-                                                                    data-nro-ticket="${row.nro_ticket}" 
-                                                                    data-has-send-key-date="${dataSent}"
-                                                                    data-serial-pos="${row.serial_pos}">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
-                                                                      <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>
-                                                                    </svg>
-                                                                  </button>`;
-                                                      } else {
-                                                          return ""; // No mostrar nada si no es "Reparado"
-                                                      }
-                                                  },
-                                              });
-
-                                              // Initialize DataTables
-                                              const dataTableInstance = $(tableElement).DataTable({
-                                                    order: [
-                                                      [0, 'desc']
-                                                    ], // Esto ordena
-                                                  scrollX: "200px",
-                                                  responsive: false,
-                                                  data: TicketData,
-                                                  columns: columnsConfig,
-                                                  pagingType: "simple_numbers",
-                                                  lengthMenu: [5, 10, 25, 50, 100],
-                                                  autoWidth: false,
-                                                  buttons: [
-                                                      {
-                                                          extend: "colvis",
-                                                          text: "Mostrar/Ocultar Columnas",
-                                                          className: "btn btn-secondary",
-                                                      },
-                                                  ],
-                                                  language: {
-                                                      lengthMenu: "Mostrar _MENU_",
-                                                      emptyTable: "No hay datos disponibles en la tabla",
-                                                      zeroRecords: "No se encontraron resultados para la búsqueda",
-                                                      info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
-                                                      infoEmpty: "No hay datos disponibles",
-                                                      infoFiltered: " de _MAX_ Disponibles",
-                                                      search: "Buscar:",
-                                                      loadingRecords: "Cargando...",
-                                                      processing: "Procesando...",
-                                                      paginate: {
-                                                          first: "Primero",
-                                                          last: "Último",
-                                                          next: "Siguiente",
-                                                          previous: "Anterior",
-                                                      },
-                                                      buttons: {
-                                                          colvis: "Visibilidad de Columna",
-                                                      },
-                                                  },
-                                                  // === APLICACIÓN DE CAMBIOS PARA LOS BOTONES DE FILTRO ===
-                          dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-                          initComplete: function (settings, json) {
-                              const dataTableInstance = this.api(); // Obtén la instancia de la API de DataTables
-                              const buttonsHtml = `
-                                  <button id="btn-por-asignar" class="btn btn-secondary me-2" title="Tickets en espera de confirmar recibido en el Taller">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                                      <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                                      <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                                    </svg>
-                                  </button>
-
-                                  <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets en Taller">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
-                                      <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
-                                    </svg>
-                                  </button>
-
-                                  <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets Por confirmar carga de llaves">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                                      <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                                    </svg>
-                                  </button>
-
-                                  <button id="btn-devuelto" class="btn btn-secondary me-2" title="Tickets Enviados al Rosal">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house-door" viewBox="0 0 16 16">
-                                      <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z"/>
-                                    </svg>
-                                  </button>
-                              `;
-                              $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
-
-                              // Tu función setActiveButton es correcta.
-                              function setActiveButton(activeButtonId) {
-                                  $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
-                                  $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
-                                  $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
-                                  $("#btn-devuelto").removeClass("btn-primary").addClass("btn-secondary");
-                                  $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
-                              }
-
-                              function clearFilters() {
-                                  dataTableInstance.search('');
-                                  dataTableInstance.columns().every(function () { this.search(''); });
-                                  dataTableInstance.draw(false);
-                              }
-
-                              // Función para verificar si hay datos en una búsqueda específica (sin dejar filtros activos)
-                              function checkDataExists(searchColumn, searchTerm) {
-                                  clearFilters();
-                                  dataTableInstance.column(searchColumn).search(searchTerm, true, false).draw(false);
-                                  const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
-                                  clearFilters();
-                                  return rowCount > 0;
-                              }
-
-                              // Función para buscar automáticamente el primer botón con datos
-                              function findFirstButtonWithData() {
-                                  const searchTerms = [
-                                      { button: "btn-por-asignar", column: 9, term: "Recibido en Taller", status: "En proceso", action: "Recibido en Taller"},
-                                      { button: "btn-asignados", column: 8, term: "Enviado a taller", status: "En proceso", action: "Enviado a taller"},
-                                      { button: "btn-recibidos", column: 8, term: "En espera confirmación carga de llaves", status: "En proceso", action: "En espera confirmación carga de llaves" },
-                                      { button: "btn-devuelto", column: 8, term: "En el Rosal", status: "En proceso", action: "En el Rosal"}
-                                  ];
-
-                                  for (let i = 0; i < searchTerms.length; i++) {
-                                      const { button, column, term, status, action} = searchTerms[i];
-                                      if (checkDataExists(column, term)) {
-                                          // aplica filtro definitivo limpio
-                                          clearFilters();
-                                          dataTableInstance.column(column).search(term, true, false).draw(false);
-
-                                          // Aplicar configuración específica para cada botón (visibilidades coherentes)
-                                          if (button === "btn-por-asignar") {
-                                              dataTableInstance.column('carga_de_llave:name').visible(false);
-                                              dataTableInstance.column('Enviar_AlRosal:name').visible(false);
-                                              dataTableInstance.column(11).visible(false);
-                                              dataTableInstance.column(10).visible(false);
-                                              showTicketStatusIndicator(status, action);
-                                          } else if (button === "btn-asignados") {
-                                              dataTableInstance.column('carga_de_llave:name').visible(true);
-                                              dataTableInstance.column('Enviar_AlRosal:name').visible(true);
-                                              dataTableInstance.column(11).visible(false);
-                                              dataTableInstance.column(10).visible(false);
-                                              // Aplicar segunda búsqueda para este botón
-                                              dataTableInstance.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto", true, false).draw(false);
-                                              showTicketStatusIndicator(status, ["En proceso de Reparación", "Reparado|Pendiente por repuesto", "Reparado"]);
-                                          } else if (button === "btn-recibidos") {
-                                              dataTableInstance.column('carga_de_llave:name').visible(false);
-                                              dataTableInstance.column('Enviar_AlRosal:name').visible(true);
-                                              dataTableInstance.column(11).visible(true);
-                                              showTicketStatusIndicator(status, action);
-                                          } else if (button === "btn-devuelto") {
-                                              // Ocultar botones y checkboxes
-                                              document.querySelectorAll(".load-key-button").forEach(button => {
-                                                  button.style.display = "none";
-                                              });
-                                              document.querySelectorAll(".receive-key-checkbox").forEach(checkbox => {
-                                                  checkbox.style.display = "none";
-                                              });
-                                          }
-                                          setActiveButton(button);
-                                          return true; // Encontramos datos
-                                      }
-                                  }
-                                  
-                                  // Si no hay datos en ningún botón, mostrar mensaje
-                                  dataTableInstance.columns().search('').draw(false);
-                                  dataTableInstance.column(8).search("NO_DATA_FOUND").draw(); // Búsqueda que no devuelve resultados
-                                  setActiveButton("btn-por-asignar"); // Mantener el primer botón activo por defecto
-                                 showTicketStatusIndicator('Cerrado', 'No hay datos');
-                                  
-                                  // Mostrar mensaje de que no hay datos
-                                  const tbody = document.querySelector("#tabla-ticket tbody");
-                                  if (tbody) {
-                                      tbody.innerHTML = '<tr><td colspan="14" class="text-center text-muted">No hay tickets disponibles en ningún estado</td></tr>';
-                                  }
-                                  
-                                  return false;
-                              }
-
-                              // Ejecutar la búsqueda automática al inicializar
-                              findFirstButtonWithData();
-
-                              // Event listeners para los botones (mantener la funcionalidad manual)
-                              $("#btn-por-asignar").on("click", function () {
-                                  clearFilters();
-                                  dataTableInstance.column(9).search("^Recibido en Taller$", true, false).draw(false);
-                                  const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
-                                  if (rowCount === 0) return findFirstButtonWithData();
-                                  dataTableInstance.column('carga_de_llave:name').visible(false);
-                                  dataTableInstance.column('Enviar_AlRosal:name').visible(false);
-                                  dataTableInstance.column(11).visible(false);
-                                  dataTableInstance.column(10).visible(false);
-                                  setActiveButton("btn-por-asignar");
-                                  showTicketStatusIndicator('En proceso', 'Recibido en Taller');
-                              });
-
-                              // Tus event listeners de clic están correctos
-                              $("#btn-asignados").on("click", function () {
-                                  clearFilters();
-                                  dataTableInstance.column(8).search("^En Taller$|^Enviado a taller$", true, false).draw(false);
-                                  // refinamiento por estado del lab
-                                  dataTableInstance.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto", true, false).draw(false);
-                                  const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
-                                  if (rowCount === 0) return findFirstButtonWithData();
-                                  dataTableInstance.column('carga_de_llave:name').visible(true);
-                                  dataTableInstance.column('Enviar_AlRosal:name').visible(true);
-                                  dataTableInstance.column(11).visible(false);
-                                  dataTableInstance.column(10).visible(false);
-                                  setActiveButton("btn-asignados");
-                                  showTicketStatusIndicator('En proceso', ['En proceso de Reparación', 'Reparado', 'Pendiente por repuesto']);
-                              });
-
-                              $("#btn-recibidos").on("click", function () {
-                                  clearFilters();
-                                  dataTableInstance.column(8).search("^En espera confirmación carga de llaves$", true, false).draw(false);
-                                  const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
-                                  if (rowCount === 0) return findFirstButtonWithData();
-                                  dataTableInstance.column(11).visible(true);
-                                  dataTableInstance.column('carga_de_llave:name').visible(false);
-                                  dataTableInstance.column('Enviar_AlRosal:name').visible(true);
-                                  setActiveButton("btn-recibidos");
-                                  showTicketStatusIndicator('En proceso', 'Confirmación carga de llaves');
-                              });
-
-                              $("#btn-devuelto").on("click", function () {
-                                  clearFilters();
-                                  dataTableInstance.column(8).search("^En el Rosal$", true, false).draw(false);
-                                  const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
-                                  if (rowCount === 0) return findFirstButtonWithData();
-
-                                  // Ocultar controles de llaves
-                                  document.querySelectorAll(".load-key-button").forEach(button => { button.style.display = "none"; });
-                                  document.querySelectorAll(".receive-key-checkbox").forEach(checkbox => { checkbox.style.display = "none"; });
-
-                                  setActiveButton("btn-devuelto");
-                                  showTicketStatusIndicator('En proceso', 'En el Rosal');
-                              });
-
-                          },
+                                    return `<button class="btn btn-info btn-sm load-key-button" 
+                                            title="Enviar Al Rosal" 
+                                            data-id-ticket="${row.id_ticket}" 
+                                            data-nro-ticket="${row.nro_ticket}" 
+                                            data-has-send-key-date="${dataSent}"
+                                            data-serial-pos="${row.serial_pos}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
+                                                <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>
+                                            </svg>
+                                        </button>`;
+                                }
+                                return "";
+                            },
                         });
 
-                        // ... (El resto de tus event listeners: .truncated-cell, .load-key-button, tr click, .confirm-waiting-btn) ...
-                        // ************* INICIO: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO (Aplicada DESPUÉS de la inicialización de DataTables) *************
-                        $("#tabla-ticket tbody")
-                            .off("click", ".truncated-cell, .expanded-cell") // Usa .off() para evitar múltiples listeners
-                            .on("click", ".truncated-cell, .expanded-cell", function (e) {
-                                e.stopPropagation(); // Evita que el clic en la celda active el clic de la fila completa
-                                const $cellSpan = $(this);
-                                const fullText = $cellSpan.data("full-text"); // Obtiene el texto completo del atributo data-
+                        // Initialize DataTables
+                        const dataTableInstance = $(tableElement).DataTable({
+                            order: [[0, 'desc']],
+                            scrollX: "200px",
+                            responsive: false,
+                            data: TicketData,
+                            columns: columnsConfig,
+                            pagingType: "simple_numbers",
+                            lengthMenu: [5, 10, 25, 50, 100],
+                            autoWidth: false,
+                            buttons: [{ extend: "colvis", text: "Mostrar/Ocultar Columnas", className: "btn btn-secondary" }],
+                            language: {
+                                lengthMenu: "Mostrar _MENU_",
+                                emptyTable: "No hay datos disponibles en la tabla",
+                                zeroRecords: "No se encontraron resultados para la búsqueda",
+                                info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+                                infoEmpty: "No hay datos disponibles",
+                                infoFiltered: " de _MAX_ Disponibles",
+                                search: "Buscar:",
+                                loadingRecords: "Cargando...",
+                                processing: "Procesando...",
+                                paginate: {
+                                    first: "Primero",
+                                    last: "Último",
+                                    next: "Siguiente",
+                                    previous: "Anterior",
+                                },
+                                buttons: { colvis: "Visibilidad de Columna" },
+                            },
+                            dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+                            initComplete: function (settings, json) {
+                                const dataTableInstance = this.api();
+                                const buttonsHtml = `
+                                    <button id="btn-por-asignar" class="btn btn-secondary me-2" title="Tickets en espera de confirmar recibido en el Taller">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                            <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                        </svg>
+                                    </button>
+                                    <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets en Taller">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                                            <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+                                        </svg>
+                                    </button>
+                                    <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets Por confirmar carga de llaves">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                                            <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                                        </svg>
+                                    </button>
+                                    <button id="btn-devuelto" class="btn btn-secondary me-2" title="Tickets Enviados al Rosal">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house-door" viewBox="0 0 16 16">
+                                            <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z"/>
+                                        </svg>
+                                    </button>
+                                `;
+                                $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
-                                if ($cellSpan.hasClass("truncated-cell")) {
-                                    $cellSpan
-                                        .removeClass("truncated-cell")
-                                        .addClass("expanded-cell");
-                                    $cellSpan.text(fullText);
-                                } else {
-                                    $cellSpan
-                                        .removeClass("expanded-cell")
-                                        .addClass("truncated-cell");
-                                    const displayLength = 25; // La misma longitud de truncado usada en el render
-                                    if (fullText.length > displayLength) {
-                                        $cellSpan.text(
-                                            fullText.substring(0, displayLength) + "..."
-                                        );
-                                    } else {
-                                        $cellSpan.text(fullText);
-                                    }
-                                }
-                            });
-                        // ************* FIN: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO *************
-
-                       // ************* INICIO: LÓGICA PARA EL BOTÓN "ENVIAR AL ROSAL" *************
-                        $("#tabla-ticket tbody")
-                            .off("click", ".load-key-button") // Evita múltiples listeners
-                            .on("click", ".load-key-button", function (e) {
-                                e.stopPropagation(); // Evita que el clic en el botón active el clic de la fila.
-
-                                const ticketId = $(this).data("id-ticket");
-                                const nroTicket = $(this).data("nro-ticket");
-                                const hasSendKeyDate = $(this).data("has-send-key-date"); // Leer el atributo del botón
-                                const serialPos = $(this).data("serial-pos");
-
-                                if (hasSendKeyDate != true) { // Ojo: Los data attributes devuelven booleanos si son 'true'/'false'
-                                  const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
-                                  Swal.fire({
-                                      title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
-                                                <div class="custom-modal-header-content">Confirmar envio al rosal</div>
-                                              </div>`,
-                                    html: `<div class="custom-modal-body-content">
-                                              <div class="mb-4">
-                                                ${customWarningSvg}
-                                              </div>
-                                              <p class="h4 mb-3" style = "color: black;">¿Desea enviar al rosal el Pos asociado <span id = "numeroserial" style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff; ">${serialPos}</span> al Nro de ticket: <span style = "display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> <span style = "color: #004242;">Sin cargar las llaves?</span></p>
-                                            </div>`,
-                                    confirmButtonText: "Si",
-                                    color: "black",
-                                    confirmButtonColor: "#003594",
-                                    cancelButtonText: "No",
-                                    showCancelButton: true,
-                                    showConfirmButton: true,
-                                    focusConfirm: false,
-                                    allowOutsideClick: false, 
-                                    allowEscapeKey: false,
-                                  }).then((result) => { // Aquí capturamos la respuesta del usuario
-                                    if (result.isConfirmed) {
-                                      sendTicketToRosal1(ticketId, nroTicket, false, serialPos); // `true` podría indicar "sin llaves"
-                                    }
-                                  });
-                                  return; // Detiene la ejecución aquí, no abre el modal de confirmación
-                                }else{
-                                $("#modalTicketNroSendKey").text(nroTicket);
-                                $("#modalHiddenTicketIdSendKey").val(ticketId); // Guardar el ID en un hidden input
-                                sendTicketToRosal(ticketId, nroTicket, true, serialPos); // `true` podría indicar "sin llaves"
-                              }
-                            });
-                        // ************* FIN: LÓGICA PARA EL BOTÓN "ENVIAR AL ROSAL" *************
-
-
-                        // === ADD THE CLICK EVENT LISTENER FOR TABLE ROWS HERE ===
-                        $("#tabla-ticket tbody")
-                            .off("click", "tr") // .off() to prevent multiple bindings if called multiple times
-                            .on("click", "tr", function (e) {
-                                // Asegúrate de que el clic no proviene de una celda truncable/expandible o de un botón.
-                                if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('expanded-cell') || $(e.target).is('button') || $(e.target).is('input[type="checkbox"]')) {
-                                    return; // Si el clic fue en la celda del checkbox o el botón, no activar el evento de la fila.
+                                function setActiveButton(activeButtonId) {
+                                    $("#btn-asignados, #btn-por-asignar, #btn-recibidos, #btn-devuelto")
+                                        .removeClass("btn-primary").addClass("btn-secondary");
+                                    $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
                                 }
 
-                                const tr = $(this);
-                                const rowData = dataTableInstance.row(tr).data();
-
-                                if (!rowData) {
-                                    return;
+                                function clearFilters() {
+                                    dataTableInstance.search('');
+                                    dataTableInstance.columns().every(function () { this.search(''); });
+                                    dataTableInstance.draw(false);
                                 }
 
-                                $("#tabla-ticket tbody tr").removeClass("table-active");tr.addClass("table-active");
+                                function checkDataExists(searchColumn, searchTerm) {
+                                    clearFilters();
+                                    dataTableInstance.column(searchColumn).search(searchTerm, true, false).draw(false);
+                                    const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
+                                    clearFilters();
+                                    return rowCount > 0;
+                                }
 
-                                const ticketId = rowData.id_ticket;
-
-                                const selectedTicketDetails = TicketData.find(
-                                    (t) => t.id_ticket == ticketId
-                                );
-
-                                if (selectedTicketDetails) {
-                                    detailsPanel.innerHTML = formatTicketDetailsPanel(
-                                        selectedTicketDetails
-                                    );
-                                    loadTicketHistory(ticketId, currentTicketNroForImage);
-                                    if (selectedTicketDetails.serial_pos) {
-                                        downloadImageModal(selectedTicketDetails.serial_pos);
-                                    } else {
-                                        const imgElement = document.getElementById(
-                                            "device-ticket-image"
-                                        );
-                                        if (imgElement) {
-                                            imgElement.src =
-                                                '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png'; // Corrige esta ruta si es JS puro y no PHP
-                                            imgElement.alt = "Serial no disponible";
+                                function applyNroTicketSearch() {
+                                    if (nroTicket) {
+                                        dataTableInstance.search(nroTicket).draw(false);
+                                        let ticketFound = false;
+                                        dataTableInstance.rows({ filter: 'applied' }).every(function () {
+                                            const rowData = this.data();
+                                            if (rowData.nro_ticket === nroTicket) {
+                                                $(this.node()).addClass('table-active');
+                                                this.node().scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                ticketFound = true;
+                                            } else {
+                                                $(this.node()).removeClass('table-active');
+                                            }
+                                        });
+                                        if (!ticketFound) {
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'Ticket no encontrado',
+                                                text: `El ticket ${nroTicket} no se encuentra en este filtro.`,
+                                                confirmButtonText: 'Ok',
+                                                color: 'black',
+                                                confirmButtonColor: '#003594'
+                                            });
+                                            dataTableInstance.search('').draw(false);
                                         }
                                     }
-                                } else {
-                                    detailsPanel.innerHTML =
-                                        "<p>No se encontraron detalles para este ticket.</p>";
                                 }
-                            });
-                        // === END CLICK EVENT LISTENER ===
 
-                        $("#tabla-ticket tbody")
-                            .off("click", ".confirm-waiting-btn")
-                            .on("click", ".confirm-waiting-btn", function (e) {
-                                e.stopPropagation();
-                                const ticketId = $(this).data("id-ticket");
-                                const nroTicket = $(this).data("nro-ticket");
-                                const serialPos = $(this).data("serial-pos") || ""; // Asegúrate de que serial_pos esté definido
+                                function findFirstButtonWithData() {
+                                    const searchTerms = [
+                                        { button: "btn-por-asignar", column: 9, term: "Recibido en Taller", status: "En proceso", action: "Recibido en Taller" },
+                                        { button: "btn-asignados", column: 8, term: "Enviado a taller", status: "En proceso", action: "Enviado a taller" },
+                                        { button: "btn-recibidos", column: 8, term: "En espera confirmación carga de llaves", status: "En proceso", action: "En espera confirmación carga de llaves" },
+                                        { button: "btn-devuelto", column: 8, term: "En el Rosal", status: "En proceso", action: "En el Rosal" }
+                                    ];
 
+                                    for (const { button, column, term, status, action } of searchTerms) {
+                                        if (checkDataExists(column, term)) {
+                                            clearFilters();
+                                            dataTableInstance.column(column).search(term, true, false);
+                                            if (button === "btn-por-asignar") {
+                                                dataTableInstance.column('carga_de_llave:name').visible(false);
+                                                dataTableInstance.column('Enviar_AlRosal:name').visible(false);
+                                                dataTableInstance.column(11).visible(false);
+                                                dataTableInstance.column(10).visible(false);
+                                                showTicketStatusIndicator(status, action);
+                                            } else if (button === "btn-asignados") {
+                                                dataTableInstance.column('carga_de_llave:name').visible(true);
+                                                dataTableInstance.column('Enviar_AlRosal:name').visible(true);
+                                                dataTableInstance.column(11).visible(false);
+                                                dataTableInstance.column(10).visible(false);
+                                                dataTableInstance.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto", true, false);
+                                                showTicketStatusIndicator(status, ["En proceso de Reparación", "Reparado", "Pendiente por repuesto"]);
+                                            } else if (button === "btn-recibidos") {
+                                                dataTableInstance.column('carga_de_llave:name').visible(false);
+                                                dataTableInstance.column('Enviar_AlRosal:name').visible(true);
+                                                dataTableInstance.column(11).visible(true);
+                                                showTicketStatusIndicator(status, action);
+                                            } else if (button === "btn-devuelto") {
+                                                document.querySelectorAll(".load-key-button").forEach(button => button.style.display = "none");
+                                                document.querySelectorAll(".receive-key-checkbox").forEach(checkbox => checkbox.style.display = "none");
+                                                showTicketStatusIndicator(status, action);
+                                            }
+                                            dataTableInstance.draw(false);
+                                            setActiveButton(button);
+                                            applyNroTicketSearch();
+                                            return true;
+                                        }
+                                    }
 
-                                currentTicketIdForConfirmTaller = ticketId;
-                                currentNroTicketForConfirmTaller = nroTicket;
-
-                                $("#modalTicketIdConfirmTaller").val(ticketId);
-                                $("#modalHiddenNroTicketConfirmTaller").val(nroTicket);
-                                $("#serialPost").text(serialPos);
-
-                                $("#modalTicketIdConfirmTaller").text(nroTicket);
-
-                                if (confirmInTallerModalInstance) {
-                                    confirmInTallerModalInstance.show();
-                                } else {
-                                    console.error(
-                                        "La instancia del modal 'confirmInTallerModal' no está disponible."
-                                    );
+                                    clearFilters();
+                                    dataTableInstance.column(8).search("NO_DATA_FOUND").draw();
+                                    setActiveButton("btn-por-asignar");
+                                    showTicketStatusIndicator('Cerrado', 'No hay datos');
+                                    if (tbodyElement) {
+                                        tbodyElement.innerHTML = `
+                                            <tr>
+                                                <td colspan="14" class="text-center text-muted py-5">
+                                                    <div class="d-flex flex-column align-items-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                                                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                                        </svg>
+                                                        <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                                                        <p class="text-muted mb-0">No hay tickets en Taller para mostrar en este momento.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>`;
+                                    }
+                                    return false;
                                 }
-                            });
 
-                        if (tableContainer) {
-                            tableContainer.style.display = ""; // Show the table container
-                            }
+                                // Determine the correct filter button based on the current module
+                                const currentPath = window.location.pathname.split('/').pop().replace('.html', '');
+                                const buttonMapping = {
+                                    'enviado_taller': 'btn-asignados',
+                                    'asignar_tecnico': 'btn-por-asignar',
+                                    'tecnico': 'btn-recibidos',
+                                    'entregado_cliente': 'btn-devuelto'
+                                };
+                                const activeButton = buttonMapping[currentPath] || 'btn-por-asignar';
+
+                                // Initialize with the correct filter
+                                findFirstButtonWithData();
+
+                                // Event listeners for filter buttons
+                                $("#btn-por-asignar").on("click", function () {
+                                    clearFilters();
+                                    dataTableInstance.column(9).search("^Recibido en Taller$", true, false).draw(false);
+                                    const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
+                                    if (rowCount === 0) return findFirstButtonWithData();
+                                    dataTableInstance.column('carga_de_llave:name').visible(false);
+                                    dataTableInstance.column('Enviar_AlRosal:name').visible(false);
+                                    dataTableInstance.column(11).visible(false);
+                                    dataTableInstance.column(10).visible(false);
+                                    setActiveButton("btn-por-asignar");
+                                    showTicketStatusIndicator('En proceso', 'Recibido en Taller');
+                                    applyNroTicketSearch();
+                                });
+
+                                $("#btn-asignados").on("click", function () {
+                                    clearFilters();
+                                    dataTableInstance.column(8).search("^En Taller$|^Enviado a taller$", true, false);
+                                    dataTableInstance.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto", true, false).draw(false);
+                                    const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
+                                    if (rowCount === 0) return findFirstButtonWithData();
+                                    dataTableInstance.column('carga_de_llave:name').visible(true);
+                                    dataTableInstance.column('Enviar_AlRosal:name').visible(true);
+                                    dataTableInstance.column(11).visible(false);
+                                    dataTableInstance.column(10).visible(false);
+                                    setActiveButton("btn-asignados");
+                                    showTicketStatusIndicator('En proceso', ['En proceso de Reparación', 'Reparado', 'Pendiente por repuesto']);
+                                    applyNroTicketSearch();
+                                });
+
+                                $("#btn-recibidos").on("click", function () {
+                                    clearFilters();
+                                    dataTableInstance.column(8).search("^En espera confirmación carga de llaves$", true, false).draw(false);
+                                    const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
+                                    if (rowCount === 0) return findFirstButtonWithData();
+                                    dataTableInstance.column('carga_de_llave:name').visible(false);
+                                    dataTableInstance.column('Enviar_AlRosal:name').visible(true);
+                                    dataTableInstance.column(11).visible(true);
+                                    setActiveButton("btn-recibidos");
+                                    showTicketStatusIndicator('En proceso', 'Confirmación carga de llaves');
+                                    applyNroTicketSearch();
+                                });
+
+                                $("#btn-devuelto").on("click", function () {
+                                    clearFilters();
+                                    dataTableInstance.column(8).search("^En el Rosal$", true, false).draw(false);
+                                    const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
+                                    if (rowCount === 0) return findFirstButtonWithData();
+                                    document.querySelectorAll(".load-key-button").forEach(button => button.style.display = "none");
+                                    document.querySelectorAll(".receive-key-checkbox").forEach(checkbox => checkbox.style.display = "none");
+                                    setActiveButton("btn-devuelto");
+                                    showTicketStatusIndicator('En proceso', 'En el Rosal');
+                                    applyNroTicketSearch();
+                                });
+
+                                // Truncated cell click handler
+                                $("#tabla-ticket tbody").off("click", ".truncated-cell, .expanded-cell").on("click", ".truncated-cell, .expanded-cell", function (e) {
+                                    e.stopPropagation();
+                                    const $cellSpan = $(this);
+                                    const fullText = $cellSpan.data("full-text");
+                                    if ($cellSpan.hasClass("truncated-cell")) {
+                                        $cellSpan.removeClass("truncated-cell").addClass("expanded-cell").text(fullText);
+                                    } else {
+                                        $cellSpan.removeClass("expanded-cell").addClass("truncated-cell");
+                                        const displayLength = 25;
+                                        $cellSpan.text(fullText.length > displayLength ? fullText.substring(0, displayLength) + "..." : fullText);
+                                    }
+                                });
+
+                                // Load key button handler
+                                $("#tabla-ticket tbody").off("click", ".load-key-button").on("click", ".load-key-button", function (e) {
+                                    e.stopPropagation();
+                                    const ticketId = $(this).data("id-ticket");
+                                    const nroTicket = $(this).data("nro-ticket");
+                                    const hasSendKeyDate = $(this).data("has-send-key-date");
+                                    const serialPos = $(this).data("serial-pos");
+
+                                    if (hasSendKeyDate !== 'true') {
+                                        const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+                                        Swal.fire({
+                                            title: `<div class="custom-modal-header-title bg-gradient-primary text-white"><div class="custom-modal-header-content">Confirmar envío al rosal</div></div>`,
+                                            html: `<div class="custom-modal-body-content"><div class="mb-4">${customWarningSvg}</div><p class="h4 mb-3" style="color: black;">¿Desea enviar al rosal el POS asociado <span id="numeroserial" style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> al Nro de ticket: <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> <span style="color: #004242;">Sin cargar las llaves?</span></p></div>`,
+                                            confirmButtonText: "Sí",
+                                            color: "black",
+                                            confirmButtonColor: "#003594",
+                                            cancelButtonText: "No",
+                                            showCancelButton: true,
+                                            showConfirmButton: true,
+                                            focusConfirm: false,
+                                            allowOutsideClick: false,
+                                            allowEscapeKey: false,
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                sendTicketToRosal1(ticketId, nroTicket, false, serialPos);
+                                            }
+                                        });
+                                        return;
+                                    } else {
+                                        $("#modalTicketNroSendKey").text(nroTicket);
+                                        $("#modalHiddenTicketIdSendKey").val(ticketId);
+                                        sendTicketToRosal(ticketId, nroTicket, true, serialPos);
+                                    }
+                                });
+
+                                // Table row click handler
+                                $("#tabla-ticket tbody").off("click", "tr").on("click", "tr", function (e) {
+                                    if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('expanded-cell') || $(e.target).is('button') || $(e.target).is('input[type="checkbox"]')) {
+                                        return;
+                                    }
+                                    const tr = $(this);
+                                    const rowData = dataTableInstance.row(tr).data();
+                                    if (!rowData) return;
+                                    $("#tabla-ticket tbody tr").removeClass("table-active");
+                                    tr.addClass("table-active");
+                                    const ticketId = rowData.id_ticket;
+                                    const selectedTicketDetails = TicketData.find(t => t.id_ticket == ticketId);
+                                    if (selectedTicketDetails) {
+                                        detailsPanel.innerHTML = formatTicketDetailsPanel(selectedTicketDetails);
+                                        loadTicketHistory(ticketId, currentTicketNroForImage);
+                                        if (selectedTicketDetails.serial_pos) {
+                                            downloadImageModal(selectedTicketDetails.serial_pos);
+                                        } else {
+                                            const imgElement = document.getElementById("device-ticket-image");
+                                            if (imgElement) {
+                                                imgElement.src = '/public/img/consulta_rif/POS/mantainment.png';
+                                                imgElement.alt = "Serial no disponible";
+                                            }
+                                        }
+                                    } else {
+                                        detailsPanel.innerHTML = "<p>No se encontraron detalles para este ticket.</p>";
+                                    }
+                                });
+
+                                // Confirm waiting button handler
+                                $("#tabla-ticket tbody").off("click", ".confirm-waiting-btn").on("click", ".confirm-waiting-btn", function (e) {
+                                    e.stopPropagation();
+                                    const ticketId = $(this).data("id-ticket");
+                                    const nroTicket = $(this).data("nro-ticket");
+                                    const serialPos = $(this).data("serial-pos") || "";
+                                    currentTicketIdForConfirmTaller = ticketId;
+                                    currentNroTicketForConfirmTaller = nroTicket;
+                                    $("#modalTicketIdConfirmTaller").val(ticketId);
+                                    $("#modalHiddenNroTicketConfirmTaller").val(nroTicket);
+                                    $("#serialPost").text(serialPos);
+                                    $("#modalTicketIdConfirmTaller").text(nroTicket);
+                                    if (confirmInTallerModalInstance) {
+                                        confirmInTallerModalInstance.show();
+                                    } else {
+                                        console.error("La instancia del modal 'confirmInTallerModal' no está disponible.");
+                                    }
+                                });
+
+                                // Cambiar estatus button handler
+                                $("#tabla-ticket tbody").off("click", ".cambiar-estatus-btn").on("click", ".cambiar-estatus-btn", function (e) {
+                                    e.stopPropagation();
+                                    const ticketId = $(this).data("id");
+                                    const currentStatus = $(this).data("current-status");
+                                    $("#modalHiddenTicketId").val(ticketId);
+                                    $("#modalTicketCurrentStatus").val(currentStatus);
+                                    // Ensure the modal is shown (already handled by data-bs-toggle and data-bs-target)
+                                });
+
+                                // Receive key checkbox handler
+                                $("#tabla-ticket tbody").off("change", ".receive-key-checkbox").on("change", ".receive-key-checkbox", function (e) {
+                                    e.stopPropagation();
+                                    const ticketId = $(this).data("id-ticket");
+                                    const nroTicket = $(this).data("nro-ticket");
+                                    if (this.checked) {
+                                        // Call function to handle key reception (not provided in original code)
+                                        console.log(`Checkbox checked for ticket ${nroTicket} (ID: ${ticketId})`);
+                                        // Example: receiveKey(ticketId, nroTicket);
+                                    }
+                                });
+                            },
+                        });
+
+                        if (tableContainer) tableContainer.style.display = "";
                     } else {
                         if (tableContainer) {
                             tableContainer.innerHTML = "<p>No hay datos disponibles.</p>";
@@ -673,10 +603,7 @@ function getTicketData() {
                     }
                 } else {
                     if (tableContainer) {
-                        tableContainer.innerHTML =
-                            "<p>Error al cargar los datos: " +
-                            (response.message || "Mensaje desconocido") +
-                            "</p>";
+                        tableContainer.innerHTML = "<p>Error al cargar los datos: " + (response.message || "Mensaje desconocido") + "</p>";
                         tableContainer.style.display = "";
                     }
                     console.error("Error from API:", response.message);
@@ -690,17 +617,18 @@ function getTicketData() {
             }
         } else if (xhr.status === 404) {
             if (tableContainer) {
-              tableContainer.innerHTML = `<tr>
-        <td colspan="14" class="text-center text-muted py-5">
-          <div class="d-flex flex-column align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-            </svg>
-            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-            <p class="text-muted mb-0">No hay tickets en Taller para mostrar en este momento.</p>
-          </div>
-        </td>
-      </tr>`
+                tableContainer.innerHTML = `
+                    <tr>
+                        <td colspan="14" class="text-center text-muted py-5">
+                            <div class="d-flex flex-column align-items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                                    <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                </svg>
+                                <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                                <p class="text-muted mb-0">No hay tickets en Taller para mostrar en este momento.</p>
+                            </div>
+                        </td>
+                    </tr>`;
                 tableContainer.style.display = "";
             }
         } else {

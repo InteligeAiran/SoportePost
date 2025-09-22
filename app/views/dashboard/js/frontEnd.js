@@ -1,5 +1,62 @@
 let ModalTimelineInstance = null; // Variable para la instancia del modal de línea de tiempo
 
+
+
+let usuariosAcciones = {
+  coordinador: {
+    modulo: 'asignar_tecnico',
+    modalId: 'asignadoTecnicoModal', // Replace with actual modal ID
+    buttonId: 'btn-asignados',
+    filterTerm: 'Recibido por la Coordinación|Asignado a la Coordinación',
+    acciones: [3, 4],
+  },
+  tecnico: {
+    modulo: 'tecnico',
+    modalId: 'tecnicoModal', // Replace with actual modal ID (e.g., for Recibido/Reasignado)
+    buttonId: 'btn-recibidos',
+    filterTerm: 'Asignado al Técnico|Recibido por el Técnico|Reasignado al Técnico',
+    acciones: [6, 10, 11], // Added 11 for Reasignado al Técnico
+  },
+  // Add other roles as needed, e.g., for Entregado a Cliente
+  cliente: {
+    modulo: 'region',
+    modalId: 'entregadoClienteModal', // From your provided HTML
+    buttonId: 'btn-devuelto',
+    filterTerm: 'Entregado a Cliente',
+    acciones: [16], // Adjust id_accion_ticket as needed
+  },
+  taller: {
+    modulo: 'taller',
+    modalId: 'enviadoTallerModal', // Replace with actual modal ID
+    buttonId: 'btn-por-asignar',
+    filterTerm: 'Enviado a taller|En Taller',
+    acciones: [7, 15], // Adjust id_accion_ticket as needed
+  },
+};
+
+function redirigirPorAccion(idStatusAccion, idTicket, nroTicket) {
+  console.log(`Redirigiendo para acción: ${idStatusAccion}, Ticket ID: ${idTicket}, Nro Ticket: ${nroTicket}`);
+  for (const usuario in usuariosAcciones) {
+    if (usuariosAcciones[usuario].acciones.includes(idStatusAccion)) {
+      const modulo = usuariosAcciones[usuario].modulo;
+      const url = `${modulo}?id_ticket=${idTicket}&nro_ticket=${encodeURIComponent(nroTicket)}`;
+      window.location.href = url; // Perform the redirect
+      return;
+    }
+  }
+  // If no matching action is found
+  console.log(`Acción ${idStatusAccion} no encontrada. No se pudo redirigir.`);
+  Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: `Acción ${idStatusAccion} no encontrada. No se pudo redirigir.`,
+    confirmButtonText: 'Ok',
+    confirmButtonColor: '#003594',
+    color: 'black'
+  });
+}
+
+
 // Variable para almacenar todos los tickets cargados (sin filtrar)
 let allOpenTickets = [];
 let allProcessTickets = []; // Separar datos para tickets en proceso
@@ -865,8 +922,13 @@ if (!Array.isArray(details)) {
             </div>
         `;
   });
+  html += `
+        </div>
+    `;
   return html;
 }
+
+
 
 function loadIndividualPendienteRepuesto() {
     const contentDiv = document.getElementById("PendienteRespuesModalTicketsContent");
@@ -951,7 +1013,7 @@ function formatPendinRespueTicketsDetails(details){
 
     html += `
             <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white" id = "Cardticket" data-ticket-id="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-id-accion-ticket = "${ticket.id_accion_ticket}">
                     Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
                 </div>
                 <div class="card-body">
@@ -1013,6 +1075,9 @@ function formatPendinRespueTicketsDetails(details){
             </div>
         `;
   });
+  html += `
+        </div>
+    `;
   return html;
 }
 
@@ -1099,7 +1164,7 @@ if (!Array.isArray(details)) {
 
     html += `
             <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white"  id = "Cardticket" data-ticket-id="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-id-accion-ticket = "${ticket.id_accion_ticket}">
                     Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
                 </div>
                 <div class="card-body">
@@ -1246,7 +1311,7 @@ function formatProcessReparacionDetails(details) {
 
     html += `
             <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white" id = "Cardticket" data-ticket-id="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-id-accion-ticket = "${ticket.id_accion_ticket}">
                     Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
                 </div>
                 <div class="card-body">
@@ -1308,6 +1373,9 @@ function formatProcessReparacionDetails(details) {
             </div>
         `;
   });
+  html += `
+        </div>
+    `;
   return html;
 }
 
@@ -1403,7 +1471,7 @@ function formatIndividualTickets(tickets, month, status) {
 
     html += `
             <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white" id = "Cardticket" data-ticket-id="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-id-accion-ticket = "${ticket.id_accion_ticket}">
                     Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
                 </div>
                 <div class="card-body">
@@ -1643,6 +1711,99 @@ function loadOpenTicketDetails() {
         });
 }
 
+// Asegúrate de que esta función exista y sea llamada después de cargar los tickets
+function formatOpenDetails(details) {
+      // Asegúrate de definir la variable currentUserRole en tu HTML antes de este script, por ejemplo:
+      // 
+      // O si el valor es numérico, sin comillas.
+      //1 = SuperAdmin 
+      //4 = Coordinador 
+      //3 = Tecnico
+      const showDocumentButtons = (currentUserRole === 1 || currentUserRole === 4 || currentUserRole === 3); // Rol de administrador o superadministrador;
+
+    if (!details || details.length === 0) {
+        return "<p>No hay tickets abiertos disponibles.</p>";
+    }
+
+    let htmlContent = '';
+
+    details.forEach(ticket => {
+        let documentButtonsHtml = '';
+        let markReceivedButtonHtml = ''; // Variable para el botón "Marcar como Recibido"
+
+        const statusPaymentId = parseInt(ticket.id_status_payment, 10);
+        const accionTicket = ticket.name_accion_ticket;
+
+        ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
+          // Lógica corregida para el botón "Marcar como Recibido"
+        if (accionTicket === 'Recibido por la Coordinación') {
+            markReceivedButtonHtml = `
+              <button type="button" class="btn btn-success ms-2 mark-received-btn" disabled>
+                Ya está recibido
+              </button>
+            `;
+        } else if (currentUserRole === 1 || currentUserRole === 4) {
+            markReceivedButtonHtml = `
+              <button type="button" class="btn btn-success ms-2 mark-received-btn" data-ticket-id="${ticket.id_ticket}" data-nro-ticket = "${ticket.nro_ticket}" data-serial-pos = ${ticket.serial_pos_cliente}>
+                Marcar como Recibido
+              </button>
+            `;
+        }
+        ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
+
+        
+        htmlContent += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white" id = "Cardticket" data-ticket-id="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-id-accion-ticket = "${ticket.id_accion_ticket}">
+                    Ticket #<strong>${ticket.nro_ticket || 'N/A'}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${ticket.serial_pos_cliente || 'N/A'}</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.razon_social_cliente || 'N/A'}</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || 'N/A'}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${ticket.name_modelopos_cliente || 'N/A'}</dd>
+
+                        <dt class="col-sm-4">Estatus Documentos:</dt>
+                        <dd class="col-sm-8">${ticket.name_status_payment || 'N/A'}</dd>
+
+                        <dt class="col-sm-4">Estatus Ticket:</dt>
+                        <dd class="col-sm-8">${ticket.status_name_ticket || 'N/A'}</dd>
+
+                        <dt class="col-sm-4">Estatus Domiciliación:</dt>
+                        <dd class="col-sm-8">${ticket.name_status_domiciliacion || 'N/A'}</dd>
+
+                        <dt class="col-sm-4">Estatus Taller:</dt>
+                        <dd class="col-sm-8">${ticket.name_status_lab || 'N/A'}</dd>
+
+                        <dt class="col-sm-4">Acción Ticket:</dt>
+                        <dd class="col-sm-8">${ticket.name_accion_ticket || 'N/A'}</dd>
+                        
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${ticket.date_create_ticket || 'N/A'}</dd>
+                    </dl>
+                    
+                     <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
+                        ${documentButtonsHtml}
+                        ${markReceivedButtonHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+     htmlContent += `
+        </div>
+    `;
+  return htmlContent;
+}
+
 function loadEntregadoClienteDetails() {
     const contentDiv = document.getElementById("EntregadoClienteModalTicketsContent");
     const searchInput = document.getElementById("ticketSearchInputEntregadoCliente");
@@ -1732,7 +1893,7 @@ function formatEntregadoClienteDetails(tickets) {
 
         html += `
             <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white" id = "Cardticket" data-ticket-id="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-id-accion-ticket = "${ticket.id_accion_ticket}">
                     Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
                 </div>
                 <div class="card-body">
@@ -2082,7 +2243,7 @@ function formatProcessTicketsDetails(details){
 
     html += `
             <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white" id = "Cardticket" data-ticket-id="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-id-accion-ticket = "${ticket.id_accion_ticket}">
                     Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
                 </div>
                 <div class="card-body">
@@ -2140,6 +2301,9 @@ function formatProcessTicketsDetails(details){
             </div>
         `;
   });
+   html += `
+        </div>
+    `;
   return html;
 }
 
@@ -2522,10 +2686,10 @@ function formatTallerDetails(details) {
         ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
     html += `
             <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white" id = "Cardticket" data-ticket-id="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-id-accion-ticket = "${ticket.id_accion_ticket}">
                     Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
                 </div>
-                <div class="card-body">
+                <div class="card-body" id = "Cardticket" data-ticket-id="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-id-accion-ticket = "${ticket.id_accion_ticket}">
                     <dl class="row mb-0">
                         <dt class="col-sm-4">Serial POS:</dt>
                         <dd class="col-sm-8">${
@@ -2584,6 +2748,9 @@ function formatTallerDetails(details) {
             </div>
         `;
   });
+   html += `
+        </div>
+    `;
   return html;
 }
 
@@ -2606,7 +2773,7 @@ function formatResolveDetails(details) {
 
     html += `
             <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white" id = "Cardticket" data-ticket-id="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-id-accion-ticket = "${ticket.id_accion_ticket}">
                     Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
                 </div>
                 <div class="card-body">
@@ -3433,96 +3600,6 @@ if (viewDocumentModalElement) {
     });
 }
 
-// Asegúrate de que esta función exista y sea llamada después de cargar los tickets
-function formatOpenDetails(details) {
-      // Asegúrate de definir la variable currentUserRole en tu HTML antes de este script, por ejemplo:
-      // 
-      // O si el valor es numérico, sin comillas.
-      //1 = SuperAdmin 
-      //4 = Coordinador 
-      //3 = Tecnico
-      const showDocumentButtons = (currentUserRole === 1 || currentUserRole === 4 || currentUserRole === 3); // Rol de administrador o superadministrador;
-
-    if (!details || details.length === 0) {
-        return "<p>No hay tickets abiertos disponibles.</p>";
-    }
-
-    let htmlContent = '';
-
-    details.forEach(ticket => {
-        let documentButtonsHtml = '';
-        let markReceivedButtonHtml = ''; // Variable para el botón "Marcar como Recibido"
-
-        const statusPaymentId = parseInt(ticket.id_status_payment, 10);
-        const accionTicket = ticket.name_accion_ticket;
-
-        ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
-          // Lógica corregida para el botón "Marcar como Recibido"
-        if (accionTicket === 'Recibido por la Coordinación') {
-            markReceivedButtonHtml = `
-              <button type="button" class="btn btn-success ms-2 mark-received-btn" disabled>
-                Ya está recibido
-              </button>
-            `;
-        } else if (currentUserRole === 1 || currentUserRole === 4) {
-            markReceivedButtonHtml = `
-              <button type="button" class="btn btn-success ms-2 mark-received-btn" data-ticket-id="${ticket.id_ticket}" data-nro-ticket = "${ticket.nro_ticket}" data-serial-pos = ${ticket.serial_pos_cliente}>
-                Marcar como Recibido
-              </button>
-            `;
-        }
-        ////////////////////////////// CAMBIAR A QUE SOLO EL 4 QU E ES "COORDINADOR" CANDO EL SISTEMA SE TERMINE ////////////////////////////////////////////////////////////
-
-        
-        htmlContent += `
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.nro_ticket || 'N/A'}</strong>
-                </div>
-                <div class="card-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Serial POS:</dt>
-                        <dd class="col-sm-8">${ticket.serial_pos_cliente || 'N/A'}</dd>
-
-                        <dt class="col-sm-4">Razón Social Cliente:</dt>
-                        <dd class="col-sm-8">${ticket.razon_social_cliente || 'N/A'}</dd>
-
-                        <dt class="col-sm-4">Rif Cliente:</dt>
-                        <dd class="col-sm-8">${ticket.rif_cliente || 'N/A'}</dd>
-
-                        <dt class="col-sm-4">Modelo POS:</dt>
-                        <dd class="col-sm-8">${ticket.name_modelopos_cliente || 'N/A'}</dd>
-
-                        <dt class="col-sm-4">Estatus Documentos:</dt>
-                        <dd class="col-sm-8">${ticket.name_status_payment || 'N/A'}</dd>
-
-                        <dt class="col-sm-4">Estatus Ticket:</dt>
-                        <dd class="col-sm-8">${ticket.status_name_ticket || 'N/A'}</dd>
-
-                        <dt class="col-sm-4">Estatus Domiciliación:</dt>
-                        <dd class="col-sm-8">${ticket.name_status_domiciliacion || 'N/A'}</dd>
-
-                        <dt class="col-sm-4">Estatus Taller:</dt>
-                        <dd class="col-sm-8">${ticket.name_status_lab || 'N/A'}</dd>
-
-                        <dt class="col-sm-4">Acción Ticket:</dt>
-                        <dd class="col-sm-8">${ticket.name_accion_ticket || 'N/A'}</dd>
-                        
-                        <dt class="col-sm-4">Fecha Creación:</dt>
-                        <dd class="col-sm-8">${ticket.date_create_ticket || 'N/A'}</dd>
-                    </dl>
-                    
-                     <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
-                        ${documentButtonsHtml}
-                        ${markReceivedButtonHtml}
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-  return htmlContent;
-}
-
 // NUEVA función para adjuntar los event listeners (reconfirmada)
 function attachMarkReceivedListeners() {
   document.querySelectorAll('.mark-received-btn').forEach(button => {
@@ -4176,7 +4253,7 @@ function formatIndividualRegionTickets(tickets, region) {
 
     html += `
             <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white" id = "Cardticket" data-ticket-id="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-id-accion-ticket = "${ticket.id_accion_ticket}">
                     Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
                 </div>
                 <div class="card-body">
@@ -4951,3 +5028,19 @@ function markTicketAsReceivedTaller(ticketId, nroTicket, serialPos) {
     }
   });
 }
+
+document.addEventListener('click', function(event) {
+    // 1. Identifica el elemento clicado
+    const targetCard = event.target.closest('#Cardticket');
+
+    // 2. Comprueba si el clic fue dentro de una tarjeta con la clase '.card-ticket'
+    if (targetCard) {
+        // 3. Extrae los datos del elemento (no del evento)
+        const idAccionTicket = parseInt(targetCard.getAttribute('data-id-accion-ticket'));
+        const idTicket = targetCard.getAttribute('data-ticket-id');
+        const nroTicket = targetCard.getAttribute('data-nro-ticket');
+
+        // 4. Llama a tu función de redirección
+        redirigirPorAccion(idAccionTicket, idTicket, nroTicket);
+    }
+});
