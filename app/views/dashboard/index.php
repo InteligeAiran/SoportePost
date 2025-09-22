@@ -683,302 +683,302 @@ function mi_navbar() {}
                 </div>
 
                 <!-- Estadísticas de Tickets por Módulo -->
-                <div class="row mt-6">
-                    <div class="col-lg-7 mb-lg-0 mb-4">
-                        <div class="card shadow-md rounded-xl">
-                            <div class="card-header pb-0 p-4 border-b border-gray-200">
-                                <div class="flex justify-between items-center">
-                                    <div class="card-header bg-gradient-primary">
-                                        <h6 class="chart-title text-white">Estadísticas de Tickets por Módulo</h6>
+                    <div class="row mt-6">
+                        <div class="col-lg-7 mb-lg-0 mb-4">
+                            <div class="card shadow-md rounded-xl">
+                                <div class="card-header pb-0 p-4 border-b border-gray-200">
+                                    <div class="flex justify-between items-center">
+                                        <div class="card-header bg-gradient-primary">
+                                            <h6 class="chart-title text-white">Estadísticas de Tickets por Módulo</h6>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="p-4">
-                                <div class="table-responsive">
-                                    <table id="ticketCountSummaryTable" class="min-w-full leading-normal" style="width: 100%;">
-                                        <thead class="bg-gray-100">
-                                            <tr>
-                                                <th
-                                                    class="px-5 py-4 border-b-2 border-gray-300 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                                    Módulo / Estado del Ticket
-                                                </th>
-                                                <th
-                                                    class="px-5 py-4 border-b-2 border-gray-300 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                                    Cantidad de Tickets
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="ticketCountsBody" class="divide-y divide-gray-200">
-                                            <tr>
-                                                <td colspan="2" class="px-5 py-3 text-sm text-center text-gray-500 bg-white">
-                                                    Cargando resumen de tickets...
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                <!-- Tabla de Resumen de Tickets por Módulo -->
+                                    <div class="p-4">
+                                        <div class="table-responsive">
+                                            <table id="ticketCountSummaryTable" class="min-w-full leading-normal" style="width: 100%;">
+                                                <thead class="bg-gray-100">
+                                                    <tr>
+                                                        <th
+                                                            class="px-5 py-4 border-b-2 border-gray-300 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                                            Módulo / Estado del Ticket
+                                                        </th>
+                                                        <th
+                                                            class="px-5 py-4 border-b-2 border-gray-300 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                                            Cantidad de Tickets
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="ticketCountsBody" class="divide-y divide-gray-200">
+                                                    <tr>
+                                                        <td colspan="2" class="px-5 py-3 text-sm text-center text-gray-500 bg-white">
+                                                            Cargando resumen de tickets...
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                <!-- End Tabla de Resumen de Tickets por Módulo -->
+                            </div>
+                        </div>
+
+                        <div class="col-lg-5">
+                            <div class="card shadow-md rounded-xl">
+                                <div class="card-header pb-0 p-4 border-b border-gray-200 bg-gradient-info">
+                                    <h6 class="text-2xl font-semibold text-gray-800">Categorías de Tickets</h6>
+                                </div>
+                                <div class="card-body p-4">
+                                    <ul class="list-group">
+
+                                        <li class="list-group-item list-group-item-custom" id="ModalPostReparacion">
+                                            <div class="item-content-wrapper">
+                                                <div class="icon-wrapper">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        fill="currentColor" class="bi bi-wrench-adjustable"
+                                                        viewBox="0 0 16 16">
+                                                        <path
+                                                            d="M16 4.5a4.5 4.5 0 0 1-1.703 3.526L13 5l2.959-1.11q.04.3.041.61" />
+                                                        <path
+                                                            d="M11.5 9c.653 0 1.273-.139 1.833-.39L12 5.5 11 3l3.826-1.53A4.5 4.5 0 0 0 7.29 6.092l-6.116 5.096a2.583 2.583 0 1 0 3.638 3.638L9.908 8.71A4.5 4.5 0 0 0 11.5 9m-1.292-4.361-.596.893.809-.27a.25.25 0 0 1 .287.377l-.596.893.809-.27.158.475-1.5.5a.25.25 0 0 1-.287-.376l.596-.893-.809.27a.25.25 0 0 1-.287-.377l.596-.893-.809.27-.158-.475 1.5-.5a.25.25 0 0 1 .287.376M3 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
+                                                    </svg>
+                                                </div>
+                                                <div class="text-content-wrapper">
+                                                    <h6 class="item-title">POS en Proceso De Reparaci&oacuten</h6>
+                                                    <span class="item-count" id="CountProcessReparacion"></span>
+                                                </div>
+                                            </div>
+                                            <div class="arrow-wrapper">
+                                                <button class="btn-link btn-icon-only">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                                        <path fill-rule="evenodd"
+                                                            d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </li>
+
+                                        <li class="list-group-item list-group-item-custom" id="OpenModalPostReparado">
+                                            <div class="item-content-wrapper">
+                                                <div class="icon-wrapper">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        fill="currentColor" class="bi bi-file-post-fill"
+                                                        viewBox="0 0 16 16">
+                                                        <path
+                                                            d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M4.5 3h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1m0 2h7a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5" />
+                                                    </svg>
+                                                </div>
+                                                <div class="text-content-wrapper">
+                                                    <h6 class="item-title">POS Reparados</h6>
+                                                    <span class="item-count" id="ReparadopsCount"></span>
+                                                </div>
+                                            </div>
+                                            <div class="arrow-wrapper">
+                                                <button class="btn-link btn-icon-only">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                                        <path fill-rule="evenodd"
+                                                            d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </li>
+
+                                        <li class="list-group-item list-group-item-custom" id="OpenModalPendienteRepuesto">
+                                            <div class="item-content-wrapper">
+                                                <div class="icon-wrapper">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        fill="currentColor" class="bi bi-gear-wide-connected"
+                                                        viewBox="0 0 16 16">
+                                                        <path
+                                                            d="M7.068.727c.243-.97 1.62-.97 1.864 0l.071.286a.96.96 0 0 0 1.622.434l.205-.211c.695-.719 1.888-.03 1.613.931l-.08.284a.96.96 0 0 0 1.187 1.187l.283-.081c.96-.275 1.65.918.931 1.613l-.211.205a.96.96 0 0 0 .434 1.622l.286.071c.97.243.97 1.62 0 1.864l-.286.071a.96.96 0 0 0-.434 1.622l.211.205c.719.695.03 1.888-.931 1.613l-.284-.08a.96.96 0 0 0-1.187 1.187l.081.283c.275.96-.918 1.65-1.613.931l-.205-.211a.96.96 0 0 0-1.622.434l-.071.286c-.243.97-1.62.97-1.864 0l-.071-.286a.96.96 0 0 0-1.622-.434l-.205.211c-.695.719-1.888.03-1.613-.931l.08-.284a.96.96 0 0 0-1.186-1.187l-.284.081c-.96.275-1.65-.918-.931-1.613l.211-.205a.96.96 0 0 0-.434-1.622l-.286-.071c-.97-.243-.97-1.62 0-1.864l.286-.071a.96.96 0 0 0 .434-1.622l-.211-.205c-.719-.695-.03-1.888.931-1.613l.284.08a.96.96 0 0 0 1.187-1.186l-.081-.284c-.275-.96.918-1.65 1.613-.931l.205.211a.96.96 0 0 0 1.622-.434zM12.973 8.5H8.25l-2.834 3.779A4.998 4.998 0 0 0 12.973 8.5m0-1a4.998 4.998 0 0 0-7.557-3.779l2.834 3.78zM5.048 3.967l-.087.065zm-.431.355A4.98 4.98 0 0 0 3.002 8c0 1.455.622 2.765 1.615 3.678L7.375 8zm.344 7.646.087.065z" />
+                                                    </svg>
+                                                </div>
+                                                <div class="text-content-wrapper">
+                                                    <h6 class="item-title">POS Pendiente Por repuestos</h6>
+                                                    <span class="item-count" id="PendientePorRepuesto"></span>
+                                                </div>
+                                            </div>
+                                            <div class="arrow-wrapper">
+                                                <button class="btn-link btn-icon-only">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                                        <path fill-rule="evenodd"
+                                                            d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </li>
+
+                                        <li class="list-group-item list-group-item-custom">
+                                            <div class="item-content-wrapper">
+                                                <div class="icon-wrapper">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        fill="currentColor" class="bi bi-person-check-fill"
+                                                        viewBox="0 0 16 16">
+                                                        <path fill-rule="evenodd"
+                                                            d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0" />
+                                                        <path
+                                                            d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+                                                    </svg>
+                                                </div>
+                                                <div class="text-content-wrapper">
+                                                    <h6 class="item-title">POS Entregado a Cliente</h6>
+                                                    <span class="item-count" id = "EntregadosCliente"></span>
+                                                </div>
+                                            </div>
+                                            <div class="arrow-wrapper">
+                                                <button class="btn-link btn-icon-only">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                                        <path fill-rule="evenodd"
+                                                            d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </li>
+
+                                        <li class="list-group-item list-group-item-custom" id="OpenModalIrreparable">
+                                            <div class="item-content-wrapper">
+                                                <div class="icon-wrapper">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        fill="currentColor" class="bi bi-file-x-fill" viewBox="0 0 16 16">
+                                                        <path
+                                                            d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M6.854 6.146 8 7.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 8l1.147 1.146a.5.5 0 0 1-.708.708L8 8.707 6.854 9.854a.5.5 0 0 1-.708-.708L7.293 8 6.146 6.854a.5.5 0 1 1 .708-.708" />
+                                                    </svg>
+                                                </div>
+                                                <div class="text-content-wrapper">
+                                                    <h6 class="item-title">Irreparables</h6>
+                                                    <span class="item-count" id="CountIrreparable"></span>
+                                                </div>
+                                            </div>
+                                            <div class="arrow-wrapper">
+                                                <button class="btn-link btn-icon-only">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                                        <path fill-rule="evenodd"
+                                                            d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
+                <!-- End Estadísticas de Tickets por Módulo --> 
 
-                    <div class="col-lg-5">
-                        <div class="card shadow-md rounded-xl">
-                            <div class="card-header pb-0 p-4 border-b border-gray-200 bg-gradient-info">
-                                <h6 class="text-2xl font-semibold text-gray-800">Categorías de Tickets</h6>
-                            </div>
-                            <div class="card-body p-4">
-                                <ul class="list-group">
-
-                                    <li class="list-group-item list-group-item-custom" id="ModalPostReparacion">
-                                        <div class="item-content-wrapper">
-                                            <div class="icon-wrapper">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                    fill="currentColor" class="bi bi-wrench-adjustable"
-                                                    viewBox="0 0 16 16">
-                                                    <path
-                                                        d="M16 4.5a4.5 4.5 0 0 1-1.703 3.526L13 5l2.959-1.11q.04.3.041.61" />
-                                                    <path
-                                                        d="M11.5 9c.653 0 1.273-.139 1.833-.39L12 5.5 11 3l3.826-1.53A4.5 4.5 0 0 0 7.29 6.092l-6.116 5.096a2.583 2.583 0 1 0 3.638 3.638L9.908 8.71A4.5 4.5 0 0 0 11.5 9m-1.292-4.361-.596.893.809-.27a.25.25 0 0 1 .287.377l-.596.893.809-.27.158.475-1.5.5a.25.25 0 0 1-.287-.376l.596-.893-.809.27a.25.25 0 0 1-.287-.377l.596-.893-.809.27-.158-.475 1.5-.5a.25.25 0 0 1 .287.376M3 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
-                                                </svg>
-                                            </div>
-                                            <div class="text-content-wrapper">
-                                                <h6 class="item-title">POS en Proceso De Reparaci&oacuten</h6>
-                                                <span class="item-count" id="CountProcessReparacion"></span>
-                                            </div>
-                                        </div>
-                                        <div class="arrow-wrapper">
-                                            <button class="btn-link btn-icon-only">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                    fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd"
-                                                        d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </li>
-
-                                    <li class="list-group-item list-group-item-custom" id="OpenModalPostReparado">
-                                        <div class="item-content-wrapper">
-                                            <div class="icon-wrapper">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                    fill="currentColor" class="bi bi-file-post-fill"
-                                                    viewBox="0 0 16 16">
-                                                    <path
-                                                        d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M4.5 3h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1m0 2h7a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5" />
-                                                </svg>
-                                            </div>
-                                            <div class="text-content-wrapper">
-                                                <h6 class="item-title">POS Reparados</h6>
-                                                <span class="item-count" id="ReparadopsCount"></span>
-                                            </div>
-                                        </div>
-                                        <div class="arrow-wrapper">
-                                            <button class="btn-link btn-icon-only">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                    fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd"
-                                                        d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </li>
-
-                                    <li class="list-group-item list-group-item-custom" id="OpenModalPendienteRepuesto">
-                                        <div class="item-content-wrapper">
-                                            <div class="icon-wrapper">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                    fill="currentColor" class="bi bi-gear-wide-connected"
-                                                    viewBox="0 0 16 16">
-                                                    <path
-                                                        d="M7.068.727c.243-.97 1.62-.97 1.864 0l.071.286a.96.96 0 0 0 1.622.434l.205-.211c.695-.719 1.888-.03 1.613.931l-.08.284a.96.96 0 0 0 1.187 1.187l.283-.081c.96-.275 1.65.918.931 1.613l-.211.205a.96.96 0 0 0 .434 1.622l.286.071c.97.243.97 1.62 0 1.864l-.286.071a.96.96 0 0 0-.434 1.622l.211.205c.719.695.03 1.888-.931 1.613l-.284-.08a.96.96 0 0 0-1.187 1.187l.081.283c.275.96-.918 1.65-1.613.931l-.205-.211a.96.96 0 0 0-1.622.434l-.071.286c-.243.97-1.62.97-1.864 0l-.071-.286a.96.96 0 0 0-1.622-.434l-.205.211c-.695.719-1.888.03-1.613-.931l.08-.284a.96.96 0 0 0-1.186-1.187l-.284.081c-.96.275-1.65-.918-.931-1.613l.211-.205a.96.96 0 0 0-.434-1.622l-.286-.071c-.97-.243-.97-1.62 0-1.864l.286-.071a.96.96 0 0 0 .434-1.622l-.211-.205c-.719-.695-.03-1.888.931-1.613l.284.08a.96.96 0 0 0 1.187-1.186l-.081-.284c-.275-.96.918-1.65 1.613-.931l.205.211a.96.96 0 0 0 1.622-.434zM12.973 8.5H8.25l-2.834 3.779A4.998 4.998 0 0 0 12.973 8.5m0-1a4.998 4.998 0 0 0-7.557-3.779l2.834 3.78zM5.048 3.967l-.087.065zm-.431.355A4.98 4.98 0 0 0 3.002 8c0 1.455.622 2.765 1.615 3.678L7.375 8zm.344 7.646.087.065z" />
-                                                </svg>
-                                            </div>
-                                            <div class="text-content-wrapper">
-                                                <h6 class="item-title">POS Pendiente Por repuestos</h6>
-                                                <span class="item-count" id="PendientePorRepuesto"></span>
-                                            </div>
-                                        </div>
-                                        <div class="arrow-wrapper">
-                                            <button class="btn-link btn-icon-only">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                    fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd"
-                                                        d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </li>
-
-                                    <li class="list-group-item list-group-item-custom">
-                                        <div class="item-content-wrapper">
-                                            <div class="icon-wrapper">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                    fill="currentColor" class="bi bi-person-check-fill"
-                                                    viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd"
-                                                        d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0" />
-                                                    <path
-                                                        d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
-                                                </svg>
-                                            </div>
-                                            <div class="text-content-wrapper">
-                                                <h6 class="item-title">POS Entregado a Cliente</h6>
-                                                <span class="item-count" id = "EntregadosCliente"></span>
-                                            </div>
-                                        </div>
-                                        <div class="arrow-wrapper">
-                                            <button class="btn-link btn-icon-only">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                    fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd"
-                                                        d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </li>
-
-                                    <li class="list-group-item list-group-item-custom" id="OpenModalIrreparable">
-                                        <div class="item-content-wrapper">
-                                            <div class="icon-wrapper">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                    fill="currentColor" class="bi bi-file-x-fill" viewBox="0 0 16 16">
-                                                    <path
-                                                        d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M6.854 6.146 8 7.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 8l1.147 1.146a.5.5 0 0 1-.708.708L8 8.707 6.854 9.854a.5.5 0 0 1-.708-.708L7.293 8 6.146 6.854a.5.5 0 1 1 .708-.708" />
-                                                </svg>
-                                            </div>
-                                            <div class="text-content-wrapper">
-                                                <h6 class="item-title">Irreparables</h6>
-                                                <span class="item-count" id="CountIrreparable"></span>
-                                            </div>
-                                        </div>
-                                        <div class="arrow-wrapper">
-                                            <button class="btn-link btn-icon-only">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                    fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd"
-                                                        d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </li>
-                                </ul>
+                <!-- Card ver Tickets En Proceso de Reparaci&oacuten -->
+                    <div class="modal fade" id="procesoReparacionModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-gradient-info text-white">
+                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalles de los POS en proceso de Reparaci&oacuten</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <input type="text" id="ticketSearchInputEnProceso" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                    </div>
+                                    <div id="ReparacionModalTicketsContent"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id="ModalProcessReparacion" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cerrar</buttModalProcessReparacionon>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                <!-- End Card ver Tickets En Proceso de Reparaci&oacuten  -->
 
-                <div class="modal fade" id="procesoReparacionModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                        <div class="modal-content">
-                            <div class="modal-header bg-gradient-info text-white">
-                                <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Ticket:
-                                    Detalles
-                                    de los POS en proceso de Reparaci&oacuten
-                                </h5>
-                                <button type="button" class="btn-close" id="ModalProcessReparacionIcon"
-                                    data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="ReparacionModalTicketsContent"></div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" id="ModalProcessReparacion" class="btn btn-secondary"
-                                    data-bs-dismiss="modal">Cerrar</buttModalProcessReparacionon>
+                <!-- Card ver Tickets Reparados -->
+                    <div class="modal fade" id="ReparadosModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-gradient-info text-white">
+                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalles de los POS Reparados</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <input type="text" id="ticketSearchInputReparado" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                    </div>
+                                    <div id="ReparadoModalTicketsContent"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id="ModalReparado" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cerrar
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                <!-- End Card ver Tickets Reparados  -->
 
-                <div class="modal fade" id="ReparadosModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                        <div class="modal-content">
-                            <div class="modal-header bg-gradient-info text-white">
-                                <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Ticket:
-                                    Detalles
-                                    de los POS Reparados
-                                </h5>
-                                <button type="button" class="btn-close" id="ModalReparadoIcon"
-                                    data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <!-- Card ver Tickets Pendientes Por Repuesto -->
+                    <div class="modal fade" id="pendienterespuestoModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-gradient-info text-white">
+                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalles de los POS Que requieren de Repuestos</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <input type="text" id="ticketSearchInputRequiereRepuesto" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                    </div>
+                                    <div id="PendienteRespuesModalTicketsContent"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id="ModalPendiRespuu" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cerrar
+                                </div>
                             </div>
-                            <div class="modal-body">
-                                <div id="ReparadoModalTicketsContent"></div>
+                        </div>
+                    </div>
+                <!-- End Card ver Tickets Pendientes Por Repuesto  -->
+
+                <!-- Card ver Tickets Entregados a Cliente -->
+                    <div class="modal fade" id="entregadoClienteModal" tabindex="-1" aria-labelledby="entregadoClienteModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header bg-gradient-primary">
+                                    <h5 class="modal-title text-white" id="entregadoClienteModalLabel">POS Entregado a Cliente</h5>
+                                </div>
+                                <div class="modal-body" id="entregadoClienteContent">
+                                    <p class="chart-subtitle text-gray-700 mb-4">Listado de tickets de Puntos de Venta (POS)
+                                        que ya han sido entregados al cliente.</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                                        id="ModalEntregadoClienteCerrar">Cerrar</button>
+                                </div>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" id="ModalReparado" class="btn btn-secondary"
-                                    data-bs-dismiss="modal">Cerrar
+                        </div>
+                    </div>
+                <!-- End Card ver Tickets Entregados a Cliente  -->
+
+                <!-- Card ver Tickets Irreparables -->
+                    <div class="modal fade" id="IrreparableModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-gradient-info text-white">
+                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalles de los POS Irreparables</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="IrreparableTikModalTicketsContent"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id="ModalIrreparableTik" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cerrar</button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                <!-- End Card ver Tickets Irreparables  -->
+            </div>    
+        </div>
 
-            <div class="modal fade" id="pendienterespuestoModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                    <div class="modal-content">
-                        <div class="modal-header bg-gradient-info text-white">
-                            <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Ticket:
-                                Detalles
-                                de los POS Que requieren de Repuestos
-                            </h5>
-                            <button type="button" class="btn-close" id="ModalpendiRespIcon"
-                                data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div id="PendienteRespuesModalTicketsContent"></div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" id="ModalPendiRespuu" class="btn btn-secondary"
-                                data-bs-dismiss="modal">Cerrar
-                        </div>
-                    </div>
-                </div>
-            </div>
-            </div>
-
-            <div class="modal fade" id="entregadoClienteModal" tabindex="-1"
-                aria-labelledby="entregadoClienteModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header bg-gradient-primary">
-                            <h5 class="modal-title text-white" id="entregadoClienteModalLabel">Tickets: POS
-                                Entregado a Cliente</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                aria-label="Close" id="ModalEntregadoClienteIcon"></button>
-                        </div>
-                        <div class="modal-body" id="entregadoClienteContent">
-                            <p class="chart-subtitle text-gray-700 mb-4">Listado de tickets de Puntos de Venta (POS)
-                                que ya han sido entregados al cliente.</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                                id="ModalEntregadoClienteCerrar">Cerrar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal fade" id="IrreparableModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                    <div class="modal-content">
-                        <div class="modal-header bg-gradient-info text-white">
-                            <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Ticket:
-                                Detalles
-                                de los POS Irreparables
-                            </h5>
-                            <button type="button" class="btn-close" id="ModalIrreparabltikIcon"
-                                data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div id="IrreparableTikModalTicketsContent"></div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" id="ModalIrreparableTik" class="btn btn-secondary"
-                                data-bs-dismiss="modal">Cerrar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    
 
             
         <!-- MODAL PARA NUEVA CONTRASENA -->

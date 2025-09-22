@@ -923,7 +923,7 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function handleGetTicketsPendienteReparacion(){
+    public function handleGetTicketsReparado(){
         try {
             $sql = "SELECT * FROM get_individual_tickets_reparados()";
             $result = Model::getResult($sql, $this->db);

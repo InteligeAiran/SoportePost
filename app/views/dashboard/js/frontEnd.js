@@ -1,10 +1,3 @@
-/*document.addEventListener("DOMContentLoaded", (event) => {
-  const anchoPantalla = window.innerWidth;
-  const altoPantalla = window.innerHeight;
-  console.log(`Ancho de la pantalla: ${anchoPantalla}px`);
-  console.log(`Alto de la pantalla: ${altoPantalla}px`);
-});*/
-
 let ModalTimelineInstance = null; // Variable para la instancia del modal de línea de tiempo
 
 // Variable para almacenar todos los tickets cargados (sin filtrar)
@@ -15,17 +8,30 @@ let allTallerTickets = [];// Variables globales para almacenar los tickets comer
 let allComercialTickets = [];
 let allIndividualTickets = [];
 let allRegionTickets = [];
+let allInporceesReparacionTickets = []; // ��NUEVO: Tickets en proceso de reparación
+let allReparadoTickets = []; // Global variable to store all repaired tickets
+let allPendienteRepuestoTickets = []; // Global variable to store all pending spare parts tickets
 
 let currentRegion = null; // Variable global para almacenar la región actual en el modal de región
 let currentMonth = null;
 let currentStatus = null;
 
+let allPendienteRepuestoTicketsSearchHandler = null; // Global variable for search handler
+let allReparadoTicketsSearchHandler = null; // Global variable for search handler
+let allInporceesReparacionTicketsSearchHandler = null; // ��NUEVO: Tickets en proceso de reparación
 let regionTicketSearchHandler = null;
 let monthlyTicketSearchHandler = null;
 let comercialTicketSearchHandler = null;
 let tallerTicketSearchHandler = null;
 let ticketSearchHandler = null;
 let resolvedTicketSearchHandler = null;
+
+/*document.addEventListener("DOMContentLoaded", (event) => {
+  const anchoPantalla = window.innerWidth;
+  const altoPantalla = window.innerHeight;
+  console.log(`Ancho de la pantalla: ${anchoPantalla}px`);
+  console.log(`Alto de la pantalla: ${altoPantalla}px`);
+});*/
 
 
 // --- Helpers de API: construcción de URL y parseo seguro de JSON ---
@@ -612,27 +618,24 @@ function handleTicketSearch(event, ticketArray, containerId) {
             );
         });
     }
-
     // Pasa los parámetros a displayFilteredTickets
     displayFilteredTickets(filteredTickets, containerId, currentMonth, currentStatus);
 }
+
 function displayFilteredTickets(ticketsToDisplay, containerId, month = null, status = null) {
-  console.log("displayFilteredTickets ejecutándose con:", { ticketsToDisplay: ticketsToDisplay?.length, containerId, month, status });
   const contentDiv = document.getElementById(containerId);
 
   if (!contentDiv) {
-    console.error(`El elemento ${containerId} no se encuentra en el DOM.`);
+    showNoDataMessage(contentDiv, "No se encontraron el containerId.");
     return;
   }
 
   if (!ticketsToDisplay || ticketsToDisplay.length === 0) {
-    console.log("No hay tickets para mostrar, mostrando mensaje de no datos");
     showNoDataMessage(contentDiv, "No se encontraron tickets con los criterios de búsqueda.");
     return;
   }
 
   if (!ticketsToDisplay || ticketsToDisplay.length === 0) {
-    console.log("No hay tickets para mostrar, mostrando mensaje de no datos");
     // Solo mostrar mensaje de "no datos" si realmente no hay tickets en la base de datos
     // Si es una búsqueda vacía, no mostrar nada (se manejará en el event listener)
     if (containerId === 'OpenTicketModalContent' && allOpenTickets && allOpenTickets.length > 0) {
@@ -648,8 +651,14 @@ function displayFilteredTickets(ticketsToDisplay, containerId, month = null, sta
     contentDiv.innerHTML = formatProcessTicketsDetails(ticketsToDisplay);
   } else if (containerId === 'ResolveTicketsContent') {
     contentDiv.innerHTML = formatResolveDetails(ticketsToDisplay);
-  } else if (containerId === 'TallerTicketsContent') {
+  } else if (containerId === 'ReparacionModalTicketsContent') {
+    contentDiv.innerHTML = formatProcessReparacionDetails(ticketsToDisplay);
+  }else if (containerId === 'TallerTicketsContent') {
     contentDiv.innerHTML = formatTallerDetails(ticketsToDisplay);
+  }else if (containerId === 'PendienteRespuesModalTicketsContent') {
+    contentDiv.innerHTML = formatPendinRespueTicketsDetails(ticketsToDisplay);
+  }else if (containerId === 'ReparadoModalTicketsContent') {
+    contentDiv.innerHTML = formatReparadoTicketsDetails(ticketsToDisplay);
   } else if(containerId === 'ComercialTicketsContent') {
     contentDiv.innerHTML = formatDetalleTicketComercial(ticketsToDisplay);
   } else if(containerId === 'RegionTicketsContent') {
@@ -670,18 +679,457 @@ function displayFilteredTickets(ticketsToDisplay, containerId, month = null, sta
     }
   } else if(containerId === 'OpenTicketModalContent') {
     // Para tickets abiertos, usar formatOpenDetails
-    console.log("Usando formatOpenDetails para OpenTicketModalContent");
     const htmlContent = formatOpenDetails(ticketsToDisplay);
-    console.log("HTML generado:", htmlContent.substring(0, 200) + "...");
     contentDiv.innerHTML = htmlContent;
   } else {
     // Si no coincide con ninguno, usar formatOpenDetails como fallback
-    console.log("Usando formatOpenDetails como fallback para:", containerId);
     const htmlContent = formatOpenDetails(ticketsToDisplay);
     contentDiv.innerHTML = htmlContent;
   }
-
   attachMarkReceivedListeners();
+}
+
+function loadIndividualPendienteRepuesto() {
+    const contentDiv = document.getElementById("PendienteRespuesModalTicketsContent");
+    const searchInput = document.getElementById("ticketSearchInputRequiereRepuesto");
+
+    contentDiv.innerHTML = "<p>Cargando información de los POS Pendientes por Repuestos...</p>"; // Loading message
+    searchInput.value = ''; // Clear the search input on reload
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendientesPorRepuestos`)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (data.success) {
+                allPendienteRepuestoTickets = data.details; // Store all pending spare parts tickets
+                displayFilteredTickets(allPendienteRepuestoTickets, 'PendienteRespuesModalTicketsContent'); // Display all tickets initially
+                attachMarkReceivedListeners(); // Attach listeners to "Mark as Received" buttons
+
+                // Add event listener for search input with stable reference
+                if (allPendienteRepuestoTicketsSearchHandler) {
+                    searchInput.removeEventListener('input', allPendienteRepuestoTicketsSearchHandler);
+                }
+                allPendienteRepuestoTicketsSearchHandler = (e) => {
+                    handleTicketSearch(e, allPendienteRepuestoTickets, 'PendienteRespuesModalTicketsContent');
+                };
+                searchInput.addEventListener('input', allPendienteRepuestoTicketsSearchHandler);
+            } else {
+                contentDiv.innerHTML =
+                    "<p>Error al cargar los detalles de tickets pendientes por repuestos: " +
+                    (data.message || "Error desconocido") +
+                    "</p>";
+                console.error(
+                    "Error en los datos de la API para tickets pendientes por repuestos:",
+                    data.message
+                );
+                allPendienteRepuestoTickets = []; // Clear on error
+                if (allPendienteRepuestoTicketsSearchHandler) {
+                    searchInput.removeEventListener('input', allPendienteRepuestoTicketsSearchHandler);
+                    allPendienteRepuestoTicketsSearchHandler = null;
+                }
+            }
+        })
+        .catch((error) => {
+            contentDiv.innerHTML =
+                `<div class="text-center text-muted py-5">
+                    <div class="d-flex flex-column align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                        </svg>
+                        <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                        <p class="text-muted mb-0">No hay tickets en Taller con estatus pendiente por repuestos.</p>
+                    </div>
+                </div>`;
+            console.error("Error fetching pendiente repuesto ticket details:", error);
+            allPendienteRepuestoTickets = []; // Clear on error
+            if (allPendienteRepuestoTicketsSearchHandler) {
+                searchInput.removeEventListener('input', allPendienteRepuestoTicketsSearchHandler);
+                allPendienteRepuestoTicketsSearchHandler = null;
+            }
+        });
+}
+
+function formatPendinRespueTicketsDetails(details){
+  if (!Array.isArray(details)) {
+    console.error("Expected 'details' to be an array, but received:", details);
+    return "<p>Formato de datos inesperado.</p>";
+  }
+
+  let html = `
+        <div class="ticket-details-list mt-3">
+    `;
+
+  details.forEach((ticket) => {
+    // <-- ¡Corregido aquí! Ahora usa 'details'
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
+
+    html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Documento:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_payment || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Domiciliación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_domiciliacion || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Taller:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Taller:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
+                        
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.date_create_ticket
+                        }</dd> <!-- Usar la variable formateada -->
+                    </dl>
+                </div>
+            </div>
+        `;
+  });
+  return html;
+}
+
+function loadIndividualReparado() {
+    const contentDiv = document.getElementById("ReparadoModalTicketsContent");
+    const searchInput = document.getElementById("ticketSearchInputReparado");
+
+    contentDiv.innerHTML = "<p>Cargando información de los POS Reparados...</p>"; // Loading message
+    searchInput.value = ''; // Clear the search input on reload
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsYaEstanReparados`)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (data.success) {
+                allReparadoTickets = data.details; // Store all repaired tickets
+                displayFilteredTickets(allReparadoTickets, 'ReparadoModalTicketsContent'); // Display all tickets initially
+                attachMarkReceivedListeners(); // Attach listeners to "Mark as Received" buttons
+
+                // Add event listener for search input with stable reference
+                if (allReparadoTicketsSearchHandler) {
+                    searchInput.removeEventListener('input', allReparadoTicketsSearchHandler);
+                }
+                allReparadoTicketsSearchHandler = (e) => {
+                    handleTicketSearch(e, allReparadoTickets, 'ReparadoModalTicketsContent');
+                };
+                searchInput.addEventListener('input', allReparadoTicketsSearchHandler);
+            } else {
+                contentDiv.innerHTML =
+                    "<p>Error al cargar los detalles de tickets reparados: " +
+                    (data.message || "Error desconocido") +
+                    "</p>";
+                console.error(
+                    "Error en los datos de la API para tickets reparados:",
+                    data.message
+                );
+                allReparadoTickets = []; // Clear on error
+                if (allReparadoTicketsSearchHandler) {
+                    searchInput.removeEventListener('input', allReparadoTicketsSearchHandler);
+                    allReparadoTicketsSearchHandler = null;
+                }
+            }
+        })
+        .catch((error) => {
+            contentDiv.innerHTML =
+                `<div class="text-center text-muted py-5">
+                    <div class="d-flex flex-column align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                        </svg>
+                        <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                        <p class="text-muted mb-0">No hay tickets en Taller con estatus reparado.</p>
+                    </div>
+                </div>`;
+            console.error("Error fetching reparado ticket details:", error);
+            allReparadoTickets = []; // Clear on error
+            if (allReparadoTicketsSearchHandler) {
+                searchInput.removeEventListener('input', allReparadoTicketsSearchHandler);
+                allReparadoTicketsSearchHandler = null;
+            }
+        });
+}
+
+function formatReparadoTicketsDetails(details){
+if (!Array.isArray(details)) {
+    console.error("Expected 'details' to be an array, but received:", details);
+    return "<p>Formato de datos inesperado.</p>";
+  }
+
+  let html = `
+        <div class="ticket-details-list mt-3">
+    `;
+
+  details.forEach((ticket) => {
+    // <-- ¡Corregido aquí! Ahora usa 'details'
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
+
+    html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Documento:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_payment || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Domiciliación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_domiciliacion || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Taller:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Taller:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
+                        
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.date_create_ticket
+                        }</dd> <!-- Usar la variable formateada -->
+                    </dl>
+                </div>
+            </div>
+        `;
+  });
+  return html;
+}
+
+function loadIndividualProceessReparacion() {
+    const contentDiv = document.getElementById("ReparacionModalTicketsContent");
+    const searchInput = document.getElementById("ticketSearchInputEnProceso");
+
+    contentDiv.innerHTML = "<p>Cargando información de los POS en proceso de reparación...</p>"; // Mensaje de carga
+    searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendienteReparacion`)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (data.success) {
+                allInporceesReparacionTickets = data.details; // Almacenar todos los tickets
+                displayFilteredTickets(allInporceesReparacionTickets, 'ReparacionModalTicketsContent'); // Mostrar todos al principio
+
+                // Añadir event listener para el input de búsqueda con referencia estable
+                if (allInporceesReparacionTicketsSearchHandler) {
+                    searchInput.removeEventListener('input', allInporceesReparacionTicketsSearchHandler);
+                }
+                allInporceesReparacionTicketsSearchHandler = (e) => {
+                    handleTicketSearch(e, allInporceesReparacionTickets, 'ReparacionModalTicketsContent');
+                };
+                searchInput.addEventListener('input', allInporceesReparacionTicketsSearchHandler);
+            } else {
+                contentDiv.innerHTML =
+                    "<p>Error al cargar los detalles de tickets en proceso de reparación: " +
+                    (data.message || "Error desconocido") +
+                    "</p>";
+                console.error(
+                    "Error en los datos de la API para tickets en proceso de reparación:",
+                    data.message
+                );
+                allInporceesReparacionTickets = []; // Limpiar por si hubo error
+                if (allInporceesReparacionTicketsSearchHandler) {
+                    searchInput.removeEventListener('input', allInporceesReparacionTicketsSearchHandler);
+                    allInporceesReparacionTicketsSearchHandler = null;
+                }
+            }
+        })
+        .catch((error) => {
+            contentDiv.innerHTML =
+                `<div class="text-center text-muted py-5">
+                    <div class="d-flex flex-column align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                        </svg>
+                        <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                        <p class="text-muted mb-0">No hay tickets en proceso de reparación.</p>
+                    </div>
+                </div>`;
+            console.error("Error fetching reparacion ticket details:", error);
+            allInporceesReparacionTickets = []; // Limpiar por si hubo error
+            if (allInporceesReparacionTicketsSearchHandler) {
+                searchInput.removeEventListener('input', allInporceesReparacionTicketsSearchHandler);
+                allInporceesReparacionTicketsSearchHandler = null;
+            }
+        });
+}
+
+function formatProcessReparacionDetails(details) {
+  if (!Array.isArray(details)) {
+    console.error("Expected 'details' to be an array, but received:", details);
+    return "<p>Formato de datos inesperado.</p>";
+  }
+
+  let html = `
+        <div class="ticket-details-list mt-3">
+    `;
+
+  details.forEach((ticket) => {
+    // <-- ¡Corregido aquí! Ahora usa 'details'
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
+
+    html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Documentos:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_payment || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Domiciliación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_domiciliacion || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Taller:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_domiciliacion || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
+                        
+                        <dt class="col-sm-4">Estatus Taller:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.date_create_ticket
+                        }</dd> <!-- Usar la variable formateada -->
+                    </dl>
+                </div>
+            </div>
+        `;
+  });
+  return html;
 }
 
 function loadIndividualTicketDetails(month, status) {
@@ -781,9 +1229,9 @@ function formatIndividualTickets(tickets, month, status) {
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
-                    <dt class="col-sm-4">Nivel Falla:</dt>
+                        <dt class="col-sm-4">Nivel Falla:</dt>
                         <dd class="col-sm-8">${
-                          ticket.name_level_failure || "N/A"
+                          ticket.name_level_failure || "No Aplica"
                         }</dd>
 
                         <dt class="col-sm-4">Serial POS:</dt>
@@ -951,7 +1399,6 @@ function formatMonthlyDetails(details) {
   return html;
 }
 
-
 function loadOpenTicketDetails() {
     const contentDiv = document.getElementById("OpenTicketModalContent");
     const searchInput = document.getElementById("ticketSearchInputOpen");
@@ -1079,48 +1526,6 @@ function loadIndividualProceess() {
                 ticketSearchHandler = null;
             }
         });
-}
-
-function loadIndividualReparado(){
-  const contentDiv = document.getElementById("ReparadoModalTicketsContent");
-  contentDiv.innerHTML =
-    "<p>Cargando información de los POS Reparado..</p>"; // Mensaje de carga
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsYaEstanReparados`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (data.success) {
-        contentDiv.innerHTML = formatReparadoTicketsDetails(data.details); // Renderizar los datos
-      } else {
-        contentDiv.innerHTML =
-          "<p>Error al cargar los detalles de Taller: " +
-          (data.message || "Error desconocido") +
-          "</p>";
-        console.error(
-          "Error en los datos de la API para Taller:",
-          data.message
-        );
-      }
-    })
-    .catch((error) => {
-      contentDiv.innerHTML =
-        `<tr>
-        <td colspan="14" class="text-center text-muted py-5">
-          <div class="d-flex flex-column align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-            </svg>
-            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-            <p class="text-muted mb-0">No hay tickets en Taller con estatus reparado.</p>
-          </div>
-        </td>
-      </tr>`
-      console.error("Error fetching taller details:", error);
-    });
 }
 
 function loadResolveTicketDetails() {
@@ -1592,9 +1997,9 @@ drawTimelineLine()
                 changeDescriptionHtml += `<br><strong>Motivo de Devolución:</strong> ${item.comment_devolution}<br>`;
             }
 
-            // Resto de los cambios de estado (laboratorio, domiciliación, pago)
+            // Resto de los cambios de estado (taller, domiciliación, pago)
             if (item.old_status_lab_name && item.new_status_lab_name && item.old_status_lab_name !== item.new_status_lab_name) {
-                changeDescriptionHtml += `<strong>Cambio estado laboratorio:</strong> De "${item.old_status_lab_name}" a "${item.new_status_lab_name}"<br>`;
+                changeDescriptionHtml += `<strong>Cambio estado taller:</strong> De "${item.old_status_lab_name}" a "${item.new_status_lab_name}"<br>`;
             }
             if (item.old_status_domiciliacion_name && item.new_status_domiciliacion_name && item.old_status_domiciliacion_name !== item.new_status_domiciliacion_name) {
                 changeDescriptionHtml += `<strong>Cambio estado domiciliación:</strong> De "${item.old_status_domiciliacion_name}" a "${item.new_status_domiciliacion_name}"<br>`;
@@ -1667,13 +2072,7 @@ function initializeTimelineClickHandlers() {
 }
 
 $('#flowTicketModal').on('shown.bs.modal', function () {
-    // Aquí es donde obtienes tus datos y llamas a formatTimeline
-    // Ejemplo (adapta esto a tu lógica actual de carga):
-    // const timelineData = obtenerDatosDelTicket(); // Llama a tu función para obtener los datos
-    // document.getElementById('timeline-container').innerHTML = formatTimeline(timelineData); // Asigna el HTML generado
-    
-    // Una vez que el HTML está en el DOM, inicializa los manejadores
-    initializeTimelineClickHandlers();
+  initializeTimelineClickHandlers();
 });
 
 function drawTimelineLine() {
@@ -1724,189 +2123,6 @@ function drawTimelineLine() {
     line.style.transform = `translateY(-50%)`; // Ajuste para centrado vertical preciso
 
     timelineContainer.appendChild(line);
-}
-
-function loadIndividualPendienteRepuesto(){
-  const contentDiv = document.getElementById("PendienteRespuesModalTicketsContent");
-  contentDiv.innerHTML =
-    "<p>Cargando información de los POS Pendiente de Respuesta..</p>"; // Mensaje de carga
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendientesPorRepuestos`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-      })
-    .then((data) => {
-      if (data.success) {
-        contentDiv.innerHTML = formatPendinRespueTicketsDetails(data.details); // Renderizar los datos
-
-      } else {
-        contentDiv.innerHTML =
-          "<p>Error al cargar los detalles de Taller: " +
-          (data.message || "Error desconocido") +
-          "</p>";
-        console.error(
-          "Error en los datos de la API para Taller:",
-          data.message
-        );
-      }
-    })
-    .catch((error) => {
-      contentDiv.innerHTML =
-        `<tr>
-        <td colspan="14" class="text-center text-muted py-5">
-          <div class="d-flex flex-column align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-            </svg>
-            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-            <p class="text-muted mb-0">No hay tickets en Taller con estatus de pendiente por respuesto.</p>
-          </div>
-        </td>
-      </tr>`
-      console.error("Error fetching taller details:", error);
-    });
-}
-
-function formatPendinRespueTicketsDetails(details){
-  if (!Array.isArray(details)) {
-    console.error("Expected 'details' to be an array, but received:", details);
-    return "<p>Formato de datos inesperado.</p>";
-  }
-
-  let html = `
-        <h5>POS Pendiente Por Repuestos</h5>
-        <div class="ticket-details-list mt-3">
-    `;
-
-  details.forEach((ticket) => {
-    // <-- ¡Corregido aquí! Ahora usa 'details'
-    // Formatear la fecha de creación del ticket para una mejor visualización
-    const creationDate = ticket.date_create_ticket
-      ? new Date(ticket.date_create_ticket).toLocaleString()
-      : "N/A";
-
-    html += `
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
-                </div>
-                <div class="card-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Serial POS:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.serial_pos_cliente || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Razón Social Cliente:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.razon_social_cliente || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Rif Cliente:</dt>
-                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
-
-                        <dt class="col-sm-4">Modelo POS:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_modelopos_cliente || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Estado Ticket:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.status_name_ticket || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Accion Ticket:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_accion_ticket || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Estatus Taller:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_status_lab || "N/A"
-                        }</dd>
-                        
-                        <dt class="col-sm-4">Fecha Creación:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.date_create_ticket
-                        }</dd> <!-- Usar la variable formateada -->
-                    </dl>
-                </div>
-            </div>
-        `;
-  });
-  return html;
-}
-
-function formatReparadoTicketsDetails(details){
-if (!Array.isArray(details)) {
-    console.error("Expected 'details' to be an array, but received:", details);
-    return "<p>Formato de datos inesperado.</p>";
-  }
-
-  let html = `
-        <h5>POS Reparados</h5>
-        <div class="ticket-details-list mt-3">
-    `;
-
-  details.forEach((ticket) => {
-    // <-- ¡Corregido aquí! Ahora usa 'details'
-    // Formatear la fecha de creación del ticket para una mejor visualización
-    const creationDate = ticket.date_create_ticket
-      ? new Date(ticket.date_create_ticket).toLocaleString()
-      : "N/A";
-
-    html += `
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
-                </div>
-                <div class="card-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Serial POS:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.serial_pos_cliente || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Razón Social Cliente:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.razon_social_cliente || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Rif Cliente:</dt>
-                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
-
-                        <dt class="col-sm-4">Modelo POS:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_modelopos_cliente || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Estado Ticket:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.status_name_ticket || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Accion Ticket:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_accion_ticket || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Estatus Taller:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_status_lab || "N/A"
-                        }</dd>
-                        
-                        <dt class="col-sm-4">Fecha Creación:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.date_create_ticket
-                        }</dd> <!-- Usar la variable formateada -->
-                    </dl>
-                </div>
-            </div>
-        `;
-  });
-  return html;
 }
 
 async function getTicketProcessReparacion() {
@@ -2000,118 +2216,6 @@ async function getTicketIrreparables() {
     } catch (error) {
         console.error("Failed to fetch irreparable ticket count:", error);
     }
-}
-
-function loadIndividualProceessReparacion() {
-  const contentDiv = document.getElementById("ReparacionModalTicketsContent");
-  contentDiv.innerHTML =
-    "<p>Cargando información de los POS en proceso de reparaci&oacuten..</p>"; // Mensaje de carga
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendienteReparacion`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (data.success) {
-        contentDiv.innerHTML = formatProcessReparacionDetails(data.details); // Renderizar los datos
-      } else {
-        contentDiv.innerHTML =
-          "<p>Error al cargar los detalles de Taller: " +
-          (data.message || "Error desconocido") +
-          "</p>";
-        console.error(
-          "Error en los datos de la API para Taller:",
-          data.message
-        );
-      }
-    })
-    .catch((error) => {
-      contentDiv.innerHTML =
-        `<tr>
-        <td colspan="14" class="text-center text-muted py-5">
-          <div class="d-flex flex-column align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-            </svg>
-            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-            <p class="text-muted mb-0">No hay tickets en Taller con estatus en proceso de reparación.</p>
-          </div>
-        </td>
-      </tr>`
-      console.error("Error fetching taller details:", error);
-    });
-}
-
-function formatProcessReparacionDetails(details) {
-  if (!Array.isArray(details)) {
-    console.error("Expected 'details' to be an array, but received:", details);
-    return "<p>Formato de datos inesperado.</p>";
-  }
-
-  let html = `
-        <h5>POS En Proceso De reparaci&oacuten</h5>
-        <div class="ticket-details-list mt-3">
-    `;
-
-  details.forEach((ticket) => {
-    // <-- ¡Corregido aquí! Ahora usa 'details'
-    // Formatear la fecha de creación del ticket para una mejor visualización
-    const creationDate = ticket.date_create_ticket
-      ? new Date(ticket.date_create_ticket).toLocaleString()
-      : "N/A";
-
-    html += `
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
-                </div>
-                <div class="card-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Serial POS:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.serial_pos_cliente || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Razón Social Cliente:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.razon_social_cliente || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Rif Cliente:</dt>
-                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
-
-                        <dt class="col-sm-4">Modelo POS:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_modelopos_cliente || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Estado Ticket:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.status_name_ticket || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Accion Ticket:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_accion_ticket || "N/A"
-                        }</dd>
-                        
-                        <dt class="col-sm-4">Estatus Taller:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_status_lab || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Fecha Creación:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.date_create_ticket
-                        }</dd> <!-- Usar la variable formateada -->
-                    </dl>
-                </div>
-            </div>
-        `;
-  });
-  return html;
 }
 
 function formatTallerDetails(details) {
@@ -2221,8 +2325,6 @@ function formatTallerDetails(details) {
   });
   return html;
 }
-
-
 
 function formatResolveDetails(details) {
   if (!Array.isArray(details)) {
@@ -3139,7 +3241,7 @@ function formatOpenDetails(details) {
                         <dt class="col-sm-4">Estatus Domiciliación:</dt>
                         <dd class="col-sm-8">${ticket.name_status_domiciliacion || 'N/A'}</dd>
 
-                        <dt class="col-sm-4">Estatus Laboratorio:</dt>
+                        <dt class="col-sm-4">Estatus Taller:</dt>
                         <dd class="col-sm-8">${ticket.name_status_lab || 'N/A'}</dd>
 
                         <dt class="col-sm-4">Acción Ticket:</dt>
@@ -4031,7 +4133,6 @@ function hideChartErrorMessage(chartId) {
     }
 }
 
-
 function formatDetalleTicketComercial(details) {
   if (!Array.isArray(details)) {
     console.error("Expected 'details' to be an array, but received:", details);
@@ -4056,11 +4157,6 @@ function formatDetalleTicketComercial(details) {
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
-                      <dt class="col-sm-4">Nivel Falla:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_level_failure || "N/A"
-                        }</dd>
-
                         <dt class="col-sm-4">Serial POS:</dt>
                         <dd class="col-sm-8">${
                           ticket.serial_pos_cliente || "N/A"
@@ -4115,7 +4211,6 @@ function formatDetalleTicketComercial(details) {
   });
   return html;
 }
-
 
 async function loadMonthlyCreatedTicketsChart() {
     // Array para los colores de fondo con degradado

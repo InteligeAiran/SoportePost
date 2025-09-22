@@ -432,9 +432,9 @@ class ReportRepository
         return $result['row']['get_total_reparados'];
     }
 
-    public function handleGetTicketsPendienteReparacion(){
+    public function handleGetTicketsReparado(){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->handleGetTicketsPendienteReparacion(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->handleGetTicketsReparado(); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
