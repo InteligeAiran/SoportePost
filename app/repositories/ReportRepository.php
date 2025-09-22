@@ -614,4 +614,19 @@ class ReportRepository
             return [];
         }
     }
+
+    public function GetTicketCounts(){
+        // Lógica para obtener conteos de tickets por módulo
+        $result = $this->model->GetTicketCounts();
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
 }

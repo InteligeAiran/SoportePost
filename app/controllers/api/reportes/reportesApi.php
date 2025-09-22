@@ -220,6 +220,10 @@ class reportes extends Controller {
                     $this->handlegetTicketEntregadoCliente();
                 break;
 
+                case 'GetTicketCounts':
+                    $this->handleGetTicketCounts();
+                break;
+
                 case 'GetDetalleTicketComercial':
                     $this->handleGetDetalleTicketComercial();
                 break;
@@ -1248,6 +1252,18 @@ class reportes extends Controller {
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+    }
+
+    public function handleGetTicketCounts(){
+        $repository = new ReportRepository();
+        $result = $repository->GetTicketCounts();
+        if ($result !== false && !empty($result)) {
+            $this->response(['success' => true, 'counts' => $result], 200);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => false, 'message' => 'No hay tickets disponibles'], 404);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los tickets'], 500);
         }
     }
 }

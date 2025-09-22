@@ -1210,6 +1210,24 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
             // Handle exception
         }
     }
+
+    public function GetTicketCounts(){
+        try {
+            $sql = "SELECT 
+                        at.id_accion_ticket,
+                        at.name_accion_ticket,
+                        COUNT(t.id_ticket) as total_tickets
+                    FROM accions_tickets at
+                    LEFT JOIN tickets t ON at.id_accion_ticket = t.id_accion_ticket
+                    GROUP BY at.id_accion_ticket, at.name_accion_ticket
+                    ORDER BY at.id_accion_ticket";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+            return false;
+        }
+    }
 }
 ?>
 

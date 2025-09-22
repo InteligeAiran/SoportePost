@@ -239,79 +239,85 @@ function mi_navbar() {}
                 <div class="row">
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
-                            <div class="card" id="Card-Ticket-open">
-                                <div class="card-body">
-                                    <div class="card-content-wrapper">
-                                        <div class="numbers">
-                                            <p class="card-category" style="color: black">Tickets Abiertos</p>
-                                            <h5 class="card-title font-weight-bolder" id="TicketsAbiertos">0</h5>
-                                            <p class="card-text mb-0">
-                                                <span class="text-danger font-weight-bolder"
-                                                    id="TicketPorcentOpen">0.00%</span>Del total de tickets
-                                            </p>
+                            <!-- Card Tickets Abiertos -->
+                                <div class="card" id="Card-Ticket-open">
+                                    <div class="card-body">
+                                        <div class="card-content-wrapper">
+                                            <div class="numbers">
+                                                <p class="card-category" style="color: black">Tickets Abiertos</p>
+                                                <h5 class="card-title font-weight-bolder" id="TicketsAbiertos">0</h5>
+                                                <p class="card-text mb-0">
+                                                    <span class="text-danger font-weight-bolder"
+                                                        id="TicketPorcentOpen">0.00%</span>Del total de tickets
+                                                </p>
+                                            </div>
+                                            <div class="icon-on-right">
+                                                <div class="icon-shape bg-gradient-primary">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                                        fill="white" class="bi bi-ticket-fill" viewBox="0 0 16 16">
+                                                        <path
+                                                            d="M1.5 3A1.5 1.5 0 0 0 0 4.5V6a.5.5 0 0 0 .5.5 1.5 1.5 0 1 1 0 3 .5.5 0 0 0-.5.5v1.5A1.5 1.5 0 0 0 1.5 13h13a1.5 1.5 0 0 0 1.5-1.5V10a.5.5 0 0 0-.5-.5 1.5 1.5 0 0 1 0-3A.5.5 0 0 0 16 6V4.5A1.5 1.5 0 0 0 14.5 3z" />
+                                                    </svg>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="icon-on-right">
-                                            <div class="icon-shape bg-gradient-primary">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"
-                                                    fill="white" class="bi bi-ticket-fill" viewBox="0 0 16 16">
-                                                    <path
-                                                        d="M1.5 3A1.5 1.5 0 0 0 0 4.5V6a.5.5 0 0 0 .5.5 1.5 1.5 0 1 1 0 3 .5.5 0 0 0-.5.5v1.5A1.5 1.5 0 0 0 1.5 13h13a1.5 1.5 0 0 0 1.5-1.5V10a.5.5 0 0 0-.5-.5 1.5 1.5 0 0 1 0-3A.5.5 0 0 0 16 6V4.5A1.5 1.5 0 0 0 14.5 3z" />
-                                                </svg>
+                                    </div>
+                                </div>
+                            <!--End Card Tickets Abiertos  -->
+                        </div>
+                    </div>
+
+                    <!-- Card ver Tickets Abiertos -->
+                        <div class="modal fade" id="OpenTicketModal" tabindex="-1"
+                            aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-gradient-primary text-white">
+                                        <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle de Tickets Abiertos
+                                        </h5>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <input type="text" id="ticketSearchInputOpen" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                        </div>
+                                        <div id="OpenTicketModalContent"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" id="ModalOpen" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <!--End Card ver Tickets Abiertos  -->
+
+                    <!-- Card Tickets Proceso -->
+                        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                            <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
+                                <div class="card"  id="Card-Ticket-process">
+                                    <div class="card-body">
+                                        <div class="card-content-wrapper">
+                                            <div class="numbers">
+                                                <p class="card-category" style="color: black">TICKETS PROCESO</p>
+                                                <h5 class="card-title" id="ProcessTicketNumber">0</h5>
+                                                <p class="card-text">
+                                                    <span class="text font-weight-bolder" id="Process_Tickets"></span>Del total de tickets
+                                                </p>
+                                            </div>
+                                            <div class="icon-on-right">
+                                                <div class="icon-shape bg-gradient-secondary">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-hourglass-split" viewBox="0 0 16 16">
+                                                        <path d="M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2zm3 6.35c0 .701-.478 1.236-1.011 1.492A3.5 3.5 0 0 0 4.5 13s.866-1.299 3-1.48zm1 0v3.17c2.134.181 3 1.48 3 1.48a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351z" />
+                                                    </svg>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                   <div class="modal fade" id="OpenTicketModal" tabindex="-1"
-                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                            <div class="modal-content">
-                                <div class="modal-header bg-gradient-primary text-white">
-                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
-                                        de Tickets Abiertos
-                                    </h5>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <input type="text" id="ticketSearchInputOpen" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
-                                    </div>
-                                    <div id="OpenTicketModalContent"></div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" id="ModalOpen" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-                        <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
-                            <div class="card"  id="Card-Ticket-process">
-                                <div class="card-body">
-                                    <div class="card-content-wrapper">
-                                        <div class="numbers">
-                                            <p class="card-category" style="color: black">TICKETS PROCESO</p>
-                                            <h5 class="card-title" id="ProcessTicketNumber">0</h5>
-                                            <p class="card-text">
-                                                <span class="text font-weight-bolder" id="Process_Tickets"></span>Del total de tickets
-                                            </p>
-                                        </div>
-                                        <div class="icon-on-right">
-                                            <div class="icon-shape bg-gradient-secondary">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-hourglass-split" viewBox="0 0 16 16">
-                                                    <path d="M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2zm3 6.35c0 .701-.478 1.236-1.011 1.492A3.5 3.5 0 0 0 4.5 13s.866-1.299 3-1.48zm1 0v3.17c2.134.181 3 1.48 3 1.48a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351z" />
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+                    <!-- End Card Tickets Proceso -->
+                    
+                    <!-- Card ver Tickets Proceso -->
                     <div class="modal fade" id="ProcessTicketsModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
@@ -330,8 +336,10 @@ function mi_navbar() {}
                             </div>
                         </div>
                     </div>
+                    <!--End Card ver Tickets Proceso  -->
 
-                   <div class="modal fade" id="TimelineModal" tabindex="-1" aria-labelledby="timelineModalLabel" aria-hidden="true">
+                    <!-- Card ver Flujo de los Tickets en Proceso -->
+                        <div class="modal fade" id="TimelineModal" tabindex="-1" aria-labelledby="timelineModalLabel" aria-hidden="true">
                         <div class="modal-fullscreen"> 
                             <div class="modal-content" id="ContentModallineTime">
                                 <div class="modal-header bg-gradient-primary text-white">
@@ -348,30 +356,35 @@ function mi_navbar() {}
                                 </div>
                             </div>
                         </div>
-                    </div>
+                        </div>
+                    <!--End Card ver Flujo de los Tickets en Proceso -->
 
-                    <div class="modal fade" id="flowTicketModal" tabindex="-1" role="dialog" aria-labelledby="flowTicketModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg" role="document">
-                            <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="flowTicketModalLabel">Historial del Ticket</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="timeline-display-area">
-                                    </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                            </div>
+                    <!-- Card ver historial de los Tickets en Proceso -->
+                        <div class="modal fade" id="flowTicketModal" tabindex="-1" role="dialog" aria-labelledby="flowTicketModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg" role="document">
+                                <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="flowTicketModalLabel">Historial del Ticket</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="timeline-display-area">
+                                        </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    <!-- Card ver historial de los Tickets en Proceso -->
 
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
+
+                        <!-- Card Tickets Cerrados -->
                             <div class="card" id="Card-resolve-ticket">
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
@@ -395,60 +408,67 @@ function mi_navbar() {}
                                     </div>
                                 </div>
                             </div>
+                        <!--End Card Tickets Cerrados -->
                         </div>
                     </div>
 
-                    <div class="modal fade" id="ResolveTicketsModal" tabindex="-1"
-                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                            <div class="modal-content">
-                                <div class="modal-header bg-gradient-primary text-white">
-                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
-                                        de Tickets Resueltos
-                                    </h5>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <input type="text" id="ticketSearchInputResolved" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                    <!-- Card ver Tickets Cerrados -->
+                        <div class="modal fade" id="ResolveTicketsModal" tabindex="-1"
+                            aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-gradient-primary text-white">
+                                        <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalles de Tickets Resueltos
+                                        </h5>
                                     </div>
-                                    <div id="ResolveTicketsContent"></div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" id="ModalResolveRegion" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Cerrar</button>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <input type="text" id="ticketSearchInputResolved" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                        </div>
+                                        <div id="ResolveTicketsContent"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" id="ModalResolveRegion" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cerrar</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    <!--End Card ver Tickets Cerrados  -->
 
-                    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-                        <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="card-content-wrapper">
-                                        <div class="numbers">
-                                            <p class="card-category" style="color: black">Total Tickets</p>
-                                            <h5 id="TotalTicket" class="card-title">0</h5>
-                                            <p class="card-text mb-0"><br><br>
-                                            </p>
-                                        </div>
-                                        <div class="icon-on-right">
-                                            <div class="icon-shape bg-gradient-info"> <svg
-                                                    xmlns="http://www.w3.org/2000/svg" width="30" height="30"
-                                                    fill="white" class="bi bi-ticket-detailed-fill" viewBox="0 0 16 16">
-                                                    <path
-                                                        d="M0 4.5A1.5 1.5 0 0 1 1.5 3h13A1.5 1.5 0 0 1 16 4.5V6a.5.5 0 0 1-.5.5 1.5 1.5 0 0 0 0 3 .5.5 0 0 1 .5.5v1.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5V10a.5.5 0 0 1 .5-.5 1.5 1.5 0 1 0 0-3A.5.5 0 0 1 0 6zm4 1a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5m0 5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5M4 8a1 1 0 0 0 1 1h6a1 1 0 1 0 0-2H5a1 1 0 0 0-1 1" />
-                                                </svg>
+                    <!-- Card Total de Tickets -->
+                        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                            <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="card-content-wrapper">
+                                            <div class="numbers">
+                                                <p class="card-category" style="color: black">Total Tickets</p>
+                                                <h5 id="TotalTicket" class="card-title">0</h5>
+                                                <p class="card-text mb-0"><br><br>
+                                                </p>
+                                            </div>
+                                            <div class="icon-on-right">
+                                                <div class="icon-shape bg-gradient-info"> <svg
+                                                        xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                                        fill="white" class="bi bi-ticket-detailed-fill" viewBox="0 0 16 16">
+                                                        <path
+                                                            d="M0 4.5A1.5 1.5 0 0 1 1.5 3h13A1.5 1.5 0 0 1 16 4.5V6a.5.5 0 0 1-.5.5 1.5 1.5 0 0 0 0 3 .5.5 0 0 1 .5.5v1.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5V10a.5.5 0 0 1 .5-.5 1.5 1.5 0 1 0 0-3A.5.5 0 0 1 0 6zm4 1a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5m0 5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5M4 8a1 1 0 0 0 1 1h6a1 1 0 1 0 0-2H5a1 1 0 0 0-1 1" />
+                                                    </svg>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    <!--End Card Total de Tickets  -->
+
 
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
+                        
+                        <!-- Card Tickets En Taller -->
                             <div class="card" id="Card-Send-To-Taller">
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
@@ -475,10 +495,11 @@ function mi_navbar() {}
                                     </div>
                                 </div>
                             </div>
+                        <!--End Card Tickets En Taller  -->
                         </div>
                     </div>
 
-                     <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
+                    <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
                         <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel" aria-hidden="true">
                             <div class="modal-dialog modal-xl modal-dialog-centered"> 
                                 <div class="modal-content">
@@ -501,153 +522,167 @@ function mi_navbar() {}
                         </div>
                     <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
 
-                    <div class="modal fade" id="SendTallerTicketsModal" tabindex="-1"
-                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                            <div class="modal-content">
-                                <div class="modal-header bg-gradient-primary text-white">
-                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
-                                        de Tickets En Taller
-                                    </h5>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <input type="text" id="ticketSearchInputTaller" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                    <!-- Card ver Tickets En Taller -->
+                        <div class="modal fade" id="SendTallerTicketsModal" tabindex="-1"
+                            aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-gradient-primary text-white">
+                                        <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle de Tickets En Taller
+                                        </h5>
                                     </div>
-                                    <div id="TallerTicketsContent"></div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" id="ModalTallerRegion" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Cerrar</button>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <input type="text" id="ticketSearchInputTaller" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                        </div>
+                                        <div id="TallerTicketsContent"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" id="ModalTallerRegion" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cerrar</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    <!--End Card ver Tickets En Taller  -->
 
-                    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-                        <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
-                            <div class="card"  id="Card-Comercial-Ticket">
-                                <div class="card-body">
-                                    <div class="card-content-wrapper">
-                                        <div class="numbers">
-                                            <p class="card-category" style="color: black">GESTI&OacuteN COMERCIAL</p>
-                                            <h5 class="card-title" id="ticketGestionComercialCount">0</h5>
-                                            <p class="card-text mb-0">
-                                                <span class="text-percentage" id="PorcentGestionComercial"></span>Del total de tickets
-                                            </p>
-                                        </div>
-                                        <div class="icon-on-right">
-                                            <div class="icon-shape bg-gradient-danger"> <svg
-                                                    xmlns="http://www.w3.org/2000/svg" width="30" height="30"
-                                                    fill="white" class="bi bi-calendar-check-fill" viewBox="0 0 16 16">
-                                                    <path
-                                                        d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2m-5.146-5.146-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708" />
-                                                </svg>
+                    <!-- Card Gesti&oacuten Comercial -->
+                        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                            <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
+                                <div class="card"  id="Card-Comercial-Ticket">
+                                    <div class="card-body">
+                                        <div class="card-content-wrapper">
+                                            <div class="numbers">
+                                                <p class="card-category" style="color: black">GESTI&OacuteN COMERCIAL</p>
+                                                <h5 class="card-title" id="ticketGestionComercialCount">0</h5>
+                                                <p class="card-text mb-0">
+                                                    <span class="text-percentage" id="PorcentGestionComercial"></span>Del total de tickets
+                                                </p>
+                                            </div>
+                                            <div class="icon-on-right">
+                                                <div class="icon-shape bg-gradient-danger"> <svg
+                                                        xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                                        fill="white" class="bi bi-calendar-check-fill" viewBox="0 0 16 16">
+                                                        <path
+                                                            d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2m-5.146-5.146-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708" />
+                                                    </svg>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    <!-- End Card Gesti&oacuten Comercial -->
                 </div>
 
-                <div class="modal fade" id="DetalleTicketComercial" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                        <div class="modal-content">
-                            <div class="modal-header bg-gradient-primary text-white">
-                                <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle de Tickets En Gesti&oacuten Comercial</h5>
-                            </div>
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <input type="text" id="ticketSearchInputComercial" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
-                                </div>
-                                <div id="ComercialTicketsContent"></div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" id="ModalComercialDetalle" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mt-4">
-                    <div class="col-lg-7 mb-lg-0 mb-4">
-                        <div class="card card-chart" id="monthlyTicketsCard">
-                            <div class="card-header bg-gradient-info">
-                                <h5 class="chart-title text-white">Ticket Mensuales</h5>
-                                <p class="chart-subtitle text-white">
-                                    <i class="fa fa-arrow-up text-success"></i>
-                                    <span id="porcent" class="font-weight-bold"></span>
-                                </p>
-                            </div>
-                            <div class="card-body">
-                                <div class="chart-container">
-                                    <canvas id="chart-line"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal fade" id="monthlyTicketsModal" tabindex="-1"
-                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
+                <!-- Card ver Tickets En Gesti&oacuten Comercial -->
+                    <div class="modal fade" id="DetalleTicketComercial" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                             <div class="modal-content">
-                                <div class="modal-header bg-gradient-info text-white">
-                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
-                                        de Tickets Mensuales
-                                    </h5>
+                                <div class="modal-header bg-gradient-primary text-white">
+                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle de Tickets En Gesti&oacuten Comercial</h5>
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
-                                        <input type="text" id="ticketSearchInputMensual" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                        <input type="text" id="ticketSearchInputComercial" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
                                     </div>
-                                    <div id="monthlyTicketsContent"></div>
+                                    <div id="ComercialTicketsContent"></div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" id="ModalStadisticMonth" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Cerrar</button>
+                                    <button type="button" id="ModalComercialDetalle" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                                 </div>
                             </div>
                         </div>
                     </div>
+                <!--End Card ver Tickets En Gesti&oacuten Comercial  -->
 
-                    <div class="modal fade" id="RegionTicketsModal" tabindex="-1"
-                        aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                            <div class="modal-content">
-                                <div class="modal-header bg-gradient-info text-white">
-                                    <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle
-                                        de Tickets Regionales
-                                    </h5>
+                <div class="row mt-4">
+                    <!-- Gráficas de Tickets Mensuales -->
+                        <div class="col-lg-7 mb-lg-0 mb-4">
+                            <div class="card card-chart" id="monthlyTicketsCard">
+                                <div class="card-header bg-gradient-info">
+                                    <h5 class="chart-title text-white">Ticket Mensuales</h5>
+                                    <p class="chart-subtitle text-white">
+                                        <i class="fa fa-arrow-up text-success"></i>
+                                        <span id="porcent" class="font-weight-bold"></span>
+                                    </p>
                                 </div>
-                                <div class="modal-body">
-                                    <div id="RegionTicketsContent"></div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" id="ModalStadisticRegion" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Cerrar</button>
+                                <div class="card-body">
+                                    <div class="chart-container">
+                                        <canvas id="chart-line"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    <!-- End Gráficas de Tickets Mensuales -->
 
-                    <div class="col-lg-5">
-                        <div class="card card-chart" id="RegionTicketsCard">
-                            <div class="card-header bg-gradient-primary">
-                                <h5 class="chart-title text-white">Tickets por Regiones</h5>
-                                <p class="chart-subtitle text-white">Resumen de tickets Regionales
-                                </p>
-                            </div>
-                            <div class="card-body">
-                                <div class="chart-container">
-                                    <canvas id="ticketsChart"></canvas>
+                    <!-- Gráficas ver de Tickets Mensuales -->
+                        <div class="modal fade" id="monthlyTicketsModal" tabindex="-1" aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-gradient-info text-white">
+                                        <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle de Tickets Mensuales
+                                        </h5>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <input type="text" id="ticketSearchInputMensual" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                        </div>
+                                        <div id="monthlyTicketsContent"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" id="ModalStadisticMonth" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cerrar</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    <!-- End Gráficas ver de Tickets Mensuales -->
+
+                    <!-- Gráficas de Tickets Mensuales -->
+                        <div class="col-lg-5">
+                            <div class="card card-chart" id="RegionTicketsCard">
+                                <div class="card-header bg-gradient-primary">
+                                    <h5 class="chart-title text-white">Tickets por Regiones</h5>
+                                    <p class="chart-subtitle text-white">Resumen de tickets Regionales
+                                    </p>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container">
+                                        <canvas id="ticketsChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <!-- End Gráficas de Tickets Mensuales -->
+
+                    <!-- Gráficas ver de Tickets Regionales -->
+                        <div class="modal fade" id="RegionTicketsModal" tabindex="-1"
+                            aria-labelledby="monthlyTicketsModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-gradient-info text-white">
+                                        <h5 class="modal-title" style="color: white" id="monthlyTicketsModalLabel">Detalle de Tickets Regionales
+                                        </h5>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <input type="text" id="ticketSearchInputRegion" class="form-control" placeholder="Buscar por Serial POS, RIF, Razón Social, o Acción...">
+                                        </div>
+                                        <div id="RegionTicketsContent"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" id="ModalStadisticRegion" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cerrar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <!-- End Gráficas de Tickets Regionales -->
                 </div>
 
+                <!-- Estadísticas de Tickets por Módulo -->
                 <div class="row mt-6">
                     <div class="col-lg-7 mb-lg-0 mb-4">
                         <div class="card shadow-md rounded-xl">

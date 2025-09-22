@@ -14,10 +14,13 @@ let allResolvedTickets = [];
 let allTallerTickets = [];// Variables globales para almacenar los tickets comerciales y manejar la búsqueda
 let allComercialTickets = [];
 let allIndividualTickets = [];
+let allRegionTickets = [];
 
+let currentRegion = null; // Variable global para almacenar la región actual en el modal de región
 let currentMonth = null;
 let currentStatus = null;
 
+let regionTicketSearchHandler = null;
 let monthlyTicketSearchHandler = null;
 let comercialTicketSearchHandler = null;
 let tallerTicketSearchHandler = null;
@@ -491,9 +494,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // A. Clics dentro de monthlyTicketsContent
-  const monthlyTicketsContent = document.getElementById(
-    "monthlyTicketsContent"
-  );
+  const monthlyTicketsContent = document.getElementById("monthlyTicketsContent");
+
   if (monthlyTicketsContent) {
     monthlyTicketsContent.addEventListener("click", function (event) {
       const clickedButton = event.target.closest(".monthly-tickets-detail");
@@ -571,7 +573,7 @@ function handleTicketSearch(event, ticketArray, containerId) {
         // Usa las variables globales para el mes y el estado
         const contentDiv = document.getElementById(containerId);
         if (contentDiv) {
-            contentDiv.innerHTML = formatIndividualTickets(ticketArray, currentMonth, currentStatus);
+            displayFilteredTickets(ticketArray, containerId, currentMonth, currentStatus);
         }
         return;
     } else {
@@ -614,10 +616,8 @@ function handleTicketSearch(event, ticketArray, containerId) {
     // Pasa los parámetros a displayFilteredTickets
     displayFilteredTickets(filteredTickets, containerId, currentMonth, currentStatus);
 }
-
-// Función para mostrar los tickets (llamada por loadOpenTicketDetails y handleTicketSearch)
-// Ahora, tu función displayFilteredTickets puede usar esta nueva estructura
 function displayFilteredTickets(ticketsToDisplay, containerId, month = null, status = null) {
+  console.log("displayFilteredTickets ejecutándose con:", { ticketsToDisplay: ticketsToDisplay?.length, containerId, month, status });
   const contentDiv = document.getElementById(containerId);
 
   if (!contentDiv) {
@@ -626,13 +626,21 @@ function displayFilteredTickets(ticketsToDisplay, containerId, month = null, sta
   }
 
   if (!ticketsToDisplay || ticketsToDisplay.length === 0) {
+    console.log("No hay tickets para mostrar, mostrando mensaje de no datos");
     showNoDataMessage(contentDiv, "No se encontraron tickets con los criterios de búsqueda.");
     return;
   }
 
-  // Aquí usamos el formato correcto
-  if (containerId === 'monthlyTicketsContent') {
-    contentDiv.innerHTML = formatIndividualTickets(ticketsToDisplay, month, status);
+  if (!ticketsToDisplay || ticketsToDisplay.length === 0) {
+    console.log("No hay tickets para mostrar, mostrando mensaje de no datos");
+    // Solo mostrar mensaje de "no datos" si realmente no hay tickets en la base de datos
+    // Si es una búsqueda vacía, no mostrar nada (se manejará en el event listener)
+    if (containerId === 'OpenTicketModalContent' && allOpenTickets && allOpenTickets.length > 0) {
+      // Si hay tickets en allOpenTickets pero la búsqueda está vacía, no mostrar mensaje
+      return;
+    }
+    showNoDataMessage(contentDiv, "No se encontraron tickets con los criterios de búsqueda.");
+    return;
   }
 
   // Usar la función de formato adecuada según el contenedor
@@ -644,17 +652,33 @@ function displayFilteredTickets(ticketsToDisplay, containerId, month = null, sta
     contentDiv.innerHTML = formatTallerDetails(ticketsToDisplay);
   } else if(containerId === 'ComercialTicketsContent') {
     contentDiv.innerHTML = formatDetalleTicketComercial(ticketsToDisplay);
+  } else if(containerId === 'RegionTicketsContent') {
+    // Si se llama desde la búsqueda, usa la función de formato individual de región
+    if (currentRegion) {
+         contentDiv.innerHTML = formatIndividualRegionTickets(ticketsToDisplay, currentRegion);
+    } else {
+         // Si no se ha pasado región, probablemente sea la carga inicial
+         contentDiv.innerHTML = formatRegionDetails(ticketsToDisplay);
+    }
   } else if(containerId === 'monthlyTicketsContent') {
     // Si se llama desde la búsqueda, usa la función de formato individual
-    if (month && status) {
-         contentDiv.innerHTML = formatIndividualTickets(ticketsToDisplay, month, status);
+    if (currentMonth && currentStatus) {
+         contentDiv.innerHTML = formatIndividualTickets(ticketsToDisplay, currentMonth, currentStatus);
     } else {
          // Si no se han pasado mes y status, probablemente sea la carga inicial
          contentDiv.innerHTML = formatMonthlyDetails(ticketsToDisplay);
     }
+  } else if(containerId === 'OpenTicketModalContent') {
+    // Para tickets abiertos, usar formatOpenDetails
+    console.log("Usando formatOpenDetails para OpenTicketModalContent");
+    const htmlContent = formatOpenDetails(ticketsToDisplay);
+    console.log("HTML generado:", htmlContent.substring(0, 200) + "...");
+    contentDiv.innerHTML = htmlContent;
   } else {
-    // Si no coincide con ninguno, usa el formato predeterminado
-    contentDiv.innerHTML = formatOpenDetails(ticketsToDisplay);
+    // Si no coincide con ninguno, usar formatOpenDetails como fallback
+    console.log("Usando formatOpenDetails como fallback para:", containerId);
+    const htmlContent = formatOpenDetails(ticketsToDisplay);
+    contentDiv.innerHTML = htmlContent;
   }
 
   attachMarkReceivedListeners();
@@ -732,84 +756,201 @@ function loadIndividualTicketDetails(month, status) {
     });
 }
 
+function formatIndividualTickets(tickets, month, status) {
 
-function handleTicketSearch(event, ticketArray, containerId) {
-    const inputEl = event && event.target ? event.target : null;
-    if (!inputEl) return;
+  if (tickets.length === 0) {
+    return `<p>No hay tickets ${status.toLowerCase()}s para ${month}.</p>
+                <button class="btn btn-primary mt-3" onclick="loadMonthlyTicketDetails()">Volver al resumen</button>`;
+  }
 
-    const searchTerm = inputEl.value.trim();
-    const searchTermLower = searchTerm.toLowerCase();
-    const searchTermDigits = searchTerm.replace(/\D/g, '');
-    let filteredTickets = [];
+  let html = `
+        <h5 style = "color:black;">Tickets ${status}s para ${month}</h5>
+        <div class="ticket-details-list mt-3">
+    `;
 
-    if (searchTerm === '') {
-        // Usa las variables globales para el mes y el estado
-        const contentDiv = document.getElementById(containerId);
-        if (contentDiv) {
-            contentDiv.innerHTML = formatIndividualTickets(ticketArray, currentMonth, currentStatus);
-        }
-        return;
-    } else {
-        filteredTickets = (ticketArray || []).filter(ticket => {
-            // Construir variantes de fecha
-            const originalDate = (ticket.date_create_ticket || '').trim();
-            const originalDateLower = originalDate.toLowerCase();
-            const dateOnly = originalDateLower.substring(0, 10);
-            const dateOnlySlashes = dateOnly.replace(/-/g, '/');
-            const localizedDate = originalDate
-                ? new Date(originalDate.replace(/-/g, '/')).toLocaleDateString('es-ES', {
-                    day: '2-digit', month: '2-digit', year: 'numeric'
-                }).toLowerCase()
-                : '';
-            const dateDigits = originalDate.replace(/\D/g, '');
+  tickets.forEach((ticket) => {
+    // Formatear la fecha de creación del ticket para una mejor visualización
+    const creationDate = ticket.date_create_ticket
+      ? new Date(ticket.date_create_ticket).toLocaleString()
+      : "N/A";
 
-            const matchesDate = (
-                dateOnly.includes(searchTermLower) ||
-                dateOnlySlashes.includes(searchTermLower) ||
-                localizedDate.includes(searchTermLower) ||
-                (searchTermDigits !== '' && dateDigits.includes(searchTermDigits))
-            );
+    html += `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                    <dt class="col-sm-4">Nivel Falla:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_level_failure || "N/A"
+                        }</dd>
 
-            return (
-                (ticket.nro_ticket || '').toLowerCase().includes(searchTermLower) ||
-                (ticket.serial_pos || ticket.serial_pos_cliente || '').toLowerCase().includes(searchTermLower) ||
-                (ticket.razon_social_cliente || '').toLowerCase().includes(searchTermLower) ||
-                (ticket.rif_empresa || ticket.rif_cliente || '').toLowerCase().includes(searchTermLower) ||
-                (ticket.name_modelopos_cliente || '').toLowerCase().includes(searchTermLower) ||
-                (ticket.name_status_payment || '').toLowerCase().includes(searchTermLower) ||
-                (ticket.name_accion_ticket || '').toLowerCase().includes(searchTermLower) ||
-                (ticket.status_name_ticket || '').toLowerCase().includes(searchTermLower) ||
-                (ticket.name_status_domiciliacion || '').toLowerCase().includes(searchTermLower) ||
-                (ticket.name_status_lab || '').toLowerCase().includes(searchTermLower) ||
-                matchesDate
-            );
-        });
-    }
+                        <dt class="col-sm-4">Serial POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.serial_pos_cliente || "N/A"
+                        }</dd>
 
-    // Pasa los parámetros a displayFilteredTickets
-    displayFilteredTickets(filteredTickets, containerId, currentMonth, currentStatus);
+                        <dt class="col-sm-4">Razón Social Cliente:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.razon_social_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Rif Cliente:</dt>
+                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Modelo POS:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_modelopos_cliente || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Documento:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_payment || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.status_name_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Domiciliación:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_domiciliacion || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Estatus Taller:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_status_lab || "N/A"
+                        }</dd>
+                        
+                        <dt class="col-sm-4">Accion Ticket:</dt>
+                        <dd class="col-sm-8">${
+                          ticket.name_accion_ticket || "N/A"
+                        }</dd>
+
+                        <dt class="col-sm-4">Fecha Creación:</dt>
+                        <dd class="col-sm-8">${ticket.date_create_ticket}</dd>
+                    </dl>
+                </div>
+            </div>
+        `;
+  });
+
+  html += `
+        </div>
+        <button class="btn btn-primary mt-3" onclick="loadMonthlyTicketDetails()">Volver al resumen</button>
+    `;
+  return html;
 }
 
-// La función displayFilteredTickets debe ser capaz de recibir month y status
-function displayFilteredTickets(ticketsToDisplay, containerId, month = null, status = null) {
-  const contentDiv = document.getElementById(containerId);
-  if (!contentDiv) {
-    console.error(`El elemento ${containerId} no se encuentra en el DOM.`);
-    return;
+function loadMonthlyTicketDetails() {
+  const contentDiv = document.getElementById("monthlyTicketsContent");
+  contentDiv.innerHTML = "<p>Cargando información...</p>"; // Mensaje de carga
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyTicketDetails`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        contentDiv.innerHTML = formatMonthlyDetails(data.details); // Renderizar los datos
+      } else {
+        contentDiv.innerHTML =
+          "<p>Error al cargar los detalles: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error("Error en los datos de la API:", data.message);
+      }
+    })
+    .catch((error) => {
+      contentDiv.innerHTML =
+  `<tr>
+        <td colspan="14" class="text-center text-muted py-5">
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+            <p class="text-muted mb-0">No hay tickets Abiertos para cargar la gráfica mensual.</p>
+          </div>
+        </td>
+      </tr>`
+      console.error("Error fetching monthly details:", error);
+    });
+}
+
+function formatMonthlyDetails(details) {
+
+  const SearchInput = document.getElementById('ticketSearchInputMensual');
+
+  if (SearchInput) {
+    SearchInput.style.display = 'none'; // Limpiar el campo de búsqueda
   }
 
-  // Lógica para mostrar el mensaje "No hay datos"
-  if (!ticketsToDisplay || ticketsToDisplay.length === 0) {
-    showNoDataMessage(contentDiv, "No se encontraron tickets con los criterios de búsqueda.");
-    return;
-  }
-  
-  // Aquí usamos el formato correcto
-  if (containerId === 'monthlyTicketsContent') {
-    contentDiv.innerHTML = formatIndividualTickets(ticketsToDisplay, month, status);
-  }
-  // ... (el resto de las condiciones)
+
+  let html = `
+        <p>Haz clic en el número de tickets para ver el detalle.</p>
+        <table class="table table-striped table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Mes</th>
+                    <th>Tickets Creados</th>
+                    <th>Abiertos</th>
+                    <th>En Proceso</th>
+                    <th>Cerrados</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+  details.forEach((item) => {
+    const monthName = item.month_name.trim();
+    const year = item.year_month.substring(0, 4);
+
+    html += `
+            <tr>
+                <td>${monthName} ${year}</td> 
+                <td>${item.total_tickets_creados_mes}</td>
+                <td>
+                    <button class="btn btn-link p-0 monthly-tickets-detail" 
+                            data-month="${item.year_month}" 
+                            data-status="Abierto" 
+                            data-count="${item.tickets_abiertos}">
+                        ${item.tickets_abiertos}
+                    </button>
+                </td>
+                <td>
+                    <button class="btn btn-link p-0 monthly-tickets-detail" 
+                            data-month="${item.year_month}" 
+                            data-status="En proceso" 
+                            data-count="${item.tickets_en_proceso}">
+                        ${item.tickets_en_proceso}
+                    </button>
+                </td>
+                <td>
+                    <button class="btn btn-link p-0 monthly-tickets-detail" 
+                            data-month="${item.year_month}" 
+                            data-status="Cerrado" 
+                            data-count="${item.tickets_cerrados}">
+                        ${item.tickets_cerrados}
+                    </button>
+                </td>
+            </tr>
+        `;
+  });
+
+  html += `
+            </tbody>
+        </table>
+        <p class="text-muted mt-3">Información extra sobre los tickets.</p>
+    `;
+  return html;
 }
+
 
 function loadOpenTicketDetails() {
     const contentDiv = document.getElementById("OpenTicketModalContent");
@@ -3605,6 +3746,12 @@ function loadRegionTicketDetails() {
 
 // Función para formatear la tabla de tickets por región (ajustada)
 function formatRegionDetails(details) {
+  const InputSearch = document.getElementById("ticketSearchInputRegion");
+  
+  if (InputSearch) {
+    InputSearch.style.display = "none"; // Mostrar el input de búsqueda
+  }
+
   let html = `
         <p>Haz clic en el número de tickets para ver el detalle de todos los tickets en esa región.</p>
         <table class="table table-striped table-bordered mt-3">
@@ -3642,13 +3789,19 @@ function formatRegionDetails(details) {
 
 // Función para formatear los tickets individuales por región
 function formatIndividualRegionTickets(tickets, region) {
+  const InputSearch = document.getElementById("ticketSearchInputRegion");
+
+  if (InputSearch) {
+    InputSearch.style.display = "inline-block"; // Mostrar el input de búsqueda
+  }
+
   if (tickets.length === 0) {
     return `<p>No hay tickets para la región ${region}.</p>
                   <button class="btn btn-primary mt-3" onclick="loadRegionTicketDetails()">Volver al resumen regional</button>`;
   }
 
   let html = `
-        <h5>Tickets para la región ${region}</h5>
+        <h5 style = "color:black;">Tickets para la región: ${region}</h5>
         <div class="ticket-details-list mt-3">
     `;
 
@@ -3661,7 +3814,7 @@ function formatIndividualRegionTickets(tickets, region) {
     html += `
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.id_ticket || "N/A"}</strong>
+                    Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
                 </div>
                 <div class="card-body">
                 <dl class="row mb-0">
@@ -3716,23 +3869,25 @@ function formatIndividualRegionTickets(tickets, region) {
 }
 
 function loadIndividualRegionTicketDetails(region) {
-  // status es opcional ahora
   const contentDiv = document.getElementById("RegionTicketsContent");
+  const searchInput = document.getElementById("ticketSearchInputRegion");
 
-  
-
+  // Almacenar la región en variable global
+  currentRegion = region;
 
   let loadingMessage = `Cargando tickets para la región ${region}...`;
-  if (region) {
-    loadingMessage = `Cargando tickets para la región ${region}...`;
-  }
   contentDiv.innerHTML = `<p>${loadingMessage}</p>`;
+  
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.style.display = "inline-block";
+  }
 
   const xhr = new XMLHttpRequest();
   xhr.open(
     "POST",
     `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetIndividualTicketDetailsByRegion`
-  ); // Asumiendo que este endpoint puede filtrar solo por región
+  );
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
@@ -3740,11 +3895,19 @@ function loadIndividualRegionTicketDetails(region) {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success && response.details) {
-          // Llama a la función de formateo de tickets individuales por región
-          contentDiv.innerHTML = formatIndividualRegionTickets(
-            response.details,
-            region
-          );
+          allRegionTickets = response.details; // Almacenar todos los tickets
+          displayFilteredTickets(allRegionTickets, 'RegionTicketsContent', currentMonth, currentStatus);
+          
+          // Añadir event listener para el input de búsqueda
+          if (searchInput) {
+            if (regionTicketSearchHandler) {
+              searchInput.removeEventListener('input', regionTicketSearchHandler);
+            }
+            regionTicketSearchHandler = (e) => {
+              handleTicketSearch(e, allRegionTickets, 'RegionTicketsContent');
+            };
+            searchInput.addEventListener('input', regionTicketSearchHandler);
+          }
         } else {
           contentDiv.innerHTML =
             `<p>Error al cargar el detalle de tickets: ` +
@@ -3754,6 +3917,11 @@ function loadIndividualRegionTicketDetails(region) {
             "Error en los datos de la API para tickets individuales por región:",
             response.message
           );
+          allRegionTickets = [];
+          if (searchInput && regionTicketSearchHandler) {
+            searchInput.removeEventListener('input', regionTicketSearchHandler);
+            regionTicketSearchHandler = null;
+          }
         }
       } catch (error) {
         console.error(
@@ -3761,6 +3929,11 @@ function loadIndividualRegionTicketDetails(region) {
           error
         );
         contentDiv.innerHTML = `<p>Error de procesamiento de datos al cargar el detalle de tickets.</p>`;
+        allRegionTickets = [];
+        if (searchInput && regionTicketSearchHandler) {
+          searchInput.removeEventListener('input', regionTicketSearchHandler);
+          regionTicketSearchHandler = null;
+        }
       }
     } else {
       console.error(
@@ -3769,6 +3942,11 @@ function loadIndividualRegionTicketDetails(region) {
         xhr.statusText
       );
       contentDiv.innerHTML = `<p>Error de red al cargar el detalle de tickets. Por favor, intente de nuevo más tarde.</p>`;
+      allRegionTickets = [];
+      if (searchInput && regionTicketSearchHandler) {
+        searchInput.removeEventListener('input', regionTicketSearchHandler);
+        regionTicketSearchHandler = null;
+      }
     }
   };
 
@@ -3777,210 +3955,18 @@ function loadIndividualRegionTicketDetails(region) {
       "Network error during individual regional ticket details fetch."
     );
     contentDiv.innerHTML = `<p>Error de conexión al cargar el detalle de tickets.</p>`;
+    allRegionTickets = [];
+    if (searchInput && regionTicketSearchHandler) {
+      searchInput.removeEventListener('input', regionTicketSearchHandler);
+      regionTicketSearchHandler = null;
+    }
   };
 
   // Prepara los datos a enviar: solo la región
   let dataToSend = `action=GetIndividualTicketDetailsByRegion&region=${encodeURIComponent(
     region
   )}`;
-  // Si tu API GetIndividualTicketDetailsByRegion puede filtrar por status, puedes añadirlo aquí
   xhr.send(dataToSend);
-}
-
-// *** NUEVA FUNCIÓN: Para formatear la tabla de tickets individuales (VERTICAL) ***
-function formatIndividualTickets(tickets, month, status) {
-  if (tickets.length === 0) {
-    return `<p>No hay tickets ${status.toLowerCase()}s para ${month}.</p>
-                <button class="btn btn-primary mt-3" onclick="loadMonthlyTicketDetails()">Volver al resumen</button>`;
-  }
-
-  let html = `
-        <h5 style = "color:black;">Tickets ${status}s para ${month}</h5>
-        <div class="ticket-details-list mt-3">
-    `;
-
-  tickets.forEach((ticket) => {
-    // Formatear la fecha de creación del ticket para una mejor visualización
-    const creationDate = ticket.date_create_ticket
-      ? new Date(ticket.date_create_ticket).toLocaleString()
-      : "N/A";
-
-    html += `
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    Ticket #<strong>${ticket.nro_ticket || "N/A"}</strong>
-                </div>
-                <div class="card-body">
-                    <dl class="row mb-0">
-                    <dt class="col-sm-4">Nivel Falla:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_level_failure || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Serial POS:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.serial_pos_cliente || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Razón Social Cliente:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.razon_social_cliente || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Rif Cliente:</dt>
-                        <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
-
-                        <dt class="col-sm-4">Modelo POS:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_modelopos_cliente || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Estatus Documento:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_status_payment || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Estatus Ticket:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.status_name_ticket || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Estatus Domiciliación:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_status_domiciliacion || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Estatus Taller:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_status_lab || "N/A"
-                        }</dd>
-                        
-                        <dt class="col-sm-4">Accion Ticket:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_accion_ticket || "N/A"
-                        }</dd>
-
-                        <dt class="col-sm-4">Fecha Creación:</dt>
-                        <dd class="col-sm-8">${ticket.date_create_ticket}</dd>
-                    </dl>
-                </div>
-            </div>
-        `;
-  });
-
-  html += `
-        </div>
-        <button class="btn btn-primary mt-3" onclick="loadMonthlyTicketDetails()">Volver al resumen</button>
-    `;
-  return html;
-}
-
-function loadMonthlyTicketDetails() {
-  const contentDiv = document.getElementById("monthlyTicketsContent");
-  contentDiv.innerHTML = "<p>Cargando información...</p>"; // Mensaje de carga
-
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyTicketDetails`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (data.success) {
-        contentDiv.innerHTML = formatMonthlyDetails(data.details); // Renderizar los datos
-      } else {
-        contentDiv.innerHTML =
-          "<p>Error al cargar los detalles: " +
-          (data.message || "Error desconocido") +
-          "</p>";
-        console.error("Error en los datos de la API:", data.message);
-      }
-    })
-    .catch((error) => {
-      contentDiv.innerHTML =
-  `<tr>
-        <td colspan="14" class="text-center text-muted py-5">
-          <div class="d-flex flex-column align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-            </svg>
-            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-            <p class="text-muted mb-0">No hay tickets Abiertos para cargar la gráfica mensual.</p>
-          </div>
-        </td>
-      </tr>`
-      console.error("Error fetching monthly details:", error);
-    });
-}
-
-// *** FUNCIÓN CORREGIDA: Para formatear la tabla de tickets mensuales ***
-function formatMonthlyDetails(details) {
-
-  const SearchInput = document.getElementById('ticketSearchInputMensual');
-
-  if (SearchInput) {
-    SearchInput.style.display = 'none'; // Limpiar el campo de búsqueda
-  }
-
-
-  let html = `
-        <p>Haz clic en el número de tickets para ver el detalle.</p>
-        <table class="table table-striped table-bordered mt-3">
-            <thead>
-                <tr>
-                    <th>Mes</th>
-                    <th>Tickets Creados</th>
-                    <th>Abiertos</th>
-                    <th>En Proceso</th>
-                    <th>Cerrados</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-  details.forEach((item) => {
-    const monthName = item.month_name.trim();
-    const year = item.year_month.substring(0, 4);
-
-    html += `
-            <tr>
-                <td>${monthName} ${year}</td> 
-                <td>${item.total_tickets_creados_mes}</td>
-                <td>
-                    <button class="btn btn-link p-0 monthly-tickets-detail" 
-                            data-month="${item.year_month}" 
-                            data-status="Abierto" 
-                            data-count="${item.tickets_abiertos}">
-                        ${item.tickets_abiertos}
-                    </button>
-                </td>
-                <td>
-                    <button class="btn btn-link p-0 monthly-tickets-detail" 
-                            data-month="${item.year_month}" 
-                            data-status="En proceso" 
-                            data-count="${item.tickets_en_proceso}">
-                        ${item.tickets_en_proceso}
-                    </button>
-                </td>
-                <td>
-                    <button class="btn btn-link p-0 monthly-tickets-detail" 
-                            data-month="${item.year_month}" 
-                            data-status="Cerrado" 
-                            data-count="${item.tickets_cerrados}">
-                        ${item.tickets_cerrados}
-                    </button>
-                </td>
-            </tr>
-        `;
-  });
-
-  html += `
-            </tbody>
-        </table>
-        <p class="text-muted mt-3">Información extra sobre los tickets.</p>
-    `;
-  return html;
 }
 
 let monthlyTicketsChartInstance; // Variable global para la instancia del gráfico
