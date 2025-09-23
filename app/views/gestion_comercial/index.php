@@ -169,6 +169,97 @@ function mi_navbar() {}
             border-color: #B0B0B0;
             box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
         }
+
+        .highlighted-change {
+            font-weight: bold;
+            color: #000; /* Color de texto más oscuro para mayor contraste */
+            background-color: #ffeb3b; /* Amarillo claro */
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        #tabla-ticket tbody tr.table-active {
+            background-color: #CCE5FF !important; /* Un gris claro para el resaltado */
+            color: #333; /* Color de texto para que sea legible sobre el gris */
+            border: 1px solid #ccc;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+
+         /* Estilos para los indicadores de estado del ticket */
+            .ticket-status-indicator {
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                padding: 15px 20px;
+                margin-bottom: 20px;
+                border-radius: 12px;
+                font-weight: bold;
+                text-align: center;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+                transition: all 0.3s ease;
+            }
+
+            .status-open {
+                background: linear-gradient(135deg, #51cf66, #40c057);
+                color: white;
+                border-left: 6px solid #2b8a3e;
+            }
+
+            .status-process {
+                background: linear-gradient(135deg, #ffd93d, #fcc419);
+                color: #2c3e50;
+                border-left: 6px solid #e67700;
+                animation: pulse 2s infinite;
+            }
+
+            .status-closed {
+                background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+                color: white;
+                border-left: 6px solid #c92a2a;
+            }
+
+            .status-content {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+            }
+
+            .status-icon {
+                font-size: 1.4em;
+                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            }
+
+            .status-text {
+                font-size: 1.2em;
+                letter-spacing: 1.5px;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            /* Animación para el estado en proceso */
+            @keyframes pulse {
+                0% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.9; transform: scale(1.02); }
+                100% { opacity: 1; transform: scale(1); }
+            }
+
+            /* Responsive para móviles */
+            @media (max-width: 768px) {
+                .ticket-status-indicator {
+                    padding: 12px 15px;
+                    margin-bottom: 15px;
+                }
+            
+                .status-text {
+                    font-size: 1em;
+                    letter-spacing: 1px;
+                }
+                
+                .status-icon {
+                    font-size: 1.2em;
+                }
+            }
+        /* END Estilos para los indicadores de estado del ticket */
     </style>
     </head>
 
