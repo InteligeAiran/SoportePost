@@ -1,7 +1,5 @@
 let ModalTimelineInstance = null; // Variable para la instancia del modal de línea de tiempo
 
-
-
 let usuariosAcciones = {
   coordinador: {
     modulo: 'asignar_tecnico',
@@ -10,13 +8,15 @@ let usuariosAcciones = {
     filterTerm: 'Recibido por la Coordinación|Asignado a la Coordinación',
     acciones: [3, 4],
   },
+
   tecnico: {
     modulo: 'tecnico',
     modalId: 'tecnicoModal', // Replace with actual modal ID (e.g., for Recibido/Reasignado)
     buttonId: 'btn-recibidos',
-    filterTerm: 'Asignado al Técnico|Recibido por el Técnico|Reasignado al Técnico',
-    acciones: [6, 10, 11], // Added 11 for Reasignado al Técnico
+    filterTerm: 'Asignado al Técnico|Recibido por el Técnico|Reasignado al Técnico|Entregado a Cliente',
+    acciones: [6, 10, 11, 16], // Added 11 for Reasignado al Técnico
   },
+
   // Add other roles as needed, e.g., for Entregado a Cliente
   cliente: {
     modulo: 'region',
@@ -25,12 +25,13 @@ let usuariosAcciones = {
     filterTerm: 'Entregado a Cliente',
     acciones: [16], // Adjust id_accion_ticket as needed
   },
+
   taller: {
     modulo: 'taller',
     modalId: 'enviadoTallerModal', // Replace with actual modal ID
     buttonId: 'btn-por-asignar',
-    filterTerm: 'Enviado a taller|En Taller',
-    acciones: [7, 15], // Adjust id_accion_ticket as needed
+    filterTerm: 'Enviado a taller|En Taller|En espera confirmación carga de llaves',
+    acciones: [7, 15, 8], // Adjust id_accion_ticket as needed
   },
 };
 
@@ -908,11 +909,6 @@ if (!Array.isArray(details)) {
                           ticket.name_accion_ticket || "N/A"
                         }</dd>
 
-                        <dt class="col-sm-4">Estatus Taller:</dt>
-                        <dd class="col-sm-8">${
-                          ticket.name_status_lab || "N/A"
-                        }</dd>
-                        
                         <dt class="col-sm-4">Fecha Creación:</dt>
                         <dd class="col-sm-8">${
                           ticket.date_create_ticket
@@ -927,8 +923,6 @@ if (!Array.isArray(details)) {
     `;
   return html;
 }
-
-
 
 function loadIndividualPendienteRepuesto() {
     const contentDiv = document.getElementById("PendienteRespuesModalTicketsContent");

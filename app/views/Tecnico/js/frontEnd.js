@@ -31,33 +31,187 @@ function getTicketData() {
   let uploadDocumentModalInstance = null;
   let viewDocumentModalInstance = null;
 
+  // Inicializar modales
+  if (
+    devuelveModalElement &&
+    typeof bootstrap !== "undefined" &&
+    typeof bootstrap.Modal !== "undefined"
+  ) {
+    modaldevolucion = new bootstrap.Modal(devuelveModalElement, {
+      backdrop: "static",
+    });
+  }
+
+  if (
+    actionSelectionModalElement &&
+    typeof bootstrap !== "undefined" &&
+    typeof bootstrap.Modal !== "undefined"
+  ) {
+    actionSelectionModalInstance = new bootstrap.Modal(actionSelectionModalElement, {
+      backdrop: "static",
+    });
+  }
+
+  if (
+    staticBackdropModalElement &&
+    typeof bootstrap !== "undefined" &&
+    typeof bootstrap.Modal !== "undefined"
+  ) {
+    staticBackdropModalInstance = new bootstrap.Modal(staticBackdropModalElement, {
+      backdrop: "static",
+    });
+  }
+
+  if (
+    uploadDocumentModalElement &&
+    typeof bootstrap !== "undefined" &&
+    typeof bootstrap.Modal !== "undefined"
+  ) {
+    uploadDocumentModalInstance = new bootstrap.Modal(uploadDocumentModalElement, {
+      backdrop: "static",
+    });
+  }
+
+  if (
+    viewDocumentModalElement &&
+    typeof bootstrap !== "undefined" &&
+    typeof bootstrap.Modal !== "undefined"
+  ) {
+    viewDocumentModalInstance = new bootstrap.Modal(viewDocumentModalElement, {
+      backdrop: "static",
+    });
+  }
+
   // Read nro_ticket from URL query parameters
   const urlParams = new URLSearchParams(window.location.search);
   const nroTicket = urlParams.get('nro_ticket');
+  console.log('nroTicket extraído de la URL:', nroTicket);
 
-  // Initialize Bootstrap modals
-  if (devuelveModalElement && typeof bootstrap !== "undefined" && typeof bootstrap.Modal !== "undefined") {
-    modaldevolucion = new bootstrap.Modal(devuelveModalElement, { backdrop: "static" });
-  }
-  if (actionSelectionModalElement && typeof bootstrap !== "undefined" && typeof bootstrap.Modal !== "undefined") {
-    actionSelectionModalInstance = new bootstrap.Modal(actionSelectionModalElement, { backdrop: "static" });
-  }
-  if (staticBackdropModalElement && typeof bootstrap !== "undefined" && typeof bootstrap.Modal !== "undefined") {
-    staticBackdropModalInstance = new bootstrap.Modal(staticBackdropModalElement, { backdrop: "static" });
-  }
-  if (uploadDocumentModalElement && typeof bootstrap !== "undefined" && typeof bootstrap.Modal !== "undefined") {
-    uploadDocumentModalInstance = new bootstrap.Modal(uploadDocumentModalElement, { backdrop: "static" });
-  }
-  if (viewDocumentModalElement && typeof bootstrap !== "undefined" && typeof bootstrap.Modal !== "undefined") {
-    viewDocumentModalInstance = new bootstrap.Modal(viewDocumentModalElement, { backdrop: "static" });
-  }
-
-  // Destroy existing DataTable and clear tbody
+  // Limpiar DataTable si ya está inicializado
   if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
     $("#tabla-ticket").DataTable().destroy();
     tbody.innerHTML = "";
   } else {
     tbody.innerHTML = "";
+  }
+
+ // Función para aplicar búsqueda por nro_ticket
+  function applyNroTicketSearch(api) {
+    if (nroTicket) {
+      // Establecer el valor en el input de búsqueda general y asegurar que sea visible
+      const searchInput = $('.dataTables_filter input');
+      searchInput.val(nroTicket); // Set the value in the search input
+
+      // Aplicar búsqueda general en la tabla
+      api.search(nroTicket).draw();
+
+      // Verificar si el ticket existe en el filtro actual
+      const row = api.rows({ filter: 'applied' }).data().toArray().find(row => row[1] === nroTicket);
+      if (row) {
+        const rowNode = api.row((idx, data) => data[1] === nroTicket).node();
+        $(rowNode).addClass('table-active');
+        rowNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Ticket no encontrado',
+          text: `El ticket ${nroTicket} no se encuentra en este filtro.`,
+          confirmButtonText: 'Ok',
+          color: 'black',
+          confirmButtonColor: '#003594'
+        });
+        api.search('').draw(); // Clear search if no matches
+        searchInput.val(''); // Clear the input if ticket not found
+      }
+    } else {
+      $('.dataTables_filter input').val(''); // Asegurar que el input esté vacío
+    }
+  }
+
+  // Función para verificar si hay datos en una búsqueda específica
+  function checkDataExists(api, searchTerm) {
+    api.columns().search('').draw(false);
+    api.column(5).search(searchTerm, true, false).draw();
+    const rowCount = api.rows({ filter: 'applied' }).count();
+    return rowCount > 0;
+  }
+
+  // Función para limpiar filtros
+  function clearFilters(api) {
+    api.search('');
+    api.columns().every(function () { this.search(''); });
+    $('.dataTables_filter input').val(''); // Limpiar el input de búsqueda general
+    api.draw(false);
+  }
+
+  // Función para buscar el primer botón con datos o el filtro que contiene nroTicket
+  function findFirstButtonWithData(api) {
+    const searchTerms = [
+      { button: "btn-asignados", term: "Asignado al Técnico", status: "En proceso", action: "Asignado al Técnico" },
+      { button: "btn-recibidos", term: "Recibido por el Técnico", status: "En proceso", action: "Recibido por el Técnico" },
+      { button: "btn-por-asignar", term: "Enviado a taller|En Taller", status: "En proceso", action: "Enviado a taller|En Taller" },
+      { button: "btn-devuelto", term: "Entregado a Cliente", status: "Cerrado", action: "Entregado a Cliente" }
+    ];
+
+    // Si hay un nroTicket, buscar el filtro que contenga ese ticket
+    if (nroTicket) {
+      for (const { button, term, status, action } of searchTerms) {
+        clearFilters(api);
+        api.column(5).search(term, true, false).draw();
+        const ticketExists = api.rows({ filter: 'applied' }).data().toArray().some(row => row[1] === nroTicket);
+        if (ticketExists) {
+          clearFilters(api);
+          api.column(5).search(term, true, false).draw();
+          if (button === "btn-devuelto") {
+            api.column(6).visible(false);
+          } else {
+            api.column(6).visible(true);
+          }
+          setActiveButton(button);
+          showTicketStatusIndicator(status, action);
+          applyNroTicketSearch(api);
+          return true;
+        }
+      }
+      // Si no se encuentra el ticket en ningún filtro
+      Swal.fire({
+        icon: 'warning',
+        title: 'Ticket no encontrado',
+        text: `El ticket ${nroTicket} no se encuentra en los datos disponibles.`,
+        confirmButtonText: 'Ok',
+        color: 'black',
+        confirmButtonColor: '#003594'
+      });
+      $('.dataTables_filter input').val(''); // Limpiar el input de búsqueda
+    }
+
+    // Buscar el primer filtro con datos
+    for (const { button, term, status, action } of searchTerms) {
+      if (checkDataExists(api, term)) {
+        clearFilters(api);
+        api.column(5).search(term, true, false).draw();
+        if (button === "btn-devuelto") {
+          api.column(6).visible(false);
+        } else {
+          api.column(6).visible(true);
+        }
+        setActiveButton(button);
+        showTicketStatusIndicator(status, action);
+        applyNroTicketSearch(api);
+        return true;
+      }
+    }
+
+    // Si no hay datos
+    hideTicketStatusIndicator();
+    return false;
+  }
+
+  // Función para establecer el botón activo
+  function setActiveButton(activeButtonId) {
+    $("#btn-asignados, #btn-por-asignar, #btn-recibidos, #btn-devuelto")
+      .removeClass("btn-primary").addClass("btn-secondary");
+    $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
   }
 
   fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketData1`)
@@ -85,7 +239,7 @@ function getTicketData() {
       if (data.success && data.ticket) {
         const TicketData = data.ticket;
 
-        // Show status of the first ticket
+        // Mostrar el estado del primer ticket
         if (TicketData && TicketData.length > 0) {
           const firstTicket = TicketData[0];
           showTicketStatusIndicator(firstTicket.name_status_ticket, firstTicket.name_accion_ticket);
@@ -108,12 +262,15 @@ function getTicketData() {
               : `<span class="truncated-cell" data-full-text="${fullRazonSocial}">${fullRazonSocial}</span>`;
 
           const hasBeenConfirmedByAnyone =
-            ticket.confirmcoord === "t" || ticket.confirmcoord === true ||
-            ticket.confirmtecn === "t" || ticket.confirmtecn === true;
+            ticket.confirmcoord === "t" ||
+            ticket.confirmcoord === true ||
+            ticket.confirmtecn === "t" ||
+            ticket.confirmtecn === true;
 
-          // Document actions button
-          if ((ticket.id_status_payment == 11 || ticket.id_status_payment == 10 || ticket.id_status_payment == 9 || ticket.id_status_payment == 6 || ticket.id_status_payment == 4) &&
-              (ticket.confirmtecn === "t" || ticket.confirmtecn === true || ticket.confirmcoord === "t" || ticket.confirmcoord === true)) {
+          if (
+            (ticket.id_status_payment == 11 || ticket.id_status_payment == 10 || ticket.id_status_payment == 9 || ticket.id_status_payment == 6 || ticket.id_status_payment == 4) &&
+            (ticket.confirmtecn === "t" || ticket.confirmtecn === true || ticket.confirmcoord === "t" || ticket.confirmcoord === true)
+          ) {
             actionButtonsHTML += `
               <button class="btn btn-sm btn-info btn-document-actions-modal mr-2"
                   data-bs-toggle="tooltip" data-bs-placement="top"
@@ -128,27 +285,20 @@ function getTicketData() {
                   data-pago-file="${ticket.pdf_pago_filename || ""}"
                   data-zoom-file="${ticket.pdf_zoom_filename || ""}"
                   data-estado-cliente="${ticket.nombre_estado_cliente}">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16">
-                    <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/>
-                  </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
               </button>`;
           }
 
-          // Marcar como Recibido button
           if (!hasBeenConfirmedByAnyone) {
             actionButtonsHTML += `
               <button id="RecibirTec" class="btn btn-sm btn-received-ticket mr-2"
                   data-bs-toggle="tooltip" data-bs-placement="top"
                   title="Marcar como Recibido por Técnico"
                   data-ticket-id="${ticket.id_ticket}">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 0 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/>
-                    <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                  </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16"><path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/></svg>
               </button>`;
           }
 
-          // Enviar a Taller button
           if (hasBeenConfirmedByAnyone && ticket.name_accion_ticket !== "Enviado a taller") {
             actionButtonsHTML += `
               <button class="btn btn-sm btn-wrench-custom"
@@ -163,10 +313,7 @@ function getTicketData() {
                   data-url_exo="${ticket.img_exoneracion_url || ''}"
                   data-url_pago="${ticket.pdf_pago_url || ''}"
                   data-estado="${ticket.nombre_estado_cliente}">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16">
-                    <path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/>
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/>
-                  </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
               </button>`;
           }
 
@@ -185,11 +332,14 @@ function getTicketData() {
           ];
         });
 
-        const dataTableInstance = $("#tabla-ticket").DataTable({
+        dataTableInstance = $("#tabla-ticket").DataTable({
           responsive: false,
           scrollX: true,
           pagingType: "simple_numbers",
-          lengthMenu: [[5, 10], ["5", "10"]],
+          lengthMenu: [
+            [5, 10],
+            ["5", "10"],
+          ],
           autoWidth: false,
           data: dataForDataTable,
           columns: [
@@ -221,343 +371,279 @@ function getTicketData() {
               next: "Siguiente",
               previous: "Anterior",
             },
-            zeroRecords: `
-              <div class="text-center text-muted py-5">
-                <div class="d-flex flex-column align-items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                    <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                  </svg>
-                  <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                  <p class="text-muted mb-0">No hay tickets asociado al Técnico para mostrar en este momento.</p>
-                </div>
-              </div>`,
           },
           dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
           initComplete: function (settings, json) {
             const dataTableInstance = this.api();
             const buttonsHtml = `
               <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets Asignados">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                  <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                  <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                      <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                  </svg>
               </button>
               <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Técnico">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                  <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 0 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/>
-                  <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                      <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                  </svg>
               </button>
               <button id="btn-por-asignar" class="btn btn-secondary me-2" title="Enviados Taller">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
-                  <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
-                </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                      <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+                  </svg>
               </button>
               <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos Entregado a cliente">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
-                  <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
-                  <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
-                </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
+                      <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
+                  </svg>
               </button>`;
             $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
-            function setActiveButton(activeButtonId) {
-              $("#btn-asignados, #btn-por-asignar, #btn-recibidos, #btn-devuelto")
-                .removeClass("btn-primary").addClass("btn-secondary");
-              $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
-            }
-
-            function clearFilters() {
-              dataTableInstance.search('');
-              dataTableInstance.columns().every(function () { this.search(''); });
-              dataTableInstance.draw(false);
-            }
-
-            function checkDataExists(searchTerm) {
-              clearFilters();
-              dataTableInstance.column(5).search(searchTerm, true, false).draw(false);
-              const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
-              clearFilters();
-              return rowCount > 0;
-            }
-
-            function applyNroTicketSearch() {
-              if (nroTicket) {
-                dataTableInstance.search(nroTicket).draw(false);
-                let ticketFound = false;
-                dataTableInstance.rows({ filter: 'applied' }).every(function () {
-                  const rowData = this.data();
-                  if (rowData[1] === nroTicket) {
-                    $(this.node()).addClass('table-active');
-                    this.node().scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    ticketFound = true;
-                  } else {
-                    $(this.node()).removeClass('table-active');
-                  }
-                });
-                if (!ticketFound) {
-                  Swal.fire({
-                    icon: 'warning',
-                    title: 'Ticket no encontrado',
-                    text: `El ticket ${nroTicket} no se encuentra en este filtro.`,
-                    confirmButtonText: 'Ok',
-                    color: 'black',
-                    confirmButtonColor: '#003594'
-                  });
-                  dataTableInstance.search('').draw(false);
-                }
-              }
-            }
-
-            function findFirstButtonWithData() {
-              const searchTerms = [
-                { button: "btn-asignados", term: "Asignado al Técnico", status: "En proceso", action: "Asignado al Técnico" },
-                { button: "btn-recibidos", term: "Recibido por el Técnico", status: "En proceso", action: "Recibido por el Técnico" },
-                { button: "btn-por-asignar", term: "Enviado a taller|En Taller", status: "En proceso", action: "Enviado a taller|En Taller" },
-                { button: "btn-devuelto", term: "Entregado a Cliente", status: "Cerrado", action: "Entregado a Cliente" }
-              ];
-
-              for (const { button, term, status, action } of searchTerms) {
-                if (checkDataExists(term)) {
-                  clearFilters();
-                  dataTableInstance.column(5).search(term, true, false).draw(false);
-                  dataTableInstance.column(6).visible(button !== "btn-devuelto");
-                  setActiveButton(button);
-                  showTicketStatusIndicator(status, action);
-                  applyNroTicketSearch();
-                  return true;
-                }
-              }
-
-              clearFilters();
-              dataTableInstance.column(5).search("NO_DATA_FOUND").draw();
-              setActiveButton("btn-asignados");
-              showTicketStatusIndicator('Cerrado', 'No hay datos');
-              tbody.innerHTML = `
-                <tr>
-                  <td colspan="14" class="text-center text-muted py-5">
-                    <div class="d-flex flex-column align-items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                        <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                      </svg>
-                      <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                      <p class="text-muted mb-0">No hay tickets asociado al Técnico para mostrar en este momento.</p>
-                    </div>
-                  </td>
-                </tr>`;
-              return false;
-            }
-
-            // Initialize with the correct filter
-            findFirstButtonWithData();
-
-            // Filter button event listeners
+            // Event listeners para los botones
             $("#btn-asignados").on("click", function () {
-              if (checkDataExists("Asignado al Técnico")) {
-                clearFilters();
-                dataTableInstance.column(5).search("Asignado al Técnico", true, false).draw(false);
+              if (checkDataExists(dataTableInstance, "Asignado al Técnico")) {
+                showTicketStatusIndicator('En proceso', 'Asignado al Técnico');
+                clearFilters(dataTableInstance);
+                dataTableInstance.column(5).search("Asignado al Técnico").draw();
                 dataTableInstance.column(6).visible(true);
                 setActiveButton("btn-asignados");
-                showTicketStatusIndicator('En proceso', 'Asignado al Técnico');
-                applyNroTicketSearch();
+                applyNroTicketSearch(dataTableInstance);
               } else {
-                findFirstButtonWithData();
-              }
-            });
-
-            $("#btn-recibidos").on("click", function () {
-              if (checkDataExists("Recibido por el Técnico")) {
-                clearFilters();
-                dataTableInstance.column(5).search("Recibido por el Técnico", true, false).draw(false);
-                dataTableInstance.column(6).visible(true);
-                setActiveButton("btn-recibidos");
-                showTicketStatusIndicator('En proceso', 'Recibido por el Técnico');
-                applyNroTicketSearch();
-              } else {
-                findFirstButtonWithData();
+                findFirstButtonWithData(dataTableInstance);
               }
             });
 
             $("#btn-por-asignar").on("click", function () {
-              if (checkDataExists("Enviado a taller|En Taller")) {
-                clearFilters();
-                dataTableInstance.column(5).search("Enviado a taller|En Taller", true, false).draw(false);
+              if (checkDataExists(dataTableInstance, "Enviado a taller|En Taller")) {
+                showTicketStatusIndicator('En proceso', 'Enviado a taller|En Taller');
+                clearFilters(dataTableInstance);
+                dataTableInstance.column(5).search("Enviado a taller|En Taller", true, false).draw();
                 dataTableInstance.column(6).visible(true);
                 setActiveButton("btn-por-asignar");
-                showTicketStatusIndicator('En proceso', 'Enviado a taller|En Taller');
-                applyNroTicketSearch();
+                applyNroTicketSearch(dataTableInstance);
               } else {
-                findFirstButtonWithData();
+                findFirstButtonWithData(dataTableInstance);
+              }
+            });
+
+            $("#btn-recibidos").on("click", function () {
+              if (checkDataExists(dataTableInstance, "Recibido por el Técnico")) {
+                showTicketStatusIndicator('En proceso', 'Recibido por el Técnico');
+                clearFilters(dataTableInstance);
+                dataTableInstance.column(5).search("Recibido por el Técnico").draw();
+                dataTableInstance.column(6).visible(true);
+                setActiveButton("btn-recibidos");
+                applyNroTicketSearch(dataTableInstance);
+              } else {
+                findFirstButtonWithData(dataTableInstance);
               }
             });
 
             $("#btn-devuelto").on("click", function () {
-              if (checkDataExists("Entregado a Cliente")) {
-                clearFilters();
-                dataTableInstance.column(5).search("Entregado a Cliente", true, false).draw(false);
+              if (checkDataExists(dataTableInstance, "Entregado a Cliente")) {
+                showTicketStatusIndicator('Cerrado', 'Entregado a Cliente');
+                clearFilters(dataTableInstance);
+                dataTableInstance.column(5).search("Entregado a Cliente").draw();
                 dataTableInstance.column(6).visible(false);
                 setActiveButton("btn-devuelto");
-                showTicketStatusIndicator('Cerrado', 'Entregado a Cliente');
-                applyNroTicketSearch();
+                applyNroTicketSearch(dataTableInstance);
               } else {
-                findFirstButtonWithData();
+                findFirstButtonWithData(dataTableInstance);
               }
             });
 
-            // Truncated cell click handler
-            $("#tabla-ticket tbody").off("click", ".truncated-cell, .expanded-cell").on("click", ".truncated-cell, .expanded-cell", function (e) {
-              e.stopPropagation();
-              const $cellSpan = $(this);
-              const fullText = $cellSpan.data("full-text");
-              if ($cellSpan.hasClass("truncated-cell")) {
-                $cellSpan.removeClass("truncated-cell").addClass("expanded-cell").text(fullText);
+            // Ejecutar la búsqueda automática al inicializar
+            findFirstButtonWithData(dataTableInstance);
+
+            // Event listener para el input de búsqueda general
+            $('.dataTables_filter input').on('input', function () {
+              const searchValue = $(this).val();
+              clearFilters(dataTableInstance);
+              if (searchValue) {
+                dataTableInstance.column(1).search(searchValue, true, false).draw();
               } else {
-                $cellSpan.removeClass("expanded-cell").addClass("truncated-cell");
-                const displayLength = 25;
-                $cellSpan.text(fullText.length > displayLength ? fullText.substring(0, displayLength) + "..." : fullText);
+                dataTableInstance.column(1).search('').draw();
               }
             });
 
-            // Row click handler
-            $("#tabla-ticket tbody").off("click", "tr").on("click", "tr", function (e) {
-              if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('expanded-cell') || $(e.target).is('button')) {
-                return;
-              }
-              const tr = $(this);
-              const rowData = dataTableInstance.row(tr).data();
-              if (!rowData) return;
-              $("#tabla-ticket tbody tr").removeClass("table-active");
-              tr.addClass("table-active");
-              const ticketId = rowData[0];
-              const selectedTicketDetails = TicketData.find(t => t.id_ticket == ticketId);
-              if (selectedTicketDetails) {
-                detailsPanel.innerHTML = formatTicketDetailsPanel(selectedTicketDetails);
-                loadTicketHistory(ticketId, currentTicketNroForImage);
-                if (selectedTicketDetails.serial_pos) {
-                  downloadImageModal(selectedTicketDetails.serial_pos);
-                } else {
-                  const imgElement = document.getElementById("device-ticket-image");
-                  if (imgElement) {
-                    imgElement.src = '/public/img/consulta_rif/POS/mantainment.png';
-                    imgElement.alt = "Serial no disponible";
+            // Event listeners para botones de acción
+            $("#tabla-ticket tbody")
+              .off("click", ".btn-received-ticket")
+              .on("click", ".btn-received-ticket", function (e) {
+                e.stopPropagation();
+                const button = $(this);
+                const ticketId = button.data("ticket-id");
+                if (ticketId) {
+                  const selectedTicketDetails = TicketData.find(t => t.id_ticket == ticketId);
+                  if (selectedTicketDetails) {
+                    const currentnroTicket = selectedTicketDetails.nro_ticket;
+                    const serialPos = selectedTicketDetails.serial_pos || "No disponible";
+                    showConfirmationModalForReceived(ticketId, currentnroTicket, serialPos);
+                  } else {
+                    console.error(`Error: No se encontraron detalles para el ticket ID: ${ticketId}`);
+                    Swal.fire({
+                      icon: 'error',
+                      title: 'Error',
+                      text: 'No se pudieron cargar los detalles del ticket. Intente de nuevo.',
+                      color: 'black'
+                    });
                   }
+                } else {
+                  console.error("Error: ticketId no encontrado en el botón .btn-received-ticket");
                 }
-              } else {
-                detailsPanel.innerHTML = "<p>No se encontraron detalles para este ticket.</p>";
-              }
-            });
+              });
 
-            // btn-received-ticket handler
-            $("#tabla-ticket tbody").off("click", ".btn-received-ticket").on("click", ".btn-received-ticket", function (e) {
-              e.stopPropagation();
-              const ticketId = $(this).data("ticket-id");
-              const selectedTicketDetails = TicketData.find(t => t.id_ticket == ticketId);
-              if (selectedTicketDetails) {
-                const currentnroTicket = selectedTicketDetails.nro_ticket;
-                const serialPos = selectedTicketDetails.serial_pos || "No disponible";
-                showConfirmationModalForReceived(ticketId, currentnroTicket, serialPos);
-              } else {
-                Swal.fire({
-                  icon: 'error',
-                  title: 'Error',
-                  text: 'No se pudieron cargar los detalles del ticket. Intente de nuevo.',
-                  color: 'black',
-                  confirmButtonColor: '#003594'
-                });
-              }
-            });
+            $("#tabla-ticket tbody")
+              .off("click", ".truncated-cell, .expanded-cell")
+              .on("click", ".truncated-cell, .expanded-cell", function (e) {
+                e.stopPropagation();
+                const $cellSpan = $(this);
+                const fullText = $cellSpan.data("full-text");
+                if ($cellSpan.hasClass("truncated-cell")) {
+                  $cellSpan.removeClass("truncated-cell").addClass("expanded-cell").text(fullText);
+                } else {
+                  $cellSpan.removeClass("expanded-cell").addClass("truncated-cell");
+                  const displayLength = 25;
+                  $cellSpan.text(fullText.length > displayLength ? fullText.substring(0, displayLength) + "..." : fullText);
+                }
+              });
 
-            // btn-exoneracion-img handler
-            $("#tabla-ticket tbody").off("click", ".btn-exoneracion-img").on("click", ".btn-exoneracion-img", function (e) {
-              e.stopPropagation();
-              const ticketId = $(this).data("ticket-id");
-              const documentType = $(this).data("document-type");
-              if (uploadDocumentModalInstance) {
-                $("#uploadDocumentModal").data("ticket-id", ticketId).data("document-type", documentType);
-                $("#type_document").val(documentType);
-                $('#generateNotaEntregaBtn').hide();
-                uploadDocumentModalInstance.show();
-              }
-            });
+            if ($.fn.tooltip) {
+              $('[data-bs-toggle="tooltip"]').tooltip("dispose");
+              $('[data-bs-toggle="tooltip"]').tooltip();
+            }
 
-            // btn-pago-pdf handler
-            $("#tabla-ticket tbody").off("click", ".btn-pago-pdf").on("click", ".btn-pago-pdf", function (e) {
-              e.stopPropagation();
-              const ticketId = $(this).data("ticket-id");
-              const documentType = $(this).data("document-type");
-              if (uploadDocumentModalInstance) {
-                $("#uploadDocumentModal").data("ticket-id", ticketId).data("document-type", documentType);
-                $("#type_document").val(documentType);
-                $('#generateNotaEntregaBtn').hide();
-                uploadDocumentModalInstance.show();
-              }
-            });
+            $("#tabla-ticket").resizableColumns();
 
-            // btn-zoom-pdf handler
-            $("#tabla-ticket tbody").off("click", ".btn-zoom-pdf").on("click", ".btn-zoom-pdf", function (e) {
-              e.stopPropagation();
-              const ticketId = $(this).data("ticket-id");
-              const documentType = $(this).data("document-type");
-              if (uploadDocumentModalInstance) {
-                const $modal = $("#uploadDocumentModal");
-                $modal.data("ticket-id", ticketId).data("document-type", documentType);
-                $("#id_ticket").val(ticketId);
-                $("#type_document").val(documentType);
-                $("#htmlTemplateTicketId").val(ticketId);
-                uploadDocumentModalInstance.show();
-              }
-            });
+            $("#tabla-ticket tbody")
+              .off("click", "tr")
+              .on("click", "tr", function () {
+                const tr = $(this);
+                const rowData = dataTableInstance.row(tr).data();
+                if (!rowData) return;
+                $("#tabla-ticket tbody tr").removeClass("table-active");
+                tr.addClass("table-active");
+                const ticketId = rowData[0];
+                const selectedTicketDetails = TicketData.find(t => t.id_ticket == ticketId);
+                if (selectedTicketDetails) {
+                  detailsPanel.innerHTML = formatTicketDetailsPanel(selectedTicketDetails);
+                  loadTicketHistory(ticketId, currentTicketNroForImage);
+                  if (selectedTicketDetails.serial_pos) {
+                    downloadImageModal(selectedTicketDetails.serial_pos);
+                  } else {
+                    const imgElement = document.getElementById("device-ticket-image");
+                    if (imgElement) {
+                      imgElement.src = "/public/img/consulta_rif/POS/mantainment.png";
+                      imgElement.alt = "Serial no disponible";
+                    }
+                  }
+                } else {
+                  detailsPanel.innerHTML = "<p>No se encontraron detalles para este ticket.</p>";
+                }
+              });
 
-            // btn-view-document handler
-            $("#tabla-ticket tbody").off("click", ".btn-view-document").on("click", ".btn-view-document", function (e) {
-              e.stopPropagation();
-              const ticketId = $(this).data("ticket-id");
-              const documentType = $(this).data("document-type");
-              const fileUrl = $(this).data("file-url");
-              if (viewDocumentModalInstance) {
-                $("#viewDocumentModal").data("ticket-id", ticketId).data("document-type", documentType).data("file-url", fileUrl);
-                loadDocumentIntoViewModal(fileUrl, documentType);
-                viewDocumentModalInstance.show();
-              }
-            });
+            // Listeners para botones de acción específicos
+            $("#tabla-ticket tbody")
+              .off("click", ".btn-exoneracion-img")
+              .on("click", ".btn-exoneracion-img", function (e) {
+                e.stopPropagation();
+                const ticketId = $(this).data("ticket-id");
+                const documentType = $(this).data("document-type");
+                if (uploadDocumentModalInstance) {
+                  $("#uploadDocumentModal").data("ticket-id", ticketId);
+                  $("#uploadDocumentModal").data("document-type", documentType);
+                  $("#type_document").val(documentType);
+                  $('#generateNotaEntregaBtn').hide();
+                  uploadDocumentModalInstance.show();
+                }
+              });
 
-            // btn-wrench-custom handler
-            $("#tabla-ticket tbody").off("click", ".btn-wrench-custom").on("click", ".btn-wrench-custom", function (e) {
-              e.stopPropagation();
-              const ticketId = $(this).data("ticket-id");
-              const nroTicket = $(this).data("nro_ticket");
-              const id_document = $(this).data("id_document");
-              const id_domiciliacion = $(this).data("id_domiciliacion");
-              const pdfZoomUrl = $(this).data("url_zoom") || "";
-              const imgExoneracionUrl = $(this).data("url_exo") || "";
-              const pdfPagoUrl = $(this).data("url_pago") || "";
-              const serialPos = $(this).data("serial_pos") || "No disponible";
-              const estado = $(this).data("estado");
+            $("#tabla-ticket tbody")
+              .off("click", ".btn-pago-pdf")
+              .on("click", ".btn-pago-pdf", function (e) {
+                e.stopPropagation();
+                const ticketId = $(this).data("ticket-id");
+                const documentType = $(this).data("document-type");
+                if (uploadDocumentModalInstance) {
+                  $("#uploadDocumentModal").data("ticket-id", ticketId);
+                  $("#uploadDocumentModal").data("document-type", documentType);
+                  $("#type_document").val(documentType);
+                  $('#generateNotaEntregaBtn').hide();
+                  uploadDocumentModalInstance.show();
+                }
+              });
 
-              currentTicketId = ticketId;
-              currentnroTicket = nroTicket;
-              currentSerial = serialPos;
-              currentDocument = id_document;
-              currentDomiciliacion = id_domiciliacion;
-              currentEstado = estado;
+            $("#tabla-ticket tbody")
+              .off("click", ".btn-zoom-pdf")
+              .on("click", ".btn-zoom-pdf", function (e) {
+                e.stopPropagation();
+                const ticketId = $(this).data("ticket-id");
+                const documentType = $(this).data("document-type");
+                if (uploadDocumentModalInstance) {
+                  const $modal = $("#uploadDocumentModal");
+                  $modal.data("ticket-id", ticketId);
+                  $modal.data("document-type", documentType);
+                  $("#id_ticket").val(ticketId);
+                  $("#type_document").val(documentType);
+                  $("#htmlTemplateTicketId").val(ticketId);
+                  uploadDocumentModalInstance.show();
+                }
+              });
 
-              url_envio = pdfZoomUrl;
-              url_exoneracion = imgExoneracionUrl;
-              url_pago = pdfPagoUrl;
+            $("#tabla-ticket tbody")
+              .off("click", ".btn-view-document")
+              .on("click", ".btn-view-document", function (e) {
+                e.stopPropagation();
+                const ticketId = $(this).data("ticket-id");
+                const documentType = $(this).data("document-type");
+                const fileUrl = $(this).data("file-url");
+                if (viewDocumentModalInstance) {
+                  $("#viewDocumentModal").data("ticket-id", ticketId);
+                  $("#viewDocumentModal").data("document-type", documentType);
+                  $("#viewDocumentModal").data("file-url", fileUrl);
+                  loadDocumentIntoViewModal(fileUrl, documentType);
+                  viewDocumentModalInstance.show();
+                }
+              });
 
-              if (actionSelectionModalInstance) {
-                actionSelectionModalInstance.show();
-              } else {
-                console.error("No se pudo inicializar el modal: actionSelectionModalElement o Bootstrap Modal no están disponibles.");
-              }
-            });
+            $("#tabla-ticket tbody")
+              .off("click", ".btn-wrench-custom")
+              .on("click", ".btn-wrench-custom", function (e) {
+                e.stopPropagation();
+                const ticketId = $(this).data("ticket-id");
+                const nroTicket = $(this).data("nro_ticket");
+                const id_document = $(this).data("id_document");
+                const id_domiciliacion = $(this).data("id_domiciliacion");
+                const pdfZoomUrl = $(this).data("url_zoom") || "";
+                const imgExoneracionUrl = $(this).data("url_exo") || "";
+                const pdfPagoUrl = $(this).data("url_pago") || "";
+                const serialPos = $(this).data("serial_pos") || "No disponible";
+                const estado = $(this).data("estado");
 
-            // ButtonSendToTaller handler
+                currentTicketId = ticketId;
+                currentnroTicket = nroTicket;
+                currentSerial = serialPos;
+                currentDocument = id_document;
+                currentDomiciliacion = id_domiciliacion;
+                currentEstado = estado;
+
+                url_envio = pdfZoomUrl;
+                url_exoneracion = imgExoneracionUrl;
+                url_pago = pdfPagoUrl;
+
+                if (actionSelectionModalInstance) {
+                  actionSelectionModalInstance.show();
+                } else {
+                  console.error("No se pudo inicializar el modal: actionSelectionModalElement o Bootstrap Modal no están disponibles.");
+                }
+              });
+
             $("#ButtonSendToTaller").off("click").on("click", function () {
               const id_document = currentDocument;
               const id_domiciliacion = currentDomiciliacion;
-              const isEstadoSinEnvio = currentEstado && ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'].includes(currentEstado);
               let showButton = false;
+              const isEstadoSinEnvio = currentEstado && ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'].includes(currentEstado);
 
               if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
                 showButton = true;
@@ -614,7 +700,7 @@ function getTicketData() {
                   modalTicketNrSpan.textContent = currentnroTicket;
                   modalSerialPosSpan.textContent = currentSerial;
                 } else {
-                  modalTicketNrSpan.textContent = " seleccionado";
+                  modalTicketNrSpan.textContent = "seleccionado";
                   console.warn("No se pudo inyectar el número de ticket en el modal de taller.");
                 }
 
@@ -628,31 +714,28 @@ function getTicketData() {
               }
             });
 
-            // BtnCerrarSelecionAccion handler
             $("#BtnCerrarSelecionAccion").off("click").on("click", function () {
               if (actionSelectionModalInstance) {
                 actionSelectionModalInstance.hide();
               }
             });
 
-            // Close-icon handler
             $("#Close-icon").off("click").on("click", function () {
               if (staticBackdropModalInstance) {
                 staticBackdropModalInstance.hide();
               }
             });
 
-            // close-button handler
             $("#close-button").off("click").on("click", function () {
               if (staticBackdropModalInstance) {
                 staticBackdropModalInstance.hide();
               }
             });
 
-            // devolver handler
             $("#devolver").off("click").on("click", function () {
               const id_document = currentDocument;
               const modalTicketNrSpan = document.getElementById("SerialLabel");
+
               if (modalTicketNrSpan && currentSerial) {
                 modalTicketNrSpan.textContent = currentSerial;
               } else {
@@ -669,130 +752,195 @@ function getTicketData() {
                   color: 'black',
                 });
                 return;
+              } else {
+                if (actionSelectionModalInstance) {
+                  actionSelectionModalInstance.hide();
+                }
               }
 
               if (modaldevolucion) {
                 modaldevolucion.show();
               }
-            });
 
-            // BttonCloseModalDevolucion handler
-            $("#BttonCloseModalDevolucion").off("click").on("click", function () {
-              if (modaldevolucion) {
-                modaldevolucion.hide();
-              }
-            });
+              $("#BttonCloseModalDevolucion").off("click").on("click", function () {
+                if (modaldevolucion) {
+                  modaldevolucion.hide();
+                }
+              });
 
-            // confirmDevolverCliente handler
-            $("#confirmDevolverCliente").off("click").on("click", function () {
-              if (modaldevolucion) {
-                SendToDevolution(currentTicketId, currentnroTicket, currentSerial);
-              }
+              $("#confirmDevolverCliente").off("click").on("click", function () {
+                if (modaldevolucion) {
+                  SendToDevolution(currentTicketId, currentnroTicket, currentSerial);
+                }
+              });
             });
           },
         });
-
-        if ($.fn.tooltip) {
-          $('[data-bs-toggle="tooltip"]').tooltip("dispose");
-          $('[data-bs-toggle="tooltip"]').tooltip();
-        }
-
-        $("#tabla-ticket").resizableColumns();
       } else {
         console.warn("No se encontraron tickets o la respuesta no fue exitosa.");
         tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay tickets disponibles.</td></tr>';
-        initializeEmptyDataTable();
+        if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
+          hideTicketStatusIndicator();
+          $("#tabla-ticket").DataTable().destroy();
+        }
+        $("#tabla-ticket").DataTable({
+          responsive: false,
+          scrollX: true,
+          pagingType: "simple_numbers",
+          lengthMenu: [
+            [5, 10],
+            ["5", "10"],
+          ],
+          autoWidth: false,
+          data: [],
+          columns: [
+            {
+              title: "N°",
+              orderable: false,
+              searchable: false,
+              render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+              }
+            },
+            { title: "Nro Ticket" },
+            { title: "Serial" },
+            { title: "Rif" },
+            { title: "Razón Social" },
+            { title: "Acción Ticket" },
+            { title: "Acciones", orderable: false },
+          ],
+          language: {
+            lengthMenu: "Mostrar _MENU_ Registros",
+            info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+            infoFiltered: " de _MAX_ Disponibles",
+            search: "Buscar:",
+            loadingRecords: "Cargando...",
+            processing: "Procesando...",
+            paginate: {
+              first: "Primero",
+              last: "Último",
+              next: "Siguiente",
+              previous: "Anterior",
+            },
+          },
+          dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+          initComplete: function () {
+            const buttonsHtml = `
+              <button id="btn-asignados" class="btn btn-primary me-2" title="Tickets ya Asignados">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                      <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                  </svg>
+              </button>
+              <button id="btn-por-asignar" class="btn btn-primary me-2" title="Enviados Taller">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                      <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+                  </svg>
+              </button>
+              <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Técnico">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                      <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                  </svg>
+              </button>
+              <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos devuelto a cliente">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
+                      <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
+                  </svg>
+              </button>`;
+            $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+            setActiveButton("btn-asignados");
+          },
+        });
       }
     })
     .catch((error) => {
       hideTicketStatusIndicator();
       console.error("Error al obtener los datos del ticket:", error);
       tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Error al cargar los datos: ${error.message}</td></tr>`;
-      initializeEmptyDataTable();
-    });
-
-  function initializeEmptyDataTable() {
-    if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
-      $("#tabla-ticket").DataTable().destroy();
-    }
-    $("#tabla-ticket").DataTable({
-      responsive: false,
-      scrollX: true,
-      pagingType: "simple_numbers",
-      lengthMenu: [[5, 10], ["5", "10"]],
-      autoWidth: false,
-      data: [],
-      columns: [
-        {
-          title: "N°",
-          orderable: false,
-          searchable: false,
-          render: function (data, type, row, meta) {
-            return meta.row + meta.settings._iDisplayStart + 1;
-          }
+      if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
+        $("#tabla-ticket").DataTable().destroy();
+      }
+      $("#tabla-ticket").DataTable({
+        responsive: false,
+        scrollX: true,
+        pagingType: "simple_numbers",
+        lengthMenu: [
+          [5, 10],
+          ["5", "10"],
+        ],
+        autoWidth: false,
+        data: [],
+        columns: [
+          {
+            title: "N°",
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row, meta) {
+              return meta.row + meta.settings._iDisplayStart + 1;
+            }
+          },
+          { title: "Nro Ticket" },
+          { title: "Serial" },
+          { title: "Rif" },
+          { title: "Razón Social" },
+          { title: "Acción Ticket" },
+          { title: "Acciones", orderable: false },
+        ],
+        language: {
+          lengthMenu: "Mostrar _MENU_ Registros",
+          zeroRecords: `
+            <div class="text-center text-muted py-5">
+              <div class="d-flex flex-column align-items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                  <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                </svg>
+                <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                <p class="text-muted mb-0">No hay tickets asociado al Técnico para mostrar en este momento.</p>
+              </div>
+            </div>`,
+          info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+          infoFiltered: " de _MAX_ Disponibles",
+          search: "Buscar:",
+          loadingRecords: "Cargando...",
+          processing: "Procesando...",
+          paginate: {
+            first: "Primero",
+            last: "Último",
+            next: "Siguiente",
+            previous: "Anterior",
+          },
         },
-        { title: "Nro Ticket" },
-        { title: "Serial" },
-        { title: "Rif" },
-        { title: "Razón Social" },
-        { title: "Acción Ticket" },
-        { title: "Acciones", orderable: false },
-      ],
-      language: {
-        lengthMenu: "Mostrar _MENU_ Registros",
-        zeroRecords: `
-          <div class="text-center text-muted py-5">
-            <div class="d-flex flex-column align-items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-              </svg>
-              <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-              <p class="text-muted mb-0">No hay tickets asociado al Técnico para mostrar en este momento.</p>
-            </div>
-          </div>`,
-        info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
-        infoFiltered: " de _MAX_ Disponibles",
-        search: "Buscar:",
-        loadingRecords: "Cargando...",
-        processing: "Procesando...",
-        paginate: {
-          first: "Primero",
-          last: "Último",
-          next: "Siguiente",
-          previous: "Anterior",
+        dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+        initComplete: function () {
+          const buttonsHtml = `
+            <button id="btn-asignados" class="btn btn-primary me-2" title="Tickets ya Asignados">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                    <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                </svg>
+            </button>
+            <button id="btn-por-asignar" class="btn btn-primary me-2" title="Enviados Taller">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                    <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+                </svg>
+            </button>
+            <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Técnico">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                </svg>
+            </button>
+            <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos devuelto a cliente">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
+                    <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
+                </svg>
+            </button>`;
+          $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+          setActiveButton("btn-asignados");
         },
-      },
-      dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-      initComplete: function () {
-        const buttonsHtml = `
-          <button id="btn-asignados" class="btn btn-primary me-2" title="Tickets ya Asignados">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-              <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-            </svg>
-          </button>
-          <button id="btn-por-asignar" class="btn btn-primary me-2" title="Enviados Taller">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
-              <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
-            </svg>
-          </button>
-          <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por el Técnico">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-              <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 0 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/>
-              <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-            </svg>
-          </button>
-          <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos devuelto a cliente">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
-              <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
-            </svg>
-          </button>`;
-        $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
-        setActiveButton("btn-asignados");
-      },
+      });
     });
-  }
 }
 
     // 1. Instanciar todos los modales al inicio
@@ -3034,7 +3182,7 @@ function SendToDevolution(ticketId, currentnroTicket, currentSerial) {
             const data = `action=DevolverCliente&id_ticket=${encodeURIComponent(ticketId)}&observaciones=${encodeURIComponent(observaciones)}&id_user=${encodeURIComponent(id_user)}`;
             xhr.send(data);
         } else {
-            console.log("Devolución cancelada por el usuario (SweetAlert).");
+            // Si el usuario cancela, simplemente cerramos el modal y no hacemos nada}
         }
     });
   }

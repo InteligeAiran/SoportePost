@@ -28,42 +28,42 @@ function mi_navbar() {}
 
         <style>
             .card-header.bg-primary.text-white {
-    cursor: pointer; /* Changes the cursor to indicate clickability */
-    transition: all 0.3s ease; /* Smooth transition for hover effects */
-}
+                cursor: pointer; /* Changes the cursor to indicate clickability */
+                transition: all 0.3s ease; /* Smooth transition for hover effects */
+            }
 
-.card-header.bg-primary.text-white:hover {
-    background-color: #0057b3; /* Slightly darker blue on hover */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9); /* Add shadow on hover */
-    transform: translateY(-2px); /* Slight lift effect */
-}
+            .card-header.bg-primary.text-white:hover {
+                background-color: #0057b3; /* Slightly darker blue on hover */
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9); /* Add shadow on hover */
+                transform: translateY(-2px); /* Slight lift effect */
+            }
 
-.card-header.bg-primary.text-white:active {
-    background-color: #004494; /* Even darker blue when clicked */
-    transform: translateY(0); /* Reset lift on click */
-}
+            .card-header.bg-primary.text-white:active {
+                background-color: #004494; /* Even darker blue when clicked */
+                transform: translateY(0); /* Reset lift on click */
+            }
 
-/* Tooltip styling */
-.card-header.bg-primary.text-white:hover::after {
-    content: 'Redireccionar'; /* Text to display */
-    position: absolute;
-    bottom: 100%; /* Position above the header */
-    left: 50%;
-    transform: translateX(-50%); /* Center horizontally */
-    background-color: #333; /* Dark background for tooltip */
-    color: #fff; /* White text */
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    z-index: 10; /* Ensure it appears above other elements */
-    opacity: 1;
-    transition: opacity 0.2s ease;
-}
+            /* Tooltip styling */
+            .card-header.bg-primary.text-white:hover::after {
+                content: 'Redireccionar'; /* Text to display */
+                position: absolute;
+                bottom: 100%; /* Position above the header */
+                left: 50%;
+                transform: translateX(-50%); /* Center horizontally */
+                background-color: #333; /* Dark background for tooltip */
+                color: #fff; /* White text */
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                white-space: nowrap;
+                z-index: 10; /* Ensure it appears above other elements */
+                opacity: 1;
+                transition: opacity 0.2s ease;
+            }
 
-.card-header.bg-primary.text-white::after {
-    opacity: 0; /* Hidden by default */
-}
+            .card-header.bg-primary.text-white::after {
+                opacity: 0; /* Hidden by default */
+            }
 
             /* Custom styles for SweetAlert2 modal */
             /* Custom styles for SweetAlert2 session expired modal */
@@ -1020,9 +1020,6 @@ function mi_navbar() {}
                 <!-- End Card ver Tickets Irreparables  -->
             </div>    
         </div>
-
-    
-
             
         <!-- MODAL PARA NUEVA CONTRASENA -->
             <div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel" aria-hidden="true"
