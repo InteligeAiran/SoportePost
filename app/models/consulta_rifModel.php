@@ -2957,5 +2957,16 @@ class consulta_rifModel extends Model
             // Manejar excepciones
         }
     }
+
+
+    public function GetBancoTicket(){
+        try{
+            $sql = "SELECT * FROM sp_verdatabanco()";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Manejar excepciones
+        }
+    }
 }
 ?>

@@ -220,6 +220,10 @@ class reportes extends Controller {
                     $this->handlegetTicketEntregadoCliente();
                 break;
 
+                case 'SearchBancoData':
+                    $this->handleSearchBancoData();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -1234,5 +1238,21 @@ class reportes extends Controller {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
+
+
+    public function handleSearchBancoData(){
+        $banco = isset($_POST['banco'])? $_POST['banco'] : null;
+        $repository = new ReportRepository(); // Inicializa el repositorio
+        $result = $repository->SearchBanco($banco);
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay serial disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los serial'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Coloque un serial']);
+    }
+
 }
 ?>
