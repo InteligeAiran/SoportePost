@@ -98,6 +98,7 @@ function getIconSvgForName(name) {
  * @param {HTMLElement} menuElement El menú desplegable (ej. un <ul>) asociado al toggle.
  * @param {string} [moduleId=null] El ID del módulo padre para la carga de submódulos, si aplica.
  */
+
 function setupCustomDropdown(toggleElement, menuElement, moduleId = null) {
   if (!toggleElement || !menuElement) {
     console.warn(
@@ -457,150 +458,149 @@ function loadSubmodulesForModule(moduleId, targetUlElement) {
 /**
  * Fetches main modules and initializes their custom dropdowns.
  */
+
 async function loadFullNavbar(options = {}) {
-    const {
-        method = "POST",
-        apiPath = "api/consulta/getModulesUsers", // This endpoint returns main modules
-    } = options;
+  const {
+    method = "POST",
+    apiPath = "api/consulta/getModulesUsers", // This endpoint returns main modules
+  } = options;
 
-    const navbarNav = document.getElementById("main-navbar-nav");
-    if (!navbarNav) {
-        console.error(
-            "Elemento con ID 'main-navbar-nav' no encontrado. No se puede poblar la barra de navegación."
-        );
-        return;
+  const navbarNav = document.getElementById("main-navbar-nav");
+  if (!navbarNav) {
+    console.error(
+      "Elemento con ID 'main-navbar-nav' no encontrado. No se puede poblar la barra de navegación."
+    );
+    return;
+  }
+
+  const id_usuario_element = document.getElementById("id_user");
+  if (!id_usuario_element) {
+    console.error(
+      "Elemento con ID 'id_user' no encontrado. Asegúrate de que existe en tu HTML."
+    );
+    return;
+  }
+  const id_usuario = id_usuario_element.value;
+
+  navbarNav.innerHTML = "";
+  const inicioLi = document.createElement("li");
+  inicioLi.className = "nav-item";
+  inicioLi.id = "inicio-link";
+  const inicioAnchor = document.createElement("a");
+  inicioAnchor.className = "nav-link";
+  inicioAnchor.href = "dashboard";
+  inicioAnchor.innerHTML =
+    getIconSvgForName("Inicio") +
+    '<h6 class="nav-link-text ms-3" style="color:white; margin:0; padding-left:.5rem;">Inicio</h6>';
+  inicioLi.appendChild(inicioAnchor);
+  navbarNav.appendChild(inicioLi);
+
+  const hrAfterInicio = document.createElement("hr");
+  hrAfterInicio.className = "horizontal dark my-3";
+  navbarNav.appendChild(hrAfterInicio);
+
+  try {
+    const url = `${ENDPOINT_BASE}${APP_PATH}${apiPath}`;
+    const body = new URLSearchParams({
+      action: "getModulesUsers",
+      id_usuario: id_usuario,
+    });
+
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: body,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al obtener módulos: ${response.status} ${response.statusText}`);
     }
 
-    const id_usuario_element = document.getElementById("id_user");
-    if (!id_usuario_element) {
-        console.error(
-            "Elemento con ID 'id_user' no encontrado. Asegúrate de que existe en tu HTML."
-        );
-        return;
-    }
-    const id_usuario = id_usuario_element.value;
+    const data = await response.json();
 
-    navbarNav.innerHTML = "";
-    const inicioLi = document.createElement("li");
-    inicioLi.className = "nav-item";
-    inicioLi.id = "inicio-link";
-    const inicioAnchor = document.createElement("a");
-    inicioAnchor.className = "nav-link";
-    inicioAnchor.href = "dashboard";
-    inicioAnchor.innerHTML =
-        getIconSvgForName("Inicio") +
-        '<h6 class="nav-link-text ms-3" style="color:white; margin:0; padding-left:.5rem;">Inicio</h6>';
-    inicioLi.appendChild(inicioAnchor);
-    navbarNav.appendChild(inicioLi);
+    if (data.success && Array.isArray(data.modules)) {
+      const modulesData = data.modules;
 
-    const hrAfterInicio = document.createElement("hr");
-    hrAfterInicio.className = "horizontal dark my-3";
-    navbarNav.appendChild(hrAfterInicio);
+      modulesData.forEach((module, index) => {
+        if (module.activo === "t") {
+          const mainLi = buildMenuItem(module, "module");
+          const mainAnchor = mainLi.querySelector("a");
+          const subUl = document.createElement("ul");
+          subUl.className = "dropdown-menu";
+          subUl.setAttribute("aria-labelledby", mainAnchor.id);
+          subUl.setAttribute("data-submodules-loaded", "false");
+          subUl.innerHTML = '<div class="p-2 text-white-50">Cargando...</div>';
+          mainLi.appendChild(subUl);
 
-    try {
-        const url = `${ENDPOINT_BASE}${APP_PATH}${apiPath}`;
-        const body = new URLSearchParams({
-            action: "getModulesUsers",
-            id_usuario: id_usuario,
-        });
+          setupCustomDropdown(mainAnchor, subUl, module.idmodulo);
+          navbarNav.appendChild(mainLi);
 
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: body,
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error al obtener módulos: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success && Array.isArray(data.modules)) {
-            const modulesData = data.modules;
-
-            modulesData.forEach((module, index) => {
-                if (module.activo === "t") {
-                    const mainLi = buildMenuItem(module, "module");
-                    const mainAnchor = mainLi.querySelector("a");
-                    const subUl = document.createElement("ul");
-                    subUl.className = "dropdown-menu";
-                    subUl.setAttribute("aria-labelledby", mainAnchor.id);
-                    subUl.setAttribute("data-submodules-loaded", "false");
-                    subUl.innerHTML = '<div class="p-2 text-white-50">Cargando...</div>';
-                    mainLi.appendChild(subUl);
-
-                    setupCustomDropdown(mainAnchor, subUl, module.idmodulo);
-                    navbarNav.appendChild(mainLi);
-
-                    if (index < modulesData.length - 1) {
-                        const nextModule = modulesData[index + 1];
-                        if (nextModule && nextModule.activo === "t") {
-                            const hr = document.createElement("hr");
-                            hr.className = "horizontal dark my-3";
-                            navbarNav.appendChild(hr);
-                        }
-                    }
-                } else {
-                    console.log(
-                        `Módulo ${module.desc_modulo} (ID: ${module.idmodulo}) está inactivo y no se mostrará.`
-                    );
-                }
-            });
-
-            // Add "Cerrar Sesión" at the very end
-            const logoutLi = document.createElement("li");
-            logoutLi.className = "nav-item";
-            const logoutAnchor = document.createElement("a");
-            logoutAnchor.className = "nav-link";
-            logoutAnchor.id = "cerrar-session-link";
-            logoutAnchor.href = "cerrar_session";
-
-            const logoutIcon = getIconSvgForName("Cerrar Sesión");
-            const logoutText = document.createElement("h6");
-            logoutText.className = "nav-link-text ms-3";
-            logoutText.textContent = "Cerrar Sesión";
-            logoutText.style.color = "white";
-            logoutText.style.margin = "11%";
-            logoutText.style.paddingLeft = ".5rem";
-
-            logoutAnchor.innerHTML = logoutIcon;
-            logoutAnchor.appendChild(logoutText);
-            logoutLi.appendChild(logoutAnchor);
-            navbarNav.appendChild(logoutLi);
+          // Añadir separador después de cada módulo activo, excepto el último
+          if (index < modulesData.length - 1) {
+            const hr = document.createElement("hr");
+            hr.className = "horizontal dark my-3";
+            navbarNav.appendChild(hr);
+          }
         } else {
-            console.error(
-                "Formato de respuesta inválido: Se esperaba 'success: true' y un array 'modules'.",
-                data
-            );
-            if (typeof Swal !== "undefined") {
-                Swal.fire({
-                    title: "Error",
-                    text: "Formato de respuesta de módulos inesperado.",
-                    icon: "error",
-                    confirmButtonText: "OK",
-                    color: "black",
-                });
-            }
+          console.log(
+            `Módulo ${module.desc_modulo} (ID: ${module.idmodulo}) está inactivo y no se mostrará.`
+          );
         }
-    } catch (error) {
-        console.error("Error al procesar la respuesta o de red:", error);
-        const errorMessage = error.message.includes("HTTP")
-            ? `Error de conexión con el servidor al cargar módulos: ${error.message}`
-            : "Ocurrió un error al procesar los módulos del servidor.";
+      });
 
-        if (typeof Swal !== "undefined") {
-            Swal.fire({
-                title: "Error",
-                text: errorMessage,
-                icon: "error",
-                confirmButtonText: "OK",
-                color: "black",
-            });
-        }
+      // Add "Cerrar Sesión" at the very end
+      const logoutLi = document.createElement("li");
+      logoutLi.className = "nav-item";
+      const logoutAnchor = document.createElement("a");
+      logoutAnchor.className = "nav-link";
+      logoutAnchor.id = "cerrar-session-link";
+      logoutAnchor.href = "cerrar_session";
+
+      const logoutIcon = getIconSvgForName("Cerrar Sesión");
+      const logoutText = document.createElement("h6");
+      logoutText.className = "nav-link-text ms-3";
+      logoutText.textContent = "Cerrar Sesión";
+      logoutText.style.color = "white";
+      logoutText.style.margin = "11%";
+      logoutText.style.paddingLeft = ".5rem";
+
+      logoutAnchor.innerHTML = logoutIcon;
+      logoutAnchor.appendChild(logoutText);
+      logoutLi.appendChild(logoutAnchor);
+      navbarNav.appendChild(logoutLi);
+    } else {
+      console.error(
+        "Formato de respuesta inválido: Se esperaba 'success: true' y un array 'modules'.",
+        data
+      );
+      if (typeof Swal !== "undefined") {
+        Swal.fire({
+          title: "Error",
+          text: "Formato de respuesta de módulos inesperado.",
+          icon: "error",
+          confirmButtonText: "OK",
+          color: "black",
+        });
+      }
     }
+  } catch (error) {
+    console.error("Error al procesar la respuesta o de red:", error);
+    const errorMessage = error.message.includes("HTTP")
+      ? `Error de conexión con el servidor al cargar módulos: ${error.message}`
+      : "Ocurrió un error al procesar los módulos del servidor.";
+
+    if (typeof Swal !== "undefined") {
+      Swal.fire({
+        title: "Error",
+        text: errorMessage,
+        icon: "error",
+        confirmButtonText: "OK",
+        color: "black",
+      });
+    }
+  }
 }
 
 // --- Resto de tu código (sidebar, active links, y HideNavbar) ---

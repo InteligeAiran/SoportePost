@@ -57,7 +57,6 @@ function redirigirPorAccion(idStatusAccion, idTicket, nroTicket) {
   });
 }
 
-
 // Variable para almacenar todos los tickets cargados (sin filtrar)
 let allOpenTickets = [];
 let allProcessTickets = []; // Separar datos para tickets en proceso
@@ -4846,20 +4845,35 @@ async function getTicketCounts() {
     try {
         const data = await fetchJsonByAction('GetTicketCounts');
 
-
         // Limpiar el contenido de la tabla antes de renderizar
         tbodyCounts.innerHTML = '';
 
         if (data.success && Array.isArray(data.counts) && data.counts.length > 0) {
+            let hasNonZeroCounts = false;
             data.counts.forEach(item => {
-                const tr = document.createElement('tr');
-                const moduleName = item.name_accion_ticket;
-                tr.innerHTML = `
-                    <td class="px-5 py-5 border-b border-gray-200 text-sm">${moduleName}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 text-sm">${item.total_tickets}</td>
-                `;
-                tbodyCounts.appendChild(tr);
+                // Solo mostrar si total_tickets es mayor que 0
+                if (item.total_tickets > 0) {
+                    hasNonZeroCounts = true;
+                    const tr = document.createElement('tr');
+                    const moduleName = item.name_accion_ticket;
+                    tr.innerHTML = `
+                        <td class="px-5 py-5 border-b border-gray-200 text-sm">${moduleName}</td>
+                        <td class="px-5 py-5 border-b border-gray-200 text-sm">${item.total_tickets}</td>
+                    `;
+                    tbodyCounts.appendChild(tr);
+                }
             });
+
+            // Si no hay elementos con total_tickets > 0, mostrar mensaje
+            if (!hasNonZeroCounts) {
+                tbodyCounts.innerHTML = `
+                    <tr>
+                        <td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">
+                            No hay tickets en los módulos seleccionados.
+                        </td>
+                    </tr>
+                `;
+            }
         } else {
             // Manejar caso sin datos o error de servidor
             const errorMessage = data.success ?
