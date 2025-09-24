@@ -3167,5 +3167,15 @@ class consulta_rifModel extends Model
             return false;
         }
     }
+
+    public function GetTicketDataGestionComercial($id_user){
+        $sql = "SELECT * FROM getdataticketGestionComercial(".$id_user.");";
+        $result = Model::getResult($sql, $this->db);
+        if ($result === false) {
+            error_log("Error al consultar tickets de gestion comercial: ". pg_last_error($this->db->getConnection()));
+            return false;
+        }
+        return $result;
+    }
 }
 ?>

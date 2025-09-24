@@ -120,6 +120,10 @@ class Consulta extends Controller
                 case 'GetTicketData':
                     $this->handleGetTicketData();
                     break;
+                
+                case 'GetTicketDataGestionComercial':
+                    $this->handleGetTicketDataGestionComercial();
+                    break;
 
                 case 'GetCoordinador':
                     $this->handleGetCoordinator();
@@ -2046,6 +2050,24 @@ class Consulta extends Controller
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         } 
+    }
+
+    public function handleGetTicketDataGestionComercial(){
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+    
+        if (!$id_user) {
+            $this->response(['success' => false, 'message' => 'Faltan el id_user.'], 400);
+            return;
+        }
+    
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetTicketDataGestionComercial($id_user);
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Se ha encontrado la información del ticket.', 'ticket_data' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
+        }
     }
 }
 ?>

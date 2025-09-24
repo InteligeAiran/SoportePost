@@ -25,6 +25,99 @@ function mi_navbar() {}
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
     <style>
+
+        /* Estilos para el botón botonMostarImage */
+        #botonMostarImage{
+           background-color: #003594;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        #botonMostarImage:hover {
+        background-color: #004085; /* Color más oscuro al pasar el ratón */
+        border-color: #004085;
+        color: #fff;
+        }
+
+        #botonMostarImage:active,
+        #botonMostarImage:focus {
+        background-color: #004085; /* Color más oscuro al hacer clic o enfocar */
+        border-color: #004085;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5); /* Sombra de enfoque */
+        }
+
+        #botonMostarImage svg {
+        vertical-align: middle; /* Alinear el SVG con el texto */
+        margin-right: 0.25rem; /* Espacio entre el ícono y el borde */
+        }
+
+        /* Asegurar que el botón se vea bien en la tabla */
+        #tabla-ticket #botonMostarImage {
+        margin: 0 2px; /* Espacio entre botones en la columna de acciones */
+        }
+
+        /* Estilos para el modal */
+        #selectSolicitudModal .modal-content {
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #selectSolicitudModal .modal-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        }
+
+        #selectSolicitudModal .modal-title {
+        color: white;
+        font-weight: 500;
+        }
+
+        #selectSolicitudModal .modal-body {
+        padding: 1.5rem;
+        }
+
+        #selectSolicitudModal .form-check {
+        margin-bottom: 1rem;
+        }
+
+        #selectSolicitudModal .form-check-label {
+        margin-left: 0.5rem;
+        color: #495057;
+        }
+
+        #selectSolicitudModal .modal-footer {
+        border-top: 1px solid #dee2e6;
+        justify-content: space-between;
+        }
+
+        #selectSolicitudModal .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        }
+
+        #selectSolicitudModal .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        }
+
+        #selectSolicitudModal .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+        }
+
+        #selectSolicitudModal .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        }
+
+        #selectSolicitudModal .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+        }
       
         #ticket-details-panel table td, table th {
             white-space: normal !important;
@@ -297,19 +390,11 @@ function mi_navbar() {}
                                             </div>
                                         </div>
                                     </div>
+                                    <div id="ticket-status-indicator-container"></div>
                                    <table id="tabla-ticket"
                                         class="table table-striped table-bordered table-hover table-sm">
                                        <thead>
-                                            <tr>
-                                                <th scope="col">ID Ticket</th>
-                                                <th scope="col">RIF</th>
-                                                <th scope="col">Razón Social</th>
-                                                <th scope="col">Fecha Creación</th>
-                                                <th scope="col">Técnico Asignado</th>
-                                                <th scope="col">Nro Ticket</th>
-                                                <th scope="col">Acción Ticket</th> <th scope="col">Acciones</th>
-                                            </tr>
-                                        </thead>
+                                           
                                         <tbody class="table-group-divider" id="table-ticket-body">
                                             <tr>
                                                 <td colspan="3">No hay datos</td>
@@ -329,25 +414,55 @@ function mi_navbar() {}
             </div>
         </main>
 
+        <!-- Modal para seleccionar solicitud -->
+        <div class="modal fade" id="selectSolicitudModal" tabindex="-1" aria-labelledby="selectSolicitudModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header bg-gradient-primary">
+                <h5 class="modal-title" id="selectSolicitudModalLabel">Selecciona solicitud</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-check">
+                <input class="form-check-input" type="radio" name="solicitudType" id="sustituirPos" value="sustituir">
+                <label class="form-check-label" for="sustituirPos">Sustituir POS</label>
+                </div>
+                <div class="form-check">
+                <input class="form-check-input" type="radio" name="solicitudType" id="desafiliarPos" value="desafiliar">
+                <label class="form-check-label" for="desafiliarPos">Desafiliación POS</label>
+                </div>
+                <div class="form-check">
+                <input class="form-check-input" type="radio" name="solicitudType" id="prestamoPos" value="prestamo">
+                <label class="form-check-label" for="prestamoPos">Préstamo POS</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmarSolicitud">Confirmar</button>
+            </div>
+            </div>
+        </div>
+        </div>
+
         <!-- MODAL PARA SELECCIONAR TECNICO -->
-        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-            aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div id="ModalSelecttecnico" class="modal-content">
-                    <div class="modal-header">
-                        <!--h1 class="modal-title fs-5" id="staticBackdropLabel">Seleccione un Técnico</h1-->
-                        <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p style="font-size: 200%; font-family: ui-monospace;">Deseas Enviar al Taller?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button id="close-button" type="button" class="btn btn-secondary">Cerrar</button>
-                        <button id="SendToTaller-button" type="button" class="btn btn-primary">Enviar a Taller</button>
+            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div id="ModalSelecttecnico" class="modal-content">
+                        <div class="modal-header">
+                            <!--h1 class="modal-title fs-5" id="staticBackdropLabel">Seleccione un Técnico</h1-->
+                            <button id="Close-icon" type="button" class="btn-close" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p style="font-size: 200%; font-family: ui-monospace;">Deseas Enviar al Taller?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="close-button" type="button" class="btn btn-secondary">Cerrar</button>
+                            <button id="SendToTaller-button" type="button" class="btn btn-primary">Enviar a Taller</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         <!--MODAL PARA SELECCIONAR TECNICO-->
 
         <!--MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
@@ -415,7 +530,7 @@ function mi_navbar() {}
                 </div>
             </div>
         <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
-    <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
+        <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 
         <div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">

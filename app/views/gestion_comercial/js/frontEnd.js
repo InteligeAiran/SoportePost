@@ -1,6 +1,10 @@
-function getTicketDataCoordinator() {
+function getTicketDataGestionComercial() {
+  const id_user = document.getElementById("userId").value;
+  let activeFilter = 'btn-por-asignar'; // Variable para rastrear el filtro activo
+
   const xhr = new XMLHttpRequest();
-  xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketData`);
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketDataGestionComercial`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
 
@@ -19,11 +23,13 @@ function getTicketDataCoordinator() {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          const TicketData = response.ticket;
-          // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente)
+          const TicketData = response.ticket_data;
+
+          // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente) según el filtro inicial
           if (TicketData && TicketData.length > 0) {
             const firstTicket = TicketData[0];
-            showTicketStatusIndicator(firstTicket.name_status_ticket, firstTicket.name_accion_ticket);
+            const statusId = activeFilter === 'btn-por-asignar' ? firstTicket.id_status_lab : firstTicket.id_status_domiciliacion;
+            showTicketStatusIndicator(firstTicket.id_status_ticket, statusId);
           } else {
             hideTicketStatusIndicator();
           }
@@ -66,89 +72,13 @@ function getTicketDataCoordinator() {
             let actionButtonsHtml = "";
             currentTicketNroForImage = data.nro_ticket;
 
-            // Lógica para los botones de acción
-            if (data.id_accion_ticket === '4') {
-              actionButtonsHtml += `
-                <button id="confirmreceived" class="btn btn-sm btn-info btn-received-coord mr-2"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="top"
-                  title="Marcar como Recibido por Coordinador"
-                  data-ticket-id="${data.id_ticket}"
-                  data-nro-ticket="${data.nro_ticket}"
-                  data-serial-pos="${data.serial_pos}">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/>
-                    <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                  </svg>
-                </button>
-                <button id="myUniqueAssingmentButton"
-                  class="btn btn-sm btn-assign-tech"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="top"
-                  title="Asignar Técnico"
-                  data-ticket-id="${data.id_ticket}"
-                  data-nro-ticket="${data.nro_ticket}"
-                  data-serial-pos="${data.serial_pos}">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/>
-                  </svg>
-                </button>
-              `;
-            } else if (data.id_accion_ticket === '3') {
-              actionButtonsHtml += `
-                <button id="myUniqueAssingmentButton"
-                  class="btn btn-sm btn-assign-tech"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="top"
-                  title="Asignar Técnico"
-                  data-ticket-id="${data.id_ticket}"
-                  data-nro-ticket="${data.nro_ticket}"
-                  data-serial-pos="${data.serial_pos}">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/>
-                  </svg>
-                </button>
-              `;
-            } else if (data.id_accion_ticket === '6' || data.id_accion_ticket === '10') {
-              actionButtonsHtml += `
-                <button id="reasingButton" class="btn btn-sm btn-primary btn-reassign-tech"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="top"
-                  title="Reasignar Técnico"
-                  data-ticket-id="${data.id_ticket}"
-                  data-nro-ticket="${data.nro_ticket}"
-                  data-serial-pos="${data.serial_pos}">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16">
-                    <path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/>
-                  </svg>
-                </button>
-              `;
-            }
-
-            if (data.envio === 'Sí' || data.exoneracion === 'Sí' || data.pago === 'Sí') {
-              actionButtonsHtml += `
-                <button id="botonMostarImage" class="btn btn-sm btn-view-image" data-bs-placement="top" title="Visualizar Documentos"
-                  data-ticket-id="${data.id_ticket}"
-                  data-nro-ticket="${data.nro_ticket}"
-                  data-envio="${data.envio}"
-                  data-exoneracion="${data.exoneracion}"
-                  data-pago="${data.pago}"
-                  data-rechazado="${data.rechazado}">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
-                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                    <path d="M.046 8.5C.138 7.042 1.517 5.0 8 5.0s7.862 2.042 7.954 3.5c-.092 1.458-1.472 3.5-7.954 3.5S.138 9.958.046 8.5M13 8a5 5 0 1 0-10 0 5 5 0 0 0 10 0"/>
-                  </svg>
-                </button>
-              `;
-            } else {
-              actionButtonsHtml += `
-                <button type="button" id="botonMostarNoImage" class="btn btn-secondary btn-sm" title="No hay Documentos a visualizar" disabled>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-x-fill" viewBox="0 0 16 16">
-                    <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.854 7.146 8 8.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 9l1.147 1.146a.5.5 0 0 1-.708.708L8 9.707l-1.146 1.147a.5.5 0 0 1-.708-.708L7.293 9 6.146 7.854a.5.5 0 1 1 .708-.708"/>
-                  </svg>
-                </button>
-              `;
-            }
+            actionButtonsHtml += `
+              <button id="botonMostarImage" class="btn btn-sm btn-view-image" data-bs-toggle="modal" data-bs-target="#selectSolicitudModal" data-ticket-id="${data.id_ticket}" data-nro-ticket="${data.nro_ticket}" data-envio="${data.envio}" data-exoneracion="${data.exoneracion}" data-pago="${data.pago}" data-rechazado="${data.rechazado}" title="Visualizar Documentos">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-plus-fill" viewBox="0 0 16 16">
+                    <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M8.5 7v1.5H10a.5.5 0 0 1 0 1H8.5V11a.5.5 0 0 1-1 0V9.5H6a.5.5 0 0 1 0-1h1.5V7a.5.5 0 0 1 1 0"/>
+                </svg>
+              </button>
+            `;
 
             dataForDataTable.push([
               data.id_ticket,
@@ -157,12 +87,15 @@ function getTicketDataCoordinator() {
               data.serial_pos,
               data.razonsocial_cliente,
               data.name_accion_ticket,
+              data.name_status_lab,
+              data.name_status_domiciliacion,
               data.full_name_tecnico_n2_actual,
               actionButtonsHtml,
+              data.id_status_lab,
+              data.id_status_domiciliacion
             ]);
           });
 
-          // Inicialización de DataTables
           const dataTableInstance = $("#tabla-ticket").DataTable({
             data: dataForDataTable,
             scrollX: "200px",
@@ -193,8 +126,12 @@ function getTicketDataCoordinator() {
                 },
               },
               { title: "Acción Ticket" },
+              { title: "Estatus Taller" },
+              { title: "Estatus Domiciliación" },
               { title: "Técnico Asignado", visible: false },
               { title: "Acciones", orderable: false },
+              { title: "ID Estatus Taller", visible: false },
+              { title: "ID Estatus Domiciliación", visible: false }
             ],
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
@@ -216,68 +153,51 @@ function getTicketDataCoordinator() {
             dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
             initComplete: function (settings, json) {
               const api = this.api();
+
               const buttonsHtml = `
-                <button id="btn-por-asignar" class="btn btn-primary me-2" title="Tickets por Asignar">
+                <button id="btn-por-asignar" class="btn btn-primary me-2" title="Gestión Comercial Taller">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/>
                   </svg>
                 </button>
-                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por la Coordinación">
+                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Gestión Comercial Domiciliación">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
                     <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/>
                     <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
                   </svg>
                 </button>
-                <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets Asignados">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                    <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                  </svg>
-                </button>
-                <button id="btn-reasignado" class="btn btn-secondary me-2" title="Tickets Reasignados">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16">
-                    <path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/>
-                  </svg>
-                </button>`;
+              `;
               $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
               function setActiveButton(activeButtonId) {
-                $("#btn-por-asignar, #btn-recibidos, #btn-asignados, #btn-reasignado")
+                $("#btn-por-asignar, #btn-recibidos")
                   .removeClass("btn-primary").addClass("btn-secondary");
                 $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
+                activeFilter = activeButtonId;
+                $("#tabla-ticket tbody tr").removeClass("table-active");
               }
 
-              function checkDataExists(searchTerm) {
+              function checkDataExists(searchTerm, columnIndex) {
                 api.columns().search('').draw(false);
-                api.column(6).visible(false);
-                api.column(7).visible(true);
-                api.column(5).search(searchTerm, true, false).draw();
+                api.column(columnIndex).search(searchTerm, true, false).draw();
                 const rowCount = api.rows({ filter: 'applied' }).count();
                 return rowCount > 0;
               }
 
               function findFirstButtonWithData() {
                 const searchTerms = [
-                  { button: "btn-por-asignar", term: "Asignado a la Coordinación", status: "Abierto", action: "Asignado a la Coordinación" },
-                  { button: "btn-recibidos", term: "Recibido por la Coordinación", status: "Abierto", action: "Recibido por la Coordinación" },
-                  { button: "btn-asignados", term: "Asignado al Técnico|Recibido por el Técnico", status: "En proceso", action: ["Asignado al Técnico", "Recibido por el Técnico"] },
-                  { button: "btn-reasignado", term: "Reasignado al Técnico", status: "En proceso", action: "Reasignado al Técnico" }
+                  { button: "btn-por-asignar", term: "^(7|4)$", status: 1, action: [7, 4], column: 10 },
+                  { button: "btn-recibidos", term: "^3$", status: 1, action: 3, column: 11 }
                 ];
 
-                for (const { button, term, status, action } of searchTerms) {
-                  if (checkDataExists(term)) {
+                for (const { button, term, status, action, column } of searchTerms) {
+                  if (checkDataExists(term, column)) {
                     api.columns().search('').draw(false);
-                    if (button === "btn-asignados") {
-                      api.column(6).visible(true);
-                    } else {
-                      api.column(6).visible(false);
-                    }
-                    api.column(7).visible(true);
-                    api.column(5).search(term, true, false).draw();
+                    api.column(column).search(term, true, false).draw();
                     setActiveButton(button);
-                    showTicketStatusIndicator(status, action);
-
-                    // Apply nro_ticket search if provided
+                    const firstTicket = TicketData[0];
+                    const statusId = button === 'btn-por-asignar' ? firstTicket.id_status_lab : firstTicket.id_status_domiciliacion;
+                    showTicketStatusIndicator(firstTicket.id_status_ticket, statusId);
                     if (nroTicket) {
                       api.search(nroTicket).draw(false);
                       api.rows().every(function () {
@@ -285,11 +205,14 @@ function getTicketDataCoordinator() {
                         if (rowData[1] === nroTicket) {
                           $(this.node()).addClass('table-active');
                           this.node().scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          const selectedTicket = TicketData.find(t => t.nro_ticket === nroTicket);
+                          if (selectedTicket) {
+                            onTicketSelect(selectedTicket);
+                          }
                         } else {
                           $(this.node()).removeClass('table-active');
                         }
                       });
-                      // Check if ticket exists in current filter
                       if (api.rows({ filter: 'applied' }).count() === 0) {
                         Swal.fire({
                           icon: 'warning',
@@ -299,7 +222,7 @@ function getTicketDataCoordinator() {
                           color: 'black',
                           confirmButtonColor: '#003594'
                         });
-                        api.search('').draw(false); // Clear search if no matches
+                        api.search('').draw(false);
                       }
                     }
                     return true;
@@ -307,11 +230,8 @@ function getTicketDataCoordinator() {
                 }
 
                 api.columns().search('').draw(false);
-                api.column(6).visible(false);
-                api.column(7).visible(true);
-                api.column(5).search("NO_DATA_FOUND").draw();
                 setActiveButton("btn-por-asignar");
-                showTicketStatusIndicator("Cerrado", "Sin datos");
+                showTicketStatusIndicator(3, null);
                 tbody.innerHTML = `
                   <tr>
                     <td colspan="14" class="text-center text-muted py-5">
@@ -327,28 +247,18 @@ function getTicketDataCoordinator() {
                 return false;
               }
 
-              // Determine the correct filter button based on the current module
-              const currentPath = window.location.pathname.split('/').pop().replace('.html', '');
-              const buttonMapping = {
-                'asignar_tecnico': 'btn-por-asignar',
-                'recibidos_coordinacion': 'btn-recibidos',
-                'asignados_tecnico': 'btn-asignados',
-                'reasignado_tecnico': 'btn-reasignado'
-              };
-              const activeButton = buttonMapping[currentPath] || 'btn-por-asignar';
-
-              // Initialize with the correct filter and nro_ticket search
               findFirstButtonWithData();
 
-              // Event listeners para los botones
               $("#btn-por-asignar").on("click", function () {
-                if (checkDataExists("Asignado a la Coordinación")) {
+                const searchTerm = "^(7|4)$";
+                if (checkDataExists(searchTerm, 10)) {
                   api.columns().search('').draw(false);
-                  api.column(6).visible(false);
-                  api.column(7).visible(true);
-                  api.column(5).search("Asignado a la Coordinación").draw();
+                  api.column(10).search(searchTerm, true, false).draw();
                   setActiveButton("btn-por-asignar");
-                  showTicketStatusIndicator("Abierto", "Asignado a la Coordinación");
+                  if (TicketData.length > 0) {
+                    const firstTicket = TicketData[0];
+                    showTicketStatusIndicator(firstTicket.id_status_ticket, firstTicket.id_status_lab);
+                  }
                   if (nroTicket) api.search(nroTicket).draw(false);
                 } else {
                   findFirstButtonWithData();
@@ -356,42 +266,15 @@ function getTicketDataCoordinator() {
               });
 
               $("#btn-recibidos").on("click", function () {
-                if (checkDataExists("Recibido por la Coordinación")) {
+                const searchTerm = "^3$";
+                if (checkDataExists(searchTerm, 11)) {
                   api.columns().search('').draw(false);
-                  api.column(6).visible(false);
-                  api.column(7).visible(true);
-                  api.column(5).search("Recibido por la Coordinación").draw();
+                  api.column(11).search(searchTerm, true, false).draw();
                   setActiveButton("btn-recibidos");
-                  showTicketStatusIndicator("Abierto", "Recibido por la Coordinación");
-                  if (nroTicket) api.search(nroTicket).draw(false);
-                } else {
-                  findFirstButtonWithData();
-                }
-              });
-
-              $("#btn-asignados").on("click", function () {
-                const searchTerm = "Asignado al Técnico|Recibido por el Técnico";
-                if (checkDataExists(searchTerm)) {
-                  api.columns().search('').draw(false);
-                  api.column(6).visible(true);
-                  api.column(7).visible(true);
-                  api.column(5).search(searchTerm).draw();
-                  setActiveButton("btn-asignados");
-                  showTicketStatusIndicator("En proceso", ["Asignado al Técnico", "Recibido por el Técnico"]);
-                  if (nroTicket) api.search(nroTicket).draw(false);
-                } else {
-                  findFirstButtonWithData();
-                }
-              });
-
-              $("#btn-reasignado").on("click", function () {
-                if (checkDataExists("Reasignado al Técnico")) {
-                  api.columns().search('').draw(false);
-                  api.column(6).visible(true);
-                  api.column(7).visible(false);
-                  api.column(5).search("Reasignado al Técnico").draw();
-                  setActiveButton("btn-reasignado");
-                  showTicketStatusIndicator("En proceso", "Reasignado al Técnico");
+                  if (TicketData.length > 0) {
+                    const firstTicket = TicketData[0];
+                    showTicketStatusIndicator(firstTicket.id_status_ticket, firstTicket.id_status_domiciliacion);
+                  }
                   if (nroTicket) api.search(nroTicket).draw(false);
                 } else {
                   findFirstButtonWithData();
@@ -424,176 +307,29 @@ function getTicketDataCoordinator() {
                     imgElement.alt = "Serial no disponible";
                   }
                 }
+                const statusId = activeFilter === 'btn-por-asignar' ? selectedTicketDetails.id_status_lab : selectedTicketDetails.id_status_domiciliacion;
+                showTicketStatusIndicator(selectedTicketDetails.id_status_ticket, statusId);
               } else {
                 detailsPanel.innerHTML = "<p>No se encontraron detalles para este ticket.</p>";
+                hideTicketStatusIndicator();
               }
             });
 
-          $("#tabla-ticket tbody")
-            .off("click", ".truncated-cell, .expanded-cell")
-            .on("click", ".truncated-cell, .expanded-cell", function (e) {
-              e.stopPropagation();
-              const $cellSpan = $(this);
-              const fullText = $cellSpan.data("full-text");
-              const displayLength = 25;
-              if ($cellSpan.hasClass("truncated-cell")) {
-                $cellSpan.removeClass("truncated-cell").addClass("expanded-cell").text(fullText);
-              } else if ($cellSpan.hasClass("expanded-cell")) {
-                $cellSpan.removeClass("expanded-cell").addClass("truncated-cell");
-                $cellSpan.text(fullText.length > displayLength ? fullText.substring(0, displayLength) + "..." : fullText);
-              }
-            });
+          // Evento para el botón botonMostarImage
+          $("#tabla-ticket tbody").off("click", ".btn-view-image").on("click", ".btn-view-image", function (e) {
+            e.stopPropagation();
+            const ticketId = $(this).data("ticket-id");
+            const nroTicket = $(this).data("nro-ticket");
+            const envio = $(this).data("envio");
+            const exoneracion = $(this).data("exoneracion");
+            const pago = $(this).data("pago");
+            const rechazado = $(this).data("rechazado");
 
-          $("#tabla-ticket tbody")
-            .off("click", ".btn-received-coord")
-            .on("click", ".btn-received-coord", function (e) {
-              e.stopPropagation();
-              const ticketId = $(this).data("ticket-id");
-              const nroTicket = $(this).data("nro-ticket");
-              const serialPos = $(this).data("serial-pos");
-              markTicketAsReceived(ticketId, nroTicket, serialPos);
-            });
-
-          $("#tabla-ticket tbody")
-            .off("click", ".btn-assign-tech")
-            .on("click", ".btn-assign-tech", function (e) {
-              e.stopPropagation();
-              const ticketId = $(this).data("ticket-id");
-              const nroTicket = $(this).data("nro-ticket");
-              const serialPos = $(this).data("serial-pos");
-              currentTicketId = ticketId;
-              currentTicketNroForAssignment = nroTicket;
-              currentTicketSerialPosForAssignment = serialPos;
-              if (modalInstanceCoordinator) {
-                modalInstanceCoordinator.show();
-              } else {
-                console.error("Error: La instancia del modal de asignación no está disponible.");
-              }
-            });
-
-          $("#tabla-ticket tbody")
-            .off("click", ".btn-reassign-tech")
-            .on("click", ".btn-reassign-tech", function (e) {
-              e.stopPropagation();
-              currentTicketId = $(this).data("ticket-id");
-              currentTicketNro = $(this).data("nro-ticket");
-              currentserialPos = $(this).data("serial-pos");
-              ticketNumberSpan.textContent = currentTicketNro;
-              ticketserialPos.textContent = currentserialPos;
-              confirmReassignModalInstance.show();
-            });
-
-          $("#tabla-ticket tbody")
-            .off("click", ".btn-view-image")
-            .on("click", ".btn-view-image", function (e) {
-              e.stopPropagation();
-              const ticketId = $(this).data("ticket-id");
-              const nroTicket = $(this).data("nro-ticket");
-              const envioValor = $(this).data("envio");
-              const exoValor = $(this).data("exoneracion");
-              const pagoValor = $(this).data("pago");
-              const ticketRechazado = $(this).data("rechazado");
-              const BotonRechazo = document.getElementById('RechazoDocumento');
-              BotonRechazo.style.display = 'none';
-              currentTicketIdForImage = ticketId;
-              currentTicketNroForImage = nroTicket;
-              const VizualizarImage = document.getElementById('visualizarImagenModal');
-              const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
-              document.getElementById('BotonCerrarSelectDocument').onclick = () => visualizarImagenModal.hide();
-              const EnvioInputModal = document.getElementById('imagenEnvio');
-              const EnvioLabelModal = document.getElementById('labelEnvio');
-              const ExoInputModal = document.getElementById('imagenExoneracion');
-              const ExoLabelModal = document.getElementById('labelExo');
-              const PagoInputModal = document.getElementById('imagenPago');
-              const PagoLabelModal = document.getElementById('labelPago');
-              if (envioValor === 'Sí') {
-                EnvioLabelModal.style.display = 'block';
-                EnvioInputModal.style.display = 'block';
-              } else {
-                EnvioLabelModal.style.display = 'none';
-                EnvioInputModal.style.display = 'none';
-              }
-              if (exoValor === 'Sí') {
-                ExoInputModal.style.display = 'block';
-                ExoLabelModal.style.display = 'block';
-              } else {
-                ExoInputModal.style.display = 'none';
-                ExoLabelModal.style.display = 'none';
-              }
-              if (pagoValor === 'Sí') {
-                PagoInputModal.style.display = 'block';
-                PagoLabelModal.style.display = 'block';
-              } else {
-                PagoInputModal.style.display = 'none';
-                PagoLabelModal.style.display = 'none';
-              }
-              const btnConfirmar = document.getElementById('btnConfirmarVisualizacion');
-              const btnConfirmarClone = btnConfirmar.cloneNode(true);
-              btnConfirmar.parentNode.replaceChild(btnConfirmarClone, btnConfirmar);
-              btnConfirmarClone.addEventListener('click', function () {
-                const selectedOption = document.querySelector('input[name="opcionImagen"]:checked')?.value;
-                if (!selectedOption) {
-                  Swal.fire({
-                    icon: 'warning',
-                    title: 'Selección Requerida',
-                    text: 'Por favor, elija un tipo de documento para visualizar.',
-                    confirmButtonText: 'Ok',
-                    color: 'black',
-                    confirmButtonColor: '#003594'
-                  });
-                  return;
-                }
-                if (ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
-                  BotonRechazo.style.display = 'none';
-                } else {
-                  BotonRechazo.style.display = 'block';
-                }
-                getMotivos(selectedOption);
-                fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                  body: `action=GetDocumentByType&ticketId=${currentTicketNroForImage}&documentType=${selectedOption}`
-                })
-                  .then(response => response.json())
-                  .then(data => {
-                    if (data.success) {
-                      const document = data.document;
-                      const filePath = document.file_path;
-                      const mimeType = document.mime_type;
-                      const fileName = document.original_filename;
-                      if (mimeType.startsWith('image/')) {
-                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, filePath, null, fileName);
-                      } else if (mimeType === 'application/pdf') {
-                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, filePath, fileName);
-                      } else {
-                        showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, null, "Tipo de documento no soportado");
-                      }
-                      visualizarImagenModal.hide();
-                    } else {
-                      Swal.fire({
-                        icon: 'warning',
-                        title: 'Error',
-                        text: `No se pudo obtener el documento: ${data.message || 'Error desconocido'}`,
-                        confirmButtonText: 'Ok',
-                        color: 'black',
-                        confirmButtonColor: '#003594'
-                      });
-                    }
-                  })
-                  .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                      icon: 'error',
-                      title: 'Error',
-                      text: 'Error al obtener el documento',
-                      confirmButtonText: 'Ok',
-                      color: 'black',
-                      confirmButtonColor: '#003594'
-                    });
-                  });
-              });
-              visualizarImagenModal.show();
-            });
+            // Configurar el modal con los datos del ticket
+            const modal = new bootstrap.Modal(document.getElementById('selectSolicitudModal'));
+            document.getElementById('selectSolicitudModalLabel').textContent = `Selecciona solicitud para Ticket #${nroTicket}`;
+            modal.show();
+          });
         } else {
           hideTicketStatusIndicator();
           tbody.innerHTML = '<tr><td>Error al cargar</td></tr>';
@@ -629,50 +365,52 @@ function getTicketDataCoordinator() {
     tbody.innerHTML = '<tr><td>Error de conexión</td></tr>';
     console.error("Error de red");
   };
-
-  const datos = `action=GetTicketData`;
+  const datos = `action=GetTicketDataGestionComercial&id_user=${encodeURIComponent(id_user)}`;
   xhr.send(datos);
 }
 
-function getTicketStatusVisual(statusTicket, accionTicket) {
+// Función para determinar el estado visual del ticket basada en IDs
+function getTicketStatusVisual(statusTicketId, statusSpecificId) {
   let statusClass = '';
   let statusText = '';
   let statusIcon = '';
-  
-  if (statusTicket === 'Abierto' || 
-      accionTicket === 'Asignado a la Coordinación' ||
-      accionTicket === 'Pendiente por revisar domiciliacion') {
+
+  // Usar statusTicketId como base principal
+  if (statusTicketId === "1") {
     statusClass = 'status-open';
     statusText = 'ABIERTO';
     statusIcon = '🟢';
-  } else if (statusTicket === 'En proceso' || 
-             accionTicket === 'Asignado al Técnico' || 
-             accionTicket === 'Recibido por el Técnico' ||
-             accionTicket === 'Enviado a taller' ||
-             accionTicket === 'En Taller' ||
-             accionTicket === 'En espera de Confirmar Devolución') {
+  } else if (statusTicketId === "2") {
     statusClass = 'status-process';
     statusText = 'EN PROCESO';
     statusIcon = '🟡';
-  } else if (statusTicket === 'Cerrado' || 
-             accionTicket === 'Entregado a Cliente') {
+  } else if (statusTicketId === "3") {
     statusClass = 'status-closed';
     statusText = 'CERRADO';
     statusIcon = '🔴';
+  } else {
+    statusClass = 'status-open'; // Fallback por defecto
+    statusText = 'ABIERTO';
+    statusIcon = '🟢';
   }
-  
+
+  // Sobrescribir solo si statusSpecificId indica un estado específico (4, 7, 3)
+  if (statusSpecificId !== null && statusSpecificId !== undefined && [4, 7, 3].includes(statusSpecificId)) {
+    statusClass = 'status-open';
+    statusText = 'ABIERTO';
+    statusIcon = '🟢';
+  }
   return { statusClass, statusText, statusIcon };
 }
 
-// Función para mostrar el indicador de estado
-function showTicketStatusIndicator(statusTicket, accionTicket) {
+function showTicketStatusIndicator(statusTicketId, statusSpecificId) {
   const container = document.getElementById('ticket-status-indicator-container');
-  if (!container) return;
+  if (!container) {
+    console.error('Contenedor ticket-status-indicator-container no encontrado');
+    return;
+  }
   
-  // Si accionTicket es un array, usar el primer elemento
-  const actionToUse = Array.isArray(accionTicket) ? accionTicket[0] : accionTicket;
-  
-  const { statusClass, statusText, statusIcon } = getTicketStatusVisual(statusTicket, actionToUse);
+  const { statusClass, statusText, statusIcon } = getTicketStatusVisual(statusTicketId, statusSpecificId);
   
   container.innerHTML = `
     <div class="ticket-status-indicator ${statusClass}">
@@ -682,6 +420,15 @@ function showTicketStatusIndicator(statusTicket, accionTicket) {
       </div>
     </div>
   `;
+  container.style.display = 'block'; // Asegura que el contenedor sea visible
+}
+
+function hideTicketStatusIndicator() {
+  const container = document.getElementById('ticket-status-indicator-container');
+  if (container) {
+    container.innerHTML = '';
+    container.style.display = 'none'; // Oculta el contenedor si no hay datos
+  }
 }
 
 function formatTicketDetailsPanel(d) {
@@ -1643,21 +1390,37 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
     });
 }
 
-
-// Función para ocultar el indicador
-function hideTicketStatusIndicator() {
-  const container = document.getElementById('ticket-status-indicator-container');
-  if (container) {
-    container.innerHTML = '';
-  }
-}
-
-// Cuando se selecciona un ticket específico
-function onTicketSelect(ticketData) {
-  showTicketStatusIndicator(ticketData.name_status_ticket, ticketData.name_accion_ticket);
-  // ... resto de tu código para mostrar detalles del ticket ...
-}
-
 document.addEventListener("DOMContentLoaded", function () {
-    getTicketDataCoordinator();
+    getTicketDataGestionComercial();
+
+    const confirmarSolicitudBtn = document.getElementById('confirmarSolicitud');
+  if (confirmarSolicitudBtn) {
+    confirmarSolicitudBtn.addEventListener('click', function () {
+      const selectedSolicitud = document.querySelector('input[name="solicitudType"]:checked');
+      if (selectedSolicitud) {
+        const solicitudType = selectedSolicitud.value;
+        const modal = bootstrap.Modal.getInstance(document.getElementById('selectSolicitudModal'));
+        modal.hide();
+        Swal.fire({
+          icon: 'success',
+          title: 'Solicitud seleccionada',
+          text: `Has seleccionado: ${solicitudType === 'sustituir' ? 'Sustituir POS' : solicitudType === 'desafiliar' ? 'Desafiliación POS' : 'Préstamo POS'}`,
+          confirmButtonText: 'Ok',
+          color: 'black',
+          confirmButtonColor: '#007bff'
+        });
+        // Aquí puedes añadir lógica adicional, como enviar la selección a un servidor
+      } else {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Selección requerida',
+          text: 'Por favor, selecciona una opción.',
+          confirmButtonText: 'Ok',
+          color: 'black',
+          confirmButtonColor: '#007bff'
+        });
+      }
+    });
+  }
 });
+
