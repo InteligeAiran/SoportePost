@@ -483,7 +483,7 @@ function mi_navbar() {}
                                             <div class="numbers">
                                                 <p class="card-category" style="color: black">Total Tickets</p>
                                                 <h5 id="TotalTicket" class="card-title">0</h5>
-                                                <p class="card-text mb-0"><br><br>
+                                                <p class="card-text mb-0"><br><br><br>
                                                 </p>
                                             </div>
                                             <div class="icon-on-right">
@@ -727,7 +727,7 @@ function mi_navbar() {}
                                 <div class="card-header pb-0 p-4 border-b border-gray-200">
                                     <div class="flex justify-between items-center">
                                         <div class="card-header bg-gradient-primary">
-                                            <h6 class="chart-title text-white">Estadísticas de Tickets por Módulo</h6>
+                                            <h6 class="chart-title text-white" style="font-size: 1.2rem;">Estadísticas de Tickets por Módulo</h6>
                                         </div>
                                     </div>
                                 </div>
@@ -765,7 +765,7 @@ function mi_navbar() {}
                         <div class="col-lg-5">
                             <div class="card shadow-md rounded-xl">
                                 <div class="card-header pb-0 p-4 border-b border-gray-200 bg-gradient-info">
-                                    <h6 class="text-2xl font-semibold text-gray-800">Categorías de Tickets</h6>
+                                    <h6 class="text-2xl font-semibold text-gray-800" style="font-size: 1.2rem;">Categorías de Tickets</h6>
                                 </div>
                                 <div class="card-body p-4">
                                     <ul class="list-group">

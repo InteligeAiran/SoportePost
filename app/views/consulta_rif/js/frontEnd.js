@@ -1897,7 +1897,7 @@ function SendDataFailure2(idStatusPayment) {
           color: "black",
           confirmButtonText: "Cerrar",
           confirmButtonColor: "#003594",
-          showConfirmButton: true,
+          showConfirmButton: false,
           showClass: {
             popup: "animate__animated animate__fadeInDown",
           },
