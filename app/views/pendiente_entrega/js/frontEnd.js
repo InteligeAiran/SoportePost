@@ -835,7 +835,6 @@ function getTicketDataFinaljs() {
                                   $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
                                   $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
                                   $("#btn-llaves-cargadas").removeClass("btn-primary").addClass("btn-secondary");
-                                  $("#btn-devuelto").removeClass("btn-primary").addClass("btn-secondary");
                                   $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
                               }
 
@@ -852,7 +851,7 @@ function getTicketDataFinaljs() {
                                   const searchTerms = [
                                       { button: "btn-por-asignar", term: "En espera de confirmar recibido en el Rosal|En espera de Confirmar Devolución", status: "En proceso", action: ["En espera de confirmar recibido en el Rosal", "En espera de Confirmar Devolución"]},
                                       { button: "btn-asignados", term: "^En el Rosal$", status: "En proceso", action: "En el Rosal"},
-                                      { button: "btn-recibidos", term: "Entregado a Cliente", status: "Cerrado", action: "Entregado a Cliente"},
+                                      { button: "btn-recibidos", term: "En espera confirmación carga de llaves", status: "En proceso", action: "En espera confirmación carga de llaves"},
                                       { button: "btn-llaves-cargadas", term: "Llaves Cargadas", status: "En proceso", action: "Llaves Cargadas"}
                                   ];
 
@@ -881,7 +880,7 @@ function getTicketDataFinaljs() {
                                               dataTableInstance.column(18).visible(false);
                                               dataTableInstance.column(19).visible(false);
                                               dataTableInstance.column(20).visible(false);
-                                              showTicketStatusIndicator('Cerrado', "Entregado a Cliente");
+                                              showTicketStatusIndicator('En proceso', "En espera confirmación carga de llaves");
                                           } else if (button === "btn-llaves-cargadas") {
                                               dataTableInstance.column(17).visible(true);
                                               dataTableInstance.column(18).visible(true);
@@ -960,7 +959,7 @@ function getTicketDataFinaljs() {
                                       dataTableInstance.column(19).visible(false);
                                       dataTableInstance.column(20).visible(false);
                                       setActiveButton("btn-recibidos");
-                                      showTicketStatusIndicator('Cerrado', "Entregado a Cliente");
+                                      showTicketStatusIndicator('En proceso', "En espera confirmación carga de llaves");
                                   } else {
                                       findFirstButtonWithData();
                                   }

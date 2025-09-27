@@ -12,36 +12,30 @@ class dashboard extends Controller {
         parent::__construct();
 
         if (empty($_SESSION["id_user"])) {
-            // Redirigir siempre con header para evitar respuestas vacías
             header('Location: ' . self::getURL() . 'login');
             exit();
         }
 
-        Model::exists('user'); // Si Model::exists() carga la clase, esto es bueno.
+        Model::exists('user');
         $this->userModel = new UserModel(); 
-    
-        if (isset($_SESSION['id_user']) && isset($_SESSION['session_id'])) {
-            $model = new UserModel(); // O pásalo por inyección de dependencias
-            // Verifica si la sesión actual del navegador está activa en la DB
-            // Verifica si la sesión actual del navegador sigue siendo activa en la DB
+        
+        // Solo validar sesión si es una petición AJAX o cada 5 minutos
+        $shouldValidateSession = (
+            !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || 
+            !isset($_SESSION['last_session_check']) || 
+            (time() - $_SESSION['last_session_check']) > 300 // 5 minutos
+        );
+        
+        if ($shouldValidateSession && isset($_SESSION['id_user']) && isset($_SESSION['session_id'])) {
+            $model = new UserModel();
             if (!$model->IsSessionActuallyActive($_SESSION['session_id'], $_SESSION['id_user'])) {
-                // La sesión no es activa en la DB (fue invalidada por otro login)
-                
-                session_unset();     // Elimina todas las variables de sesión
-                session_destroy();   // Destruye la sesión actual
-                setcookie(session_name(), '', time() - 3600, '/'); // Borra la cookie de sesión del navegador
-                
-                // Redirige al usuario al login con un mensaje
-                header('Location: login'); // O una URL de login con un mensaje
+                session_unset();
+                session_destroy();
+                setcookie(session_name(), '', time() - 3600, '/');
+                header('Location: ' . self::getURL() . 'login');
                 exit();
             }
-        } else if (!isset($_SESSION['id_user']) && !empty($_COOKIE[session_name()])) {
-            // Si la cookie de sesión existe pero PHP no cargó una sesión (ej. sesión destruida), forzar logout.
-            session_unset();
-            session_destroy();
-            setcookie(session_name(), '', time() - 3600, '/');
-            header('Location: ' . self::getURL() . 'login');
-            exit();
+            $_SESSION['last_session_check'] = time();
         }
     }
 
