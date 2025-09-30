@@ -9,10 +9,14 @@ let currentTicketIdForImage = null;
 let currentTicketNroForImage = null;
 let DocumentType = null;
 
+let currentTicketOldTechnicianId = null; 
 let EnvioInput = null;
 let ExoInput = null;
 let PagoInput = null;
 
+// Variables globales para la reasignación de tickets
+let currentTicketNro = null;
+let currentTicketData = null;
 
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -178,12 +182,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // Referencias a elementos dentro de los modales
   const ticketNumberSpan = document.getElementById("ticketNumberSpan");
   const ticketserialPos = document.getElementById("ticketserialPos");
-  const currentTechnicianName = document.getElementById(
-    "currentTechnicianName"
-  );
-  const confirmReassignYesBtn = document.getElementById(
-    "confirmReassignYesBtn"
-  );
+  const currentTechnicianName = document.getElementById("currentTechnicianName");
+  const confirmReassignYesBtn = document.getElementById("confirmReassignYesBtn");
   const assignTechnicianBtn = document.getElementById("assignTechnicianBtn");
 
   // Evento para el botón "Sí" del modal de confirmación
@@ -192,53 +192,132 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Evento para el botón "Asignar" del modal de selección de técnico
-  assignTechnicianBtn.addEventListener("click", async function () {
-    const newTechnicianId = technicianSelect.value;
-    const newTechnicianName = technicianSelect.options[technicianSelect.selectedIndex].textContent; // Para el alert
+  // Evento para el botón "Asignar" del modal de selección de técnico
+assignTechnicianBtn.addEventListener("click", async function () {
+  const newTechnicianId = technicianSelect.value;
+  const newTechnicianName = technicianSelect.options[technicianSelect.selectedIndex].textContent;
 
-    if (newTechnicianId) {
-      // Deshabilitar botón para evitar múltiples clics
-      assignTechnicianBtn.disabled = true;
-      assignTechnicianBtn.textContent = "Asignando...";
+  if (newTechnicianId) {
+    // Deshabilitar botón para evitar múltiples clics
+    assignTechnicianBtn.disabled = true;
+    assignTechnicianBtn.textContent = "Asignando...";
 
-      try {
-        const success = await reassignTicket(currentTicketId, newTechnicianId);
+    try {
+      const success = await reassignTicket(currentTicketId, newTechnicianId);
 
-        if (success) {
-          Swal.fire({
-            icon: 'success',
-            title: '¡Reasignación Exitosa!',
-            html: `El Ticket <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNro}</span> ha sido reasignado con éxito a <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${newTechnicianName}</span>.`,
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#003594'
-          }).then(() => { // El .then() se ejecuta cuando el usuario hace clic en el botón
-            location.reload(); // Recarga la página inmediatamente
-          });
-        } else {
-          alert(
-            `Error al reasignar el ticket ${currentTicketNro}. Por favor, intente de nuevo.`
-          );
-        }
-      } catch (error) {
-        console.error("Error al reasignar el ticket:", error);
-        console.error(`Ocurrió un error al reasignar el ticket ${currentTicketNro}.`);
-      } finally {
-        selectTechnicianModalInstance.hide(); // Oculta el modal de selección
-        assignTechnicianBtn.disabled = false;
-        assignTechnicianBtn.textContent = "Asignar";
+      if (success) {
+        const emailSuccess = await sendReassignmentEmails(
+          currentTicketId,
+          currentTicketOldTechnicianId,
+          newTechnicianId
+        );
+        Swal.fire({
+          icon: "success",
+          title: "¡Reasignación Exitosa!",
+          html: `El Ticket <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNro}</span> ha sido reasignado con éxito a <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${newTechnicianName}</span>.`,
+          confirmButtonText: "Ok",
+          color: "black",
+          confirmButtonColor: "#003594",
+        }).then(() => {
+          location.reload();
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: `Error al reasignar el ticket ${currentTicketNro}. Por favor, intente de nuevo.`,
+          confirmButtonText: "Aceptar",
+          color: "black",
+          confirmButtonColor: "#003594",
+        });
       }
-    } else {
+    } catch (error) {
       Swal.fire({
-        title: "Notificación!",
-        text: "Debe seleccionar un técnico para reasignar el ticket.",
-        icon: "warning",
+        icon: "error",
+        title: "Error",
+        text: `Ocurrió un error al reasignar el ticket ${currentTicketNro}: ${error.message}`,
         confirmButtonText: "Aceptar",
         color: "black",
         confirmButtonColor: "#003594",
       });
+    } finally {
+      selectTechnicianModalInstance.hide();
+      assignTechnicianBtn.disabled = false;
+      assignTechnicianBtn.textContent = "Asignar";
     }
-  });
+  } else {
+    Swal.fire({
+      title: "Notificación!",
+      text: "Debe seleccionar un técnico para reasignar el ticket.",
+      icon: "warning",
+      confirmButtonText: "Aceptar",
+      color: "black",
+      confirmButtonColor: "#003594",
+    });
+  }
+});
+
+// Función para enviar correos de reasignación (convertida a async/await)
+async function sendReassignmentEmails(ticketId, oldTechnicianId, newTechnicianId) {
+  try {
+    console.log("DEBUG: Iniciando sendReassignmentEmails", {
+      ticketId,
+      oldTechnicianId,
+      newTechnicianId,
+    });
+
+    const xhrEmail = new XMLHttpRequest();
+    const url = `${ENDPOINT_BASE}${APP_PATH}api/email/send_reassignment_email`;
+    const params = `action=send_reassignment_email&ticket_id=${encodeURIComponent(
+      ticketId
+    )}&old_technician_id=${encodeURIComponent(
+      oldTechnicianId
+    )}&new_technician_id=${encodeURIComponent(newTechnicianId)}`;
+
+    xhrEmail.open("POST", url);
+    xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    // Convertir xhrEmail a Promise para usar await
+    const response = await new Promise((resolve, reject) => {
+      xhrEmail.onload = function () {
+        console.log("DEBUG: Respuesta recibida del servidor", {
+          status: xhrEmail.status,
+          responseText: xhrEmail.responseText,
+        });
+
+        if (xhrEmail.status === 200) {
+          try {
+            const responseEmail = JSON.parse(xhrEmail.responseText);
+            resolve(responseEmail);
+          } catch (error) {
+            reject(error);
+          }
+        } else {
+          console.error("DEBUG: Error en la solicitud HTTP:", {
+            status: xhrEmail.status,
+            statusText: xhrEmail.statusText,
+            responseText: xhrEmail.responseText,
+          });
+          reject(new Error(`HTTP error! status: ${xhrEmail.status}`));
+        }
+      };
+
+      xhrEmail.onerror = function () {
+        reject(new Error("Error de red"));
+      };
+
+      xhrEmail.send(params);
+    });
+
+    if (response.success) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return false;
+  }
+}
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -928,6 +1007,7 @@ function getTechnicianData(ticketIdToFetch) {
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const response = JSON.parse(xhr.responseText);
+          console.log(response);
           const inputNtecnico = document.getElementById("currentTechnicianDisplay");
           const inputFecha = document.getElementById("currentAssignmentDateDisplay");
           const inputRegion = document.getElementById("currentRegion");
@@ -937,6 +1017,8 @@ function getTechnicianData(ticketIdToFetch) {
             // *** ESTA ES LA LÍNEA CRÍTICA ***
             // 1. Asigna el valor del técnico actual a la variable global 'inputTecnicoActual'
             inputTecnicoActual = response.technicians.full_tecnicoassig1 || "No Asignado";
+            currentTicketOldTechnicianId = response.technicians.id_tecnico;
+
 
             // 2. Luego, usa inputTecnicoActual (o directamente response.technicians.full_tecnicoassig1) para actualizar el DOM
             // Ya tienes 'inputNtecnico' que es la referencia a "currentTechnicianDisplay"
@@ -986,8 +1068,8 @@ function getTechnicianData(ticketIdToFetch) {
   });
 }
 
-function reassignTicket(ticketId, newTechnicianId) {
-  return new Promise((resolve, reject) => {
+async function reassignTicket(ticketId, newTechnicianId) {
+  try {
     const xhr = new XMLHttpRequest();
     const id_user = document.getElementById("id_user").value; // Asumiendo que tienes el ID del usuario logueado
     const comment = document.getElementById("reassignObservation").value; // Asumiendo que tienes el comentario del usuario
@@ -996,33 +1078,41 @@ function reassignTicket(ticketId, newTechnicianId) {
     xhr.open("POST", API_URL_REASSIGN);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-    xhr.onload = function () {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          resolve(response.success);
-        } catch (error) {
-          console.error("Error parsing JSON para reasignar ticket:", error);
-          reject(error);
-        }
-      } else {
-        console.error(
-          "Error en la solicitud para reasignar ticket:",
-          xhr.status,
-          xhr.statusText
-        );
-        reject(new Error(`HTTP error! status: ${xhr.status}`));
-      }
-    };
-
-    xhr.onerror = function () {
-      console.error("Error de red al intentar reasignar ticket.");
-      reject(new Error("Error de red"));
-    };
-
     const dataToSend = `action=ReassignTicket&ticket_id=${ticketId}&new_technician_id=${newTechnicianId}&id_user=${id_user}&comment=${comment}`;
-    xhr.send(dataToSend);
-  });
+
+    // Convertir el callback de xhr a una promesa para usar await
+    const response = await new Promise((resolve, reject) => {
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response.success);
+          } catch (error) {
+            console.error("Error parsing JSON para reasignar ticket:", error);
+            reject(error);
+          }
+        } else {
+          console.error(
+            "Error en la solicitud para reasignar ticket:",
+            xhr.status,
+            xhr.statusText
+          );
+          reject(new Error(`HTTP error! status: ${xhr.status}`));
+        }
+      };
+
+      xhr.onerror = function () {
+        console.error("Error de red al intentar reasignar ticket.");
+        reject(new Error("Error de red"));
+      };
+
+      xhr.send(dataToSend);
+    });
+
+    return response;
+  } catch (error) {
+    throw error; // Relanzar el error para que pueda ser manejado por el llamador
+  }
 }
 
 function downloadImageModal(serial) {

@@ -57,6 +57,8 @@ function redirigirPorAccion(idStatusAccion, idTicket, nroTicket) {
   });
 }
 
+// Variable global para el estado de la carga
+let isLoadingComplete = false;
 // Variable para almacenar todos los tickets cargados (sin filtrar)
 let allOpenTickets = [];
 let allProcessTickets = []; // Separar datos para tickets en proceso
@@ -148,507 +150,577 @@ function showNoDataMessage(container, message = "No hay datos disponibles.") {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  // --- Referencias a los elementos HTML de los Modales ---
-  const monthlyTicketsModalElement = document.getElementById("monthlyTicketsModal");
-  const regionTicketsModalElement = document.getElementById("RegionTicketsModal");
-  const openTicketsModalElement = document.getElementById("OpenTicketModal");
-  const resolveTicketsModalElement = document.getElementById("ResolveTicketsModal");
-  const sendTallerTicketsModalElement = document.getElementById("SendTallerTicketsModal"); // ¡NUEVO MODAL!
-  const processTicketModalElement = document.getElementById("ProcessTicketsModal"); // ��NUEVO MODAL!
-  const gestionCoordinadorModalElement = document.getElementById("DetalleTicketComercial"); // ��NUEVO MODAL!
-  const EntregadoClienteModalElement = document.getElementById("entregadoClienteModal"); // ��NUEVO MODAL!
+const minimumLoadingTime = 6000; // 6 segundos en milisegundos
 
+window.addEventListener("load", function () {
+    // Definición de variables y funciones auxiliares
+    // ===============================================
 
-  const ModalReparacion = document.getElementById("procesoReparacionModal"); // ��NUEVO ELEMENTO!
-  const ModalReparado = document.getElementById("ReparadosModal"); // ��NUEVO ELEMENTO!
-  const ModalPendienteRepuesto = document.getElementById("pendienterespuestoModal"); // ��NUEVO ELEMENTO!
-  const ModalTikIrreparable = document.getElementById("IrreparableModal"); // ��NUEVO ELEMENTO!
-  const timelineModalElement = document.getElementById("TimelineModal");
+    const dashboardLoadingOverlay = document.getElementById("dashboard-loading-overlay");
+    const loadingStatusElement = document.getElementById("loading-status");
+    const progressBarElement = document.querySelector(".loading-progress-bar");
+    const minimumLoadingTime = 6000; // 6 segundos
 
-  // --- Instancias de Bootstrap Modals (declaradas para ser accesibles globalmente dentro de este scope) ---
-  let monthlyTicketsModalInstance = null;
-  let regionTicketsModalInstance = null;
-  let openTicketsModalInstance = null;
-  let resolveTicketsModalInstance = null;
-  let sendTallerTicketsModalInstance = null; // ¡NUEVA INSTANCIA!
-  let ModalProcesoReparacion = null; // ��NUEVO ELEMENTO!
-  let ModalReparados = null; // ��NUEVO ELEMENTO!
-  let ModalPendiRepuesto = null; // ��NUEVO ELEMENTO!
-  let ModalIrreparable = null; // ��NUEVO ELEMENTO!
-  let ModalprocessTicketsModalInstance = null; // ��NUEVO ELEMENTO!
-  let modal_gestionCoordinadorInstance = null; // ��NUEVO ELEMENTO!
-  let EntregadoClienteModalInstance = null; // ��NUEVO ELEMENTO!
-
-  if(EntregadoClienteModalElement) {
-    EntregadoClienteModalInstance = new bootstrap.Modal(EntregadoClienteModalElement);
-  }
-  
-  if(gestionCoordinadorModalElement){
-    modal_gestionCoordinadorInstance = new bootstrap.Modal(gestionCoordinadorModalElement);
-  }
-
-  if (timelineModalElement) {
-      ModalTimelineInstance = new bootstrap.Modal(timelineModalElement);
+    // Función para actualizar el estado de la carga
+    function updateLoadingStatus(message, progress) {
+        if (loadingStatusElement) {
+            loadingStatusElement.textContent = message;
+        }
+        if (progressBarElement && progress !== undefined) {
+            // Se usa la propiedad 'transition' del CSS para la animación fluida
+            progressBarElement.style.width = `${progress}%`;
+        }
     }
 
-  // --- Inicializar las instancias de los modales (UNA SOLA VEZ al cargar la página) ---
-  if (monthlyTicketsModalElement) {  
-    monthlyTicketsModalInstance = new bootstrap.Modal(monthlyTicketsModalElement);
-  }
-
-  if (regionTicketsModalElement) {
-    regionTicketsModalInstance = new bootstrap.Modal(regionTicketsModalElement);
-  }
-
-  if (openTicketsModalElement) {
-    openTicketsModalInstance = new bootstrap.Modal(openTicketsModalElement);
-  }
-
-  if (resolveTicketsModalElement) {
-    resolveTicketsModalInstance = new bootstrap.Modal(
-      resolveTicketsModalElement
-    );
-  }
-
-  if (sendTallerTicketsModalElement) {
-    // ¡NUEVO!
-    sendTallerTicketsModalInstance = new bootstrap.Modal(
-      sendTallerTicketsModalElement
-    );
-  }
-
-  if(processTicketModalElement) {
-    ModalprocessTicketsModalInstance = new bootstrap.Modal(processTicketModalElement);
-  }
-
-  if (ModalReparacion) {
-    // ��NUEVO!
-    ModalProcesoReparacion = new bootstrap.Modal(ModalReparacion);
-  }
-
-  if (ModalReparado) {
-    // ��NUEVO!
-    ModalReparados = new bootstrap.Modal(ModalReparado);
-  }
-
-  if(ModalPendienteRepuesto) {
-    modalPendienteRepa = new bootstrap.Modal(ModalPendienteRepuesto);
-  }
-
-  if(ModalTikIrreparable) {
-    ModalIrreparable = new bootstrap.Modal(ModalTikIrreparable);
-  }
-  // --- Event Listeners para ABRIR Modales (desde tarjetas/botones) ---
-
-  document.body.addEventListener('click', function (event) {
-    if (event.target.classList.contains('view-timeline-btn')) {
-      event.preventDefault(); // Evita el comportamiento predeterminado del enlace/botón
-
-      const ticketId = event.target.dataset.idTicket;
-      document.getElementById('timelineTicketId').textContent = ticketId;
-     loadTicketTimeline(ticketId); // Carga los datos específicos del ticket en el modal
-
-      const timelineModalElement = document.getElementById("TimelineModal");
-      if (timelineModalElement) {
-        ModalTimelineInstance = new bootstrap.Modal(timelineModalElement); // ¡Aquí se recrea la instancia!
-        ModalTimelineInstance.show();
-      } else {
-        console.error("Error: Elemento TimelineModal no encontrado para crear instancia. No se puede mostrar el modal de línea de tiempo.");
-      }
+    // Mostrar el overlay de carga al inicio
+    if (dashboardLoadingOverlay) {
+        dashboardLoadingOverlay.style.display = 'flex';
+        updateLoadingStatus("Inicializando dashboard...", 0);
     }
-  });
 
-  const EntregadoClienteCard = document.getElementById("OpenModalEntregadoCliente");
-  if(EntregadoClienteCard && EntregadoClienteModalInstance) {
-    EntregadoClienteCard.addEventListener("click", function(event) {
-      event.preventDefault();
-      EntregadoClienteModalInstance.show();
-      loadEntregadoClienteDetails();
-    });
-  } else {
-    console.error("Error: EntregadoClienteCard o EntregadoClienteModalInstance no encontrados.");
-  }
+    // Lista de funciones de carga y sus mensajes/progreso (aproximado)
+    // Se definen en orden secuencial
+    const loadFunctions = [
+        { func: loadMonthlyCreatedTicketsChart, status: "Cargando estadísticas mensuales...", progress: 5 },
+        { func: loadMonthlyCreatedTicketsChartForState, status: "Cargando desglose por estado...", progress: 10 },
+        { func: updateTicketMonthlyPercentageChange, status: "Calculando cambios porcentuales...", progress: 15 },
+        { func: getTicketProcessReparacion, status: "Obteniendo tickets en reparación...", progress: 20 },
+        { func: getTicketReparados, status: "Obteniendo tickets reparados...", progress: 25 },
+        { func: getTicketPendienteRepuesto, status: "Obteniendo pendientes de repuesto...", progress: 30 },
+        { func: getTicketIrreparables, status: "Obteniendo tickets irreparables...", progress: 35 },
+        { func: getTicketCounts, status: "Obteniendo conteo general de tickets...", progress: 40 },
+        { func: getTicketsgestionComercialporcent, status: "Calculando % de gestión comercial...", progress: 45 },
+        { func: getTicketGestionComercial, status: "Obteniendo tickets de gestión comercial...", progress: 50 },
+        { func: getTicketEntregadoCliente, status: "Obteniendo tickets entregados...", progress: 55 },
+        { func: getTicketTotal, status: "Obteniendo total de tickets...", progress: 60 },
+        { func: getTicketTotalSendTotaller, status: "Obteniendo tickets enviados a taller...", progress: 65 },
+        { func: getTotalTicketsPercentageOFSendTaller, status: "Calculando % de tickets a taller...", progress: 70 },
+        { func: getTotalTicketsInProcess, status: "Obteniendo tickets en proceso...", progress: 75 },
+        { func: getTotalPorcentageticket_in_process, status: "Calculando % de tickets en proceso...", progress: 80 },
+        { func: getTicketResolve, status: "Obteniendo tickets resueltos...", progress: 85 },
+        { func: getTicketsResueltosPercentage, status: "Calculando % de tickets resueltos...", progress: 90 },
+        { func: getTicketOpen, status: "Obteniendo tickets abiertos...", progress: 95 },
+        { func: getTicketPercentage, status: "Sincronizando la vista final...", progress: 100 }
+    ];
 
-  // 1. Abrir monthlyTicketsModal
-  const monthlyTicketsCard = document.getElementById("monthlyTicketsCard");
-  if (monthlyTicketsCard && monthlyTicketsModalInstance) {
-    monthlyTicketsCard.addEventListener("click", function (event) {
-      event.preventDefault();
-      monthlyTicketsModalInstance.show();
-      loadMonthlyTicketDetails();
-    });
-  } else {
-    console.error("monthlyTicketsCard o monthlyTicketsModal no encontrados.");
-  }
-
-  // 2. Abrir OpenTicketModal
-  const TicketsOpenCard = document.getElementById("Card-Ticket-open");
-  if (TicketsOpenCard && openTicketsModalInstance) {
-    TicketsOpenCard.addEventListener("click", function (event) {
-      event.preventDefault();
-      openTicketsModalInstance.show();
-      loadOpenTicketDetails();
-    });
-  } else {
-    console.error("TicketsOpenCard o OpenTicketModal no encontrados.");
-  }
-
-  // 3. Abrir RegionTicketsModal
-  const regionTicketsCard = document.getElementById("RegionTicketsCard");
-  if (regionTicketsCard && regionTicketsModalInstance) {
-    regionTicketsCard.addEventListener("click", function (event) {
-      event.preventDefault();
-      regionTicketsModalInstance.show();
-      loadRegionTicketDetails();
-    });
-  } else {
-    console.error("RegionTicketsCard o RegionTicketsModal no encontrados.");
-  }
-
-  // 4. Abrir ResolveTicketsModal
-  // Nota: Habías cambiado el ID a "Card-resolve-ticket" aquí. Lo mantengo.
-  const resolveTicketsCard = document.getElementById("Card-resolve-ticket");
-  if (resolveTicketsCard && resolveTicketsModalInstance) {
-    resolveTicketsCard.addEventListener("click", function (event) {
-      event.preventDefault();
-      resolveTicketsModalInstance.show();
-      loadResolveTicketDetails();
-    });
-  } else {
-    console.error("Card-resolve-ticket o ResolveTicketsModal no encontrados.");
-  }
-
-  // 5. Abrir SendTallerTicketsModal (¡NUEVO!)
-  // ASUMO: Que la tarjeta para este modal tendrá el ID "Card-Send-To-Taller".
-  const sendTallerTicketsCard = document.getElementById("Card-Send-To-Taller");
-  if (sendTallerTicketsCard && sendTallerTicketsModalInstance) {
-    sendTallerTicketsCard.addEventListener("click", function (event) {
-      event.preventDefault();
-      sendTallerTicketsModalInstance.show();
-      loadTallerTicketDetails(); // Nueva función para cargar detalles
-    });
-  } else {
-    console.error(
-      "Card-Send-To-Taller o SendTallerTicketsModal no encontrados."
-    );
-  }
-
-  const OpenModalReparacion = document.getElementById("ModalPostReparacion");
-  if (OpenModalReparacion && ModalProcesoReparacion) {
-    OpenModalReparacion.addEventListener("click", function (event) {
-      event.preventDefault();
-      ModalProcesoReparacion.show();
-      loadIndividualProceessReparacion(); // Nueva función para cargar detalles del proceso de reparación
-      // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
-    });
-  } else {
-    console.error(
-      "OpenModalReparacion o ModalProcesoReparacion no encontrados."
-    );
-  }
-
-  const OpenModalReparado = document.getElementById("OpenModalPostReparado");
-  if (OpenModalReparado && ModalReparados) {
-    OpenModalReparado.addEventListener("click", function (event) {
-      event.preventDefault();
-      ModalReparados.show();
-      loadIndividualReparado(); // Nueva función para cargar detalles del ticket de reparación
-      // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
-    });
-  } else {
-    console.error(
-      "OpenModalReparado o ModalReparados no encontrados."
-    );
-  }
-
-  const openModalGestionComercial = document.getElementById("Card-Comercial-Ticket");
-  if (openModalGestionComercial && modal_gestionCoordinadorInstance) {
-    openModalGestionComercial.addEventListener("click", function (event) {
-      event.preventDefault();
-      modal_gestionCoordinadorInstance.show();
-      loadDetalleTicketComercial(); // Nueva función para cargar detalles del ticket de reparación
-      // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
-    });
-  } else {
-    console.error(
-      "openModalGestionComercial o modal_gestionCoordinadorInstance no encontrados."
-    );
-  }
-
-  function forceCloseTimelineModal() {
-    const modalElement = document.getElementById("TimelineModal");
-    if (modalElement) {
-        modalElement.classList.remove('show');
-        modalElement.setAttribute('aria-hidden', 'true');
-        modalElement.style.display = 'none';
-
-        const backdrop = document.querySelector('.modal-backdrop.show');
-        if (backdrop) {
-            backdrop.remove();
+    // --- Función para cargar datos iniciales en secuencia ---
+    async function loadInitialDataSequentially() {
+        let hasError = false;
+        for (const item of loadFunctions) {
+            if (typeof item.func === 'function') {
+                try {
+                    updateLoadingStatus(item.status, item.progress);
+                    await item.func(); // <--- Ejecución secuencial (await)
+                    //console.log(`Función completada: ${item.func.name}`);
+                } catch (error) {
+                    console.error(`Error al cargar ${item.func.name}:`, error);
+                    hasError = true;
+                    // Mantenemos el error, pero continuamos con la carga para no bloquear la vista
+                    // a menos que sea un error crítico que invalide todo el dashboard.
+                }
+            }
         }
+        return hasError;
+    }
 
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
+    // Ejecución de la Carga Secuencial y Manejo del Tiempo Mínimo
+    // =============================================================
 
-        // Importante: Eliminar la instancia de Bootstrap para que se recree.
-        if (ModalTimelineInstance) {
-            ModalTimelineInstance.dispose(); // Libera los eventos y recursos de Bootstrap
-            ModalTimelineInstance = null; // Establece a null para que se pueda recrear
+    const startTime = Date.now();
+
+    loadInitialDataSequentially()
+        .then(async (hasError) => {
+            const elapsedTime = Date.now() - startTime;
+            const remainingTime = minimumLoadingTime - elapsedTime;
+
+            // Paso 1: Asegurarse de que el progreso visual esté al 100%
+            updateLoadingStatus(hasError ? "Carga completa con advertencias." : "Carga completa.", 100);
+
+            // Paso 2: Esperar el tiempo restante para alcanzar el mínimo de 10 segundos
+            if (remainingTime > 0) {
+                //console.log(`Esperando ${remainingTime}ms para el tiempo mínimo de carga.`);
+                await new Promise(resolve => setTimeout(resolve, remainingTime));
+            }
+
+            // Paso 3: Ocultar el overlay de carga con transición
+            if (dashboardLoadingOverlay) {
+                dashboardLoadingOverlay.style.transition = "opacity 0.5s ease-out";
+                dashboardLoadingOverlay.style.opacity = "0";
+                setTimeout(() => {
+                    dashboardLoadingOverlay.style.display = 'none';
+                    // Si hubo un error, muestra la alerta DESPUÉS de ocultar el overlay.
+                    if (hasError) {
+                         Swal.fire({
+                            icon: "warning",
+                            title: "Carga Parcial",
+                            text: "Algunos datos no se cargaron correctamente, pero el dashboard es visible. Revise la consola para detalles.",
+                            confirmButtonColor: "#003594",
+                        });
+                    }
+                }, 500);
+            }
+        })
+        .catch(error => {
+            // Este catch solo se activa si loadInitialDataSequentially lanza un error fatal
+            console.error("Error FATAL durante la carga secuencial:", error);
+            updateLoadingStatus("Error crítico. Reintente.", 100);
+            if (dashboardLoadingOverlay) {
+                dashboardLoadingOverlay.style.display = 'none';
+            }
+            Swal.fire({
+                icon: "error",
+                title: "Error de Carga Crítico",
+                text: "No se pudieron cargar los datos. Por favor, recarga la página.",
+                confirmButtonColor: "#003594",
+            });
+        });
+
+
+    // **************** Inicialización de Modales y Event Listeners ****************
+
+    // --- Referencias a los elementos HTML de los Modales (Mismos que tu original) ---
+    const monthlyTicketsModalElement = document.getElementById("monthlyTicketsModal");
+    const regionTicketsModalElement = document.getElementById("RegionTicketsModal");
+    const openTicketsModalElement = document.getElementById("OpenTicketModal");
+    const resolveTicketsModalElement = document.getElementById("ResolveTicketsModal");
+    const sendTallerTicketsModalElement = document.getElementById("SendTallerTicketsModal");
+    const processTicketModalElement = document.getElementById("ProcessTicketsModal");
+    const gestionCoordinadorModalElement = document.getElementById("DetalleTicketComercial");
+    const entregadoClienteModalElement = document.getElementById("entregadoClienteModal");
+    const modalReparacion = document.getElementById("procesoReparacionModal");
+    const modalReparado = document.getElementById("ReparadosModal");
+    const modalPendienteRepuesto = document.getElementById("pendienterespuestoModal");
+    const modalTikIrreparable = document.getElementById("IrreparableModal");
+    const timelineModalElement = document.getElementById("TimelineModal");
+
+    // --- Instancias de Bootstrap Modals (inicializadas una sola vez) ---
+    let monthlyTicketsModalInstance = null;
+    let regionTicketsModalInstance = null;
+    let openTicketsModalInstance = null;
+    let resolveTicketsModalInstance = null;
+    let sendTallerTicketsModalInstance = null;
+    let modalProcesoReparacion = null;
+    let modalReparados = null;
+    let modalPendienteRepa = null;
+    let modalIrreparable = null;
+    let modalProcessTicketsModalInstance = null;
+    let modalGestionCoordinadorInstance = null;
+    let entregadoClienteModalInstance = null;
+    let modalTimelineInstance = null;
+
+    // Inicializar todos los modales si existen
+    if (monthlyTicketsModalElement) {
+        monthlyTicketsModalInstance = new bootstrap.Modal(monthlyTicketsModalElement);
+    }
+    if (regionTicketsModalElement) {
+        regionTicketsModalInstance = new bootstrap.Modal(regionTicketsModalElement);
+    }
+    if (openTicketsModalElement) {
+        // Usar la instancia localmente para los listeners
+        openTicketsModalInstance = new bootstrap.Modal(openTicketsModalElement);
+    }
+    if (resolveTicketsModalElement) {
+        resolveTicketsModalInstance = new bootstrap.Modal(resolveTicketsModalElement);
+    }
+    if (sendTallerTicketsModalElement) {
+        sendTallerTicketsModalInstance = new bootstrap.Modal(sendTallerTicketsModalElement);
+    }
+    if (processTicketModalElement) {
+        modalProcessTicketsModalInstance = new bootstrap.Modal(processTicketModalElement);
+    }
+    if (gestionCoordinadorModalElement) {
+        modalGestionCoordinadorInstance = new bootstrap.Modal(gestionCoordinadorModalElement);
+    }
+    if (entregadoClienteModalElement) {
+        entregadoClienteModalInstance = new bootstrap.Modal(entregadoClienteModalElement);
+    }
+    if (modalReparacion) {
+        modalProcesoReparacion = new bootstrap.Modal(modalReparacion);
+    }
+    if (modalReparado) {
+        modalReparados = new bootstrap.Modal(modalReparado);
+    }
+    if (modalPendienteRepuesto) {
+        modalPendienteRepa = new bootstrap.Modal(modalPendienteRepuesto);
+    }
+    if (modalTikIrreparable) {
+        modalIrreparable = new bootstrap.Modal(modalTikIrreparable);
+    }
+    if (timelineModalElement) {
+        modalTimelineInstance = new bootstrap.Modal(timelineModalElement);
+    }
+
+    // --- Funciones auxiliares (Mantienen tu lógica original) ---
+
+    // Función auxiliar para fetch con retry y timeout
+    async function fetchWithRetry(url, options, retries = 3, timeout = 10000) {
+        for (let i = 0; i < retries; i++) {
+            try {
+                const controller = new AbortController();
+                const id = setTimeout(() => controller.abort(), timeout);
+                const response = await fetch(url, { ...options, signal: controller.signal });
+                clearTimeout(id);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                if (i === retries - 1) throw error;
+                console.warn(`Retry ${i + 1} for ${url}: ${error.message}`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
         }
+    }
 
-        console.log("Cierre forzado del modal de línea de tiempo.");
+    // Función para limpiar backdrops y clases residuales
+    function forceCleanupAfterModalClose() {
+        if (document.body.classList.contains('modal-open')) {
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+        const backdrops = document.querySelectorAll('.modal-backdrop.show');
+        backdrops.forEach(backdrop => backdrop.remove());
+    }
+
+    // Función para cerrar forzosamente el modal Timeline
+    function forceCloseTimelineModal() {
+        const modalElement = document.getElementById("TimelineModal");
+        if (modalElement && modalTimelineInstance) {
+            modalTimelineInstance.hide();
+            forceCleanupAfterModalClose();
+            console.log("Cierre forzado del modal de línea de tiempo.");
+        } else {
+            console.error("No se encontró el elemento #TimelineModal o la instancia para cierre forzado.");
+        }
+    }
+
+    // --- Event Listeners para ABRIR Modales por botón de detalle (view-timeline-btn) ---
+    document.body.addEventListener('click', function (event) {
+        if (event.target.classList.contains('view-timeline-btn')) {
+            event.preventDefault();
+            const ticketId = event.target.dataset.idTicket;
+            document.getElementById('timelineTicketId').textContent = ticketId;
+            if (modalTimelineInstance) {
+                modalTimelineInstance.show();
+                if (typeof loadTicketTimeline === 'function') {
+                    loadTicketTimeline(ticketId);
+                } else {
+                    console.error("Función loadTicketTimeline no definida.");
+                }
+            } else {
+                console.error("ModalTimelineInstance no inicializado.");
+            }
+        }
+    });
+
+    // --- Event Listener para OpenTicketModal (Manteniendo la lógica original) ---
+    const ticketsOpenCard = document.getElementById("Card-Ticket-open");
+    if (ticketsOpenCard && openTicketsModalInstance) {
+        ticketsOpenCard.addEventListener("click", async function (event) {
+            event.preventDefault();
+            try {
+                openTicketsModalInstance.show();
+                if (typeof loadOpenTicketDetails === 'function') await loadOpenTicketDetails();
+            } catch (error) {
+                console.error("Error al cargar detalles de tickets abiertos:", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "No se pudieron cargar los detalles de los tickets abiertos.",
+                    confirmButtonColor: "#003594",
+                });
+                openTicketsModalInstance.hide();
+            }
+        });
     } else {
-        console.error("No se encontró el elemento #TimelineModal para cierre forzado.");
-    }
-  }
-
-  const cerrarModalEntregadoacliente = document.getElementById("ModalEntregadoClienteCerrar");
-  if(cerrarModalEntregadoacliente && EntregadoClienteModalInstance) {
-    cerrarModalEntregadoacliente.addEventListener("click", function() {
-      EntregadoClienteModalInstance.hide();
-    });
-  }
-
-  const cerraTimeLineModal = document.getElementById("CloseCerrarTimeline");
-  const iconCerrarTimeLine = document.getElementById("IconCloseTimeline");
-  // Cómo usarla en tus listeners (reemplazando ModalTimelineInstance.hide()):
-  if (cerraTimeLineModal && ModalTimelineInstance) { // Mantén la condición ModalTimelineInstance para asegurar que ya se inicializó
-    cerraTimeLineModal.addEventListener('click', function() {
-      forceCloseTimelineModal(); // Llama a la función de cierre forzado
-      // No necesitas el console.log de la instancia aquí, ya que el control es manual.
-    });
-  }
-
-  if (iconCerrarTimeLine && ModalTimelineInstance) {
-    iconCerrarTimeLine.addEventListener('click', function() {
-      forceCloseTimelineModal(); // Llama a la función de cierre forzado
-    });
-  }
-
-
-  const OpenModalPendienteRepuesto = document.getElementById("OpenModalPendienteRepuesto");
-  if (OpenModalPendienteRepuesto && modalPendienteRepa) {
-    OpenModalPendienteRepuesto.addEventListener("click", function (event) {
-      event.preventDefault();
-      modalPendienteRepa.show();
-      loadIndividualPendienteRepuesto(); // Nueva función para cargar detalles del ticket de reparación
-      // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
-    });
-  }
-
-  const OpenModalIrreparable = document.getElementById("OpenModalIrreparable");
-
-  if (OpenModalIrreparable && ModalIrreparable) {
-    OpenModalIrreparable.addEventListener("click", function (event) {
-      event.preventDefault();
-      ModalIrreparable.show();
-      loadIndividualIrreparable(); // Nueva función para cargar detalles del ticket de reparación
-      // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
-    });
-  }
-
-  const OpenModalProcess = document.getElementById("Card-Ticket-process");
-
-  if (OpenModalProcess && ModalprocessTicketsModalInstance) {
-    OpenModalProcess.addEventListener("click", function (event) {
-      event.preventDefault();
-      ModalprocessTicketsModalInstance.show();
-      loadIndividualProceess(); // Nueva función para cargar detalles del proceso de reparación
-      // Aquí puedes agregar código para mostrar los detalles del ticket de reparación
-    }); 
-  } else {
-    console.error(
-      "OpenModalProcess o ModalProcesoReparacion no encontrados."
-    );
-  }
-  
-  function forceCleanupAfterModalClose() {
-    // Quitar la clase 'modal-open' del body si persiste
-    if (document.body.classList.contains('modal-open')) {
-      document.body.classList.remove('modal-open');
-      // Restablecer overflow y padding-right si fueron modificados por Bootstrap
-      document.body.style.overflow = ''; 
-      document.body.style.paddingRight = ''; 
+        console.error("No se encontraron los elementos Card-Ticket-open o OpenTicketModal.");
     }
 
-    // Eliminar cualquier backdrop residual que tenga la clase 'show' (visible)
-    const backdrops = document.querySelectorAll('.modal-backdrop.show');
-    if (backdrops.length > 0) {
-      backdrops.forEach(backdrop => {
-        backdrop.remove();
-      });
+    // --- El resto de Event Listeners para ABRIR Modales por tarjeta ---
+
+    const entregadoClienteCard = document.getElementById("OpenModalEntregadoCliente");
+    if (entregadoClienteCard && entregadoClienteModalInstance) {
+        entregadoClienteCard.addEventListener("click", function (event) {
+            event.preventDefault();
+            entregadoClienteModalInstance.show();
+            if (typeof loadEntregadoClienteDetails === 'function') loadEntregadoClienteDetails();
+        });
+    } else {
+        console.error("Error: OpenModalEntregadoCliente o entregadoClienteModalInstance no encontrados.");
     }
-  }
-  // --- Event Listeners para CERRAR Modales (desde botones dentro del modal) ---
 
-  const cerrarModalComecial = document.getElementById("ModalComercialDetalle");
+    const monthlyTicketsCard = document.getElementById("monthlyTicketsCard");
+    if (monthlyTicketsCard && monthlyTicketsModalInstance) {
+        monthlyTicketsCard.addEventListener("click", function (event) {
+            event.preventDefault();
+            monthlyTicketsModalInstance.show();
+            if (typeof loadMonthlyTicketDetails === 'function') loadMonthlyTicketDetails();
+        });
+    } else {
+        console.error("Error: monthlyTicketsCard o monthlyTicketsModalInstance no encontrados.");
+    }
 
-  if(cerrarModalComecial && modal_gestionCoordinadorInstance) {
-    cerrarModalComecial.addEventListener("click", function() {
-      modal_gestionCoordinadorInstance.hide();
-    });
-  }
+    const regionTicketsCard = document.getElementById("RegionTicketsCard");
+    if (regionTicketsCard && regionTicketsModalInstance) {
+        regionTicketsCard.addEventListener("click", function (event) {
+            event.preventDefault();
+            regionTicketsModalInstance.show();
+            if (typeof loadRegionTicketDetails === 'function') loadRegionTicketDetails();
+        });
+    } else {
+        console.error("Error: RegionTicketsCard o regionTicketsModalInstance no encontrados.");
+    }
 
-  // 1. Botones de cierre para monthlyTicketsModal
-  const cerrarMonthly = document.getElementById("ModalStadisticMonth");
+    const resolveTicketsCard = document.getElementById("Card-resolve-ticket");
+    if (resolveTicketsCard && resolveTicketsModalInstance) {
+        resolveTicketsCard.addEventListener("click", function (event) {
+            event.preventDefault();
+            resolveTicketsModalInstance.show();
+            if (typeof loadResolveTicketDetails === 'function') loadResolveTicketDetails();
+        });
+    } else {
+        console.error("Error: Card-resolve-ticket o resolveTicketsModalInstance no encontrados.");
+    }
 
-  if (cerrarMonthly && monthlyTicketsModalInstance) {
-    cerrarMonthly.addEventListener("click", function () {
-      monthlyTicketsModalInstance.hide();
-    });
-  }
+    const sendTallerTicketsCard = document.getElementById("Card-Send-To-Taller");
+    if (sendTallerTicketsCard && sendTallerTicketsModalInstance) {
+        sendTallerTicketsCard.addEventListener("click", function (event) {
+            event.preventDefault();
+            sendTallerTicketsModalInstance.show();
+            if (typeof loadTallerTicketDetails === 'function') loadTallerTicketDetails();
+        });
+    } else {
+        console.error("Error: Card-Send-To-Taller o sendTallerTicketsModalInstance no encontrados.");
+    }
 
-  // 2. Botones de cierre para RegionTicketsModal
-  const cerrarRegion = document.getElementById("ModalStadisticRegion");
+    const openModalReparacion = document.getElementById("ModalPostReparacion");
+    if (openModalReparacion && modalProcesoReparacion) {
+        openModalReparacion.addEventListener("click", function (event) {
+            event.preventDefault();
+            modalProcesoReparacion.show();
+            if (typeof loadIndividualProceessReparacion === 'function') loadIndividualProceessReparacion();
+        });
+    } else {
+        console.error("Error: ModalPostReparacion o modalProcesoReparacion no encontrados.");
+    }
 
-  if (cerrarRegion && regionTicketsModalInstance) {
-    cerrarRegion.addEventListener("click", function () {
-      regionTicketsModalInstance.hide();
-    });
-  }
+    const openModalReparado = document.getElementById("OpenModalPostReparado");
+    if (openModalReparado && modalReparados) {
+        openModalReparado.addEventListener("click", function (event) {
+            event.preventDefault();
+            modalReparados.show();
+            if (typeof loadIndividualReparado === 'function') loadIndividualReparado();
+        });
+    } else {
+        console.error("Error: OpenModalPostReparado o modalReparados no encontrados.");
+    }
 
-  // 3. Botones de cierre para OpenTicketModal
-  const cerrarOpen = document.getElementById("ModalOpen");
+    const openModalGestionComercial = document.getElementById("Card-Comercial-Ticket");
+    if (openModalGestionComercial && modalGestionCoordinadorInstance) {
+        openModalGestionComercial.addEventListener("click", function (event) {
+            event.preventDefault();
+            modalGestionCoordinadorInstance.show();
+            if (typeof loadDetalleTicketComercial === 'function') loadDetalleTicketComercial();
+        });
+    } else {
+        console.error("Error: Card-Comercial-Ticket o modalGestionCoordinadorInstance no encontrados.");
+    }
 
-  if (cerrarOpen && openTicketsModalInstance) {
-        cerrarOpen.addEventListener("click", function () {
-            openTicketsModalInstance.hide();
-            // AÑADE ESTE CÓDIGO AQUÍ PARA QUE SE EJECUTE AL CLIC DEL BOTÓN "Cerrar"
+    const openModalPendienteRepuesto = document.getElementById("OpenModalPendienteRepuesto");
+    if (openModalPendienteRepuesto && modalPendienteRepa) {
+        openModalPendienteRepuesto.addEventListener("click", function (event) {
+            event.preventDefault();
+            modalPendienteRepa.show();
+            if (typeof loadIndividualPendienteRepuesto === 'function') loadIndividualPendienteRepuesto();
+        });
+    } else {
+        console.error("Error: OpenModalPendienteRepuesto o modalPendienteRepa no encontrados.");
+    }
+
+    const openModalIrreparable = document.getElementById("OpenModalIrreparable");
+    if (openModalIrreparable && modalIrreparable) {
+        openModalIrreparable.addEventListener("click", function (event) {
+            event.preventDefault();
+            modalIrreparable.show();
+            if (typeof loadIndividualIrreparable === 'function') loadIndividualIrreparable();
+        });
+    } else {
+        console.error("Error: OpenModalIrreparable o modalIrreparable no encontrados.");
+    }
+
+    const openModalProcess = document.getElementById("Card-Ticket-process");
+    if (openModalProcess && modalProcessTicketsModalInstance) {
+        openModalProcess.addEventListener("click", function (event) {
+            event.preventDefault();
+            modalProcessTicketsModalInstance.show();
+            if (typeof loadIndividualProceess === 'function') loadIndividualProceess();
+        });
+    } else {
+        console.error("Error: Card-Ticket-process o modalProcessTicketsModalInstance no encontrados.");
+    }
+
+    // --- El resto de Event Listeners para CERRAR Modales y Detalles de Tickets (Mantienen tu lógica original) ---
+
+    const cerrarModalComercial = document.getElementById("ModalComercialDetalle");
+    if (cerrarModalComercial && modalGestionCoordinadorInstance) {
+        cerrarModalComercial.addEventListener("click", function () {
+            modalGestionCoordinadorInstance.hide();
             forceCleanupAfterModalClose();
         });
     }
 
-  // 4. Botones de cierre para ResolveTicketsModal
-  const cerrarResolve = document.getElementById("ModalResolveRegion");
+    const cerrarModalEntregadoCliente = document.getElementById("ModalEntregadoClienteCerrar");
+    if (cerrarModalEntregadoCliente && entregadoClienteModalInstance) {
+        cerrarModalEntregadoCliente.addEventListener("click", function () {
+            entregadoClienteModalInstance.hide();
+            forceCleanupAfterModalClose();
+        });
+    }
 
-  if (cerrarResolve && resolveTicketsModalInstance) {
-    cerrarResolve.addEventListener("click", function () {
-      resolveTicketsModalInstance.hide();
-    });
-  }
+    const cerrarMonthly = document.getElementById("ModalStadisticMonth");
+    if (cerrarMonthly && monthlyTicketsModalInstance) {
+        cerrarMonthly.addEventListener("click", function () {
+            monthlyTicketsModalInstance.hide();
+            forceCleanupAfterModalClose();
+        });
+    }
 
-  // 5. Botones de cierre para SendTallerTicketsModal (¡NUEVO!)
-  const cerrarTaller = document.getElementById("ModalTallerRegion"); // El ID de tu botón "Cerrar" en el footer
+    const cerrarRegion = document.getElementById("ModalStadisticRegion");
+    if (cerrarRegion && regionTicketsModalInstance) {
+        cerrarRegion.addEventListener("click", function () {
+            regionTicketsModalInstance.hide();
+            forceCleanupAfterModalClose();
+        });
+    }
 
-  if (cerrarTaller && sendTallerTicketsModalInstance) {
-    cerrarTaller.addEventListener("click", function () {
-      sendTallerTicketsModalInstance.hide();
-    });
-  }
+    const cerrarResolve = document.getElementById("ModalResolveRegion");
+    if (cerrarResolve && resolveTicketsModalInstance) {
+        cerrarResolve.addEventListener("click", function () {
+            resolveTicketsModalInstance.hide();
+            forceCleanupAfterModalClose();
+        });
+    }
 
-  // 6. Botones de cierre para processTicketModalElement (��NUEVO!)
-  const cerrarProcess = document.getElementById("ModalProcess"); // El ID de tu botón "Cerrar" en el footer
+    const cerrarTaller = document.getElementById("ModalTallerRegion");
+    if (cerrarTaller && sendTallerTicketsModalInstance) {
+        cerrarTaller.addEventListener("click", function () {
+            sendTallerTicketsModalInstance.hide();
+            forceCleanupAfterModalClose();
+        });
+    }
 
-  if (cerrarProcess && ModalprocessTicketsModalInstance) {
-    cerrarProcess.addEventListener("click", function () {
-      ModalprocessTicketsModalInstance.hide();
-      forceCleanupAfterModalClose(); // <-- Se llama aquí
-    });
-  }
+    const cerrarProcess = document.getElementById("ModalProcess");
+    if (cerrarProcess && modalProcessTicketsModalInstance) {
+        cerrarProcess.addEventListener("click", function () {
+            modalProcessTicketsModalInstance.hide();
+            forceCleanupAfterModalClose();
+        });
+    }
 
-  const cerrarPenReparacion = document.getElementById("ModalProcessReparacion");
+    const cerrarPenReparacion = document.getElementById("ModalProcessReparacion");
+    if (cerrarPenReparacion && modalProcesoReparacion) {
+        cerrarPenReparacion.addEventListener("click", function () {
+            modalProcesoReparacion.hide();
+            forceCleanupAfterModalClose();
+        });
+    }
 
-  if (cerrarPenReparacion && ModalProcesoReparacion) {
-    cerrarPenReparacion.addEventListener("click", function () {
-      ModalProcesoReparacion.hide();
-    });
-  }
+    const cerrarPenReparado = document.getElementById("ModalReparado");
+    if (cerrarPenReparado && modalReparados) {
+        cerrarPenReparado.addEventListener("click", function () {
+            modalReparados.hide();
+            forceCleanupAfterModalClose();
+        });
+    }
 
-  const cerrarPenReparado = document.getElementById("ModalReparado");
+    const cerrarPenPendienteRepuesto = document.getElementById("ModalPendiRespuu");
+    if (cerrarPenPendienteRepuesto && modalPendienteRepa) {
+        cerrarPenPendienteRepuesto.addEventListener("click", function () {
+            modalPendienteRepa.hide();
+            forceCleanupAfterModalClose();
+        });
+    }
 
-  if (cerrarPenReparado && ModalReparados) {
-    cerrarPenReparado.addEventListener("click", function () {
-      ModalReparados.hide();
-    });
-  }
+    const cerrarPenIrreparable = document.getElementById("ModalIrreparableTik");
+    if (cerrarPenIrreparable && modalIrreparable) {
+        cerrarPenIrreparable.addEventListener("click", function () {
+            modalIrreparable.hide();
+            forceCleanupAfterModalClose();
+        });
+    }
 
-  const cerrarPenPendienteRepuesto = document.getElementById(
-    "ModalPendiRespuu"
-  );
+    const cerrarTimeline = document.getElementById("CloseCerrarTimeline");
+    const iconCerrarTimeline = document.getElementById("IconCloseTimeline");
+    if (cerrarTimeline && modalTimelineInstance) {
+        cerrarTimeline.addEventListener("click", forceCloseTimelineModal);
+    }
+    if (iconCerrarTimeline && modalTimelineInstance) {
+        iconCerrarTimeline.addEventListener("click", forceCloseTimelineModal);
+    }
 
-  if(cerrarPenPendienteRepuesto && modalPendienteRepa) {
-    cerrarPenPendienteRepuesto.addEventListener("click", function () {
-      modalPendienteRepa.hide();
-    });
-  }
+    // --- Clics dentro de monthlyTicketsContent ---
+    const monthlyTicketsContent = document.getElementById("monthlyTicketsContent");
+    if (monthlyTicketsContent) {
+        monthlyTicketsContent.addEventListener("click", function (event) {
+            const clickedButton = event.target.closest(".monthly-tickets-detail");
+            if (clickedButton) {
+                const month = clickedButton.dataset.month;
+                const status = clickedButton.dataset.status;
+                const count = clickedButton.dataset.count;
 
-  const cerrarPenIrreparable = document.getElementById(
-    "ModalIrreparableTik"
-  );
+                if (parseInt(count) > 0) {
+                    if (typeof loadIndividualTicketDetails === 'function') {
+                        loadIndividualTicketDetails(month, status);
+                    }
+                } else {
+                    Swal.fire({
+                        icon: "info",
+                        title: "Sin Tickets",
+                        html: `No hay tickets ${status.toLowerCase()}s en la fecha <strong>${month}</strong>.`,
+                        confirmButtonText: "Ok",
+                        confirmButtonColor: "#003594",
+                    });
+                }
+            }
+        });
+    }
 
-  if (cerrarPenIrreparable && ModalIrreparable) {
-    cerrarPenIrreparable.addEventListener("click", function () {
-      ModalIrreparable.hide();
-    });
-  }
+    // --- Clics dentro de RegionTicketsContent ---
+    const regionTicketsContent = document.getElementById("RegionTicketsContent");
+    if (regionTicketsContent) {
+        regionTicketsContent.addEventListener("click", function (event) {
+            const clickedButton = event.target.closest(".region-tickets-total-detail");
+            if (clickedButton) {
+                const region = clickedButton.dataset.region;
+                const count = clickedButton.dataset.count;
 
-  // A. Clics dentro de monthlyTicketsContent
-  const monthlyTicketsContent = document.getElementById("monthlyTicketsContent");
+                if (parseInt(count) > 0) {
+                    if (typeof loadIndividualRegionTicketDetails === 'function') {
+                        loadIndividualRegionTicketDetails(region);
+                    }
+                } else {
+                    Swal.fire({
+                        icon: "info",
+                        title: "Sin Tickets",
+                        html: `No hay tickets para la región de <strong>${region}</strong>.`,
+                        confirmButtonText: "Ok",
+                        confirmButtonColor: "#003594",
+                    });
+                }
+            }
+        });
+    }
 
-  if (monthlyTicketsContent) {
-    monthlyTicketsContent.addEventListener("click", function (event) {
-      const clickedButton = event.target.closest(".monthly-tickets-detail");
-      if (clickedButton) {
-        const month = clickedButton.dataset.month;
-        const status = clickedButton.dataset.status;
-        const count = clickedButton.dataset.count;
-
-        if (parseInt(count) > 0) {
-          loadIndividualTicketDetails(month, status);
-        } else {
-          Swal.fire({
-            icon: "info",
-            title: "Sin Tickets",
-            html: `No hay tickets ${status.toLowerCase()}s en la fecha <strong>${month}</strong>.`,
-            confirmButtonText: "Ok",
-            confirmButtonColor: "#003594",
-          });
-        }
-      }
-    });
-  }
-
-  // B. Clics dentro de RegionTicketsContent
-  const regionTicketsContent = document.getElementById("RegionTicketsContent");
-  if (regionTicketsContent) {
-    regionTicketsContent.addEventListener("click", function (event) {
-      const clickedButton = event.target.closest(
-        ".region-tickets-total-detail"
-      );
-      if (clickedButton) {
-        const region = clickedButton.dataset.region;
-        const count = clickedButton.dataset.count;
-
-        if (parseInt(count) > 0) {
-          loadIndividualRegionTicketDetails(region);
-        } else {
-          Swal.fire({
-            icon: "info",
-            title: "Sin Tickets",
-            html: `No hay tickets para la región de <strong>${region}</strong>.`,
-            confirmButtonText: "Ok",
-            confirmButtonColor: "#003594",
-          });
-        }
-      }
-    });
-  }
-
-  // D. Clics dentro de TallerTicketsContent (¡NUEVO! Si aplicara)
-  const tallerTicketsContent = document.getElementById("TallerTicketsContent");
-  if (tallerTicketsContent) {
-    tallerTicketsContent.addEventListener("click", function (event) {
-      const clickedButton = event.target.closest(".taller-ticket-detail"); // Clase de tus botones dentro de este modal
-      if (clickedButton) {
-        const ticketId = clickedButton.dataset.ticketId;
-        // Si necesitas cargar más detalles de un ticket específico en el taller:
-        // loadSpecificTallerTicketDetails(ticketId);
-        console.log(`Clic en detalle de ticket de taller, ID: ${ticketId}`);
-      }
-    });
-  }
+    // --- Clics dentro de TallerTicketsContent ---
+    const tallerTicketsContent = document.getElementById("TallerTicketsContent");
+    if (tallerTicketsContent) {
+        tallerTicketsContent.addEventListener("click", function (event) {
+            const clickedButton = event.target.closest(".taller-ticket-detail");
+            if (clickedButton) {
+                const ticketId = clickedButton.dataset.ticketId;
+                console.log(`Clic en detalle de ticket de taller, ID: ${ticketId}`);
+            }
+        });
+    }
 });
 
 function handleTicketSearch(event, ticketArray, containerId) {
@@ -1929,14 +2001,14 @@ function loadIndividualProceess() {
     searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
 
     fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsInProcess`)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then((data) => {
-            if (data.success) {
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success) {
                 allProcessTickets = data.details; // Guardar todos los tickets para búsqueda
                 displayFilteredTickets(allProcessTickets, 'ProcessTicketsContent');
 
@@ -1949,40 +2021,40 @@ function loadIndividualProceess() {
                     handleTicketSearch(event, allProcessTickets, 'ProcessTicketsContent');
                 };
                 searchInput.addEventListener('input', ticketSearchHandler);
-            } else {
-                contentDiv.innerHTML =
-                    "<p>Error al cargar los detalles de Taller: " +
-                    (data.message || "Error desconocido") +
-                    "</p>";
-                console.error(
-                    "Error en los datos de la API para Taller:",
-                    data.message
-                );
+      } else {
+        contentDiv.innerHTML =
+          "<p>Error al cargar los detalles de Taller: " +
+          (data.message || "Error desconocido") +
+          "</p>";
+        console.error(
+          "Error en los datos de la API para Taller:",
+          data.message
+        );
                 allProcessTickets = [];
                 if (ticketSearchHandler) {
                     searchInput.removeEventListener('input', ticketSearchHandler);
                     ticketSearchHandler = null;
                 }
-            }
-        })
-        .catch((error) => {
-            contentDiv.innerHTML =
+      }
+    })
+    .catch((error) => {
+      contentDiv.innerHTML =
                 `<div class="text-center text-muted py-5">
-                    <div class="d-flex flex-column align-items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                        </svg>
-                        <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+          <div class="d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
                         <p class="text-muted mb-0">No hay tickets en proceso.</p>
-                    </div>
+          </div>
                 </div>`;
-            console.error("Error fetching taller details:", error);
+      console.error("Error fetching taller details:", error);
             allProcessTickets = [];
             if (ticketSearchHandler) {
                 searchInput.removeEventListener('input', ticketSearchHandler);
                 ticketSearchHandler = null;
             }
-        });
+    });
 }
 
 function loadResolveTicketDetails() {
@@ -2350,7 +2422,7 @@ function loadTicketTimeline(ticketId) {
       timelineContentDiv.innerHTML = errorMessage;
       console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
     },
-  });
+    }); 
 }
 
 function formatTimeline(timelineData) {
@@ -2490,7 +2562,7 @@ function initializeTimelineClickHandlers() {
 }
 
 $('#flowTicketModal').on('shown.bs.modal', function () {
-  initializeTimelineClickHandlers();
+    initializeTimelineClickHandlers();
 });
 
 function drawTimelineLine() {
@@ -3016,7 +3088,6 @@ function checkUserStatusAndPromptPassword() {
 }
 
 // --- Event Listeners y la Lógica del Botón 'Guardar Contraseña' del modal ---
-// --- Event Listeners y la Lógica del Botón 'Guardar Contraseña' del modal ---
 document.addEventListener("DOMContentLoaded", function () {
     // Asumo que checkUserStatusAndPromptPassword() es una función existente en tu código.
     checkUserStatusAndPromptPassword();
@@ -3431,37 +3502,7 @@ async function getTicketOpen() {
         console.error("Failed to fetch open ticket count:", error);
     }
 }
-
-document.addEventListener("DOMContentLoaded", function () {
-  // Referencia al elemento de la tarjeta de estadística para tickets regionales
-  const TicketsOpenCard = document.getElementById("Card-Ticket-open");
-
-  // Referencia al elemento del modal para tickets regionales
-  const OpenTicketsModalElement = document.getElementById("OpenTicketModal");
-
-  // Declarar la instancia del modal fuera del if/else para que sea accesible
-  let OpenTicketsModalInstance = null;
-
-  // Asegúrate de que ambos elementos existan antes de añadir el event listener
-  if (TicketsOpenCard && OpenTicketsModalElement) {
-    // **Crear la instancia del modal de Bootstrap una sola vez.**
-    OpenTicketsModalInstance = new bootstrap.Modal(OpenTicketsModalElement);
-
-    TicketsOpenCard.addEventListener("click", function (event) {
-      // Evita el comportamiento predeterminado si el clic es en un enlace o botón.
-      event.preventDefault();
-
-      // Muestra el modal usando la instancia de Bootstrap
-      OpenTicketsModalInstance.show();
-      loadOpenTicketDetails(); // Carga los detalles regionales al abrir el modal
-    });
-  } else {
-    console.error(
-      "No se encontraron los elementos TicketsOpenCard o OpenTicketsModalElement."
-    );
-  }
-});
-
+  
 function handleViewDocumentClick() {
     const ticketId = this.dataset.ticketId;
 
@@ -3801,13 +3842,6 @@ async function getTicketPercentage() {
     }
 }
 
-// Llama a la función getTicketPercentage() cuando la página se cargue
-window.addEventListener("load", async () => {
-    await getTicketOpen();
-    await getTicketPercentage();
-});
-
-
 async function getTicketResolve() {
     try {
         const actionPath = 'getTicketsResueltosCount';
@@ -3924,12 +3958,6 @@ async function getTicketsgestionComercialporcent() {
         console.error("Failed to fetch commercial management percentage:", error);
     }
 }
-
-// Llama a las funciones cuando la página se cargue
-window.addEventListener("load", async () => {
-  await getTicketResolve();
-  await getTicketsResueltosPercentage(); // Agrega esta línea
-});
 
 async function getTicketTotal() {
     try {
@@ -4123,15 +4151,6 @@ async function getTotalTicketsInProcess() {
         console.error("Failed to fetch tickets in process count:", error);
     }
 }
-
-// Llama a las funciones cuando la página se cargue
-window.addEventListener("load", async () => {
-  await getTicketTotal();
-  await getTicketTotalSendTotaller();
-  await getTotalTicketsPercentageOFSendTaller();
-  await getTotalTicketsInProcess();
-  await getTotalPorcentageticket_in_process();
-});
 
 function loadRegionTicketDetails() {
   const contentDiv = document.getElementById("RegionTicketsContent");
@@ -4854,13 +4873,13 @@ async function getTicketCounts() {
                 // Solo mostrar si total_tickets es mayor que 0
                 if (item.total_tickets > 0) {
                     hasNonZeroCounts = true;
-                    const tr = document.createElement('tr');
-                    const moduleName = item.name_accion_ticket;
-                    tr.innerHTML = `
-                        <td class="px-5 py-5 border-b border-gray-200 text-sm">${moduleName}</td>
-                        <td class="px-5 py-5 border-b border-gray-200 text-sm">${item.total_tickets}</td>
-                    `;
-                    tbodyCounts.appendChild(tr);
+                const tr = document.createElement('tr');
+                const moduleName = item.name_accion_ticket;
+                tr.innerHTML = `
+                    <td class="px-5 py-5 border-b border-gray-200 text-sm">${moduleName}</td>
+                    <td class="px-5 py-5 border-b border-gray-200 text-sm">${item.total_tickets}</td>
+                `;
+                tbodyCounts.appendChild(tr);
                 }
             });
 
@@ -4903,18 +4922,118 @@ async function getTicketCounts() {
 }
 
 // Llama a esta función para cargar el gráfico cuando el DOM esté listo
-document.addEventListener("DOMContentLoaded", async  function () {
-  await loadMonthlyCreatedTicketsChart();
-  await loadMonthlyCreatedTicketsChartForState();
-  await updateTicketMonthlyPercentageChange();
-  await getTicketProcessReparacion();
-  await getTicketReparados();
-  await getTicketPendienteRepuesto();
-  await  getTicketIrreparables();
-  await getTicketCounts(); // Para la tabla de conteos
-  await getTicketsgestionComercialporcent();
-  await getTicketGestionComercial();
-  await getTicketEntregadoCliente();
+window.addEventListener("load", async () => {
+  // Referencia al elemento de la tarjeta de estadística para tickets abiertos
+  const ticketsOpenCard = document.getElementById("Card-Ticket-open");
+
+  // Referencia al elemento del modal para tickets abiertos
+  const openTicketsModalElement = document.getElementById("OpenTicketModal");
+
+  // Declarar la instancia del modal
+  let openTicketsModalInstance = null;
+
+  // Asegúrate de que ambos elementos existan antes de añadir el event listener
+  if (ticketsOpenCard && openTicketsModalElement) {
+    // Crear la instancia del modal de Bootstrap una sola vez
+    openTicketsModalInstance = new bootstrap.Modal(openTicketsModalElement);
+
+    ticketsOpenCard.addEventListener("click", async function (event) {
+      event.preventDefault(); // Evita el comportamiento predeterminado
+      try {
+        openTicketsModalInstance.show();
+        await loadOpenTicketDetails(); // Carga los detalles de los tickets abiertos
+      } catch (error) {
+        console.error("Error al abrir OpenTicketModal:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "No se pudieron cargar los detalles de los tickets abiertos.",
+          confirmButtonColor: "#003594",
+        });
+        openTicketsModalInstance.hide(); // Cierra el modal si falla la carga
+      }
+    });
+
+    // Botón de cierre para OpenTicketModal
+    const cerrarOpen = document.getElementById("ModalOpen");
+    if (cerrarOpen && openTicketsModalInstance) {
+      cerrarOpen.addEventListener("click", function () {
+        openTicketsModalInstance.hide();
+        forceCleanupAfterModalClose(); // Limpia backdrops residuales
+      });
+    }
+  } else {
+    console.error(
+      "No se encontraron los elementos Card-Ticket-open o OpenTicketModal."
+    );
+  }
+
+  // --- Función auxiliar para fetch con retry y timeout ---
+  async function fetchWithRetry(url, options, retries = 3, timeout = 10000) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(id);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return await response.json();
+      } catch (error) {
+        if (i === retries - 1) throw error;
+        console.warn(`Retry ${i + 1} for ${url}: ${error.message}`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+  }
+
+  // --- Función para limpiar backdrops y clases residuales ---
+  function forceCleanupAfterModalClose() {
+    if (document.body.classList.contains('modal-open')) {
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+    const backdrops = document.querySelectorAll('.modal-backdrop.show');
+    backdrops.forEach(backdrop => backdrop.remove());
+  }
+
+  console.log("Page fully loaded. Starting async loads...");
+  try {
+    await Promise.all([
+      loadMonthlyCreatedTicketsChart(),
+      loadMonthlyCreatedTicketsChartForState(),
+      updateTicketMonthlyPercentageChange(),
+      getTicketProcessReparacion(),
+      getTicketReparados(),
+      getTicketPendienteRepuesto(),
+      getTicketIrreparables(),
+      getTicketCounts(),
+      getTicketsgestionComercialporcent(),
+      getTicketGestionComercial(),
+      getTicketEntregadoCliente(),
+      getTicketTotal(),
+      getTicketTotalSendTotaller(),
+      getTotalTicketsPercentageOFSendTaller(),
+      getTotalTicketsInProcess(),
+      getTotalPorcentageticket_in_process(),
+      getTicketResolve(),
+      getTicketsResueltosPercentage(), // Agrega esta línea
+      getTicketOpen(),
+      getTicketPercentage(),
+      // Agrega aquí todas tus funciones load async similares
+    ]);
+    console.log("All data loaded successfully");
+  } catch (error) {
+    console.error("Error in parallel loads:", error);
+    // Muestra un mensaje global si falla la carga inicial
+    Swal.fire({
+      icon: 'error',
+      title: 'Error de Carga',
+      text: 'Algunos datos no se cargaron. Por favor, recarga la página.',
+      color: 'black',
+      confirmButtonColor: '#003594'
+    });
+  }
 });
 
 function showErrorMessage(title, message) {

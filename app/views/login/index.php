@@ -54,7 +54,7 @@
     <p>Enviando correo</p>
   </div>
 
-  <div id="modal" class="modal">
+  <div id="modal" class="modal" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
     <div class="modal-contenido" id="modal-content">
         <span class="cerrar">&times;</span>
         <h2>Restablecer Contraseña</h2>

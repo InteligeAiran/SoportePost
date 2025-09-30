@@ -659,7 +659,7 @@ class users extends Controller {
         if ($result) {
             $this->response(['success' => true, 'email' => $result], 200);
         } else {
-            $this->response(['success' => false, 'message' => 'No se encontró el correo electrónico para el usuario'], 404);
+            $this->response(['success' => false, 'message' => 'No se encontro el Usuario'], 200);
         }
     }
 

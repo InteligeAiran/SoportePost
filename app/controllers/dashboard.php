@@ -23,7 +23,7 @@ class dashboard extends Controller {
         $shouldValidateSession = (
             !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || 
             !isset($_SESSION['last_session_check']) || 
-            (time() - $_SESSION['last_session_check']) > 300 // 5 minutos
+            (time() - $_SESSION['last_session_check']) > 1800 // 5 minutos
         );
         
         if ($shouldValidateSession && isset($_SESSION['id_user']) && isset($_SESSION['session_id'])) {

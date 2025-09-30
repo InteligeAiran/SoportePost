@@ -298,9 +298,10 @@ cursor: pointer;
 }
 
 .form-control[disabled] {
-    background-color: #f7fafc; /* Very light gray for disabled, common in modern UIs */
+    background-color: #F0F0DC; /* Very light gray for disabled, common in modern UIs */
     cursor: not-allowed;
     opacity: 0.8;
+    color: #6C757D;
 }
 
 /* Error and Success Messages */
@@ -309,7 +310,7 @@ cursor: pointer;
     font-size: 0.8em; /* Slightly smaller error text */
     margin-top: -31px;
     margin-bottom: 44px;
-    text-align: left; /* Keep text aligned to the left */
+    /*text-align: left; /* Keep text aligned to the left */
 }
 
 .successEmail {
@@ -494,3 +495,65 @@ cursor: pointer;
 }
 
 /************/
+
+ #usernameVerification {
+      gap: 8px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #007bff;
+      margin-top: 2px;
+      padding: 4px 8px;
+      background-color: rgba(0, 123, 255, 0.1);
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      width: 70%;
+      margin-left: 10%;
+    }
+
+    #usernameVerification.error{
+      color: #dc3545; /* Rojo para mensajes de error */
+      background-color: rgba(255, 0, 0, 0.1); /* Fondo sutil rojo */
+    }
+
+     #usernameVerification.success {
+      color: #28a745; /* Verde para mensajes de éxito */
+      background-color: rgba(40, 167, 69, 0.1); /* Fondo sutil verde */
+    }
+      
+    #usernameVerification.loading {
+      color: #007bff; /* Azul para carga */
+      background-color: rgba(0, 123, 255, 0.1); /* Fondo azul sutil */
+    }
+
+     #restoreUsernameVerification {
+      gap: 8px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #007bff;
+      margin-top: -16%;
+      padding: 4px 8px;
+      background-color: rgba(0, 123, 255, 0.1);
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      width: 70%;
+      margin-left: 10%;
+    }
+
+    #restoreUsernameVerification.error{
+      color: #dc3545; /* Rojo para mensajes de error */
+      background-color: rgba(255, 0, 0, 0.1); /* Fondo sutil rojo */
+      width: 80%;
+      margin-left: 10%;
+    }
+
+    #restoreUsernameVerification.success{
+      color: #28a745; /* Verde para mensajes de éxito */
+      background-color: rgba(40, 167, 69, 0.1); /* Fondo sutil verde */
+    }
+
+    #restoreUsernameVerification.loading {
+      color: #007bff; /* Azul para carga */
+      background-color: rgba(0, 123, 255, 0.1); /* Fondo azul sutil */
+    }

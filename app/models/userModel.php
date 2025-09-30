@@ -336,7 +336,8 @@ class userModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en getEmailByUsername: " . $e->getMessage());
+            return null; // Devolver null en caso de error
         }
     }
 
@@ -485,7 +486,9 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            // Loguear el error para depuración
+            error_log("Error en getEmailByUsername: " . $e->getMessage());
+            return null; // Devolver null en caso de error
         }
     }
 
@@ -541,7 +544,7 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
 
     public function GetTechniciansAndCurrentTicketTechnician($id_ticket){
         try {
-            $sql = "SELECT * FROM  get_tecnico_asignacion(".$id_ticket.");";
+            $sql = "SELECT * FROM get_tecnico_asignacion(".$id_ticket.");";
             //var_dump($sql); // Para depuración
             $result = Model::getResult($sql, $this->db);
             return $result;

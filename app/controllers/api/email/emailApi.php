@@ -93,6 +93,10 @@ class email extends Controller {
                     $this->handleSendRejectDocument();
                 break;
 
+                case 'send_reassignment_email':
+                    $this->handlesend_reassignment_email();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en email'], 404);
                 break;
@@ -1232,7 +1236,7 @@ class email extends Controller {
     } else {
         $this->response(['success' => false, 'message' => 'Error al enviar ambos correos.', 'color' => 'red']);
     }
-}
+    }
 
     public function handleSendDevolutionTicket() {
         $repository = new EmailRepository();
@@ -1918,6 +1922,241 @@ class email extends Controller {
         } else {
             $this->response(['success' => false, 'message' => 'Error al enviar todos los correos.', 'color' => 'red']);
         }
+    }
+
+    public function handlesend_reassignment_email() {
+    $repository = new EmailRepository();
+    
+    // Obtener parámetros del POST
+    $ticketId = isset($_POST['ticket_id']) ? $_POST['ticket_id'] : '';
+    $oldTechnicianId = isset($_POST['old_technician_id']) ? $_POST['old_technician_id'] : '';
+    $newTechnicianId = isset($_POST['new_technician_id']) ? $_POST['new_technician_id'] : '';
+
+    if (empty($ticketId) || empty($oldTechnicianId) || empty($newTechnicianId)) {
+        $this->response(['success' => false, 'message' => 'Faltan parámetros requeridos (ticket_id, old_technician_id, new_technician_id).', 'color' => 'red']);
+        return;
+    }
+
+    try {
+        // Obtener datos del ticket
+        $ticketData = $repository->GetTicketDataById($ticketId);
+        if (!$ticketData) {
+            $this->response(['success' => false, 'message' => 'No se encontraron datos del ticket.', 'color' => 'red']);
+            return;
+        }
+
+        // Obtener datos del técnico anterior
+        $oldTechnicianData = $repository->GetEmailUserDataById($oldTechnicianId);
+        if (!$oldTechnicianData) {
+            $this->response(['success' => false, 'message' => 'No se encontraron datos del técnico anterior.', 'color' => 'red']);
+            return;
+        }
+
+        // Obtener datos del nuevo técnico
+        $newTechnicianData = $repository->GetEmailUserDataById($newTechnicianId);
+        if (!$newTechnicianData) {
+            $this->response(['success' => false, 'message' => 'No se encontraron datos del nuevo técnico.', 'color' => 'red']);
+            return;
+        }
+
+        // Preparar imágenes embebidas
+        $embeddedImages = [];
+        if (defined('FIRMA_CORREO')) {
+            $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
+        }
+
+        $correosEnviados = 0;
+        $totalCorreos = 0;
+
+        // 1. ENVIAR CORREO AL TÉCNICO ANTERIOR
+        $totalCorreos++;
+        $subjectPrevious = 'Notificación de Reasignación de Ticket';
+        
+        $bodyPrevious = '
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Reasignación de Ticket</title>
+            <style>
+                body { margin: 0; padding: 0; background-color: #f4f7f6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+                .container { max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-top: 5px solid #dc3545; }
+                .header { text-align: center; padding-bottom: 20px; }
+                .header h1 { color: #dc3545; font-size: 24px; margin: 0; }
+                .ticket-info { margin-top: 20px; border-top: 1px solid #e0e0e0; padding-top: 20px; }
+                .info-row { margin-bottom: 15px; }
+                .info-label { color: #555; font-weight: bold; width: 140px; display: inline-block; }
+                .info-value { color: #333; }
+                .ticket-number { background-color: #e0f7fa; color: #007bff; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+                .new-technician { background-color: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+                .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #999; }
+                .logo { display: block; margin: 20px auto; max-width: 150px; height: auto; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Ticket Reasignado</h1>
+                    <p>Estimado/a <strong>' . htmlspecialchars($oldTechnicianData['full_name']) . '</strong>,</p>
+                </div>
+                
+                <div class="ticket-info">
+                    <p>Le informamos que el siguiente ticket ha sido reasignado a otro técnico:</p>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Número de Ticket:</span>
+                        <span class="info-value"><span class="ticket-number">' . htmlspecialchars($ticketData['nro_ticket']) . '</span></span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Serial POS:</span>
+                        <span class="info-value">' . htmlspecialchars($ticketData['serial_pos'] ?? 'N/A') . '</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Cliente:</span>
+                        <span class="info-value">' . htmlspecialchars($ticketData['razonsocial'] ?? 'N/A') . '</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">RIF Cliente:</span>
+                        <span class="info-value">' . htmlspecialchars($ticketData['rif'] ?? 'N/A') . '</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Nuevo Técnico:</span>
+                        <span class="info-value"><span class="new-technician">' . htmlspecialchars($newTechnicianData['full_name']) . '</span></span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Fecha de Reasignación:</span>
+                        <span class="info-value">' . date('d/m/Y H:i:s') . '</span>
+                    </div>
+                </div>
+                
+                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
+                
+                <div class="footer">
+                    <p>Este es un mensaje automático del sistema de Soporte Post-Venta.</p>
+                    <p>Por favor, no responda a este correo.</p>
+                </div>
+            </div>
+        </body>
+        </html>';
+
+        // Enviar correo al técnico anterior
+        if ($this->emailService->sendEmail($oldTechnicianData['user_email'], $subjectPrevious, $bodyPrevious, [], $embeddedImages)) {
+            $correosEnviados++;
+        }
+
+        // 2. ENVIAR CORREO AL NUEVO TÉCNICO
+        $totalCorreos++;
+        $subjectNew = 'Nueva Asignación de Ticket';
+        
+        $bodyNew = '
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Nueva Asignación de Ticket</title>
+            <style>
+                body { margin: 0; padding: 0; background-color: #f4f7f6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+                .container { max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-top: 5px solid #28a745; }
+                .header { text-align: center; padding-bottom: 20px; }
+                .header h1 { color: #28a745; font-size: 24px; margin: 0; }
+                .ticket-info { margin-top: 20px; border-top: 1px solid #e0e0e0; padding-top: 20px; }
+                .info-row { margin-bottom: 15px; }
+                .info-label { color: #555; font-weight: bold; width: 140px; display: inline-block; }
+                .info-value { color: #333; }
+                .ticket-number { background-color: #e0f7fa; color: #007bff; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+                .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: bold; color: #fff; text-align: center; }
+                .status-badge-assigned { background-color: #007bff; }
+                .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #999; }
+                .logo { display: block; margin: 20px auto; max-width: 150px; height: auto; }
+                .attention-message { text-align: center; margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #28a745; border-radius: 4px; }
+                .attention-message p { margin: 0; font-weight: bold; color: #28a745; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Nueva Asignación de Ticket</h1>
+                    <p>Estimado/a <strong>' . htmlspecialchars($newTechnicianData['full_name']) . '</strong>,</p>
+                </div>
+                
+                <div class="ticket-info">
+                    <p>Le informamos que se le ha asignado un nuevo ticket para su atención:</p>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Número de Ticket:</span>
+                        <span class="info-value"><span class="ticket-number">' . htmlspecialchars($ticketData['nro_ticket']) . '</span></span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Serial POS:</span>
+                        <span class="info-value">' . htmlspecialchars($ticketData['serial_pos'] ?? 'N/A') . '</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Cliente:</span>
+                        <span class="info-value">' . htmlspecialchars($ticketData['razonsocial'] ?? 'N/A') . '</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">RIF Cliente:</span>
+                        <span class="info-value">' . htmlspecialchars($ticketData['rif'] ?? 'N/A') . '</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Modelo POS:</span>
+                        <span class="info-value">' . htmlspecialchars($ticketData['name_modelopos'] ?? 'N/A') . '</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Estado del Ticket:</span>
+                        <span class="info-value"><span class="status-badge status-badge-assigned">Asignado al Técnico</span></span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Fecha de Asignación:</span>
+                        <span class="info-value">' . date('d/m/Y H:i:s') . '</span>
+                    </div>
+                </div>
+                
+                <div class="attention-message">
+                    <p>Por favor, proceda a revisar y atender este ticket lo antes posible.</p>
+                </div>
+                
+                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo">' : '') . '
+                
+                <div class="footer">
+                    <p>Este es un mensaje automático del sistema de Soporte Post-Venta.</p>
+                    <p>Por favor, no responda a este correo.</p>
+                </div>
+            </div>
+        </body>
+        </html>';
+
+        // Enviar correo al nuevo técnico
+        if ($this->emailService->sendEmail($newTechnicianData['user_email'], $subjectNew, $bodyNew, [], $embeddedImages)) {
+            $correosEnviados++;
+        }
+
+        // Respuesta final
+        if ($correosEnviados == $totalCorreos) {
+            $this->response(['success' => true, 'message' => 'Correos de reasignación enviados exitosamente a ambos técnicos.', 'color' => 'green']);
+        } elseif ($correosEnviados > 0) {
+            $this->response(['success' => true, 'message' => "Se enviaron {$correosEnviados} de {$totalCorreos} correos de reasignación.", 'color' => 'orange']);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al enviar los correos de reasignación.', 'color' => 'red']);
+        }
+
+    } catch (Exception $e) {
+        error_log('Error en handlesend_reassignment_email: ' . $e->getMessage());
+        $this->response(['success' => false, 'message' => 'Error interno del servidor.', 'color' => 'red']);
+    }
     }
 }
 ?>
