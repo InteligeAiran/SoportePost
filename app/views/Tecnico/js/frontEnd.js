@@ -1121,43 +1121,67 @@ $(document).on('click', '#printHtmlTemplateBtn', function () {
         // Crear el nombre del archivo
         const filename = `NotaEntrega_${ticketId}${sanitizedNumero ? '_' + sanitizedNumero : ''}_${fechaStr}`;
         
-        // Asignar el nombre del archivo al título de la ventana principal
-        window.document.title = filename;
+        // --- PREPARACIÓN DEL MODAL DE SUBIDA (Lógica movida para configurar antes) ---
+        const ticketIdValue = (document.getElementById('htmlTemplateTicketId') || {}).value || '';
+        const idTicketInput = document.getElementById('id_ticket');
+        const typeDocInput = document.getElementById('type_document');
+        const modalTicketIdSpan = document.getElementById('modalTicketId');
+        
+        if (idTicketInput) idTicketInput.value = ticketIdValue;
+        if (typeDocInput) typeDocInput.value = 'Envio';
+        if (modalTicketIdSpan) modalTicketIdSpan.textContent = ticketIdValue;
+        
+        // 1. Mostrar el modal de éxito del "Guardado" (o Registro de NE) y preguntar qué hacer
+        Swal.fire({
+            icon: 'success',
+            title: 'Nota de Entrega',
+            text: 'El archivo se generó correctamente. Puedes guardarlo como PDF.',
+            showCancelButton: true,
+            confirmButtonText: 'Imprimir', // Opción que dispara window.print()
+            cancelButtonText: 'Cerrar', // Opción que cierra la vista previa
+            confirmButtonColor: '#003594',
+            cancelButtonColor: '#808080', // Color para el botón "Cerrar Ventana"
+            color: 'black'
+        }).then((result) => {
+            // Si el usuario presiona "Imprimir / Guardar PDF"
+            if (result.isConfirmed) {
+                
+                // Asignar el nombre del archivo al título de la ventana principal
+                window.document.title = filename;
 
-        // Llamar a la función de impresión
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
+                // Llamar a la función de impresión
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
 
-        // Usa setTimeout para restaurar el título después de que el diálogo de impresión se lance
-        setTimeout(() => {
-            doc.title = originalIframeTitle; // Restaurar el título del iframe
-            window.document.title = originalWindowTitle; // Restaurar el título de la ventana principal
-            
-            const ticketIdValue = (document.getElementById('htmlTemplateTicketId') || {}).value || '';
-            const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
-            const uploadDocumentModal = new bootstrap.Modal(document.getElementById('uploadDocumentModal'));
-            
-            const idTicketInput = document.getElementById('id_ticket');
-            const typeDocInput = document.getElementById('type_document');
-            const modalTicketIdSpan = document.getElementById('modalTicketId');
-            
-            if (idTicketInput) idTicketInput.value = ticketIdValue;
-            if (typeDocInput) typeDocInput.value = 'Envio';
-            if (modalTicketIdSpan) modalTicketIdSpan.textContent = ticketIdValue;
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'Nota de Entrega Guardada',
-                text: 'El archivo se generó correctamente. Puedes subirlo ahora.',
-                confirmButtonColor: '#003594',
-                color: 'black'
-            }).then(() => {
-             window.location.reload();
-            });
-        }, 600);
+                // Usa setTimeout para restaurar el título después de que el diálogo de impresión se lance
+                // Se usa un tiempo corto, ya no necesitamos esperar que el usuario interactúe
+                setTimeout(() => {
+                    doc.title = originalIframeTitle; // Restaurar el título del iframe
+                    window.document.title = originalWindowTitle; // Restaurar el título de la ventana principal
+                    
+                    // Aquí puedes mostrar el modal de "Subir Documento" si lo deseas
+                     const uploadDocumentModal = new bootstrap.Modal(document.getElementById('uploadDocumentModal'));
+                     uploadDocumentModal.show();
+                    
+                    // O simplemente recargar la página principal
+                    window.location.reload(); 
+                    
+                }, 500); // 100ms es suficiente para que el título se aplique a la ventana de impresión
+
+            } else {
+                // Si el usuario presiona "Cerrar Ventana"
+                // 2. Cerrar el modal actual (si es que estás usando uno para la vista previa)
+                const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
+                htmlModal.hide();
+                
+                // O recargar la página, dependiendo de la necesidad de tu flujo
+                // window.location.reload();
+            }
+        });
+        
     } catch (e) {
         console.error('Error:', e);
-        // Si hay un error, aún intenta imprimir sin cambiar el nombre
+        // Si hay un error, aún intenta imprimir sin cambiar el nombre (Opción de fallback)
         const iframe = document.getElementById('htmlTemplatePreview');
         if (iframe && iframe.contentWindow) {
             iframe.contentWindow.focus();

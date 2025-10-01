@@ -568,50 +568,60 @@ function getTicketDataFinaljs() {
 
                       // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
                       if (name_accion_ticket === "En espera de confirmar recibido en el Rosal") {
-                          actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
+                          actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn" title = "Marcar Como Recibido En el rosal"
                                               data-id-ticket="${idTicket}"
                                               data-serial-pos="${serialPos}"
-                                              data-nro-ticket="${nroTicket}">
-                                              <i class="fas fa-hand-holding-box"></i> Recibido
+                                              data-nro-ticket="${nroTicket}" id = "marcarrecibido">
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16"><path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/></svg>
                                           </button>`;
                       }
                       // Prioridad 2: Validar si el ticket es de Caracas o Miranda y está Reparado
                       else if ((currentStatusLab === "Reparado") && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas")) {
-                          actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
+                          actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn" title = "Entregar al Cliente"
                                               data-id-ticket="${idTicket}"
                                               data-serial-pos="${serialPos}"
                                               data-nro-ticket="${nroTicket}">
-                                              Entregar al Cliente
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16">
+                                                <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5z"/>
+                                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708"/>
+                                              </svg>
                                           </button>`;
                       }else if((currentStatusLab === "Reparado" || currentStatusLab === "") && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas") && (name_accion_ticket == "En espera de Confirmar Devolución")){
-                         actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-bt"
+                         actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-bt" title = "Entregar al Cliente"
                                               data-id-ticket="${idTicket}"
                                               data-serial-pos="${serialPos}"
                                               data-nro-ticket="${nroTicket}">
-                                              Entregar al Cliente
-                                          </button>`;
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16">
+                                                <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5z"/>
+                                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708"/>
+                                              </svg>
+                                            </button>`;
 
                       }
                       else {
                           const commonConditions = ((currentStatusLab === "Reparado" || currentStatusLab === "") && !(nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas"));
                           
                           if (commonConditions && isDocumentMissing) {
-                              actionButton = `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
+                              actionButton = `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn" title = "Subir Documento"
                                                   data-id-ticket="${idTicket}"
                                                   data-nro-ticket="${nroTicket}"
                                                   data-bs-toggle="modal"
                                                   data-bs-target="#uploadDocumentModal">
-                                                  Subir Documento
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-arrow-up-fill" viewBox="0 0 16 16">
+                                                    <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M7.5 6.707 6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0z"/>
+                                                  </svg>
                                               </button>`;
                           }
                           // Si cumple las condiciones base y YA se subió el documento
                           else if (commonConditions && hasEnvioDestinoDocument) {
-                              actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn"
+                              actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn" title = "Enviar a Región: ${nombre_estado_cliente}"
                                                   data-id-ticket="${idTicket}"
                                                   data-region-name="${nombre_estado_cliente || 'No tiene Asignado'}"  
                                                   data-serial-pos="${serialPos}"
                                                   data-nro-ticket="${nroTicket}">
-                                                  Enviar a Región: ${nombre_estado_cliente} 
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck" viewBox="0 0 16 16">
+                                                    <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5zm1.294 7.456A2 2 0 0 1 4.732 11h5.536a2 2 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456M12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+                                                  </svg>
                                               </button>`;
                           }
                       }
@@ -632,24 +642,25 @@ function getTicketDataFinaljs() {
                       const name_accion_ticket = (row.name_accion_ticket || "").trim();
                       const reentry_lab = row.reentry_lab;
                   
-                      console.log(reentry_lab);
                       let actionButton = '';
 
                       // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
                       if (name_accion_ticket === "En espera de confirmar recibido en el Rosal") {
-                        actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
+                        actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn" title = "Recibido"
                           data-id-ticket="${idTicket}"
                           data-serial-pos="${serialPos}"
                           data-nro-ticket="${nroTicket}">
-                          <i class="fas fa-hand-holding-box"></i> Recibido
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16"><path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/></svg>
                         </button>`;
                       }else if(reentry_lab === null || reentry_lab ===  'f' || reentry_lab === ""){
-                        actionButton = `<button type="button"
+                        actionButton = `<button type="button" title = "Devolver a Taller"
                           class="btn btn-warning btn-sm send-back-to-lab-btn"
                           data-id-ticket="${idTicket}"
                           data-serial-pos="${serialPos}"
                           data-nro-ticket="${nroTicket}">
-                          Devolver a Taller
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16">
+                            <path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/>
+                          </svg>
                         </button>`;
                       }else{
                        actionButton =  `<button type="button"
@@ -677,6 +688,7 @@ function getTicketDataFinaljs() {
                     const accionllaves = row.name_accion_ticket;
                     const fechaLlavesEnviada = row.date_sendkey; // CORREGIDO: Usar date_sendkey
                     const fechaCargaLlaves = row.date_receivekey; // CORREGIDO: Usar date_receivekey
+                    const recibidoRosal = row.confirmrosal;
 
                     // Lógica para el checkbox "Cargar Llave"
                     // shouldShowLoadKeyCheckbox ahora se basa en 'confirmreceive'
@@ -702,7 +714,13 @@ function getTicketDataFinaljs() {
                                     data-nro-ticket="${row.nro_ticket}"
                                      data-serial-pos="${row.serial_pos} 
                                     title="Es devolucion" checked disabled>`;
-                        } else {
+                        } else if(recibidoRosal === 'f' || recibidoRosal === false || recibidoRosal === '' || recibidoRosal === null){
+                           return `<input type="checkbox" class="receive-key-checkbox" 
+                                    data-id-ticket="${idTicket}" 
+                                    data-nro-ticket="${row.nro_ticket}"
+                                     data-serial-pos="${row.serial_pos} 
+                                    title="Confirmar recibido" disabled>`;
+                        }else{
                           return `<input type="checkbox" class="receive-key-checkbox" 
                                     data-id-ticket="${idTicket}" 
                                     data-nro-ticket="${row.nro_ticket}"
@@ -1491,13 +1509,13 @@ function getTicketDataFinaljs() {
           $("#tabla-ticket tbody")
             .off("click", ".send-back-to-lab-btn")
             .on("click", ".send-back-to-lab-btn", function (e){
-               e.stopPropagation();
+              e.stopPropagation();
 
-                  const ticketId = $(this).data("id-ticket");
-    const nroTicket = $(this).data("nro-ticket");
-    const serialPos = $(this).data("serial-pos") || "";
+              const ticketId = $(this).data("id-ticket");
+              const nroTicket = $(this).data("nro-ticket");
+              const serialPos = $(this).data("serial-pos") || "";
 
-    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+            const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
 
     Swal.fire({
         title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
@@ -2148,6 +2166,8 @@ $(document).ready(function () {
       const nroTicket = $(this).data('nro-ticket');
 
       $('#uploadDocumentModal').attr('data-id-ticket', idTicket);
+      $("#htmlTemplateTicketId").val(idTicket);
+
 
 
 
@@ -3496,3 +3516,504 @@ function CloseTicket(ticketId) {
     )}`;
     xhr.send(data);
 }
+
+$(document).on('click', '#generateNotaEntregaBtn', function () {
+    const ticketId = document.getElementById('htmlTemplateTicketId').value;
+    if (!ticketId) {
+        Swal.fire({ icon: 'warning', title: 'Ticket no disponible' });
+        return;
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/documents/GetDeliveryNoteData`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState !== 4) return;
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const res = JSON.parse(xhr.responseText);
+                if (!res || !res.success || !res.rows) {
+                    Swal.fire({ icon: 'warning', title: 'No se encontraron datos' });
+                    return;
+                }
+
+                const d = res.rows[0];
+                const serialPos = d.serialpos || d.serial_pos || '';
+                const lastFourSerialDigits = serialPos.slice(-4);
+                const notaNumero = `NE-${ticketId}-${lastFourSerialDigits}`;
+                const regDes = 'Caracas';
+
+                $('#htmlTemplateTicketId').val(ticketId);
+                $('#ne_fecha').val(d.fecha_actual || new Date().toLocaleDateString());
+                $('#ne_numero').val(notaNumero);
+                $('#ne_rif').val(d.coddocumento || '');
+                $('#ne_razon').val(d.razonsocial || '');
+                $('#ne_responsable').val(d.rlegal || d.rlegal || '');
+                $('#ne_contacto').val(d.telf1 || 'Sin número de Contacto');
+                $('#ne_tipo_equipo').val(d.tipo_equipo || d.tipo_pos || 'POS');
+                $('#ne_modelo').val(d.modelo || d.desc_modelo || '');
+                $('#ne_serial').val(d.serialpos || d.serial_pos || '');
+                $('#ne_region_origen').val(d.estado_final || d.estado_final || '');
+                $('#ne_region_destino').val(regDes);
+                $('#ne_observaciones').val('');
+
+                // 1. Obtiene la instancia del modal o la crea si no existe
+                const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
+                htmlModal.show();
+                
+                // 2. Adjunta el evento de clic al botón de cerrar
+                // Es mejor usar jQuery para unificar el manejo de eventos
+                $('#closeHtmlTemplateBtn').on('click', function () {
+                     htmlModal.hide();
+                });
+
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'Respuesta inválida del servidor' });
+            }
+        } else {
+            Swal.fire({ icon: 'error', title: 'Error de red/servidor' });
+        }
+    };
+
+    const params = `action=GetDeliveryNoteData&id_ticket=${encodeURIComponent(ticketId)}`;
+    xhr.send(params);
+});
+
+$(document).on('click', '#previewHtmlTemplateBtn', function () {
+  const data = {
+    fecha: $('#ne_fecha').val(),
+    numero: $('#ne_numero').val(),
+    rif: $('#ne_rif').val(),
+    razon: $('#ne_razon').val(),
+    responsable: $('#ne_responsable').val(),
+    tipo_equipo: $('#ne_tipo_equipo').val(),
+    modelo: $('#ne_modelo').val(),
+    serial: $('#ne_serial').val(),
+    region_origen: $('#ne_region_origen').val(),
+    region_destino: $('#ne_region_destino').val(),
+    observaciones: $('#ne_observaciones').val()
+  };
+
+  const html = buildDeliveryNoteHtml(data);
+  const iframe = document.getElementById('htmlTemplatePreview');
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+});
+
+function buildDeliveryNoteHtml(d) {
+  const safe = (s) => (s || '').toString();
+  return `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota de Entrega y Envío de Equipo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #333;
+        background: #fff;
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 20px 0;
+        border-bottom: 3px solid #2c5aa0;
+        position: relative;
+      }
+      
+      .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #2c5aa0 0%, #4a90e2 50%, #2c5aa0 100%);
+      }
+      
+      .company-logo {
+        font-size: 18px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin-bottom: 5px;
+      }
+      
+      .document-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin: 10px 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      
+      .document-subtitle {
+        font-size: 16px;
+        color: #666;
+        font-weight: 500;
+      }
+      
+      .document-info {
+        display: flex;
+        justify-content: space-between;
+        margin: 20px 0;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #2c5aa0;
+      }
+      
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+      }
+      
+      .info-label {
+        font-size: 12px;
+        color: #666;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+      
+      .info-value {
+        font-size: 16px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      .section {
+        margin: 25px 0;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .section-header {
+        background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%);
+        color: white;
+        padding: 12px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .section-content {
+        padding: 20px;
+      }
+      
+      .field-row {
+        display: flex;
+        margin-bottom: 15px;
+        align-items: flex-start;
+      }
+      
+      .field-row:last-child {
+        margin-bottom: 0;
+      }
+      
+      .field-label {
+        font-weight: 600;
+        color: #555;
+        min-width: 200px;
+        margin-right: 15px;
+        font-size: 13px;
+      }
+      
+      .field-value {
+        flex: 1;
+        color: #333;
+        font-weight: 500;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        border-left: 3px solid #2c5aa0;
+      }
+      
+      .field-value.observations {
+        background: #fff;
+        border: 1px solid #ddd;
+        min-height: 60px;
+        font-style: italic;
+      }
+      
+      .constancy {
+        background: #e8f4fd;
+        border: 1px solid #b3d9ff;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: center;
+        font-size: 15px;
+        line-height: 1.8;
+        color: #2c5aa0;
+        font-weight: 500;
+      }
+      
+      .signature-section {
+        margin-top: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+      
+      .signature-box {
+        flex: 1;
+        margin: 0 10px;
+        text-align: center;
+        padding: 20px;
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        background: #fafafa;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      
+      .signature-line {
+        border-top: 2px solid #333;
+        margin: 20px 0 10px 0;
+        width: 200px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      
+      .signature-label {
+        font-weight: bold;
+        color: #2c5aa0;
+        margin-bottom: 5px;
+      }
+      
+      .signature-field {
+        color: #666;
+        font-size: 13px;
+      }
+      
+      .footer {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+        text-align: center;
+        color: #666;
+        font-size: 12px;
+      }
+      
+      @media print {
+        body { padding: 0; }
+        .section { box-shadow: none; border: 1px solid #ddd; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="company-logo">SOPORTE POST VENTA</div>
+      <div class="document-title">Nota de Entrega y Envío de Equipo</div>
+      <div class="document-subtitle">Documento Oficial de Entrega</div>
+    </div>
+    
+    <div class="document-info">
+      <div class="info-item">
+        <div class="info-label">Fecha</div>
+        <div class="info-value">${safe(d.fecha)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">N° de Nota</div>
+        <div class="info-value">${safe(d.numero)}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <i class="fas fa-user"></i> Datos del Cliente
+      </div>
+      <div class="section-content">
+        <div class="field-row">
+          <div class="field-label">R.I.F. / Identificación:</div>
+          <div class="field-value">${safe(d.rif)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Razón Social de la Empresa:</div>
+          <div class="field-value">${safe(d.razon)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Responsable:</div>
+          <div class="field-value">${safe(d.responsable)}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <i class="fas fa-desktop"></i> Detalles del Equipo
+      </div>
+      <div class="section-content">
+        <div class="field-row">
+          <div class="field-label">Tipo de Equipo:</div>
+          <div class="field-value">${safe(d.tipo_equipo)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Modelo del Equipo:</div>
+          <div class="field-value">${safe(d.modelo)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Número de Serie:</div>
+          <div class="field-value">${safe(d.serial)}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <i class="fas fa-truck"></i> Información del Envío
+      </div>
+      <div class="section-content">
+        <div class="field-row">
+          <div class="field-label">Región de Origen:</div>
+          <div class="field-value">${safe(d.region_origen)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Región de Destino:</div>
+          <div class="field-value">${safe(d.region_destino)}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Observaciones de Envío:</div>
+          <div class="field-value observations">${safe(d.observaciones) || 'Sin observaciones adicionales'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="constancy">
+      <strong>CONSTANCIA DE ENTREGA</strong><br>
+      El equipo detallado en la presente nota ha sido entregado en perfectas condiciones de embalaje y funcionamiento al responsable designado.
+    </div>
+
+    <div class="signature-section">
+      <div class="signature-box">
+        <div class="signature-label">Firma de Conformidad</div>
+        <div class="signature-line"></div>
+        <div class="signature-field">Nombre: ${safe(d.responsable)}</div>
+        <div class="signature-field">C.I./DNI: __________________________</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Este documento es válido como constancia oficial de entrega del equipo especificado.</p>
+      <p>Fecha de generación: ${new Date().toLocaleString('es-ES')}</p>
+    </div>
+  </body>
+  </html>`;
+}
+
+$(document).on('click', '#printHtmlTemplateBtn', function () {
+    try {
+        const iframe = document.getElementById('htmlTemplatePreview');
+        if (!iframe || !iframe.contentWindow) return;
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        if (!doc) return;
+
+        const originalIframeTitle = doc.title || '';
+        const originalWindowTitle = window.document.title || ''; // Guardar el título de la ventana principal
+
+        const ticketId = (document.getElementById('htmlTemplateTicketId') || {}).value || 'Ticket';
+        const neNumero = (document.getElementById('ne_numero') || {}).value || '';
+        const fecha = new Date();
+        const y = fecha.getFullYear();
+        const m = String(fecha.getMonth() + 1).padStart(2, '0');
+        const d = String(fecha.getDate()).padStart(2, '0');
+        const fechaStr = `${y}${m}${d}`;
+        const sanitizedNumero = String(neNumero).replace(/[^A-Za-z0-9_-]+/g, '');
+        
+        // Crear el nombre del archivo
+        const filename = `NotaEntrega_${ticketId}${sanitizedNumero ? '_' + sanitizedNumero : ''}_${fechaStr}`;
+        
+        // --- PREPARACIÓN DEL MODAL DE SUBIDA (Lógica movida para configurar antes) ---
+        const ticketIdValue = (document.getElementById('htmlTemplateTicketId') || {}).value || '';
+        const idTicketInput = document.getElementById('id_ticket');
+        const typeDocInput = document.getElementById('type_document');
+        const modalTicketIdSpan = document.getElementById('modalTicketId');
+        
+        if (idTicketInput) idTicketInput.value = ticketIdValue;
+        if (typeDocInput) typeDocInput.value = 'Envio';
+        if (modalTicketIdSpan) modalTicketIdSpan.textContent = ticketIdValue;
+        
+        // 1. Mostrar el modal de éxito del "Guardado" (o Registro de NE) y preguntar qué hacer
+        Swal.fire({
+            icon: 'success',
+            title: 'Nota de Entrega',
+            text: 'El archivo se generó correctamente. Puedes guardarlo como PDF.',
+            showCancelButton: true,
+            confirmButtonText: 'Imprimir', // Opción que dispara window.print()
+            cancelButtonText: 'Cerrar', // Opción que cierra la vista previa
+            confirmButtonColor: '#003594',
+            cancelButtonColor: '#808080', // Color para el botón "Cerrar Ventana"
+            color: 'black'
+        }).then((result) => {
+            // Si el usuario presiona "Imprimir / Guardar PDF"
+            if (result.isConfirmed) {
+                
+                // Asignar el nombre del archivo al título de la ventana principal
+                window.document.title = filename;
+
+                // Llamar a la función de impresión
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+
+                // Usa setTimeout para restaurar el título después de que el diálogo de impresión se lance
+                // Se usa un tiempo corto, ya no necesitamos esperar que el usuario interactúe
+                setTimeout(() => {
+                    doc.title = originalIframeTitle; // Restaurar el título del iframe
+                    window.document.title = originalWindowTitle; // Restaurar el título de la ventana principal
+                    
+                    // Aquí puedes mostrar el modal de "Subir Documento" si lo deseas
+                     const uploadDocumentModal = new bootstrap.Modal(document.getElementById('uploadDocumentModal'));
+                     uploadDocumentModal.show();
+                    
+                    // O simplemente recargar la página principal
+                    window.location.reload(); 
+                    
+                }, 500); // 100ms es suficiente para que el título se aplique a la ventana de impresión
+
+            } else {
+                // Si el usuario presiona "Cerrar Ventana"
+                // 2. Cerrar el modal actual (si es que estás usando uno para la vista previa)
+                const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
+                htmlModal.hide();
+                
+                // O recargar la página, dependiendo de la necesidad de tu flujo
+                // window.location.reload();
+            }
+        });
+        
+    } catch (e) {
+        console.error('Error:', e);
+        // Si hay un error, aún intenta imprimir sin cambiar el nombre (Opción de fallback)
+        const iframe = document.getElementById('htmlTemplatePreview');
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        }
+    }
+});

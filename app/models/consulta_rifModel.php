@@ -2171,7 +2171,7 @@ class consulta_rifModel extends Model
          try {
                 $id_accion_ticket = 14;
 
-                $sql = "UPDATE tickets SET id_accion_ticket = ".(int)$id_accion_ticket.", date_send_torosal_fromlab = NOW() WHERE id_ticket = ".$id_ticket.";";
+                $sql = "UPDATE tickets SET id_accion_ticket = ".(int)$id_accion_ticket.", date_send_torosal_fromlab = NOW(), confirmrosal = TRUE WHERE id_ticket = ".$id_ticket.";";
                 $result = Model::getResult($sql, $this->db);
                 if ($result) {
 

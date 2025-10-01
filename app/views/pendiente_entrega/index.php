@@ -27,6 +27,12 @@ function mi_navbar()
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
     <style>
+       #marcarrecibido{
+            background-color: green;
+            border: none;
+            color: white;
+        }
+
         div.dataTables_wrapper div.dataTables_length label {
             font-weight: bold;
             /* Ejemplo: Texto en negrita */
@@ -794,11 +800,95 @@ function mi_navbar()
                         <button type="button" class="btn btn-secondary" id="CerrarBoton"
                             data-bs-dismiss="modal">Cerrar</button>
                         <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
+                        <button type="button" class="btn btn-warning" id="generateNotaEntregaBtn">Generar Nota de Entrega</button>
                     </div>
                 </div>
             </div>
         </div>
     <!-- END MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
+
+    <!-- MODAL DE NOTA DE ENTREGA -->
+        <div class="modal fade" id="htmlTemplateModal" tabindex="-1" aria-labelledby="htmlTemplateModalLabel" aria-hidden="true" style="background-color: rgba(0,0,0,.4); backdrop-filter: blur(8px);">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"> 
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-primary">
+                <h5 class="modal-title" id="htmlTemplateModalLabel">Generar Nota de Entrega</h5>
+            </div>
+            <div class="modal-body"> 
+                <div class="row g-3">
+                    <input type="hidden" id="htmlTemplateTicketId" value="">
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Fecha</label>
+                        <input type="text" id="ne_fecha" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">N° de Nota</label>
+                        <input type="text" id="ne_numero" class="form-control" readonly>
+                    </div>
+
+                    <div class="col-12"><strong>Datos del Cliente</strong></div>
+                    <div class="col-md-6">
+                        <label class="form-label">RIF/Identificación</label>
+                        <input type="text" id="ne_rif" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Razón Social</label>
+                        <input type="text" id="ne_razon" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Responsable</label>
+                        <input type="text" id="ne_responsable" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Contacto</label>
+                        <input type="text" id="ne_contacto" class="form-control" readonly>
+                    </div>
+
+                    <div class="col-12"><strong>Detalles del Equipo</strong></div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de Equipo</label>
+                        <input type="text" id="ne_tipo_equipo" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Modelo</label>
+                        <input type="text" id="ne_modelo" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Número de Serie</label>
+                        <input type="text" id="ne_serial" class="form-control" readonly>
+                    </div>
+
+                    <div class="col-12"><strong>Información del Envío</strong></div>
+                    <div class="col-md-6">
+                        <label class="form-label">Región de Origen</label>
+                        <input type="text" id="ne_region_origen" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Región de Destino</label>
+                        <input type="text" id="ne_region_destino" class="form-control" readonly>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Observaciones de Envío</label>
+                        <textarea id="ne_observaciones" class="form-control" rows="3" placeholder="Opcional"></textarea>
+                    </div>
+
+                    <div class="col-12">
+                        <button type="button" class="btn btn-secondary" id="previewHtmlTemplateBtn">Previsualizar</button>
+                        <button type="button" class="btn btn-success" id="printHtmlTemplateBtn">Imprimir / Guardar PDF</button>
+                    </div>
+                    <div class="col-12" style="height: 400px;">
+                        <iframe id="htmlTemplatePreview" style="width:100%; height:100%; border:1px solid #ddd;"></iframe>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="closeHtmlTemplateBtn">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- END MODAL DE NOTA DE ENTREGA-->
 
     <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
         <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
