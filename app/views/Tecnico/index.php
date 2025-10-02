@@ -841,8 +841,8 @@ function mi_navbar() {}
 
                             <div class="col-12"><strong>Detalles del Equipo</strong></div>
                             <div class="col-md-6">
-                                <label class="form-label">Tipo de Equipo</label>
-                                <input type="text" id="ne_tipo_equipo" class="form-control" readonly>
+                                <label class="form-label">Proveedor</label>
+                                <input type="text" id="ne_proveedor" class="form-control" readonly>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Modelo</label>
@@ -851,6 +851,15 @@ function mi_navbar() {}
                             <div class="col-md-6">
                                 <label class="form-label">Número de Serie</label>
                                 <input type="text" id="ne_serial" class="form-control" readonly>
+                            </div>
+                            <!-- ✅ AGREGAR ESTOS CAMPOS -->
+                            <div class="col-md-6">
+                                <label class="form-label">Banco</label>
+                                <input type="text" id="ne_banco" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Componentes</label>
+                                <input type="text" id="ne_componentes" class="form-control" readonly>
                             </div>
 
                             <div class="col-12"><strong>Información del Envío</strong></div>
