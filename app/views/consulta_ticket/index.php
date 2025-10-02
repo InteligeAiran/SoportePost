@@ -30,6 +30,7 @@ require 'app/footer.php';
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
         <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css"/>
+        <link rel="stylesheet" href="app/views/consulta_rif/css/tipo-busqueda-style.css">
 
         <style>
             #rifTipo {
@@ -207,7 +208,7 @@ require 'app/footer.php';
         }
 
         #inputsDate{
-            margin-left: 1%;
+            margin-left: 10%;
             margin-top: -5%;
         }
 
@@ -293,6 +294,94 @@ require 'app/footer.php';
             div.dt-buttons{
                 margin-left: 2%;
             }
+
+            /* CSS para "Tipo de Búsqueda" con estilo igual al botón azul fosforescente */
+            #tipoBusqueda {
+                background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+                color: white !important;
+                padding: 12px 20px !important;
+                border: 2px solid #00d4ff !important;
+                border-radius: 8px !important;
+                font-weight: 600 !important;
+                font-size: 16px !important;
+                text-align: center !important;
+                box-shadow: 0 0 15px rgba(0, 212, 255, 0.6) !important;
+                text-transform: uppercase !important;
+                letter-spacing: 1px !important;
+                margin-bottom: 15px !important;
+                position: relative !important;
+                overflow: hidden !important;
+                display: block !important;
+            }
+
+            /* Efecto de brillo fosforescente animado */
+            #tipoBusqueda::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.4), transparent);
+                transition: left 0.8s ease-in-out;
+                z-index: 1;
+            }
+
+            #tipoBusqueda:hover::before {
+                left: 100%;
+            }
+
+            /* Asegurar que el texto esté por encima del efecto */
+            #tipoBusqueda {
+                z-index: 2;
+                position: relative;
+            }
+
+            /* Animación de pulso en el borde azul fosforescente */
+           #tipoBusqueda {
+                animation: pulse-glow 2.5s infinite ease-in-out;
+            }
+
+            @keyframes pulse-glow {
+                0% {
+                    box-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+                    border-color: #00d4ff;
+                }
+                50% {
+                    box-shadow: 0 0 25px rgba(0, 212, 255, 0.9), 0 0 35px rgba(0, 212, 255, 0.5);
+                    border-color: #00f0ff;
+                }
+                100% {
+                    box-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+                    border-color: #00d4ff;
+                }
+            }
+
+            /* Efecto hover adicional */
+            #tipoBusqueda:hover {
+                transform: translateY(-2px);
+                transition: transform 0.3s ease;
+                box-shadow: 0 0 30px rgba(0, 212, 255, 0.8), 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            /* Versión sin animaciones si prefieres más sencillo */
+            /*
+            .col-lg-16 {
+                background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+                color: white !important;
+                padding: 12px 20px !important;
+                border: 2px solid #00d4ff !important;
+                border-radius: 8px !important;
+                font-weight: 600 !important;
+                font-size: 16px !important;
+                text-align: center !important;
+                box-shadow: 0 0 15px rgba(0, 212, 255, 0.6) !important;
+                text-transform: uppercase !important;
+                letter-spacing: 1px !important;
+                margin-bottom: 15px !important;
+            }
+            */
+
     </style>
     </head>
     <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -324,7 +413,7 @@ require 'app/footer.php';
                             <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRegionsBtn">Buscar Por Region</button>
                             <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorStatusBtn">Buscar Por Estatus</button> -->
                             <div>
-                              <div class="col-lg-16">Tipo de Busqueda:</div>
+                              <div id = "tipoBusqueda" class="col-lg-16">Tipo de Busqueda:</div>
                               <br>
                               <div class="col-lg-16">
                               <select class="form-control" name="regiones" id="regiones" required >
@@ -346,8 +435,8 @@ require 'app/footer.php';
                 <h1 class="text-center">Ingrese los datos del Ticket</h1>
             </div>
             
-            <div id="SearchRifdiv" class="d-flex align-items-center" style="position: absolute; margin: 2%;">
-                <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none; margin-left: -39%;">
+            <div id="SearchRifdiv" class="d-flex align-items-center" style="position: absolute; margin: 2%; margin-left: 17%;">
+                <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none; margin-left: -114%; position: absolute;">
                     <option value="J">J</option>
                     <option value="V" selected>V</option>
                     <option value="E">E</option>
@@ -357,8 +446,8 @@ require 'app/footer.php';
                 <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;  margin-top: 5px;">Buscar</button><br>
             </div>
 
-            <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none; margin-left: -36%; margin-top: -2%;" maxlength="24">
-            <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none; margin-top: -9%; margin-left: 10%;">Buscar</button>
+            <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none; margin-left: -3%; margin-top: -2%;" maxlength="24">
+            <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none; margin-top: -9%; margin-left: 36%;">Buscar</button>
 
             <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
             <!-- Asegurarse de que el botón buscarRazon exista si se usa en JS -->
@@ -377,19 +466,19 @@ require 'app/footer.php';
                 <button type="button" class="btn btn-primary" onclick="SendRango()" id="buscarRango" style="height: 10%;">Buscar</button>
             </div>
 
-            <div id="InputSearchReg" class="d-flex align-items-center" style="margin-left: -19%;">
+            <div id="InputSearchReg" class="d-flex align-items-center" style="margin-left: 14%;">
                 <select id="SelectRgions" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
                 </select>
                 <button type="button" class="btn btn-primary" onclick="SendRegions()" id="buscarRegions" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
             </div>
 
-            <div id = "SelectStatusInput" class="d-flex align-items-center" style = "margin-top: -2%; margin-left: -20%;">
+            <div id = "SelectStatusInput" class="d-flex align-items-center" style = "margin-top: -2%; margin-left: 14%;">
                 <select id="SelectStatus" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
                 </select>
                 <button type="button" class="btn btn-primary" onclick="SendStatus()" id="buscarStatus" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
             </div>
 
-            <div id = "SelectBancosInput" class="d-flex align-items-center" style = "margin-top: -2%; margin-left: -20%;">
+            <div id = "SelectBancosInput" class="d-flex align-items-center" style = "margin-top: -2%; margin-left: 13%;">
                 <select id="SelectBancos" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
                 </select>
                 <button type="button" class="btn btn-primary" onclick="SendBancos()" id="buscarBancos" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>

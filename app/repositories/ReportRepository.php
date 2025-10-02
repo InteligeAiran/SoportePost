@@ -615,7 +615,6 @@ class ReportRepository
         }
     }   
 
-
     public function SearchBanco($banco)
     {
         // Lógica para obtener todos los usuarios
@@ -645,7 +644,7 @@ class ReportRepository
         } else {
             return [];
         }
-    }
+    } 
 
     public function EntregadoClienteDetails(){
         // Lógica para obtener todos los usuarios
