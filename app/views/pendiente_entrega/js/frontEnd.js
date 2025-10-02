@@ -1141,8 +1141,8 @@ function getTicketDataFinaljs() {
                                                                   // ENVIAR CORREO DESPUÉS DE CERRAR EL MODAL
                                                                   enviarCorreoTicketDevuelto(ticketData);
                                                                   
-                                                                  // Usuario hizo clic en "Cerrar"
-                                                                  window.location.reload();
+                                                                  // NO recargar la página aquí - la cola de correos manejará la recarga
+                                                                  // después de mostrar el toast
                                                               }
                                                           });
                                                       } else {
@@ -1350,7 +1350,6 @@ function getTicketDataFinaljs() {
                                     }).then((result) => {
                                       if (result.isConfirmed) {
                                         enviarCorreoTicketCerrado(ticketData);
-                                        window.location.reload();
                                       }
                                     });
                                   } else {
@@ -1362,7 +1361,6 @@ function getTicketDataFinaljs() {
                                       confirmButtonText: "Cerrar",
                                       confirmButtonColor: "#003594"
                                     }).then(() => {
-                                      window.location.reload();
                                     });
                                   }
                                 },
@@ -1748,74 +1746,299 @@ function getTicketDataFinaljs() {
 
 document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
 
-// Función para enviar correo cuando se cierra el ticket
+// ✅ SISTEMA DE COLA DE CORREOS PARA PENDIENTE_ENTREGA
+let emailQueuePendiente = [];
+let isProcessingPendiente = false;
+
+function processEmailQueuePendiente() {
+    if (isProcessingPendiente || emailQueuePendiente.length === 0) {
+        return;
+    }
+
+    isProcessingPendiente = true;
+    const emailData = emailQueuePendiente.shift();
+
+    console.log(`🔄 Procesando correo ${emailData.type} para ticket: ${emailData.ticketNumber}`);
+
+    const xhrEmail = new XMLHttpRequest();
+    xhrEmail.open("POST", emailData.endpoint);
+    xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhrEmail.timeout = 10000; // Timeout de 10 segundos
+
+    xhrEmail.onload = function() {
+        if (xhrEmail.status === 200) {
+            try {
+                const responseEmail = JSON.parse(xhrEmail.responseText);
+                console.log(`📧 Respuesta del envío de correo (${emailData.type}):`, responseEmail);
+                
+                if (responseEmail.success) {
+                    // ✅ NOTIFICACIÓN TOAST DE ÉXITO - INMEDIATA
+                    Swal.fire({
+                        icon: "success",
+                        title: "Correo Enviado",
+                        text: `Correo de notificación (${emailData.type}) enviado exitosamente para el ticket #${emailData.ticketNumber} - Cliente: ${emailData.ticketData?.razonsocial_cliente || emailData.ticketData?.razon_social || 'N/A'} (${emailData.ticketData?.rif_cliente || emailData.ticketData?.rif || 'N/A'})`,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end',
+                        color: 'black',
+                        timer: 2500,
+                        timerProgressBar: true
+                    });
+                    
+                    // Recargar la página después del timer
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2500); // 2.5 segundos para dar tiempo al toast
+                } else {
+                    console.error(`❌ Error al enviar correo (${emailData.type}):`, responseEmail.message);
+                    // Recargar la página incluso si hay error
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error(`❌ Error al parsear respuesta del correo (${emailData.type}):`, error);
+                // Recargar la página incluso si hay error
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        } else {
+            console.error(`❌ Error al solicitar el envío de correo (${emailData.type}):`, xhrEmail.status);
+            // Recargar la página incluso si hay error
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+
+        // Procesar siguiente correo en la cola
+        isProcessingPendiente = false;
+        if (emailQueuePendiente.length > 0) {
+            setTimeout(() => {
+                processEmailQueuePendiente();
+            }, 100); // Pausa mínima de 100ms entre correos
+        }
+    };
+
+    xhrEmail.onerror = function() {
+        console.error(`❌ Error de red al enviar correo (${emailData.type})`);
+        isProcessingPendiente = false;
+        if (emailQueuePendiente.length > 0) {
+            setTimeout(() => {
+                processEmailQueuePendiente();
+            }, 200); // Pausa mínima en caso de error
+        }
+    };
+
+    xhrEmail.ontimeout = function() {
+        console.error(`⏰ Timeout al enviar correo (${emailData.type})`);
+        isProcessingPendiente = false;
+        if (emailQueuePendiente.length > 0) {
+            setTimeout(() => {
+                processEmailQueuePendiente();
+            }, 200); // Pausa mínima en caso de timeout
+        }
+    };
+
+    xhrEmail.send(emailData.params);
+}
+
+// ✅ FUNCIÓN PARA TICKET CERRADO (con cola de correos)
+function processEmailQueue() {
+    if (emailQueue.length === 0) {
+        isProcessing = false;
+        console.log("✅ Cola de correos vacía. Procesamiento detenido.");
+        return;
+    }
+
+    isProcessing = true;
+    const emailData = emailQueue[0]; // Tomar el primer correo de la cola
+
+    console.log(`🔄 Procesando correo para ticket: ${emailData.ticketData.Nr_ticket}`);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.timeout = 10000; // Timeout de 10 segundos
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    console.log(`✅ Correo enviado exitosamente para ticket: ${emailData.ticketData.Nr_ticket}`, response.message);
+                    
+                    // Mostrar notificación de éxito
+                    if (typeof Swal !== "undefined") {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Correo Enviado",
+                            text: `Correo de notificación enviado exitosamente para el ticket #${emailData.ticketData.Nr_ticket} - Cliente: ${emailData.ticketData?.razonsocial_cliente || emailData.ticketData?.razon_social || 'N/A'} (${emailData.ticketData?.rif_cliente || emailData.ticketData?.rif || 'N/A'})`,
+                            timer: 3000,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end',
+                            color: 'black'
+                        });
+                    }
+                } else {
+                    console.error(`❌ Error al enviar correo para ticket ${emailData.ticketData.Nr_ticket}:`, response.message);
+                }
+            } catch (error) {
+                console.error(`❌ Error al parsear respuesta de correo para ticket ${emailData.ticketData.Nr_ticket}:`, error);
+            }
+        } else {
+            console.error(`❌ Error HTTP en envío de correo para ticket ${emailData.ticketData.Nr_ticket}:`, xhr.status);
+        }
+
+        // Remover el correo procesado de la cola
+        emailQueue.shift();
+        console.log(`📧 Correo removido de la cola. Restantes: ${emailQueue.length}`);
+        
+        // Procesar la siguiente solicitud en la cola
+        if (emailQueue.length > 0) {
+            // Pequeña pausa antes del siguiente correo (1 segundo)
+            setTimeout(() => {
+                processEmailQueue();
+            }, 1000);
+        } else {
+            isProcessing = false;
+            console.log("🎉 Todos los correos de la cola han sido procesados.");
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error(`❌ Error de red al enviar correo para ticket ${emailData.ticketData.Nr_ticket}`);
+        
+        if (typeof Swal !== "undefined") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: `No se pudo conectar con el servidor para enviar el correo del ticket #${emailData.ticketData.Nr_ticket}.`,
+                color: 'black',
+                timer: 5000,
+                timerProgressBar: true
+            });
+        }
+        
+        // Remover el correo fallido de la cola
+        emailQueue.shift();
+        console.log(`📧 Correo fallido removido de la cola. Restantes: ${emailQueue.length}`);
+        
+        // Procesar la siguiente solicitud en la cola
+        if (emailQueue.length > 0) {
+            setTimeout(() => {
+                processEmailQueue();
+            }, 200); // Pausa mínima en caso de error
+        } else {
+            isProcessing = false;
+        }
+    };
+
+    xhr.ontimeout = function() {
+        console.error(`⏰ Timeout al enviar correo para ticket ${emailData.ticketData.Nr_ticket}`);
+        
+        if (typeof Swal !== "undefined") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Tiempo de espera agotado',
+                text: `La solicitud de envío de correo para el ticket #${emailData.ticketData.Nr_ticket} tomó demasiado tiempo.`,
+                color: 'black',
+                timer: 5000,
+                timerProgressBar: true
+            });
+        }
+        
+        // Remover el correo fallido de la cola
+        emailQueue.shift();
+        console.log(`📧 Correo con timeout removido de la cola. Restantes: ${emailQueue.length}`);
+        
+        // Procesar la siguiente solicitud en la cola
+        if (emailQueue.length > 0) {
+            setTimeout(() => {
+                processEmailQueue();
+            }, 200); // Pausa mínima en caso de timeout
+        } else {
+            isProcessing = false;
+        }
+    };
+    
+    const params = `id_user=${encodeURIComponent(emailData.id_user)}`;
+    xhr.send(params);
+}
+
 function enviarCorreoTicketCerrado(ticketData) {
-    const xhrEmail = new XMLHttpRequest();
-    xhrEmail.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/email/send_end_ticket`);
-    xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-    xhrEmail.onload = function() {
-        if (xhrEmail.status === 200) {
-            try {
-                const responseEmail = JSON.parse(xhrEmail.responseText);
-                if (responseEmail.success) {
-                  
-                } else {
-                    console.error("❌ Error al enviar correo:", responseEmail.message);
-                }
-            } catch (error) {
-                console.error("❌ Error al parsear respuesta del correo:", error);
-            }
-        } else {
-            console.error("❌ Error en solicitud de correo:", xhrEmail.status);
-        }
-    };
-
-    xhrEmail.onerror = function() {
-        console.error("❌ Error de red al enviar correo");
-    };
-
-    // Obtener el coordinador del ticket (ajusta según tu estructura de datos)
+    // Obtener datos necesarios
     const coordinador = ticketData.user_coordinator_id || ticketData.id_coordinator || '';
     const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
+    const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
     
-    const params = `id_user=${encodeURIComponent(id_user)}`;
-    xhrEmail.send(params);
+    console.log(`📧 Agregando correo de Ticket Cerrado a la cola para ticket: ${ticketNumber}`);
+    
+    // Agregar a la cola de correos
+    emailQueuePendiente.push({
+        endpoint: `${ENDPOINT_BASE}${APP_PATH}api/email/send_end_ticket`,
+        params: `id_user=${encodeURIComponent(id_user)}`,
+        type: 'Ticket Cerrado',
+        ticketNumber: ticketNumber,
+        ticketData: ticketData
+    });
+
+    // Procesar la cola
+    processEmailQueuePendiente();
 }
 
+// ✅ FUNCIÓN PARA TICKET DEVUELTO (con cola de correos)
 function enviarCorreoTicketDevuelto(ticketData) {
-    const xhrEmail = new XMLHttpRequest();
-    xhrEmail.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/email/send_devolution_ticket`);
-    xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-    xhrEmail.onload = function() {
-        if (xhrEmail.status === 200) {
-            try {
-                const responseEmail = JSON.parse(xhrEmail.responseText);
-                if (responseEmail.success) {
-                  
-                } else {
-                    console.error("❌ Error al enviar correo:", responseEmail.message);
-                }
-            } catch (error) {
-                console.error("❌ Error al parsear respuesta del correo:", error);
-            }
-        } else {
-            console.error("❌ Error en solicitud de correo:", xhrEmail.status);
-        }
-    };
-
-    xhrEmail.onerror = function() {
-        console.error("❌ Error de red al enviar correo");
-    };
-
-    // Obtener el coordinador del ticket (ajusta según tu estructura de datos)
+    // Obtener datos necesarios
     const coordinador = ticketData.user_coordinator_id || ticketData.id_coordinator || '';
     const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
+    const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
     
-    const params = `id_coordinador=${encodeURIComponent(coordinador)}&id_user=${encodeURIComponent(id_user)}`;
-    xhrEmail.send(params);
+    console.log(`📧 Agregando correo de Ticket Devuelto a la cola para ticket: ${ticketNumber}`);
+    
+    // Agregar a la cola de correos
+    emailQueuePendiente.push({
+        endpoint: `${ENDPOINT_BASE}${APP_PATH}api/email/send_devolution_ticket`,
+        params: `id_coordinador=${encodeURIComponent(coordinador)}&id_user=${encodeURIComponent(id_user)}`,
+        type: 'Ticket Devuelto',
+        ticketNumber: ticketNumber,
+        ticketData: ticketData
+    });
+
+    // Procesar la cola
+    processEmailQueuePendiente();
 }
+
+// ✅ FUNCIÓN PARA MOSTRAR ESTADO DE COLA DE PENDIENTE_ENTREGA (opcional, para debugging)
+function mostrarEstadoColaPendiente() {
+    console.log(`📊 Estado de la cola de correos (Pendiente Entrega):`);
+    console.log(`   - Correos en cola: ${emailQueuePendiente.length}`);
+    console.log(`   - Procesando: ${isProcessingPendiente ? 'Sí' : 'No'}`);
+    
+    if (emailQueuePendiente.length > 0) {
+        console.log(`   - Próximo correo: ${emailQueuePendiente[0].type} - Ticket #${emailQueuePendiente[0].ticketNumber}`);
+    }
+    
+    if (typeof Swal !== "undefined") {
+        Swal.fire({
+            icon: 'info',
+            title: 'Estado de Cola de Correos (Pendiente Entrega)',
+            html: `
+                <div style="text-align: left;">
+                    <p><strong>Correos en cola:</strong> ${emailQueuePendiente.length}</p>
+                    <p><strong>Procesando:</strong> ${isProcessingPendiente ? 'Sí' : 'No'}</p>
+                    ${emailQueuePendiente.length > 0 ? `<p><strong>Próximo correo:</strong> ${emailQueuePendiente[0].type} - Ticket #${emailQueuePendiente[0].ticketNumber}</p>` : ''}
+                </div>
+            `,
+            color: 'black',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#003594'
+        });
+    }
+}
+
+// Exponer función globalmente para debugging (opcional)
 
 /**
  * Muestra un modal de SweetAlert para seleccionar componentes antes de enviar el ticket.
@@ -4404,3 +4627,177 @@ $(document).on('click', '#printHtmlTemplateBtn', function () {
         }
     }
 });
+
+// ========================================
+// FUNCIONES PARA PENDIENTE_ENTREGA
+// ========================================
+
+function processEmailQueuePendiente() {
+    if (isProcessingPendiente || emailQueuePendiente.length === 0) {
+        return;
+    }
+
+    isProcessingPendiente = true;
+    const emailData = emailQueuePendiente.shift();
+
+    console.log(`🔄 Procesando correo ${emailData.type} para ticket: ${emailData.ticketNumber}`);
+
+    const xhrEmail = new XMLHttpRequest();
+    xhrEmail.open("POST", emailData.endpoint);
+    xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhrEmail.timeout = 10000; // Timeout de 10 segundos
+
+    xhrEmail.onload = function() {
+        if (xhrEmail.status === 200) {
+            try {
+                const responseEmail = JSON.parse(xhrEmail.responseText);
+                console.log(`📧 Respuesta del envío de correo (${emailData.type}):`, responseEmail);
+                
+                if (responseEmail.success) {
+                    // ✅ NOTIFICACIÓN TOAST DE ÉXITO - INMEDIATA
+                    Swal.fire({
+                        icon: "success",
+                        title: "Correo Enviado",
+                        text: `Correo de notificación (${emailData.type}) enviado exitosamente para el ticket #${emailData.ticketNumber} - Cliente: ${emailData.ticketData?.razonsocial_cliente || emailData.ticketData?.razon_social || 'N/A'} (${emailData.ticketData?.rif_cliente || emailData.ticketData?.rif || 'N/A'})`,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end',
+                        color: 'black',
+                        timer: 2500,
+                        timerProgressBar: true
+                    });
+                    
+                    // Recargar la página después del timer
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2500); // 2.5 segundos para dar tiempo al toast
+                } else {
+                    console.error(`❌ Error al enviar correo (${emailData.type}):`, responseEmail.message);
+                    // Recargar la página incluso si hay error
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error(`❌ Error al parsear respuesta del correo (${emailData.type}):`, error);
+                // Recargar la página incluso si hay error
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        } else {
+            console.error(`❌ Error al solicitar el envío de correo (${emailData.type}):`, xhrEmail.status);
+            // Recargar la página incluso si hay error
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+
+        // Procesar siguiente correo en la cola
+        isProcessingPendiente = false;
+        if (emailQueuePendiente.length > 0) {
+            setTimeout(() => {
+                processEmailQueuePendiente();
+            }, 100); // Pausa mínima de 100ms entre correos
+        }
+    };
+
+    xhrEmail.onerror = function() {
+        console.error(`❌ Error de red al enviar correo (${emailData.type})`);
+        isProcessingPendiente = false;
+        if (emailQueuePendiente.length > 0) {
+            setTimeout(() => {
+                processEmailQueuePendiente();
+            }, 200); // Pausa mínima en caso de error
+        }
+    };
+
+    xhrEmail.ontimeout = function() {
+        console.error(`⏰ Timeout al enviar correo (${emailData.type})`);
+        isProcessingPendiente = false;
+        if (emailQueuePendiente.length > 0) {
+            setTimeout(() => {
+                processEmailQueuePendiente();
+            }, 200); // Pausa mínima en caso de timeout
+        }
+    };
+
+    xhrEmail.send(emailData.params);
+}
+
+// ✅ FUNCIÓN PARA TICKET CERRADO (con cola de correos)
+function enviarCorreoTicketCerrado(ticketData) {
+    // Obtener datos necesarios
+    const coordinador = ticketData.user_coordinator_id || ticketData.id_coordinator || '';
+    const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
+    const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
+    
+    console.log(`📧 Agregando correo de Ticket Cerrado a la cola para ticket: ${ticketNumber}`);
+    
+    // Agregar a la cola de correos
+    emailQueuePendiente.push({
+        endpoint: `${ENDPOINT_BASE}${APP_PATH}api/email/send_end_ticket`,
+        params: `id_user=${encodeURIComponent(id_user)}`,
+        type: 'Ticket Cerrado',
+        ticketNumber: ticketNumber,
+        ticketData: ticketData
+    });
+
+    // Procesar la cola
+    processEmailQueuePendiente();
+}
+
+// ✅ FUNCIÓN PARA TICKET DEVUELTO (con cola de correos)
+function enviarCorreoTicketDevuelto(ticketData) {
+    // Obtener datos necesarios
+    const coordinador = ticketData.user_coordinator_id || ticketData.id_coordinator || '';
+    const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
+    const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
+    
+    console.log(`📧 Agregando correo de Ticket Devuelto a la cola para ticket: ${ticketNumber}`);
+    
+    // Agregar a la cola de correos
+    emailQueuePendiente.push({
+        endpoint: `${ENDPOINT_BASE}${APP_PATH}api/email/send_devolution_ticket`,
+        params: `id_coordinador=${encodeURIComponent(coordinador)}&id_user=${encodeURIComponent(id_user)}`,
+        type: 'Ticket Devuelto',
+        ticketNumber: ticketNumber,
+        ticketData: ticketData
+    });
+
+    // Procesar la cola
+    processEmailQueuePendiente();
+}
+
+// ✅ FUNCIÓN PARA MOSTRAR ESTADO DE COLA DE PENDIENTE_ENTREGA (opcional, para debugging)
+function mostrarEstadoColaPendiente() {
+    console.log(`📊 Estado de la cola de correos (Pendiente Entrega):`);
+    console.log(`   - Correos en cola: ${emailQueuePendiente.length}`);
+    console.log(`   - Procesando: ${isProcessingPendiente ? 'Sí' : 'No'}`);
+    
+    if (emailQueuePendiente.length > 0) {
+        console.log(`   - Próximo correo: ${emailQueuePendiente[0].type} - Ticket #${emailQueuePendiente[0].ticketNumber}`);
+    }
+    
+    if (typeof Swal !== "undefined") {
+        Swal.fire({
+            icon: 'info',
+            title: 'Estado de Cola de Correos (Pendiente Entrega)',
+            html: `
+                <div style="text-align: left;">
+                    <p><strong>Correos en cola:</strong> ${emailQueuePendiente.length}</p>
+                    <p><strong>Procesando:</strong> ${isProcessingPendiente ? 'Sí' : 'No'}</p>
+                    ${emailQueuePendiente.length > 0 ? `<p><strong>Próximo correo:</strong> ${emailQueuePendiente[0].type} - Ticket #${emailQueuePendiente[0].ticketNumber}</p>` : ''}
+                </div>
+            `,
+            color: 'black',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#003594'
+        });
+    }
+}
+
+// Exponer funciones globalmente para debugging (opcional)
+window.mostrarEstadoColaPendiente = mostrarEstadoColaPendiente;
+window.enviarCorreoTicketCerrado = enviarCorreoTicketCerrado;
+window.enviarCorreoTicketDevuelto = enviarCorreoTicketDevuelto;

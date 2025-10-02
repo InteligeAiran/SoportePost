@@ -2554,7 +2554,7 @@ function SendDataFailure1() {
           xhrEmail.onload = function () {
             if (xhrEmail.status === 200) {
               try {
-                const responseEmail = JSON.parse(xhrEmail.responseText);
+              const responseEmail = JSON.parse(xhrEmail.responseText);
                 console.log("📧 Respuesta del envío de correo (Nivel 1):", responseEmail);
                 
                 // Verificar si al menos un correo se envió exitosamente
@@ -2578,7 +2578,7 @@ function SendDataFailure1() {
                       timerProgressBar: true
                     });
                   }, 500); // Delay de 3 segundos para que aparezca después del modal principal
-                } else {
+            } else {
                   console.error("❌ Error al enviar correo (Nivel 1):", responseEmail.message);
                 }
               } catch (error) {
