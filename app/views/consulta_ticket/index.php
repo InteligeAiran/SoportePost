@@ -317,60 +317,86 @@ require 'app/footer.php';
             <div class="container-fluid py-4">
                 <div id="Row" class="row mt-4">
                     <div class="cord">
-                        <div class="d-flex justify-content-start mt-2 flex-wrap" style="margin-left: 15%; margin-top: -2%;">
-                            <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorRangoBtn">Buscar por Rango de Fecha</button>
+                        <div class="d-flex justify-content-start mt-2 flex-wrap" style="margin-left: 45%; margin-top: -2%;">
+                            <!-- <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorRangoBtn">Buscar por Rango de Fecha</button>
                             <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorSerialBtn">Buscar por Serial</button>
                             <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorRifBtn">Buscar Por Rif</button>
                             <button type="button" class="btn btn-outline-primary btn-custom" id="buscarPorRegionsBtn">Buscar Por Region</button>
-                            <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorStatusBtn">Buscar Por Estatus</button>
+                            <button type="button" class="btn btn-outline-primary me-2 btn-custom" id="buscarPorStatusBtn">Buscar Por Estatus</button> -->
+                            <div>
+                              <div class="col-lg-16">Tipo de Busqueda:</div>
+                              <br>
+                              <div class="col-lg-16">
+                              <select class="form-control" name="regiones" id="regiones" required >
+                                <option value="0">Seleccione Región</option>
+                                    <option value="1">Rango de Fecha</option>
+                                    <option value="2">Serial</option>
+                                    <option value="3">Rif</option>
+                                    <option value="4">Region</option>
+                                    <option value="5">Estatus</option>
+                                    <option value="6">Bancos</option>
+                                </select>
+                              </div>
+                              <br>
+                            </div>
                         </div>
-                        <div id="SearchRif" class="mb-3 d-flex align-items-center">
-                            <div id="welcomeMessage" class="d-flex justify-content-center align-items-center">
-                                <h1 class="text-center">Ingrese los datos del Ticket</h1>
-                            </div>
-                            <div id = "SearchRifdiv" class="d-flex align-items-center" style="position: absolute; margin: 2%;">
-                                <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none; margin-left: -39%;">
-                                    <option value="J">J</option>
-                                    <option value="V" selected>V</option>
-                                    <option value="E">E</option>
-                                    <option value="G">G</option>
-                                </select>
-                                <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
-                                <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;  margin-top: 5px;">Buscar</button><br>
-                            </div>
 
-                            <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none; margin-left: -36%; margin-top: -2%;" maxlength="24">
-                            <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none; margin-top: -9%; margin-left: 10%;">Buscar</button>
+        <div id="SearchRif" class="mb-3 d-flex align-items-center">
+            <div id="welcomeMessage" class="d-flex justify-content-center align-items-center">
+                <h1 class="text-center">Ingrese los datos del Ticket</h1>
+            </div>
+            
+            <div id="SearchRifdiv" class="d-flex align-items-center" style="position: absolute; margin: 2%;">
+                <select class="form-select me-2" id="rifTipo" style="width: auto; max-width: 80px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto; display: none; margin-left: -39%;">
+                    <option value="J">J</option>
+                    <option value="V" selected>V</option>
+                    <option value="E">E</option>
+                    <option value="G">G</option>
+                </select>
+                <input type="text" class="form-control me-2" id="rifInput" placeholder="JV123456789" style="display: none;">
+                <button type="button" class="btn btn-primary" onclick="SendRif()" id="buscarRif" style="display: none;  margin-top: 5px;">Buscar</button><br>
+            </div>
 
-                            <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
-                            <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
+            <input type="text" class="form-control me-2" id="serialInput" placeholder="10000CT27000041" style="display: none; margin-left: -36%; margin-top: -2%;" maxlength="24">
+            <button type="button" class="btn btn-primary" onclick="SendSerial()" id="buscarSerial" style="display: none; margin-top: -9%; margin-left: 10%;">Buscar</button>
 
-                            <div id="inputsDate" class="date-input-container" style="display: none;">
-                                <div class="date-input-wrapper">
-                                    <input type="date" id="date-ini" max="<?php  echo date("Y-m-d");?>">
-                                    <div id="errorDateIni" class="error-message"></div>
-                                </div>
+            <input type="text" class="form-control me-2" id="RazonInput" placeholder="Mi Empresa, 2018, C.A." style="display: none;">
+            <!-- Asegurarse de que el botón buscarRazon exista si se usa en JS -->
+            <button type="button" class="btn btn-primary" onclick="SendRazon()" id="buscarRazon" style="display: none;">Buscar</button>
 
-                                <div class="date-input-wrapper">
-                                    <input type="date" id="date-end"  max="<?php  echo date("Y-m-d");?>">
-                                    <div id="errorDateEnd" class="error-message"></div>
-                                </div>
-                                <button type="button" class="btn btn-primary" onclick="SendRango()" id="buscarRango" style="height: 10%;">Buscar</button>
-                            </div>
+            <div id="inputsDate" class="date-input-container" style="display: none;">
+                <div class="date-input-wrapper">
+                    <input type="date" id="date-ini" max="<?php  echo date("Y-m-d");?>">
+                    <div id="errorDateIni" class="error-message"></div>
+                </div>
 
-                            <div id="InputSearchReg" class="d-flex align-items-center" style="margin-left: -19%;">
-                                <select id="SelectRgions" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
-                                </select>
-                                <button type="button" class="btn btn-primary" onclick="SendRegions()" id="buscarRegions" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
-                            </div>
+                <div class="date-input-wrapper">
+                    <input type="date" id="date-end"  max="<?php  echo date("Y-m-d");?>">
+                    <div id="errorDateEnd" class="error-message"></div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="SendRango()" id="buscarRango" style="height: 10%;">Buscar</button>
+            </div>
 
-                            <div id = "SelectStatusInput" class="d-flex align-items-center" style = "margin-top: -2%; margin-left: -20%;">
-                                <select id="SelectStatus" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
-                                </select>
-                                <button type="button" class="btn btn-primary" onclick="SendStatus()" id="buscarStatus" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
-                            </div>
+            <div id="InputSearchReg" class="d-flex align-items-center" style="margin-left: -19%;">
+                <select id="SelectRgions" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
+                </select>
+                <button type="button" class="btn btn-primary" onclick="SendRegions()" id="buscarRegions" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
+            </div>
 
-                        </div><br>
+            <div id = "SelectStatusInput" class="d-flex align-items-center" style = "margin-top: -2%; margin-left: -20%;">
+                <select id="SelectStatus" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
+                </select>
+                <button type="button" class="btn btn-primary" onclick="SendStatus()" id="buscarStatus" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
+            </div>
+
+            <div id = "SelectBancosInput" class="d-flex align-items-center" style = "margin-top: -2%; margin-left: -20%;">
+                <select id="SelectBancos" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
+                </select>
+                <button type="button" class="btn btn-primary" onclick="SendBancos()" id="buscarBancos" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
+            </div>
+
+        </div>
+    </div>
                         <div class="card" style="display: none;">
                                 <table id="rifCountTable" style="display: none;" class="background-users-table">
                                     <thead>
@@ -384,7 +410,6 @@ require 'app/footer.php';
                         </div>
                     </div>
                 </div>
-            </div>
 
             <!-- AVISA LAS GARANTIAS --->
             <div id="garantiaModal" class="modal">

@@ -1203,6 +1203,16 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
             $sql = "SELECT * FROM get_individual_card_comercial()";
             $result = Model::getResult($sql, $this->db);
             return $result;
+        }catch(Throwable $e){
+            return null;
+        }
+    }
+
+    public function SearchBanco($banco){
+        try {
+            $sql = "SELECT * FROM getticketsbybanco(".$banco.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
         } catch (Throwable $e) {
             // Handle exception
         }

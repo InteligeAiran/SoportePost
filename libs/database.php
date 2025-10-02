@@ -15,13 +15,6 @@ define("bd_usuario", 'postgres');
 define("bd_clave", 'Airan1234');
 //define("bd_clave", 'Int3l1g3ns@.');
 
-//define("bd_hostname", '192.168.1.5');
-//////define("mvc_port", '5432');
-/*define("mvc_port", '5433');*/
-//define("bd_usuario", 'postgres');
-//define("bd_clave", 'Airan1234');
-//define("bd_clave", 'Int3l1g3ns@.');
-
 /*define("bd_hostname", '192.168.1.20');
 define("mvc_port", '5432');
 define("bd_usuario", 'postgres');

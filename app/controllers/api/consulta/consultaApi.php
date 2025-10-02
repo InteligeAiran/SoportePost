@@ -301,6 +301,10 @@ class Consulta extends Controller
                     $this->handelCloseTicket();
                     break;
 
+                case 'getBancoTicket':
+                    $this->handleGetBancoTicket();
+                    break;     
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
