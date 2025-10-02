@@ -6,31 +6,41 @@ session_start();
 
 class dashboard extends Controller {
 
+    private $db;
+
     private $userModel; 
 
     function __construct() {
         parent::__construct();
+        $this->db = DatabaseCon::getInstance(bd_hostname, mvc_port, bd_usuario, bd_clave, database); // Ensure getInstance() returns a PgSql\Connection
 
         if (empty($_SESSION["id_user"])) {
+            $this->db->closeConnection(); 
             header('Location: ' . self::getURL() . 'login');
             exit();
         }
 
-        Model::exists('user');
-        $this->userModel = new UserModel(); 
+       try {
+            Model::exists('user');
+            $this->userModel = new UserModel();
+        } catch (Exception $e) {
+            error_log("Error al cargar UserModel: " . $e->getMessage());
+            $this->db->closeConnection();
+            header('Location: ' . self::getURL() . 'login');
+            exit();
+        } 
         
         // Solo validar sesión si es una petición AJAX o cada 5 minutos
         $shouldValidateSession = (
             !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || 
             !isset($_SESSION['last_session_check']) || 
-            (time() - $_SESSION['last_session_check']) > 1800 // 5 minutos
+            (time() - $_SESSION['last_session_check']) > 1800 // 30 minutos
         );
         
         if ($shouldValidateSession && isset($_SESSION['id_user']) && isset($_SESSION['session_id'])) {
             $model = new UserModel();
             if (!$model->IsSessionActuallyActive($_SESSION['session_id'], $_SESSION['id_user'])) {
-                session_unset();
-                session_destroy();
+                session_unset();                
                 setcookie(session_name(), '', time() - 3600, '/');
                 header('Location: ' . self::getURL() . 'login');
                 exit();
@@ -68,14 +78,11 @@ class dashboard extends Controller {
         // Obtener las sesiones expiradas del usuario
         $expires_session = $usuarioModel->GetExpiredSessions($usuario_id, $ahora);
 
-        // Verificar si hay sesiones expiradas
         if ($expires_session && $expires_session['numRows'] > 0) {
-            for ($i = 0; $i < $expires_session['numRows']; $i++) {
             $this->view->expired_sessions = true;
             $this->view->message = 'Su sesión está a punto de expirar.';
             $this->view->redirect = 'login';
             $this->view->usuario_id = $usuario_id;
-            }
         } else {
             $this->view->expired_sessions = false;
         }

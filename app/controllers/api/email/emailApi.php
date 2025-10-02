@@ -1236,7 +1236,7 @@ class email extends Controller {
     } else {
         $this->response(['success' => false, 'message' => 'Error al enviar ambos correos.', 'color' => 'red']);
     }
-    }
+}
 
     public function handleSendDevolutionTicket() {
         $repository = new EmailRepository();
@@ -2156,7 +2156,7 @@ class email extends Controller {
     } catch (Exception $e) {
         error_log('Error en handlesend_reassignment_email: ' . $e->getMessage());
         $this->response(['success' => false, 'message' => 'Error interno del servidor.', 'color' => 'red']);
-    }
+        }
     }
 }
 ?>

@@ -1202,7 +1202,7 @@ class Consulta extends Controller
         if ($id_new_status != '') {
             if ($result) {
                 $this->response(['success' => true, 'message' => 'Ticket actualizado con éxito.'], 200);
-                var_dump($result);
+               // var_dump($result);
             } else {
                 $this->response(['success' => false, 'message' => 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
             }

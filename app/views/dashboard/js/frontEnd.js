@@ -279,10 +279,10 @@ window.addEventListener("load", function () {
     // **************** Inicialización de Modales y Event Listeners ****************
 
     // --- Referencias a los elementos HTML de los Modales (Mismos que tu original) ---
-    const monthlyTicketsModalElement = document.getElementById("monthlyTicketsModal");
-    const regionTicketsModalElement = document.getElementById("RegionTicketsModal");
-    const openTicketsModalElement = document.getElementById("OpenTicketModal");
-    const resolveTicketsModalElement = document.getElementById("ResolveTicketsModal");
+  const monthlyTicketsModalElement = document.getElementById("monthlyTicketsModal");
+  const regionTicketsModalElement = document.getElementById("RegionTicketsModal");
+  const openTicketsModalElement = document.getElementById("OpenTicketModal");
+  const resolveTicketsModalElement = document.getElementById("ResolveTicketsModal");
     const sendTallerTicketsModalElement = document.getElementById("SendTallerTicketsModal");
     const processTicketModalElement = document.getElementById("ProcessTicketsModal");
     const gestionCoordinadorModalElement = document.getElementById("DetalleTicketComercial");
@@ -291,13 +291,13 @@ window.addEventListener("load", function () {
     const modalReparado = document.getElementById("ReparadosModal");
     const modalPendienteRepuesto = document.getElementById("pendienterespuestoModal");
     const modalTikIrreparable = document.getElementById("IrreparableModal");
-    const timelineModalElement = document.getElementById("TimelineModal");
+  const timelineModalElement = document.getElementById("TimelineModal");
 
     // --- Instancias de Bootstrap Modals (inicializadas una sola vez) ---
-    let monthlyTicketsModalInstance = null;
-    let regionTicketsModalInstance = null;
-    let openTicketsModalInstance = null;
-    let resolveTicketsModalInstance = null;
+  let monthlyTicketsModalInstance = null;
+  let regionTicketsModalInstance = null;
+  let openTicketsModalInstance = null;
+  let resolveTicketsModalInstance = null;
     let sendTallerTicketsModalInstance = null;
     let modalProcesoReparacion = null;
     let modalReparados = null;
@@ -309,20 +309,20 @@ window.addEventListener("load", function () {
     let modalTimelineInstance = null;
 
     // Inicializar todos los modales si existen
-    if (monthlyTicketsModalElement) {
-        monthlyTicketsModalInstance = new bootstrap.Modal(monthlyTicketsModalElement);
-    }
-    if (regionTicketsModalElement) {
-        regionTicketsModalInstance = new bootstrap.Modal(regionTicketsModalElement);
-    }
-    if (openTicketsModalElement) {
+  if (monthlyTicketsModalElement) {  
+    monthlyTicketsModalInstance = new bootstrap.Modal(monthlyTicketsModalElement);
+  }
+  if (regionTicketsModalElement) {
+    regionTicketsModalInstance = new bootstrap.Modal(regionTicketsModalElement);
+  }
+  if (openTicketsModalElement) {
         // Usar la instancia localmente para los listeners
-        openTicketsModalInstance = new bootstrap.Modal(openTicketsModalElement);
-    }
-    if (resolveTicketsModalElement) {
+    openTicketsModalInstance = new bootstrap.Modal(openTicketsModalElement);
+  }
+  if (resolveTicketsModalElement) {
         resolveTicketsModalInstance = new bootstrap.Modal(resolveTicketsModalElement);
-    }
-    if (sendTallerTicketsModalElement) {
+  }
+  if (sendTallerTicketsModalElement) {
         sendTallerTicketsModalInstance = new bootstrap.Modal(sendTallerTicketsModalElement);
     }
     if (processTicketModalElement) {
@@ -394,7 +394,7 @@ window.addEventListener("load", function () {
     }
 
     // --- Event Listeners para ABRIR Modales por botón de detalle (view-timeline-btn) ---
-    document.body.addEventListener('click', function (event) {
+  document.body.addEventListener('click', function (event) {
         if (event.target.classList.contains('view-timeline-btn')) {
             event.preventDefault();
             const ticketId = event.target.dataset.idTicket;
@@ -403,7 +403,7 @@ window.addEventListener("load", function () {
                 modalTimelineInstance.show();
                 if (typeof loadTicketTimeline === 'function') {
                     loadTicketTimeline(ticketId);
-                } else {
+            } else {
                     console.error("Función loadTicketTimeline no definida.");
                 }
             } else {
@@ -416,7 +416,7 @@ window.addEventListener("load", function () {
     const ticketsOpenCard = document.getElementById("Card-Ticket-open");
     if (ticketsOpenCard && openTicketsModalInstance) {
         ticketsOpenCard.addEventListener("click", async function (event) {
-            event.preventDefault();
+      event.preventDefault();
             try {
                 openTicketsModalInstance.show();
                 if (typeof loadOpenTicketDetails === 'function') await loadOpenTicketDetails();
@@ -430,8 +430,8 @@ window.addEventListener("load", function () {
                 });
                 openTicketsModalInstance.hide();
             }
-        });
-    } else {
+    });
+  } else {
         console.error("No se encontraron los elementos Card-Ticket-open o OpenTicketModal.");
     }
 
@@ -440,96 +440,96 @@ window.addEventListener("load", function () {
     const entregadoClienteCard = document.getElementById("OpenModalEntregadoCliente");
     if (entregadoClienteCard && entregadoClienteModalInstance) {
         entregadoClienteCard.addEventListener("click", function (event) {
-            event.preventDefault();
+      event.preventDefault();
             entregadoClienteModalInstance.show();
             if (typeof loadEntregadoClienteDetails === 'function') loadEntregadoClienteDetails();
-        });
-    } else {
+    });
+  } else {
         console.error("Error: OpenModalEntregadoCliente o entregadoClienteModalInstance no encontrados.");
     }
 
     const monthlyTicketsCard = document.getElementById("monthlyTicketsCard");
     if (monthlyTicketsCard && monthlyTicketsModalInstance) {
         monthlyTicketsCard.addEventListener("click", function (event) {
-            event.preventDefault();
+      event.preventDefault();
             monthlyTicketsModalInstance.show();
             if (typeof loadMonthlyTicketDetails === 'function') loadMonthlyTicketDetails();
-        });
-    } else {
+    });
+  } else {
         console.error("Error: monthlyTicketsCard o monthlyTicketsModalInstance no encontrados.");
-    }
+  }
 
-    const regionTicketsCard = document.getElementById("RegionTicketsCard");
-    if (regionTicketsCard && regionTicketsModalInstance) {
-        regionTicketsCard.addEventListener("click", function (event) {
-            event.preventDefault();
-            regionTicketsModalInstance.show();
+  const regionTicketsCard = document.getElementById("RegionTicketsCard");
+  if (regionTicketsCard && regionTicketsModalInstance) {
+    regionTicketsCard.addEventListener("click", function (event) {
+      event.preventDefault();
+      regionTicketsModalInstance.show();
             if (typeof loadRegionTicketDetails === 'function') loadRegionTicketDetails();
-        });
-    } else {
+    });
+  } else {
         console.error("Error: RegionTicketsCard o regionTicketsModalInstance no encontrados.");
-    }
+  }
 
-    const resolveTicketsCard = document.getElementById("Card-resolve-ticket");
-    if (resolveTicketsCard && resolveTicketsModalInstance) {
-        resolveTicketsCard.addEventListener("click", function (event) {
-            event.preventDefault();
-            resolveTicketsModalInstance.show();
+  const resolveTicketsCard = document.getElementById("Card-resolve-ticket");
+  if (resolveTicketsCard && resolveTicketsModalInstance) {
+    resolveTicketsCard.addEventListener("click", function (event) {
+      event.preventDefault();
+      resolveTicketsModalInstance.show();
             if (typeof loadResolveTicketDetails === 'function') loadResolveTicketDetails();
-        });
-    } else {
+    });
+  } else {
         console.error("Error: Card-resolve-ticket o resolveTicketsModalInstance no encontrados.");
-    }
+  }
 
-    const sendTallerTicketsCard = document.getElementById("Card-Send-To-Taller");
-    if (sendTallerTicketsCard && sendTallerTicketsModalInstance) {
-        sendTallerTicketsCard.addEventListener("click", function (event) {
-            event.preventDefault();
-            sendTallerTicketsModalInstance.show();
+  const sendTallerTicketsCard = document.getElementById("Card-Send-To-Taller");
+  if (sendTallerTicketsCard && sendTallerTicketsModalInstance) {
+    sendTallerTicketsCard.addEventListener("click", function (event) {
+      event.preventDefault();
+      sendTallerTicketsModalInstance.show();
             if (typeof loadTallerTicketDetails === 'function') loadTallerTicketDetails();
-        });
-    } else {
+    });
+  } else {
         console.error("Error: Card-Send-To-Taller o sendTallerTicketsModalInstance no encontrados.");
     }
 
     const openModalReparacion = document.getElementById("ModalPostReparacion");
     if (openModalReparacion && modalProcesoReparacion) {
         openModalReparacion.addEventListener("click", function (event) {
-            event.preventDefault();
+      event.preventDefault();
             modalProcesoReparacion.show();
             if (typeof loadIndividualProceessReparacion === 'function') loadIndividualProceessReparacion();
-        });
-    } else {
+    });
+  } else {
         console.error("Error: ModalPostReparacion o modalProcesoReparacion no encontrados.");
     }
 
     const openModalReparado = document.getElementById("OpenModalPostReparado");
     if (openModalReparado && modalReparados) {
         openModalReparado.addEventListener("click", function (event) {
-            event.preventDefault();
+      event.preventDefault();
             modalReparados.show();
             if (typeof loadIndividualReparado === 'function') loadIndividualReparado();
-        });
-    } else {
+    });
+  } else {
         console.error("Error: OpenModalPostReparado o modalReparados no encontrados.");
-    }
+  }
 
-    const openModalGestionComercial = document.getElementById("Card-Comercial-Ticket");
+  const openModalGestionComercial = document.getElementById("Card-Comercial-Ticket");
     if (openModalGestionComercial && modalGestionCoordinadorInstance) {
-        openModalGestionComercial.addEventListener("click", function (event) {
-            event.preventDefault();
+    openModalGestionComercial.addEventListener("click", function (event) {
+      event.preventDefault();
             modalGestionCoordinadorInstance.show();
             if (typeof loadDetalleTicketComercial === 'function') loadDetalleTicketComercial();
-        });
-    } else {
+    });
+  } else {
         console.error("Error: Card-Comercial-Ticket o modalGestionCoordinadorInstance no encontrados.");
     }
 
     const openModalPendienteRepuesto = document.getElementById("OpenModalPendienteRepuesto");
     if (openModalPendienteRepuesto && modalPendienteRepa) {
         openModalPendienteRepuesto.addEventListener("click", function (event) {
-            event.preventDefault();
-            modalPendienteRepa.show();
+      event.preventDefault();
+      modalPendienteRepa.show();
             if (typeof loadIndividualPendienteRepuesto === 'function') loadIndividualPendienteRepuesto();
         });
     } else {
@@ -539,7 +539,7 @@ window.addEventListener("load", function () {
     const openModalIrreparable = document.getElementById("OpenModalIrreparable");
     if (openModalIrreparable && modalIrreparable) {
         openModalIrreparable.addEventListener("click", function (event) {
-            event.preventDefault();
+      event.preventDefault();
             modalIrreparable.show();
             if (typeof loadIndividualIrreparable === 'function') loadIndividualIrreparable();
         });
@@ -550,11 +550,11 @@ window.addEventListener("load", function () {
     const openModalProcess = document.getElementById("Card-Ticket-process");
     if (openModalProcess && modalProcessTicketsModalInstance) {
         openModalProcess.addEventListener("click", function (event) {
-            event.preventDefault();
+      event.preventDefault();
             modalProcessTicketsModalInstance.show();
             if (typeof loadIndividualProceess === 'function') loadIndividualProceess();
-        });
-    } else {
+    }); 
+  } else {
         console.error("Error: Card-Ticket-process o modalProcessTicketsModalInstance no encontrados.");
     }
 
@@ -576,57 +576,57 @@ window.addEventListener("load", function () {
         });
     }
 
-    const cerrarMonthly = document.getElementById("ModalStadisticMonth");
-    if (cerrarMonthly && monthlyTicketsModalInstance) {
-        cerrarMonthly.addEventListener("click", function () {
-            monthlyTicketsModalInstance.hide();
+  const cerrarMonthly = document.getElementById("ModalStadisticMonth");
+  if (cerrarMonthly && monthlyTicketsModalInstance) {
+    cerrarMonthly.addEventListener("click", function () {
+      monthlyTicketsModalInstance.hide();
+            forceCleanupAfterModalClose();
+    });
+  }
+
+  const cerrarRegion = document.getElementById("ModalStadisticRegion");
+  if (cerrarRegion && regionTicketsModalInstance) {
+    cerrarRegion.addEventListener("click", function () {
+      regionTicketsModalInstance.hide();
             forceCleanupAfterModalClose();
         });
     }
 
-    const cerrarRegion = document.getElementById("ModalStadisticRegion");
-    if (cerrarRegion && regionTicketsModalInstance) {
-        cerrarRegion.addEventListener("click", function () {
-            regionTicketsModalInstance.hide();
+  const cerrarResolve = document.getElementById("ModalResolveRegion");
+  if (cerrarResolve && resolveTicketsModalInstance) {
+    cerrarResolve.addEventListener("click", function () {
+      resolveTicketsModalInstance.hide();
             forceCleanupAfterModalClose();
-        });
-    }
-
-    const cerrarResolve = document.getElementById("ModalResolveRegion");
-    if (cerrarResolve && resolveTicketsModalInstance) {
-        cerrarResolve.addEventListener("click", function () {
-            resolveTicketsModalInstance.hide();
-            forceCleanupAfterModalClose();
-        });
-    }
+    });
+  }
 
     const cerrarTaller = document.getElementById("ModalTallerRegion");
-    if (cerrarTaller && sendTallerTicketsModalInstance) {
-        cerrarTaller.addEventListener("click", function () {
-            sendTallerTicketsModalInstance.hide();
+  if (cerrarTaller && sendTallerTicketsModalInstance) {
+    cerrarTaller.addEventListener("click", function () {
+      sendTallerTicketsModalInstance.hide();
             forceCleanupAfterModalClose();
         });
     }
 
     const cerrarProcess = document.getElementById("ModalProcess");
     if (cerrarProcess && modalProcessTicketsModalInstance) {
-        cerrarProcess.addEventListener("click", function () {
+    cerrarProcess.addEventListener("click", function () {
             modalProcessTicketsModalInstance.hide();
             forceCleanupAfterModalClose();
-        });
-    }
+    });
+  }
 
-    const cerrarPenReparacion = document.getElementById("ModalProcessReparacion");
+  const cerrarPenReparacion = document.getElementById("ModalProcessReparacion");
     if (cerrarPenReparacion && modalProcesoReparacion) {
-        cerrarPenReparacion.addEventListener("click", function () {
+    cerrarPenReparacion.addEventListener("click", function () {
             modalProcesoReparacion.hide();
             forceCleanupAfterModalClose();
-        });
-    }
+    });
+  }
 
-    const cerrarPenReparado = document.getElementById("ModalReparado");
+  const cerrarPenReparado = document.getElementById("ModalReparado");
     if (cerrarPenReparado && modalReparados) {
-        cerrarPenReparado.addEventListener("click", function () {
+    cerrarPenReparado.addEventListener("click", function () {
             modalReparados.hide();
             forceCleanupAfterModalClose();
         });
@@ -634,15 +634,15 @@ window.addEventListener("load", function () {
 
     const cerrarPenPendienteRepuesto = document.getElementById("ModalPendiRespuu");
     if (cerrarPenPendienteRepuesto && modalPendienteRepa) {
-        cerrarPenPendienteRepuesto.addEventListener("click", function () {
-            modalPendienteRepa.hide();
+    cerrarPenPendienteRepuesto.addEventListener("click", function () {
+      modalPendienteRepa.hide();
             forceCleanupAfterModalClose();
         });
     }
 
     const cerrarPenIrreparable = document.getElementById("ModalIrreparableTik");
     if (cerrarPenIrreparable && modalIrreparable) {
-        cerrarPenIrreparable.addEventListener("click", function () {
+    cerrarPenIrreparable.addEventListener("click", function () {
             modalIrreparable.hide();
             forceCleanupAfterModalClose();
         });
@@ -659,68 +659,68 @@ window.addEventListener("load", function () {
 
     // --- Clics dentro de monthlyTicketsContent ---
     const monthlyTicketsContent = document.getElementById("monthlyTicketsContent");
-    if (monthlyTicketsContent) {
-        monthlyTicketsContent.addEventListener("click", function (event) {
-            const clickedButton = event.target.closest(".monthly-tickets-detail");
-            if (clickedButton) {
-                const month = clickedButton.dataset.month;
-                const status = clickedButton.dataset.status;
-                const count = clickedButton.dataset.count;
+  if (monthlyTicketsContent) {
+    monthlyTicketsContent.addEventListener("click", function (event) {
+      const clickedButton = event.target.closest(".monthly-tickets-detail");
+      if (clickedButton) {
+        const month = clickedButton.dataset.month;
+        const status = clickedButton.dataset.status;
+        const count = clickedButton.dataset.count;
 
-                if (parseInt(count) > 0) {
+        if (parseInt(count) > 0) {
                     if (typeof loadIndividualTicketDetails === 'function') {
-                        loadIndividualTicketDetails(month, status);
+          loadIndividualTicketDetails(month, status);
                     }
-                } else {
-                    Swal.fire({
-                        icon: "info",
-                        title: "Sin Tickets",
-                        html: `No hay tickets ${status.toLowerCase()}s en la fecha <strong>${month}</strong>.`,
-                        confirmButtonText: "Ok",
-                        confirmButtonColor: "#003594",
-                    });
-                }
-            }
-        });
-    }
+        } else {
+          Swal.fire({
+            icon: "info",
+            title: "Sin Tickets",
+            html: `No hay tickets ${status.toLowerCase()}s en la fecha <strong>${month}</strong>.`,
+            confirmButtonText: "Ok",
+            confirmButtonColor: "#003594",
+          });
+        }
+      }
+    });
+  }
 
     // --- Clics dentro de RegionTicketsContent ---
-    const regionTicketsContent = document.getElementById("RegionTicketsContent");
-    if (regionTicketsContent) {
-        regionTicketsContent.addEventListener("click", function (event) {
+  const regionTicketsContent = document.getElementById("RegionTicketsContent");
+  if (regionTicketsContent) {
+    regionTicketsContent.addEventListener("click", function (event) {
             const clickedButton = event.target.closest(".region-tickets-total-detail");
-            if (clickedButton) {
-                const region = clickedButton.dataset.region;
-                const count = clickedButton.dataset.count;
+      if (clickedButton) {
+        const region = clickedButton.dataset.region;
+        const count = clickedButton.dataset.count;
 
-                if (parseInt(count) > 0) {
+        if (parseInt(count) > 0) {
                     if (typeof loadIndividualRegionTicketDetails === 'function') {
-                        loadIndividualRegionTicketDetails(region);
+          loadIndividualRegionTicketDetails(region);
                     }
-                } else {
-                    Swal.fire({
-                        icon: "info",
-                        title: "Sin Tickets",
-                        html: `No hay tickets para la región de <strong>${region}</strong>.`,
-                        confirmButtonText: "Ok",
-                        confirmButtonColor: "#003594",
-                    });
-                }
-            }
-        });
-    }
+        } else {
+          Swal.fire({
+            icon: "info",
+            title: "Sin Tickets",
+            html: `No hay tickets para la región de <strong>${region}</strong>.`,
+            confirmButtonText: "Ok",
+            confirmButtonColor: "#003594",
+          });
+        }
+      }
+    });
+  }
 
     // --- Clics dentro de TallerTicketsContent ---
-    const tallerTicketsContent = document.getElementById("TallerTicketsContent");
-    if (tallerTicketsContent) {
-        tallerTicketsContent.addEventListener("click", function (event) {
+  const tallerTicketsContent = document.getElementById("TallerTicketsContent");
+  if (tallerTicketsContent) {
+    tallerTicketsContent.addEventListener("click", function (event) {
             const clickedButton = event.target.closest(".taller-ticket-detail");
-            if (clickedButton) {
-                const ticketId = clickedButton.dataset.ticketId;
-                console.log(`Clic en detalle de ticket de taller, ID: ${ticketId}`);
-            }
-        });
-    }
+      if (clickedButton) {
+        const ticketId = clickedButton.dataset.ticketId;
+        console.log(`Clic en detalle de ticket de taller, ID: ${ticketId}`);
+      }
+    });
+  }
 });
 
 function handleTicketSearch(event, ticketArray, containerId) {
@@ -3502,7 +3502,7 @@ async function getTicketOpen() {
         console.error("Failed to fetch open ticket count:", error);
     }
 }
-  
+
 function handleViewDocumentClick() {
     const ticketId = this.dataset.ticketId;
 

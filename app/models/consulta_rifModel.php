@@ -20,7 +20,6 @@ class consulta_rifModel extends Model
             $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif); // Assuming '$this->db' is now a valid PgSql\Connection
             $sql = "SELECT * FROM getdataclientbyrif('%" . substr($escaped_rif, 1, -1) . "%');";
             $result = $this->getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception
@@ -33,7 +32,6 @@ class consulta_rifModel extends Model
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); // Assuming '$this->db' is now a valid PgSql\Connection
             $sql = "SELECT * FROM getdataclientbyserial('%" . substr($escaped_serial, 1, -1) . "%')";
             $result = Model::getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception
@@ -46,7 +44,6 @@ class consulta_rifModel extends Model
             $escaped_razonsocial = pg_escape_literal($this->db->getConnection(), $razonsocial); // Assuming '$this->db' is now a valid PgSql\Connection
             $sql = "SELECT * FROM getdataclientbyrazon('%" . substr($escaped_razonsocial, 1, -1) . "%')";
             $result = Model::getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception
@@ -59,7 +56,7 @@ class consulta_rifModel extends Model
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); // Assuming '$this->db' is now a valid PgSql\Connection
             $sql = "SELECT * FROM SearchSerial(" . $escaped_serial . ")";
             $result = Model::getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
+            // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception
@@ -71,7 +68,7 @@ class consulta_rifModel extends Model
         try {
             $sql = "SELECT * FROM GetInstallDate();";
             $result = Model::getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
+            // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception
@@ -84,7 +81,7 @@ class consulta_rifModel extends Model
             $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif); // Assuming '$this->db' is now a valid PgSql\Connection
             $sql = "SELECT * FROM VerifingClient(" . $escaped_rif . ");";
             $result = Model::getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
+            // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception
@@ -97,7 +94,7 @@ class consulta_rifModel extends Model
             $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif); // Assuming '$this->db' is now a valid PgSql\Connection
             $sql = "SELECT * FROM GetPosSerialsByRif(" . $escaped_rif . ");";
             $result = Model::getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
+            // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception
@@ -110,7 +107,7 @@ class consulta_rifModel extends Model
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); // Assuming '$this->db' is now a valid PgSql\Connection
             $sql = "SELECT * FROM SearchtypePos(" . $escaped_serial . ");";
             $result = Model::getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
+            // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception
@@ -214,7 +211,7 @@ class consulta_rifModel extends Model
             }
             pg_free_result($resultUserTicket); // Liberar el recurso de $resultUserTicket
 
-            $this->db->closeConnection(); // Cierra la conexión al final de la operación exitosa
+            // Cierra la conexión al final de la operación exitosa
 
             // **¡AQUÍ ESTÁ EL CAMBIO CLAVE!**
             // Devuelve un array que incluye el ID del ticket creado y el estado

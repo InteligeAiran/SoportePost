@@ -5,6 +5,10 @@ let globalEstatusPos = ""; // O null, dependiendo de cómo quieras inicializarla
 // Variable global para controlar que el alerta de garantía se muestre solo una vez
 let garantiaAlertShown = false;
 
+// Variables para la cola de correos
+let emailQueue = []; // Cola para almacenar las solicitudes de correo
+let isProcessing = false; // Indicador de si se está procesando una solicitud
+
   // FUNCIÓN PARA RESTAURAR EL ESTADO DE LA COORDINACIÓN
 function restoreCoordinacionState() {
   const select = document.getElementById("AsiganrCoordinador");
@@ -1794,48 +1798,20 @@ function SendDataFailure2(idStatusPayment) {
         try {
           const response = JSON.parse(xhr.responseText);
           if (response.success) {
-            // Lógica del correo para Nivel 2
-            const xhrEmail = new XMLHttpRequest();
-            xhrEmail.open(
-              "POST",
-              `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`
-            );
-            xhrEmail.setRequestHeader(
-              "Content-Type",
-              "application/x-www-form-urlencoded"
-            );
-
-            xhrEmail.onload = function () {
-              if (xhrEmail.status === 200) {
-                try {
-                  const responseEmail = JSON.parse(xhrEmail.responseText);
-                  if (responseEmail.success) {
-                    console.log(
-                      "Correo enviado con éxito:",
-                      responseEmail.message
-                    );
-                  } else {
-                    console.error(
-                      "Error al enviar el correo:",
-                      responseEmail.message
-                    );
-                  }
-                } catch (error) {
-                  console.error(
-                    "Error al parsear la respuesta del correo:",
-                    error
-                  );
-                }
-              } else {
-                console.error(
-                  "Error en la solicitud de envío de correo:",
-                  xhrEmail.status,
-                  xhrEmail.responseText
-                );
-              }
+            // NUEVO: Agregar correo a la cola en lugar de enviarlo directamente
+            const emailData = {
+              id_user: id_user,
+              ticketData: response.ticket_data
             };
-            const params = `id_user=${encodeURIComponent(id_user)}`;
-            xhrEmail.send(params);
+            
+            // Agregar el correo a la cola
+            emailQueue.push(emailData);
+            console.log(`📧 Correo agregado a la cola para ticket: ${response.ticket_data.Nr_ticket}. Total en cola: ${emailQueue.length}`);
+            
+            // Procesar la cola si no hay una solicitud en curso
+            if (!isProcessing) {
+              processEmailQueue();
+            }
 
             // Mostrar el primer modal (Guardado exitoso)
             Swal.fire({
@@ -1913,7 +1889,6 @@ function SendDataFailure2(idStatusPayment) {
           if (result.isConfirmed) {
             $("#miModal").css("display", "none");
             setTimeout(() => {
-              location.reload();
             }, 1000);
           } else if (result.dismiss === Swal.DismissReason.cancel) {
               $("#miModal").css("display", "none");
@@ -2578,14 +2553,39 @@ function SendDataFailure1() {
 
           xhrEmail.onload = function () {
             if (xhrEmail.status === 200) {
-              const responseEmail = JSON.parse(xhrEmail.responseText);
-              // Puedes manejar la respuesta del envío de correo aquí si es necesario
-              console.log("Respuesta del envío de correo:", responseEmail);
+              try {
+                const responseEmail = JSON.parse(xhrEmail.responseText);
+                console.log("📧 Respuesta del envío de correo (Nivel 1):", responseEmail);
+                
+                // Verificar si al menos un correo se envió exitosamente
+                const message = responseEmail.message || '';
+                const correoTecnicoEnviado = message.includes('Correo del técnico enviado');
+                
+                if (responseEmail.success || correoTecnicoEnviado) {
+                  // Mostrar notificación toast de éxito DESPUÉS de enviar ambos correos
+                  setTimeout(() => {
+                    Swal.fire({
+                      icon: "success",
+                      title: "Correo Enviado",
+                      text: `Correo de notificación (Nivel 1) enviado exitosamente para el ticket #${response.ticket_data.Nr_ticket} - Cliente: ${globalRazon} (${globalRif})`,
+                      showConfirmButton: false,
+                      confirmButtonText: "Cerrar",
+                      confirmButtonColor: "#003594",
+                      toast: true,
+                      position: 'top-end',
+                      color: 'black',
+                      timer: 5000, // Se cierra automáticamente en 4 segundos
+                      timerProgressBar: true
+                    });
+                  }, 500); // Delay de 3 segundos para que aparezca después del modal principal
+                } else {
+                  console.error("❌ Error al enviar correo (Nivel 1):", responseEmail.message);
+                }
+              } catch (error) {
+                console.error("❌ Error al parsear respuesta del correo (Nivel 1):", error);
+              }
             } else {
-              console.error(
-                "Error al solicitar el envío de correo:",
-                xhrEmail.status
-              );
+              console.error("❌ Error al solicitar el envío de correo (Nivel 1):", xhrEmail.status);
             }
           };
 
@@ -2683,7 +2683,6 @@ function SendDataFailure1() {
                 $("#miModal").css("display", "none");
                 // Establece un temporizador para recargar la página después de 2 segundos.
                 setTimeout(() => {
-                  location.reload(); // Recarga la página
                 }, 1000); // 2000 milisegundos = 2 segundos
               }); // Este cierra el .then()
             },
@@ -4671,6 +4670,63 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                 const response = JSON.parse(xhr.responseText);
                 
                 if (response.success) {
+                    // **ENVIAR CORREO DIRECTAMENTE DESPUÉS DE AGREGAR COMPONENTES**
+                    const xhrEmail = new XMLHttpRequest();
+                    xhrEmail.open(
+                        "POST",
+                        `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`
+                    );
+                    xhrEmail.setRequestHeader(
+                        "Content-Type",
+                        "application/x-www-form-urlencoded"
+                    );
+
+                    xhrEmail.onload = function () {
+                        if (xhrEmail.status === 200) {
+                            try {
+                                const responseEmail = JSON.parse(xhrEmail.responseText);
+                                console.log("📧 Respuesta del envío de correo (Nivel 2):", responseEmail);
+                                
+                                // Verificar si al menos un correo se envió exitosamente
+                                const message = responseEmail.message || '';
+                                const correoTecnicoEnviado = message.includes('Correo del técnico enviado');
+                                
+                                if (responseEmail.success || correoTecnicoEnviado) {
+                                    // Mostrar notificación toast de éxito DESPUÉS de enviar ambos correos
+                                    setTimeout(() => {
+                                        Swal.fire({
+                                            icon: "success",
+                                            title: "Correo Enviado",
+                                            text: `Correo de notificación (Nivel 2) enviado exitosamente para el ticket #${response.ticket_number || ticketId} - Cliente: ${globalRazon} (${globalRif})`,
+                                            showConfirmButton: false,
+                                            confirmButtonText: "Cerrar",
+                                            confirmButtonColor: "#003594",
+                                            toast: true,
+                                            position: 'top-end',
+                                            color: 'black',
+                                            timer: 5000, // Se cierra automáticamente en 4 segundos
+                                            timerProgressBar: true
+                                        });
+                                    }, 500); // Delay de 3 segundos para que aparezca después del modal principal
+                                } else {
+                                    console.error("❌ Error al enviar correo (Nivel 2):", responseEmail.message);
+                                }
+                            } catch (error) {
+                                console.error("❌ Error al parsear respuesta del correo (Nivel 2):", error);
+                            }
+                        } else {
+                            console.error("❌ Error al solicitar el envío de correo (Nivel 2):", xhrEmail.status);
+                        }
+                    };
+
+                    xhrEmail.onerror = function () {
+                        console.error("❌ Error de red al solicitar el envío de correo (Nivel 2).");
+                    };
+                    
+                    const paramsEmail = `id_user=${encodeURIComponent(id_user)}`;
+                    xhrEmail.send(paramsEmail);
+                    // **FIN DE LA LÓGICA DEL CORREO**
+                    
                     Swal.fire({
                         title: '¡Éxito!',
                         html: `Los componentes del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
@@ -4683,7 +4739,6 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                         keydownListenerCapture: true
                     }).then(() => {
                         modalComponentes.hide();
-                        window.location.reload(); 
                     });
                 } else {
                     Swal.fire({
@@ -4936,3 +4991,161 @@ function abrirModalComponentes(boton) {
     }
     showSelectComponentsModal(ticketId, regionName, serialPos);
 }
+
+// ========================================
+// FUNCIONES DE COLA DE CORREOS
+// ========================================
+
+function processEmailQueue() {
+    if (emailQueue.length === 0) {
+        isProcessing = false;
+        console.log("✅ Cola de correos vacía. Procesamiento detenido.");
+        return;
+    }
+
+    isProcessing = true;
+    const emailData = emailQueue[0]; // Tomar el primer correo de la cola
+
+    console.log(`🔄 Procesando correo para ticket: ${emailData.ticketData.Nr_ticket}`);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.timeout = 10000; // Timeout de 10 segundos
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    console.log(`✅ Correo enviado exitosamente para ticket: ${emailData.ticketData.Nr_ticket}`, response.message);
+                    
+                    // Mostrar notificación de éxito
+                    if (typeof Swal !== "undefined") {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Correo Enviado",
+                            text: `Correo de notificación enviado exitosamente para el ticket #${emailData.ticketData.Nr_ticket} - Cliente: ${globalRazon} (${globalRif})`,
+                            timer: 3000,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end',
+                            color: 'black'
+                        });
+                    }
+                } else {
+                    console.error(`❌ Error al enviar correo para ticket ${emailData.ticketData.Nr_ticket}:`, response.message);
+                }
+            } catch (error) {
+                console.error(`❌ Error al parsear respuesta de correo para ticket ${emailData.ticketData.Nr_ticket}:`, error);
+            }
+        } else {
+            console.error(`❌ Error HTTP en envío de correo para ticket ${emailData.ticketData.Nr_ticket}:`, xhr.status);
+        }
+
+        // Remover el correo procesado de la cola
+        emailQueue.shift();
+        console.log(`📧 Correo removido de la cola. Restantes: ${emailQueue.length}`);
+        
+        // Procesar la siguiente solicitud en la cola
+        if (emailQueue.length > 0) {
+            // Pequeña pausa antes del siguiente correo (1 segundo)
+            setTimeout(() => {
+                processEmailQueue();
+            }, 1000);
+        } else {
+            isProcessing = false;
+            console.log("🎉 Todos los correos de la cola han sido procesados.");
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error(`❌ Error de red al enviar correo para ticket ${emailData.ticketData.Nr_ticket}`);
+        
+        if (typeof Swal !== "undefined") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: `No se pudo conectar con el servidor para enviar el correo del ticket #${emailData.ticketData.Nr_ticket}.`,
+                color: 'black',
+                timer: 5000,
+                timerProgressBar: true
+            });
+        }
+        
+        // Remover el correo fallido de la cola
+        emailQueue.shift();
+        console.log(`📧 Correo fallido removido de la cola. Restantes: ${emailQueue.length}`);
+        
+        // Procesar la siguiente solicitud en la cola
+        if (emailQueue.length > 0) {
+            setTimeout(() => {
+                processEmailQueue();
+            }, 2000); // Pausa más larga en caso de error
+        } else {
+            isProcessing = false;
+        }
+    };
+
+    xhr.ontimeout = function() {
+        console.error(`⏰ Timeout al enviar correo para ticket ${emailData.ticketData.Nr_ticket}`);
+        
+        if (typeof Swal !== "undefined") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Tiempo de espera agotado',
+                text: `La solicitud de envío de correo para el ticket #${emailData.ticketData.Nr_ticket} tomó demasiado tiempo.`,
+                color: 'black',
+                timer: 5000,
+                timerProgressBar: true
+            });
+        }
+        
+        // Remover el correo fallido de la cola
+        emailQueue.shift();
+        console.log(`📧 Correo con timeout removido de la cola. Restantes: ${emailQueue.length}`);
+        
+        // Procesar la siguiente solicitud en la cola
+        if (emailQueue.length > 0) {
+            setTimeout(() => {
+                processEmailQueue();
+            }, 2000); // Pausa más larga en caso de timeout
+        } else {
+            isProcessing = false;
+        }
+    };
+    
+    const params = `id_user=${encodeURIComponent(emailData.id_user)}`;
+    xhr.send(params);
+}
+
+// Función para mostrar el estado de la cola (opcional, para debugging)
+function mostrarEstadoCola() {
+    console.log(`📊 Estado de la cola de correos:`);
+    console.log(`   - Correos en cola: ${emailQueue.length}`);
+    console.log(`   - Procesando: ${isProcessing ? 'Sí' : 'No'}`);
+    
+    if (emailQueue.length > 0) {
+        console.log(`   - Próximo correo: Ticket #${emailQueue[0].ticketData.Nr_ticket}`);
+    }
+    
+    if (typeof Swal !== "undefined") {
+        Swal.fire({
+            icon: 'info',
+            title: 'Estado de Cola de Correos',
+            html: `
+                <div style="text-align: left;">
+                    <p><strong>Correos en cola:</strong> ${emailQueue.length}</p>
+                    <p><strong>Procesando:</strong> ${isProcessing ? 'Sí' : 'No'}</p>
+                    ${emailQueue.length > 0 ? `<p><strong>Próximo correo:</strong> Ticket #${emailQueue[0].ticketData.Nr_ticket}</p>` : ''}
+                </div>
+            `,
+            color: 'black',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#003594'
+        });
+    }
+}
+
+// Exponer función globalmente para debugging (opcional)
+window.mostrarEstadoCola = mostrarEstadoCola;
