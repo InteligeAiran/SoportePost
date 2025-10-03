@@ -192,8 +192,7 @@ function mi_navbar()
             background-color: #003594;
             color: #fff;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             transition: background-color 0.3s ease-in-out;
         }
@@ -869,11 +868,11 @@ function mi_navbar()
 
                             <div class="col-12"><strong>Información del Envío</strong></div>
                             <div class="col-md-6">
-                                <label class="form-label">Región de Origen</label>
+                                <label class="form-label">Estado de Origen</label>
                                 <input type="text" id="ne_region_origen" class="form-control" readonly>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Región de Destino</label>
+                                <label class="form-label">Estado de Destino</label>
                                 <input type="text" id="ne_region_destino" class="form-control" readonly>
                             </div>
                             <div class="col-12">

@@ -459,11 +459,24 @@ function getTicketData() {
             // Event listener para el input de búsqueda general
             $('.dataTables_filter input').on('input', function () {
               const searchValue = $(this).val();
-              clearFilters(dataTableInstance);
-              if (searchValue) {
-                dataTableInstance.column(1).search(searchValue, true, false).draw();
+              // Aplicar búsqueda general en DataTables (igual que coordinador)
+              dataTableInstance.search(searchValue).draw();
+              
+              // Resaltar la fila si se encuentra el ticket
+              if (searchValue.trim() !== '') {
+                const filteredRows = dataTableInstance.rows({ filter: 'applied' });
+                filteredRows.every(function () {
+                  const rowData = this.data();
+                  if (rowData[1] === searchValue) {
+                    $(this.node()).addClass('table-active');
+                    this.node().scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return false;
+                  }
+                  return true;
+                });
               } else {
-                dataTableInstance.column(1).search('').draw();
+                // Limpiar resaltado si no hay búsqueda
+                $('#tabla-ticket tbody tr').removeClass('table-active');
               }
             });
 
@@ -2118,11 +2131,11 @@ function buildDeliveryNoteHtml(d) {
           <div class="section-header">Información del Envío</div>
           <div class="section-content">
             <div class="field-row">
-              <div class="field-label">Región de Origen:</div>
+              <div class="field-label">Estado de Origen:</div>
               <div class="field-value">${safe(d.region_origen)}</div>
             </div>
             <div class="field-row">
-              <div class="field-label">Región de Destino:</div>
+              <div class="field-label">Estado de Destino:</div>
               <div class="field-value">${safe(d.region_destino)}</div>
             </div>
             <div class="field-row">

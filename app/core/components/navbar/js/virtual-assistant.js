@@ -11,6 +11,9 @@ class VirtualAssistant {
         this.overlay = null;
         this.avatar = null;
         this.isPanelOpen = false;
+        this.isDragging = false;
+        this.dragOffset = { x: 0, y: 0 };
+        this.panelPosition = { x: 0, y: 0 };
         
         this.init();
     }
@@ -45,7 +48,7 @@ class VirtualAssistant {
         panel.className = 'assistant-panel chat-panel';
         panel.id = 'assistantPanel';
         panel.innerHTML = `
-            <div class="assistant-panel-header">
+            <div class="assistant-panel-header" id="panelHeader">
                 <div class="assistant-info">
                     <img src="${APP_PATH}app/public/img/assistant/woman-avatar.png" 
                          alt="Asistente" 
@@ -56,11 +59,23 @@ class VirtualAssistant {
                         <span class="assistant-status">En línea</span>
                     </div>
                 </div>
-                <button class="close-panel" id="closePanel">
-                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-                    </svg>
-                </button>
+                <div class="panel-controls">
+                    <div class="drag-indicator" title="Arrastra para mover">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+                        </svg>
+                    </div>
+                    <button class="reset-position" id="resetPosition" title="Centrar ventana">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0M4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5z"/>
+                        </svg>
+                    </button>
+                    <button class="close-panel" id="closePanel">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
             
             <div class="chat-container">
@@ -172,6 +187,14 @@ class VirtualAssistant {
             });
         }
         
+        // Click en resetear posición
+        const resetBtn = document.getElementById('resetPosition');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                this.resetPanelPosition();
+            });
+        }
+        
         // Click en overlay
         if (this.overlay) {
             this.overlay.addEventListener('click', () => {
@@ -194,6 +217,120 @@ class VirtualAssistant {
                 this.closePanel();
             }
         });
+        
+        // Eventos de arrastre
+        this.bindDragEvents();
+    }
+    
+    bindDragEvents() {
+        const panelHeader = document.getElementById('panelHeader');
+        if (!panelHeader) return;
+        
+        // Prevenir selección de texto durante el arrastre
+        panelHeader.style.userSelect = 'none';
+        
+        // Mouse events
+        panelHeader.addEventListener('mousedown', (e) => {
+            this.startDrag(e);
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            this.drag(e);
+        });
+        
+        document.addEventListener('mouseup', (e) => {
+            this.endDrag(e);
+        });
+        
+        // Touch events para dispositivos móviles
+        panelHeader.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.startDrag(e.touches[0]);
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            this.drag(e.touches[0]);
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            this.endDrag(e);
+        });
+    }
+    
+    startDrag(e) {
+        if (!this.isPanelOpen) return;
+        
+        this.isDragging = true;
+        const panelRect = this.panel.getBoundingClientRect();
+        
+        this.dragOffset.x = e.clientX - panelRect.left;
+        this.dragOffset.y = e.clientY - panelRect.top;
+        
+        // Cambiar cursor y agregar clase de arrastre
+        document.body.style.cursor = 'grabbing';
+        this.panel.classList.add('dragging');
+        
+        // Prevenir eventos por defecto
+        e.preventDefault();
+    }
+    
+    drag(e) {
+        if (!this.isDragging || !this.isPanelOpen) return;
+        
+        // Calcular nueva posición
+        const newX = e.clientX - this.dragOffset.x;
+        const newY = e.clientY - this.dragOffset.y;
+        
+        // Limitar movimiento dentro de la ventana
+        const maxX = window.innerWidth - this.panel.offsetWidth;
+        const maxY = window.innerHeight - this.panel.offsetHeight;
+        
+        this.panelPosition.x = Math.max(0, Math.min(newX, maxX));
+        this.panelPosition.y = Math.max(0, Math.min(newY, maxY));
+        
+        // Aplicar nueva posición
+        this.panel.style.left = `${this.panelPosition.x}px`;
+        this.panel.style.top = `${this.panelPosition.y}px`;
+        this.panel.style.transform = 'none'; // Remover transform centrado
+        
+        e.preventDefault();
+    }
+    
+    endDrag(e) {
+        if (!this.isDragging) return;
+        
+        this.isDragging = false;
+        
+        // Restaurar cursor y remover clase de arrastre
+        document.body.style.cursor = '';
+        this.panel.classList.remove('dragging');
+        
+        // Guardar posición en localStorage
+        this.savePanelPosition();
+        
+        e.preventDefault();
+    }
+    
+    savePanelPosition() {
+        localStorage.setItem('chatbotPanelPosition', JSON.stringify(this.panelPosition));
+    }
+    
+    loadPanelPosition() {
+        const saved = localStorage.getItem('chatbotPanelPosition');
+        if (saved) {
+            this.panelPosition = JSON.parse(saved);
+            return true;
+        }
+        return false;
+    }
+    
+    resetPanelPosition() {
+        this.panelPosition = { x: 0, y: 0 };
+        this.panel.style.left = '';
+        this.panel.style.top = '';
+        this.panel.style.transform = 'translate(-50%, -50%)';
+        this.savePanelPosition();
     }
     
     togglePanel() {
@@ -209,6 +346,18 @@ class VirtualAssistant {
         this.panel.classList.add('show');
         this.overlay.classList.add('show');
         document.body.style.overflow = 'hidden';
+        
+        // Cargar posición guardada o usar posición centrada por defecto
+        if (this.loadPanelPosition()) {
+            this.panel.style.left = `${this.panelPosition.x}px`;
+            this.panel.style.top = `${this.panelPosition.y}px`;
+            this.panel.style.transform = 'none';
+        } else {
+            // Posición centrada por defecto
+            this.panel.style.left = '';
+            this.panel.style.top = '';
+            this.panel.style.transform = 'translate(-50%, -50%)';
+        }
         
         // Log para debugging
         console.log('🤖 Panel del asistente virtual abierto');

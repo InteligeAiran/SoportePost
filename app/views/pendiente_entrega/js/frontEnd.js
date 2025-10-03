@@ -602,7 +602,7 @@ function getTicketDataFinaljs() {
                           const commonConditions = ((currentStatusLab === "Reparado" || currentStatusLab === "") && !(nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas"));
                           
                           if (commonConditions && isDocumentMissing) {
-                              actionButton = `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn" title = "Subir Documento"
+                              actionButton = `<button type="button" id="openModalButton" class="btn btn-primary btn-sm upload-document-btn" title = "Subir Documento"
                                                   data-id-ticket="${idTicket}"
                                                   data-nro-ticket="${nroTicket}"
                                                   data-bs-toggle="modal"
@@ -619,8 +619,8 @@ function getTicketDataFinaljs() {
                                                   data-region-name="${nombre_estado_cliente || 'No tiene Asignado'}"  
                                                   data-serial-pos="${serialPos}"
                                                   data-nro-ticket="${nroTicket}">
-                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck" viewBox="0 0 16 16">
-                                                    <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5zm1.294 7.456A2 2 0 0 1 4.732 11h5.536a2 2 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456M12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck-front-fill" viewBox="0 0 16 16">
+                                                    <path d="M3.5 0A2.5 2.5 0 0 0 1 2.5v9c0 .818.393 1.544 1 2v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5V14h6v1.5a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-2c.607-.456 1-1.182 1-2v-9A2.5 2.5 0 0 0 12.5 0zM3 3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3.9c0 .625-.562 1.092-1.17.994C10.925 7.747 9.208 7.5 8 7.5s-2.925.247-3.83.394A1.008 1.008 0 0 1 3 6.9zm1 9a1 1 0 1 1 0-2 1 1 0 0 1 0 2m8 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2m-5-2h2a1 1 0 1 1 0 2H7a1 1 0 1 1 0-2"/>
                                                   </svg>
                                               </button>`;
                           }
@@ -1068,7 +1068,7 @@ function getTicketDataFinaljs() {
 
                                                           const beautifulHtmlContent = `
                                                               <div style="text-align: left; padding: 15px;">
-                                                                  <h3 style="color: #28a745; margin-bottom: 15px; text-align: center;">↩️ ¡Ticket Devueto! ↩️</h3>
+                                                                  <h3 style="color: #28a745; margin-bottom: 15px; text-align: center;">↩️ ¡POS Devueto! ↩️</h3>
                                                                   <p style="font-size: 1.1em; margin-bottom: 10px;">
                                                                       <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.nro_ticket}</span>
                                                                   </p>
@@ -3779,8 +3779,8 @@ $(document).on('click', '#generateNotaEntregaBtn', function () {
                 $('#ne_tipo_equipo').val(d.tipo_equipo || d.tipo_pos || 'POS');
                 $('#ne_modelo').val(d.modelo || d.desc_modelo || '');
                 $('#ne_serial').val(d.serialpos || d.serial_pos || '');
-                $('#ne_region_origen').val(d.estado_final || d.estado || '');
-                $('#ne_region_destino').val(regDes);
+                $('#ne_region_origen').val(regDes);
+                $('#ne_region_destino').val(d.estado_final || d.estado || '');
                 $('#ne_observaciones').val('');
                 $('#ne_componentes').val(d.componentes || 'Sin componentes');
                 
@@ -4485,11 +4485,11 @@ function buildDeliveryNoteHtml(d) {
           <div class="section-header">Información del Envío</div>
           <div class="section-content">
             <div class="field-row">
-              <div class="field-label">Región de Origen:</div>
+              <div class="field-label">Estado de Origen:</div>
               <div class="field-value">${safe(d.region_origen)}</div>
             </div>
             <div class="field-row">
-              <div class="field-label">Región de Destino:</div>
+              <div class="field-label">Estado de Destino:</div>
               <div class="field-value">${safe(d.region_destino)}</div>
             </div>
             <div class="field-row">

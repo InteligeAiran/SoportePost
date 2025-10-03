@@ -275,19 +275,23 @@ function getTicketDataFinaljs() {
 
                 // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
                 if (name_accion_ticket === "En espera de confirmar recibido en Región") {
-                  actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
+                  actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn" title = "Marcar Como recibido en la región"
                     data-id-ticket="${idTicket}"
                     data-serial-pos="${serialPos}"
                     data-nro-ticket="${nroTicket}">
-                    <i class="fas fa-hand-holding-box"></i> Recibido
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-all" viewBox="0 0 16 16">
+                      <path d="M8.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L2.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093L8.95 4.992zm-.92 5.14.92.92a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 1 0-1.091-1.028L9.477 9.417l-.485-.486z"/>
+                    </svg>
                   </button>`;
                 } else {
-                  actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
+                  actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn" title = "Entregar a cliente"
                     data-id-ticket="${idTicket}"
                     data-serial-pos="${serialPos}"
                     data-nro-ticket="${nroTicket}"
                     data-has_devolution="${HasDevolution}">
-                    <i class="fas fa-truck"></i> Entregar A cliente
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bag-check-fill" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M10.5 3.5a2.5 2.5 0 0 0-5 0V4h5zm1 0V4H15v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4h3.5v-.5a3.5 3.5 0 1 1 7 0m-.646 5.354a.5.5 0 0 0-.708-.708L7.5 10.793 6.354 9.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
+                    </svg>
                   </button>`;
                 }
                 return actionButton;
@@ -323,7 +327,7 @@ function getTicketDataFinaljs() {
                     const hasAnyDocument = envioUrl || exoneracionUrl || pagoUrl;
                   // ... existing code ...
                  if (hasAnyDocument) {
-                    return `<button type="button" class="btn btn-success btn-sm btn-document-actions-modal"
+                    return `<button type="button" class="btn btn-success btn-sm btn-document-actions-modal" title = "Vizualizar Documentos"
                         data-bs-toggle="tooltip" data-bs-placement="top"
                         title="Vizualizar Documentos"
                         data-nombre-estado="${nombre_estado_cliente}"
@@ -337,8 +341,11 @@ function getTicketDataFinaljs() {
                         data-pago-filename="${row.pago_original_filename || ''}"
                         data-envio-destino="${row.envio_destino_document_url || ''}"
                         data-envio-destino-filename="${row.envio_destino_original_filename || ''}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M8.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
-                    </button>`;
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                          <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                          <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                        </svg>                    
+                      </button>`;
                 
             
                     } else {

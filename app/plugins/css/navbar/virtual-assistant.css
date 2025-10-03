@@ -23,9 +23,9 @@
 .assistant-img {
     width: 100px;
     height: 100px;
-    border-radius: 50%;
+    border-radius: 70%;
     border: 2px solid #fff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 15.2);
     transition: all 0.3s ease;
 }
 
@@ -130,6 +130,8 @@
     justify-content: space-between;
     align-items: center;
     border-radius: 15px 15px 0 0;
+    cursor: move;
+    user-select: none;
 }
 
 .assistant-info {
@@ -183,6 +185,67 @@
 
 .close-panel:hover {
     background: rgba(255, 255, 255, 0.2);
+}
+
+/* Controles del panel */
+.panel-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.drag-indicator {
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+    cursor: grab;
+    opacity: 0.7;
+}
+
+.drag-indicator:hover {
+    background: rgba(255, 255, 255, 0.2);
+    opacity: 1;
+}
+
+.drag-indicator:active {
+    cursor: grabbing;
+}
+
+.reset-position {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reset-position:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Estado de arrastre */
+.assistant-panel.dragging {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    transform: scale(1.02);
+    transition: none;
+}
+
+.assistant-panel.dragging .assistant-panel-header {
+    cursor: grabbing;
+}
+
+/* Animación suave para cambios de posición */
+.assistant-panel {
+    transition: left 0.1s ease, top 0.1s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.assistant-panel.dragging {
+    transition: none;
 }
 
 /* Contenedor del chat */
