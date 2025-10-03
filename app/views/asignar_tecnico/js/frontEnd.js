@@ -1004,7 +1004,6 @@ function getTechnicianData(ticketIdToFetch) {
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const response = JSON.parse(xhr.responseText);
-          console.log(response);
           const inputNtecnico = document.getElementById("currentTechnicianDisplay");
           const inputFecha = document.getElementById("currentAssignmentDateDisplay");
           const inputRegion = document.getElementById("currentRegion");
