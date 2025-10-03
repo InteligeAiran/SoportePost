@@ -173,6 +173,57 @@ function mi_navbar() {}
                 transform: translateY(-2px) !important;
             }
 
+            /* Estilos para el botón de expandir/contraer en tabla */
+            .btn-expand-collapse {
+                background: #007bff !important;
+                border: 1px solid #007bff !important;
+                border-radius: 8px;
+                padding: 8px 16px;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: #ffffff !important;
+                transition: all 0.2s ease;
+                font-family: 'Open Sans', sans-serif;
+                text-decoration: none;
+                outline: none;
+            }
+
+            .btn-expand-collapse:hover {
+                background: #0056b3 !important;
+                border-color: #0056b3 !important;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+                color: #ffffff !important;
+            }
+
+            .btn-expand-collapse:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+                background: #004085 !important;
+                border-color: #004085 !important;
+                color: #ffffff !important;
+            }
+
+            .btn-expand-collapse:focus {
+                box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+                color: #ffffff !important;
+            }
+
+            .expand-icon {
+                transition: transform 0.3s ease;
+                flex-shrink: 0;
+                color: #ffffff !important;
+            }
+
+            .expand-text {
+                white-space: nowrap;
+                color: #ffffff !important;
+            }
+
             input[type="text"], input[type="password"]{
                 width: calc(100% - 1rem);
                 padding: 0.5rem 0.75rem;

@@ -1773,17 +1773,17 @@ function processEmailQueuePendiente() {
                 
                 if (responseEmail.success) {
                     // ✅ NOTIFICACIÓN TOAST DE ÉXITO - INMEDIATA
-                    Swal.fire({
-                        icon: "success",
-                        title: "Correo Enviado",
+                        Swal.fire({
+                            icon: "success",
+                            title: "Correo Enviado",
                         text: `Correo de notificación (${emailData.type}) enviado exitosamente para el ticket #${emailData.ticketNumber} - Cliente: ${emailData.ticketData?.razonsocial_cliente || emailData.ticketData?.razon_social || 'N/A'} (${emailData.ticketData?.rif_cliente || emailData.ticketData?.rif || 'N/A'})`,
-                        showConfirmButton: false,
-                        toast: true,
-                        position: 'top-end',
-                        color: 'black',
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end',
+                            color: 'black',
                         timer: 2500,
-                        timerProgressBar: true
-                    });
+                            timerProgressBar: true
+                        });
                     
                     // Recargar la página después del timer
                     setTimeout(() => {

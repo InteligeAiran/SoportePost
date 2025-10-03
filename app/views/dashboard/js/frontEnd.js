@@ -4849,6 +4849,10 @@ async function loadMonthlyCreatedTicketsChartForState() {
     }
 }
 
+// Variable global para controlar el estado de la tabla expandible
+let ticketCountsData = [];
+let visibleRowsLimit = 5; // Límite inicial de filas visibles
+
 async function getTicketCounts() {
     const tbodyCounts = document.getElementById("ticketCountsBody");
 
@@ -4868,23 +4872,10 @@ async function getTicketCounts() {
         tbodyCounts.innerHTML = '';
 
         if (data.success && Array.isArray(data.counts) && data.counts.length > 0) {
-            let hasNonZeroCounts = false;
-            data.counts.forEach(item => {
-                // Solo mostrar si total_tickets es mayor que 0
-                if (item.total_tickets > 0) {
-                    hasNonZeroCounts = true;
-                const tr = document.createElement('tr');
-                const moduleName = item.name_accion_ticket;
-                tr.innerHTML = `
-                    <td class="px-5 py-5 border-b border-gray-200 text-sm">${moduleName}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 text-sm">${item.total_tickets}</td>
-                `;
-                tbodyCounts.appendChild(tr);
-                }
-            });
-
-            // Si no hay elementos con total_tickets > 0, mostrar mensaje
-            if (!hasNonZeroCounts) {
+            // Filtrar solo elementos con total_tickets > 0 y almacenar globalmente
+            ticketCountsData = data.counts.filter(item => item.total_tickets > 0);
+            
+            if (ticketCountsData.length === 0) {
                 tbodyCounts.innerHTML = `
                     <tr>
                         <td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">
@@ -4892,7 +4883,12 @@ async function getTicketCounts() {
                         </td>
                     </tr>
                 `;
+                return;
             }
+
+            // Renderizar la tabla con funcionalidad expandible
+            renderTicketCountsTable();
+            
         } else {
             // Manejar caso sin datos o error de servidor
             const errorMessage = data.success ?
@@ -4910,6 +4906,7 @@ async function getTicketCounts() {
         }
     } catch (error) {
         // Manejar errores de red o de parseo de JSON
+
         tbodyCounts.innerHTML = `
             <tr>
                 <td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">
@@ -4919,6 +4916,74 @@ async function getTicketCounts() {
         `;
         console.error("Failed to fetch ticket counts:", error);
     }
+}
+
+function renderTicketCountsTable() {
+    const tbodyCounts = document.getElementById("ticketCountsBody");
+    tbodyCounts.innerHTML = '';
+
+    const rowsToShow = ticketCountsData.length;
+    const isExpanded = visibleRowsLimit >= ticketCountsData.length;
+    const showExpandButton = rowsToShow > 5; // Siempre mostrar botón si hay más de 5 filas
+    const currentVisibleRows = visibleRowsLimit;
+    const hiddenRows = rowsToShow - 5;
+
+    // Renderizar las filas visibles
+    for (let i = 0; i < currentVisibleRows; i++) {
+        const item = ticketCountsData[i];
+        const tr = document.createElement('tr');
+        const moduleName = item.name_accion_ticket;
+        tr.innerHTML = `
+            <td class="px-5 py-5 border-b border-gray-200 text-sm">${moduleName}</td>
+            <td class="px-5 py-5 border-b border-gray-200 text-sm">${item.total_tickets}</td>
+        `;
+        tbodyCounts.appendChild(tr);
+    }
+
+    // Si hay más de 5 filas, agregar el botón de expandir/contraer
+    if (showExpandButton) {
+        const trExpand = document.createElement('tr');
+        trExpand.id = 'expandRow';
+        const buttonText = isExpanded ? 'Ver menos...' : `Ver ${hiddenRows} más...`;
+        const iconRotation = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+        
+        trExpand.innerHTML = `
+            <td colspan="2" class="px-5 py-3 text-center border-b border-gray-200">
+                <button 
+                    id="expandButton" 
+                    class="btn-expand-collapse"
+                    onclick="toggleTicketCountsTable()">
+                    <span class="expand-text">${buttonText}</span>
+                    <svg class="expand-icon" style="transform: ${iconRotation};" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M4.646 9.646a.5.5 0 0 1 .708 0L8 12.293l2.646-2.647a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </button>
+            </td>
+        `;
+        tbodyCounts.appendChild(trExpand);
+    }
+}
+
+function toggleTicketCountsTable() {
+    const button = document.getElementById('expandButton');
+    const expandIcon = button.querySelector('.expand-icon');
+    const expandText = button.querySelector('.expand-text');
+    const isCurrentlyExpanded = expandText.textContent.includes('Ver menos');
+
+    if (isCurrentlyExpanded) {
+        // Contraer la tabla
+        visibleRowsLimit = 5;
+        expandText.textContent = `Ver ${ticketCountsData.length - visibleRowsLimit} más...`;
+        expandIcon.style.transform = 'rotate(0deg)';
+    } else {
+        // Expandir la tabla
+        visibleRowsLimit = ticketCountsData.length;
+        expandText.textContent = 'Ver menos...';
+        expandIcon.style.transform = 'rotate(180deg)';
+    }
+
+    // Re-renderizar la tabla
+    renderTicketCountsTable();
 }
 
 // Llama a esta función para cargar el gráfico cuando el DOM esté listo

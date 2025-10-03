@@ -325,9 +325,9 @@ class email extends Controller {
             <div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
                 <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-            </div>
+                    </div>
                 </div>
             </body>
             </html>
@@ -433,7 +433,7 @@ class email extends Controller {
 
             // 5. Enviar correo a COORDINACIÓN (Estilo Ejecutivo - Jerarquía Alta)
             $subject_coordinador = '🎯 NOTIFICACIÓN EJECUTIVA - Ticket Cerrado';
-            $body_coordinador = '
+           $body_coordinador = '
             <!DOCTYPE html>
             <html lang="es">
             <head>
@@ -596,44 +596,44 @@ class email extends Controller {
                                 <div class="info-item">
                                     <span class="info-label">🎫 Número de Ticket</span>
                                     <span class="info-value" style="color: #003594; font-weight: 700; font-size: 1.3em;">' . htmlspecialchars($ticketnro) . '</span>
-                                </div>
+                        </div>
                                 <div class="info-item">
                                     <span class="info-label">🏢 RIF Cliente</span>
-                                    <span class="info-value">' . htmlspecialchars($clientRif) . '</span>
-                                </div>
+                            <span class="info-value">' . htmlspecialchars($clientRif) . '</span>
+                        </div>
                                 <div class="info-item">
                                     <span class="info-label">🏢 Razón Social</span>
-                                    <span class="info-value">' . htmlspecialchars($clientName) . '</span>
-                                </div>
+                            <span class="info-value">' . htmlspecialchars($clientName) . '</span>
+                        </div>
                                 <div class="info-item">
                                     <span class="info-label">⚙️ Serial POS</span>
                                     <span class="info-value" style="font-family: monospace; background: #e9ecef; padding: 4px 8px; border-radius: 4px;">' . htmlspecialchars($ticketserial) . '</span>
-                                </div>
+                        </div>
                                 <div class="info-item">
                                     <span class="info-label">🔍 Nivel de Falla</span>
-                                    <span class="info-value">' . htmlspecialchars($ticketNivelFalla) . '</span>
-                                </div>
+                            <span class="info-value">' . htmlspecialchars($ticketNivelFalla) . '</span>
+                        </div>
                                 <div class="info-item">
                                     <span class="info-label">❌ Falla Reportada</span>
-                                    <span class="info-value">' . htmlspecialchars($name_failure) . '</span>
-                                </div>
+                            <span class="info-value">' . htmlspecialchars($name_failure) . '</span>
+                        </div>
                                 <div class="info-item">
                                     <span class="info-label">📅 Fecha de Creación</span>
                                     <span class="info-value">' . htmlspecialchars($ticketfinished) . '</span>
-                                </div>
+                        </div>
                                 <div class="info-item">
                                     <span class="info-label">📋 Acción del Ticket</span>
-                                    <span class="info-value">' . htmlspecialchars($ticketaccion) . '</span>
-                                </div>
+                            <span class="info-value">' . htmlspecialchars($ticketaccion) . '</span>
+                        </div>
                             </div>
                             
                             <div style="text-align: center; margin-top: 20px;">
                                 <span class="status-badge status-closed">
                                     ✅ ' . htmlspecialchars($ticketstatus) . '
                                 </span>
-                            </div>
-                        </div>
-                        
+                        </div>    
+                    </div>
+
                         <div style="text-align: center; margin: 30px 0;">
                             <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="action-button">
                                 📋 Ver Detalles Completos del Ticket
@@ -644,9 +644,9 @@ class email extends Controller {
             <div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
                 <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-            </div>
+                    </div>
                 </div>
             </body>
             </html>';
@@ -664,29 +664,29 @@ class email extends Controller {
             
             // Enviar correo a TÉCNICO (Jerarquía Operativa - Estilo Técnico)
             $result_tecnico = $repository->GetEmailUserDataById($id_user);
-            if ($result_tecnico && !empty($result_tecnico['user_email'])) {
+                if ($result_tecnico && !empty($result_tecnico['user_email'])) {
                 $email_tecnico = $result_tecnico['user_email'];
                 $nombre_tecnico = $result_tecnico['full_name'] ?? 'Técnico';
 
                 // Template para TÉCNICO (Estilo Técnico - Jerarquía Operativa)
                 $subject_tecnico = '✅ CONFIRMACIÓN TÉCNICA - Ticket Procesado';
-                $body_tecnico = '
-                <!DOCTYPE html>
-                <html lang="es">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    $body_tecnico = '
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>Confirmación Técnica - Ticket Procesado</title>
-                    <style>
-                        body { 
-                            margin: 0; 
-                            padding: 0; 
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
                             background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
                             font-family: "Consolas", "Monaco", "Courier New", monospace;
                         }
                         .technical-container { 
                             max-width: 650px; 
-                            margin: 20px auto; 
+                    margin: 20px auto;
                             background: #ffffff; 
                             border-radius: 10px; 
                             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
@@ -697,7 +697,7 @@ class email extends Controller {
                             background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
                             color: #ffffff; 
                             padding: 30px 25px; 
-                            text-align: center;
+                    text-align: center;
                             position: relative;
                         }
                         .technical-header::before {
@@ -710,7 +710,7 @@ class email extends Controller {
                             background: url("data:image/svg+xml,%3Csvg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Cpath d="M20 20c0-11.046-8.954-20-20-20v20h20z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
                         }
                         .technical-title { 
-                            font-size: 1.8em; 
+                    font-size: 1.8em;
                             margin: 0 0 8px 0; 
                             font-weight: 700;
                             font-family: "Consolas", monospace;
@@ -723,8 +723,8 @@ class email extends Controller {
                         }
                         .technical-content {
                             padding: 30px 25px;
-                        }
-                        .greeting {
+                }
+                .greeting {
                             font-size: 1.2em;
                             color: #2d3436;
                             margin-bottom: 25px;
@@ -741,18 +741,18 @@ class email extends Controller {
                         .details-title {
                             font-size: 1.3em;
                             color: #00b894;
-                            margin-bottom: 20px;
+                    margin-bottom: 20px;
                             font-weight: 600;
                             text-transform: uppercase;
                             letter-spacing: 1px;
-                        }
+                }
                         .details-list {
-                            list-style: none;
+                    list-style: none;
                             padding: 0;
                             margin: 0;
-                        }
+                }
                         .details-item {
-                            margin-bottom: 12px;
+                    margin-bottom: 12px;
                             padding: 8px 0;
                             border-bottom: 1px solid #e9ecef;
                             display: flex;
@@ -788,11 +788,11 @@ class email extends Controller {
                             color: #ffffff;
                         }
                         .action-button {
-                            display: inline-block;
-                            padding: 12px 25px;
+                            display: inline-block; 
+                            padding: 12px 25px; 
                             background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
-                            color: #ffffff;
-                            text-decoration: none;
+                            color: #ffffff; 
+                            text-decoration: none; 
                             border-radius: 20px;
                             font-weight: 600;
                             font-size: 1em;
@@ -821,14 +821,14 @@ class email extends Controller {
                             border-radius: 3px;
                             font-size: 0.9em;
                         }
-                    </style>
-                </head>
-                <body>
+            </style>
+        </head>
+        <body>
                     <div class="technical-container">
                         <div class="technical-header">
                             <h1 class="technical-title">✅ TICKET PROCESADO</h1>
                             <p class="technical-subtitle">Confirmación Técnica de Cierre</p>
-                        </div>
+                </div>
                         
                         <div class="technical-content">
                             <div class="greeting">
@@ -885,7 +885,7 @@ class email extends Controller {
                                     <span class="status-indicator status-success">
                                         ✅ ' . htmlspecialchars($ticketstatus) . '
                                     </span>
-                                </div>
+                    </div>
                             </div>
                             
                             <div style="text-align: center; margin: 25px 0;">
@@ -900,18 +900,18 @@ class email extends Controller {
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
                 <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
                 <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-            </div>
                     </div>
-                </body>
+            </div>
+        </body>
                 </html>';
 
-                $embeddedImages1 = [];
-                if (defined('FIRMA_CORREO')) {
-                    $embeddedImages1['imagen_adjunta'] = FIRMA_CORREO;
-                }
+    $embeddedImages1 = [];
+            if (defined('FIRMA_CORREO')) {
+                $embeddedImages1['imagen_adjunta'] = FIRMA_CORREO;
+            }
 
                 $results['tecnico'] = $this->emailService->sendEmail($email_tecnico, $subject_tecnico, $body_tecnico, [], $embeddedImages1);
-            } else {
+                } else {
                 $results['messages'][] = "No se pudo obtener el correo del técnico.";
             }
 
@@ -932,7 +932,7 @@ class email extends Controller {
             
         } catch (Exception $e) {
             $this->response(['success' => false, 'message' => 'Error interno: ' . $e->getMessage(), 'color' => 'red']);
-        }
+            }
     }
 
     public function handleSendEndTicket() {
@@ -994,13 +994,13 @@ class email extends Controller {
     // --- Configuración y envío del correo para el COORDINADOR ---
     $subject_coordinador = '🎯 NOTIFICACIÓN EJECUTIVA - Ticket Cerrado';
     $body_coordinador = '
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Notificación Ejecutiva - Ticket Cerrado</title>
-        <style>
+            <style>
             body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
             .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
             .header { background: #003594; color: white; padding: 30px; text-align: center; }
@@ -1020,14 +1020,14 @@ class email extends Controller {
             .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e9ecef; }
             .logo { max-width: 150px; margin: 10px 0; }
             @media (max-width: 600px) { .info-grid { grid-template-columns: 1fr; } .content { padding: 20px; } }
-        </style>
-    </head>
-    <body>
+            </style>
+        </head>
+        <body>
         <div class="container">
             <div class="header">
                 <h1>🏁 TICKET CERRADO</h1>
                 <p>Notificación Ejecutiva de Finalización</p>
-            </div>
+                        </div>
             <div class="content">
                 <div class="greeting">
                     Estimado/a <strong>Coordinación de ' . htmlspecialchars($name_coordinador) . '</strong>
@@ -1095,17 +1095,17 @@ class email extends Controller {
                 <div style="text-align: center;">
                     <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="button">
                         📋 Ver Detalles Completos
-                    </a>
-                </div>
+                            </a>
+                        </div>
             </div>
-            <div class="footer">
+                        <div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
-                <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-            </div>
+                            <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                            <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                        </div>
         </div>
-    </body>
+        </body>
     </html>';
 
     $embeddedImages = [];
@@ -1125,13 +1125,13 @@ class email extends Controller {
     if ($email_tecnico && $result_tecnico) {
         $subject_tecnico = '✅ CONFIRMACIÓN TÉCNICA - Ticket Cerrado Exitosamente';
         $body_tecnico = '
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Confirmación Técnica - Ticket Cerrado</title>
-            <style>
+                <style>
                 body { font-family: Arial, sans-serif; background: #f0f8ff; margin: 0; padding: 20px; }
                 .container { max-width: 550px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
                 .header { background: #00b894; color: white; padding: 25px; text-align: center; }
@@ -1148,14 +1148,14 @@ class email extends Controller {
                 .button { display: inline-block; background: #00b894; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 15px 0; font-size: 14px; }
                 .footer { background: #f8f9fa; padding: 15px; text-align: center; color: #666; font-size: 11px; border-top: 1px solid #e9ecef; }
                 .logo { max-width: 120px; margin: 8px 0; }
-            </style>
-        </head>
-        <body>
+                </style>
+            </head>
+            <body>
             <div class="container">
                 <div class="header">
                     <h1>✅ ¡COMPLETADO!</h1>
                     <p>Confirmación de Cierre de Ticket</p>
-                </div>
+                            </div>
                 <div class="content">
                     <div class="greeting">
                         Hola, <strong>' . htmlspecialchars($nombre_tecnico) . '</strong>
@@ -1203,17 +1203,17 @@ class email extends Controller {
                     <div style="text-align: center;">
                         <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="button">
                             📋 Ver Detalles del Ticket
-                        </a>
-                    </div>
+                                </a>
+                            </div>
                 </div>
-                <div class="footer">
+                            <div class="footer">
                     ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                     <p><strong>Sistema de Tickets Técnicos - InteliSoft</strong></p>
                     <p>Correo automático de confirmación técnica.</p>
-                    <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-                </div>
+                                <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                            </div>
             </div>
-        </body>
+            </body>
         </html>';
 
         if ($this->emailService->sendEmail($email_tecnico, $subject_tecnico, $body_tecnico, [], $embeddedImages)) {
@@ -1231,7 +1231,7 @@ class email extends Controller {
     } else {
         $this->response(['success' => false, 'message' => 'Error al enviar ambos correos.', 'color' => 'red']);
     }
-    }
+}
 
     public function handleSendDevolutionTicket() {
         $repository = new EmailRepository();
@@ -1292,13 +1292,13 @@ class email extends Controller {
         // --- Configuración y envío del correo para el COORDINADOR ---
         $subject_coordinador = '🎯 NOTIFICACIÓN EJECUTIVA - Ticket Devuelto por Devolución';
         $body_coordinador = '
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Notificación Ejecutiva - Ticket Devuelto</title>
-            <style>
+                <style>
                 body { 
                     font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; 
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1394,7 +1394,7 @@ class email extends Controller {
                     font-size: 1.1em; 
                 }
                 .status-badge { 
-                    display: inline-block; 
+                                display: inline-block; 
                     padding: 8px 16px; 
                     border-radius: 25px; 
                     font-weight: 600; 
@@ -1410,7 +1410,7 @@ class email extends Controller {
                     color: white; 
                     padding: 15px 30px; 
                     border-radius: 10px; 
-                    text-decoration: none; 
+                                text-decoration: none; 
                     font-weight: 600; 
                     font-size: 1.1em;
                     box-shadow: 0 4px 15px rgba(0, 102, 204, 0.3);
@@ -1419,7 +1419,7 @@ class email extends Controller {
                 .action-button:hover { 
                     transform: translateY(-2px); 
                     box-shadow: 0 6px 20px rgba(0, 102, 204, 0.4);
-                    text-decoration: none;
+                                text-decoration: none; 
                     color: white;
                 }
                 .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e9ecef; }
@@ -1427,15 +1427,15 @@ class email extends Controller {
                 .logo-header img { 
                     max-width: 150px; 
                     height: auto;
-                }
-            </style>
-        </head>
-        <body>
+                            }
+                </style>
+            </head>
+            <body>
             <div class="executive-container">
                 <div class="executive-header">
                     <h1 class="executive-title">↩️ TICKET DEVUELTO</h1>
                     <p class="executive-subtitle">Notificación Ejecutiva de Devolución</p>
-                </div>
+                    </div>
                 <div class="executive-content">
                     <div class="greeting">
                         Estimado/a <strong>Coordinación de ' . htmlspecialchars($name_coordinador) . '</strong>
@@ -1511,11 +1511,11 @@ class email extends Controller {
             <div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                            <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
                 <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-            </div>
-            </div>
-        </body>
+                        </div>
+                </div>
+            </body>
         </html>';
 
         $embeddedImages = [];
@@ -1536,13 +1536,13 @@ class email extends Controller {
         if ($email_tecnico && $result_tecnico) {
             $subject_tecnico = '✅ CONFIRMACIÓN TÉCNICA - Equipo POS Devuelto Exitosamente';
             $body_tecnico = '
-            <!DOCTYPE html>
-            <html lang="es">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Confirmación Técnica - Equipo Devuelto</title>
-                <style>
+                    <style>
                     body { 
                         font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; 
                         background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
@@ -1642,7 +1642,7 @@ class email extends Controller {
                         flex: 1;
                     }
                     .status-indicator { 
-                        display: inline-block; 
+                                display: inline-block; 
                         padding: 6px 12px; 
                         border-radius: 20px; 
                         font-weight: 600; 
@@ -1656,9 +1656,9 @@ class email extends Controller {
                         display: inline-block; 
                         background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); 
                         color: white; 
-                        padding: 12px 25px; 
+                                padding: 12px 25px; 
                         border-radius: 8px; 
-                        text-decoration: none; 
+                                text-decoration: none; 
                         font-weight: 600; 
                         font-size: 1em;
                         box-shadow: 0 3px 10px rgba(0, 184, 148, 0.3);
@@ -1667,7 +1667,7 @@ class email extends Controller {
                     .action-button:hover { 
                         transform: translateY(-1px); 
                         box-shadow: 0 4px 15px rgba(0, 184, 148, 0.4);
-                        text-decoration: none;
+                                text-decoration: none; 
                         color: white;
                     }
                     .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e9ecef; }
@@ -1682,15 +1682,15 @@ class email extends Controller {
                         padding: 2px 6px;
                         border-radius: 3px;
                         color: #2d5016;
-                    }
-                </style>
-            </head>
-            <body>
+                            }
+                    </style>
+                </head>
+                <body>
                 <div class="technical-container">
                     <div class="technical-header">
                         <h1 class="technical-title">✅ EQUIPO DEVUELTO</h1>
                         <p class="technical-subtitle">Confirmación Técnica de Devolución</p>
-                    </div>
+                        </div>
                     <div class="technical-content">
                         <div class="greeting">
                             Hola, <strong>' . htmlspecialchars($nombre_tecnico) . '</strong>
@@ -1746,7 +1746,7 @@ class email extends Controller {
                                     <span class="details-label">💬 Comentario Devolución:</span>
                                     <span class="details-value">' . htmlspecialchars($comentario_entrega) . '</span>
                                 </li>
-                            </ul>
+                        </ul>
                             <div style="text-align: center; margin-top: 15px;">
                                 <span class="status-indicator status-success">
                                     ✅ ' . htmlspecialchars($ticketstatus) . '
@@ -1762,11 +1762,11 @@ class email extends Controller {
             <div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                            <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
                 <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-            </div>
-                </div>
-            </body>
+                        </div>
+                    </div>
+                </body>
             </html>';
 
             if ($this->emailService->sendEmail($email_tecnico, $subject_tecnico, $body_tecnico, [], $embeddedImages)) {
@@ -1968,9 +1968,9 @@ class email extends Controller {
             <div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
                 <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-            </div>
+                </div>
             </div>
             </body>
             </html>
@@ -2035,9 +2035,9 @@ class email extends Controller {
             <div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
                 <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-            </div>
+                </div>
             </div>
             </div>
             </body>
@@ -2101,9 +2101,9 @@ class email extends Controller {
             <div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
                 <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-            </div>
+                    </div>
             </div>
             </div>
             </body>
@@ -2171,9 +2171,9 @@ class email extends Controller {
             <div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
                 <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-            </div>
+                </div>
             </div>
             </body>
             </html>
