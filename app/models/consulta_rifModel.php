@@ -3184,5 +3184,16 @@ class consulta_rifModel extends Model
             // Manejar excepciones
         }
     }
+
+    public function GetTicketDataComponent(){
+        try {
+            $sql = "SELECT * FROM component_pos();";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetTicketReentry_lab: " . $e->getMessage());
+            return false;
+        }
+    }
 }
 ?>

@@ -17,7 +17,6 @@ use App\Repositories\technicalConsultionRepository;
 use Controller;
 use DatabaseCon;
 use DateTime;
-use DateInterval;
 
 class Consulta extends Controller
 {
@@ -303,7 +302,11 @@ class Consulta extends Controller
 
                 case 'getBancoTicket':
                     $this->handleGetBancoTicket();
-                    break;     
+                    break;   
+                    
+                case 'GetTicketsComponentes':
+                    $this->handleGetTicketsComponentes();
+                    break;
 
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
@@ -2085,6 +2088,17 @@ class Consulta extends Controller
             $this->response(['success' => false, 'message' => 'Error al obtener los serial'], 500); // Código 500 Internal Server Error
         }
         $this->response(['success' => false, 'message' => 'Debe Coloque un serial']);
+    }
+
+    public function handleGetTicketsComponentes(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetTicketDataComponent();
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Se ha encontrado la información del ticket.', 'tickets' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
+        }
     }
 }
 ?>
