@@ -88,4 +88,28 @@ class AiRepository
             return null;
         }
     }
+
+    /**
+     * Obtiene eficiencia de técnicos individuales
+     * Consulta compleja para análisis detallado de rendimiento
+     */
+    public function getTechnicianEfficiency()
+    {
+        try {
+            $result = $this->aiModel->getTechnicianEfficiency();
+            if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+            }else{
+                return null;
+            }
+        } catch (Exception $e) {
+            error_log('Error en AiRepository::getTechnicianEfficiency: ' . $e->getMessage());
+            return null;
+        }
+    }
 }

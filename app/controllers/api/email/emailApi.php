@@ -2197,35 +2197,35 @@ class email extends Controller {
                         <div class="info-grid">
                             <div class="info-item">
                                 <span class="info-label">🎫 Número de Ticket: </span>
-                                <span class="info-value" style="color: #003594; font-weight: 700; font-size: 1.3em;">' . htmlspecialchars($ticketnro) . '</span>
+                                <span class="info-value" style="color: #003594; font-weight: 700; font-size: 1.3em;"> ' . htmlspecialchars($ticketnro) . '</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">🏢 RIF Cliente: </span>
-                                <span class="info-value">' . htmlspecialchars($clientRif) . '</span>
+                                <span class="info-value"> ' . htmlspecialchars($clientRif) . '</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">🏢 Razón Social: </span>
-                                <span class="info-value">' . htmlspecialchars($clientName) . '</span>
+                                <span class="info-value"> ' . htmlspecialchars($clientName) . '</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">⚙️ Serial POS: </span>
-                                <span class="info-value" style="font-family: monospace; background: #e9ecef; padding: 4px 8px; border-radius: 4px;">' . htmlspecialchars($ticketserial) . '</span>
+                                <span class="info-value" style="font-family: monospace; background: #e9ecef; padding: 4px 8px; border-radius: 4px;"> ' . htmlspecialchars($ticketserial) . '</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">🔍 Nivel de Falla: </span>
-                                <span class="info-value">' . htmlspecialchars($ticketNivelFalla) . '</span>
+                                <span class="info-value"> ' . htmlspecialchars($ticketNivelFalla) . '</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">❌ Falla Reportada: </span>
-                                <span class="info-value">' . htmlspecialchars($name_failure) . '</span>
+                                <span class="info-value"> ' . htmlspecialchars($name_failure) . '</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">📅 Fecha de Creación: </span>
-                                <span class="info-value">' . htmlspecialchars($ticketfinished) . '</span>
+                                <span class="info-value"> ' . htmlspecialchars($ticketfinished) . '</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">📋 Acción del Ticket: </span>
-                                <span class="info-value">' . htmlspecialchars($ticketaccion) . '</span>
+                                <span class="info-value"> ' . htmlspecialchars($ticketaccion) . '</span>
                             </div>
                         </div>
                         <div style="text-align: center; margin-top: 20px;">
@@ -2414,40 +2414,40 @@ class email extends Controller {
                         <h3 class="details-title">🔧 Detalles Técnicos del Ticket</h3>
                         <ul class="details-list">
                             <li class="details-item">
-                                <span class="details-label">🎫 Número de Ticket:</span>
-                                <span class="details-value code-style">' . htmlspecialchars($ticketnro) . '</span>
+                                <span class="details-label">🎫 Número de Ticket: </span>
+                                <span class="details-value code-style"> ' . htmlspecialchars($ticketnro) . '</span>
                             </li>
                             <li class="details-item">
-                                <span class="details-label">🏢 RIF Cliente:</span>
-                                <span class="details-value">' . htmlspecialchars($clientRif) . '</span>
+                                <span class="details-label">🏢 RIF Cliente: </span>
+                                <span class="details-value"> ' . htmlspecialchars($clientRif) . '</span>
                             </li>
                             <li class="details-item">
-                                <span class="details-label">🏢 Razón Social:</span>
-                                <span class="details-value">' . htmlspecialchars($clientName) . '</span>
+                                <span class="details-label">🏢 Razón Social: </span>
+                                <span class="details-value"> ' . htmlspecialchars($clientName) . '</span>
                             </li>
                             <li class="details-item">
-                                <span class="details-label">⚙️ Serial POS:</span>
-                                <span class="details-value code-style">' . htmlspecialchars($ticketserial) . '</span>
+                                <span class="details-label">⚙️ Serial POS: </span>
+                                <span class="details-value code-style"> ' . htmlspecialchars($ticketserial) . '</span>
                             </li>
                             <li class="details-item">
-                                <span class="details-label">🔍 Nivel de Falla:</span>
-                                <span class="details-value">' . htmlspecialchars($ticketNivelFalla) . '</span>
+                                <span class="details-label">🔍 Nivel de Falla: </span>
+                                <span class="details-value"> ' . htmlspecialchars($ticketNivelFalla) . '</span>
                             </li>
                             <li class="details-item">
-                                <span class="details-label">❌ Falla Reportada:</span>
-                                <span class="details-value">' . htmlspecialchars($name_failure) . '</span>
+                                <span class="details-label">❌ Falla Reportada: </span>
+                                <span class="details-value"> ' . htmlspecialchars($name_failure) . '</span>
                             </li>
                             <li class="details-item">
-                                <span class="details-label">📅 Fecha de Creación:</span>
-                                <span class="details-value">' . htmlspecialchars($ticketfinished) . '</span>
+                                <span class="details-label">📅 Fecha de Creación: </span>
+                                <span class="details-value"> ' . htmlspecialchars($ticketfinished) . '</span>
                             </li>
                             <li class="details-item">
-                                <span class="details-label">📋 Acción del Ticket:</span>
-                                <span class="details-value">' . htmlspecialchars($ticketaccion) . '</span>
+                                <span class="details-label">📋 Acción del Ticket: </span>
+                                <span class="details-value"> ' . htmlspecialchars($ticketaccion) . '</span>
                             </li>
                             <li class="details-item">
-                                <span class="details-label">💰 Estado de Pago:</span>
-                                <span class="details-value">' . htmlspecialchars($ticketpaymnet) . '</span>
+                                <span class="details-label">💰 Estado de Pago: </span>
+                                <span class="details-value"> ' . htmlspecialchars($ticketpaymnet) . '</span>
                             </li>
                         </ul>
                         

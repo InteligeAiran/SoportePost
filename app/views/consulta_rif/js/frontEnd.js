@@ -2643,7 +2643,7 @@ function SendDataFailure1() {
                   </p>
                   <strong>
                       <p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
-                          Se ha enviado una notificación por correo electrónico.<br>
+                          Se enviará una notificación por correo electrónico al agregar componentes.<br>
                           <h7 style="color: black;" font-weight: bold;>El Estatus del Ticket es: <span style="color: red;">${ticketData.status_text}</span></h7>
                       </p>
                   </strong>
@@ -4649,8 +4649,63 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                 const response = JSON.parse(xhr.responseText);
                 
                 if (response.success) {
-                    // CORREO ELIMINADO: No se envía correo al agregar componentes
-                    console.log(`📧 Componentes guardados para ticket: ${response.ticket_number || ticketId}. Correo NO enviado (solo al cerrar ticket).`);
+                    // **MOVER LA LÓGICA DEL CORREO AQUÍ**
+                    const xhrEmail = new XMLHttpRequest();
+                    xhrEmail.open(
+                        "POST",
+                        `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`
+                    );
+                    xhrEmail.setRequestHeader(
+                        "Content-Type",
+                        "application/x-www-form-urlencoded"
+                    );
+
+                    xhrEmail.onload = function () {
+                        if (xhrEmail.status === 200) {
+                            try {
+                                const responseEmail = JSON.parse(xhrEmail.responseText);
+                                console.log("📧 Respuesta del envío de correo (Nivel 2):", responseEmail);
+                                
+                                // Verificar si al menos un correo se envió exitosamente
+                                const message = responseEmail.message || '';
+                                const correoTecnicoEnviado = message.includes('Correo del técnico enviado');
+                                
+                                if (responseEmail.success || correoTecnicoEnviado) {
+                                    // Mostrar notificación toast de éxito DESPUÉS de enviar ambos correos
+                                    setTimeout(() => {
+                                        Swal.fire({
+                                            icon: "success",
+                                            title: "Correo Enviado",
+                                            text: `Correo de notificación (Nivel 2) enviado exitosamente para el ticket #${response.ticket_number || ticketId} - Cliente: ${globalRazon} (${globalRif})`,
+                                            showConfirmButton: false,
+                                            confirmButtonText: "Cerrar",
+                                            confirmButtonColor: "#003594",
+                                            toast: true,
+                                            position: 'top-end',
+                                            color: 'black',
+                                            timer: 5000, // Se cierra automáticamente en 5 segundos
+                                            timerProgressBar: true
+                                        });
+                                    }, 500); // Delay de 500ms para que aparezca después del modal principal
+                                } else {
+                                    console.error("❌ Error al enviar correo (Nivel 2):", responseEmail.message);
+                                }
+                            } catch (error) {
+                                console.error("❌ Error al parsear respuesta del correo (Nivel 2):", error);
+                            }
+                        } else {
+                            console.error("❌ Error al solicitar el envío de correo (Nivel 2):", xhrEmail.status);
+                        }
+                    };
+
+                    xhrEmail.onerror = function () {
+                        console.error("Error de red al solicitar el envío de correo.");
+                    };
+                    const paramsEmail = `id_user=${encodeURIComponent(id_user)}`; // Asegúrate de enviar el ID del usuario para el correo
+                    xhrEmail.send(paramsEmail); // No necesitas enviar datos adicionales si tu backend ya tiene la información
+                    // **FIN DE LA LÓGICA DEL CORREO**
+                    
+                    console.log(`📧 Componentes guardados para ticket: ${response.ticket_number || ticketId}. Correo enviado.`);
                     
                     Swal.fire({
                         title: '¡Éxito!',

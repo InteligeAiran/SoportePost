@@ -190,6 +190,23 @@ class AiModel extends Model
     }
 
     /**
+     * Obtiene eficiencia de técnicos individuales
+     * Utiliza la función SQL GetTechnicianEfficiency() para análisis detallado
+     */
+    public function getTechnicianEfficiency()
+    {
+        try {
+            $sql = "SELECT * FROM GetTechnicianEfficiency()";
+            
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en getTechnicianEfficiency: " . $e->getMessage());
+            return ['query' => null, 'rows' => null, 'numRows' => 0];
+        }
+    }
+
+    /**
      * Método de ejemplo para consulta de base de datos específica
      * Este método puede ser usado para consultas personalizadas
      */

@@ -11,10 +11,12 @@ require_once 'app/repositories/AiRepository.php';
 use App\Repositories\AiRepository;
 use Controller;
 use DatabaseCon;
+use Exception;
 
 class ai extends Controller
 {
     private $aiRepository;
+    private $db;
 
     public function __construct()
     {
@@ -50,6 +52,9 @@ class ai extends Controller
                 break;
             case 'system_health':
                 $this->getSystemHealth();
+                break;
+            case 'technician_efficiency':
+                $this->getTechnicianEfficiency();
                 break;
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
@@ -227,6 +232,35 @@ class ai extends Controller
             }
         } catch (Exception $e) {
             error_log('Error en getSystemHealth: ' . $e->getMessage());
+            $this->response([
+                'success' => false,
+                'message' => 'Error interno del servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtiene eficiencia de técnicos individuales
+     */
+    private function getTechnicianEfficiency()
+    {
+        try {
+            $efficiency = $this->aiRepository->getTechnicianEfficiency();
+            
+            if ($efficiency) {
+                $this->response([
+                    'success' => true,
+                    'data' => $efficiency,
+                    'message' => 'Eficiencia de técnicos obtenida exitosamente'
+                ], 200);
+            } else {
+                $this->response([
+                    'success' => false,
+                    'message' => 'No se pudo obtener la eficiencia de técnicos'
+                ], 500);
+            }
+        } catch (Exception $e) {
+            error_log('Error en getTechnicianEfficiency: ' . $e->getMessage());
             $this->response([
                 'success' => false,
                 'message' => 'Error interno del servidor'

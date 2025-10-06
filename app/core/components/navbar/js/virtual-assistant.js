@@ -117,6 +117,10 @@ class VirtualAssistant {
                             <span class="option-icon">👥</span>
                             <span class="option-text">Rendimiento de técnicos</span>
                         </button>
+                        <button class="chat-option-btn" data-query="technician_efficiency">
+                            <span class="option-icon">📊</span>
+                            <span class="option-text">Eficiencia de técnicos individuales</span>
+                        </button>
                         <button class="chat-option-btn" data-query="pending_tickets">
                             <span class="option-icon">⏳</span>
                             <span class="option-text">Tickets pendientes</span>
@@ -413,7 +417,7 @@ class VirtualAssistant {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message user-message';
         messageDiv.innerHTML = `
-            <div class="message-content" style = "margin-top: 50%;">
+            <div class="message-content">
                 <div class="message-bubble">
                     <p style = "color: white;">${message}</p>
                 </div>
@@ -559,6 +563,16 @@ class VirtualAssistant {
                 '👥 Análisis del rendimiento de técnicos:',
                 {
                     type: 'performance',
+                    data: data
+                }
+            );
+            break;
+
+        case 'technician_efficiency':
+            this.addAssistantMessage(
+                '📊 Análisis detallado de eficiencia de técnicos individuales:',
+                {
+                    type: 'technician_efficiency',
                     data: data
                 }
             );
@@ -865,6 +879,77 @@ addChartMessage(data) {
                         </div>
                     </div>
                 `;
+                break;
+                
+            case 'technician_efficiency':
+                if (Array.isArray(data.data) && data.data.length > 0) {
+                    formatted = `
+                        <div class="data-response">
+                            <div class="technician-efficiency-header">
+                                <h6>🏆 Ranking de Eficiencia de Técnicos</h6>
+                                <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                                    Análisis basado en tickets asignados, completados y tiempo de resolución (últimos 30 días)
+                                </p>
+                            </div>
+                            <div class="technician-list">
+                                ${data.data.map((tech, index) => {
+                                    const rank = index + 1;
+                                    const isTopThree = index < 3;
+                                    const efficiencyColor = tech.efficiency_score >= 80 ? '#28a745' : tech.efficiency_score >= 60 ? '#ffc107' : '#dc3545';
+                                    const borderColor = isTopThree ? '#28a745' : '#6c757d';
+                                    
+                                    return `
+                                        <div class="technician-item" style="margin-bottom: 15px; padding: 12px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid ${borderColor};">
+                                            <div class="technician-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                <div class="technician-name">
+                                                    <strong style="color: #333;">#${rank} ${tech.technician_name} ${tech.technician_surname}</strong>
+                                                    ${isTopThree ? `<span style="margin-left: 8px; font-size: 12px; background-color: #28a745; color: white; padding: 2px 6px; border-radius: 3px;">TOP ${rank}</span>` : ''}
+                                                </div>
+                                                <div class="efficiency-score" style="font-size: 18px; font-weight: bold; color: ${efficiencyColor};">
+                                                    ${tech.efficiency_score}%
+                                                </div>
+                                            </div>
+                                            <div class="technician-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; font-size: 12px;">
+                                                <div class="stat-item">
+                                                    <span class="stat-label">Tickets:</span>
+                                                    <span class="stat-value">${tech.total_tickets_assigned}</span>
+                                                </div>
+                                                <div class="stat-item">
+                                                    <span class="stat-label">Completados:</span>
+                                                    <span class="stat-value" style="color: #28a745;">${tech.tickets_completed}</span>
+                                                </div>
+                                                <div class="stat-item">
+                                                    <span class="stat-label">En Proceso:</span>
+                                                    <span class="stat-value" style="color: #ffc107;">${tech.tickets_in_progress}</span>
+                                                </div>
+                                                <div class="stat-item">
+                                                    <span class="stat-label">Abiertos:</span>
+                                                    <span class="stat-value" style="color: #dc3545;">${tech.tickets_open}</span>
+                                                </div>
+                                                <div class="stat-item">
+                                                    <span class="stat-label">Tasa:</span>
+                                                    <span class="stat-value">${tech.completion_rate}%</span>
+                                                </div>
+                                                <div class="stat-item">
+                                                    <span class="stat-label">Tiempo Prom:</span>
+                                                    <span class="stat-value">${tech.average_resolution_time || 'N/A'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    formatted = `
+                        <div class="data-response">
+                            <div class="no-data">
+                                <p>No hay datos de eficiencia de técnicos disponibles.</p>
+                            </div>
+                        </div>
+                    `;
+                }
                 break;
         }
         
