@@ -16,7 +16,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-Use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 use App\Repositories\EmailRepository;
@@ -55,7 +55,7 @@ class email extends Controller {
                     $this->handleRestorePassword();
                 break;
 
-                case'send_ticket1':
+                case 'send_ticket1':
                     // Manejo del envío de ticket
                     $this->handleSendTicket1();
                 break;
@@ -376,6 +376,9 @@ class email extends Controller {
 
     public function handleSendTicket2() {
         try {
+            // Log para verificar que se está ejecutando la función correcta
+            error_log("EJECUTANDO handleSendTicket2 - " . date('Y-m-d H:i:s'));
+            
             $repository = new EmailRepository();
 
             // 1. Validar datos de entrada
@@ -433,223 +436,20 @@ class email extends Controller {
 
             // 5. Enviar correo a COORDINACIÓN (Estilo Ejecutivo - Jerarquía Alta)
             $subject_coordinador = '🎯 NOTIFICACIÓN EJECUTIVA - Ticket Cerrado';
-           $body_coordinador = '
-            <!DOCTYPE html>
-            <html lang="es">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Notificación Ejecutiva - Ticket Cerrado</title>
-                <style>
-                    body { 
-                        margin: 0; 
-                        padding: 0; 
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-                    }
-                    .executive-container { 
-                        max-width: 700px; 
-                        margin: 20px auto; 
-                        background: #ffffff; 
-                        border-radius: 15px; 
-                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-                        overflow: hidden;
-                    }
-                    .executive-header { 
-                        background: linear-gradient(135deg, #003594 0%, #0047ab 100%);
-                        color: #ffffff; 
-                        padding: 40px 30px; 
-                        text-align: center;
-                        position: relative;
-                    }
-                    .executive-header::before {
-                        content: "";
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background: url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
-                    }
-                    .executive-title { 
-                        font-size: 2.2em; 
-                        margin: 0 0 10px 0; 
-                        font-weight: 700;
-                        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-                    }
-                    .executive-subtitle {
-                        font-size: 1.1em;
-                        opacity: 0.9;
-                        margin: 0;
-                    }
-                    .executive-content {
-                        padding: 40px 30px;
-                    }
-                    .greeting {
-                        font-size: 1.3em;
-                        color: #2c3e50;
-                        margin-bottom: 30px;
-                        text-align: center;
-                    }
-                    .ticket-summary {
-                        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-                        border-radius: 12px;
-                        padding: 30px;
-                        margin: 30px 0;
-                        border-left: 5px solid #003594;
-                    }
-                    .summary-title {
-                        font-size: 1.4em;
-                        color: #003594;
-                        margin-bottom: 20px;
-                        font-weight: 600;
-                    }
-                    .info-grid {
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 15px;
-                        margin-bottom: 20px;
-                    }
-                    .info-item {
-                        display: flex;
-                        flex-direction: column;
-                        padding: 12px;
-                        background: #ffffff;
-                        border-radius: 8px;
-                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-                    }
-                    .info-label {
-                        font-size: 0.9em;
-                        color: #6c757d;
-                        font-weight: 600;
-                        margin-bottom: 5px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                    }
-                    .info-value {
-                        font-size: 1.1em;
-                        color: #2c3e50;
-                        font-weight: 500;
-                    }
-                    .status-badge {
-                        display: inline-block;
-                        padding: 8px 16px;
-                        border-radius: 20px;
-                        font-weight: 600;
-                        font-size: 0.9em;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                    }
-                    .status-closed {
-                        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-                        color: #ffffff;
-                    }
-                    .action-button {
-                        display: inline-block;
-                        padding: 15px 30px;
-                        background: linear-gradient(135deg, #003594 0%, #0047ab 100%);
-                        color: #ffffff;
-                        text-decoration: none;
-                        border-radius: 25px;
-                        font-weight: 600;
-                        font-size: 1.1em;
-                        text-align: center;
-                        margin: 20px 0;
-                        transition: all 0.3s ease;
-                        box-shadow: 0 4px 15px rgba(0, 53, 148, 0.3);
-                    }
-                    .action-button:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 6px 20px rgba(0, 53, 148, 0.4);
-                    }
-                    .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e9ecef; }
-                    .logo { max-width: 150px; margin: 10px 0; }
-                    .logo-section {
-                        margin-top: 20px;
-                    }
-                    .logo-section img {
-                        max-width: 200px;
-                        height: auto;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="executive-container">
-                    <div class="executive-header">
-                        <h1 class="executive-title">🎯 TICKET CERRADO</h1>
-                        <p class="executive-subtitle">Notificación Ejecutiva de Cierre</p>
-                    </div>
-                    
-                    <div class="executive-content">
-                        <div class="greeting">
-                            Hola, <strong>Gerencia de ' . htmlspecialchars($nombre_area) . '</strong>
-                        </div>
-                        
-                        <p style="font-size: 1.1em; color: #495057; line-height: 1.6; text-align: center; margin-bottom: 30px;">
-                            El técnico <strong style="color: #003594;">' . htmlspecialchars($nombre_tecnico_ticket) . '</strong> 
-                            ha <strong style="color: #28a745;">CERRADO EXITOSAMENTE</strong> el siguiente ticket:
-                        </p>
-                        
-                        <div class="ticket-summary">
-                            <h3 class="summary-title">📊 Resumen Ejecutivo del Ticket</h3>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <span class="info-label">🎫 Número de Ticket</span>
-                                    <span class="info-value" style="color: #003594; font-weight: 700; font-size: 1.3em;">' . htmlspecialchars($ticketnro) . '</span>
-                        </div>
-                                <div class="info-item">
-                                    <span class="info-label">🏢 RIF Cliente</span>
-                            <span class="info-value">' . htmlspecialchars($clientRif) . '</span>
-                        </div>
-                                <div class="info-item">
-                                    <span class="info-label">🏢 Razón Social</span>
-                            <span class="info-value">' . htmlspecialchars($clientName) . '</span>
-                        </div>
-                                <div class="info-item">
-                                    <span class="info-label">⚙️ Serial POS</span>
-                                    <span class="info-value" style="font-family: monospace; background: #e9ecef; padding: 4px 8px; border-radius: 4px;">' . htmlspecialchars($ticketserial) . '</span>
-                        </div>
-                                <div class="info-item">
-                                    <span class="info-label">🔍 Nivel de Falla</span>
-                            <span class="info-value">' . htmlspecialchars($ticketNivelFalla) . '</span>
-                        </div>
-                                <div class="info-item">
-                                    <span class="info-label">❌ Falla Reportada</span>
-                            <span class="info-value">' . htmlspecialchars($name_failure) . '</span>
-                        </div>
-                                <div class="info-item">
-                                    <span class="info-label">📅 Fecha de Creación</span>
-                                    <span class="info-value">' . htmlspecialchars($ticketfinished) . '</span>
-                        </div>
-                                <div class="info-item">
-                                    <span class="info-label">📋 Acción del Ticket</span>
-                            <span class="info-value">' . htmlspecialchars($ticketaccion) . '</span>
-                        </div>
-                            </div>
-                            
-                            <div style="text-align: center; margin-top: 20px;">
-                                <span class="status-badge status-closed">
-                                    ✅ ' . htmlspecialchars($ticketstatus) . '
-                                </span>
-                        </div>    
-                    </div>
-
-                        <div style="text-align: center; margin: 30px 0;">
-                            <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="action-button">
-                                📋 Ver Detalles Completos del Ticket
-                            </a>
-                        </div>
-                    </div>
-                    
-            <div class="footer">
-                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
-                <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
-                <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-                    </div>
-                </div>
-            </body>
-            </html>';
+            $body_coordinador = $this->getCoordinatorEmailBody(
+                $nombre_area, 
+                $nombre_tecnico_ticket, 
+                $ticketnro, 
+                $clientRif, 
+                $clientName, 
+                $ticketserial, 
+                $ticketNivelFalla, 
+                $name_failure, 
+                $ticketfinished, 
+                $ticketaccion, 
+                $ticketstatus,
+                $ticketprocess
+            );
 
             
             // 6. Enviar correos según jerarquía
@@ -662,6 +462,9 @@ class email extends Controller {
             // Enviar correo a COORDINACIÓN (Jerarquía Alta - Estilo Ejecutivo)
             $results['coordinador'] = $this->emailService->sendEmail($email_area, $subject_coordinador, $body_coordinador, [], $embeddedImages);
             
+            // Log para verificar envío
+            error_log("CORREO COORDINADOR ENVIADO: " . ($results['coordinador'] ? 'SI' : 'NO'));
+            
             // Enviar correo a TÉCNICO (Jerarquía Operativa - Estilo Técnico)
             $result_tecnico = $repository->GetEmailUserDataById($id_user);
                 if ($result_tecnico && !empty($result_tecnico['user_email'])) {
@@ -670,249 +473,30 @@ class email extends Controller {
 
                 // Template para TÉCNICO (Estilo Técnico - Jerarquía Operativa)
                 $subject_tecnico = '✅ CONFIRMACIÓN TÉCNICA - Ticket Procesado';
-                    $body_tecnico = '
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Confirmación Técnica - Ticket Procesado</title>
-            <style>
-                body {
-                    margin: 0;
-                    padding: 0;
-                            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-                            font-family: "Consolas", "Monaco", "Courier New", monospace;
-                        }
-                        .technical-container { 
-                            max-width: 650px; 
-                    margin: 20px auto;
-                            background: #ffffff; 
-                            border-radius: 10px; 
-                            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-                            overflow: hidden;
-                            border: 2px solid #e9ecef;
-                        }
-                        .technical-header { 
-                            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
-                            color: #ffffff; 
-                            padding: 30px 25px; 
-                    text-align: center;
-                            position: relative;
-                        }
-                        .technical-header::before {
-                            content: "";
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            right: 0;
-                            bottom: 0;
-                            background: url("data:image/svg+xml,%3Csvg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Cpath d="M20 20c0-11.046-8.954-20-20-20v20h20z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
-                        }
-                        .technical-title { 
-                    font-size: 1.8em;
-                            margin: 0 0 8px 0; 
-                            font-weight: 700;
-                            font-family: "Consolas", monospace;
-                        }
-                        .technical-subtitle {
-                            font-size: 1em;
-                            opacity: 0.9;
-                            margin: 0;
-                            font-family: "Consolas", monospace;
-                        }
-                        .technical-content {
-                            padding: 30px 25px;
-                }
-                .greeting {
-                            font-size: 1.2em;
-                            color: #2d3436;
-                            margin-bottom: 25px;
-                            text-align: center;
-                            font-weight: 600;
-                        }
-                        .ticket-details {
-                            background: #f8f9fa;
-                            border-radius: 8px;
-                            padding: 25px;
-                            margin: 25px 0;
-                            border-left: 4px solid #00b894;
-                        }
-                        .details-title {
-                            font-size: 1.3em;
-                            color: #00b894;
-                    margin-bottom: 20px;
-                            font-weight: 600;
-                            text-transform: uppercase;
-                            letter-spacing: 1px;
-                }
-                        .details-list {
-                    list-style: none;
-                            padding: 0;
-                            margin: 0;
-                }
-                        .details-item {
-                    margin-bottom: 12px;
-                            padding: 8px 0;
-                            border-bottom: 1px solid #e9ecef;
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                        }
-                        .details-item:last-child {
-                            border-bottom: none;
-                        }
-                        .details-label {
-                            font-weight: 600;
-                            color: #636e72;
-                            font-size: 0.95em;
-                            width: 180px;
-                        }
-                        .details-value {
-                            color: #2d3436;
-                            font-weight: 500;
-                            text-align: right;
-                            flex: 1;
-                        }
-                        .status-indicator {
-                            display: inline-block;
-                            padding: 6px 12px;
-                            border-radius: 15px;
-                            font-weight: 600;
-                            font-size: 0.85em;
-                            text-transform: uppercase;
-                            letter-spacing: 0.5px;
-                        }
-                        .status-success {
-                            background: #00b894;
-                            color: #ffffff;
-                        }
-                        .action-button {
-                            display: inline-block; 
-                            padding: 12px 25px; 
-                            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
-                            color: #ffffff; 
-                            text-decoration: none; 
-                            border-radius: 20px;
-                            font-weight: 600;
-                            font-size: 1em;
-                            text-align: center;
-                            margin: 20px 0;
-                            transition: all 0.3s ease;
-                            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
-                        }
-                        .action-button:hover {
-                            transform: translateY(-2px);
-                            box-shadow: 0 6px 20px rgba(0, 184, 148, 0.4);
-                        }
-                        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e9ecef; }
-                        .logo { max-width: 150px; margin: 10px 0; }
-                        .logo-section {
-                            margin-top: 15px;
-                        }
-                        .logo-section img {
-                            max-width: 150px;
-                            height: auto;
-                        }
-                        .code-style {
-                            font-family: "Consolas", "Monaco", "Courier New", monospace;
-                            background: #e9ecef;
-                            padding: 2px 6px;
-                            border-radius: 3px;
-                            font-size: 0.9em;
-                        }
-            </style>
-        </head>
-        <body>
-                    <div class="technical-container">
-                        <div class="technical-header">
-                            <h1 class="technical-title">✅ TICKET PROCESADO</h1>
-                            <p class="technical-subtitle">Confirmación Técnica de Cierre</p>
-                </div>
-                        
-                        <div class="technical-content">
-                            <div class="greeting">
-                                Hola, <strong>' . htmlspecialchars($nombre_tecnico) . '</strong>
-                            </div>
-                            
-                            <p style="font-size: 1.1em; color: #495057; line-height: 1.6; text-align: center; margin-bottom: 25px;">
-                                Tu ticket ha sido <strong style="color: #00b894;">PROCESADO EXITOSAMENTE</strong> y 
-                                se ha notificado a <strong style="color: #003594;">' . htmlspecialchars($nombre_area) . '</strong>.
-                            </p>
-                            
-                            <div class="ticket-details">
-                                <h3 class="details-title">🔧 Detalles Técnicos del Ticket</h3>
-                                <ul class="details-list">
-                                    <li class="details-item">
-                                        <span class="details-label">🎫 Número de Ticket:</span>
-                                        <span class="details-value code-style">' . htmlspecialchars($ticketnro) . '</span>
-                                    </li>
-                                    <li class="details-item">
-                                        <span class="details-label">🏢 RIF Cliente:</span>
-                                        <span class="details-value">' . htmlspecialchars($clientRif) . '</span>
-                                    </li>
-                                    <li class="details-item">
-                                        <span class="details-label">🏢 Razón Social:</span>
-                                        <span class="details-value">' . htmlspecialchars($clientName) . '</span>
-                                    </li>
-                                    <li class="details-item">
-                                        <span class="details-label">⚙️ Serial POS:</span>
-                                        <span class="details-value code-style">' . htmlspecialchars($ticketserial) . '</span>
-                                    </li>
-                                    <li class="details-item">
-                                        <span class="details-label">🔍 Nivel de Falla:</span>
-                                        <span class="details-value">' . htmlspecialchars($ticketNivelFalla) . '</span>
-                                    </li>
-                                    <li class="details-item">
-                                        <span class="details-label">❌ Falla Reportada:</span>
-                                        <span class="details-value">' . htmlspecialchars($name_failure) . '</span>
-                                    </li>
-                                    <li class="details-item">
-                                        <span class="details-label">📅 Fecha de Creación:</span>
-                                        <span class="details-value">' . htmlspecialchars($ticketfinished) . '</span>
-                                    </li>
-                                    <li class="details-item">
-                                        <span class="details-label">📋 Acción del Ticket:</span>
-                                        <span class="details-value">' . htmlspecialchars($ticketaccion) . '</span>
-                                    </li>
-                                    <li class="details-item">
-                                        <span class="details-label">💰 Estado de Pago:</span>
-                                        <span class="details-value">' . htmlspecialchars($ticketpaymnet) . '</span>
-                                    </li>
-                                </ul>
-                                
-                                <div style="text-align: center; margin-top: 20px;">
-                                    <span class="status-indicator status-success">
-                                        ✅ ' . htmlspecialchars($ticketstatus) . '
-                                    </span>
-                    </div>
-                            </div>
-                            
-                            <div style="text-align: center; margin: 25px 0;">
-                                <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="action-button">
-                                    🔍 Ver Detalles del Ticket
-                                </a>
-                            </div>
-                        </div>
-                        
-            <div class="footer">
-                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
-                <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
-                <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-                    </div>
-            </div>
-        </body>
-                </html>';
+                
+                $body_tecnico = $this->getTechnicianEmailBody(
+                    $nombre_tecnico,
+                    $nombre_area,
+                    $ticketnro, 
+                    $clientRif, 
+                    $clientName, 
+                    $ticketserial, 
+                    $ticketNivelFalla, 
+                    $name_failure, 
+                    $ticketfinished, 
+                    $ticketaccion, 
+                    $ticketpaymnet, 
+                    $ticketstatus,
+                    $ticketprocess
+                );
 
-    $embeddedImages1 = [];
-            if (defined('FIRMA_CORREO')) {
-                $embeddedImages1['imagen_adjunta'] = FIRMA_CORREO;
-            }
-
-                $results['tecnico'] = $this->emailService->sendEmail($email_tecnico, $subject_tecnico, $body_tecnico, [], $embeddedImages1);
-                } else {
+                $results['tecnico'] = $this->emailService->sendEmail($email_tecnico, $subject_tecnico, $body_tecnico, [], $embeddedImages);
+                
+                // Log para verificar envío
+                error_log("CORREO TECNICO ENVIADO: " . ($results['tecnico'] ? 'SI' : 'NO'));
+            } else {
                 $results['messages'][] = "No se pudo obtener el correo del técnico.";
+                error_log("ERROR: No se pudo obtener el correo del técnico");
             }
 
             // 7. Responder según resultados
@@ -2467,6 +2051,429 @@ class email extends Controller {
         error_log('Error en handlesend_reassignment_email: ' . $e->getMessage());
         $this->response(['success' => false, 'message' => 'Error interno del servidor.', 'color' => 'red']);
         }
+    }
+
+    // Funciones auxiliares para generar HTML de correos
+    private function getCoordinatorEmailBody($nombre_area, $nombre_tecnico_ticket, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketstatus, $ticketprocess) {
+        return '
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Notificación Ejecutiva - Ticket Cerrado</title>
+            <style>
+                body { 
+                    margin: 0; 
+                    padding: 0; 
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                }
+                .executive-container { 
+                    max-width: 700px; 
+                    margin: 20px auto; 
+                    background: #ffffff; 
+                    border-radius: 15px; 
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
+                }
+                .executive-header { 
+                    background: linear-gradient(135deg, #003594 0%, #0047ab 100%);
+                    color: #ffffff; 
+                    padding: 40px 30px; 
+                    text-align: center;
+                    position: relative;
+                }
+                .executive-title { 
+                    font-size: 2.2em; 
+                    margin: 0 0 10px 0; 
+                    font-weight: 700;
+                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                }
+                .executive-subtitle {
+                    font-size: 1.1em;
+                    opacity: 0.9;
+                    margin: 0;
+                }
+                .executive-content {
+                    padding: 40px 30px;
+                }
+                .greeting {
+                    font-size: 1.3em;
+                    color: #2c3e50;
+                    margin-bottom: 30px;
+                    text-align: center;
+                }
+                .ticket-summary {
+                    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                    border-radius: 12px;
+                    padding: 30px;
+                    margin: 30px 0;
+                    border-left: 5px solid #003594;
+                }
+                .summary-title {
+                    font-size: 1.4em;
+                    color: #003594;
+                    margin-bottom: 20px;
+                    font-weight: 600;
+                }
+                .info-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 15px;
+                    margin-bottom: 20px;
+                }
+                .info-item {
+                    display: flex;
+                    flex-direction: column;
+                    padding: 12px;
+                    background: #ffffff;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                }
+                .info-label {
+                    font-size: 0.9em;
+                    color: #6c757d;
+                    font-weight: 600;
+                    margin-bottom: 5px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                .info-value {
+                    font-size: 1.1em;
+                    color: #2c3e50;
+                    font-weight: 500;
+                }
+                .status-badge {
+                    display: inline-block;
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    font-weight: 600;
+                    font-size: 0.9em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                .status-closed {
+                    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                    color: #ffffff;
+                }
+                .action-button {
+                    display: inline-block;
+                    padding: 15px 30px;
+                    background: linear-gradient(135deg, #003594 0%, #0047ab 100%);
+                    color: #ffffff;
+                    text-decoration: none;
+                    border-radius: 25px;
+                    font-weight: 600;
+                    font-size: 1.1em;
+                    text-align: center;
+                    margin: 20px 0;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 4px 15px rgba(0, 53, 148, 0.3);
+                }
+                .action-button:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(0, 53, 148, 0.4);
+                }
+                .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e9ecef; }
+                .logo { max-width: 150px; margin: 10px 0; }
+            </style>
+        </head>
+        <body>
+            <div class="executive-container">
+                <div class="executive-header">
+                    <h1 class="executive-title">🎯 TICKET CERRADO</h1>
+                    <p class="executive-subtitle">Notificación Ejecutiva de Cierre</p>
+                </div>
+                <div class="executive-content">
+                    <div class="greeting">
+                        Hola, <strong>Gerencia de ' . htmlspecialchars($nombre_area) . '</strong>
+                    </div>
+                    <p style="font-size: 1.1em; color: #495057; line-height: 1.6; text-align: center; margin-bottom: 30px;">
+                        El técnico <strong style="color: #003594;">' . htmlspecialchars($nombre_tecnico_ticket) . '</strong> ha <strong style="color: #28a745;">CERRADO EXITOSAMENTE</strong> el siguiente ticket:
+                    </p>
+                    <div class="ticket-summary">
+                        <h3 class="summary-title">📊 Resumen Ejecutivo del Ticket</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">🎫 Número de Ticket: </span>
+                                <span class="info-value" style="color: #003594; font-weight: 700; font-size: 1.3em;">' . htmlspecialchars($ticketnro) . '</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">🏢 RIF Cliente: </span>
+                                <span class="info-value">' . htmlspecialchars($clientRif) . '</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">🏢 Razón Social: </span>
+                                <span class="info-value">' . htmlspecialchars($clientName) . '</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">⚙️ Serial POS: </span>
+                                <span class="info-value" style="font-family: monospace; background: #e9ecef; padding: 4px 8px; border-radius: 4px;">' . htmlspecialchars($ticketserial) . '</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">🔍 Nivel de Falla: </span>
+                                <span class="info-value">' . htmlspecialchars($ticketNivelFalla) . '</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">❌ Falla Reportada: </span>
+                                <span class="info-value">' . htmlspecialchars($name_failure) . '</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">📅 Fecha de Creación: </span>
+                                <span class="info-value">' . htmlspecialchars($ticketfinished) . '</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">📋 Acción del Ticket: </span>
+                                <span class="info-value">' . htmlspecialchars($ticketaccion) . '</span>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 20px;">
+                            <span class="status-badge status-closed">
+                                ✅ ' . htmlspecialchars($ticketstatus) . '
+                            </span>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="action-button">
+                            📋 Ver Detalles Completos del Ticket
+                        </a>
+                    </div>
+                </div>
+                <div class="footer">
+                    ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
+                    <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                    <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+        </html>';
+    }
+
+    private function getTechnicianEmailBody($nombre_tecnico, $nombre_area, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketpaymnet, $ticketstatus, $ticketprocess) {
+        return '
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Confirmación Técnica - Ticket Procesado</title>
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+                    font-family: "Consolas", "Monaco", "Courier New", monospace;
+                }
+                .technical-container { 
+                    max-width: 650px; 
+                    margin: 20px auto;
+                    background: #ffffff; 
+                    border-radius: 10px; 
+                    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
+                    border: 2px solid #e9ecef;
+                }
+                .technical-header { 
+                    background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+                    color: #ffffff; 
+                    padding: 30px 25px; 
+                    text-align: center;
+                    position: relative;
+                }
+                .technical-title { 
+                    font-size: 1.8em;
+                    margin: 0 0 8px 0; 
+                    font-weight: 700;
+                    font-family: "Consolas", monospace;
+                }
+                .technical-subtitle {
+                    font-size: 1em;
+                    opacity: 0.9;
+                    margin: 0;
+                    font-family: "Consolas", monospace;
+                }
+                .technical-content {
+                    padding: 30px 25px;
+                }
+                .greeting {
+                    font-size: 1.2em;
+                    color: #2d3436;
+                    margin-bottom: 25px;
+                    text-align: center;
+                    font-weight: 600;
+                }
+                .ticket-details {
+                    background: #f8f9fa;
+                    border-radius: 8px;
+                    padding: 25px;
+                    margin: 25px 0;
+                    border-left: 4px solid #00b894;
+                }
+                .details-title {
+                    font-size: 1.3em;
+                    color: #00b894;
+                    margin-bottom: 20px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                }
+                .details-list {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+                .details-item {
+                    margin-bottom: 12px;
+                    padding: 8px 0;
+                    border-bottom: 1px solid #e9ecef;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                .details-item:last-child {
+                    border-bottom: none;
+                }
+                .details-label {
+                    font-weight: 600;
+                    color: #636e72;
+                    font-size: 0.95em;
+                    width: 180px;
+                }
+                .details-value {
+                    color: #2d3436;
+                    font-weight: 500;
+                    text-align: right;
+                    flex: 1;
+                }
+                .status-indicator {
+                    display: inline-block;
+                    padding: 6px 12px;
+                    border-radius: 15px;
+                    font-weight: 600;
+                    font-size: 0.85em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                .status-success {
+                    background: #00b894;
+                    color: #ffffff;
+                }
+                .action-button {
+                    display: inline-block;
+                    padding: 12px 25px;
+                    background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+                    color: #ffffff;
+                    text-decoration: none;
+                    border-radius: 20px;
+                    font-weight: 600;
+                    font-size: 1em;
+                    text-align: center;
+                    margin: 20px 0;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+                }
+                .action-button:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(0, 184, 148, 0.4);
+                }
+                .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e9ecef; }
+                .logo { max-width: 150px; margin: 10px 0; }
+                .code-style {
+                    font-family: "Consolas", "Monaco", "Courier New", monospace;
+                    background: #e9ecef;
+                    padding: 2px 6px;
+                    border-radius: 3px;
+                    font-size: 0.9em;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="technical-container">
+                <div class="technical-header">
+                    <h1 class="technical-title">✅ TICKET PROCESADO</h1>
+                    <p class="technical-subtitle">Confirmación Técnica de Cierre</p>
+                </div>
+                <div class="technical-content">
+                    <div class="greeting">
+                        Hola, <strong>' . htmlspecialchars($nombre_tecnico) . '</strong>
+                    </div>
+                    
+                    <p style="font-size: 1.1em; color: #495057; line-height: 1.6; text-align: center; margin-bottom: 25px;">
+                        Tu ticket ha sido <strong style="color: #00b894;">PROCESADO EXITOSAMENTE</strong> y 
+                        se ha notificado a <strong style="color: #003594;">' . htmlspecialchars($nombre_area) . '</strong>.
+                    </p>
+                    
+                    <!-- IDENTIFICADOR ÚNICO PARA VERIFICAR FUNCIÓN -->
+                    <div style="display: none; color: #ff0000; font-size: 8px;">
+                        FUNCION_HANDLESENDTICKET2_VERIFICACION_' . date('YmdHis') . '
+                    </div>
+                    
+                    <div class="ticket-details">
+                        <h3 class="details-title">🔧 Detalles Técnicos del Ticket</h3>
+                        <ul class="details-list">
+                            <li class="details-item">
+                                <span class="details-label">🎫 Número de Ticket:</span>
+                                <span class="details-value code-style">' . htmlspecialchars($ticketnro) . '</span>
+                            </li>
+                            <li class="details-item">
+                                <span class="details-label">🏢 RIF Cliente:</span>
+                                <span class="details-value">' . htmlspecialchars($clientRif) . '</span>
+                            </li>
+                            <li class="details-item">
+                                <span class="details-label">🏢 Razón Social:</span>
+                                <span class="details-value">' . htmlspecialchars($clientName) . '</span>
+                            </li>
+                            <li class="details-item">
+                                <span class="details-label">⚙️ Serial POS:</span>
+                                <span class="details-value code-style">' . htmlspecialchars($ticketserial) . '</span>
+                            </li>
+                            <li class="details-item">
+                                <span class="details-label">🔍 Nivel de Falla:</span>
+                                <span class="details-value">' . htmlspecialchars($ticketNivelFalla) . '</span>
+                            </li>
+                            <li class="details-item">
+                                <span class="details-label">❌ Falla Reportada:</span>
+                                <span class="details-value">' . htmlspecialchars($name_failure) . '</span>
+                            </li>
+                            <li class="details-item">
+                                <span class="details-label">📅 Fecha de Creación:</span>
+                                <span class="details-value">' . htmlspecialchars($ticketfinished) . '</span>
+                            </li>
+                            <li class="details-item">
+                                <span class="details-label">📋 Acción del Ticket:</span>
+                                <span class="details-value">' . htmlspecialchars($ticketaccion) . '</span>
+                            </li>
+                            <li class="details-item">
+                                <span class="details-label">💰 Estado de Pago:</span>
+                                <span class="details-value">' . htmlspecialchars($ticketpaymnet) . '</span>
+                            </li>
+                        </ul>
+                        
+                        <div style="text-align: center; margin-top: 20px;">
+                            <span class="status-indicator status-success">
+                                ✅ ' . htmlspecialchars($ticketstatus) . '
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 25px 0;">
+                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="action-button">
+                            🔍 Ver Detalles del Ticket
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="footer">
+                    ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
+                    <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                    <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+        </html>';
     }
 }
 ?>

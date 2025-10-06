@@ -2666,9 +2666,10 @@ function sendToRegion(ticketId, selectedComponents, serial_Pos) {
     const id_user = document.getElementById("userId").value; // Obtiene el ID del usuario desde el formulario
     const component = selectedComponents;
     const pos_serial = serial_Pos;
+    const modulo = "Gestión Rosal";
 
     const regionalApiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/SendToRegion`; // Reemplaza con la URL real de tu API
-    const dataToSendString = `action=SendToRegion&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}&components=${encodeURIComponent(component)}&pos_serial=${encodeURIComponent(pos_serial)}`;
+    const dataToSendString = `action=SendToRegion&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}&components=${encodeURIComponent(component)}&pos_serial=${encodeURIComponent(pos_serial)}&modulo=${encodeURIComponent(modulo)}`;
 
     const xhr = new XMLHttpRequest();
     xhr.open("POST", regionalApiUrl, true);

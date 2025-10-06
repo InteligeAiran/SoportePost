@@ -290,27 +290,238 @@ function SearchTicketsComponents() {
     xhr.send(datos);
 }
 
-// Función para mostrar el modal de componentes (puedes personalizarla según tus necesidades)
+// Función para mostrar el modal de componentes con datos reales
 function showComponentsModal(idTicket, serialPos, nroTicket) {
-    // Aquí puedes implementar la lógica para mostrar los componentes
-    // Por ejemplo, hacer una llamada AJAX para obtener los componentes del POS
-    
+    // Mostrar loading
     Swal.fire({
-        title: 'Componentes del POS',
-        html: `
-            <div class="text-start">
-                <p><strong>Ticket:</strong> ${nroTicket}</p>
-                <p><strong>Serial POS:</strong> ${serialPos}</p>
-                <p><strong>ID Ticket:</strong> ${idTicket}</p>
-                <hr>
-                <p class="text-muted">Aquí se mostrarían los componentes del POS...</p>
-            </div>
-        `,
-        icon: 'info',
-        confirmButtonText: 'Cerrar',
-        confirmButtonColor: '#17a2b8',
-        width: 500
+        title: 'Cargando información del POS...',
+        text: 'Por favor espera mientras obtenemos la información del POS',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
     });
+
+    // Llamada AJAX para obtener la información del POS
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPOSInfo`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        Swal.close(); // Cerrar el loading
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success && response.tickets && response.tickets.length > 0) {
+                    // CORRECCIÓN: Mostrar TODOS los registros, no solo el primero
+                    const allPosData = response.tickets; // Todos los registros
+                    
+                    // Crear HTML para mostrar la información del POS
+                    let posInfoHtml = `
+                        <div class="text-start">
+                            <div class="row mb-4">
+                                <div class="col-12 text-center mb-3">
+                                    <h5 class="text-primary">
+                                        <i class="fas fa-desktop me-2"></i>
+                                        Información del POS
+                                    </h5>
+                                    <p class="text-muted">Se encontraron ${allPosData.length} registro(s) de componentes</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Información del Ticket y Serial (común para todos) -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="card border-primary">
+                                        <div class="card-header bg-primary text-white">
+                                            <strong><i class="fas fa-ticket-alt me-2"></i>Información del Ticket</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-2"><strong>N° Ticket:</strong> ${nroTicket}</p>
+                                            <p class="mb-0"><strong>ID Ticket:</strong> ${idTicket}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-info">
+                                        <div class="card-header bg-info text-white">
+                                            <strong><i class="fas fa-barcode me-2"></i>Serial del POS</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-0"><strong>Serial:</strong> ${serialPos}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Información del Banco y Tipo de POS (común para todos) -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="card border-success">
+                                        <div class="card-header bg-success text-white">
+                                            <strong><i class="fas fa-university me-2"></i>Información del Banco</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-0">
+                                                <strong>Banco:</strong><br>
+                                                <span class="text-break">${allPosData[0].banco_ibp || 'No disponible'}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-warning">
+                                        <div class="card-header bg-warning text-dark">
+                                            <strong><i class="fas fa-cogs me-2"></i>Tipo de POS</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-0">
+                                                <strong>Modelo:</strong><br>
+                                                <span class="text-break">${allPosData[0].tipo_pos || 'No disponible'}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Componentes por Módulo (ITERAR TODOS LOS REGISTROS) -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-puzzle-piece me-2"></i>
+                                        Componentes por Módulo
+                                    </h6>
+                                </div>
+                            </div>
+                    `;
+
+                    // ITERAR TODOS LOS REGISTROS DE COMPONENTES
+                    allPosData.forEach((posData, index) => {
+                        posInfoHtml += `
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="card border-secondary">
+                                        <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                                            <strong>
+                                                <i class="fas fa-layer-group me-2"></i>
+                                                Módulo: ${posData.modulo_insert || 'No disponible'}
+                                            </strong>
+                                            <span class="badge bg-light text-dark">#${index + 1}</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <p class="mb-2">
+                                                        <strong><i class="fas fa-user me-2"></i>Usuario que Cargó:</strong><br>
+                                                        <span class="text-break">${posData.full_name || 'No disponible'}</span>
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p class="mb-2">
+                                                        <strong><i class="fas fa-calendar me-2"></i>Fecha de Carga:</strong><br>
+                                                        <span class="text-break">${posData.component_insert_date || 'No disponible'}</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <p class="mb-0">
+                                                        <strong><i class="fas fa-puzzle-piece me-2"></i>Componentes:</strong><br>
+                                                        <span class="text-break badge bg-primary text-white p-2" style="font-size: 0.9em;">
+                                                            ${posData.aggregated_components_by_module || 'No disponible'}
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    posInfoHtml += `
+                            <!-- Nota informativa -->
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Nota:</strong> Esta información se obtiene desde la base de datos de Intelipunto y muestra todos los registros de componentes registrados para este serial de POS, organizados por módulo.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Mostrar el modal con la información del POS
+                    Swal.fire({
+                        title: 'Información del POS',
+                        html: posInfoHtml,
+                        icon: 'info',
+                        confirmButtonText: 'Cerrar',
+                        confirmButtonColor: '#17a2b8',
+                        width: 900, // Aumentar el ancho para mostrar más información
+                        customClass: {
+                            popup: 'swal-wide'
+                        }
+                    });
+
+                } else {
+                    // No hay información del POS
+                    Swal.fire({
+                        title: 'Sin Información',
+                        html: `
+                            <div class="text-center">
+                                <i class="fas fa-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
+                                <p>No se encontró información registrada para este POS.</p>
+                                <small class="text-muted">Ticket: ${nroTicket} | Serial: ${serialPos}</small>
+                            </div>
+                        `,
+                        icon: 'warning',
+                        confirmButtonText: 'Cerrar',
+                        confirmButtonColor: '#ffc107'
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al procesar la respuesta del servidor.',
+                    icon: 'error',
+                    confirmButtonText: 'Cerrar',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: `Error del servidor: ${xhr.status} ${xhr.statusText}`,
+                icon: 'error',
+                confirmButtonText: 'Cerrar',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    };
+
+    xhr.onerror = function() {
+        Swal.close();
+        Swal.fire({
+            title: 'Error de Conexión',
+            text: 'No se pudo conectar al servidor. Verifica tu conexión a Internet.',
+            icon: 'error',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#dc3545'
+        });
+    };
+
+    // Enviar la solicitud
+    const datos = `action=GetPOSInfo&serial=${encodeURIComponent(serialPos)}&id_ticket=${idTicket}`;
+    xhr.send(datos);
 }
 
 document.addEventListener('DOMContentLoaded', SearchTicketsComponents);

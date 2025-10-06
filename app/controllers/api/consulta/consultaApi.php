@@ -307,6 +307,10 @@ class Consulta extends Controller
                 case 'GetTicketsComponentes':
                     $this->handleGetTicketsComponentes();
                     break;
+                
+                case 'GetPOSInfo':
+                    $this->handleGetPOSInfo();
+                    break;
 
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
@@ -1750,6 +1754,7 @@ class Consulta extends Controller
         $ticketId = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
         $serial = isset($_POST['pos_serial']) ? $_POST['pos_serial'] : '';
+        $modulo = isset($_POST['modulo']) ? $_POST['modulo'] : '';
 
         // --- CORRECCIÓN AQUÍ ---
         // Recibe la cadena de texto de componentes, ej. "1,2"
@@ -1783,7 +1788,7 @@ class Consulta extends Controller
 
         $repository = new technicalConsultionRepository();
         // Pasa el array decodificado al repositorio
-        $result = $repository->SendToRegion($ticketId, $id_user, $componentes_array, $serial);
+        $result = $repository->SendToRegion($ticketId, $id_user, $componentes_array, $serial, $modulo);
         if ($result) {
             $this->response(['success' => true, 'message' => 'El ticket ha sido enviado a la región exitosamente.'], 200);
         } else {
@@ -2093,6 +2098,26 @@ class Consulta extends Controller
     public function handleGetTicketsComponentes(){
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketDataComponent();
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Se ha encontrado la información del ticket.', 'tickets' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleGetPOSInfo(){
+        $ticket_id = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $serial = isset($_POST['serial'])? $_POST['serial'] : '';
+
+    
+        if (!$ticket_id || !$serial) {
+            $this->response(['success' => false, 'message' => 'Faltan el id_ticket y el serial.'], 400);
+            return;
+        } 
+        
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetComponentsBySerial($ticket_id, $serial);
 
         if ($result) {
             $this->response(['success' => true, 'message' => 'Se ha encontrado la información del ticket.', 'tickets' => $result], 200);

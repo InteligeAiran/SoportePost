@@ -1021,7 +1021,7 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function SaveComponents($id_ticket, $components, $serial_pos, $id_user){
+    public function SaveComponents($id_ticket, $components, $serial_pos, $id_user, $modulo){
         try {
             $id_ticket1 = (int)$id_ticket;
             
@@ -1050,7 +1050,7 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
                     (int)$idticket,        // int
                     (int)$comp_id,         // int (debe existir en tabla components)
                     (int)$id_user,         // int (debe existir en users)
-                    'coordinador'          // text/varchar (verifica tipo de modulo_insert)
+                    $modulo         // text/varchar (verifica tipo de modulo_insert)
                     ];
 
                     $res = pg_query_params($this->db->getConnection(), $sqlcomponents, $params);

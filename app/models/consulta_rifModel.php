@@ -2335,10 +2335,10 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function SendToRegion($ticketId, $id_user, $componentes_array, $serial) {
+    public function SendToRegion($ticketId, $id_user, $componentes_array, $serial, $modulo) {
         try {
             $id_accion_ticket = 18;
-            $modulo_insertcolumn = "Rosal_region";
+            $modulo_insertcolumn = $modulo;
             
             // 1. Inicia una transacción
             pg_query($this->db->getConnection(), "BEGIN");
@@ -3187,7 +3187,18 @@ class consulta_rifModel extends Model
 
     public function GetTicketDataComponent(){
         try {
-            $sql = "SELECT * FROM component_pos();";
+            $sql = "SELECT * FROM GetTicketWithcomponent_pos();";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetTicketReentry_lab: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function GetComponentsBySerial($id_ticket, $serial){
+        try {
+            $sql = "SELECT * FROM component_pos('".$serial."', ".$id_ticket.");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

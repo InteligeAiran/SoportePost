@@ -1167,6 +1167,8 @@ class reportes extends Controller {
         $components_json = isset($_POST['selectedComponents']) ? trim($_POST['selectedComponents']) : null;
         $serial_pos = isset($_POST['serialPos']) ? trim($_POST['serialPos']) : null;
         $id_user = isset($_POST['id_user']) ? trim($_POST['id_user']) : null;
+        $modulo = isset($_POST['modulo']) ? trim ($_POST['modulo']) : null;
+
 
         // --- CORRECCIÓN AQUÍ ---
         // Inicializa array de componentes
@@ -1186,7 +1188,7 @@ class reportes extends Controller {
         }
 
         $repository = new ReportRepository();
-        $result = $repository->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user);
+        $result = $repository->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user, $modulo);
         if ($result !== false) {
             $this->response(['success' => true, 'message' => 'Componentes guardados correctamente'], 200);
         } else {

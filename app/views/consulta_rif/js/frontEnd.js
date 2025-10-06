@@ -9,7 +9,7 @@ let garantiaAlertShown = false;
 let emailQueue = []; // Cola para almacenar las solicitudes de correo
 let isProcessing = false; // Indicador de si se está procesando una solicitud
 
-  // FUNCIÓN PARA RESTAURAR EL ESTADO DE LA COORDINACIÓN
+// FUNCIÓN PARA RESTAURAR EL ESTADO DE LA COORDINACIÓN
 function restoreCoordinacionState() {
   const select = document.getElementById("AsiganrCoordinador");
   if (!select) return;
@@ -1452,7 +1452,7 @@ document.getElementById("DownloadExo").addEventListener("click", function (event
       });
       return;
     }
-  });
+});
 
 document.getElementById("DownloadAntici").addEventListener("click", function (event) {
   event.stopPropagation(); // Detener la propagación del evento
@@ -1511,7 +1511,7 @@ document.getElementById("DownloadAntici").addEventListener("click", function (ev
   const inputAnticipo1 = document.getElementById("DownloadAntici"); // El botón
 
   // Puedes agregar aquí validación de tamaño para el archivo de anticipo si es necesario
-  });
+});
 
 document.getElementById("DownloadAntici").addEventListener("click", function (event) {
     document.getElementById("DownloadExo").style.display = "none";
@@ -1798,20 +1798,8 @@ function SendDataFailure2(idStatusPayment) {
         try {
           const response = JSON.parse(xhr.responseText);
           if (response.success) {
-            // NUEVO: Agregar correo a la cola en lugar de enviarlo directamente
-            const emailData = {
-              id_user: id_user,
-              ticketData: response.ticket_data
-            };
-            
-            // Agregar el correo a la cola
-            emailQueue.push(emailData);
-            console.log(`📧 Correo agregado a la cola para ticket: ${response.ticket_data.Nr_ticket}. Total en cola: ${emailQueue.length}`);
-            
-            // Procesar la cola si no hay una solicitud en curso
-            if (!isProcessing) {
-              processEmailQueue();
-            }
+            // CORREO ELIMINADO: No se envía correo al crear el ticket
+            console.log(`📧 Ticket creado: ${response.ticket_data.Nr_ticket}. Correo NO enviado (solo al cerrar ticket).`);
 
             // Mostrar el primer modal (Guardado exitoso)
             Swal.fire({
@@ -1861,7 +1849,7 @@ function SendDataFailure2(idStatusPayment) {
                     </p>
                     <strong>
                       <p style="font-size: 0.9em; color: black; margin-top: 20px; text-align: center;">
-                        Se ha enviado una notificación por correo electrónico.<br>
+                        Ticket creado exitosamente.<br>
                         <h7><strong>El Estatus del Ticket es:</strong> <span style = "color: #28a745"; font-weight: bold;">${ticketData.status_text}</span></h7>
                       </p>
                     </strong>
@@ -2172,6 +2160,7 @@ function validateFileType(file, allowedTypes = ['*/*']) {
     // NUEVA LÓGICA: Aceptar cualquier tipo de archivo
     return { isValid: true };
 }
+
 // Función para validar el tamaño del archivo (ejemplo: máximo 10MB)
 function validateFileSize(file, maxSizeMB = 10) {
     if (!file) return { isValid: true };
@@ -2989,25 +2978,14 @@ function restaurarVisibilidadCompleta() {
   console.log("Visibilidad completa restaurada");
 }
 
-// --- Funciones auxiliares BORRAR---
-/*function clearFileInput(fileInputId) {
-  const oldFileInput = document.getElementById(fileInputId);
-  if (oldFileInput) {
-    const newFileInput = oldFileInput.cloneNode(true);
-    oldFileInput.parentNode.replaceChild(newFileInput, oldFileInput);
-  }
-}*/
-
-
 function clearFileSpan(spanElement) {
   if (spanElement) spanElement.textContent = "";
 }
 
 /* CAMPO RIF*/
-$(document).ready(function () {
-  $("#rifInput").mask("9?99999999"); // Máscara solo para la parte numérica
-});
-
+  $(document).ready(function () {
+    $("#rifInput").mask("9?99999999"); // Máscara solo para la parte numérica
+  });
 /* END CAMPO RIF*/
 
 function obtenerRifCompleto() {
@@ -4660,6 +4638,7 @@ function limpiarSeleccion() {
 // CORRECCIÓN PRINCIPAL: Se modificó la función para que reciba los componentes seleccionados
 function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos) {
     const id_user = document.getElementById('id_user').value;
+    const modulo = 'Creación Ticket';
     
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
@@ -4670,62 +4649,8 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                 const response = JSON.parse(xhr.responseText);
                 
                 if (response.success) {
-                    // **ENVIAR CORREO DIRECTAMENTE DESPUÉS DE AGREGAR COMPONENTES**
-                    const xhrEmail = new XMLHttpRequest();
-                    xhrEmail.open(
-                        "POST",
-                        `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`
-                    );
-                    xhrEmail.setRequestHeader(
-                        "Content-Type",
-                        "application/x-www-form-urlencoded"
-                    );
-
-                    xhrEmail.onload = function () {
-                        if (xhrEmail.status === 200) {
-                            try {
-                                const responseEmail = JSON.parse(xhrEmail.responseText);
-                                console.log("📧 Respuesta del envío de correo (Nivel 2):", responseEmail);
-                                
-                                // Verificar si al menos un correo se envió exitosamente
-                                const message = responseEmail.message || '';
-                                const correoTecnicoEnviado = message.includes('Correo del técnico enviado');
-                                
-                                if (responseEmail.success || correoTecnicoEnviado) {
-                                    // Mostrar notificación toast de éxito DESPUÉS de enviar ambos correos
-                                    setTimeout(() => {
-                                        Swal.fire({
-                                            icon: "success",
-                                            title: "Correo Enviado",
-                                            text: `Correo de notificación (Nivel 2) enviado exitosamente para el ticket #${response.ticket_number || ticketId} - Cliente: ${globalRazon} (${globalRif})`,
-                                            showConfirmButton: false,
-                                            confirmButtonText: "Cerrar",
-                                            confirmButtonColor: "#003594",
-                                            toast: true,
-                                            position: 'top-end',
-                                            color: 'black',
-                                            timer: 5000, // Se cierra automáticamente en 4 segundos
-                                            timerProgressBar: true
-                                        });
-                                    }, 500); // Delay de 3 segundos para que aparezca después del modal principal
-                                } else {
-                                    console.error("❌ Error al enviar correo (Nivel 2):", responseEmail.message);
-                                }
-                            } catch (error) {
-                                console.error("❌ Error al parsear respuesta del correo (Nivel 2):", error);
-                            }
-                        } else {
-                            console.error("❌ Error al solicitar el envío de correo (Nivel 2):", xhrEmail.status);
-                        }
-                    };
-
-                    xhrEmail.onerror = function () {
-                        console.error("❌ Error de red al solicitar el envío de correo (Nivel 2).");
-                    };
-                    
-                    const paramsEmail = `id_user=${encodeURIComponent(id_user)}`;
-                    xhrEmail.send(paramsEmail);
-                    // **FIN DE LA LÓGICA DEL CORREO**
+                    // CORREO ELIMINADO: No se envía correo al agregar componentes
+                    console.log(`📧 Componentes guardados para ticket: ${response.ticket_number || ticketId}. Correo NO enviado (solo al cerrar ticket).`);
                     
                     Swal.fire({
                         title: '¡Éxito!',
@@ -4739,6 +4664,22 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                         keydownListenerCapture: true
                     }).then(() => {
                         modalComponentes.hide();
+                        // Mostrar toast después de cerrar el modal - SOLO PARA COMPONENTES
+                        setTimeout(() => {
+                            Swal.fire({
+                                icon: "success",
+                                title: "✅ Componentes Agregados",
+                                text: `Componentes del POS ${serialPos} agregados exitosamente al ticket #${response.ticket_number || ticketId}`,
+                                showConfirmButton: false,
+                                confirmButtonText: "Cerrar",
+                                confirmButtonColor: "#003594",
+                                toast: true,
+                                position: 'top-end',
+                                color: 'black',
+                                timer: 4000, // Se cierra automáticamente en 4 segundos
+                                timerProgressBar: true
+                            });
+                        }, 500); // Delay de 500ms después de cerrar el modal
                     });
                 } else {
                     Swal.fire({
@@ -4775,7 +4716,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
         });
     };
     
-    const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}`;
+    const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}&modulo=${encodeURIComponent(modulo)}`;
     xhr.send(dataToSend);
 }
 

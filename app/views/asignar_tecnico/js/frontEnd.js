@@ -2218,6 +2218,7 @@ function limpiarSeleccion() {
 // CORRECCIÓN PRINCIPAL: Se modificó la función para que reciba los componentes seleccionados
 function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos) {
   const id_user = document.getElementById('id_user').value;
+  const modulo = 'Coordinación Post-Venta';
 
   const xhr = new XMLHttpRequest();
   xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
@@ -2277,7 +2278,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
     });
   };
 
-  const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}`;
+  const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}&modulo=${encodeURIComponent(modulo)}`;
   xhr.send(dataToSend);
 }
 

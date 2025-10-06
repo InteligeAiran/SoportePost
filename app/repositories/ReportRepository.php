@@ -561,9 +561,9 @@ class ReportRepository
         }
     }
 
-    public function SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user){
+    public function SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user, $modulo){
         // Lógica para guardar los componentes del ticket
-        $result = $this->model->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user);
+        $result = $this->model->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user, $modulo);
         return $result;
     }
 
