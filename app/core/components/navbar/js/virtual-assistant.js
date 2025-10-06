@@ -5,6 +5,14 @@
 
 let text = null;
 
+    // Agregar esta función al inicio de tu archivo virtual-assistant.js
+        function formatNumber(number) {
+            if (typeof number !== 'number') return number;
+            return number.toFixed(2);
+        }
+
+
+
 class VirtualAssistant {
     constructor() {
         this.panel = null;
@@ -379,22 +387,25 @@ class VirtualAssistant {
         // Obtener el texto del botón
         const queryText = buttonElement.querySelector('.option-text').textContent;
         
-        // Agregar mensaje del usuario
-        this.addUserMessage(queryText);
-        
-        // Mostrar indicador de carga
-        this.showChatLoading();
-        
         // Deshabilitar botón temporalmente
         buttonElement.disabled = true;
         buttonElement.style.opacity = '0.6';
         
-        // Simular procesamiento de IA (con delay realista)
+        // Mostrar indicador de carga
+        this.showChatLoading();
+        
+        // Esperar un poco antes de agregar el mensaje del usuario para evitar superposición
         setTimeout(() => {
-            this.processAIQuery(query);
-            buttonElement.disabled = false;
-            buttonElement.style.opacity = '1';
-        }, 1500 + Math.random() * 1000); // Delay variable para simular IA
+            // Agregar mensaje del usuario después de un delay
+            this.addUserMessage(queryText);
+            
+            // Procesar la consulta IA después de agregar el mensaje del usuario
+            setTimeout(() => {
+                this.processAIQuery(query);
+                buttonElement.disabled = false;
+                buttonElement.style.opacity = '1';
+            }, 500); // Delay adicional para separar mensaje del usuario de la respuesta
+        }, 200); // Delay inicial para evitar superposición
     }
     
     addUserMessage(message) {
@@ -402,7 +413,7 @@ class VirtualAssistant {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message user-message';
         messageDiv.innerHTML = `
-            <div class="message-content">
+            <div class="message-content" style = "margin-top: 50%;">
                 <div class="message-bubble">
                     <p style = "color: white;">${message}</p>
                 </div>
@@ -435,7 +446,11 @@ class VirtualAssistant {
             </div>
         `;
         chatMessages.appendChild(messageDiv);
-        this.scrollToBottom();
+        
+        // Forzar scroll después de agregar el mensaje
+        setTimeout(() => {
+            this.scrollToBottom();
+        }, 50);
     }
     
     showChatLoading() {
@@ -494,89 +509,243 @@ class VirtualAssistant {
         }
     }
 
-   processSuccessfulResponse(query, data) {
-        let text; // Declarar text fuera del switch para evitar problemas de ámbito
+  processSuccessfulResponse(query, data) {
+    let text; // Declarar text fuera del switch para evitar problemas de ámbito
 
-        // Función auxiliar para redondear a 2 decimales
-        const formatNumber = (num) => {
-            return parseFloat(num).toFixed(2);
-        };
+    // Función auxiliar para redondear a 2 decimales
+    const formatNumber = (num) => {
+        return parseFloat(num).toFixed(2);
+    };
 
-        switch (query) {
-            case 'tickets_efficiency_summary':
-                // Validar que todos los datos necesarios estén presentes
-                if (!data.total_tickets_count || !data.percentage_open || !data.percentage_in_process || !data.percentage_resolved || !data.efficiency) {
-                    this.addAssistantMessage('Error: Datos incompletos recibidos del servidor.');
-                    return;
+    switch (query) {
+        case 'tickets_efficiency_summary':
+            // Validar que todos los datos necesarios estén presentes
+            if (!data.total_tickets_count || !data.percentage_open || !data.percentage_in_process || !data.percentage_resolved || !data.efficiency) {
+                this.addAssistantMessage('Error: Datos incompletos recibidos del servidor.');
+                return;
+            }
+
+            // Determinar el mensaje basado en el porcentaje de tickets en proceso
+            if (parseFloat(data.percentage_in_process) > 50) {
+                text = `pero más de la mitad`;
+            } else {
+                text = `pero menos de la mitad`;
+            }
+
+            // PRIMER MENSAJE: Solo el análisis de texto
+            this.addAssistantMessage(
+                `Un <span style="color: #4CAF50">${formatNumber(data.efficiency)}%</span> de eficiencia indica que los técnicos han completado una proporción moderada del total de tickets que son ${data.total_tickets_count}, de los cuales hay ` +
+                `(<span style="color: #36A2EB">${formatNumber(data.percentage_resolved)}% cerrados</span>) ${text} en proceso (<span style="color: #FFCE56">${formatNumber(data.percentage_in_process)}%</span>) y hay una cantidad de tickets abiertos de (<span style="color: #FF6384">${formatNumber(data.percentage_open)}%</span>)`
+            );
+
+            // SEGUNDO MENSAJE: Solo la gráfica (separado)
+            setTimeout(() => {
+                this.addChartMessage(data);
+            }, 1000); // Delay mayor para asegurar separación visual
+            break;
+
+        case 'tickets_stats':
+            this.addAssistantMessage(
+                '📊 Aquí tienes las estadísticas actuales de tickets:',
+                {
+                    type: 'stats',
+                    data: data
                 }
+            );
+            break;
 
-                // Determinar el mensaje basado en el porcentaje de tickets en proceso
-                if (parseFloat(data.percentage_in_process) > 50) {
-                    text = `pero más de la mitad`;
-                } else {
-                    text = `pero menos de la mitad`;
+        case 'user_performance':
+            this.addAssistantMessage(
+                '👥 Análisis del rendimiento de técnicos:',
+                {
+                    type: 'performance',
+                    data: data
                 }
+            );
+            break;
 
-                this.addAssistantMessage(
-                    `Un <span style="color: #4CAF50">${formatNumber(data.efficiency)}%</span> de eficiencia indica que los técnicos han completado una proporción moderada del total de tickets que son ${data.total_tickets_count}, de los cuales hay ` +
-                    `(<span style="color: #36A2EB">${formatNumber(data.percentage_resolved)}% cerrados</span>) ${text} en proceso (<span style="color: #FFCE56">${formatNumber(data.percentage_in_process)}%</span>) y hay una cantidad de tickets abiertos de (<span style="color: #FF6384">${formatNumber(data.percentage_open)}%</span>)`
-                );
-                break;
+        case 'pending_tickets':
+            this.addAssistantMessage(
+                '⏳ Tickets pendientes que requieren atención:',
+                {
+                    type: 'pending',
+                    data: data
+                }
+            );
+            break;
 
-            case 'tickets_stats':
-                this.addAssistantMessage(
-                    '📊 Aquí tienes las estadísticas actuales de tickets:',
-                    {
-                        type: 'stats',
-                        data: data
-                    }
-                );
-                break;
+        case 'client_analysis':
+            this.addAssistantMessage(
+                '🏢 Análisis inteligente de clientes:',
+                {
+                    type: 'clients',
+                    data: data
+                }
+            );
+            break;
 
-            case 'user_performance':
-                this.addAssistantMessage(
-                    '👥 Análisis del rendimiento de técnicos:',
-                    {
-                        type: 'performance',
-                        data: data
-                    }
-                );
-                break;
+        case 'system_health':
+            this.addAssistantMessage(
+                '💚 Estado actual del sistema:',
+                {
+                    type: 'system',
+                    data: data
+                }
+            );
+            break;
 
-            case 'pending_tickets':
-                this.addAssistantMessage(
-                    '⏳ Tickets pendientes que requieren atención:',
-                    {
-                        type: 'pending',
-                        data: data
-                    }
-                );
-                break;
-
-            case 'client_analysis':
-                this.addAssistantMessage(
-                    '🏢 Análisis inteligente de clientes:',
-                    {
-                        type: 'clients',
-                        data: data
-                    }
-                );
-                break;
-
-            case 'system_health':
-                this.addAssistantMessage(
-                    '💚 Estado actual del sistema:',
-                    {
-                        type: 'system',
-                        data: data
-                    }
-                );
-                break;
-
-            default:
-                this.addAssistantMessage('Lo siento, no pude procesar esa consulta. ¿Podrías intentar con otra opción?');
-        }
+        default:
+            this.addAssistantMessage('Lo siento, no pude procesar esa consulta. ¿Podrías intentar con otra opción?');
     }
+}
+
+// Función para agregar gráfica de tickets (modificada)
+addChartMessage(data) {
+    const chartId = `chart-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Función local para formatear números con solo 2 decimales
+    const formatNumber = (num) => {
+        const numValue = typeof num === 'string' ? parseFloat(num) : num;
+        if (isNaN(numValue)) return '0.00';
+        return numValue.toFixed(2);
+    };
+    
+    // Convertir los datos a números
+    const resolved = parseFloat(data.percentage_resolved) || 0;
+    const inProcess = parseFloat(data.percentage_in_process) || 0;
+    const open = parseFloat(data.percentage_open) || 0;
+    
+    const chartHtml = `
+        <div class="chart-container" style="margin-top: 20px; margin-bottom: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef;">
+            <h5 style="text-align: center; color: #333; margin-bottom: 20px; font-weight: bold;">
+                <i class="fas fa-chart-pie me-2"></i>Distribución de Tickets
+            </h5>
+            <div style="position: relative; height: 350px; width: 100%; margin-bottom: 25px;">
+                <canvas id="${chartId}" width="400" height="350"></canvas>
+            </div>
+            <div class="chart-legend" style="margin-top: 20px; text-align: center; padding-top: 15px; border-top: 1px solid #dee2e6;">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="legend-item" style="margin-bottom: 10px;">
+                            <span class="legend-color" style="background-color: #36A2EB; width: 15px; height: 15px; display: inline-block; margin-right: 8px; border-radius: 3px;"></span>
+                            <strong style="font-size: 14px;">Cerrados: ${formatNumber(resolved)}%</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="legend-item" style="margin-bottom: 10px;">
+                            <span class="legend-color" style="background-color: #FFCE56; width: 15px; height: 15px; display: inline-block; margin-right: 8px; border-radius: 3px;"></span>
+                            <strong style="font-size: 14px;">En Proceso: ${formatNumber(inProcess)}%</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="legend-item" style="margin-bottom: 10px;">
+                            <span class="legend-color" style="background-color: #FF6384; width: 15px; height: 15px; display: inline-block; margin-right: 8px; border-radius: 3px;"></span>
+                            <strong style="font-size: 14px;">Abiertos: ${formatNumber(open)}%</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Crear un mensaje separado para la gráfica
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message assistant-message';
+    messageDiv.innerHTML = `
+        <div class="message-avatar">
+            <img src="${APP_PATH}app/public/img/assistant/woman-avatar.png" alt="Ana" class="msg-avatar">
+        </div>
+        <div class="message-content">
+            <div class="message-bubble">
+                ${chartHtml}
+            </div>
+            <div class="message-time">${new Date().toLocaleTimeString()}</div>
+        </div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+    
+    // Forzar scroll después de agregar el mensaje
+    setTimeout(() => {
+        this.scrollToBottom();
+    }, 50);
+
+    // Crear la gráfica después de que se renderice el HTML
+    setTimeout(() => {
+        this.createTicketChart(chartId, data);
+        // Scroll adicional después de crear la gráfica
+        setTimeout(() => {
+            this.scrollToBottom();
+        }, 100);
+    }, 100);
+}
+
+
+
+    // Función para crear la gráfica con Chart.js
+    createTicketChart(chartId, data) {
+        const ctx = document.getElementById(chartId);
+        if (!ctx) return;
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Tickets Cerrados', 'Tickets En Proceso', 'Tickets Abiertos'],
+                datasets: [{
+                    data: [
+                        data.percentage_resolved,
+                        data.percentage_in_process,
+                        data.percentage_open
+                    ],
+                    backgroundColor: [
+                        '#36A2EB',  // Azul para cerrados
+                        '#FFCE56',  // Amarillo para en proceso
+                        '#FF6384'   // Rojo para abiertos
+                    ],
+                    borderColor: [
+                        '#2E86C1',
+                        '#F39C12',
+                        '#E74C3C'
+                    ],
+                    borderWidth: 2,
+                    hoverBackgroundColor: [
+                        '#2E86C1',
+                        '#F39C12',
+                        '#E74C3C'
+                    ],
+                    hoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false // Usamos nuestra propia leyenda
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                return `${label}: ${value.toFixed(2)}% (${Math.round((value / 100) * data.total_tickets_count)} tickets)`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                },
+                cutout: '50%' // Para hacer el efecto doughnut
+            }
+        });
+    }
+
     
     formatDataResponse(data) {
         if (!data || !data.data) return '';
