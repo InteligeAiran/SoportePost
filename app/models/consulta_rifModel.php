@@ -1189,12 +1189,12 @@ class consulta_rifModel extends Model
         }
     }
 
-    public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user)
+    public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, $observation)
 {
     try {
         // Primero, actualiza el estado de domiciliación
         // Aquí no hay problema con la inyección si $id_new_status y $id_ticket vienen saneados (int)
-        $sql = "UPDATE tickets_status_domiciliacion SET id_status_domiciliacion = " . (int)$id_new_status . " WHERE id_ticket = " . (int)$id_ticket . ";";
+        $sql = "UPDATE tickets_status_domiciliacion SET id_status_domiciliacion = " . (int)$id_new_status . ", observation1 = '".$observation."' WHERE id_ticket = " . (int)$id_ticket . ";";
         $new_status_domiciliacion = $id_new_status;
         $result = Model::getResult($sql, $this->db);
 

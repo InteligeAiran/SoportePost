@@ -1,5 +1,6 @@
 
 let currentTicketNroForImage = null;
+let paymentAgreementModalInstance = null; // Variable global para la instancia del modal
 
 function searchDomiciliacionTickets() {
     const xhr = new XMLHttpRequest();
@@ -104,7 +105,9 @@ function searchDomiciliacionTickets() {
                                             data-id="${idTicket}"
                                             data-current-status-id="${currentStatusDomiciliacion}"
                                             data-current-status-name="${currentNameStatusDomiciliacion}">
-                                            Verificar Solvencia
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-check-fill" viewBox="0 0 16 16">
+                                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5m9.954 3H2.545c-.3 0-.545.224-.545.5v1c0 .276.244.5.545.5h10.91c.3 0 .545-.224.545-.5v-1c0-.276-.244-.5-.546-.5m-2.6 5.854a.5.5 0 0 0-.708-.708L7.5 10.793 6.354 9.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
+                                            </svg>
                                         </button>`;
                                 /*}*/
                             }
@@ -1180,11 +1183,29 @@ $(document).ready(function () {
                     if (errorMessageDomiciliacion) {
                         errorMessageDomiciliacion.textContent = 'Por favor, selecciona un "Nuevo Estatus".';
                         errorMessageDomiciliacion.style.display = 'block';
+                        errorMessageDomiciliacion.style.color = 'white';
                     }
                     return;
                 }
 
-                updateDomiciliacionStatus(idTicket, newStatusId, id_user, changeStatusDomiciliacionModal);
+                // *** OBTENER OBSERVACIONES SI EL ESTATUS ES 3 ***
+                let observations = '';
+                if (newStatusId === '3') {
+                    const observationsText = document.getElementById('observationsText');
+                    if (observationsText) {
+                        observations = observationsText.value.trim();
+                        if (!observations) {
+                            if (errorMessageDomiciliacion) {
+                                errorMessageDomiciliacion.textContent = 'Por favor, ingrese las observaciones para este estatus.';
+                                errorMessageDomiciliacion.style.display = 'block';
+                                errorMessageDomiciliacion.style.color = 'white';
+                            }
+                            return;
+                        }
+                    }
+                }
+
+                updateDomiciliacionStatus(idTicket, newStatusId, id_user, changeStatusDomiciliacionModal, observations);
             });
         }
 
@@ -1196,6 +1217,15 @@ $(document).ready(function () {
                 errorMessageDomiciliacion.style.display = 'none';
                 errorMessageDomiciliacion.innerHTML = '';
             }
+            // *** LIMPIAR CAMPO DE OBSERVACIONES ***
+            const observationsContainer = document.getElementById('observationsContainer');
+            if (observationsContainer) {
+                observationsContainer.style.display = 'none';
+                const observationsText = document.getElementById('observationsText');
+                if (observationsText) {
+                    observationsText.value = '';
+                }
+            }
         });
 
         const closeIconBtn = changeStatusDomiciliacionModalElement.querySelector("#Close-icon");
@@ -1203,25 +1233,45 @@ $(document).ready(function () {
 
         if (closeIconBtn) {
             closeIconBtn.addEventListener('click', function () {
+                // *** OCULTAR CAMPO DE OBSERVACIONES ***
+                const observationsContainer = document.getElementById('observationsContainer');
+                if (observationsContainer) {
+                    observationsContainer.style.display = 'none';
+                    const observationsText = document.getElementById('observationsText');
+                    if (observationsText) {
+                        observationsText.value = '';
+                    }
+                }
                 changeStatusDomiciliacionModal.hide();
             });
         }
 
+
         if (closeButton) {
             closeButton.addEventListener('click', function () {
+                // *** OCULTAR CAMPO DE OBSERVACIONES ***
+                const observationsContainer = document.getElementById('observationsContainer');
+                if (observationsContainer) {
+                    observationsContainer.style.display = 'none';
+                    const observationsText = document.getElementById('observationsText');
+                    if (observationsText) {
+                        observationsText.value = '';
+                    }
+                }
                 changeStatusDomiciliacionModal.hide();
             });
         }
+        
     }
 });
 
 // Función para enviar la actualización del estatus de domiciliación al backend
-function updateDomiciliacionStatus(idTicket, newStatusId, id_user) {
+function updateDomiciliacionStatus(idTicket, newStatusId, id_user, changeStatusDomiciliacionModal, observations = '') {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/updateDomiciliacionStatus`); // Nueva ruta de API para actualizar
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    const changeStatusDomiciliacionModal = document.getElementById("changeStatusDomiciliacionModal");
-    const errorMessageDomiciliacion = changeStatusDomiciliacionModal.querySelector("#errorMessageDomiciliacion");
+    const changeStatusDomiciliacionModalElement = document.getElementById("changeStatusDomiciliacionModal");
+    const errorMessageDomiciliacion = changeStatusDomiciliacionModalElement.querySelector("#errorMessageDomiciliacion");
 
     xhr.onload = function () {
         if (errorMessageDomiciliacion) {
@@ -1247,11 +1297,10 @@ function updateDomiciliacionStatus(idTicket, newStatusId, id_user) {
                             location.reload();
                         },
                     });
-                    const changeStatusDomiciliacionModalElement = document.getElementById("changeStatusDomiciliacionModal");
-                    const changeStatusDomiciliacionModal = new bootstrap.Modal(changeStatusDomiciliacionModalElement);
+                    const changeStatusDomiciliacionModalInstance = new bootstrap.Modal(changeStatusDomiciliacionModalElement);
 
-                    changeStatusDomiciliacionModal.hide();
-                    searchDomiciliacionTickets
+                    changeStatusDomiciliacionModalInstance.hide();
+                    searchDomiciliacionTickets();
                 } else {
                     if (errorMessageDomiciliacion) {
                         errorMessageDomiciliacion.textContent = response.message || 'Error al actualizar el estatus de domiciliación.';
@@ -1283,7 +1332,13 @@ function updateDomiciliacionStatus(idTicket, newStatusId, id_user) {
         console.error('Error de red al actualizar estatus.');
     };
 
-    const datos = `action=updateDomiciliacionStatus&id_ticket=${idTicket}&new_status_id=${newStatusId}&id_user=${id_user}`;
+    // *** CONSTRUIR DATOS CON OBSERVACIONES SI ES NECESARIO ***
+    let datos = `action=updateDomiciliacionStatus&id_ticket=${idTicket}&new_status_id=${newStatusId}&id_user=${id_user}`;
+    
+    if (observations && observations.trim() !== '') {
+        datos += `&observations=${encodeURIComponent(observations)}`;
+    }
+    
     xhr.send(datos);
 }
 
@@ -1317,6 +1372,177 @@ function getStatusDom(currentStatusNameToExclude = null) {
                         option.textContent = "No hay status Disponibles";
                         select.appendChild(option);
                     }
+
+                    // *** AGREGAR EVENT LISTENER PARA MOSTRAR CAMPO DE OBSERVACIONES Y MODAL DE DOCUMENTO ***
+                    select.addEventListener('change', function() {
+                        const selectedValue = this.value;
+                        const observationsContainer = document.getElementById('observationsContainer');
+                        
+                        // Quitar el mensaje de error cuando se seleccione un estatus
+                        const errorMessageDomiciliacion = document.getElementById('errorMessageDomiciliacion');
+                        if (errorMessageDomiciliacion) {
+                            errorMessageDomiciliacion.style.display = 'none';
+                            errorMessageDomiciliacion.innerHTML = '';
+                        }
+                        
+                        // Cambiar el color del texto a blanco cuando se seleccione una opción válida
+                        if (selectedValue && selectedValue !== '') {
+                            this.style.color = 'white';
+                        } else {
+                            this.style.color = '#6c757d'; // Color gris para la opción por defecto
+                        }
+                        
+                        if (selectedValue === '3') {
+                            // Mostrar campo de observaciones
+                            if (!observationsContainer) {
+                                const form = document.getElementById('changeStatusDomiciliacionForm');
+                                const observationsDiv = document.createElement('div');
+                                observationsDiv.id = 'observationsContainer';
+                                observationsDiv.className = 'mb-3';
+                                observationsDiv.innerHTML = `
+                                    <label for="observationsText" class="form-label">Observaciones:</label>
+                                    <textarea class="form-control" id="observationsText" rows="3" placeholder="Ingrese sus observaciones aquí..."></textarea>
+                                `;
+                                form.appendChild(observationsDiv);
+                            } else {
+                                observationsContainer.style.display = 'block';
+                            }
+                        } else if (selectedValue === '4') {
+                            // Mostrar modal para subir documento de convenio firmado
+                            const idTicket = document.getElementById('idTicket').value;
+                            const modalTicketId = document.getElementById('modalTicketId');
+                            const idTicketHidden = document.getElementById('id_ticket');
+                            
+                            if (modalTicketId) modalTicketId.textContent = idTicket;
+                            if (idTicketHidden) idTicketHidden.value = idTicket;
+                            
+                            // Cerrar el modal actual
+                            const changeStatusDomiciliacionModalElement = document.getElementById("changeStatusDomiciliacionModal");
+                            const changeStatusDomiciliacionModal = new bootstrap.Modal(changeStatusDomiciliacionModalElement);
+                            changeStatusDomiciliacionModal.hide();
+                            
+                            // Abrir el modal de subida de documento
+                            const uploadDocumentModalElement = document.getElementById("uploadDocumentModal");
+                            const uploadDocumentModal = new bootstrap.Modal(uploadDocumentModalElement);
+                            
+                            // *** EVENT LISTENER PARA EL BOTÓN CERRAR DEL MODAL DE DOCUMENTO ***
+                            const cerrarBotonDocumento = document.getElementById("CerrarBoton");
+                            
+                            if (cerrarBotonDocumento) {
+                                cerrarBotonDocumento.addEventListener('click', function() {
+                                    // 1. Oculta el modal de visualización actual
+                                    uploadDocumentModal.hide();
+                                    
+                                    // 2. Resetea el select al estado inicial
+                                    const modalNewStatusDomiciliacionSelect = document.getElementById('modalNewStatusDomiciliacionSelect');
+                                    if (modalNewStatusDomiciliacionSelect) {
+                                        modalNewStatusDomiciliacionSelect.value = '';
+                                        modalNewStatusDomiciliacionSelect.selectedIndex = 0; // Seleccionar la opción "Seleccione"
+                                        modalNewStatusDomiciliacionSelect.style.color = '#6c757d'; // Restaurar color gris
+                                    }
+                                    
+                                    // 3. Ocultar el textarea de observaciones si está visible
+                                    const observationsContainer = document.getElementById('observationsContainer');
+                                    if (observationsContainer) {
+                                        observationsContainer.style.display = 'none';
+                                        const observationsText = document.getElementById('observationsText');
+                                        if (observationsText) {
+                                            observationsText.value = '';
+                                        }
+                                    }
+                                    
+                                    // 4. Muestra el modal de cambio de estatus de nuevo
+                                    // Usamos un pequeño retraso para evitar problemas de superposición y animaciones
+                                    setTimeout(() => {
+                                        const changeStatusDomiciliacionModalElement = document.getElementById("changeStatusDomiciliacionModal");
+                                        const changeStatusDomiciliacionModal = new bootstrap.Modal(changeStatusDomiciliacionModalElement);
+                                        changeStatusDomiciliacionModal.show();
+                                    }, 300);
+                                });
+                            }
+                            
+                            uploadDocumentModal.show();
+                        } else if (selectedValue === '5') {
+                            // Mostrar modal de confirmación para "Deudor - Desafiliado con Deuda"
+                            Swal.fire({
+                                title: '⚠️ CONFIRMACIÓN REQUERIDA ⚠️',
+                                html: `
+                                    <div style="text-align: center; padding: 20px;">
+                                        <div style="font-size: 48px; color: #dc3545; margin-bottom: 20px;">🚨🚨🚨</div>
+                                        <h4 style="color: #dc3545; font-weight: bold; margin-bottom: 20px;">
+                                            ¿Seguro que desea colocar este estatus?
+                                        </h4>
+                                        <div style="background: linear-gradient(135deg, #fff3cd, #ffeaa7); padding: 20px; border-radius: 10px; border-left: 5px solid #ffc107; margin: 20px 0;">
+                                            <p style="color: #856404; font-size: 16px; margin: 0; font-weight: 500;">
+                                                <strong>⚠️ ADVERTENCIA:</strong> Esto ocasionará el <strong>CIERRE DEL TICKET</strong> y se le enviará un correo a los departamentos correspondientes.
+                                            </p>
+                                        </div>
+                                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                                            <p style="color: black; margin: 0; font-size: 14px;">
+                                                <strong>Estatus:</strong> Deudor - Desafiliado con Deuda
+                                            </p>
+                                        </div>
+                                    </div>
+                                `,
+                                showCancelButton: true,
+                                confirmButtonText: 'CONFIRMAR',
+                                cancelButtonText: 'CANCELAR',
+                                confirmButtonColor: 'GREEN',
+                                cancelButtonColor: '#6c757d',
+                                reverseButtons: true,
+                                focusCancel: true,
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                keydownListenerCapture: true,
+                                customClass: {
+                                    popup: 'swal-wide',
+                                    title: 'swal-title-danger',
+                                    confirmButton: 'swal-confirm-danger',
+                                    cancelButton: 'swal-cancel-safe'
+                                },
+                                width: '500px',
+                                padding: '20px'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Si confirma, proceder con el cambio de estatus
+                                    // Aquí puedes agregar la lógica para procesar el cambio
+                                    console.log('Usuario confirmó el cambio a estatus 5');
+                                    
+                                    // Mostrar mensaje de confirmación
+                                    Swal.fire({
+                                        title: '✅ ESTATUS ACTUALIZADO',
+                                        text: 'El ticket ha sido cerrado y se han enviado las notificaciones correspondientes.',
+                                        icon: 'success',
+                                        confirmButtonColor: '#003594',
+                                        color: 'black'
+                                    });
+                                } else {
+                                    // Si cancela, resetear el select
+                                    const modalNewStatusDomiciliacionSelect = document.getElementById('modalNewStatusDomiciliacionSelect');
+                                    if (modalNewStatusDomiciliacionSelect) {
+                                        modalNewStatusDomiciliacionSelect.value = '';
+                                        modalNewStatusDomiciliacionSelect.selectedIndex = 0;
+                                        modalNewStatusDomiciliacionSelect.style.color = '#6c757d';
+                                    }
+                                    
+                                    // Ocultar campo de observaciones si está visible
+                                    if (observationsContainer) {
+                                        observationsContainer.style.display = 'none';
+                                        const observationsText = document.getElementById('observationsText');
+                                        if (observationsText) {
+                                            observationsText.value = '';
+                                        }
+                                    }
+                                }
+                            });
+                        } else {
+                            // Ocultar campo de observaciones
+                            if (observationsContainer) {
+                                observationsContainer.style.display = 'none';
+                                document.getElementById('observationsText').value = '';
+                            }
+                        }
+                    });
                 } else {
                     document.getElementById("rifMensaje").innerHTML +=
                         "<br>Error al obtener los status.";
@@ -1338,4 +1564,1206 @@ function getStatusDom(currentStatusNameToExclude = null) {
     xhr.send(datos);
 }
 
-document.addEventListener("DOMContentLoaded", getStatusDom);
+document.addEventListener("DOMContentLoaded", function() {
+    getStatusDom();
+    
+    // *** FUNCIONALIDAD DEL MODAL DE SUBIDA DE DOCUMENTO ***
+    const uploadDocumentModalElement = document.getElementById("uploadDocumentModal");
+    let uploadDocumentModal = null;
+    
+    if (uploadDocumentModalElement) {
+        uploadDocumentModal = new bootstrap.Modal(uploadDocumentModalElement);
+        
+        // Event listener para el botón de subir archivo
+        const uploadFileBtn = document.getElementById('uploadFileBtn');
+        if (uploadFileBtn) {
+            uploadFileBtn.addEventListener('click', function() {
+                const documentFile = document.getElementById('documentFile');
+                const idTicket = document.getElementById('id_ticket').value;
+                const idUser = document.getElementById('iduser').value;
+                
+                if (!documentFile.files[0]) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Archivo requerido',
+                        text: 'Por favor, seleccione un archivo para subir.',
+                        confirmButtonColor: '#003594',
+                        color: 'black'
+                    });
+                    return;
+                }
+                
+                // Aquí puedes agregar la lógica para subir el archivo
+                console.log('Subiendo archivo para ticket:', idTicket);
+                console.log('Archivo seleccionado:', documentFile.files[0]);
+                
+                // Mostrar mensaje de éxito temporal
+                Swal.fire({
+                    title: "¡Archivo subido!",
+                    text: "El documento de convenio firmado ha sido subido correctamente.",
+                    icon: "success",
+                    confirmButtonText: "Ok",
+                    confirmButtonColor: "#003594",
+                    color: "black",
+                    willClose: () => {
+                        // *** RESETEAR EL SELECT AL ESTADO INICIAL ***
+                        const modalNewStatusDomiciliacionSelect = document.getElementById('modalNewStatusDomiciliacionSelect');
+                        if (modalNewStatusDomiciliacionSelect) {
+                            modalNewStatusDomiciliacionSelect.value = '';
+                            modalNewStatusDomiciliacionSelect.selectedIndex = 0;
+                        }
+                        
+                        uploadDocumentModal.hide();
+                        // Recargar la página para actualizar los datos
+                        location.reload();
+                    },
+                });
+            });
+        }
+        
+        // Event listener para el botón de generar convenio firmado
+        const generateNotaEntregaBtn = document.getElementById('generateNotaEntregaBtn');
+        if (generateNotaEntregaBtn) {
+            generateNotaEntregaBtn.addEventListener('click', function() {
+                const idTicket = document.getElementById('idTicket').value;
+
+                console.log(idTicket);
+                
+                if (!idTicket) {
+                    Swal.fire({ 
+                        icon: 'warning', 
+                        title: 'Ticket no disponible',
+                        text: 'No se encontró el ID del ticket para generar el acuerdo de pago.'
+                    });
+                    return;
+                }
+
+                // Obtener datos del ticket para el acuerdo de pago
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/documents/GetPaymentAgreementData`);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState !== 4) return;
+
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const res = JSON.parse(xhr.responseText);
+                            if (!res || !res.success || !res.rows) {
+                                Swal.fire({ 
+                                    icon: 'warning', 
+                                    title: 'No se encontraron datos',
+                                    text: 'No se pudieron obtener los datos del ticket para generar el acuerdo de pago.'
+                                });
+                                return;
+                            }
+
+                            const d = res.rows[0];
+                            window.currentPaymentAgreementData = d;
+                            
+                            // Llenar el modal con los datos del ticket
+                            fillPaymentAgreementModal(d);
+                            
+                            // Cerrar el modal actual y abrir el modal de acuerdo de pago
+                            uploadDocumentModal.hide();
+                            
+                            setTimeout(() => {
+                                // Usar la instancia global o crear una nueva si no existe
+                                if (!paymentAgreementModalInstance) {
+                                    paymentAgreementModalInstance = new bootstrap.Modal(document.getElementById('paymentAgreementModal'));
+                                }
+                                paymentAgreementModalInstance.show();
+                            }, 300);
+                            
+                        } catch (error) {
+                            console.error('Error parsing JSON:', error);
+                            Swal.fire({ 
+                                icon: 'error', 
+                                title: 'Error al procesar datos',
+                                text: 'Hubo un error al procesar los datos del ticket.'
+                            });
+                        }
+                    } else {
+                        Swal.fire({ 
+                            icon: 'error', 
+                            title: 'Error del servidor',
+                            text: `Error ${xhr.status}: ${xhr.statusText}`
+                        });
+                    }
+                };
+
+                xhr.onerror = function () {
+                    Swal.fire({ 
+                        icon: 'error', 
+                        title: 'Error de conexión',
+                        text: 'No se pudo conectar al servidor para obtener los datos del ticket.'
+                    });
+                };
+
+                const data = `action=GetPaymentAgreementData&id_ticket=${idTicket}`;
+                xhr.send(data);
+            });
+        }
+        
+        // Event listener para previsualización de imagen
+        const documentFile = document.getElementById('documentFile');
+        const imagePreview = document.getElementById('imagePreview');
+        
+        if (documentFile && imagePreview) {
+            documentFile.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.style.display = 'none';
+                }
+            });
+        }
+        
+        
+        
+        // Limpiar el formulario cuando se cierre el modal
+        uploadDocumentModalElement.addEventListener('hidden.bs.modal', function() {
+            const uploadForm = document.getElementById('uploadForm');
+            if (uploadForm) {
+                uploadForm.reset();
+            }
+            if (imagePreview) {
+                imagePreview.style.display = 'none';
+                imagePreview.src = '#';
+            }
+        });
+    } 
+});
+
+// Función para llenar el modal de acuerdo de pago con los datos del ticket
+function fillPaymentAgreementModal(d) {
+    // Verificar que d existe
+    if (!d) {
+        console.error('No data provided to fillPaymentAgreementModal');
+        return;
+    }
+    
+    const safe = (s) => (s || '').toString();
+    const formatDate = (dateStr) => {
+        if (!dateStr) return new Date().toLocaleDateString('es-ES');
+        try {
+            return new Date(dateStr).toLocaleDateString('es-ES');
+        } catch (e) {
+            return dateStr;
+        }
+    };
+    
+    // Llenar campos del modal
+    document.getElementById('pa_ticket_id').value = safe(d.id_ticket);
+    document.getElementById('pa_fecha').value = formatDate(d.fecha_actual);
+    document.getElementById('pa_numero_ticket').value = safe(d.nro_ticket);
+    document.getElementById('pa_rif').value = safe(d.coddocumento);
+    document.getElementById('pa_razon_social').value = safe(d.razonsocial);
+    document.getElementById('pa_ejecutivo_venta').value = safe(d.ejecutivo) || '';
+    document.getElementById('pa_marca_equipo').value = safe(d.desc_modelo) || safe(d.tipo_pos) || '';
+    document.getElementById('pa_fecha_instalacion').value = safe(d.fechainstalacion) || '';
+    document.getElementById('pa_serial').value = safe(d.serialpos);
+    document.getElementById('pa_status_pos').value = safe(d.desc_estatus) || '';
+    
+    // Limpiar campos editables
+    document.getElementById('pa_saldo_deudor').value = '';
+    document.getElementById('pa_propuesta').value = '';
+    document.getElementById('pa_observaciones').value = '';
+    document.getElementById('pa_acuerdo').value = '';
+    
+    // Limpiar campos de configuración bancaria (opcional - mantener valores por defecto)
+    // document.getElementById('pa_numero_cuenta').value = 'XXXX-XXXX-XX-XXXX';
+    // document.getElementById('pa_nombre_empresa').value = 'Informática y Telecomunicaciones Integradas Inteligen, SA';
+    // document.getElementById('pa_rif_empresa').value = 'J-00291615-0';
+    // document.getElementById('pa_banco').value = 'XXXX';
+    // document.getElementById('pa_correo').value = 'domiciliación.intelipunto@inteligensa.com';
+}
+
+// Event listeners para el modal de acuerdo de pago
+document.addEventListener('DOMContentLoaded', function() {
+    // Función para forzar saltos de línea cada cierto número de caracteres
+    function addLineBreaks(text, maxCharsPerLine = 25) {
+        if (!text) return text;
+        
+        // Remover saltos de línea existentes para procesar todo el texto
+        const cleanText = text.replace(/\n/g, ' ');
+        
+        let result = '';
+        let currentLine = '';
+        
+        for (let i = 0; i < cleanText.length; i++) {
+            const char = cleanText[i];
+            
+            if (currentLine.length >= maxCharsPerLine) {
+                result += currentLine + '\n';
+                currentLine = char;
+            } else {
+                currentLine += char;
+            }
+        }
+        
+        if (currentLine) {
+            result += currentLine;
+        }
+        
+        return result;
+    }
+
+    // Aplicar saltos de línea automáticos a los campos de texto
+    function setupAutoLineBreaks() {
+        const textFields = ['pa_propuesta', 'pa_observaciones', 'pa_acuerdo'];
+        
+        textFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                // Aplicar estilos adicionales
+                field.style.wordBreak = 'break-all';
+                field.style.overflowWrap = 'break-word';
+                field.style.whiteSpace = 'pre-wrap';
+                
+                field.addEventListener('input', function(e) {
+                    const originalValue = e.target.value;
+                    const withLineBreaks = addLineBreaks(originalValue, 25);
+                    
+                    if (originalValue !== withLineBreaks) {
+                        const cursorPosition = e.target.selectionStart;
+                        e.target.value = withLineBreaks;
+                        // Ajustar posición del cursor
+                        const newPosition = Math.min(cursorPosition, withLineBreaks.length);
+                        e.target.setSelectionRange(newPosition, newPosition);
+                    }
+                });
+                
+                field.addEventListener('blur', function(e) {
+                    const originalValue = e.target.value;
+                    const withLineBreaks = addLineBreaks(originalValue, 25);
+                    if (originalValue !== withLineBreaks) {
+                        e.target.value = withLineBreaks;
+                    }
+                });
+                
+                field.addEventListener('paste', function(e) {
+                    setTimeout(() => {
+                        const originalValue = e.target.value;
+                        const withLineBreaks = addLineBreaks(originalValue, 25);
+                        if (originalValue !== withLineBreaks) {
+                            e.target.value = withLineBreaks;
+                        }
+                    }, 10);
+                });
+            }
+        });
+    }
+
+    // Formatear campo de saldo deudor mientras se escribe
+    const saldoDeudorField = document.getElementById('pa_saldo_deudor');
+    if (saldoDeudorField) {
+        // Formatear al perder el foco
+        saldoDeudorField.addEventListener('blur', function(e) {
+            let value = e.target.value;
+            if (value && !isNaN(parseFloat(value))) {
+                const numValue = parseFloat(value);
+                e.target.value = numValue.toFixed(2);
+            }
+        });
+        
+        // Formatear al escribir para mostrar el $ después
+        saldoDeudorField.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9.]/g, ''); // Solo números y punto
+            
+            // Permitir solo un punto decimal
+            const parts = value.split('.');
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+            
+            // Limitar a 2 decimales
+            if (parts[1] && parts[1].length > 2) {
+                value = parts[0] + '.' + parts[1].substring(0, 2);
+            }
+            
+            e.target.value = value;
+        });
+    }
+    
+    // Configurar saltos de línea automáticos
+    setupAutoLineBreaks();
+    
+    // Aplicar estilos cuando se abra el modal
+    const modal = document.getElementById('paymentAgreementModal');
+    if (modal) {
+        modal.addEventListener('shown.bs.modal', function() {
+            // Re-aplicar configuración cuando se abra el modal
+            setTimeout(() => {
+                setupAutoLineBreaks();
+                
+                // Asegurar que el scroll funcione correctamente
+                const modalBody = modal.querySelector('.modal-body');
+                if (modalBody) {
+                    modalBody.style.overflowY = 'auto';
+                    modalBody.style.overflowX = 'hidden';
+                    modalBody.style.maxHeight = 'calc(95vh - 120px)';
+                    
+                    // Forzar el scroll si es necesario
+                    modalBody.scrollTop = 0;
+                }
+            }, 100);
+        });
+        
+        // Prevenir que el modal se cierre al hacer scroll
+        modal.addEventListener('wheel', function(e) {
+            const modalBody = modal.querySelector('.modal-body');
+            if (modalBody && modalBody.scrollHeight > modalBody.clientHeight) {
+                e.stopPropagation();
+            }
+        });
+    }
+    
+    // Botón de previsualizar
+    const previewBtn = document.getElementById('previewPaymentAgreementBtn');
+    if (previewBtn) {
+        previewBtn.addEventListener('click', function() {
+            // Validar monto mínimo
+            const saldoDeudor = document.getElementById('pa_saldo_deudor').value;
+            if (saldoDeudor && parseFloat(saldoDeudor.replace(/[^0-9.-]/g, '')) < 10) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Monto inválido',
+                    text: 'El saldo deudor debe ser mínimo $10.00',
+                    confirmButtonColor: '#003594'
+                });
+                return;
+            }
+            
+            const data = getPaymentAgreementFormData();
+            const html = buildPaymentAgreementHtml(data);
+            const preview = document.getElementById('paymentAgreementPreview');
+            preview.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
+        });
+    }
+    
+// Botón de imprimir
+const printBtn = document.getElementById('printPaymentAgreementBtn');
+
+if (printBtn) {
+    // 1. Añadir el Listener de Clic al botón principal
+    printBtn.addEventListener('click', function() {
+        // Validar monto mínimo
+        const saldoDeudor = document.getElementById('pa_saldo_deudor').value;
+        if (saldoDeudor && parseFloat(saldoDeudor.replace(/[^0-9.-]/g, '')) < 10) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Monto inválido',
+                text: 'El saldo deudor debe ser mínimo $10.00',
+                confirmButtonColor: '#003594'
+            });
+            return;
+        }
+        
+        // Asume que la lógica para generar el Acuerdo se ejecuta aquí o ya se ejecutó
+        const data = getPaymentAgreementFormData();
+        const html = buildPaymentAgreementHtml(data);
+
+        // 2. Mostrar la alerta de éxito
+        Swal.fire({
+            title: "¡Acuerdo de Pago generado!",
+            text: "El acuerdo de pago ha sido generado correctamente y está listo para imprimir.",
+            icon: "success",
+            confirmButtonText: "Imprimir",
+            confirmButtonColor: "#003594",
+            cancelButtonText: "Cerrar",
+            cancelButtonColor: "#6c757d",
+            color: "black",
+            showCancelButton: true,
+            allowOutsideClick: false,
+            allowEscapeKey: true
+        }).then((result) => {
+            // 3. Ejecutar la lógica de impresión SÓLO si el usuario presiona el botón de Confirmación ('Imprimir')
+            if (result.isConfirmed) {
+                // Crear una nueva ventana para imprimir
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                
+                if (printWindow) {
+                    printWindow.document.open();
+                    printWindow.document.write(html);
+                    printWindow.document.close();
+                    
+                    // Esperar a que se cargue el contenido y luego imprimir
+                    printWindow.onload = function() {
+                        printWindow.focus();
+                        printWindow.print();
+                        // printWindow.close(); // Opcional: algunos navegadores bloquean el close() inmediato
+                    };
+                } else {
+                    // Manejo si el navegador bloquea la nueva ventana (pop-up)
+                    console.error("El navegador bloqueó la ventana de impresión.");
+                    Swal.fire('Error', 'El navegador bloqueó la ventana de impresión. Por favor, permita pop-ups.', 'error');
+                }
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                // El usuario hizo clic en "Cerrar"
+                console.log("Modal cerrado por el usuario");
+            }
+        });
+    });
+}
+    
+    // Botón de cerrar
+    const closeBtn = document.getElementById('closePaymentAgreementBtn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            // Usar la instancia global o crear una nueva si no existe
+            if (!paymentAgreementModalInstance) {
+                paymentAgreementModalInstance = new bootstrap.Modal(document.getElementById('paymentAgreementModal'));
+            }
+            paymentAgreementModalInstance.hide();
+        });
+    }
+});
+
+// Función para obtener los datos del formulario del modal
+function getPaymentAgreementFormData() {
+    return {
+        id_ticket: document.getElementById('pa_ticket_id').value,
+        fecha_actual: document.getElementById('pa_fecha').value,
+        nro_ticket: document.getElementById('pa_numero_ticket').value,
+        coddocumento: document.getElementById('pa_rif').value,
+        razonsocial: document.getElementById('pa_razon_social').value,
+        ejecutivo: document.getElementById('pa_ejecutivo_venta').value,
+        desc_modelo: document.getElementById('pa_marca_equipo').value,
+        fecha_instalacion: document.getElementById('pa_fecha_instalacion').value,
+        serialpos: document.getElementById('pa_serial').value,
+        desc_estatus: document.getElementById('pa_status_pos').value,
+        saldo_deudor: document.getElementById('pa_saldo_deudor').value,
+        propuesta: document.getElementById('pa_propuesta').value,
+        observaciones: document.getElementById('pa_observaciones').value,
+        acuerdo: document.getElementById('pa_acuerdo').value,
+        // Nuevos campos de configuración bancaria
+        numero_cuenta: document.getElementById('pa_numero_cuenta').value,
+        nombre_empresa: document.getElementById('pa_nombre_empresa').value,
+        rif_empresa: document.getElementById('pa_rif_empresa').value,
+        banco: document.getElementById('pa_banco').value,
+        correo: document.getElementById('pa_correo').value
+    };
+}
+
+// Función para construir el HTML del Acuerdo de Pago
+function buildPaymentAgreementHtml(d) {
+    const safe = (s) => (s || '').toString();
+    const formatDate = (dateStr) => {
+        if (!dateStr) return new Date().toLocaleDateString('es-ES');
+        try {
+            return new Date(dateStr).toLocaleDateString('es-ES');
+        } catch (e) {
+            return dateStr;
+        }
+    };
+    
+    // Función para formatear moneda
+    const formatCurrency = (amount) => {
+        if (!amount || amount === '') return '____.__$';
+        const numericAmount = parseFloat(amount.replace(/[^0-9.-]/g, ''));
+        if (isNaN(numericAmount)) return '____.__$';
+        return `${numericAmount.toFixed(2)}$`;
+    };
+    
+    return `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Acuerdo de Pago - Inteligensa</title>
+        <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11px;
+            line-height: 1.2;
+            color: #333;
+            background: #fff;
+            padding: 10px;
+            max-width: 100%;
+            margin: 0 auto;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            min-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 2px solid #2c5aa0;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #2c5aa0 0%, #4a90e2 50%, #2c5aa0 100%);
+        }
+        
+        .company-logo-img {
+            max-width: 120px;
+            max-height: 60px;
+            margin-bottom: 8px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .company-address {
+            font-size: 10px;
+            color: #555;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .document-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c5aa0;
+            margin: 4px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .document-subtitle {
+            font-size: 11px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .document-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 3px solid #2c5aa0;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .info-label {
+            font-size: 9px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+        
+        .info-value {
+            font-size: 12px;
+            font-weight: bold;
+            color: #2c5aa0;
+        }
+        
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .section {
+            margin: 6px 0;
+            background: #fff;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%);
+            color: white;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .section-content {
+            padding: 8px 10px;
+        }
+        
+        .field-row {
+            display: flex;
+            margin-bottom: 4px;
+            align-items: flex-start;
+        }
+        
+        .field-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .field-label {
+            font-weight: 600;
+            color: #555;
+            min-width: 110px;
+            margin-right: 8px;
+            font-size: 10px;
+            padding-top: 2px;
+        }
+        
+        .field-value {
+            flex: 1;
+            color: #333;
+            font-weight: 500;
+            padding: 3px 8px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            border-left: 2px solid #2c5aa0;
+            font-size: 10px;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .field-value.large {
+            min-height: 60px;
+            align-items: flex-start;
+            padding-top: 5px;
+        }
+        
+        .two-columns {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .column {
+            flex: 1;
+        }
+        
+        .column-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #2c5aa0;
+            margin-bottom: 8px;
+            text-align: center;
+            padding: 4px;
+            background: #f0f4f8;
+            border-radius: 3px;
+            border-left: 3px solid #2c5aa0;
+        }
+        
+        .constancy {
+            background: #e8f4fd;
+            border: 1px solid #b3d9ff;
+            border-radius: 5px;
+            padding: 8px;
+            margin: 8px 0;
+            text-align: center;
+            font-size: 10px;
+            line-height: 1.4;
+            color: #2c5aa0;
+            font-weight: 500;
+        }
+        
+        .signature-section {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 20px;
+        }
+        
+        .signature-box {
+            flex: 1;
+            max-width: 280px;
+            text-align: center;
+            padding: 12px;
+            border: 1px dashed #ccc;
+            border-radius: 5px;
+            background: #fafafa;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        
+        .signature-line {
+            border-top: 2px solid #333;
+            margin: 15px auto 8px auto;
+            width: 180px;
+            display: block;
+        }
+        
+        .signature-space {
+            height: 40px;
+            margin: 10px 0;
+        }
+        
+        .signature-label {
+            font-weight: bold;
+            color: #2c5aa0;
+            margin-bottom: 3px;
+            font-size: 10px;
+        }
+        
+        .signature-field {
+            color: #666;
+            font-size: 9px;
+            margin-bottom: 2px;
+        }
+        
+        /* ✅ ESTILOS DEL FOOTER ACTUALIZADOS */
+        .footer {
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 8px;
+            line-height: 1.2;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .footer-left {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .footer-right {
+            flex: 1;
+            text-align: right;
+        }
+        
+        .footer-logo {
+            max-height: 25px;
+            max-width: 100px;
+        }
+        
+        .footer-rif {
+            font-size: 10px;
+            font-weight: bold;
+            color: #2c5aa0;
+        }
+        
+        .footer-text {
+            text-align: center;
+            margin-top: 6px;
+        }
+        
+        /* Optimizaciones críticas para impresión */
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Mostrar header y footer personalizados solo en impresión */
+            .print-header,
+            .print-footer {
+                display: block !important;
+            }
+            
+            /* Ajustar el contenido para dar espacio al header/footer fijos */
+            body {
+                margin-top: 50px !important;
+                margin-bottom: 40px !important;
+            }
+            
+            html, body {
+                width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            
+            body {
+                font-size: 10px !important;
+                padding: 8px !important;
+            }
+            
+            .container {
+                max-width: 100% !important;
+                width: 100% !important;
+                min-height: auto !important;
+                height: auto !important;
+                page-break-inside: avoid;
+            }
+            
+            .section {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+                margin: 4px 0 !important;
+                page-break-inside: avoid;
+            }
+            
+            .header {
+                margin-bottom: 6px !important;
+                padding: 6px 0 !important;
+                page-break-after: avoid;
+            }
+            
+            .company-logo-img {
+                max-width: 100px !important;
+                max-height: 50px !important;
+                margin-bottom: 6px !important;
+            }
+            
+            .company-address {
+                font-size: 9px !important;
+                margin-bottom: 6px !important;
+            }
+            
+            .document-title {
+                font-size: 14px !important;
+            }
+            
+            .section-content {
+                padding: 6px 8px !important;
+            }
+            
+            .two-columns {
+                gap: 10px !important;
+            }
+            
+            .column-title {
+                font-size: 10px !important;
+                margin-bottom: 6px !important;
+            }
+            
+            .constancy {
+                padding: 6px !important;
+                margin: 6px 0 !important;
+                page-break-inside: avoid;
+            }
+            
+            .signature-section {
+                margin-top: 12px !important;
+                page-break-inside: avoid;
+                gap: 15px !important;
+            }
+            
+            .signature-box {
+                min-height: 70px !important;
+                padding: 10px !important;
+            }
+            
+            .signature-line {
+                width: 150px !important;
+                margin: 12px auto 6px auto !important;
+                display: block !important;
+            }
+            
+            .signature-space {
+                height: 30px !important;
+                margin: 8px 0 !important;
+            }
+            
+            /* ✅ ESTILOS DE IMPRESIÓN PARA FOOTER */
+            .footer {
+                margin-top: 6px !important;
+                padding-top: 4px !important;
+                page-break-before: avoid;
+            }
+            
+            .footer-content {
+                margin-bottom: 6px !important;
+                padding: 6px 0 !important;
+            }
+            
+            .footer-logo {
+                max-height: 20px !important;
+                max-width: 80px !important;
+            }
+            
+            .footer-rif {
+                font-size: 9px !important;
+            }
+            
+            .footer-text {
+                margin-top: 4px !important;
+            }
+            
+            .field-row {
+                margin-bottom: 3px !important;
+                page-break-inside: avoid;
+            }
+            
+            .document-info {
+                margin: 6px 0 !important;
+                padding: 6px !important;
+                page-break-after: avoid;
+            }
+            
+            .section-header {
+                padding: 4px 8px !important;
+                font-size: 10px !important;
+            }
+        }
+        
+        /* Configuración de página para impresión */
+        @page {
+            size: letter;
+            margin: 0.2in 0.5in;
+            padding: 0;
+            /* Ocultar header y footer del navegador */
+            @top-left { content: ""; }
+            @top-center { content: ""; }
+            @top-right { content: ""; }
+            @bottom-left { content: ""; }
+            @bottom-center { content: ""; }
+            @bottom-right { content: ""; }
+        }
+        
+        /* Header personalizado para impresión */
+        .print-header {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: white;
+            border-bottom: 1px solid #ddd;
+            z-index: 1000;
+            padding: 8px 20px;
+            box-sizing: border-box;
+        }
+        
+        .print-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .print-header-logo {
+            max-height: 30px;
+            max-width: 80px;
+        }
+        
+        .print-header-rif {
+            font-size: 12px;
+            font-weight: bold;
+            color: #2c5aa0;
+        }
+        
+        /* Footer personalizado para impresión */
+        .print-footer {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: white;
+            border-top: 1px solid #ddd;
+            z-index: 1000;
+            padding: 5px 20px;
+            box-sizing: border-box;
+        }
+        
+        .print-footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+            font-size: 10px;
+            color: #666;
+        }
+        
+        /* Evitar cortes de página en elementos críticos */
+        .header,
+        .document-info,
+        .section,
+        .constancy,
+        .signature-section,
+        .footer {
+            page-break-inside: avoid;
+        }
+    </style>
+    </head>
+    <body>
+        <!-- Header personalizado para impresión -->
+        <div class="print-header">
+            <div class="print-header-content">
+                <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="print-header-logo" onerror="this.style.display='none'">
+                <div class="print-header-rif">RIF: J-00291615-0</div>
+            </div>
+        </div>
+        
+        <!-- Footer personalizado para impresión -->
+        <div class="print-footer">
+            <div class="print-footer-content">
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+        
+        <div class="container">
+            <div class="header">
+                <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="company-logo-img" onerror="this.style.display='none'">
+                <div class="company-address">
+                    Urbanización El Rosal. Av. Francisco de Miranda<br>
+                    Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
+                </div>
+                <div class="document-title">Acuerdo de Pago</div>
+                <div class="document-subtitle"></div>
+            </div>
+            
+            <div class="document-info">
+                <div class="info-item">
+                    <div class="info-label">Fecha</div>
+                    <div class="info-value">${formatDate(d.fecha_actual || new Date())}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">N° de Ticket</div>
+                    <div class="info-value">${safe(d.nro_ticket)}</div>
+                </div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="section">
+                    <div class="section-header">Datos del Cliente</div>
+                    <div class="section-content">
+                        <div class="field-row">
+                            <div class="field-label">R.I.F. / Identificación:</div>
+                            <div class="field-value">${safe(d.coddocumento) || '_____________________'}</div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-label">Razón Social:</div>
+                            <div class="field-value">${safe(d.razonsocial) || '_____________________'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">Antecedentes del Equipo</div>
+                    <div class="section-content">
+                        <div class="field-row">
+                            <div class="field-label">Ejecutivo de Venta:</div>
+                            <div class="field-value">${safe(d.ejecutivo) || '_____________________'}</div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-label">Equipo MARCA:</div>
+                            <div class="field-value">${safe(d.desc_modelo) || '_____________________'}</div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-label">Fecha de Instalación:</div>
+                            <div class="field-value">${safe(d.fecha_instalacion) || '_____________________'}</div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-label">Serial N°:</div>
+                            <div class="field-value">${safe(d.serialpos) || '_____________________'}</div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-label">Status del POS:</div>
+                            <div class="field-value">${safe(d.desc_estatus) || '_____________________'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">Información del Acuerdo</div>
+                    <div class="section-content">
+                        <div class="two-columns">
+                            <div class="column">
+                                <div class="column-title">Saldo deudor</div>
+                                <div class="field-value">${formatCurrency(d.saldo_deudor)}</div>
+                            </div>
+                            <div class="column">
+                                <div class="column-title">Propuesta</div>
+                                <div class="field-value large">${safe(d.propuesta) || '_____________________'}</div>
+                            </div>
+                        </div>
+                        <div class="two-columns">
+                            <div class="column">
+                                <div class="column-title">Observaciones</div>
+                                <div class="field-value large">${safe(d.observaciones) || '_____________________'}</div>
+                            </div>
+                            <div class="column">
+                                <div class="column-title">Acuerdo</div>
+                                <div class="field-value large">${safe(d.acuerdo) || '_____________________'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="constancy">
+                    <h3 style="color: #2c5aa0; margin-bottom: 10px; font-size: 12px;">INSTRUCCIONES DE PAGO</h3>
+                    <p style="margin-bottom: 8px; font-size: 10px; line-height: 1.4; text-align: justify;">
+                        Los pagos aquí acordados, deberán realizarse a través de depósitos a la cuenta N° <strong>${safe(d.numero_cuenta) || 'XXXX-XXXX-XX-XXXX'}</strong> a nombre de <strong>${safe(d.nombre_empresa) || 'Informática y Telecomunicaciones Integradas Inteligen, SA'}</strong> ${safe(d.rif_empresa) || 'J-00291615-0'} en el Banco <strong>${safe(d.banco) || 'XXXX'}</strong> y notificar a través de este correo los siguientes datos: nombre y número de RIF de su comercio, número de referencia, nombre del titular de la cuenta y monto del pago <strong>${safe(d.correo) || 'domiciliación.intelipunto@inteligensa.com'}</strong>. Recordar que cada vez que se realice un pago debe ser a la Tasa del BCV del día.
+                    </p>
+                </div>
+
+                <div class="signature-section">
+                    <div class="signature-box">
+                        <div class="signature-label">Firma del Cliente</div>
+                        <div class="signature-space"></div>
+                        <div class="signature-line"></div>
+                        <div class="signature-field">Nombre: _____________________</div>
+                        <div class="signature-field">C.I.: _____________________</div>
+                    </div>
+                    
+                    <div class="signature-box">
+                        <div class="signature-label">Firma de Inteligensa</div>
+                        <div class="signature-space"></div>
+                        <div class="signature-line"></div>
+                        <div class="signature-field">Nombre: ${safe(d.ejecutivo) || '_____________________'}</div>
+                        <div class="signature-field">C.I.: _____________________</div>
+                    </div>
+                </div>
+
+                <!-- ✅ FOOTER ACTUALIZADO CON LOGO Y RIF -->
+                <div class="footer">
+                    <div class="footer-content">
+                        <div class="footer-left">
+                            <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="footer-logo" onerror="this.style.display='none'">
+                        </div>
+                        <div class="footer-right">
+                            <div class="footer-rif">RIF: J-00291615-0'</div>
+                        </div>
+                    </div>
+                    <div class="footer-text">
+                        <p>El cliente certifica su responsabilidad de cumplir con los términos y condiciones del acuerdo de pago establecido en este documento.</p>
+                        <p>Generado: ${new Date().toLocaleString('es-ES')}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>`;
+}

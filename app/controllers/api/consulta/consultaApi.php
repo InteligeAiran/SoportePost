@@ -1260,9 +1260,10 @@ class Consulta extends Controller
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
         $id_ticket = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
         $id_new_status = isset($_POST['new_status_id']) ? $_POST['new_status_id'] : '';
+        $observation = isset($_POST['observations']) ? $_POST['observations'] : '';
 
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
-        $result = $repository->UpdateDomiciliacionStatus($id_new_status, $id_ticket, $id_user);
+        $result = $repository->UpdateDomiciliacionStatus($id_new_status, $id_ticket, $id_user, $observation);
         if ($id_new_status != '') {
             if ($result) {
                 $this->response(['success' => true, 'message' => 'Ticket actualizado con éxito.'], 200);

@@ -371,8 +371,8 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function UpdateDomiciliacionStatus($id_new_status, $id_ticket, $id_user){
-        $result = $this->model->UpdateStatusDomiciliacion($id_new_status,$id_ticket, $id_user);
+    public function UpdateDomiciliacionStatus($id_new_status, $id_ticket, $id_user, $observation){
+        $result = $this->model->UpdateStatusDomiciliacion($id_new_status,$id_ticket, $id_user, $observation);
         return $result;
     }
 

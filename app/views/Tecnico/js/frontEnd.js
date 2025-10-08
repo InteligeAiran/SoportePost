@@ -1476,7 +1476,6 @@ $(document).on('click', '#previewHtmlTemplateBtn', function () {
   };
 
   const html = buildDeliveryNoteHtml(data);
-  console.log('Datos para buildDeliveryNoteHtml:', data);
 
   const iframe = document.getElementById('htmlTemplatePreview');
   const doc = iframe.contentDocument || iframe.contentWindow.document;
@@ -1733,10 +1732,9 @@ function buildDeliveryNoteHtml(d) {
       
       .signature-line {
         border-top: 2px solid #333;
-        margin: 15px 0 8px 0;
+        margin: 15px auto 8px auto;
         width: 180px;
-        margin-left: auto;
-        margin-right: auto;
+        display: block;
       }
       
       .signature-space {
@@ -1902,7 +1900,8 @@ function buildDeliveryNoteHtml(d) {
         
         .signature-line {
           width: 150px !important;
-          margin: 12px 0 6px 0 !important;
+          margin: 12px auto 6px auto !important;
+          display: block !important;
         }
         
         .signature-space {
@@ -2150,6 +2149,7 @@ function buildDeliveryNoteHtml(d) {
             <div class="signature-label">Recibe</div>
             <div class="signature-space"></div>
             <div class="signature-line"></div>
+            <div class="signature-field">Nombre: _____________________</div>
             <div class="signature-field">C.I.: _____________________</div>
           </div>
           
@@ -2157,7 +2157,7 @@ function buildDeliveryNoteHtml(d) {
             <div class="signature-label">Firma de Conformidad</div>
             <div class="signature-space"></div>
             <div class="signature-line"></div>
-            <div class="signature-field">Nombre: ${safe(d.tecnico_responsable)}</div> <!-- ✅ CAMBIO AQUÍ -->
+            <div class="signature-field">Nombre: ${safe(d.tecnico_responsable)}</div>
             <div class="signature-field">C.I.: _____________________</div>
           </div>
         </div>

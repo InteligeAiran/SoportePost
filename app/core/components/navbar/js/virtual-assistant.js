@@ -103,40 +103,132 @@ class VirtualAssistant {
                 </div>
                 
                 <div class="chat-options" id="chatOptions">
-                    <div class="option-category">
-                        <h6>📊 Consultas del Sistema</h6>
-                        <button class="chat-option-btn" data-query="tickets_stats">
-                            <span class="option-icon">📋</span>
-                            <span class="option-text">Ver estadísticas de tickets</span>
-                        </button>
-                        <button class="chat-option-btn" data-query="tickets_efficiency_summary">
-                            <span class="option-icon">📋</span>
-                            <span class="option-text">Ver Eficiencia de los tecnios de tickets</span>
-                        </button>
-                        <button class="chat-option-btn" data-query="user_performance">
-                            <span class="option-icon">👥</span>
-                            <span class="option-text">Rendimiento de técnicos</span>
-                        </button>
-                        <button class="chat-option-btn" data-query="technician_efficiency">
-                            <span class="option-icon">📊</span>
-                            <span class="option-text">Eficiencia de técnicos individuales</span>
-                        </button>
-                        <button class="chat-option-btn" data-query="pending_tickets">
-                            <span class="option-icon">⏳</span>
-                            <span class="option-text">Tickets pendientes</span>
-                        </button>
+                    <!-- Categoría Técnico -->
+                    <div class="category-section">
+                        <div class="category-header" data-category="tecnico">
+                            <div class="category-title">
+                                <span class="category-icon">👨‍💼</span>
+                                <span class="category-name">Técnico</span>
+                            </div>
+                            <div class="category-arrow">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="category-options" id="tecnico-options" style="display: none;">
+                            <button class="chat-option-btn" data-query="technician_individual_efficiency">
+                                <span class="option-icon">📋</span>
+                                <span class="option-text">Eficiencia de un técnico específico</span>
+                            </button>
+                            <button class="chat-option-btn" data-query="tickets_efficiency_summary">
+                                <span class="option-icon">📊</span>
+                                <span class="option-text">Eficiencia de técnicos en general</span>
+                            </button>
+                            <button class="chat-option-btn" data-query="technician_efficiency">
+                                <span class="option-icon">📈</span>
+                                <span class="option-text">Eficiencia de técnicos individuales</span>
+                            </button>
+                            <button class="chat-option-btn" data-query="user_performance">
+                                <span class="option-icon">👥</span>
+                                <span class="option-text">Rendimiento de técnicos</span>
+                            </button>
+                            <button class="chat-option-btn" data-query="pending_tickets">
+                                <span class="option-icon">⏳</span>
+                                <span class="option-text">Tickets pendientes</span>
+                            </button>
+                        </div>
                     </div>
-                    
-                    <div class="option-category">
-                        <h6>🔍 Análisis Avanzado</h6>
-                        <button class="chat-option-btn" data-query="client_analysis">
-                            <span class="option-icon">🏢</span>
-                            <span class="option-text">Análisis de clientes</span>
-                        </button>
-                        <button class="chat-option-btn" data-query="system_health">
-                            <span class="option-icon">💚</span>
-                            <span class="option-text">Estado del sistema</span>
-                        </button>
+
+                    <!-- Categoría Ayuda -->
+                    <div class="category-section">
+                        <div class="category-header" data-category="ayuda">
+                            <div class="category-title">
+                                <span class="category-icon">❓</span>
+                                <span class="category-name">Ayuda</span>
+                            </div>
+                            <div class="category-arrow">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="category-options" id="ayuda-options" style="display: none;">
+                            <button class="chat-option-btn" data-query="help_general">
+                                <span class="option-icon">💡</span>
+                                <span class="option-text">Ayuda general del sistema</span>
+                            </button>
+                            <button class="chat-option-btn" data-query="help_tickets">
+                                <span class="option-icon">🎫</span>
+                                <span class="option-text">Cómo gestionar tickets</span>
+                            </button>
+                            <button class="chat-option-btn" data-query="help_reports">
+                                <span class="option-icon">📊</span>
+                                <span class="option-text">Cómo generar reportes</span>
+                            </button>
+                            <button class="chat-option-btn" data-query="help_technical">
+                                <span class="option-icon">🔧</span>
+                                <span class="option-text">Soporte técnico</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Categoría Sistema -->
+                    <div class="category-section">
+                        <div class="category-header" data-category="sistema">
+                            <div class="category-title">
+                                <span class="category-icon">⚙️</span>
+                                <span class="category-name">Sistema</span>
+                            </div>
+                            <div class="category-arrow">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="category-options" id="sistema-options" style="display: none;">
+                            <button class="chat-option-btn" data-query="system_health">
+                                <span class="option-icon">💚</span>
+                                <span class="option-text">Estado del sistema</span>
+                            </button>
+                            <button class="chat-option-btn" data-query="system_performance">
+                                <span class="option-icon">📈</span>
+                                <span class="option-text">Rendimiento del sistema</span>
+                            </button>
+                            <button class="chat-option-btn" data-query="system_logs">
+                                <span class="option-icon">📝</span>
+                                <span class="option-text">Logs del sistema</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Categoría Clientes -->
+                    <div class="category-section">
+                        <div class="category-header" data-category="clientes">
+                            <div class="category-title">
+                                <span class="category-icon">🏢</span>
+                                <span class="category-name">Clientes</span>
+                            </div>
+                            <div class="category-arrow">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="category-options" id="clientes-options" style="display: none;">
+                            <button class="chat-option-btn" data-query="client_analysis">
+                                <span class="option-icon">📊</span>
+                                <span class="option-text">Análisis de clientes</span>
+                            </button>
+                            <button class="chat-option-btn" data-query="client_satisfaction">
+                                <span class="option-icon">😊</span>
+                                <span class="option-text">Satisfacción de clientes</span>
+                            </button>
+                            <button class="chat-option-btn" data-query="client_tickets">
+                                <span class="option-icon">🎫</span>
+                                <span class="option-text">Tickets por cliente</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -213,6 +305,15 @@ class VirtualAssistant {
                 this.closePanel();
             });
         }
+        
+        // Click en headers de categorías
+        const categoryHeaders = document.querySelectorAll('.category-header');
+        categoryHeaders.forEach(header => {
+            header.addEventListener('click', (e) => {
+                const category = e.currentTarget.getAttribute('data-category');
+                this.toggleCategory(category);
+            });
+        });
         
         // Click en botones de chat
         const chatOptions = document.querySelectorAll('.chat-option-btn');
@@ -383,6 +484,56 @@ class VirtualAssistant {
         
         // Log para debugging
         console.log('🤖 Panel del asistente virtual cerrado');
+    }
+    
+    toggleCategory(categoryName) {
+        // Cerrar todas las categorías abiertas
+        const allCategoryOptions = document.querySelectorAll('.category-options');
+        const allCategoryHeaders = document.querySelectorAll('.category-header');
+        
+        allCategoryOptions.forEach(options => {
+            options.style.display = 'none';
+        });
+        
+        allCategoryHeaders.forEach(header => {
+            header.classList.remove('active');
+            const arrow = header.querySelector('.category-arrow svg');
+            if (arrow) {
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        });
+        
+        // Si la categoría clickeada no estaba abierta, abrirla
+        const targetOptions = document.getElementById(`${categoryName}-options`);
+        const targetHeader = document.querySelector(`[data-category="${categoryName}"]`);
+        
+        if (targetOptions && targetHeader) {
+            const isCurrentlyOpen = targetOptions.style.display !== 'none';
+            
+            if (!isCurrentlyOpen) {
+                // Abrir la categoría
+                targetOptions.style.display = 'block';
+                targetHeader.classList.add('active');
+                const arrow = targetHeader.querySelector('.category-arrow svg');
+                if (arrow) {
+                    arrow.style.transform = 'rotate(90deg)';
+                }
+                
+                // Animación suave
+                targetOptions.style.opacity = '0';
+                targetOptions.style.transform = 'translateY(-10px)';
+                
+                setTimeout(() => {
+                    targetOptions.style.transition = 'all 0.3s ease';
+                    targetOptions.style.opacity = '1';
+                    targetOptions.style.transform = 'translateY(0)';
+                }, 10);
+                
+                console.log(`🤖 Categoría "${categoryName}" abierta`);
+            } else {
+                console.log(`🤖 Categoría "${categoryName}" cerrada`);
+            }
+        }
     }
     
     handleChatQuery(query, buttonElement) {
@@ -630,7 +781,7 @@ addChartMessage(data) {
     const open = parseFloat(data.percentage_open) || 0;
     
     const chartHtml = `
-        <div class="chart-container" style="margin-top: 20px; margin-bottom: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef;">
+        <div class="chart-container" style="margin-top: 20px; margin-bottom: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef;">
             <h5 style="text-align: center; color: #333; margin-bottom: 20px; font-weight: bold;">
                 <i class="fas fa-chart-pie me-2"></i>Distribución de Tickets
             </h5>
@@ -660,6 +811,7 @@ addChartMessage(data) {
                 </div>
             </div>
         </div>
+        <div style="height: 20px; clear: both;"></div>
     `;
 
     // Crear un mensaje separado para la gráfica
@@ -1025,6 +1177,147 @@ const additionalStyles = `
     @keyframes slideOutRight {
         from { transform: translateX(0); opacity: 1; }
         to { transform: translateX(100%); opacity: 0; }
+    }
+    
+    /* Estilos para categorías desplegables */
+    .category-section {
+        margin-bottom: 8px;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+    }
+    
+    .category-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        cursor: pointer;
+        background-color: #ffffff;
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+        user-select: none;
+    }
+    
+    .category-header:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .category-header.active {
+        background-color: #e3f2fd;
+        border-bottom-color: #2196f3;
+    }
+    
+    .category-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .category-icon {
+        font-size: 18px;
+        width: 24px;
+        text-align: center;
+    }
+    
+    .category-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+    }
+    
+    .category-arrow {
+        transition: transform 0.3s ease;
+        color: #666;
+    }
+    
+    .category-arrow svg {
+        transition: transform 0.3s ease;
+    }
+    
+    .category-options {
+        background-color: #ffffff;
+        border-top: 1px solid #e9ecef;
+        padding: 8px 0;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .category-options .chat-option-btn {
+        width: 100%;
+        margin: 2px 8px;
+        padding: 10px 12px;
+        border: none;
+        background-color: transparent;
+        text-align: left;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        color: #555;
+    }
+    
+    .category-options .chat-option-btn:hover {
+        background-color: #2196f3;
+        color: #ffffff;
+        transform: translateX(4px);
+    }
+    
+    .category-options .chat-option-btn:active {
+        transform: translateX(2px);
+    }
+    
+    .category-options .option-icon {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+    }
+    
+    .category-options .option-text {
+        flex: 1;
+        font-weight: 500;
+    }
+    
+    /* Animación de entrada para las opciones */
+    .category-options {
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+            max-height: 0;
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 300px;
+        }
+    }
+    
+    /* Scroll personalizado para las opciones */
+    .category-options::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .category-options::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 2px;
+    }
+    
+    .category-options::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 2px;
+    }
+    
+    .category-options::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
     }
 `;
 

@@ -106,8 +106,6 @@ function mi_navbar() {}
             background-color: #003594;
             color: #fff;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease-in-out;
         }
@@ -162,6 +160,51 @@ function mi_navbar() {}
             background-color: red;
         }
 
+        /* Estilos específicos para los campos de texto del acuerdo */
+        #pa_propuesta, #pa_observaciones, #pa_acuerdo {
+            width: 100% !important;
+            max-width: 100% !important;
+            word-wrap: break-word !important;
+            word-break: break-all !important;
+            white-space: pre-wrap !important;
+            overflow-wrap: break-word !important;
+            resize: vertical;
+            min-height: 60px;
+            max-height: 120px;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.2;
+        }
+
+        /* Contenedor de las columnas del acuerdo */
+        .modal-body .row .col-md-6 {
+            width: 50% !important;
+            max-width: 50% !important;
+            flex: 0 0 50% !important;
+            padding: 5px !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+        }
+
+        /* Estilos específicos para impresión */
+        @media print {
+            #pa_propuesta, #pa_observaciones, #pa_acuerdo {
+                width: 180px !important;
+                max-width: 180px !important;
+                word-break: break-all !important;
+                white-space: pre-wrap !important;
+                overflow: hidden !important;
+                font-size: 10px !important;
+                line-height: 1.1 !important;
+            }
+            
+            .modal-body .row .col-md-6 {
+                width: 50% !important;
+                max-width: 50% !important;
+                overflow: hidden !important;
+            }
+        }
+
         #CerrarBoton:hover {
             background-color: red;
         }
@@ -191,6 +234,62 @@ function mi_navbar() {}
         .modal-content {
             border-radius: 0.75rem;
             /* Rounded corners for the modal */
+        }
+
+        /* Estilos específicos para el modal de acuerdo de pago */
+        #paymentAgreementModal .modal-dialog {
+            max-width: 55% !important;
+            max-height: 95vh !important;
+            margin: 2.5vh auto !important;
+        }
+
+        #paymentAgreementModal .modal-content {
+            max-height: 95vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+
+        #paymentAgreementModal .modal-body {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            padding: 20px !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: thin !important;
+        }
+
+        /* Estilos para la barra de scroll */
+        #paymentAgreementModal .modal-body::-webkit-scrollbar {
+            width: 8px !important;
+        }
+
+        #paymentAgreementModal .modal-body::-webkit-scrollbar-track {
+            background: #f1f1f1 !important;
+            border-radius: 4px !important;
+        }
+
+        #paymentAgreementModal .modal-body::-webkit-scrollbar-thumb {
+            background: #888 !important;
+            border-radius: 4px !important;
+        }
+
+        #paymentAgreementModal .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #555 !important;
+        }
+
+        /* Estilos para el select de estatus de domiciliación */
+        #modalNewStatusDomiciliacionSelect {
+            color: #6c757d !important; /* Color gris por defecto */
+        }
+
+        #modalNewStatusDomiciliacionSelect option {
+            color: #333 !important; /* Color negro para las opciones */
+            background-color: white !important;
+        }
+
+        #modalNewStatusDomiciliacionSelect option:first-child {
+            color: #6c757d !important; /* Color gris para la opción por defecto */
         }
 
         .btn-primary {
@@ -286,6 +385,64 @@ function mi_navbar() {}
             padding: 2px 5px;
             border-radius: 3px;
         }
+
+        /* Estilos personalizados para el modal de confirmación de estatus crítico */
+        .swal-wide {
+            width: 500px !important;
+            max-width: 90vw !important;
+        }
+
+        .swal-title-danger {
+            color: #dc3545 !important;
+            font-weight: bold !important;
+            font-size: 24px !important;
+            text-shadow: 0 2px 4px rgba(220, 53, 69, 0.3) !important;
+        }
+
+        .swal-confirm-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333) !important;
+            border: none !important;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4) !important;
+            font-weight: bold !important;
+            font-size: 16px !important;
+            padding: 12px 30px !important;
+            border-radius: 8px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .swal-confirm-danger:hover {
+            background: linear-gradient(135deg, #c82333, #bd2130) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6) !important;
+        }
+
+        .swal-cancel-safe {
+            background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+            border: none !important;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3) !important;
+            font-weight: bold !important;
+            font-size: 16px !important;
+            padding: 12px 30px !important;
+            border-radius: 8px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .swal-cancel-safe:hover {
+            background: linear-gradient(135deg, #5a6268, #495057) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.5) !important;
+        }
+
+        /* Animación de pulso para el ícono de advertencia */
+        @keyframes pulse-warning {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .swal-wide .swal2-icon {
+            animation: pulse-warning 2s infinite !important;
+        }
     </style>
     <!-- CSS Files -->
     <link id="pagestyle" rel="stylesheet"
@@ -353,7 +510,8 @@ function mi_navbar() {}
                 </div>
             </div>
         </div>
-        <input type="hidden" id="iduser" value="<?php echo $_SESSION['id_user'] ?>">
+
+        <!-- MODAL DE ESTATUS DOMICILIACION -->
             <div class="modal fade" id="changeStatusDomiciliacionModal" tabindex="-1" aria-labelledby="changeStatusDomiciliacionModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -382,6 +540,155 @@ function mi_navbar() {}
                     </div>
                 </div>
             </div>
+        <!-- END MODAL DE ESTATUS DOMICILIACION -->
+
+        <!--MODAL PARA SUBIR EL DOCUMENTO DE CONVENIO FIRMADO-->
+            <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-gradient-primary">
+                            <strong>
+                                <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
+                                    Documento de Convenio Firmado para el Nro Ticket: <span id="modalTicketId"></span></h5>
+                                <input type="hidden" id="id_ticket"></input>
+                                <input type="hidden" id="type_document"></input>
+                            </strong>
+                        </div>
+                        <div class="modal-body">
+                            <form id="uploadForm">
+                                <div class="mb-3">
+                                    <label for="documentFile" class="form-label text-gray-700">Seleccionar Archivo:</label>
+                                    <input class="form-control" type="file" id="documentFile" accept="image/*,application/pdf"
+                                        style="display:block">
+                                    <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
+                                </div>
+                                <div class="mb-3 text-center" style="max-height: 50vh; overflow-y: auto;">
+                                    <img id="imagePreview" class="img-fluid img-preview" src="#" alt="Previsualización de Imagen" style="display: none;">
+                                </div>
+                                <div id="uploadMessage" class="message-box hidden"></div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" id="CerrarBoton">Cerrar</button>
+                            <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
+                            <button type="button" class="btn btn-warning" id="generateNotaEntregaBtn">Generar Convenio Firmado</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <!-- END MODAL PARA SUBIR EL DOCUMENTO DE CONVENIO FIRMADO-->
+
+        <!-- MODAL DE ACUERDO DE PAGO -->
+            <div class="modal fade" id="paymentAgreementModal" tabindex="-1" aria-labelledby="paymentAgreementModalLabel" aria-hidden="true" style="background-color: rgba(0,0,0,.4); backdrop-filter: blur(8px);">
+                <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 55%; max-height: 95vh;">
+                    <div class="modal-content" style="max-height: 95vh; display: flex; flex-direction: column;">
+                        <div class="modal-header bg-gradient-primary" style="flex-shrink: 0;">
+                            <h5 class="modal-title" id="paymentAgreementModalLabel">Generar Acuerdo de Pago</h5>
+                        </div>
+                        <div class="modal-body" style="flex: 1; overflow-y: auto; padding: 20px;">
+                            <div class="row g-3">
+                                <input type="hidden" id="pa_ticket_id" value="">
+                                <div class="col-md-6">
+                                    <label class="form-label">Fecha</label>
+                                    <input type="text" id="pa_fecha" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">N° de Ticket</label>
+                                    <input type="text" id="pa_numero_ticket" class="form-control" readonly>
+                                </div>
+
+                                <div class="col-12"><strong>Datos del Cliente</strong></div>
+                                <div class="col-md-6">
+                                    <label class="form-label">RIF/Identificación</label>
+                                    <input type="text" id="pa_rif" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Razón Social</label>
+                                    <input type="text" id="pa_razon_social" class="form-control" readonly>
+                                </div>
+
+                                <div class="col-12 mt-4"><strong>Antecedentes del Equipo</strong></div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Ejecutivo de Venta</label>
+                                    <input type="text" id="pa_ejecutivo_venta" class="form-control" placeholder="Ingrese el nombre del ejecutivo">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Equipo MARCA</label>
+                                    <input type="text" id="pa_marca_equipo" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Serial N°</label>
+                                    <input type="text" id="pa_serial" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Estatus Equipo</label>
+                                    <input type="text" id="pa_status_pos" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Fecha de Instalación</label>
+                                    <input type="text" id="pa_fecha_instalacion" class="form-control" readonly>
+                                </div>
+                                <div class="col-12 mt-4"><strong>Información del Acuerdo</strong></div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Saldo deudor <small class="text-muted">(Mínimo $10.00)</small></label>
+                                    <div class="input-group">
+                                        <input type="text" id="pa_saldo_deudor" class="form-control" placeholder="__.__" style="text-align: right;">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Propuesta</label>
+                                    <textarea id="pa_propuesta" class="form-control" rows="2" placeholder="Ingrese la propuesta de pago"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Observaciones</label>
+                                    <textarea id="pa_observaciones" class="form-control" rows="2" placeholder="Ingrese observaciones adicionales"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Acuerdo</label>
+                                    <textarea id="pa_acuerdo" class="form-control" rows="2" placeholder="Ingrese los términos del acuerdo"></textarea>
+                                </div>
+
+                                <div class="col-12 mt-4"><strong>Configuración de Datos Bancarios</strong></div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Número de Cuenta</label>
+                                    <input type="text" id="pa_numero_cuenta" class="form-control" placeholder="XXXX-XXXX-XX-XXXX" value="XXXX-XXXX-XX-XXXX">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre de la Empresa</label>
+                                    <input type="text" id="pa_nombre_empresa" class="form-control" placeholder="Nombre de la empresa" value="Informática y Telecomunicaciones Integradas Inteligen, SA">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">RIF de la Empresa</label>
+                                    <input type="text" id="pa_rif_empresa" class="form-control" placeholder="J-XXXXXXXX-X" value="J-00291615-0">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Banco</label>
+                                    <input type="text" id="pa_banco" class="form-control" placeholder="Nombre del banco" value="XXXX">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Correo Electrónico</label>
+                                    <input type="email" id="pa_correo" class="form-control" placeholder="correo@empresa.com" value="domiciliación.intelipunto@inteligensa.com">
+                                </div>
+
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-secondary" id="previewPaymentAgreementBtn">Previsualizar</button>
+                                    <button type="button" class="btn btn-success" id="printPaymentAgreementBtn">Imprimir / Guardar PDF</button>
+                                </div>
+                                <div class="col-12" style="height: 500px; border: 2px solid #e9ecef; border-radius: 8px; overflow: hidden;">
+                                    <iframe id="paymentAgreementPreview" style="width:100%; height:100%; border:none; overflow-y: auto; overflow-x: hidden;"></iframe>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
+                            <button type="button" class="btn btn-secondary" id="closePaymentAgreementBtn">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <!-- END MODAL DE ACUERDO DE PAGO-->
+
+        <input type="hidden" id="iduser" value="<?php echo $_SESSION['id_user'] ?>">
         <input type="hidden" id="idTicket">
     </main>
 
