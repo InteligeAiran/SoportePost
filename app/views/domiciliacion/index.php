@@ -385,64 +385,6 @@ function mi_navbar() {}
             padding: 2px 5px;
             border-radius: 3px;
         }
-
-        /* Estilos personalizados para el modal de confirmación de estatus crítico */
-        .swal-wide {
-            width: 500px !important;
-            max-width: 90vw !important;
-        }
-
-        .swal-title-danger {
-            color: #dc3545 !important;
-            font-weight: bold !important;
-            font-size: 24px !important;
-            text-shadow: 0 2px 4px rgba(220, 53, 69, 0.3) !important;
-        }
-
-        .swal-confirm-danger {
-            background: linear-gradient(135deg, #dc3545, #c82333) !important;
-            border: none !important;
-            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4) !important;
-            font-weight: bold !important;
-            font-size: 16px !important;
-            padding: 12px 30px !important;
-            border-radius: 8px !important;
-            transition: all 0.3s ease !important;
-        }
-
-        .swal-confirm-danger:hover {
-            background: linear-gradient(135deg, #c82333, #bd2130) !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6) !important;
-        }
-
-        .swal-cancel-safe {
-            background: linear-gradient(135deg, #6c757d, #5a6268) !important;
-            border: none !important;
-            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3) !important;
-            font-weight: bold !important;
-            font-size: 16px !important;
-            padding: 12px 30px !important;
-            border-radius: 8px !important;
-            transition: all 0.3s ease !important;
-        }
-
-        .swal-cancel-safe:hover {
-            background: linear-gradient(135deg, #5a6268, #495057) !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.5) !important;
-        }
-
-        /* Animación de pulso para el ícono de advertencia */
-        @keyframes pulse-warning {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .swal-wide .swal2-icon {
-            animation: pulse-warning 2s infinite !important;
-        }
     </style>
     <!-- CSS Files -->
     <link id="pagestyle" rel="stylesheet"
@@ -571,12 +513,39 @@ function mi_navbar() {}
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" id="CerrarBoton">Cerrar</button>
                             <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
-                            <button type="button" class="btn btn-warning" id="generateNotaEntregaBtn">Generar Convenio Firmado</button>
                         </div>
                     </div>
                 </div>
             </div>
         <!-- END MODAL PARA SUBIR EL DOCUMENTO DE CONVENIO FIRMADO-->
+
+        <!-- MODAL PARA GENERAR CONVENIO FIRMADO -->
+        <div class="modal fade" id="generateConvenioModal" tabindex="-1" aria-labelledby="generateConvenioModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-gradient-primary">
+                        <h5 class="modal-title text-lg font-semibold text-gray-800" id="generateConvenioModalLabel">
+                            Generar Documento de Convenio Firmado
+                        </h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-file-contract fa-3x text-primary mb-3"></i>
+                            <h4 class="text-gray-800 mb-3">Genere el documento del convenio para después subirlo</h4>
+                            <p class="text-gray-600 mb-4">
+                                Por Favor genere el documento de Convenio Firmado para el ticket seleccionado. 
+                                Una vez generado, podrá subirlo al sistema.
+                            </p>
+                        </div>
+                        <input type="hidden" id="generate_id_ticket" value="">
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" id="generateNotaEntregaBtn">Generar Convenio Firmado</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END MODAL PARA GENERAR CONVENIO FIRMADO -->
 
         <!-- MODAL DE ACUERDO DE PAGO -->
             <div class="modal fade" id="paymentAgreementModal" tabindex="-1" aria-labelledby="paymentAgreementModalLabel" aria-hidden="true" style="background-color: rgba(0,0,0,.4); backdrop-filter: blur(8px);">
