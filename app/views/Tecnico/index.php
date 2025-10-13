@@ -513,6 +513,18 @@ function mi_navbar() {}
                 border-color: #576370;
             }
 
+            /* Botón de Ver Convenio Firmado (gris oscuro) */
+            #VerConvenio {
+                background-color: #6e6e6e;
+                border-color: #6e6e6e;
+                color: white;
+            }
+
+            #VerConvenio:hover {
+                background-color: #5c5c5c;
+                border-color: #5c5c5c;
+            }
+
         /* Estilos comunes para todos los botones en el modal */
             .modal-body button {
                 width: 100%;

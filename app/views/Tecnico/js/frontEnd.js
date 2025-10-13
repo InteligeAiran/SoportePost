@@ -15,6 +15,7 @@ let currentEstado;
 let url_envio;
 let url_exoneracion;
 let url_pago;
+let url_convenio;
 
 function getTicketData() {
   const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
@@ -281,8 +282,10 @@ function getTicketData() {
                   data-pdf-zoom-url="${ticket.pdf_zoom_url || ""}"
                   data-img-exoneracion-url="${ticket.img_exoneracion_url || ""}"
                   data-pdf-pago-url="${ticket.pdf_pago_url || ""}"
+                  data-pdf-convenio-url="${ticket.pdf_convenio_url || ""}"
                   data-exo-file="${ticket.img_exoneracion_filename || ""}"
                   data-pago-file="${ticket.pdf_pago_filename || ""}"
+                  data-convenio-file="${ticket.pdf_convenio_filename || ""}"
                   data-zoom-file="${ticket.pdf_zoom_filename || ""}"
                   data-estado-cliente="${ticket.nombre_estado_cliente}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
@@ -312,6 +315,7 @@ function getTicketData() {
                   data-url_zoom="${ticket.pdf_zoom_url || ''}"
                   data-url_exo="${ticket.img_exoneracion_url || ''}"
                   data-url_pago="${ticket.pdf_pago_url || ''}"
+                  data-url_convenio="${ticket.pdf_convenio_url || ''}"
                   data-estado="${ticket.nombre_estado_cliente}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
               </button>`;
@@ -631,6 +635,7 @@ function getTicketData() {
                 const pdfZoomUrl = $(this).data("url_zoom") || "";
                 const imgExoneracionUrl = $(this).data("url_exo") || "";
                 const pdfPagoUrl = $(this).data("url_pago") || "";
+                const pdfConvenioUrl = $(this).data("url_convenio") || "";
                 const serialPos = $(this).data("serial_pos") || "No disponible";
                 const estado = $(this).data("estado");
 
@@ -644,6 +649,7 @@ function getTicketData() {
                 url_envio = pdfZoomUrl;
                 url_exoneracion = imgExoneracionUrl;
                 url_pago = pdfPagoUrl;
+                url_convenio = pdfConvenioUrl;
 
                 if (actionSelectionModalInstance) {
                   actionSelectionModalInstance.show();
@@ -657,6 +663,19 @@ function getTicketData() {
               const id_domiciliacion = currentDomiciliacion;
               let showButton = false;
               const isEstadoSinEnvio = currentEstado && ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'].includes(currentEstado);
+
+              // Validación específica para Convenio Firmado (id_status_domiciliacion = 4)
+              if (id_domiciliacion == 4 && (url_convenio === "" || url_convenio === null || url_convenio === undefined)) {
+                Swal.fire({
+                  icon: 'warning',
+                  title: '¡Advertencia!',
+                  text: 'Como el estatus de domiciliación es "Deudor - Convenio Firmado", por favor debe cargar el documento del convenio para enviar a taller.',
+                  confirmButtonText: 'Ok',
+                  confirmButtonColor: '#003594',
+                  color: 'black',
+                });
+                return;
+              }
 
               if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
                 showButton = true;
@@ -973,10 +992,12 @@ function getTicketData() {
     const pdfZoomUrl = $(this).data('pdf-zoom-url');
     const imgExoneracionUrl = $(this).data('img-exoneracion-url');
     const pdfPagoUrl = $(this).data('pdf-pago-url');
+    const pdfConvenioUrl = $(this).data('pdf-convenio-url');
     const nro_ticket = $(this).data('nro-ticket');
     const ExoneracionFile_name = $(this).data('exo-file');
     const PagoFile_name = $(this).data('pago-file');
     const ZoomFile_name = $(this).data('zoom-file');
+    const ConvenioFile_name = $(this).data('convenio-file');
     const estado_cliente = $(this).data('estado-cliente');
 
     const modalTitle = $('#modalTicketId');
@@ -1106,6 +1127,20 @@ function getTicketData() {
                 </button>
             `;
         }
+    }
+
+    // Agregar botón de Ver Documento de Convenio Firmado si existe
+    if (pdfConvenioUrl && pdfConvenioUrl.trim() !== '') {
+        modalButtonsHTML += `
+            <button id="VerConvenio" class="btn btn-secondary btn-block btn-view-document mb-2" 
+                    data-ticket-id="${ticketId}" 
+                    data-document-type="convenio_firmado" 
+                    data-file-url="${pdfConvenioUrl}" 
+                    data-file-name="${ConvenioFile_name}" 
+                    data-nro-ticket="${nro_ticket}">
+                Ver Documento de Convenio Firmado
+            </button>
+        `;
     }
 
     buttonsContainer.html(modalButtonsHTML);

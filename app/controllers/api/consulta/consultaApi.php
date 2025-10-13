@@ -1910,7 +1910,7 @@ class Consulta extends Controller
     }
 
     public function handleGetMotivos(){
-        $documentType = isset($_POST['documentType']) ? $_POST['documentType'] : '';
+        $documentType = 'Convenio_Firmado';
 
         if (!$documentType) {
             $this->response(['success' => false, 'message' => 'Tipo de documento requerido.'], 400);
@@ -1932,13 +1932,13 @@ class Consulta extends Controller
         $id_motivo = isset($_POST['motivoId'])? $_POST['motivoId'] : '';
         $nro_ticket = isset($_POST['nroTicket'])? $_POST['nroTicket'] : '';
         $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
-        $document_type = isset($_POST['documentType'])? $_POST['documentType'] : '';
-
+        $document_type = isset($_POST['documentType']) ? $_POST['documentType'] : '';
 
         if (!$id_ticket || !$id_motivo || !$nro_ticket || !$id_user || !$document_type) {
             $this->response(['success' => false, 'message' => 'Faltan los datos necesarios.'], 400);
             return;
         }
+        
 
         $repository = new technicalConsultionRepository();
         $result = $repository->RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type);

@@ -205,6 +205,7 @@ function getTicketAprovalDocument() {
         razonsocial_cliente: "Razón Social",
         serial_pos: "Serial POS",
         name_status_payment: "Estatus Pago",
+        name_status_domiciliacion: "Estatus Domiciliación",
         document_type: "Tipo Documento",
         original_filename: "Nombre Archivo",
         motivo_rechazo: "Motivo Rechazo",
@@ -434,13 +435,13 @@ function getTicketAprovalDocument() {
 
                                         // Lógica de visibilidad de columnas para la búsqueda automática
                                         if (button === "btn-por-asignar") {
-                                            api.column(6).visible(false);
-                                            api.column(7).visible(false);
+                                            api.column(6).visible(true);
+                                            api.column(7).visible(true);
                                             api.column(8).visible(false);
                                             api.column(9).visible(false);
                                         } else if (button === "btn-recibidos") {
-                                            api.column(6).visible(false);
-                                            api.column(7).visible(false);
+                                            api.column(6).visible(true);
+                                            api.column(7).visible(true);
                                             api.column(8).visible(false);
                                             api.column(9).visible(false);
                                         }else{
@@ -473,8 +474,8 @@ function getTicketAprovalDocument() {
                                 $("#btn-por-asignar").on("click", function () {
                                 if (checkDataExists("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision")) {
                                     api.columns().search('').draw(false);
-                                    api.column(6).visible(false);
-                                    api.column(7).visible(false);
+                                    api.column(6).visible(true);
+                                    api.column(7).visible(true);
                                     api.column(8).visible(false);
                                     api.column(9).visible(false);
                                     api.column(5).search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true).draw();
@@ -487,8 +488,8 @@ function getTicketAprovalDocument() {
                                 $("#btn-recibidos").on("click", function () {
                                 if (checkDataExists("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)")) {
                                     api.columns().search('').draw(false);
-                                    api.column(6).visible(false); // Se aseguran de que las columnas sean visibles
-                                    api.column(7).visible(false); // Se aseguran de que las columnas sean visibless
+                                    api.column(6).visible(true); // Se aseguran de que las columnas sean visibles
+                                    api.column(7).visible(true); // Se aseguran de que las columnas sean visibless
                                     api.column(8).visible(false); // Se aseguran de que las columnas sean visibles
                                     api.column(9).visible(false);
                                     api.column(5).search("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)", true, false, true).draw();

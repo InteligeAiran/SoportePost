@@ -1416,6 +1416,8 @@ class email extends Controller {
         // 1. Obtener ID del coordinador desde el POST y sus datos
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
         $documentType = isset($_POST['documentType']) ? $_POST['documentType'] : '';
+        $nroTicket = isset($_POST['nroTicket']) ? $_POST['nroTicket'] : ''; // ✅ OBTENER EL NRO TICKET CORRECTO
+        $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : ''; 
 
         // EMAIL DEL AREA
         $result_email_area = $repository->GetEmailArea();
@@ -1428,9 +1430,9 @@ class email extends Controller {
 
         $email_area = $result_email_area['email_area']; // El Gmail del AREA
         $nombre_area = $result_email_area['name_area']; // El nombre del AREA
-
-        // 2. Obtener datos del ticket
-        $result_ticket = $repository->GetDataTicket2();
+        
+        // Ahora obtener los datos del ticket usando el ID
+        $result_ticket = $repository->GetTicketDataById($ticketId);
         // Verifica si se obtuvieron datos del ticket. Si no, algo anda mal.
         if (!$result_ticket) {
             $this->response(['success' => false, 'message' => 'No se encontraron datos del ticket.', 'color' => 'red']);
@@ -1438,35 +1440,43 @@ class email extends Controller {
         }
 
         $result_email_areaAdmin = $repository->GetEmailAreaAdmin();
-        $email_area_admin = $result_email_areaAdmin['email_area'];
-        $name_area_admin = $result_email_areaAdmin['name_area'];
+        $email_area_admin = $result_email_areaAdmin['email_area'] ?? '';
+        $name_area_admin = $result_email_areaAdmin['name_area'] ?? '';
 
-        $nombre_tecnico_ticket = $result_ticket['full_name_tecnico'];
-        $ticketNivelFalla = $result_ticket['id_level_failure'];
-        $name_failure = $result_ticket['name_failure'];
-        $ticketfinished = $result_ticket['create_ticket'];
-        $ticketstatus = $result_ticket['name_status_ticket'];
-        $ticketprocess = $result_ticket['name_process_ticket'];
-        $ticketaccion = $result_ticket['name_accion_ticket'];
-        $ticketserial = $result_ticket['serial_pos'];
+        $nombre_tecnico_ticket = $result_ticket['full_name_tecnico'] ?? 'N/A';
+        $ticketNivelFalla = $result_ticket['id_level_failure'] ?? 'N/A';
+        $name_failure = $result_ticket['name_failure'] ?? 'N/A';
+        $ticketfinished = $result_ticket['create_ticket'] ?? 'N/A';
+        $ticketstatus = $result_ticket['name_status_ticket'] ?? 'N/A';
+        $ticketprocess = $result_ticket['name_process_ticket'] ?? 'N/A';
+        $ticketaccion = $result_ticket['name_accion_ticket'] ?? 'N/A';
+        $ticketserial = $result_ticket['serial_pos'] ?? 'N/A';
         $ticketnro = $result_ticket['nro_ticket'] ?? 'N/A';
-        $ticketpaymnet = $result_ticket['name_status_payment'];
+        $ticketpaymnet = $result_ticket['name_status_payment'] ?? 'N/A';
 
-        // Funcion para obtener el id del ticket con el nro de ticket
-        $resultgetid_ticket = $repository->GetTicketId($ticketnro);
-        $ticketid = $resultgetid_ticket['get_ticket_id'];
+        // ✅ El ticketid ya se obtuvo arriba usando el nroTicket correcto
 
         // Funcion para obtener el nobre de la coordinacion por el id_ticket
-        $resultCoordinacion = $repository->GetCoordinacion($ticketid);
-        $name_coordinador = $resultCoordinacion['get_department_name'];
+        $resultCoordinacion = $repository->GetCoordinacion($ticketId);
+        $name_coordinador = $resultCoordinacion['get_department_name'] ?? 'N/A';
 
-        //Funcion para traer los datos del documento rechazado
-        $resultDocumentoRechazado = $repository->GetDocumentoRechazado($ticketnro);
-        $motivoTexto = $resultDocumentoRechazado['name_motivo_rechazo'];
-        $documentType = $resultDocumentoRechazado['document_type'];
-        $idrejectby = $resultDocumentoRechazado['changed_by']?? 'N/A';
-        $rejectedBy = $resultDocumentoRechazado['usuario_gestion'];
-        $ticketdatereject = $resultDocumentoRechazado['fecha_rechazo'];
+        //Funcion para traer los datos del documento rechazado usando el nroTicket correcto
+        $resultDocumentoRechazado = $repository->GetDocumentoRechazado($nroTicket);
+        
+        // 🔍 DEBUG: Resultado GetDocumentoRechazado
+        error_log("Resultado GetDocumentoRechazado: " . print_r($resultDocumentoRechazado, true));
+
+        // ✅ Validar que se obtuvieron datos del documento rechazado
+        if (!$resultDocumentoRechazado) {
+            $this->response(['success' => false, 'message' => 'No se encontraron datos del documento rechazado.', 'color' => 'red']);
+            return;
+        }
+        
+        $motivoTexto = $resultDocumentoRechazado['name_motivo_rechazo'] ?? 'N/A';
+        $documentType = $resultDocumentoRechazado['document_type'] ?? 'N/A';
+        $idrejectby = $resultDocumentoRechazado['changed_by'] ?? 'N/A';
+        $rejectedBy = $resultDocumentoRechazado['usuario_gestion'] ?? 'N/A';
+        $ticketdatereject = $resultDocumentoRechazado['fecha_rechazo'] ?? 'N/A';
 
         // Datos del que gestionó el ticket
         $result_tecnico = $repository->GetEmailUser1gestionDataById( $ticketid, $documentType);
@@ -1477,10 +1487,17 @@ class email extends Controller {
 
         // Datos del que rechazó el documento
         $resultUserreject = $repository->resultUserreject($idrejectby);
-        $rolTecnico = $resultUserreject['name_rol'];
-        $idrol = $resultUserreject['id_rol'];
-        $nombre_person_reject = $resultUserreject['full_name'];
-        $email_person_reject = $resultUserreject['email'];
+        
+        // ✅ Validar que se obtuvieron datos del usuario que rechazó
+        if (!$resultUserreject) {
+            $this->response(['success' => false, 'message' => 'No se encontraron datos del usuario que rechazó.', 'color' => 'red']);
+            return;
+        }
+        
+        $rolTecnico = $resultUserreject['name_rol'] ?? 'N/A';
+        $idrol = $resultUserreject['id_rol'] ?? 'N/A';
+        $nombre_person_reject = $resultUserreject['full_name'] ?? 'N/A';
+        $email_person_reject = $resultUserreject['email'] ?? 'N/A';
 
         $embeddedImages = [];
         if (defined('FIRMA_CORREO')) {
@@ -1546,8 +1563,6 @@ class email extends Controller {
                 <p style="text-align:center;margin-top:16px">
                     <a class="btn" href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '" style = "color: white;">Ver historial del ticket</a>
                 </p>
-                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo" class="logo">' : '') . '
-                </div>
 
             <div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
@@ -1613,8 +1628,6 @@ class email extends Controller {
                 <p style="text-align:center;margin-top:16px">
                     <a class="btn" href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '" style = "color: white;">Ver historial del ticket</a>
                 </p>
-                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo" class="logo">' : '') . '
-                </div>
 
             <div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
@@ -1679,15 +1692,12 @@ class email extends Controller {
                 <p style="text-align:center;margin-top:16px">
                     <a class="btn" href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '" style = "color: white;">Ver historial del ticket</a>
                 </p>
-                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo" class="logo">' : '') . '
-                </div>
 
             <div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
                     <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
                 <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-                    </div>
             </div>
             </div>
             </body>
@@ -1749,8 +1759,6 @@ class email extends Controller {
                 <p style="text-align:center;margin-top:16px">
                     <a class="btn" href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '" style = "color: white;">Ver historial del ticket</a>
                 </p>
-                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo" class="logo">' : '') . '
-                </div>
 
             <div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
@@ -1790,7 +1798,7 @@ class email extends Controller {
         }
 
         // Enviar correo a administración SOLO si el que rechazó es de administración (idrol == 5)
-        if ($idrol == 5 && $email_area_admin && $result_email_areaAdmin) {
+        if ((int)$idrol == 5 && $email_area_admin && $result_email_areaAdmin) {
             if ($this->emailService->sendEmail($email_area_admin, $subject_admin, $body_admin, [], $embeddedImages)) {
                 $correo_admin_enviado = true;
             }
@@ -1804,10 +1812,10 @@ class email extends Controller {
         if ($correo_admin_enviado) $correos_enviados[] = 'administración';
 
         $total_correos = count($correos_enviados);
-        $correos_esperados = ($idrol == 5) ? 4 : 3;
+        $correos_esperados = ((int)$idrol == 5) ? 4 : 3;
 
         if ($total_correos == $correos_esperados) {
-            $mensaje = ($idrol == 5) 
+            $mensaje = ((int)$idrol == 5) 
                 ? 'Correos enviados exitosamente a coordinación, persona que rechazó, técnico y administración.' 
                 : 'Correos enviados exitosamente a coordinación, persona que rechazó y técnico.';
             $this->response(['success' => true, 'message' => $mensaje, 'color' => 'green']);

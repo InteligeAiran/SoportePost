@@ -1,14 +1,46 @@
 let currentTicketNroForImage = null;
-
 let paymentAgreementModalInstance = null; // Variable global para la instancia del modal
-
 let uploadDocumentModalInstance = null; // Variable global para la instancia del modal de subir documento
-
 let idTicket = null;
+let DocumentType = null;
+let motivoRechazoSelect = null; // ✅ AGREGAR ESTA VARIABLE
+let confirmarRechazoModal = null; // ✅ AGREGAR ESTA VARIABLE
 
+
+
+  document.getElementById("confirmarRechazoBtn").addEventListener("click", function() {
+    // Opcional: Obtén el texto del motivo seleccionado para mostrarlo en el modal
+    const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
+    const motivoSeleccionadoTexto = motivoRechazoSelect.options[motivoRechazoSelect.selectedIndex].text;
+
+
+    document.getElementById("motivoSeleccionadoTexto").textContent = motivoSeleccionadoTexto;
+  });
+
+  // Evento click para el botón "Confirmar Rechazo"
+  $("#confirmarRechazoBtn").off("click").on("click", function() {
+    const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
+    confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'), {keyboard: false});
+
+    if (!motivoRechazoSelect.value) {
+      // Si no hay motivo seleccionado, muestra una alerta de SweetAlert2
+      Swal.fire({
+        icon: 'warning',
+        title: 'No puede haber campos vacíos.',
+        text: `Seleccione un motivo de rechazo.`,
+        confirmButtonText: 'Ok',
+        color: 'black',
+        confirmButtonColor: '#003594'
+      });
+    } else {
+      const motivoSeleccionadoTexto = motivoRechazoSelect.options[motivoRechazoSelect.selectedIndex].text;
+      document.getElementById("motivoSeleccionadoTexto").textContent = motivoSeleccionadoTexto;
+      confirmarRechazoModal.show();
+    }
+  });
 
 function searchDomiciliacionTickets() {
-    const xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
 
   xhr.open(
     "POST",
@@ -23,7 +55,7 @@ function searchDomiciliacionTickets() {
 
   const existingTableBody = document.getElementById("table-ticket-body");
 
-    const detailsPanel = document.getElementById("ticket-details-panel");
+  const detailsPanel = document.getElementById("ticket-details-panel");
 
   if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
     $("#tabla-ticket").DataTable().destroy();
@@ -33,59 +65,59 @@ function searchDomiciliacionTickets() {
     $("#tabla-ticket tbody").empty();
   }
 
-    if (tableContainerParent) {
+  if (tableContainerParent) {
     const existingMessages = tableContainerParent.querySelectorAll(
       "p.message-info, p.message-error"
     );
 
     existingMessages.forEach((msg) => msg.remove());
-    }
+  }
 
-    xhr.onload = function () {
-        if (tableContainerParent) {
+  xhr.onload = function () {
+    if (tableContainerParent) {
       existingTable.style.display = "table";
 
       tableContainerParent.style.display = "";
-        }
+    }
 
-        if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-                const response = JSON.parse(xhr.responseText);
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
 
-                if (response.success) {
-                    const TicketData = response.tickets;
+        if (response.success) {
+          const TicketData = response.tickets;
 
-                    currentTicketNroForImage = TicketData[0].nro_ticket;
+          currentTicketNroForImage = TicketData[0].nro_ticket;
 
-                    // Definir la longitud de truncado para las celdas
+          // Definir la longitud de truncado para las celdas
 
-                    const displayLengthForTruncate = 25; // Puedes ajustar este valor
+          const displayLengthForTruncate = 25; // Puedes ajustar este valor
 
-                    const columnDefinitions = [
-                        // NUEVA COLUMNA DE NUMERACIÓN AGREGADA AL PRINCIPIO
+          const columnDefinitions = [
+            // NUEVA COLUMNA DE NUMERACIÓN AGREGADA AL PRINCIPIO
 
-                        {
-                            title: "N°",
+            {
+              title: "N°",
 
-                            orderable: false,
+              orderable: false,
 
-                            searchable: false,
+              searchable: false,
 
-                            render: function (data, type, row, meta) {
-                                return meta.row + meta.settings._iDisplayStart + 1;
-                            },
-                        },
+              render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+              },
+            },
 
             { data: "nro_ticket", title: "N° Ticket" },
 
-                        {
+            {
               data: "razonsocial_cliente",
 
               title: "Razon social",
 
-                            // *** MODIFICACIÓN PARA TRUNCAR/EXPANDIR TEXTO ***
+              // *** MODIFICACIÓN PARA TRUNCAR/EXPANDIR TEXTO ***
 
-                            render: function (data, type, row) {
+              render: function (data, type, row) {
                 if (
                   type === "display" &&
                   data &&
@@ -95,34 +127,34 @@ function searchDomiciliacionTickets() {
                     0,
                     displayLengthForTruncate
                   )}...</span>`;
-                                }
+                }
 
-                                return data;
+                return data;
               },
 
-                            // ************************************************
-                        },
+              // ************************************************
+            },
 
             { data: "rif", title: "Rif" },
 
             { data: "serial_pos", title: "Serial POS" },
 
-                        { 
+            {
               data: "id_status_domiciliacion",
 
               title: "ID Domiciliación",
 
               visible: false, // OCULTA LA COLUMNA PERO MANTIENE LOS DATOS PARA FILTROS
-                        },
+            },
 
-                        {
+            {
               data: "name_accion_ticket",
 
               title: "Acción Realizada",
 
-                            // *** MODIFICACIÓN PARA TRUNCAR/EXPANDIR TEXTO ***
+              // *** MODIFICACIÓN PARA TRUNCAR/EXPANDIR TEXTO ***
 
-                            render: function (data, type, row) {
+              render: function (data, type, row) {
                 if (
                   type === "display" &&
                   data &&
@@ -132,72 +164,42 @@ function searchDomiciliacionTickets() {
                     0,
                     displayLengthForTruncate
                   )}...</span>`;
-                                }
+                }
 
-                                return data;
+                return data;
               },
 
-                            // ************************************************
-                        },
+              // ************************************************
+            },
 
             { data: "name_status_lab", title: "Estado de Taller" },
 
-                        {
+            {
               data: "name_status_domiciliacion",
               title: "Estado de Domiciliación",
             },
 
             {
-                            data: null,
-
-              title: "Acciones",
-
-                            orderable: false,
-
-                            searchable: false,
-
-                            width: "10%",
-
-                            render: function (data, type, row) {
-                idTicket = row.id_ticket;
-
-                                const currentStatusDomiciliacion = row.id_status_domiciliacion;
-
-                const currentNameStatusDomiciliacion =
-                  row.name_status_domiciliacion;
-
-                               /* if (currentStatusDomiciliacion == 2) {
-
-                                    return `<button class="btn btn-secondary btn-sm" disabled>Solvente</button>`;
-
-                                } else {*/
-
-                // Solo mostrar el botón de adjuntar documento si el status es 4 (Deudor - Convenio Firmado)
-                if (currentStatusDomiciliacion == 4) {
-                                    return `
-                        <div class="d-flex gap-1">
-                                        <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-domiciliacion-btn"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#changeStatusDomiciliacionModal"
-                                            data-id="${idTicket}"
-                                            data-nro-ticket="${row.nro_ticket}"
-                                            data-current-status-id="${currentStatusDomiciliacion}"
-                                            data-current-status-name="${currentNameStatusDomiciliacion}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-check-fill" viewBox="0 0 16 16">
-                                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5m9.954 3H2.545c-.3 0-.545.224-.545.5v1c0 .276.244.5.545.5h10.91c.3 0 .545-.224.545-.5v-1c0-.276-.244-.5-.546-.5m-2.6 5.854a.5.5 0 0 0-.708-.708L7.5 10.793 6.354 9.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
-                                            </svg>
-                            </button>
-                            <button type="button" class="btn btn-success btn-sm adjuntar-documento-btn" 
-                                data-id="${idTicket}" 
-                                data-nro-ticket="${row.nro_ticket}"
-                                title="Adjuntar Documento de Convenio">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-paperclip" viewBox="0 0 16 16">
-                                    <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 0 1-7 0z"/>
-                                </svg>
-                            </button>
-                        </div>`;
-                } else {
-                    return `
+    data: null,
+    title: "Acciones",
+    orderable: false,
+    searchable: false,
+    width: "10%",
+    render: function (data, type, row) {
+        idTicket = row.id_ticket;
+        const currentStatusDomiciliacion = row.id_status_domiciliacion;
+        const currentNameStatusDomiciliacion = row.name_status_domiciliacion;
+        const documentoConvenio = row.convenio_firmado;
+        
+        // Solo mostrar el botón de adjuntar documento si el status es 4 (Deudor - Convenio Firmado)
+        if (currentStatusDomiciliacion == 4) {
+            // Verificar si ya tiene documento de convenio
+            const tieneConvenio = row.convenio_firmado === "Sí";
+            
+            if (tieneConvenio) {
+                // Si ya tiene convenio, mostrar botón para visualizar
+                return `
+                    <div class="d-flex gap-1">
                         <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-domiciliacion-btn"
                             data-bs-toggle="modal"
                             data-bs-target="#changeStatusDomiciliacionModal"
@@ -208,43 +210,92 @@ function searchDomiciliacionTickets() {
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-check-fill" viewBox="0 0 16 16">
                                 <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5m9.954 3H2.545c-.3 0-.545.224-.545.5v1c0 .276.244.5.545.5h10.91c.3 0 .545-.224.545-.5v-1c0-.276-.244-.5-.546-.5m-2.6 5.854a.5.5 0 0 0-.708-.708L7.5 10.793 6.354 9.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
                             </svg>
-                                        </button>`;
-                            }
-
-                /*}*/
-              },
-            },
-                    ];
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm visualizar-documento-btn" 
+                            data-id="${idTicket}" 
+                            data-nro-ticket="${row.nro_ticket}"
+                            data-convenio-url="${row.convenio_url || ''}"
+                            data-convenio-filename="${row.convenio_filename || ''}"
+                            title="Visualizar Documento de Convenio">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                            </svg>
+                        </button>
+                    </div>`;
+            } else {
+                // Si no tiene convenio, mostrar botón para adjuntar
+                return `
+                    <div class="d-flex gap-1">
+                        <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-domiciliacion-btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#changeStatusDomiciliacionModal"
+                            data-id="${idTicket}"
+                            data-nro-ticket="${row.nro_ticket}"
+                            data-current-status-id="${currentStatusDomiciliacion}"
+                            data-current-status-name="${currentNameStatusDomiciliacion}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-check-fill" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5m9.954 3H2.545c-.3 0-.545.224-.545.5v1c0 .276.244.5.545.5h10.91c.3 0 .545-.224.545-.5v-1c0-.276-.244-.5-.546-.5m-2.6 5.854a.5.5 0 0 0-.708-.708L7.5 10.793 6.354 9.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
+                            </svg>
+                        </button>
+                        <button type="button" class="btn btn-success btn-sm adjuntar-documento-btn" 
+                            data-id="${idTicket}" 
+                            data-nro-ticket="${row.nro_ticket}"
+                            title="Adjuntar Documento de Convenio">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-paperclip" viewBox="0 0 16 16">
+                                <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 0 1-7 0z"/>
+                            </svg>
+                        </button>
+                    </div>`;
+            }
+        } else {
+            // Para otros estados, solo mostrar botón de cambiar estatus
+            return `
+                <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-domiciliacion-btn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#changeStatusDomiciliacionModal"
+                    data-id="${idTicket}"
+                    data-nro-ticket="${row.nro_ticket}"
+                    data-current-status-id="${currentStatusDomiciliacion}"
+                    data-current-status-name="${currentNameStatusDomiciliacion}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-check-fill" viewBox="0 0 16 16">
+                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5m9.954 3H2.545c-.3 0-.545.224-.545.5v1c0 .276.244.5.545.5h10.91c.3 0 .545-.224.545-.5v-1c0-.276-.244-.5-.546-.5m-2.6 5.854a.5.5 0 0 0-.708-.708L7.5 10.793 6.354 9.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
+                    </svg>
+                </button>`;
+        }
+    },
+},
+          ];
 
           const thead = existingTable.querySelector("thead");
 
           thead.innerHTML = "";
 
-                    const headerRow = thead.insertRow();
+          const headerRow = thead.insertRow();
 
           columnDefinitions.forEach((col) => {
             const th = document.createElement("th");
 
-                        th.textContent = col.title;
+            th.textContent = col.title;
 
-                        headerRow.appendChild(th);
-                    });
+            headerRow.appendChild(th);
+          });
 
-                    if (TicketData && TicketData.length > 0) {
-                        const dataTableInstance = $(existingTable).DataTable({
-                            scrollX: "200px",
+          if (TicketData && TicketData.length > 0) {
+            const dataTableInstance = $(existingTable).DataTable({
+              scrollX: "200px",
 
-                            responsive: false,
+              responsive: false,
 
-                            data: TicketData,
+              data: TicketData,
 
-                            columns: columnDefinitions,
+              columns: columnDefinitions,
 
               pagingType: "simple_numbers",
 
               lengthMenu: [5, 10, 25, 50],
 
-                            autoWidth: false,
+              autoWidth: false,
 
               language: {
                 lengthMenu: "Mostrar _MENU_",
@@ -274,14 +325,14 @@ function searchDomiciliacionTickets() {
 
                   previous: "Anterior",
                 },
-                            },
+              },
 
-                            dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+              dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
 
-                            initComplete: function (settings, json) {
-                                const dataTableInstance = this.api();
+              initComplete: function (settings, json) {
+                const dataTableInstance = this.api();
 
-                                const buttonsHtml = `
+                const buttonsHtml = `
 
                                     <button id="btn-pendiente-revisar" class="btn btn-secondary btn-sm me-1" title="Pendiente Por revisar domiciliacion">
 
@@ -344,11 +395,11 @@ function searchDomiciliacionTickets() {
 
                                 `;
 
-                                $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+                $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
-                                // Aplicar estilos iniciales a todos los botones
+                // Aplicar estilos iniciales a todos los botones
 
-                                function initializeButtonStyles() {
+                function initializeButtonStyles() {
                   $(
                     "#btn-solvente, #btn-gestion-comercial, #btn-pendiente-revisar, #btn-convenio-firmado, #btn-desafiliado-deuda"
                   ).css({
@@ -362,16 +413,16 @@ function searchDomiciliacionTickets() {
                   });
                 }
 
-                                // Inicializar estilos
+                // Inicializar estilos
 
-                                initializeButtonStyles();
+                initializeButtonStyles();
 
-                                // Agregar estilos CSS personalizados para los botones
+                // Agregar estilos CSS personalizados para los botones
 
-                                function addCustomButtonStyles() {
+                function addCustomButtonStyles() {
                   const style = document.createElement("style");
 
-                                    style.textContent = `
+                  style.textContent = `
 
                                         #btn-solvente, #btn-gestion-comercial, #btn-pendiente-revisar, #btn-convenio-firmado, #btn-desafiliado-deuda {
 
@@ -567,17 +618,17 @@ function searchDomiciliacionTickets() {
 
                                     `;
 
-                                    document.head.appendChild(style);
-                                }
+                  document.head.appendChild(style);
+                }
 
-                                // Aplicar estilos personalizados
+                // Aplicar estilos personalizados
 
-                                addCustomButtonStyles();
+                addCustomButtonStyles();
 
-                                // Función para manejar la selección de botones
+                // Función para manejar la selección de botones
 
-                                function setActiveButton(activeButtonId) {
-                                    // Remover estilos activos de todos los botones
+                function setActiveButton(activeButtonId) {
+                  // Remover estilos activos de todos los botones
 
                   $("#btn-solvente")
                     .removeClass("btn-primary")
@@ -598,18 +649,17 @@ function searchDomiciliacionTickets() {
                   $("#btn-desafiliado-deuda")
                     .removeClass("btn-primary")
                     .addClass("btn-secondary");
-                                    
-                                    
-                                    // Aplicar estilos activos al botón seleccionado
+
+                  // Aplicar estilos activos al botón seleccionado
 
                   $(`#${activeButtonId}`)
                     .removeClass("btn-secondary")
                     .addClass("btn-primary");
-                                }
+                }
 
-                                // Función para verificar si hay datos en una búsqueda específica
+                // Función para verificar si hay datos en una búsqueda específica
 
-                                function checkDataExists(searchTerm, columnIndex) {
+                function checkDataExists(searchTerm, columnIndex) {
                   dataTableInstance.columns().search("").draw(false);
 
                   const filteredData = dataTableInstance
@@ -620,16 +670,16 @@ function searchDomiciliacionTickets() {
                   const rowCount = dataTableInstance
                     .rows({ filter: "applied" })
                     .count();
-                                    
-                                    return rowCount > 0;
-                                }
 
-                                // Función para buscar automáticamente el primer botón con datos
+                  return rowCount > 0;
+                }
 
-                                function findFirstButtonWithData() {
-                                    // Buscar ID 1 (Pendiente Por revisar domiciliacion) en la columna de ID de Domiciliación (índice 5 - oculta)
+                // Función para buscar automáticamente el primer botón con datos
 
-                                    if (checkDataExists("^1$", 5)) {
+                function findFirstButtonWithData() {
+                  // Buscar ID 1 (Pendiente Por revisar domiciliacion) en la columna de ID de Domiciliación (índice 5 - oculta)
+
+                  if (checkDataExists("^1$", 5)) {
                     dataTableInstance.columns().search("").draw(false);
 
                     dataTableInstance
@@ -637,14 +687,14 @@ function searchDomiciliacionTickets() {
                       .search("^1$", true, false)
                       .draw();
 
-                                        setActiveButton("btn-pendiente-revisar");
+                    setActiveButton("btn-pendiente-revisar");
 
-                                        return true;
-                                    }
+                    return true;
+                  }
 
-                                    // Buscar ID 2 (Solvente) en la columna de ID de Domiciliación (índice 5 - oculta)
+                  // Buscar ID 2 (Solvente) en la columna de ID de Domiciliación (índice 5 - oculta)
 
-                                    if (checkDataExists("^2$", 5)) {
+                  if (checkDataExists("^2$", 5)) {
                     dataTableInstance.columns().search("").draw(false);
 
                     dataTableInstance
@@ -652,14 +702,14 @@ function searchDomiciliacionTickets() {
                       .search("^2$", true, false)
                       .draw();
 
-                                        setActiveButton("btn-solvente");
+                    setActiveButton("btn-solvente");
 
-                                        return true;
-                                    }
+                    return true;
+                  }
 
-                                    // Buscar ID 3 (Gestión Comercial) en la columna de ID de Domiciliación (índice 5 - oculta)
+                  // Buscar ID 3 (Gestión Comercial) en la columna de ID de Domiciliación (índice 5 - oculta)
 
-                                    if (checkDataExists("^3$", 5)) {
+                  if (checkDataExists("^3$", 5)) {
                     dataTableInstance.columns().search("").draw(false);
 
                     dataTableInstance
@@ -667,14 +717,14 @@ function searchDomiciliacionTickets() {
                       .search("^3$", true, false)
                       .draw();
 
-                                        setActiveButton("btn-gestion-comercial");
+                    setActiveButton("btn-gestion-comercial");
 
-                                        return true;
-                                    }
+                    return true;
+                  }
 
-                                    // Buscar ID 4 (Deudor - Convenio Firmado) en la columna de ID de Domiciliación (índice 5 - oculta)
+                  // Buscar ID 4 (Deudor - Convenio Firmado) en la columna de ID de Domiciliación (índice 5 - oculta)
 
-                                    if (checkDataExists("^4$", 5)) {
+                  if (checkDataExists("^4$", 5)) {
                     dataTableInstance.columns().search("").draw(false);
 
                     dataTableInstance
@@ -682,14 +732,14 @@ function searchDomiciliacionTickets() {
                       .search("^4$", true, false)
                       .draw();
 
-                                        setActiveButton("btn-convenio-firmado");
+                    setActiveButton("btn-convenio-firmado");
 
-                                        return true;
-                                    }
+                    return true;
+                  }
 
-                                    // Buscar ID 5 (Deudor - Desafiliado con Deuda) en la columna de ID de Domiciliación (índice 5 - oculta)
+                  // Buscar ID 5 (Deudor - Desafiliado con Deuda) en la columna de ID de Domiciliación (índice 5 - oculta)
 
-                                    if (checkDataExists("^5$", 5)) {
+                  if (checkDataExists("^5$", 5)) {
                     dataTableInstance.columns().search("").draw(false);
 
                     dataTableInstance
@@ -697,22 +747,22 @@ function searchDomiciliacionTickets() {
                       .search("^5$", true, false)
                       .draw();
 
-                                        setActiveButton("btn-desafiliado-deuda");
+                    setActiveButton("btn-desafiliado-deuda");
 
-                                        return true;
-                                    }
+                    return true;
+                  }
 
-                                    return false;
-                                }
+                  return false;
+                }
 
-                                // Ejecutar la búsqueda automática al inicializar
+                // Ejecutar la búsqueda automática al inicializar
 
-                                findFirstButtonWithData();
+                findFirstButtonWithData();
 
-                                // Event listeners para los botones
+                // Event listeners para los botones
 
-                                $("#btn-solvente").on("click", function () {
-                                    if (checkDataExists("^2$", 5)) {
+                $("#btn-solvente").on("click", function () {
+                  if (checkDataExists("^2$", 5)) {
                     dataTableInstance.columns().search("").draw(false);
 
                     dataTableInstance
@@ -720,167 +770,215 @@ function searchDomiciliacionTickets() {
                       .search("^2$", true, false)
                       .draw();
 
-                                        setActiveButton("btn-solvente");
-                                    } else {
-                                        findFirstButtonWithData();
-                                    }
-                                });
-
-                                $("#btn-gestion-comercial").on("click", function () {
-                                    if (checkDataExists("^3$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^3$", true, false)
-                      .draw();
-
-                                        setActiveButton("btn-gestion-comercial");
-                                    } else {
-                                        findFirstButtonWithData();
-                                    }
-                                });
-
-                                $("#btn-pendiente-revisar").on("click", function () {
-                                    if (checkDataExists("^1$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^1$", true, false)
-                      .draw();
-
-                                        setActiveButton("btn-pendiente-revisar");
-                                    } else {
-                                        findFirstButtonWithData();
-                                    }
-                                });
-
-                                $("#btn-convenio-firmado").on("click", function () {
-                                    if (checkDataExists("^4$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^4$", true, false)
-                      .draw();
-
-                                        setActiveButton("btn-convenio-firmado");
-                                    } else {
-                                        findFirstButtonWithData();
-                                    }
-                                });
-
-                                $("#btn-desafiliado-deuda").on("click", function () {
-                                    if (checkDataExists("^5$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^5$", true, false)
-                      .draw();
-
-                                        setActiveButton("btn-desafiliado-deuda");
-                                    } else {
-                                        findFirstButtonWithData();
+                    setActiveButton("btn-solvente");
+                  } else {
+                    findFirstButtonWithData();
                   }
                 });
 
+                $("#btn-gestion-comercial").on("click", function () {
+                  if (checkDataExists("^3$", 5)) {
+                    dataTableInstance.columns().search("").draw(false);
+
+                    dataTableInstance
+                      .column(5)
+                      .search("^3$", true, false)
+                      .draw();
+
+                    setActiveButton("btn-gestion-comercial");
+                  } else {
+                    findFirstButtonWithData();
+                  }
+                });
+
+                $("#btn-pendiente-revisar").on("click", function () {
+                  if (checkDataExists("^1$", 5)) {
+                    dataTableInstance.columns().search("").draw(false);
+
+                    dataTableInstance
+                      .column(5)
+                      .search("^1$", true, false)
+                      .draw();
+
+                    setActiveButton("btn-pendiente-revisar");
+                  } else {
+                    findFirstButtonWithData();
+                  }
+                });
+
+                $("#btn-convenio-firmado").on("click", function () {
+                  if (checkDataExists("^4$", 5)) {
+                    dataTableInstance.columns().search("").draw(false);
+
+                    dataTableInstance
+                      .column(5)
+                      .search("^4$", true, false)
+                      .draw();
+
+                    setActiveButton("btn-convenio-firmado");
+                  } else {
+                    findFirstButtonWithData();
+                  }
+                });
+
+                $("#btn-desafiliado-deuda").on("click", function () {
+                  if (checkDataExists("^5$", 5)) {
+                    dataTableInstance.columns().search("").draw(false);
+
+                    dataTableInstance
+                      .column(5)
+                      .search("^5$", true, false)
+                      .draw();
+
+                    setActiveButton("btn-desafiliado-deuda");
+                  } else {
+                    findFirstButtonWithData();
+                  }
+                });
               },
             });
 
-                        // ************* INICIO: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO (Aplicada DESPUÉS de la inicialización de DataTables) *************
+            // ************* INICIO: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO (Aplicada DESPUÉS de la inicialización de DataTables) *************
 
-                        $("#tabla-ticket tbody")
-                            .off("click", ".truncated-cell, .expanded-cell") // Usa .off() para evitar múltiples listeners
+            $("#tabla-ticket tbody")
+              .off("click", ".truncated-cell, .expanded-cell") // Usa .off() para evitar múltiples listeners
 
-                            .on("click", ".truncated-cell, .expanded-cell", function (e) {
-                                e.stopPropagation(); // Evita que el clic en la celda active el clic de la fila completa
+              .on("click", ".truncated-cell, .expanded-cell", function (e) {
+                e.stopPropagation(); // Evita que el clic en la celda active el clic de la fila completa
 
-                                const $cellSpan = $(this);
+                const $cellSpan = $(this);
 
-                                const fullText = $cellSpan.data("full-text"); // Obtiene el texto completo del atributo data-
+                const fullText = $cellSpan.data("full-text"); // Obtiene el texto completo del atributo data-
 
-                                if ($cellSpan.hasClass("truncated-cell")) {
-                                    $cellSpan
+                if ($cellSpan.hasClass("truncated-cell")) {
+                  $cellSpan
 
-                                        .removeClass("truncated-cell")
+                    .removeClass("truncated-cell")
 
-                                        .addClass("expanded-cell");
+                    .addClass("expanded-cell");
 
-                                    $cellSpan.text(fullText);
-                                } else {
-                                    $cellSpan
+                  $cellSpan.text(fullText);
+                } else {
+                  $cellSpan
 
-                                        .removeClass("expanded-cell")
+                    .removeClass("expanded-cell")
 
-                                        .addClass("truncated-cell");
+                    .addClass("truncated-cell");
 
-                                    // Asegúrate de que displayLengthForTruncate sea accesible o defínela aquí de nuevo
+                  // Asegúrate de que displayLengthForTruncate sea accesible o defínela aquí de nuevo
 
-                                    const displayLength = 25; // La misma longitud de truncado usada en el render
+                  const displayLength = 25; // La misma longitud de truncado usada en el render
 
-                                    if (fullText.length > displayLength) {
-                                        $cellSpan.text(
-                                            fullText.substring(0, displayLength) + "..."
-                                        );
-                                    } else {
-                                        $cellSpan.text(fullText); // Si el texto es corto, no debería tener "...", solo el texto completo
-                                    }
-                                }
-                            });
+                  if (fullText.length > displayLength) {
+                    $cellSpan.text(
+                      fullText.substring(0, displayLength) + "..."
+                    );
+                  } else {
+                    $cellSpan.text(fullText); // Si el texto es corto, no debería tener "...", solo el texto completo
+                  }
+                }
+              });
 
-                        // ************* FIN: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO *************
+              // Event listener para el botón de visualizar documento de convenio
+              $("#tabla-ticket tbody").on("click", ".visualizar-documento-btn", function () {
+                  const ticketId = $(this).data("id");
+                  const nroTicket = $(this).data("nro-ticket");
+                  const convenioUrl = $(this).data("convenio-url");
+                  const convenioFilename = $(this).data("convenio-filename");
+                  const ticketRechazado = $(this).data("rechazado");
+                  const BotonRechazo = document.getElementById('RechazoDocumento');
+                  
+                  // ✅ GUARDAR EL TICKET CORRECTO PARA EL RECHAZO
+                  currentTicketIdForImage = ticketId;
+                  currentTicketNroForImage = nroTicket;
+                                    
+                  // Verificar que tenemos los datos necesarios
+                  if (!convenioUrl || !convenioFilename) {
+                      Swal.fire({
+                          icon: 'warning',
+                          title: 'Documento no disponible',
+                          text: 'No se encontró el documento de convenio para este ticket.',
+                          confirmButtonText: 'Aceptar',
+                          color: 'black',
+                          confirmButtonColor: '#003594'
+                      });
+                      return;
+                  }
+                  
+                if (ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
+                  BotonRechazo.style.display = 'none';
+                } else {
+                  BotonRechazo.style.display = 'block';
+                }
 
-                        $("#tabla-ticket tbody")
-                            .off("click", "tr") // Mantener este .off() para el clic de la fila
+                  // Determinar si es PDF o imagen basándose en la extensión
+                  const fileExtension = convenioFilename.toLowerCase().split('.').pop();
+                  const isPdf = fileExtension === 'pdf';
+                  const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension);
+                  
+                  if (isPdf) {
+                      // Es un PDF
+                      showViewModal(ticketId, nroTicket, null, convenioUrl, convenioFilename);
+                  } else if (isImage) {
+                      // Es una imagen
+                      showViewModal(ticketId, nroTicket, convenioUrl, null, convenioFilename);
+                  } else {
+                      // Tipo de archivo no reconocido, intentar como PDF
+                      showViewModal(ticketId, nroTicket, null, convenioUrl, convenioFilename);
+                  }
+              });
 
-                            .on("click", "tr", function () {
-                                const tr = $(this);
+            // ************* FIN: LÓGICA PARA TRUNCAR/EXPANDIR TEXTO *************
 
-                                const rowData = dataTableInstance.row(tr).data();
+            $("#tabla-ticket tbody")
+              .off("click", "tr") // Mantener este .off() para el clic de la fila
 
-                                if (!rowData) {
-                                    return;
-                                }
+              .on("click", "tr", function () {
+                const tr = $(this);
 
-                                $("#tabla-ticket tbody tr").removeClass("table-active");
+                const rowData = dataTableInstance.row(tr).data();
 
-                                tr.addClass("table-active");
+                if (!rowData) {
+                  return;
+                }
 
-                                const ticketId = rowData.id_ticket;
+                $("#tabla-ticket tbody tr").removeClass("table-active");
 
-                                const selectedTicketDetails = TicketData.find(
-                                    (t) => t.id_ticket == ticketId
-                                );
+                tr.addClass("table-active");
 
-                                if (selectedTicketDetails) {
-                                    detailsPanel.innerHTML = formatTicketDetailsPanel(
-                                        selectedTicketDetails
-                                    );
+                const ticketId = rowData.id_ticket;
 
-                                    loadTicketHistory(ticketId, currentTicketNroForImage);
+                const selectedTicketDetails = TicketData.find(
+                  (t) => t.id_ticket == ticketId
+                );
 
-                                    if (selectedTicketDetails.serial_pos) {
-                                        downloadImageModal(selectedTicketDetails.serial_pos);
-                                    } else {
-                                        const imgElement = document.getElementById(
-                                            "device-ticket-image"
-                                        );
+                if (selectedTicketDetails) {
+                  detailsPanel.innerHTML = formatTicketDetailsPanel(
+                    selectedTicketDetails
+                  );
 
-                                        if (imgElement) {
-                                            imgElement.src =
-                                                '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png';
+                  loadTicketHistory(ticketId, currentTicketNroForImage);
 
-                                            imgElement.alt = "Serial no disponible";
-                                        }
-                                    }
-                                } else {
-                                    detailsPanel.innerHTML =
-                                        "<p>No se encontraron detalles para este ticket.</p>";
-                                }
-                            });
-                    } else {
+                  if (selectedTicketDetails.serial_pos) {
+                    downloadImageModal(selectedTicketDetails.serial_pos);
+                  } else {
+                    const imgElement = document.getElementById(
+                      "device-ticket-image"
+                    );
+
+                    if (imgElement) {
+                      imgElement.src =
+                        '__DIR__ . "/../../../public/img/consulta_rif/POS/mantainment.png';
+
+                      imgElement.alt = "Serial no disponible";
+                    }
+                  }
+                } else {
+                  detailsPanel.innerHTML =
+                    "<p>No se encontraron detalles para este ticket.</p>";
+                }
+              });
+          } else {
             existingTable.style.display = "none";
 
             const noDataMessage = document.createElement("p");
@@ -890,16 +988,16 @@ function searchDomiciliacionTickets() {
             noDataMessage.textContent =
               "No hay datos disponibles para el ID de usuario proporcionado.";
 
-                        if (tableContainerParent) {
-                            tableContainerParent.appendChild(noDataMessage);
-                        } else {
+            if (tableContainerParent) {
+              tableContainerParent.appendChild(noDataMessage);
+            } else {
               existingTable.parentNode.insertBefore(
                 noDataMessage,
                 existingTable
               );
             }
           }
-                } else {
+        } else {
           existingTable.style.display = "none";
 
           const errorMessage = document.createElement("p");
@@ -909,15 +1007,15 @@ function searchDomiciliacionTickets() {
           errorMessage.textContent =
             response.message || "Error al cargar los datos desde la API.";
 
-                    if (tableContainerParent) {
-                        tableContainerParent.appendChild(errorMessage);
-                    } else {
-                        existingTable.parentNode.insertBefore(errorMessage, existingTable);
-                    }
+          if (tableContainerParent) {
+            tableContainerParent.appendChild(errorMessage);
+          } else {
+            existingTable.parentNode.insertBefore(errorMessage, existingTable);
+          }
 
           console.error("Error de la API:", response.message);
-                }
-            } catch (error) {
+        }
+      } catch (error) {
         existingTable.style.display = "none";
 
         const errorMessage = document.createElement("p");
@@ -927,15 +1025,15 @@ function searchDomiciliacionTickets() {
         errorMessage.textContent =
           "Error al procesar la respuesta del servidor (JSON inválido).";
 
-                if (tableContainerParent) {
-                    tableContainerParent.appendChild(errorMessage);
-                } else {
-                    existingTable.parentNode.insertBefore(errorMessage, existingTable);
-                }
+        if (tableContainerParent) {
+          tableContainerParent.appendChild(errorMessage);
+        } else {
+          existingTable.parentNode.insertBefore(errorMessage, existingTable);
+        }
 
         console.error("Error parsing JSON:", error);
-            }
-        } else if (xhr.status === 404) {
+      }
+    } else if (xhr.status === 404) {
       existingTable.style.display = "none";
 
       const noDataMessage = document.createElement("p");
@@ -960,31 +1058,31 @@ function searchDomiciliacionTickets() {
 
             </div>`;
 
-            if (tableContainerParent) {
-                tableContainerParent.appendChild(noDataMessage);
-            } else {
-                existingTable.parentNode.insertBefore(noDataMessage, existingTable);
-            }
-        } else {
+      if (tableContainerParent) {
+        tableContainerParent.appendChild(noDataMessage);
+      } else {
+        existingTable.parentNode.insertBefore(noDataMessage, existingTable);
+      }
+    } else {
       existingTable.style.display = "none";
 
       const errorMessage = document.createElement("p");
 
       errorMessage.className = "message-error";
 
-            errorMessage.textContent = `Error del servidor: ${xhr.status} ${xhr.statusText}`;
+      errorMessage.textContent = `Error del servidor: ${xhr.status} ${xhr.statusText}`;
 
-            if (tableContainerParent) {
-                tableContainerParent.appendChild(errorMessage);
-            } else {
-                existingTable.parentNode.insertBefore(errorMessage, existingTable);
-            }
+      if (tableContainerParent) {
+        tableContainerParent.appendChild(errorMessage);
+      } else {
+        existingTable.parentNode.insertBefore(errorMessage, existingTable);
+      }
 
       console.error("Error HTTP:", xhr.status, xhr.statusText);
-        }
-    };
+    }
+  };
 
-    xhr.onerror = function () {
+  xhr.onerror = function () {
     existingTable.style.display = "none";
 
     const errorMessage = document.createElement("p");
@@ -994,156 +1092,329 @@ function searchDomiciliacionTickets() {
     errorMessage.textContent =
       "Error de conexión a la red. Verifica tu conexión a Internet.";
 
-        if (tableContainerParent) {
-            tableContainerParent.appendChild(errorMessage);
-        } else {
-            existingTable.parentNode.insertBefore(errorMessage, existingTable);
-        }
+    if (tableContainerParent) {
+      tableContainerParent.appendChild(errorMessage);
+    } else {
+      existingTable.parentNode.insertBefore(errorMessage, existingTable);
+    }
 
     console.error("Error de red");
-    };
+  };
 
   const id_user_input = document.getElementById("iduser");
 
   let id_user_value = "";
 
-    if (id_user_input) {
-        id_user_value = id_user_input.value;
-    } else {
+  if (id_user_input) {
+    id_user_value = id_user_input.value;
+  } else {
     console.warn(
       "Elemento con ID 'iduser' no encontrado. La búsqueda podría no funcionar correctamente."
     );
   }
 
-    const datos = `action=getDomiciliacionTickets&id_user=${id_user_value}`;
+  const datos = `action=getDomiciliacionTickets&id_user=${id_user_value}`;
 
-    xhr.send(datos);
+  xhr.send(datos);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    searchDomiciliacionTickets();
-    
+  searchDomiciliacionTickets();
+   getMotivos();
+
+  // Inicializar motivoRechazoSelect
+  motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
+
+  const modalRechazoInstance = new bootstrap.Modal(document.getElementById('modalRechazo'));
+  const botonCerrarmotivo = document.getElementById('CerrarModalMotivoRechazo');
+  const modalConfirmacionRechazoBtn = document.getElementById('modalConfirmacionRechazoBtn');
+
+  if(modalConfirmacionRechazoBtn){
+    modalConfirmacionRechazoBtn.addEventListener('click', function () {
+      confirmarRechazoModal.hide();
+    });
+  }
+
+  if (botonCerrarmotivo) {
+    botonCerrarmotivo.addEventListener('click', function () {
+      if(motivoRechazoSelect){
+        motivoRechazoSelect.value = "";
+      }
+      modalRechazoInstance.hide();
+    })
+  }
+
+  // Vaciar el select cuando el modal se cierre completamente
+  document.getElementById('modalRechazo').addEventListener('hidden.bs.modal', function () {
+    if(motivoRechazoSelect){
+      motivoRechazoSelect.value = "";
+    }
+  });
+
+  // Vaciar el select cuando el modal de confirmación se cierre completamente
+  document.getElementById('modalConfirmacionRechazo').addEventListener('hidden.bs.modal', function () {
+    if(motivoRechazoSelect){
+      motivoRechazoSelect.value = "";
+    }
+  });
+
+
+  // Obtener el botón de rechazo del DOM
+  const rechazoDocumentoBtn = document.getElementById('RechazoDocumento');
+
+  // 1. Manejar el evento de clic en el botón "Rechazar Documento"
+  // La lógica es: cerrar el modal actual y luego abrir el nuevo.
+  if (rechazoDocumentoBtn) {
+    rechazoDocumentoBtn.addEventListener('click', function () {
+
+      // Abre el modal de rechazo
+      modalRechazoInstance.show();
+    });
+  }
+
   document
     .getElementById("generateNotaEntregaBtn")
     .addEventListener("click", function () {
-      console.log("=== BOTÓN GENERAR CONVENIO CLICKEADO ===");
       const ticketId = document.getElementById("generate_id_ticket").value;
-      console.log("Ticket ID obtenido:", ticketId);
-        
-        // Obtener datos del ticket para generar el número del convenio
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/documents/GetPaymentAgreementData`);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState !== 4) return;
-          
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              const res = JSON.parse(xhr.responseText);
-              
-              if (!res || !res.success || !res.rows) {
-                Swal.fire({
-                  icon: "warning",
-                  title: "No se encontraron datos",
-                  text: "No se pudieron obtener los datos del ticket para generar el convenio.",
-                });
-                return;
-              }
-              
-              const d = res.rows[0];
-              
-              // Generar número del convenio firmado
-              const serialPos = d.serialpos || d.serial_pos || '';
-              const lastFourSerialDigits = serialPos.slice(-4);
-              const convenioNumero = `CF-${ticketId}-${lastFourSerialDigits}`;
-              
-              console.log("=== DEBUG CONVENIO ===");
-              console.log("Ticket ID:", ticketId);
-              console.log("Serial POS:", serialPos);
-              console.log("Last 4 digits:", lastFourSerialDigits);
-              console.log("Número de convenio generado:", convenioNumero);
-              console.log("Datos completos:", d);
-              
-              // Almacenar el número del convenio en una variable global
-              window.currentConvenioNumero = convenioNumero;
-              console.log("Variable global almacenada:", window.currentConvenioNumero);
-              
-              // Mostrar loading
-       
-            
-        // Simular proceso de generación (reemplazar con llamada real a la API)
-        setTimeout(() => {
-            // Cerrar el modal de generar convenio
-            const generateConvenioModal = bootstrap.Modal.getInstance(
-                document.getElementById("generateConvenioModal")
-            );
-            generateConvenioModal.hide();
-            
-            // Mostrar el modal de subir documento después de generar el convenio
-            const ticketId = document.getElementById("generate_id_ticket").value;
-            const nroTicket = document.getElementById("generateModalTicketId").textContent;
-            showUploadDocumentModal(ticketId, nroTicket);
-        }, 2000);
-              
-            } catch (error) {
-              console.error("Error parsing JSON:", error);
+
+      // Obtener datos del ticket para generar el número del convenio
+      const xhr = new XMLHttpRequest();
+      xhr.open(
+        "POST",
+        `${ENDPOINT_BASE}${APP_PATH}api/documents/GetPaymentAgreementData`
+      );
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState !== 4) return;
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const res = JSON.parse(xhr.responseText);
+
+            if (!res || !res.success || !res.rows) {
               Swal.fire({
-                icon: "error",
-                title: "Error al procesar datos",
-                text: "Hubo un error al procesar los datos del ticket.",
+                icon: "warning",
+                title: "No se encontraron datos",
+                text: "No se pudieron obtener los datos del ticket para generar el convenio.",
               });
+              return;
             }
-          } else {
+
+            const d = res.rows[0];
+
+            // Generar número del convenio firmado
+            const serialPos = d.serialpos || d.serial_pos || "";
+            const lastFourSerialDigits = serialPos.slice(-4);
+            const convenioNumero = `CF-${ticketId}-${lastFourSerialDigits}`;
+
+            // Almacenar el número del convenio en una variable global
+            window.currentConvenioNumero = convenioNumero;
+
+            // Mostrar loading
+
+            // Simular proceso de generación (reemplazar con llamada real a la API)
+            setTimeout(() => {
+              // Cerrar el modal de generar convenio
+              const generateConvenioModal = bootstrap.Modal.getInstance(
+                document.getElementById("generateConvenioModal")
+              );
+              generateConvenioModal.hide();
+
+              // Mostrar el modal de subir documento después de generar el convenio
+              const ticketId =
+                document.getElementById("generate_id_ticket").value;
+              const nroTicket = document.getElementById(
+                "generateModalTicketId"
+              ).textContent;
+              showUploadDocumentModal(ticketId, nroTicket);
+            }, 2000);
+          } catch (error) {
+            console.error("Error parsing JSON:", error);
             Swal.fire({
               icon: "error",
-              title: "Error del servidor",
-              text: `Error ${xhr.status}: ${xhr.statusText}`,
+              title: "Error al procesar datos",
+              text: "Hubo un error al procesar los datos del ticket.",
             });
           }
-        };
-        
-        xhr.onerror = function () {
+        } else {
           Swal.fire({
             icon: "error",
-            title: "Error de conexión",
-            text: "No se pudo conectar al servidor para obtener los datos del ticket.",
+            title: "Error del servidor",
+            text: `Error ${xhr.status}: ${xhr.statusText}`,
           });
+        }
+      };
+
+      xhr.onerror = function () {
+        Swal.fire({
+          icon: "error",
+          title: "Error de conexión",
+          text: "No se pudo conectar al servidor para obtener los datos del ticket.",
+        });
+      };
+
+      const data = `action=GetPaymentAgreementData&id_ticket=${ticketId}`;
+      xhr.send(data);
+    });
+});
+
+// Event listener para el botón de confirmar rechazo usando event delegation
+document.addEventListener('click', function(event) {
+    if (event.target && event.target.id === 'btnConfirmarAccionRechazo') {
+        
+        const ticketId = currentTicketIdForImage; // ✅ Usar la variable correcta
+        const nroticket = currentTicketNroForImage;
+        const motivoRechazoSelectElement = document.getElementById("motivoRechazoSelect");
+        const motivoId = motivoRechazoSelectElement ? motivoRechazoSelectElement.value : "";
+        const id_user = document.getElementById('iduser').value;
+        const documentType = 'convenio_firmado';
+
+        console.log('🔍 Datos para rechazo:', { ticketId, nroticket, motivoId, id_user, documentType });
+        
+        // Cerrar el modal de confirmación mientras se procesa la solicitud
+        if (confirmarRechazoModal) {
+            confirmarRechazoModal.hide();
+        }
+
+        // Verificación final para asegurar que tenemos los datos necesarios
+        if (!ticketId || !motivoId || !nroticket || !id_user || !documentType) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Datos incompletos para el rechazo.',
+                confirmButtonColor: '#003594'
+            });
+            return;
+        }
+
+        const xhr = new XMLHttpRequest();
+        const datos = `action=rechazarDocumento&ticketId=${encodeURIComponent(ticketId)}&motivoId=${encodeURIComponent(motivoId)}&nroTicket=${encodeURIComponent(nroticket)}&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`;
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/rechazarDocumento`);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        // Enviar correo de rechazo
+                        (function sendRejectionEmails() {
+                            try {
+                                const xhrEmail = new XMLHttpRequest();
+                                xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_reject_document`);
+                                xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+                                xhrEmail.onload = function () {
+                                    if (xhrEmail.status === 200) {
+                                        try {
+                                            const responseEmail = JSON.parse(xhrEmail.responseText);
+                                            if (responseEmail.success) {
+                                                console.log('Correo rechazo enviado:', responseEmail.message || 'OK');
+                                            } else {
+                                                console.error('Error correo rechazo:', responseEmail.message);
+                                            }
+                                        } catch (e) {
+                                            console.error('Error parseando respuesta correo rechazo:', e, xhrEmail.responseText);
+                                        }
+                                    } else {
+                                        console.error('Error HTTP correo rechazo:', xhrEmail.status, xhrEmail.responseText);
+                                    }
+                                };
+
+                                xhrEmail.onerror = function () {
+                                    console.error('Error de red al enviar correo de rechazo');
+                                };
+                                
+                                const params = `action=send_reject_document&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}&nroTicket=${encodeURIComponent(nroticket)}&ticketId=${encodeURIComponent(ticketId)}`;
+                                xhrEmail.send(params);
+                            } catch (err) {
+                                console.error('Fallo al disparar correo rechazo:', err);
+                            }
+                        })();
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Rechazado!',
+                            text: response.message,
+                            confirmButtonColor: '#003594',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            keydownListenerCapture: true,
+                            color: 'black'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message,
+                            confirmButtonColor: '#003594'
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error parsing JSON:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Respuesta del servidor no válida.',
+                        confirmButtonColor: '#003594'
+                    });
+                }
+            } else {
+                console.error("Error:", xhr.status, xhr.statusText);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: 'Hubo un problema al conectar con el servidor.',
+                    confirmButtonColor: '#003594'
+                });
+            }
+        };
+
+        xhr.onerror = function () {
+            console.error("Error de red");
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de red',
+                text: 'Verifique su conexión a internet.',
+                confirmButtonColor: '#003594'
+            });
         };
         
-        const data = `action=GetPaymentAgreementData&id_ticket=${ticketId}`;
-        xhr.send(data);
-    });
+        xhr.send(datos);
+    }
 });
 
 // Funciones para manejar los modales de convenio firmado
 function showGenerateConvenioModal() {
-    // Obtener el primer ticket del filtro actual (status 4)
+  // Obtener el primer ticket del filtro actual (status 4)
   const dataTableInstance = $("#tabla-ticket").DataTable();
   const filteredData = dataTableInstance.rows({ filter: "applied" }).data();
-    
-    if (filteredData.length > 0) {
-        const firstTicket = filteredData[0];
-        const ticketId = firstTicket.id_ticket;
-        const nroTicket = firstTicket.nro_ticket;
-        
-        // Configurar el modal de generar convenio
+
+  if (filteredData.length > 0) {
+    const firstTicket = filteredData[0];
+    const ticketId = firstTicket.id_ticket;
+    const nroTicket = firstTicket.nro_ticket;
+
+    // Configurar el modal de generar convenio
     document.getElementById("generateModalTicketId").textContent = nroTicket;
     document.getElementById("generate_id_ticket").value = ticketId;
-        
-        // Mostrar el modal
+
+    // Mostrar el modal
     const generateConvenioModal = new bootstrap.Modal(
       document.getElementById("generateConvenioModal")
     );
-        generateConvenioModal.show();
-    } else {
-        Swal.fire({
+    generateConvenioModal.show();
+  } else {
+    Swal.fire({
       title: "Sin datos",
       text: "No hay tickets de convenio firmado para procesar.",
       icon: "warning",
       confirmButtonColor: "#003594",
-        });
-    }
+    });
+  }
 }
 
 function showAttachDocumentModal(ticketId = null) {
@@ -1160,15 +1431,15 @@ function showAttachDocumentModal(ticketId = null) {
     return;
   }
 
-    // Obtener el primer ticket del filtro actual (status 4)
+  // Obtener el primer ticket del filtro actual (status 4)
   const dataTableInstance = $("#tabla-ticket").DataTable();
   const filteredData = dataTableInstance.rows({ filter: "applied" }).data();
-    
-    if (filteredData.length > 0) {
-        const firstTicket = filteredData[0];
-        const ticketId = firstTicket.id_ticket;
-        const nroTicket = firstTicket.nro_ticket;
-        
+
+  if (filteredData.length > 0) {
+    const firstTicket = filteredData[0];
+    const ticketId = firstTicket.id_ticket;
+    const nroTicket = firstTicket.nro_ticket;
+
     // Configurar el modal de generar convenio
     document.getElementById("generate_id_ticket").value = ticketId;
 
@@ -1177,14 +1448,14 @@ function showAttachDocumentModal(ticketId = null) {
       document.getElementById("generateConvenioModal")
     );
     generateConvenioModal.show();
-    } else {
-        Swal.fire({
+  } else {
+    Swal.fire({
       title: "Sin datos",
       text: "No hay tickets de convenio firmado para procesar.",
       icon: "warning",
       confirmButtonColor: "#003594",
-        });
-    }
+    });
+  }
 }
 
 function showUploadDocumentModal(ticketId = null, nroTicket = null) {
@@ -1192,7 +1463,7 @@ function showUploadDocumentModal(ticketId = null, nroTicket = null) {
   if (!ticketId) {
     ticketId = document.getElementById("generate_id_ticket").value;
   }
-  
+
   // Si no se pasa nroTicket, intentar obtenerlo del elemento idTicket
   if (!nroTicket) {
     const idTicketElement = document.getElementById("idTicket");
@@ -1200,12 +1471,11 @@ function showUploadDocumentModal(ticketId = null, nroTicket = null) {
       nroTicket = idTicketElement.getAttribute("data-nro-ticket");
     }
   }
-  
+
   const modalTicketId = document.getElementById("modalTicketId");
   const idTicketHidden = document.getElementById("id_ticket");
 
-  if (modalTicketId)
-    modalTicketId.textContent = nroTicket || ticketId;
+  if (modalTicketId) modalTicketId.textContent = nroTicket || ticketId;
   if (idTicketHidden) {
     idTicketHidden.value = ticketId;
     if (nroTicket) {
@@ -1221,8 +1491,12 @@ function showUploadDocumentModal(ticketId = null, nroTicket = null) {
 
   // Usar la instancia global del modal
   if (!uploadDocumentModalInstance) {
-    const uploadDocumentModalElement = document.getElementById("uploadDocumentModal");
-    uploadDocumentModalInstance = new bootstrap.Modal(uploadDocumentModalElement);
+    const uploadDocumentModalElement = document.getElementById(
+      "uploadDocumentModal"
+    );
+    uploadDocumentModalInstance = new bootstrap.Modal(
+      uploadDocumentModalElement
+    );
   }
   uploadDocumentModalInstance.show();
 }
@@ -1248,7 +1522,7 @@ function downloadImageModal(serial) {
 
           const imgElement = document.getElementById("device-ticket-image");
 
-            if (imgElement) {
+          if (imgElement) {
             imgElement.src = srcImagen;
 
             imgElement.className = claseImagen; // Aplicar la clase CSS
@@ -1259,7 +1533,7 @@ function downloadImageModal(serial) {
           if (imgElement) {
             imgElement.src = rutaImagen;
 
-                        imgElement.className = claseImagen; // Aplicar la clase CSS
+            imgElement.className = claseImagen; // Aplicar la clase CSS
           } else {
             console.error("No se encontró el elemento img en el modal.");
           }
@@ -1454,53 +1728,53 @@ function formatTicketDetailsPanel(d) {
 // Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
 
 function loadTicketHistory(ticketId, currentTicketNroForImage) {
-    const historyPanel = $("#ticket-history-content");
+  const historyPanel = $("#ticket-history-content");
 
   historyPanel.html(
     '<p class="text-center text-muted">Cargando historial...</p>'
   );
 
-    const parseCustomDate = (dateStr) => {
+  const parseCustomDate = (dateStr) => {
     const parts = dateStr.split(" ");
 
-        if (parts.length !== 2) return null;
+    if (parts.length !== 2) return null;
 
     const [day, month, year] = parts[0].split("-");
 
     const [hours, minutes] = parts[1].split(":");
 
-        return new Date(year, month - 1, day, hours, minutes);
-    };
+    return new Date(year, month - 1, day, hours, minutes);
+  };
 
-    const calculateTimeElapsed = (startDateStr, endDateStr) => {
-        if (!startDateStr || !endDateStr) return null;
+  const calculateTimeElapsed = (startDateStr, endDateStr) => {
+    if (!startDateStr || !endDateStr) return null;
 
-        const start = parseCustomDate(startDateStr);
+    const start = parseCustomDate(startDateStr);
 
-        const end = parseCustomDate(endDateStr);
+    const end = parseCustomDate(endDateStr);
 
-        if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
-            return null;
-        }
+    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return null;
+    }
 
-        const diffMs = end - start;
+    const diffMs = end - start;
 
-        if (diffMs <= 0) {
-            return null;
-        }
+    if (diffMs <= 0) {
+      return null;
+    }
 
-        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-        const diffHours = Math.floor(diffMinutes / 60);
+    const diffHours = Math.floor(diffMinutes / 60);
 
-        const diffDays = Math.floor(diffHours / 24);
+    const diffDays = Math.floor(diffHours / 24);
 
-        const diffWeeks = Math.floor(diffDays / 7);
+    const diffWeeks = Math.floor(diffDays / 7);
 
-        const diffMonths = Math.floor(diffDays / 30.44);
+    const diffMonths = Math.floor(diffDays / 30.44);
 
-        const calculateBusinessDays = (startDateObj, endDateObj) => {
-            const holidays2025 = [
+    const calculateBusinessDays = (startDateObj, endDateObj) => {
+      const holidays2025 = [
         "2025-01-01",
         "2025-01-06",
         "2025-02-17",
@@ -1517,16 +1791,16 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
         "2025-07-24",
         "2025-10-12",
         "2025-12-25",
-            ];
+      ];
 
-            let businessDays = 0;
+      let businessDays = 0;
 
-            const current = new Date(startDateObj);
+      const current = new Date(startDateObj);
 
-            const end = new Date(endDateObj);
+      const end = new Date(endDateObj);
 
-            while (current <= end) {
-                const dayOfWeek = current.getDay();
+      while (current <= end) {
+        const dayOfWeek = current.getDay();
 
         const dateString = current.toISOString().split("T")[0];
 
@@ -1535,78 +1809,78 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
           dayOfWeek <= 5 &&
           !holidays2025.includes(dateString)
         ) {
-                    businessDays++;
-                }
+          businessDays++;
+        }
 
-                current.setDate(current.getDate() + 1);
-            }
+        current.setDate(current.getDate() + 1);
+      }
 
-            return businessDays;
-        };
+      return businessDays;
+    };
 
-        const businessDays = calculateBusinessDays(start, end);
+    const businessDays = calculateBusinessDays(start, end);
 
     let timeText = "";
 
-        if (diffMonths > 0) {
-            const remainingDays = diffDays % 30.44;
+    if (diffMonths > 0) {
+      const remainingDays = diffDays % 30.44;
 
-            timeText = `${diffMonths}M ${Math.floor(remainingDays)}D`;
-        } else if (diffWeeks > 0) {
-            const remainingDays = diffDays % 7;
+      timeText = `${diffMonths}M ${Math.floor(remainingDays)}D`;
+    } else if (diffWeeks > 0) {
+      const remainingDays = diffDays % 7;
 
-            timeText = `${diffWeeks}W ${remainingDays}D`;
-        } else if (diffDays > 0) {
-            const remainingHours = diffHours % 24;
+      timeText = `${diffWeeks}W ${remainingDays}D`;
+    } else if (diffDays > 0) {
+      const remainingHours = diffHours % 24;
 
-            const remainingMinutes = diffMinutes % 60;
+      const remainingMinutes = diffMinutes % 60;
 
-            timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}M`;
-        } else if (diffHours > 0) {
-            const remainingMinutes = diffMinutes % 60;
+      timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}M`;
+    } else if (diffHours > 0) {
+      const remainingMinutes = diffMinutes % 60;
 
-            timeText = `${diffHours}H ${remainingMinutes}M`;
-        } else if (diffMinutes > 0) {
-            timeText = `${diffMinutes}M`;
-        } else {
-            return null;
-        }
+      timeText = `${diffHours}H ${remainingMinutes}M`;
+    } else if (diffMinutes > 0) {
+      timeText = `${diffMinutes}M`;
+    } else {
+      return null;
+    }
 
-        return {
-            text: timeText,
+    return {
+      text: timeText,
 
-            ms: diffMs,
+      ms: diffMs,
 
-            minutes: diffMinutes,
+      minutes: diffMinutes,
 
-            hours: diffHours,
+      hours: diffHours,
 
-            days: diffDays,
+      days: diffDays,
 
-            weeks: diffWeeks,
+      weeks: diffWeeks,
 
-            months: diffMonths,
+      months: diffMonths,
 
       businessDays: businessDays,
-        };
     };
+  };
 
-    $.ajax({
-        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
+  $.ajax({
+    url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
 
-        type: "POST",
+    type: "POST",
 
-        data: {
-            action: "GetTicketHistory",
+    data: {
+      action: "GetTicketHistory",
 
-            id_ticket: ticketId,
-        },
+      id_ticket: ticketId,
+    },
 
-        dataType: "json",
+    dataType: "json",
 
     success: function (response) {
-            if (response.success && response.history && response.history.length > 0) {
-                let historyHtml = `
+      if (response.success && response.history && response.history.length > 0) {
+        let historyHtml = `
 
                     <div class="d-flex justify-content-end mb-2">
 
@@ -1624,38 +1898,38 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
 
                 `;
 
-                response.history.forEach((item, index) => {
-                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+        response.history.forEach((item, index) => {
+          const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
 
-                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
+          const headingId = `headingHistoryItem_${ticketId}_${index}`;
 
-                    const isLatest = index === 0;
+          const isLatest = index === 0;
 
-                    const prevItem = response.history[index + 1] || {};
+          const prevItem = response.history[index + 1] || {};
 
-                    let timeElapsed = null;
+          let timeElapsed = null;
 
           let timeBadge = "";
 
-                    if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
+          if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
             timeElapsed = calculateTimeElapsed(
               prevItem.fecha_de_cambio,
               item.fecha_de_cambio
             );
 
-                        if (timeElapsed) {
+            if (timeElapsed) {
               let badgeColor = "success";
 
-                            if (timeElapsed.months > 0 || timeElapsed.businessDays > 5) {
+              if (timeElapsed.months > 0 || timeElapsed.businessDays > 5) {
                 badgeColor = "danger";
               } else if (
                 timeElapsed.weeks > 0 ||
                 timeElapsed.businessDays > 2
               ) {
                 badgeColor = "warning";
-                            } else if (timeElapsed.days > 0 || timeElapsed.hours > 8) {
+              } else if (timeElapsed.days > 0 || timeElapsed.hours > 8) {
                 badgeColor = "orange";
-                            } else if (timeElapsed.hours >= 1) {
+              } else if (timeElapsed.hours >= 1) {
                 badgeColor = "purple";
               }
 
@@ -1666,16 +1940,16 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
               else if (badgeColor === "warning") backgroundColor = "#ffc107";
               else if (badgeColor === "danger") backgroundColor = "#dc3545";
 
-                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
-                        }
-                    }
+              timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
+            }
+          }
 
           const cleanString = (str) =>
             (str && str.replace(/\s/g, " ").trim()) || null;
-                    
+
           const getChange = (itemVal, prevVal) =>
             cleanString(itemVal) !== cleanString(prevVal);
-                    
+
           const isCreation =
             cleanString(item.name_accion_ticket) === "Ticket Creado";
 
@@ -1734,14 +2008,14 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
             prevItem.name_motivo_rechazo
           );
 
-                    const pagoChanged = getChange(item.pago, prevItem.pago);
+          const pagoChanged = getChange(item.pago, prevItem.pago);
 
           const exoneracionChanged = getChange(
             item.exoneracion,
             prevItem.exoneracion
           );
 
-                    const envioChanged = getChange(item.envio, prevItem.envio);
+          const envioChanged = getChange(item.envio, prevItem.envio);
 
           const envioDestinoChanged = getChange(
             item.envio_destino,
@@ -1779,7 +2053,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
             ? "background-color: #ffc107;"
             : "background-color: #5d9cec;";
 
-                    const textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+          const textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
 
           let statusHeaderText =
             cleanString(item.name_status_ticket) || "Desconocido";
@@ -1792,9 +2066,9 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
               cleanString(item.name_status_lab) || "Desconocido";
           }
 
-                    // Se define el texto del botón aquí con la condición ternaria
+          // Se define el texto del botón aquí con la condición ternaria
 
-                    const buttonText = isCreation
+          const buttonText = isCreation
             ? `${
                 cleanString(item.name_accion_ticket) || "N/A"
               } (${statusHeaderText})`
@@ -1802,7 +2076,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
                 cleanString(item.name_accion_ticket) || "N/A"
               } (${statusHeaderText})`;
 
-                    historyHtml += `
+          historyHtml += `
 
                         <div class="card mb-3 custom-history-card position-relative">
 
@@ -2177,12 +2451,12 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
                             </div>
 
                         </div>`;
-                });
+        });
 
-                historyHtml += "</div>";
+        historyHtml += "</div>";
 
-                historyPanel.html(historyHtml);
-            } else {
+        historyPanel.html(historyHtml);
+      } else {
         historyPanel.html(
           '<p class="text-center text-muted">No hay historial disponible para este ticket.</p>'
         );
@@ -2199,11 +2473,11 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
       let errorMessage =
         '<p class="text-center text-danger">Error al cargar el historial.</p>';
 
-            if (jqXHR.status === 0) {
+      if (jqXHR.status === 0) {
         errorMessage =
           '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
-            } else if (jqXHR.status == 404) {
-                errorMessage = `<div class="text-center text-muted py-5">
+      } else if (jqXHR.status == 404) {
+        errorMessage = `<div class="text-center text-muted py-5">
 
                     <div class="d-flex flex-column align-items-center">
 
@@ -2220,49 +2494,49 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
                     </div>
 
                 </div>`;
-            } else if (jqXHR.status == 500) {
+      } else if (jqXHR.status == 500) {
         errorMessage =
           '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
-            } else if (textStatus === "parsererror") {
+      } else if (textStatus === "parsererror") {
         errorMessage =
           '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
-            } else if (textStatus === "timeout") {
+      } else if (textStatus === "timeout") {
         errorMessage =
           '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
-            } else if (textStatus === "abort") {
+      } else if (textStatus === "abort") {
         errorMessage =
           '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
-            }
+      }
 
-            historyPanel.html(errorMessage);
+      historyPanel.html(errorMessage);
 
-            console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-        },
-    });
+      console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+    },
+  });
 }
 
 function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
-    const decodeHistorySafe = (encoded) => {
-        try {
-            if (!encoded) return [];
+  const decodeHistorySafe = (encoded) => {
+    try {
+      if (!encoded) return [];
 
-            return JSON.parse(decodeURIComponent(encoded));
-        } catch (e) {
+      return JSON.parse(decodeURIComponent(encoded));
+    } catch (e) {
       console.error("Error decoding history:", e);
 
-            return [];
+      return [];
     }
   };
 
   const cleanString = (str) =>
     typeof str === "string" ? str.replace(/\s/g, " ").trim() : str ?? "";
 
-    const parseCustomDate = (dateStr) => {
-        if (!dateStr) return null;
+  const parseCustomDate = (dateStr) => {
+    if (!dateStr) return null;
 
     const parts = String(dateStr).split(" ");
 
-        if (parts.length !== 2) return null;
+    if (parts.length !== 2) return null;
 
     const [day, month, year] = parts[0].split("-");
 
@@ -2276,52 +2550,52 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
       Number(minutes) || 0
     );
 
-        return isNaN(d.getTime()) ? null : d;
-    };
+    return isNaN(d.getTime()) ? null : d;
+  };
 
-    const calculateTimeElapsed = (startDateStr, endDateStr) => {
-        if (!startDateStr || !endDateStr) return null;
+  const calculateTimeElapsed = (startDateStr, endDateStr) => {
+    if (!startDateStr || !endDateStr) return null;
 
-        const start = parseCustomDate(startDateStr);
+    const start = parseCustomDate(startDateStr);
 
-        const end = parseCustomDate(endDateStr);
+    const end = parseCustomDate(endDateStr);
 
-        if (!start || !end) return null;
+    if (!start || !end) return null;
 
-        const diffMs = end - start;
+    const diffMs = end - start;
 
-        if (diffMs <= 0) return null;
+    if (diffMs <= 0) return null;
 
-        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-        const diffHours = Math.floor(diffMinutes / 60);
+    const diffHours = Math.floor(diffMinutes / 60);
 
-        const diffDays = Math.floor(diffHours / 24);
+    const diffDays = Math.floor(diffHours / 24);
 
-        const diffWeeks = Math.floor(diffDays / 7);
+    const diffWeeks = Math.floor(diffDays / 7);
 
-        const diffMonths = Math.floor(diffDays / 30.44);
+    const diffMonths = Math.floor(diffDays / 30.44);
 
     let text = "";
 
-        if (diffMonths > 0) {
-            const remainingDays = Math.floor(diffDays % 30.44);
+    if (diffMonths > 0) {
+      const remainingDays = Math.floor(diffDays % 30.44);
 
-            text = `${diffMonths}M ${remainingDays}D`;
-        } else if (diffWeeks > 0) {
-            text = `${diffWeeks}W ${diffDays % 7}D`;
-        } else if (diffDays > 0) {
-            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
-        } else if (diffHours > 0) {
-            text = `${diffHours}H ${diffMinutes % 60}M`;
-        } else if (diffMinutes > 0) {
-            // Mostrar minutos cuando es al menos 1 minuto
+      text = `${diffMonths}M ${remainingDays}D`;
+    } else if (diffWeeks > 0) {
+      text = `${diffWeeks}W ${diffDays % 7}D`;
+    } else if (diffDays > 0) {
+      text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
+    } else if (diffHours > 0) {
+      text = `${diffHours}H ${diffMinutes % 60}M`;
+    } else if (diffMinutes > 0) {
+      // Mostrar minutos cuando es al menos 1 minuto
 
-            text = `${diffMinutes}M`;
-        } else {
-            // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
+      text = `${diffMinutes}M`;
+    } else {
+      // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
 
-            text = `N/A`;
+      text = `N/A`;
     }
 
     return {
@@ -2335,12 +2609,12 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
     };
   };
 
-    const history = decodeHistorySafe(historyEncoded);
+  const history = decodeHistorySafe(historyEncoded);
 
   let itemsHtml = "";
 
-    history.forEach((item, index) => {
-        const previous = history[index + 1] || null;
+  history.forEach((item, index) => {
+    const previous = history[index + 1] || null;
 
     const elapsed = previous
       ? calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio)
@@ -2348,7 +2622,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
 
     const elapsedText = elapsed ? elapsed.text : "N/A";
 
-        itemsHtml += `
+    itemsHtml += `
 
             <div style="border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 12px;">
 
@@ -2504,9 +2778,9 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
             </div>
 
         `;
-    });
+  });
 
-    const printContent = `
+  const printContent = `
 
         <div style="font-family: Arial, sans-serif; padding: 20px;">
 
@@ -2551,17 +2825,17 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
 
   printWindow.document.write("</head><body>");
 
-    printWindow.document.write(printContent);
+  printWindow.document.write(printContent);
 
   printWindow.document.write("</body></html>");
 
-    printWindow.document.close();
+  printWindow.document.close();
 
-    printWindow.focus();
+  printWindow.focus();
 
-    printWindow.print();
+  printWindow.print();
 
-    printWindow.close();
+  printWindow.close();
 }
 
 function showElapsedLegend(e) {
@@ -2569,7 +2843,7 @@ function showElapsedLegend(e) {
     if (e && e.stopPropagation) e.stopPropagation();
   } catch (_) {}
 
-    const legendHtml = `
+  const legendHtml = `
 
         <div style="font-size: 0.95rem; text-align: left;">
 
@@ -2585,10 +2859,10 @@ function showElapsedLegend(e) {
 
         </div>`;
 
-    Swal.fire({
+  Swal.fire({
     title: "Agenda de colores",
 
-        html: legendHtml,
+    html: legendHtml,
 
     icon: "info",
 
@@ -2598,8 +2872,8 @@ function showElapsedLegend(e) {
 
     color: "black",
 
-        width: 520,
-    });
+    width: 520,
+  });
 }
 
 $(document).ready(function () {
@@ -2607,7 +2881,7 @@ $(document).ready(function () {
     "changeStatusDomiciliacionModal"
   );
 
-    if (changeStatusDomiciliacionModalElement) {
+  if (changeStatusDomiciliacionModalElement) {
     const changeStatusDomiciliacionModal = new bootstrap.Modal(
       changeStatusDomiciliacionModalElement
     );
@@ -2643,19 +2917,17 @@ $(document).ready(function () {
       const nroTicket = $(this).data("nro-ticket");
 
       const currentStatusName = $(this).data("current-status-name");
-      console.log("=== DEBUG Botón Click ===");
       console.log("currentStatusName obtenido:", currentStatusName);
 
       const currentStatusId = $(this).data("current-status-id");
-      console.log("currentStatusId obtenido:", currentStatusId);
 
       document.getElementById("idTicket").value = idTicket;
 
       const getIdTicket = document.getElementById("idTicket").value;
 
-            // Store nro_ticket for later use
+      // Store nro_ticket for later use
 
-            if (nroTicket) {
+      if (nroTicket) {
         document
           .getElementById("idTicket")
           .setAttribute("data-nro-ticket", nroTicket);
@@ -2667,112 +2939,116 @@ $(document).ready(function () {
       if (modalCurrentStatusDomiciliacion)
         modalCurrentStatusDomiciliacion.value = currentStatusName;
 
-            // Limpiar cualquier mensaje de error previo
+      // Limpiar cualquier mensaje de error previo
 
-            if (errorMessageDomiciliacion) {
+      if (errorMessageDomiciliacion) {
         errorMessageDomiciliacion.style.display = "none";
 
         errorMessageDomiciliacion.innerHTML = "";
-            }
+      }
 
-            // *** LLAMADA CLAVE: Cargar los estatus excluyendo el actual ***
+      // *** LLAMADA CLAVE: Cargar los estatus excluyendo el actual ***
 
-            // Pasa el ID del estado actual para que no se muestre en el select.
+      // Pasa el ID del estado actual para que no se muestre en el select.
 
-            getStatusDom(currentStatusId);
+      getStatusDom(currentStatusId);
 
-            // ABRIR EL MODAL EXPLICITAMENTE
+      // ABRIR EL MODAL EXPLICITAMENTE
 
-            changeStatusDomiciliacionModal.show();
+      changeStatusDomiciliacionModal.show();
     });
 
     // Event listener para el botón de adjuntar documento
-    $(document).on('click', '.adjuntar-documento-btn', function () {
-        const idTicket = $(this).data('id');
-        const nroTicket = $(this).data('nro-ticket');
-        
-        // Usar la función showUploadDocumentModal con los parámetros correctos
-        showUploadDocumentModal(idTicket, nroTicket);
-        
-        // Usar la instancia global del modal
-        if (!uploadDocumentModalInstance) {
-            const uploadDocumentModalElement = document.getElementById("uploadDocumentModal");
-            uploadDocumentModalInstance = new bootstrap.Modal(uploadDocumentModalElement);
-        }
-        uploadDocumentModalInstance.show();
+    $(document).on("click", ".adjuntar-documento-btn", function () {
+      const idTicket = $(this).data("id");
+      const nroTicket = $(this).data("nro-ticket");
+
+      // Usar la función showUploadDocumentModal con los parámetros correctos
+      showUploadDocumentModal(idTicket, nroTicket);
+
+      // Usar la instancia global del modal
+      if (!uploadDocumentModalInstance) {
+        const uploadDocumentModalElement = document.getElementById(
+          "uploadDocumentModal"
+        );
+        uploadDocumentModalInstance = new bootstrap.Modal(
+          uploadDocumentModalElement
+        );
+      }
+      uploadDocumentModalInstance.show();
     });
 
-        if (saveStatusDomiciliacionChangeBtn) {
+    if (saveStatusDomiciliacionChangeBtn) {
       saveStatusDomiciliacionChangeBtn.addEventListener("click", function () {
         const idTicket = document.getElementById("idTicket").value;
 
-                const newStatusId = modalNewStatusDomiciliacionSelect.value;
+        const newStatusId = modalNewStatusDomiciliacionSelect.value;
 
         const id_user_input = document.getElementById("iduser");
 
         let id_user = "";
 
-                if (id_user_input) {
-                    id_user = id_user_input.value;
-                } else {
+        if (id_user_input) {
+          id_user = id_user_input.value;
+        } else {
           console.warn(
             "Elemento con ID 'idTicket' (para el ID de usuario) no encontrado."
           );
         }
 
-                if (!newStatusId || newStatusId === "" || newStatusId === "0") {
-                    if (errorMessageDomiciliacion) {
+        if (!newStatusId || newStatusId === "" || newStatusId === "0") {
+          if (errorMessageDomiciliacion) {
             errorMessageDomiciliacion.textContent =
               'Por favor, selecciona un "Nuevo Estatus".';
 
             errorMessageDomiciliacion.style.display = "block";
 
             errorMessageDomiciliacion.style.color = "white";
-                    }
+          }
 
-                    return;
-                }
+          return;
+        }
 
-                // *** OBTENER OBSERVACIONES SI EL ESTATUS ES 3 ***
+        // *** OBTENER OBSERVACIONES SI EL ESTATUS ES 3 ***
 
         let observations = "";
 
         if (newStatusId === "3") {
           const observationsText = document.getElementById("observationsText");
 
-                    if (observationsText) {
-                        observations = observationsText.value.trim();
+          if (observationsText) {
+            observations = observationsText.value.trim();
 
-                        if (!observations) {
-                            if (errorMessageDomiciliacion) {
+            if (!observations) {
+              if (errorMessageDomiciliacion) {
                 errorMessageDomiciliacion.textContent =
                   "Por favor, ingrese las observaciones para este estatus.";
 
                 errorMessageDomiciliacion.style.display = "block";
 
                 errorMessageDomiciliacion.style.color = "white";
-                            }
+              }
 
-                            return;
-                        }
-                    }
-                }
+              return;
+            }
+          }
+        }
 
-                // *** MODAL DE CONFIRMACIÓN ANTES DE CAMBIAR EL STATUS ***
-                // Solo mostrar modal de confirmación para status 2, 3 y 4
+        // *** MODAL DE CONFIRMACIÓN ANTES DE CAMBIAR EL STATUS ***
+        // Solo mostrar modal de confirmación para status 2, 3 y 4
         if (newStatusId === "2" || newStatusId === "3" || newStatusId === "4") {
-                    // Obtener el nombre del status actual y el nuevo status
-                    const currentStatusName = modalCurrentStatusDomiciliacion.value;
+          // Obtener el nombre del status actual y el nuevo status
+          const currentStatusName = modalCurrentStatusDomiciliacion.value;
           const newStatusName =
             modalNewStatusDomiciliacionSelect.options[
               modalNewStatusDomiciliacionSelect.selectedIndex
             ].text;
-                    
-                    // Mostrar modal de confirmación personalizado y bonito
-                    Swal.fire({
+
+          // Mostrar modal de confirmación personalizado y bonito
+          Swal.fire({
             title:
               '<div style="font-size: 24px; font-weight: 600; color: #2c3e50; margin-bottom: 10px;">⚠️ Confirmar Cambio de Status</div>',
-                        html: `
+            html: `
                             <div style="text-align: center; padding: 20px 0;">
                                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
                                     <div style="font-size: 16px; font-weight: 500; margin-bottom: 8px;">Status Actual:</div>
@@ -2797,32 +3073,32 @@ $(document).ready(function () {
                                 </div>
                             </div>
                         `,
-                        showCancelButton: true,
-                        confirmButtonText: '<i class="fas fa-check"></i> Sí, Cambiar',
-                        cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-check"></i> Sí, Cambiar',
+            cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
             confirmButtonColor: "#003594 ",
             cancelButtonColor: "#dc3545",
-                        buttonsStyling: true,
-                        customClass: {
+            buttonsStyling: true,
+            customClass: {
               popup: "swal2-popup-custom",
               confirmButton: "swal2-confirm-custom",
               cancelButton: "swal2-cancel-custom",
-                        },
-                        width: 480,
+            },
+            width: 480,
             padding: "30px",
             background: "#ffffff",
             backdrop: "rgba(0,0,0,0.4)",
-                        allowOutsideClick: false,
-                        showCloseButton: true,
+            allowOutsideClick: false,
+            showCloseButton: true,
             closeButtonHtml:
               '<i class="fas fa-times" style="color: #6c757d;"></i>',
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Si confirma, cerrar el modal y resetear el select al index[0] (status 5)
-                            changeStatusDomiciliacionModal.hide();
-                            modalNewStatusDomiciliacionSelect.selectedIndex = 0;
-                            
-                            // Proceder con el cambio de status
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Si confirma, cerrar el modal y resetear el select al index[0] (status 5)
+              changeStatusDomiciliacionModal.hide();
+              modalNewStatusDomiciliacionSelect.selectedIndex = 0;
+
+              // Proceder con el cambio de status
               updateDomiciliacionStatus(
                 idTicket,
                 newStatusId,
@@ -2830,11 +3106,11 @@ $(document).ready(function () {
                 changeStatusDomiciliacionModal,
                 observations
               );
-                        }
-                        // Si cancela, no hacer nada (el modal se mantiene abierto)
-                    });
-                } else {
-                    // Para otros status (como el 5), proceder directamente sin confirmación
+            }
+            // Si cancela, no hacer nada (el modal se mantiene abierto)
+          });
+        } else {
+          // Para otros status (como el 5), proceder directamente sin confirmación
           updateDomiciliacionStatus(
             idTicket,
             newStatusId,
@@ -2857,24 +3133,24 @@ $(document).ready(function () {
         if (modalNewStatusDomiciliacionSelect)
           modalNewStatusDomiciliacionSelect.value = "";
 
-            if (errorMessageDomiciliacion) {
+        if (errorMessageDomiciliacion) {
           errorMessageDomiciliacion.style.display = "none";
 
           errorMessageDomiciliacion.innerHTML = "";
-            }
+        }
 
-            // *** LIMPIAR CAMPO DE OBSERVACIONES ***
+        // *** LIMPIAR CAMPO DE OBSERVACIONES ***
 
         const observationsContainer = document.getElementById(
           "observationsContainer"
         );
 
-            if (observationsContainer) {
+        if (observationsContainer) {
           observationsContainer.style.display = "none";
 
           const observationsText = document.getElementById("observationsText");
 
-                if (observationsText) {
+          if (observationsText) {
             observationsText.value = "";
           }
         }
@@ -2887,50 +3163,50 @@ $(document).ready(function () {
     const closeButton =
       changeStatusDomiciliacionModalElement.querySelector("#close-button");
 
-        if (closeIconBtn) {
+    if (closeIconBtn) {
       closeIconBtn.addEventListener("click", function () {
-                // *** OCULTAR CAMPO DE OBSERVACIONES ***
+        // *** OCULTAR CAMPO DE OBSERVACIONES ***
 
         const observationsContainer = document.getElementById(
           "observationsContainer"
         );
 
-                if (observationsContainer) {
+        if (observationsContainer) {
           observationsContainer.style.display = "none";
 
           const observationsText = document.getElementById("observationsText");
 
-                    if (observationsText) {
+          if (observationsText) {
             observationsText.value = "";
-                    }
-                }
-
-                changeStatusDomiciliacionModal.hide();
-            });
+          }
         }
 
-        if (closeButton) {
-      closeButton.addEventListener("click", function () {
-                // *** OCULTAR CAMPO DE OBSERVACIONES ***
-
-        const observationsContainer = document.getElementById(
-          "observationsContainer"
-        );
-
-                if (observationsContainer) {
-          observationsContainer.style.display = "none";
-
-          const observationsText = document.getElementById("observationsText");
-
-                    if (observationsText) {
-            observationsText.value = "";
-                    }
-                }
-
-                changeStatusDomiciliacionModal.hide();
-            });
-        }
+        changeStatusDomiciliacionModal.hide();
+      });
     }
+
+    if (closeButton) {
+      closeButton.addEventListener("click", function () {
+        // *** OCULTAR CAMPO DE OBSERVACIONES ***
+
+        const observationsContainer = document.getElementById(
+          "observationsContainer"
+        );
+
+        if (observationsContainer) {
+          observationsContainer.style.display = "none";
+
+          const observationsText = document.getElementById("observationsText");
+
+          if (observationsText) {
+            observationsText.value = "";
+          }
+        }
+
+        changeStatusDomiciliacionModal.hide();
+      });
+    }
+  }
 });
 
 // Función para enviar la actualización del estatus de domiciliación al backend
@@ -2942,7 +3218,7 @@ function updateDomiciliacionStatus(
   changeStatusDomiciliacionModal,
   observations = ""
 ) {
-    const xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
 
   xhr.open(
     "POST",
@@ -2960,37 +3236,37 @@ function updateDomiciliacionStatus(
       "#errorMessageDomiciliacion"
     );
 
-    xhr.onload = function () {
-        if (errorMessageDomiciliacion) {
+  xhr.onload = function () {
+    if (errorMessageDomiciliacion) {
       errorMessageDomiciliacion.style.display = "none";
 
       errorMessageDomiciliacion.innerHTML = "";
-        }
+    }
 
-        if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-                const response = JSON.parse(xhr.responseText);
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
 
-                if (response.success) {
-                    // Si la respuesta es exitosa, muestra el SweetAlert de éxito
+        if (response.success) {
+          // Si la respuesta es exitosa, muestra el SweetAlert de éxito
 
-                    Swal.fire({
-                        title: "¡Éxito!",
+          Swal.fire({
+            title: "¡Éxito!",
 
-                        text: "Estatus del ticket actualizado correctamente.",
+            text: "Estatus del ticket actualizado correctamente.",
 
-                        icon: "success",
+            icon: "success",
 
-                        confirmButtonText: "Ok",
+            confirmButtonText: "Ok",
 
-                        confirmButtonColor: "#003594",
+            confirmButtonColor: "#003594",
 
-                        color: "black",
+            color: "black",
 
-                        // Si el nuevo status es 4 (Deudor - Convenio Firmado), no recargar la página
-                        willClose: () => {
+            // Si el nuevo status es 4 (Deudor - Convenio Firmado), no recargar la página
+            willClose: () => {
               if (newStatusId !== "4") {
-                            location.reload();
+                location.reload();
               }
             },
           });
@@ -2999,19 +3275,21 @@ function updateDomiciliacionStatus(
             changeStatusDomiciliacionModalElement
           );
 
-                    changeStatusDomiciliacionModalInstance.hide();
+          changeStatusDomiciliacionModalInstance.hide();
 
-                    searchDomiciliacionTickets();
+          searchDomiciliacionTickets();
 
           // Si el nuevo status es 4 (Deudor - Convenio Firmado), mostrar el modal de generar convenio
           if (newStatusId === "4") {
             // Obtener el número de ticket del elemento idTicket
-            const nroTicket = document.getElementById("idTicket").getAttribute("data-nro-ticket");
+            const nroTicket = document
+              .getElementById("idTicket")
+              .getAttribute("data-nro-ticket");
             // Mostrar el modal de generar convenio para que el usuario genere el documento
             showAttachDocumentModal(idTicket);
-                    }
-                } else {
-                    if (errorMessageDomiciliacion) {
+          }
+        } else {
+          if (errorMessageDomiciliacion) {
             errorMessageDomiciliacion.textContent =
               response.message ||
               "Error al actualizar el estatus de domiciliación.";
@@ -3024,19 +3302,19 @@ function updateDomiciliacionStatus(
             response.message
           );
         }
-            } catch (error) {
-                if (errorMessageDomiciliacion) {
+      } catch (error) {
+        if (errorMessageDomiciliacion) {
           errorMessageDomiciliacion.textContent =
             "Error al procesar la respuesta del servidor.";
 
           errorMessageDomiciliacion.style.display = "block";
-                }
+        }
 
         console.error("Error parsing JSON al actualizar estatus:", error);
-            }
-        } else {
-            if (errorMessageDomiciliacion) {
-                errorMessageDomiciliacion.textContent = `Error del servidor: ${xhr.status} ${xhr.statusText}`;
+      }
+    } else {
+      if (errorMessageDomiciliacion) {
+        errorMessageDomiciliacion.textContent = `Error del servidor: ${xhr.status} ${xhr.statusText}`;
 
         errorMessageDomiciliacion.style.display = "block";
       }
@@ -3049,48 +3327,46 @@ function updateDomiciliacionStatus(
     }
   };
 
-    xhr.onerror = function () {
-        if (errorMessageDomiciliacion) {
+  xhr.onerror = function () {
+    if (errorMessageDomiciliacion) {
       errorMessageDomiciliacion.textContent =
         "Error de red al intentar actualizar el estatus.";
 
       errorMessageDomiciliacion.style.display = "block";
-        }
+    }
 
     console.error("Error de red al actualizar estatus.");
-    };
+  };
 
-    // *** CONSTRUIR DATOS CON OBSERVACIONES SI ES NECESARIO ***
+  // *** CONSTRUIR DATOS CON OBSERVACIONES SI ES NECESARIO ***
 
-    let datos = `action=updateDomiciliacionStatus&id_ticket=${idTicket}&new_status_id=${newStatusId}&id_user=${id_user}`;
+  let datos = `action=updateDomiciliacionStatus&id_ticket=${idTicket}&new_status_id=${newStatusId}&id_user=${id_user}`;
 
   if (observations && observations.trim() !== "") {
-        datos += `&observations=${encodeURIComponent(observations)}`;
-    }
-    
-    xhr.send(datos);
+    datos += `&observations=${encodeURIComponent(observations)}`;
+  }
+
+  xhr.send(datos);
 }
 
 function getStatusDom(currentStatusIdToExclude = null) {
-    // Acepta un parámetro opcional (ID del status actual)
-    console.log("=== DEBUG getStatusDom ===");
-    console.log("currentStatusIdToExclude:", currentStatusIdToExclude);
+  // Acepta un parámetro opcional (ID del status actual)
 
-    const xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
 
   xhr.open(
     "POST",
     `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetStatusDomiciliacion`
   );
 
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            try {
-                const response = JSON.parse(xhr.responseText);
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
 
-                if (response.success) {
+        if (response.success) {
           const select = document.getElementById(
             "modalNewStatusDomiciliacionSelect"
           );
@@ -3098,71 +3374,70 @@ function getStatusDom(currentStatusIdToExclude = null) {
           select.innerHTML =
             '<option value="" disabled selected hidden>Seleccione</option>'; // Limpiar y agregar la opción por defecto
 
-                    if (Array.isArray(response.estatus) && response.estatus.length > 0) {
-                        console.log("Status disponibles:", response.estatus);
-                        response.estatus.forEach((status) => {
-                            // *** AQUÍ ESTÁ LA LÓGICA CLAVE: FILTRAR LA OPCIÓN ACTUAL POR ID ***
-                            console.log("Comparando ID:", status.id_status_domiciliacion, "con", currentStatusIdToExclude);
-                            console.log("¿Son diferentes?", status.id_status_domiciliacion != currentStatusIdToExclude);
+          if (Array.isArray(response.estatus) && response.estatus.length > 0) {
+            response.estatus.forEach((status) => {
+              // *** AQUÍ ESTÁ LA LÓGICA CLAVE: FILTRAR LA OPCIÓN ACTUAL POR ID ***
+              if (status.id_status_domiciliacion != currentStatusIdToExclude) {
+                const option = document.createElement("option");
 
-              if (
-                status.id_status_domiciliacion != currentStatusIdToExclude
-              ) {
-                                console.log("Agregando status:", status.name_status_domiciliacion, "(ID:", status.id_status_domiciliacion, ")");
-                                const option = document.createElement("option");
+                option.value = status.id_status_domiciliacion;
 
-                                option.value = status.id_status_domiciliacion;
+                option.textContent = status.name_status_domiciliacion;
 
-                                option.textContent = status.name_status_domiciliacion;
+                select.appendChild(option);
+              } else {
+                console.log(
+                  "Excluyendo status:",
+                  status.name_status_domiciliacion,
+                  "(ID:",
+                  status.id_status_domiciliacion,
+                  ")"
+                );
+              }
+            });
+          } else {
+            const option = document.createElement("option");
 
-                                select.appendChild(option);
-                            } else {
-                                console.log("Excluyendo status:", status.name_status_domiciliacion, "(ID:", status.id_status_domiciliacion, ")");
-                            }
-                        });
-                    } else {
-                        const option = document.createElement("option");
+            option.value = "";
 
-                        option.value = "";
+            option.textContent = "No hay status Disponibles";
 
-                        option.textContent = "No hay status Disponibles";
+            select.appendChild(option);
+          }
 
-                        select.appendChild(option);
-                    }
-
-                    // *** AGREGAR EVENT LISTENER PARA MOSTRAR CAMPO DE OBSERVACIONES Y MODAL DE DOCUMENTO ***
+          // *** AGREGAR EVENT LISTENER PARA MOSTRAR CAMPO DE OBSERVACIONES Y MODAL DE DOCUMENTO ***
 
           select.addEventListener("change", function () {
-                        const selectedValue = this.value;
+            const selectedValue = this.value;
 
             const observationsContainer = document.getElementById(
               "observationsContainer"
             );
-                        
-                        // Quitar el mensaje de error cuando se seleccione un estatus
+
+            // Quitar el mensaje de error cuando se seleccione un estatus
 
             const errorMessageDomiciliacion = document.getElementById(
               "errorMessageDomiciliacion"
             );
 
-                        if (errorMessageDomiciliacion) {
+            if (errorMessageDomiciliacion) {
               errorMessageDomiciliacion.style.display = "none";
 
               errorMessageDomiciliacion.innerHTML = "";
-                        }
-                        
-                        // Cambiar el color del texto a blanco cuando se seleccione una opción válida
+            }
+
+            // Cambiar el color del texto a blanco cuando se seleccione una opción válida
 
             if (selectedValue && selectedValue !== "") {
               this.style.color = "white";
-                        } else {
+            } else {
               this.style.color = "#6c757d"; // Color gris para la opción por defecto
-                        }
+            }
 
             if (selectedValue === "3") {
-                            // Mostrar campo de observaciones
+              // Mostrar campo de observaciones
 
-                            if (!observationsContainer) {
+              if (!observationsContainer) {
                 const form = document.getElementById(
                   "changeStatusDomiciliacionForm"
                 );
@@ -3173,7 +3448,7 @@ function getStatusDom(currentStatusIdToExclude = null) {
 
                 observationsDiv.className = "mb-3";
 
-                                observationsDiv.innerHTML = `
+                observationsDiv.innerHTML = `
 
                                     <label for="observationsText" class="form-label">Observaciones:</label>
 
@@ -3181,28 +3456,29 @@ function getStatusDom(currentStatusIdToExclude = null) {
 
                                 `;
 
-                                form.appendChild(observationsDiv);
-                            } else {
+                form.appendChild(observationsDiv);
+              } else {
                 observationsContainer.style.display = "block";
-                            }
+              }
             } else if (selectedValue === "4") {
-                            // Status 4 - Deudor - Convenio Firmado
+              // Status 4 - Deudor - Convenio Firmado
               // Ocultar campo de observaciones
               if (observationsContainer) {
                 observationsContainer.style.display = "none";
-                const observationsText = document.getElementById("observationsText");
+                const observationsText =
+                  document.getElementById("observationsText");
                 if (observationsText) {
                   observationsText.value = "";
                 }
               }
-                            // El modal se mostrará automáticamente después de confirmar el cambio
+              // El modal se mostrará automáticamente después de confirmar el cambio
             } else if (selectedValue === "5") {
-                            // Mostrar modal de confirmación para "Deudor - Desafiliado con Deuda"
+              // Mostrar modal de confirmación para "Deudor - Desafiliado con Deuda"
 
-                            Swal.fire({
+              Swal.fire({
                 title: "⚠️ CONFIRMACIÓN REQUERIDA ⚠️",
 
-                                html: `
+                html: `
 
                                     <div style="text-align: center; padding: 20px;">
 
@@ -3238,7 +3514,7 @@ function getStatusDom(currentStatusIdToExclude = null) {
 
                                 `,
 
-                                showCancelButton: true,
+                showCancelButton: true,
 
                 confirmButtonText: "Confirmar",
 
@@ -3248,17 +3524,17 @@ function getStatusDom(currentStatusIdToExclude = null) {
 
                 cancelButtonColor: "#6c757d",
 
-                                reverseButtons: true,
+                reverseButtons: true,
 
-                                focusCancel: true,
+                focusCancel: true,
 
-                                allowOutsideClick: false,
+                allowOutsideClick: false,
 
-                                allowEscapeKey: false,
+                allowEscapeKey: false,
 
-                                keydownListenerCapture: true,
+                keydownListenerCapture: true,
 
-                                customClass: {
+                customClass: {
                   popup: "swal-wide",
 
                   title: "swal-title-danger",
@@ -3266,22 +3542,14 @@ function getStatusDom(currentStatusIdToExclude = null) {
                   confirmButton: "swal-confirm-danger",
 
                   cancelButton: "swal-cancel-safe",
-                                },
+                },
 
                 width: "500px",
 
                 padding: "20px",
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    // Si confirma, proceder con el cambio de estatus
-
-                                    // Aquí puedes agregar la lógica para procesar el cambio
-
-                  console.log("Usuario confirmó el cambio a estatus 5");
-                                    
-                                    // Mostrar mensaje de confirmación
-
-                                    Swal.fire({
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  Swal.fire({
                     title: "✅ ESTATUS ACTUALIZADO",
 
                     text: "El ticket ha sido cerrado y se han enviado las notificaciones correspondientes.",
@@ -3291,92 +3559,94 @@ function getStatusDom(currentStatusIdToExclude = null) {
                     confirmButtonColor: "#003594",
 
                     color: "black",
-                                    });
-                                } else {
-                                    // Si cancela, resetear el select
+                  });
+                } else {
+                  // Si cancela, resetear el select
 
                   const modalNewStatusDomiciliacionSelect =
                     document.getElementById(
                       "modalNewStatusDomiciliacionSelect"
                     );
 
-                                    if (modalNewStatusDomiciliacionSelect) {
+                  if (modalNewStatusDomiciliacionSelect) {
                     modalNewStatusDomiciliacionSelect.value = "";
 
-                                        modalNewStatusDomiciliacionSelect.selectedIndex = 0;
+                    modalNewStatusDomiciliacionSelect.selectedIndex = 0;
 
                     modalNewStatusDomiciliacionSelect.style.color = "#6c757d";
-                                    }
-                                    
-                                    // Ocultar campo de observaciones si está visible
+                  }
 
-                                    if (observationsContainer) {
+                  // Ocultar campo de observaciones si está visible
+
+                  if (observationsContainer) {
                     observationsContainer.style.display = "none";
 
                     const observationsText =
                       document.getElementById("observationsText");
 
-                                        if (observationsText) {
+                    if (observationsText) {
                       observationsText.value = "";
-                                        }
-                                    }
-                                }
-                            });
-                        } else {
-                            // Ocultar campo de observaciones
+                    }
+                  }
+                }
+              });
+            } else {
+              // Ocultar campo de observaciones
 
-                            if (observationsContainer) {
+              if (observationsContainer) {
                 observationsContainer.style.display = "none";
 
                 document.getElementById("observationsText").value = "";
-                            }
-                        }
-                    });
-                } else {
-                    document.getElementById("rifMensaje").innerHTML +=
-                        "<br>Error al obtener los status.";
-
-                    console.error("Error al obtener los status:", response.message);
-                }
-            } catch (error) {
-                console.error("Error parsing JSON:", error);
-
-                document.getElementById("rifMensaje").innerHTML +=
-                    "<br>Error al procesar la respuesta de los status.";
+              }
             }
+          });
         } else {
-            console.error("Error:", xhr.status, xhr.statusText);
+          document.getElementById("rifMensaje").innerHTML +=
+            "<br>Error al obtener los status.";
 
-            document.getElementById("rifMensaje").innerHTML +=
-                "<br>Error de conexión con el servidor para los status.";
+          console.error("Error al obtener los status:", response.message);
         }
-    };
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
 
-    const datos = `action=GetStatusDomiciliacion`; // Asegúrate de que esta acción en el backend devuelva los técnicos filtrados
+        document.getElementById("rifMensaje").innerHTML +=
+          "<br>Error al procesar la respuesta de los status.";
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
 
-    xhr.send(datos);
+      document.getElementById("rifMensaje").innerHTML +=
+        "<br>Error de conexión con el servidor para los status.";
+    }
+  };
+
+  const datos = `action=GetStatusDomiciliacion`; // Asegúrate de que esta acción en el backend devuelva los técnicos filtrados
+
+  xhr.send(datos);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    getStatusDom();
-    
-    // *** FUNCIONALIDAD DEL MODAL DE SUBIDA DE DOCUMENTO ***
+  getStatusDom();
+
+  // *** FUNCIONALIDAD DEL MODAL DE SUBIDA DE DOCUMENTO ***
 
   const uploadDocumentModalElement = document.getElementById(
     "uploadDocumentModal"
   );
-    
-    if (uploadDocumentModalElement) {
+
+  if (uploadDocumentModalElement) {
     // Usar la instancia global del modal
     if (!uploadDocumentModalInstance) {
-      uploadDocumentModalInstance = new bootstrap.Modal(uploadDocumentModalElement);
+      uploadDocumentModalInstance = new bootstrap.Modal(
+        uploadDocumentModalElement
+      );
     }
-        
-        // Event listener para el botón de subir archivo
+
+    // Event listener para el botón de subir archivo
 
     const uploadFileBtn = document.getElementById("uploadFileBtn");
 
-        if (uploadFileBtn) {
+    if (uploadFileBtn) {
       uploadFileBtn.addEventListener("click", function () {
         const documentFileInput = document.getElementById("documentFile");
 
@@ -3388,10 +3658,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const idUser = document.getElementById("iduser").value;
 
-                const file = documentFileInput.files[0];
-                
-                if (!file) {
-                    Swal.fire({
+        const file = documentFileInput.files[0];
+
+        if (!file) {
+          Swal.fire({
             icon: "warning",
 
             title: "¡Advertencia!",
@@ -3403,85 +3673,85 @@ document.addEventListener("DOMContentLoaded", function () {
             confirmButtonColor: "#003594",
 
             color: "black",
-                    });
+          });
 
-                    return;
-                }
-                
-                // 1. Create a FormData object to handle the file upload.
+          return;
+        }
 
-                const formData = new FormData();
+        // 1. Create a FormData object to handle the file upload.
 
-                formData.append("action", "uploadDocument");
+        const formData = new FormData();
 
-                formData.append("ticket_id", idTicket);
+        formData.append("action", "uploadDocument");
 
-                formData.append("nro_ticket", nroTicket); // Añadir el número de ticket
+        formData.append("ticket_id", idTicket);
 
-                formData.append("document_type", "convenio_firmado");
+        formData.append("nro_ticket", nroTicket); // Añadir el número de ticket
 
-                // 2. Append the file object directly. Do NOT use encodeURIComponent().
+        formData.append("document_type", "convenio_firmado");
 
-                formData.append("document_file", file);
+        // 2. Append the file object directly. Do NOT use encodeURIComponent().
 
-                formData.append("id_user", idUser);
+        formData.append("document_file", file);
 
-                const xhr = new XMLHttpRequest();
+        formData.append("id_user", idUser);
 
-                const url = `${ENDPOINT_BASE}${APP_PATH}api/reportes/uploadDocumentTec`;
+        const xhr = new XMLHttpRequest();
 
-                xhr.open("POST", url);
+        const url = `${ENDPOINT_BASE}${APP_PATH}api/reportes/uploadDocumentTec`;
 
-                // 3. Remove the Content-Type header. The browser will set the correct one (multipart/form-data) automatically.
+        xhr.open("POST", url);
 
-                // xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded"); // <-- REMOVE THIS LINE
+        // 3. Remove the Content-Type header. The browser will set the correct one (multipart/form-data) automatically.
+
+        // xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded"); // <-- REMOVE THIS LINE
 
         xhr.onreadystatechange = function () {
-                    if (xhr.readyState === XMLHttpRequest.DONE) {
-                        let result;
+          if (xhr.readyState === XMLHttpRequest.DONE) {
+            let result;
 
-                        try {
-                            result = JSON.parse(xhr.responseText);
-                        } catch (e) {
+            try {
+              result = JSON.parse(xhr.responseText);
+            } catch (e) {
               result = {
                 success: false,
                 message: "Error de respuesta del servidor.",
               };
             }
 
-                        if (xhr.status === 200 && result.success) {
-                            Swal.fire({
+            if (xhr.status === 200 && result.success) {
+              Swal.fire({
                 icon: "success",
 
                 title: "¡Éxito!",
 
-                                text: result.message,
+                text: result.message,
 
                 confirmButtonColor: "#003594",
 
                 confirmButtonText: "Ok",
 
                 color: "black",
-                            }).then((result) => {
-                                // *** RESETEAR EL SELECT AL ESTADO INICIAL ***
+              }).then((result) => {
+                // *** RESETEAR EL SELECT AL ESTADO INICIAL ***
 
                 const modalNewStatusDomiciliacionSelect =
                   document.getElementById("modalNewStatusDomiciliacionSelect");
 
-                                if (modalNewStatusDomiciliacionSelect) {
+                if (modalNewStatusDomiciliacionSelect) {
                   modalNewStatusDomiciliacionSelect.value = "";
 
-                                    modalNewStatusDomiciliacionSelect.selectedIndex = 0;
-                                }
+                  modalNewStatusDomiciliacionSelect.selectedIndex = 0;
+                }
 
                 uploadDocumentModalInstance.hide();
 
-                                // Recargar la página para actualizar los datos
+                // Recargar la página para actualizar los datos
 
-                                window.location.reload();
-                            });
-                        } else {
-                            Swal.fire({
+                window.location.reload();
+              });
+            } else {
+              Swal.fire({
                 icon: "error",
 
                 title: "Error",
@@ -3489,13 +3759,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 text: result.message || "Error al subir el documento.",
 
                 confirmButtonColor: "#003594",
-                            });
-                        }
-                    }
-                };
+              });
+            }
+          }
+        };
 
         xhr.onerror = function () {
-                    Swal.fire({
+          Swal.fire({
             icon: "error",
 
             title: "Error de red",
@@ -3503,70 +3773,70 @@ document.addEventListener("DOMContentLoaded", function () {
             text: "Error de red o del servidor al subir el documento.",
 
             confirmButtonColor: "#003594",
-                    });
+          });
         };
 
-                // 4. Send the FormData object.
+        // 4. Send the FormData object.
 
-                xhr.send(formData);
+        xhr.send(formData);
       });
     }
 
     // Event listener para el botón de cerrar el modal
-    const cerrarBoton = uploadDocumentModalElement.querySelector('#CerrarBoton');
+    const cerrarBoton =
+      uploadDocumentModalElement.querySelector("#CerrarBoton");
     if (cerrarBoton) {
-      cerrarBoton.addEventListener('click', function() {
+      cerrarBoton.addEventListener("click", function () {
         // Cerrar el modal usando la instancia global
         if (uploadDocumentModalInstance) {
           uploadDocumentModalInstance.hide();
         }
-        
+
         // Limpiar el formulario
-        const uploadForm = document.getElementById('uploadForm');
+        const uploadForm = document.getElementById("uploadForm");
         if (uploadForm) {
           uploadForm.reset();
         }
-        
+
         // Limpiar la previsualización de imagen
-        const imagePreview = document.getElementById('imagePreview');
+        const imagePreview = document.getElementById("imagePreview");
         if (imagePreview) {
-          imagePreview.style.display = 'none';
-          imagePreview.src = '#';
+          imagePreview.style.display = "none";
+          imagePreview.src = "#";
         }
-        
+
         // Limpiar mensajes
-        const uploadMessage = document.getElementById('uploadMessage');
+        const uploadMessage = document.getElementById("uploadMessage");
         if (uploadMessage) {
-          uploadMessage.innerHTML = '';
-          uploadMessage.classList.add('hidden');
+          uploadMessage.innerHTML = "";
+          uploadMessage.classList.add("hidden");
         }
       });
     }
-        
-        // Event listener para el botón de generar convenio firmado
+
+    // Event listener para el botón de generar convenio firmado
 
     const generateNotaEntregaBtn = document.getElementById(
       "generateNotaEntregaBtn"
     );
 
-        if (generateNotaEntregaBtn) {
+    if (generateNotaEntregaBtn) {
       generateNotaEntregaBtn.addEventListener("click", function () {
-                
-                if (!idTicket) {
-                    Swal.fire({ 
+        if (!idTicket) {
+          Swal.fire({
             icon: "warning",
 
             title: "Ticket no disponible",
 
             text: "No se encontró el ID del ticket para generar el acuerdo de pago.",
-                    });
+          });
 
-                    return;
-                }
+          return;
+        }
 
-                // Obtener datos del ticket para el acuerdo de pago
+        // Obtener datos del ticket para el acuerdo de pago
 
-                const xhr = new XMLHttpRequest();
+        const xhr = new XMLHttpRequest();
 
         xhr.open(
           "POST",
@@ -3578,164 +3848,160 @@ document.addEventListener("DOMContentLoaded", function () {
           "application/x-www-form-urlencoded"
         );
 
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState !== 4) return;
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState !== 4) return;
 
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        try {
-                            const res = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const res = JSON.parse(xhr.responseText);
 
-                            if (!res || !res.success || !res.rows) {
-                                Swal.fire({ 
+              if (!res || !res.success || !res.rows) {
+                Swal.fire({
                   icon: "warning",
 
                   title: "No se encontraron datos",
 
                   text: "No se pudieron obtener los datos del ticket para generar el acuerdo de pago.",
-                                });
+                });
 
-                                return;
-                            }
+                return;
+              }
 
-                            const d = res.rows[0];
+              const d = res.rows[0];
 
-                            window.currentPaymentAgreementData = d;
-                            
-                            // Llenar el modal con los datos del ticket
+              window.currentPaymentAgreementData = d;
 
-                            fillPaymentAgreementModal(d);
-                            
-                            // Cerrar el modal actual y abrir el modal de acuerdo de pago
+              // Llenar el modal con los datos del ticket
+
+              fillPaymentAgreementModal(d);
+
+              // Cerrar el modal actual y abrir el modal de acuerdo de pago
 
               uploadDocumentModalInstance.hide();
-                            
-                            setTimeout(() => {
-                                // Usar la instancia global o crear una nueva si no existe
 
-                                if (!paymentAgreementModalInstance) {
+              setTimeout(() => {
+                // Usar la instancia global o crear una nueva si no existe
+
+                if (!paymentAgreementModalInstance) {
                   paymentAgreementModalInstance = new bootstrap.Modal(
                     document.getElementById("paymentAgreementModal")
                   );
-                                }
+                }
 
-                                paymentAgreementModalInstance.show();
-                            }, 300);
-                        } catch (error) {
+                paymentAgreementModalInstance.show();
+              }, 300);
+            } catch (error) {
               console.error("Error parsing JSON:", error);
 
-                            Swal.fire({ 
+              Swal.fire({
                 icon: "error",
 
                 title: "Error al procesar datos",
 
                 text: "Hubo un error al procesar los datos del ticket.",
-                            });
-                        }
-                    } else {
-                        Swal.fire({ 
+              });
+            }
+          } else {
+            Swal.fire({
               icon: "error",
 
               title: "Error del servidor",
 
               text: `Error ${xhr.status}: ${xhr.statusText}`,
-                        });
-                    }
-                };
+            });
+          }
+        };
 
-                xhr.onerror = function () {
-                    Swal.fire({ 
+        xhr.onerror = function () {
+          Swal.fire({
             icon: "error",
 
             title: "Error de conexión",
 
             text: "No se pudo conectar al servidor para obtener los datos del ticket.",
-                    });
-                };
+          });
+        };
 
-                const data = `action=GetPaymentAgreementData&id_ticket=${idTicket}`;
+        const data = `action=GetPaymentAgreementData&id_ticket=${idTicket}`;
 
-                xhr.send(data);
-            });
-        }
-        
-        // Event listener para previsualización de imagen
+        xhr.send(data);
+      });
+    }
+
+    // Event listener para previsualización de imagen
 
     const documentFile = document.getElementById("documentFile");
 
     const imagePreview = document.getElementById("imagePreview");
-        
-        if (documentFile && imagePreview) {
+
+    if (documentFile && imagePreview) {
       documentFile.addEventListener("change", function (e) {
-                const file = e.target.files[0];
+        const file = e.target.files[0];
 
         if (file && file.type.startsWith("image/")) {
-                    const reader = new FileReader();
+          const reader = new FileReader();
 
           reader.onload = function (e) {
-                        imagePreview.src = e.target.result;
+            imagePreview.src = e.target.result;
 
             imagePreview.style.display = "block";
-                    };
+          };
 
-                    reader.readAsDataURL(file);
-                } else {
+          reader.readAsDataURL(file);
+        } else {
           imagePreview.style.display = "none";
         }
       });
     }
-        
-        // Limpiar el formulario cuando se cierre el modal
+
+    // Limpiar el formulario cuando se cierre el modal
 
     uploadDocumentModalElement.addEventListener("hidden.bs.modal", function () {
       const uploadForm = document.getElementById("uploadForm");
 
-            if (uploadForm) {
-                uploadForm.reset();
-            }
+      if (uploadForm) {
+        uploadForm.reset();
+      }
 
-            if (imagePreview) {
+      if (imagePreview) {
         imagePreview.style.display = "none";
 
         imagePreview.src = "#";
-            }
-        });
-    } 
+      }
+    });
+  }
 });
 
 // Función para llenar el modal de acuerdo de pago con los datos del ticket
 
 function fillPaymentAgreementModal(d) {
-    // Verificar que d existe
+  // Verificar que d existe
 
-    if (!d) {
+  if (!d) {
     console.error("No data provided to fillPaymentAgreementModal");
 
-        return;
-    }
+    return;
+  }
 
   const safe = (s) => (s || "").toString();
 
-    const formatDate = (dateStr) => {
+  const formatDate = (dateStr) => {
     if (!dateStr) return new Date().toLocaleDateString("es-ES");
 
-        try {
+    try {
       return new Date(dateStr).toLocaleDateString("es-ES");
-        } catch (e) {
-            return dateStr;
-        }
-    };
-    
-    // Llenar campos del modal
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
+  // Llenar campos del modal
 
   document.getElementById("pa_ticket_id").value = safe(d.id_ticket);
 
   document.getElementById("pa_fecha").value = formatDate(d.fecha_actual);
 
   const numeroTicketValue = window.currentConvenioNumero || safe(d.nro_ticket);
-  console.log("=== DEBUG FILL MODAL ===");
-  console.log("window.currentConvenioNumero:", window.currentConvenioNumero);
-  console.log("d.nro_ticket:", d.nro_ticket);
-  console.log("Valor asignado a pa_numero_ticket:", numeroTicketValue);
   document.getElementById("pa_numero_ticket").value = numeroTicketValue;
 
   document.getElementById("pa_rif").value = safe(d.coddocumento);
@@ -3753,8 +4019,8 @@ function fillPaymentAgreementModal(d) {
   document.getElementById("pa_serial").value = safe(d.serialpos);
 
   document.getElementById("pa_status_pos").value = safe(d.desc_estatus) || "";
-    
-    // Limpiar campos editables
+
+  // Limpiar campos editables
 
   document.getElementById("pa_saldo_deudor").value = "";
 
@@ -3763,65 +4029,65 @@ function fillPaymentAgreementModal(d) {
   document.getElementById("pa_observaciones").value = "";
 
   document.getElementById("pa_acuerdo").value = "";
-    
-    // Limpiar campos de configuración bancaria (opcional - mantener valores por defecto)
 
-    // document.getElementById('pa_numero_cuenta').value = 'XXXX-XXXX-XX-XXXX';
+  // Limpiar campos de configuración bancaria (opcional - mantener valores por defecto)
 
-    // document.getElementById('pa_nombre_empresa').value = 'Informática y Telecomunicaciones Integradas Inteligen, SA';
+  // document.getElementById('pa_numero_cuenta').value = 'XXXX-XXXX-XX-XXXX';
 
-    // document.getElementById('pa_rif_empresa').value = 'J-00291615-0';
+  // document.getElementById('pa_nombre_empresa').value = 'Informática y Telecomunicaciones Integradas Inteligen, SA';
 
-    // document.getElementById('pa_banco').value = 'XXXX';
+  // document.getElementById('pa_rif_empresa').value = 'J-00291615-0';
 
-    // document.getElementById('pa_correo').value = 'domiciliación.intelipunto@inteligensa.com';
+  // document.getElementById('pa_banco').value = 'XXXX';
+
+  // document.getElementById('pa_correo').value = 'domiciliación.intelipunto@inteligensa.com';
 }
 
 // Event listeners para el modal de acuerdo de pago
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Función para forzar saltos de línea cada cierto número de caracteres
+  // Función para forzar saltos de línea cada cierto número de caracteres
 
-    function addLineBreaks(text, maxCharsPerLine = 25) {
-        if (!text) return text;
-        
-        // Remover saltos de línea existentes para procesar todo el texto
+  function addLineBreaks(text, maxCharsPerLine = 25) {
+    if (!text) return text;
+
+    // Remover saltos de línea existentes para procesar todo el texto
 
     const cleanText = text.replace(/\n/g, " ");
 
     let result = "";
 
     let currentLine = "";
-        
-        for (let i = 0; i < cleanText.length; i++) {
-            const char = cleanText[i];
-            
-            if (currentLine.length >= maxCharsPerLine) {
+
+    for (let i = 0; i < cleanText.length; i++) {
+      const char = cleanText[i];
+
+      if (currentLine.length >= maxCharsPerLine) {
         result += currentLine + "\n";
 
-                currentLine = char;
-            } else {
-                currentLine += char;
-            }
-        }
-        
-        if (currentLine) {
-            result += currentLine;
-        }
-        
-        return result;
+        currentLine = char;
+      } else {
+        currentLine += char;
+      }
     }
 
-    // Aplicar saltos de línea automáticos a los campos de texto
+    if (currentLine) {
+      result += currentLine;
+    }
 
-    function setupAutoLineBreaks() {
+    return result;
+  }
+
+  // Aplicar saltos de línea automáticos a los campos de texto
+
+  function setupAutoLineBreaks() {
     const textFields = ["pa_propuesta", "pa_observaciones", "pa_acuerdo"];
 
     textFields.forEach((fieldId) => {
-            const field = document.getElementById(fieldId);
+      const field = document.getElementById(fieldId);
 
-            if (field) {
-                // Aplicar estilos adicionales
+      if (field) {
+        // Aplicar estilos adicionales
 
         field.style.wordBreak = "break-all";
 
@@ -3830,139 +4096,139 @@ document.addEventListener("DOMContentLoaded", function () {
         field.style.whiteSpace = "pre-wrap";
 
         field.addEventListener("input", function (e) {
-                    const originalValue = e.target.value;
+          const originalValue = e.target.value;
 
-                    const withLineBreaks = addLineBreaks(originalValue, 25);
-                    
-                    if (originalValue !== withLineBreaks) {
-                        const cursorPosition = e.target.selectionStart;
+          const withLineBreaks = addLineBreaks(originalValue, 25);
 
-                        e.target.value = withLineBreaks;
+          if (originalValue !== withLineBreaks) {
+            const cursorPosition = e.target.selectionStart;
 
-                        // Ajustar posición del cursor
+            e.target.value = withLineBreaks;
 
-                        const newPosition = Math.min(cursorPosition, withLineBreaks.length);
+            // Ajustar posición del cursor
 
-                        e.target.setSelectionRange(newPosition, newPosition);
-                    }
-                });
+            const newPosition = Math.min(cursorPosition, withLineBreaks.length);
+
+            e.target.setSelectionRange(newPosition, newPosition);
+          }
+        });
 
         field.addEventListener("blur", function (e) {
-                    const originalValue = e.target.value;
+          const originalValue = e.target.value;
 
-                    const withLineBreaks = addLineBreaks(originalValue, 25);
+          const withLineBreaks = addLineBreaks(originalValue, 25);
 
-                    if (originalValue !== withLineBreaks) {
-                        e.target.value = withLineBreaks;
-                    }
-                });
+          if (originalValue !== withLineBreaks) {
+            e.target.value = withLineBreaks;
+          }
+        });
 
         field.addEventListener("paste", function (e) {
-                    setTimeout(() => {
-                        const originalValue = e.target.value;
+          setTimeout(() => {
+            const originalValue = e.target.value;
 
-                        const withLineBreaks = addLineBreaks(originalValue, 25);
+            const withLineBreaks = addLineBreaks(originalValue, 25);
 
-                        if (originalValue !== withLineBreaks) {
-                            e.target.value = withLineBreaks;
-                        }
-                    }, 10);
-                });
+            if (originalValue !== withLineBreaks) {
+              e.target.value = withLineBreaks;
             }
+          }, 10);
         });
-    }
+      }
+    });
+  }
 
-    // Formatear campo de saldo deudor mientras se escribe
+  // Formatear campo de saldo deudor mientras se escribe
 
   const saldoDeudorField = document.getElementById("pa_saldo_deudor");
 
-    if (saldoDeudorField) {
-        // Formatear al perder el foco
+  if (saldoDeudorField) {
+    // Formatear al perder el foco
 
     saldoDeudorField.addEventListener("blur", function (e) {
-            let value = e.target.value;
+      let value = e.target.value;
 
-            if (value && !isNaN(parseFloat(value))) {
-                const numValue = parseFloat(value);
+      if (value && !isNaN(parseFloat(value))) {
+        const numValue = parseFloat(value);
 
-                e.target.value = numValue.toFixed(2);
-            }
-        });
-        
-        // Formatear al escribir para mostrar el $ después
+        e.target.value = numValue.toFixed(2);
+      }
+    });
+
+    // Formatear al escribir para mostrar el $ después
 
     saldoDeudorField.addEventListener("input", function (e) {
       let value = e.target.value.replace(/[^0-9.]/g, ""); // Solo números y punto
-            
-            // Permitir solo un punto decimal
+
+      // Permitir solo un punto decimal
 
       const parts = value.split(".");
 
-            if (parts.length > 2) {
+      if (parts.length > 2) {
         value = parts[0] + "." + parts.slice(1).join("");
-            }
-            
-            // Limitar a 2 decimales
+      }
 
-            if (parts[1] && parts[1].length > 2) {
+      // Limitar a 2 decimales
+
+      if (parts[1] && parts[1].length > 2) {
         value = parts[0] + "." + parts[1].substring(0, 2);
-            }
-            
-            e.target.value = value;
-        });
-    }
-    
-    // Configurar saltos de línea automáticos
+      }
 
-    setupAutoLineBreaks();
-    
-    // Aplicar estilos cuando se abra el modal
+      e.target.value = value;
+    });
+  }
+
+  // Configurar saltos de línea automáticos
+
+  setupAutoLineBreaks();
+
+  // Aplicar estilos cuando se abra el modal
 
   const modal = document.getElementById("paymentAgreementModal");
 
-    if (modal) {
+  if (modal) {
     modal.addEventListener("shown.bs.modal", function () {
-            // Re-aplicar configuración cuando se abra el modal
+      // Re-aplicar configuración cuando se abra el modal
 
-            setTimeout(() => {
-                setupAutoLineBreaks();
-                
-                // Asegurar que el scroll funcione correctamente
+      setTimeout(() => {
+        setupAutoLineBreaks();
+
+        // Asegurar que el scroll funcione correctamente
 
         const modalBody = modal.querySelector(".modal-body");
 
-                if (modalBody) {
+        if (modalBody) {
           modalBody.style.overflowY = "auto";
 
           modalBody.style.overflowX = "hidden";
 
           modalBody.style.maxHeight = "calc(95vh - 120px)";
-                    
-                    // Forzar el scroll si es necesario
 
-                    modalBody.scrollTop = 0;
-                }
-            }, 100);
-        });
-        
-        // Prevenir que el modal se cierre al hacer scroll
+          // Forzar el scroll si es necesario
+
+          modalBody.scrollTop = 0;
+        }
+      }, 100);
+    });
+
+    // Prevenir que el modal se cierre al hacer scroll
 
     modal.addEventListener("wheel", function (e) {
       const modalBody = modal.querySelector(".modal-body");
 
-            if (modalBody && modalBody.scrollHeight > modalBody.clientHeight) {
-                e.stopPropagation();
-            }
-        });
-    }
-    
-    // Botón de previsualizar
+      if (modalBody && modalBody.scrollHeight > modalBody.clientHeight) {
+        e.stopPropagation();
+      }
+    });
+  }
+
+  // Botón de previsualizar
 
   const previewBtn = document.getElementById("previewPaymentAgreementBtn");
 
-    if (previewBtn) {
+  if (previewBtn) {
     previewBtn.addEventListener("click", function () {
-            // Validar monto mínimo
+      // Validar monto mínimo
 
       const saldoDeudor = document.getElementById("pa_saldo_deudor").value;
 
@@ -3970,7 +4236,7 @@ document.addEventListener("DOMContentLoaded", function () {
         saldoDeudor &&
         parseFloat(saldoDeudor.replace(/[^0-9.-]/g, "")) < 10
       ) {
-                Swal.fire({
+        Swal.fire({
           icon: "warning",
 
           title: "Monto inválido",
@@ -3978,32 +4244,32 @@ document.addEventListener("DOMContentLoaded", function () {
           text: "El saldo deudor debe ser mínimo $10.00",
 
           confirmButtonColor: "#003594",
-                });
+        });
 
-                return;
-            }
-            
-            const data = getPaymentAgreementFormData();
-            
-            // Usar la variable global del número de convenio
-            const convenioNumero = window.currentConvenioNumero || data.nro_ticket;
-            const html = buildPaymentAgreementHtml(data, convenioNumero);
+        return;
+      }
+
+      const data = getPaymentAgreementFormData();
+
+      // Usar la variable global del número de convenio
+      const convenioNumero = window.currentConvenioNumero || data.nro_ticket;
+      const html = buildPaymentAgreementHtml(data, convenioNumero);
 
       const preview = document.getElementById("paymentAgreementPreview");
 
       preview.src = "data:text/html;charset=utf-8," + encodeURIComponent(html);
-        });
-    }
+    });
+  }
 
-// Botón de imprimir
+  // Botón de imprimir
 
   const printBtn = document.getElementById("printPaymentAgreementBtn");
 
-if (printBtn) {
+  if (printBtn) {
     // 1. Añadir el Listener de Clic al botón principal
 
     printBtn.addEventListener("click", function () {
-        // Validar monto mínimo
+      // Validar monto mínimo
 
       const saldoDeudor = document.getElementById("pa_saldo_deudor").value;
 
@@ -4011,7 +4277,7 @@ if (printBtn) {
         saldoDeudor &&
         parseFloat(saldoDeudor.replace(/[^0-9.-]/g, "")) < 10
       ) {
-            Swal.fire({
+        Swal.fire({
           icon: "warning",
 
           title: "Monto inválido",
@@ -4019,60 +4285,53 @@ if (printBtn) {
           text: "El saldo deudor debe ser mínimo $10.00",
 
           confirmButtonColor: "#003594",
-            });
+        });
 
-            return;
-        }
-        
-        // Asume que la lógica para generar el Acuerdo se ejecuta aquí o ya se ejecutó
+        return;
+      }
 
-        const data = getPaymentAgreementFormData();
-        
-        console.log("=== DEBUG PRINT BUTTON ===");
-        console.log("window.currentConvenioNumero:", window.currentConvenioNumero);
-        console.log("data.nro_ticket:", data.nro_ticket);
-        console.log("Valor del campo pa_numero_ticket:", document.getElementById("pa_numero_ticket").value);
+      const data = getPaymentAgreementFormData();
 
-        // Usar la variable global del número de convenio
-        const convenioNumero = window.currentConvenioNumero || data.nro_ticket;
-        const html = buildPaymentAgreementHtml(data, convenioNumero);
+      // Usar la variable global del número de convenio
+      const convenioNumero = window.currentConvenioNumero || data.nro_ticket;
+      const html = buildPaymentAgreementHtml(data, convenioNumero);
 
-        // 2. Mostrar la alerta de éxito
+      // 2. Mostrar la alerta de éxito
 
-        Swal.fire({
-            title: "¡Acuerdo de Pago generado!",
+      Swal.fire({
+        title: "¡Acuerdo de Pago generado!",
 
-            text: "El acuerdo de pago ha sido generado correctamente y está listo para imprimir.",
+        text: "El acuerdo de pago ha sido generado correctamente y está listo para imprimir.",
 
-            icon: "success",
+        icon: "success",
 
-            confirmButtonText: "Imprimir",
+        confirmButtonText: "Imprimir",
 
-            confirmButtonColor: "#003594",
+        confirmButtonColor: "#003594",
 
-            cancelButtonText: "Cerrar",
+        cancelButtonText: "Cerrar",
 
-            cancelButtonColor: "#6c757d",
+        cancelButtonColor: "#6c757d",
 
-            color: "black",
+        color: "black",
 
-            showCancelButton: true,
+        showCancelButton: true,
 
-            allowOutsideClick: false,
+        allowOutsideClick: false,
 
         allowEscapeKey: true,
-        }).then((result) => {
-            // 3. Ejecutar la lógica de impresión SÓLO si el usuario presiona el botón de Confirmación ('Imprimir')
+      }).then((result) => {
+        // 3. Ejecutar la lógica de impresión SÓLO si el usuario presiona el botón de Confirmación ('Imprimir')
 
-            if (result.isConfirmed) {
-                // Crear una nueva ventana para imprimir
+        if (result.isConfirmed) {
+          // Crear una nueva ventana para imprimir
 
           const printWindow = window.open("", "_blank", "width=800,height=600");
-                
-                if (printWindow) {
-                    printWindow.document.open();
-                    
-                    // Agregar script para cerrar automáticamente después de guardar
+
+          if (printWindow) {
+            printWindow.document.open();
+
+            // Agregar script para cerrar automáticamente después de guardar
 
             const htmlWithScript = html.replace(
               "</body>",
@@ -4182,124 +4441,124 @@ if (printBtn) {
 
                     </body>`
             );
-                    
-                    printWindow.document.write(htmlWithScript);
 
-                    printWindow.document.close();
-                    
-                    // Esperar a que se cargue el contenido y luego imprimir
+            printWindow.document.write(htmlWithScript);
+
+            printWindow.document.close();
+
+            // Esperar a que se cargue el contenido y luego imprimir
 
             printWindow.onload = function () {
-                        printWindow.focus();
+              printWindow.focus();
 
-                        printWindow.print();
-                        
-                        let reloadExecuted = false; // Flag para evitar recargas múltiples
+              printWindow.print();
 
-                        let checkInterval = null;
-                        
-                        // Función para recargar la página
+              let reloadExecuted = false; // Flag para evitar recargas múltiples
 
-                        const reloadPage = () => {
-                            if (!reloadExecuted) {
-                                reloadExecuted = true;
+              let checkInterval = null;
+
+              // Función para recargar la página
+
+              const reloadPage = () => {
+                if (!reloadExecuted) {
+                  reloadExecuted = true;
 
                   console.log(
                     "Recargando página después de guardar documento..."
                   );
-                                
-                                // Cerrar la ventana de impresión si aún está abierta
 
-                                if (printWindow && !printWindow.closed) {
-                                    printWindow.close();
-                                }
-                                
-                                // Limpiar el intervalo
+                  // Cerrar la ventana de impresión si aún está abierta
 
-                                if (checkInterval) {
-                                    clearInterval(checkInterval);
-                                }
-                                
-                                // Recargar la página principal
+                  if (printWindow && !printWindow.closed) {
+                    printWindow.close();
+                  }
 
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 1000);
-                            }
-                        };
-                        
-                        // Método principal: Verificar periódicamente si la ventana se cerró
+                  // Limpiar el intervalo
 
-                        checkInterval = setInterval(() => {
-                            try {
-                                if (printWindow.closed) {
+                  if (checkInterval) {
+                    clearInterval(checkInterval);
+                  }
+
+                  // Recargar la página principal
+
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1000);
+                }
+              };
+
+              // Método principal: Verificar periódicamente si la ventana se cerró
+
+              checkInterval = setInterval(() => {
+                try {
+                  if (printWindow.closed) {
                     console.log(
                       "Ventana cerrada detectada - ejecutando recarga"
                     );
 
-                                    reloadPage();
-                                }
-                            } catch (e) {
-                                // Si hay error accediendo a la ventana, asumir que se cerró
+                    reloadPage();
+                  }
+                } catch (e) {
+                  // Si hay error accediendo a la ventana, asumir que se cerró
 
                   console.log(
                     "Error accediendo a ventana - asumiendo que se cerró"
                   );
 
-                                reloadPage();
-                            }
-                        }, 500); // Verificar cada 500ms
-                        
-                        // Método alternativo: Detectar cuando se completa la impresión
+                  reloadPage();
+                }
+              }, 500); // Verificar cada 500ms
+
+              // Método alternativo: Detectar cuando se completa la impresión
 
               printWindow.addEventListener("afterprint", function () {
                 console.log("Evento afterprint detectado");
 
-                            reloadPage();
-                        });
-                        
-                        // Método alternativo: Detectar cuando se pierde el foco
+                reloadPage();
+              });
+
+              // Método alternativo: Detectar cuando se pierde el foco
 
               printWindow.addEventListener("blur", function () {
                 console.log(
                   "Evento blur detectado - usuario interactuando con diálogo"
                 );
 
-                            // Esperar un poco y verificar si la ventana sigue abierta
+                // Esperar un poco y verificar si la ventana sigue abierta
 
-                            setTimeout(() => {
-                                try {
-                                    if (printWindow.closed) {
-                                        reloadPage();
-                                    }
-                                } catch (e) {
-                                    reloadPage();
-                                }
-                            }, 3000);
-                        });
-                        
-                        // Método de respaldo: Detectar cuando se cierra la ventana
+                setTimeout(() => {
+                  try {
+                    if (printWindow.closed) {
+                      reloadPage();
+                    }
+                  } catch (e) {
+                    reloadPage();
+                  }
+                }, 3000);
+              });
+
+              // Método de respaldo: Detectar cuando se cierra la ventana
 
               printWindow.addEventListener("beforeunload", function () {
                 console.log("Evento beforeunload detectado");
 
-                            reloadPage();
-                        });
-                        
-                        // Limpiar el intervalo después de 60 segundos para evitar loops infinitos
+                reloadPage();
+              });
 
-                        setTimeout(() => {
-                            if (checkInterval) {
-                                clearInterval(checkInterval);
+              // Limpiar el intervalo después de 60 segundos para evitar loops infinitos
+
+              setTimeout(() => {
+                if (checkInterval) {
+                  clearInterval(checkInterval);
 
                   console.log("Timeout alcanzado - limpiando intervalo");
-                            }
-                        }, 60000);
-                    };
-                } else {
-                    // Manejo si el navegador bloquea la nueva ventana (pop-up)
+                }
+              }, 60000);
+            };
+          } else {
+            // Manejo si el navegador bloquea la nueva ventana (pop-up)
 
-                    console.error("El navegador bloqueó la ventana de impresión.");
+            console.error("El navegador bloqueó la ventana de impresión.");
 
             Swal.fire(
               "Error",
@@ -4307,38 +4566,38 @@ if (printBtn) {
               "error"
             );
           }
-            } else if (result.dismiss === Swal.DismissReason.cancel) {
-                // El usuario hizo clic en "Cerrar"
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          // El usuario hizo clic en "Cerrar"
 
-                console.log("Modal cerrado por el usuario");
-            }
-        });
+          console.log("Modal cerrado por el usuario");
+        }
+      });
     });
-}
-    
-    // Botón de cerrar
+  }
+
+  // Botón de cerrar
 
   const closeBtn = document.getElementById("closePaymentAgreementBtn");
 
-    if (closeBtn) {
+  if (closeBtn) {
     closeBtn.addEventListener("click", function () {
-            // Usar la instancia global o crear una nueva si no existe
+      // Usar la instancia global o crear una nueva si no existe
 
-            if (!paymentAgreementModalInstance) {
+      if (!paymentAgreementModalInstance) {
         paymentAgreementModalInstance = new bootstrap.Modal(
           document.getElementById("paymentAgreementModal")
         );
-            }
+      }
 
-            paymentAgreementModalInstance.hide();
-        });
-    }
+      paymentAgreementModalInstance.hide();
+    });
+  }
 });
 
 // Función para obtener los datos del formulario del modal
 
 function getPaymentAgreementFormData() {
-    return {
+  return {
     id_ticket: document.getElementById("pa_ticket_id").value,
 
     fecha_actual: document.getElementById("pa_fecha").value,
@@ -4367,7 +4626,7 @@ function getPaymentAgreementFormData() {
 
     acuerdo: document.getElementById("pa_acuerdo").value,
 
-        // Nuevos campos de configuración bancaria
+    // Nuevos campos de configuración bancaria
 
     numero_cuenta: document.getElementById("pa_numero_cuenta").value,
 
@@ -4378,7 +4637,7 @@ function getPaymentAgreementFormData() {
     banco: document.getElementById("pa_banco").value,
 
     correo: document.getElementById("pa_correo").value,
-    };
+  };
 }
 
 // Función para construir el HTML del Acuerdo de Pago
@@ -4386,29 +4645,29 @@ function getPaymentAgreementFormData() {
 function buildPaymentAgreementHtml(d, convenioNumero = null) {
   const safe = (s) => (s || "").toString();
 
-    const formatDate = (dateStr) => {
+  const formatDate = (dateStr) => {
     if (!dateStr) return new Date().toLocaleDateString("es-ES");
 
-        try {
+    try {
       return new Date(dateStr).toLocaleDateString("es-ES");
-        } catch (e) {
-            return dateStr;
-        }
-    };
-    
-    // Función para formatear moneda
+    } catch (e) {
+      return dateStr;
+    }
+  };
 
-    const formatCurrency = (amount) => {
+  // Función para formatear moneda
+
+  const formatCurrency = (amount) => {
     if (!amount || amount === "") return "____.__$";
 
     const numericAmount = parseFloat(amount.replace(/[^0-9.-]/g, ""));
 
     if (isNaN(numericAmount)) return "____.__$";
 
-        return `${numericAmount.toFixed(2)}$`;
-    };
-    
-    return `
+    return `${numericAmount.toFixed(2)}$`;
+  };
+
+  return `
 
     <!DOCTYPE html>
 
@@ -5612,7 +5871,9 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
                     <div class="info-label">N° de Acuerdo</div>
 
-                    <div class="info-value">${convenioNumero || "No generado"}</div>
+                    <div class="info-value">${
+                      convenioNumero || "No generado"
+                    }</div>
 
                 </div>
 
@@ -5878,27 +6139,199 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
     </html>`;
 }
 
-const closeButton =
-      changeStatusDomiciliacionModalElement.querySelector("#close-button");
+const closeButton = changeStatusDomiciliacionModalElement.querySelector("#close-button");
 
-    if (closeIconBtn) {
-      closeIconBtn.addEventListener("click", function () {
-        // *** OCULTAR CAMPO DE OBSERVACIONES ***
+if (closeIconBtn) {
+  closeIconBtn.addEventListener("click", function () {
+    // *** OCULTAR CAMPO DE OBSERVACIONES ***
 
-        const observationsContainer = document.getElementById(
-          "observationsContainer"
-        );
+    const observationsContainer = document.getElementById(
+      "observationsContainer"
+    );
 
-        if (observationsContainer) {
-          observationsContainer.style.display = "none";
+    if (observationsContainer) {
+      observationsContainer.style.display = "none";
 
-          const observationsText = document.getElementById("observationsText");
+      const observationsText = document.getElementById("observationsText");
 
-          if (observationsText) {
-            observationsText.value = "";
-          }
+      if (observationsText) {
+        observationsText.value = "";
+      }
+    }
+
+    changeStatusDomiciliacionModal.hide();
+  });
+}
+
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
+    // Verificar que el modal existe antes de continuar
+    const modalElementView = document.getElementById("viewDocumentModal");
+    if (!modalElementView) {
+        console.error("Error: No se encontró el modal 'viewDocumentModal'");
+        Swal.fire({
+            icon: 'error',
+            title: 'Error del Sistema',
+            text: 'No se pudo abrir el modal de visualización.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    // Verificar que todos los elementos necesarios existen
+    const modalTicketIdSpanView = modalElementView.querySelector("#viewModalTicketId");
+    const imageViewPreview = document.getElementById("imageViewPreview");
+    const pdfViewViewer = document.getElementById("pdfViewViewer");
+    const messageContainer = document.getElementById("viewDocumentMessage");
+    const nameDocumento = document.getElementById("NombreImage");
+
+    // Verificar que los elementos críticos existen
+    if (!modalTicketIdSpanView || !imageViewPreview || !pdfViewViewer || !messageContainer || !nameDocumento) {
+        console.error("Error: Faltan elementos necesarios en el modal");
+        Swal.fire({
+            icon: 'error',
+            title: 'Error del Sistema',
+            text: 'El modal no está configurado correctamente.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    // Limpiar contenido previo
+    imageViewPreview.style.display = "none";
+    pdfViewViewer.style.display = "none";
+    pdfViewViewer.innerHTML = "";
+    messageContainer.textContent = "";
+    messageContainer.classList.add("hidden");
+
+    // Configurar información del ticket
+    modalTicketIdSpanView.textContent = nroTicket || ticketId;
+    nameDocumento.textContent = documentName || 'Documento';
+
+    // Función para limpiar la ruta del archivo
+    function cleanFilePath(filePath) {
+        if (!filePath) return null;
+
+        // Reemplazar barras invertidas con barras normales
+        let cleanPath = filePath.replace(/\\/g, '/');
+
+        // Extraer la parte después de 'Documentos_SoportePost/'
+        const pathSegments = cleanPath.split('Documentos_SoportePost/');
+        if (pathSegments.length > 1) {
+            cleanPath = pathSegments[1];
         }
 
-        changeStatusDomiciliacionModal.hide();
-      });
+        // Construir la URL completa
+        return `http://localhost/Documentos/${cleanPath}`;
+    }
+
+    // DETERMINAR QUÉ MOSTRAR BASÁNDOSE EN LOS PARÁMETROS
+    if (imageUrl) {
+        // Es una imagen
+        const fullUrl = cleanFilePath(imageUrl);
+        imageViewPreview.src = fullUrl;
+        imageViewPreview.style.display = "block";
+        
+        // Manejar errores de carga de imagen
+        imageViewPreview.onerror = function() {
+            messageContainer.textContent = "Error al cargar la imagen.";
+            messageContainer.classList.remove("hidden");
+            imageViewPreview.style.display = "none";
+        };
+
+    } else if (pdfUrl) {
+        // Es un PDF
+        const fullUrl = cleanFilePath(pdfUrl);
+        pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
+        pdfViewViewer.style.display = "block";
+        
+        // Manejar errores de carga de PDF
+        const iframe = pdfViewViewer.querySelector('iframe');
+        if (iframe) {
+            iframe.onerror = function() {
+                messageContainer.textContent = "Error al cargar el PDF.";
+                messageContainer.classList.remove("hidden");
+                pdfViewViewer.style.display = "none";
+            };
+        }
+        
+    } else {
+        // No hay documento
+        messageContainer.textContent = "No hay documento disponible para este ticket.";
+        messageContainer.classList.remove("hidden");
+    }
+
+    // Mostrar el modal usando Bootstrap
+    try {
+        const viewDocumentModal = new bootstrap.Modal(modalElementView);
+        viewDocumentModal.show();
+
+
+        const buttonCerrarModal = document.getElementById("CerrarModalVizualizar");
+        if (buttonCerrarModal) {
+            buttonCerrarModal.addEventListener("click", function() {
+                viewDocumentModal.hide();
+            });
+        }
+    } catch (error) {
+        console.error("Error al mostrar el modal:", error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error del Sistema',
+            text: 'No se pudo mostrar el modal de visualización.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+    }
+}
+
+function getMotivos() {
+  const xhr = new XMLHttpRequest();
+  const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
+  motivoRechazoSelect.innerHTML = '<option value="">Cargando...</option>';
+
+  // Aquí cambiamos el endpoint para apuntar a la API de motivos
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetMotivos`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+
+          const select = document.getElementById("motivoRechazoSelect");
+          select.innerHTML = '<option value="">Seleccione</option>';
+
+          if (Array.isArray(response.motivos) && response.motivos.length > 0) {
+            response.motivos.forEach((motivo) => {
+              const option = document.createElement("option");
+              option.value = motivo.id_motivo_rechazo;
+              option.textContent = motivo.name_motivo_rechazo;
+              select.appendChild(option);
+            });
+          } else {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No hay Motivos Disponibles";
+            select.appendChild(option);
+          }
+        } else {
+          console.error("Error al obtener los motivos:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  // ¡Aquí se envía el documentType!
+  const datos = `action=GetMotivos`;
+  xhr.send(datos);
 }
