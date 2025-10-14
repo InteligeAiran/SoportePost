@@ -95,7 +95,5 @@ class documents extends Controller {
             $this->response(['success' => false, 'message' => 'Campo vacíos', 'color'=> 'red']);
         }
     }
-
-
 }
 ?>

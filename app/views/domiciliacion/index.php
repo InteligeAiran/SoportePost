@@ -590,6 +590,28 @@ function mi_navbar() {}
             padding: 2px 5px;
             border-radius: 3px;
         }
+
+        #approveTicketFromImage{
+            color: white;
+            background-color: #003594;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 13px;
+        }
+
+        #approveTicketFromImage:hover{
+            background-color: green;
+            color: white;
+        }
+
+        #RechazoDocumento{
+            color: white;
+            background-color: #FF0000;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
     </style>
     <!-- CSS Files -->
     <link id="pagestyle" rel="stylesheet"
@@ -747,6 +769,7 @@ function mi_navbar() {}
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" id="CerrarModalVizualizar" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-success" id="approveTicketFromImage">Aprobar Documento</button>
                             <button type="button" class="btn btn-danger" id="RechazoDocumento">Rechazar Documento</button>
                         </div>
                     </div>
@@ -783,34 +806,6 @@ function mi_navbar() {}
                 </div>
             </div>
         <!-- END MODAL PARA SELECCIONAR EL MOTIVO DE RECHAZO -->
-
-        <!-- MODAL PARA GENERAR CONVENIO FIRMADO -->
-            <div class="modal fade" id="generateConvenioModal" tabindex="-1" aria-labelledby="generateConvenioModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-gradient-primary">
-                            <h5 class="modal-title text-lg font-semibold text-gray-800" id="generateConvenioModalLabel">
-                                Generar Documento de Convenio Firmado
-                            </h5>
-                        </div>
-                        <div class="modal-body text-center">
-                            <div class="mb-4">
-                                <i class="fas fa-file-contract fa-3x text-primary mb-3"></i>
-                                <h4 class="text-gray-800 mb-3">Genere el documento del convenio para después subirlo</h4>
-                                <p class="text-gray-600 mb-4">
-                                    Por Favor genere el documento de Convenio Firmado para el ticket seleccionado. 
-                                    Una vez generado, podrá subirlo al sistema.
-                                </p>
-                            </div>
-                            <input type="hidden" id="generate_id_ticket" value="">
-                        </div>
-                        <div class="modal-footer">
-                        <button type="button" class="btn btn-warning" id="generateNotaEntregaBtn">Generar Convenio Firmado</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <!-- END MODAL PARA GENERAR CONVENIO FIRMADO -->
 
         <!-- MODAL DE ACUERDO DE PAGO -->
             <div class="modal fade" id="paymentAgreementModal" tabindex="-1" aria-labelledby="paymentAgreementModalLabel" aria-hidden="true" style="background-color: rgba(0,0,0,.4); backdrop-filter: blur(8px);">
@@ -915,7 +910,6 @@ function mi_navbar() {}
                             </div>
                         </div>
                         <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
-                            <button type="button" class="btn btn-secondary" id="closePaymentAgreementBtn">Cerrar</button>
                         </div>
                     </div>
                 </div>

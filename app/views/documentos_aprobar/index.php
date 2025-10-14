@@ -684,6 +684,8 @@ function mi_navbar() {}
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" id="CerrarBoton" data-bs-dismiss="modal">Cerrar</button>
                             <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
+                            <button type="button" class="btn btn-warning" id="generateNotaEntregaBtn">Generar Convenio Firmado</button>
+
                             <!-- INPUT DONDE GUARDO VARIABLES -->
                             <input type="hidden" id="id_ticket" value=""></div>
                             <input type="hidden" id="document_type" value=""></div>
@@ -693,6 +695,116 @@ function mi_navbar() {}
                 </div>
             </div>
         <!-- END MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
+
+        <!-- MODAL DE ACUERDO DE PAGO -->
+            <div class="modal fade" id="paymentAgreementModal" tabindex="-1" aria-labelledby="paymentAgreementModalLabel" aria-hidden="true" style="background-color: rgba(0,0,0,.4); backdrop-filter: blur(8px);">
+                <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 55%; max-height: 95vh;">
+                    <div class="modal-content" style="max-height: 95vh; display: flex; flex-direction: column;">
+                        <div class="modal-header bg-gradient-primary" style="flex-shrink: 0;">
+                            <h5 class="modal-title" id="paymentAgreementModalLabel">Generar Acuerdo de Pago</h5>
+                        </div>
+                        <div class="modal-body" style="flex: 1; overflow-y: auto; padding: 20px;">
+                            <div class="row g-3">
+                                <input type="hidden" id="pa_ticket_id" value="">
+                                <div class="col-md-6">
+                                    <label class="form-label">Fecha</label>
+                                    <input type="text" id="pa_fecha" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">N° de Ticket</label>
+                                    <input type="text" id="pa_numero_ticket" class="form-control" readonly>
+                                </div>
+
+                                <div class="col-12"><strong>Datos del Cliente</strong></div>
+                                <div class="col-md-6">
+                                    <label class="form-label">RIF/Identificación</label>
+                                    <input type="text" id="pa_rif" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Razón Social</label>
+                                    <input type="text" id="pa_razon_social" class="form-control" readonly>
+                                </div>
+
+                                <div class="col-12 mt-4"><strong>Antecedentes del Equipo</strong></div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Ejecutivo de Venta</label>
+                                    <input type="text" id="pa_ejecutivo_venta" class="form-control" placeholder="Ingrese el nombre del ejecutivo">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Equipo MARCA</label>
+                                    <input type="text" id="pa_marca_equipo" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Serial N°</label>
+                                    <input type="text" id="pa_serial" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Estatus Equipo</label>
+                                    <input type="text" id="pa_status_pos" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Fecha de Instalación</label>
+                                    <input type="text" id="pa_fecha_instalacion" class="form-control" readonly>
+                                </div>
+                                <div class="col-12 mt-4"><strong>Información del Acuerdo</strong></div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Saldo deudor <small class="text-muted">(Mínimo $10.00)</small></label>
+                                    <div class="input-group">
+                                        <input type="text" id="pa_saldo_deudor" class="form-control" placeholder="__.__" style="text-align: right;">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Propuesta</label>
+                                    <textarea id="pa_propuesta" class="form-control" rows="2" placeholder="Ingrese la propuesta de pago"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Observaciones</label>
+                                    <textarea id="pa_observaciones" class="form-control" rows="2" placeholder="Ingrese observaciones adicionales"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Acuerdo</label>
+                                    <textarea id="pa_acuerdo" class="form-control" rows="2" placeholder="Ingrese los términos del acuerdo"></textarea>
+                                </div>
+
+                                <div class="col-12 mt-4"><strong>Configuración de Datos Bancarios</strong></div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Número de Cuenta</label>
+                                    <input type="text" id="pa_numero_cuenta" class="form-control" placeholder="XXXX-XXXX-XX-XXXX" value="XXXX-XXXX-XX-XXXX">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre de la Empresa</label>
+                                    <input type="text" id="pa_nombre_empresa" class="form-control" placeholder="Nombre de la empresa" value="Informática y Telecomunicaciones Integradas Inteligen, SA">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">RIF de la Empresa</label>
+                                    <input type="text" id="pa_rif_empresa" class="form-control" placeholder="J-XXXXXXXX-X" value="J-00291615-0">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Banco</label>
+                                    <input type="text" id="pa_banco" class="form-control" placeholder="Nombre del banco" value="XXXX">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Correo Electrónico</label>
+                                    <input type="email" id="pa_correo" class="form-control" placeholder="correo@empresa.com" value="domiciliación.intelipunto@inteligensa.com">
+                                </div>
+
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-secondary" id="previewPaymentAgreementBtn">Previsualizar</button>
+                                    <button type="button" class="btn btn-success" id="printPaymentAgreementBtn">Imprimir / Guardar PDF</button>
+                                </div>
+                                <div class="col-12" style="height: 500px; border: 2px solid #e9ecef; border-radius: 8px; overflow: hidden;">
+                                    <iframe id="paymentAgreementPreview" style="width:100%; height:100%; border:none; overflow-y: auto; overflow-x: hidden;"></iframe>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
+                            <button type="button" class="btn btn-secondary" id="closePaymentAgreementBtn">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <!-- END MODAL DE ACUERDO DE PAGO-->
 
         <!--MODAL PARA SELECCIONAR LAS ACCIONES PARA VIZUALIZAR LA IMAGEN-->
             <div class="modal fade" id="visualizarImagenModal" tabindex="-1" aria-labelledby="visualizarImagenModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">

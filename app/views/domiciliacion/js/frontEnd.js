@@ -5,8 +5,7 @@ let idTicket = null;
 let DocumentType = null;
 let motivoRechazoSelect = null; // ✅ AGREGAR ESTA VARIABLE
 let confirmarRechazoModal = null; // ✅ AGREGAR ESTA VARIABLE
-
-
+let currentSerial = null;
 
   document.getElementById("confirmarRechazoBtn").addEventListener("click", function() {
     // Opcional: Obtén el texto del motivo seleccionado para mostrarlo en el modal
@@ -216,6 +215,8 @@ function searchDomiciliacionTickets() {
                             data-nro-ticket="${row.nro_ticket}"
                             data-convenio-url="${row.convenio_url || ''}"
                             data-convenio-filename="${row.convenio_filename || ''}"
+                            data-serial="${row.serial_pos || ''}"
+                            data=
                             title="Visualizar Documento de Convenio">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
                                 <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
@@ -350,7 +351,7 @@ function searchDomiciliacionTickets() {
 
 
 
-                                    <button id="btn-solvente" class="btn btn-secondary btn-sm me-1" title="Tickets Solventes">
+                                    <button id="btn-solvente" class="btn btn-secondary btn-sm me-1" title="Tickets Solventes - Deudor - Convenio Firmado Aprovado">
 
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
 
@@ -694,12 +695,12 @@ function searchDomiciliacionTickets() {
 
                   // Buscar ID 2 (Solvente) en la columna de ID de Domiciliación (índice 5 - oculta)
 
-                  if (checkDataExists("^2$", 5)) {
+                  if (checkDataExists("^2$|^6$", 5)) {
                     dataTableInstance.columns().search("").draw(false);
 
                     dataTableInstance
                       .column(5)
-                      .search("^2$", true, false)
+                      .search("^2$|^6$", true, false)
                       .draw();
 
                     setActiveButton("btn-solvente");
@@ -762,12 +763,12 @@ function searchDomiciliacionTickets() {
                 // Event listeners para los botones
 
                 $("#btn-solvente").on("click", function () {
-                  if (checkDataExists("^2$", 5)) {
+                  if (checkDataExists("^2$|^6$", 5)) {
                     dataTableInstance.columns().search("").draw(false);
 
                     dataTableInstance
                       .column(5)
-                      .search("^2$", true, false)
+                      .search("^2$|^6$", true, false, true)
                       .draw();
 
                     setActiveButton("btn-solvente");
@@ -887,11 +888,13 @@ function searchDomiciliacionTickets() {
                   const convenioFilename = $(this).data("convenio-filename");
                   const ticketRechazado = $(this).data("rechazado");
                   const BotonRechazo = document.getElementById('RechazoDocumento');
+                  const serial = $(this).data("serial");
                   
                   // ✅ GUARDAR EL TICKET CORRECTO PARA EL RECHAZO
                   currentTicketIdForImage = ticketId;
                   currentTicketNroForImage = nroTicket;
-                                    
+                  currentSerial = serial;
+                  
                   // Verificar que tenemos los datos necesarios
                   if (!convenioUrl || !convenioFilename) {
                       Swal.fire({
@@ -1120,7 +1123,7 @@ function searchDomiciliacionTickets() {
 
 document.addEventListener("DOMContentLoaded", function () {
   searchDomiciliacionTickets();
-   getMotivos();
+  getMotivos();
 
   // Inicializar motivoRechazoSelect
   motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
@@ -1128,6 +1131,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const modalRechazoInstance = new bootstrap.Modal(document.getElementById('modalRechazo'));
   const botonCerrarmotivo = document.getElementById('CerrarModalMotivoRechazo');
   const modalConfirmacionRechazoBtn = document.getElementById('modalConfirmacionRechazoBtn');
+  const approveTicketFromImageBtn = document.getElementById('approveTicketFromImage');
+    
+    if (approveTicketFromImageBtn) {
+        approveTicketFromImageBtn.addEventListener('click', handleTicketApprovalFromImage);
+    }
+
 
   if(modalConfirmacionRechazoBtn){
     modalConfirmacionRechazoBtn.addEventListener('click', function () {
@@ -1259,6 +1268,181 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+function handleTicketApprovalFromImage() {
+    const nro_ticket = currentTicketNroForImage;
+    const documentType = 'convenio_firmado';
+    const serial = currentSerial;
+    const id_ticket = currentTicketIdForImage;
+
+    
+    if (!id_ticket ) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo obtener el ID del ticket.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    if (!documentType) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo obtener el tipo de documento.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    if (!serial) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo obtener el serial del documento.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    if(!nro_ticket) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo obtener el número de ticket.',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594'
+        });
+        return;
+    }
+
+    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+
+    Swal.fire({
+        title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+            <div class="custom-modal-header-content">Confirmar Aprobación</div>
+            </div>`,
+        html: `${customWarningSvg}<p class="mt-3" id="textConfirm">¿Está seguro que desea aprobar el documento del ticket Nro <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> asociado al serial <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serial}</span>?`,
+        showCancelButton: true,
+        confirmButtonColor: '#003594',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Aprobar',
+        cancelButtonText: 'Cancelar',
+        color: 'black',
+        focusConfirm: false,
+        allowOutsideClick: false, 
+        allowEscapeKey: false,
+        keydownListenerCapture: true,
+        didOpen: () => {
+            // Aplicar estilos personalizados después de que se abra el modal
+            const backdrop = document.querySelector('.swal2-backdrop-show');
+            const popup = document.querySelector('.swal2-popup');
+            
+            if (backdrop) {
+                backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
+                backdrop.style.backdropFilter = 'blur(8px)';
+            }
+            
+            if (popup) {
+                popup.style.background = 'rgba(255, 255, 255, 0.95)';
+                popup.style.backdropFilter = 'blur(10px)';
+                popup.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+                popup.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3)';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Realizar la aprobación
+            approveTicket(nro_ticket, documentType, id_ticket);
+        }
+    });
+}
+
+function approveTicket(nro_ticket, documentType, id_ticket) {
+    const id_user = document.getElementById('iduser').value;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/approve-document`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Aprobado!',
+                        html: `El documento de  <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${documentType}</span> asociado al Nro Ticket <span style = "border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> ha sido aprobado correctamente.`,
+                        confirmButtonText: 'Ok',
+                        confirmButtonColor: '#003594',
+                        color: 'black'
+                    }).then(() => {
+                       window.location.reload();
+                        
+                        // Recargar la tabla de tickets
+                        if (typeof getTicketAprovalDocument === 'function') {
+                            getTicketAprovalDocument();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message || 'Error al aprobar el documento',
+                        confirmButtonText: 'Ok',
+                        color: 'black',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            } catch (error) {
+                console.error('Error al parsear la respuesta JSON:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Respuesta',
+                    text: 'Error al procesar la respuesta del servidor',
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        } else {
+            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Conexión',
+                text: `Error HTTP ${xhr.status}: ${xhr.statusText}`,
+                confirmButtonText: 'Ok',
+                color: 'black',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error('Error de red al intentar aprobar el ticket');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de Red',
+            text: 'Error de conexión con el servidor',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#dc3545'
+        });
+    };
+
+    // Enviar los datos
+    const data = `action=approve-document&nro_ticket=${encodeURIComponent(nro_ticket)}&document_type=${encodeURIComponent(documentType)}&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}`;
+    xhr.send(data);
+}
+
 // Event listener para el botón de confirmar rechazo usando event delegation
 document.addEventListener('click', function(event) {
     if (event.target && event.target.id === 'btnConfirmarAccionRechazo') {
@@ -1387,7 +1571,6 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Funciones para manejar los modales de convenio firmado
 function showGenerateConvenioModal() {
   // Obtener el primer ticket del filtro actual (status 4)
   const dataTableInstance = $("#tabla-ticket").DataTable();
@@ -1402,11 +1585,41 @@ function showGenerateConvenioModal() {
     document.getElementById("generateModalTicketId").textContent = nroTicket;
     document.getElementById("generate_id_ticket").value = ticketId;
 
+    // ✅ CONFIGURACIÓN ROBUSTA DEL MODAL
+    const modalElement = document.getElementById("generateConvenioModal");
+    
+    // Configurar múltiples atributos para compatibilidad
+    modalElement.setAttribute('data-backdrop', 'static');        // Bootstrap 4
+    modalElement.setAttribute('data-bs-backdrop', 'static');     // Bootstrap 5
+    modalElement.setAttribute('data-keyboard', 'false');         // Bootstrap 4
+    modalElement.setAttribute('data-bs-keyboard', 'false');     // Bootstrap 5
+    
+    // Crear instancia del modal con configuración explícita
+    const generateConvenioModal = new bootstrap.Modal(modalElement, {
+      backdrop: 'static',    // No cerrar al hacer clic fuera
+      keyboard: false,       // No cerrar con Esc
+      focus: true           // Mantener el foco
+    });
+
+    // Event listeners adicionales para prevenir cierre accidental
+    modalElement.addEventListener('hide.bs.modal', function (event) {
+      // Prevenir que se cierre accidentalmente
+      event.preventDefault();
+      return false;
+    });
+
     // Mostrar el modal
-    const generateConvenioModal = new bootstrap.Modal(
-      document.getElementById("generateConvenioModal")
-    );
     generateConvenioModal.show();
+    
+    // Prevenir eventos de teclado
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+      }
+    }, true);
+
   } else {
     Swal.fire({
       title: "Sin datos",
@@ -1416,6 +1629,7 @@ function showGenerateConvenioModal() {
     });
   }
 }
+
 
 function showAttachDocumentModal(ticketId = null) {
   // Si se pasa un ticketId específico, usarlo directamente
@@ -3285,8 +3499,9 @@ function updateDomiciliacionStatus(
             const nroTicket = document
               .getElementById("idTicket")
               .getAttribute("data-nro-ticket");
-            // Mostrar el modal de generar convenio para que el usuario genere el documento
-            showAttachDocumentModal(idTicket);
+            
+            // ✅ MOSTRAR MODAL SWEETALERT2 IMPOSIBLE DE CERRAR CON ESC
+            showConvenioSwalModal(idTicket, nroTicket);
           }
         } else {
           if (errorMessageDomiciliacion) {
@@ -3989,9 +4204,18 @@ function fillPaymentAgreementModal(d) {
     if (!dateStr) return new Date().toLocaleDateString("es-ES");
 
     try {
-      return new Date(dateStr).toLocaleDateString("es-ES");
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        return new Date().toLocaleDateString("es-ES");
+      }
+      // Asegurar que solo se muestre la fecha sin hora
+      return date.toLocaleDateString("es-ES", {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
     } catch (e) {
-      return dateStr;
+      return new Date().toLocaleDateString("es-ES");
     }
   };
 
@@ -4043,605 +4267,6 @@ function fillPaymentAgreementModal(d) {
   // document.getElementById('pa_correo').value = 'domiciliación.intelipunto@inteligensa.com';
 }
 
-// Event listeners para el modal de acuerdo de pago
-
-document.addEventListener("DOMContentLoaded", function () {
-  // Función para forzar saltos de línea cada cierto número de caracteres
-
-  function addLineBreaks(text, maxCharsPerLine = 25) {
-    if (!text) return text;
-
-    // Remover saltos de línea existentes para procesar todo el texto
-
-    const cleanText = text.replace(/\n/g, " ");
-
-    let result = "";
-
-    let currentLine = "";
-
-    for (let i = 0; i < cleanText.length; i++) {
-      const char = cleanText[i];
-
-      if (currentLine.length >= maxCharsPerLine) {
-        result += currentLine + "\n";
-
-        currentLine = char;
-      } else {
-        currentLine += char;
-      }
-    }
-
-    if (currentLine) {
-      result += currentLine;
-    }
-
-    return result;
-  }
-
-  // Aplicar saltos de línea automáticos a los campos de texto
-
-  function setupAutoLineBreaks() {
-    const textFields = ["pa_propuesta", "pa_observaciones", "pa_acuerdo"];
-
-    textFields.forEach((fieldId) => {
-      const field = document.getElementById(fieldId);
-
-      if (field) {
-        // Aplicar estilos adicionales
-
-        field.style.wordBreak = "break-all";
-
-        field.style.overflowWrap = "break-word";
-
-        field.style.whiteSpace = "pre-wrap";
-
-        field.addEventListener("input", function (e) {
-          const originalValue = e.target.value;
-
-          const withLineBreaks = addLineBreaks(originalValue, 25);
-
-          if (originalValue !== withLineBreaks) {
-            const cursorPosition = e.target.selectionStart;
-
-            e.target.value = withLineBreaks;
-
-            // Ajustar posición del cursor
-
-            const newPosition = Math.min(cursorPosition, withLineBreaks.length);
-
-            e.target.setSelectionRange(newPosition, newPosition);
-          }
-        });
-
-        field.addEventListener("blur", function (e) {
-          const originalValue = e.target.value;
-
-          const withLineBreaks = addLineBreaks(originalValue, 25);
-
-          if (originalValue !== withLineBreaks) {
-            e.target.value = withLineBreaks;
-          }
-        });
-
-        field.addEventListener("paste", function (e) {
-          setTimeout(() => {
-            const originalValue = e.target.value;
-
-            const withLineBreaks = addLineBreaks(originalValue, 25);
-
-            if (originalValue !== withLineBreaks) {
-              e.target.value = withLineBreaks;
-            }
-          }, 10);
-        });
-      }
-    });
-  }
-
-  // Formatear campo de saldo deudor mientras se escribe
-
-  const saldoDeudorField = document.getElementById("pa_saldo_deudor");
-
-  if (saldoDeudorField) {
-    // Formatear al perder el foco
-
-    saldoDeudorField.addEventListener("blur", function (e) {
-      let value = e.target.value;
-
-      if (value && !isNaN(parseFloat(value))) {
-        const numValue = parseFloat(value);
-
-        e.target.value = numValue.toFixed(2);
-      }
-    });
-
-    // Formatear al escribir para mostrar el $ después
-
-    saldoDeudorField.addEventListener("input", function (e) {
-      let value = e.target.value.replace(/[^0-9.]/g, ""); // Solo números y punto
-
-      // Permitir solo un punto decimal
-
-      const parts = value.split(".");
-
-      if (parts.length > 2) {
-        value = parts[0] + "." + parts.slice(1).join("");
-      }
-
-      // Limitar a 2 decimales
-
-      if (parts[1] && parts[1].length > 2) {
-        value = parts[0] + "." + parts[1].substring(0, 2);
-      }
-
-      e.target.value = value;
-    });
-  }
-
-  // Configurar saltos de línea automáticos
-
-  setupAutoLineBreaks();
-
-  // Aplicar estilos cuando se abra el modal
-
-  const modal = document.getElementById("paymentAgreementModal");
-
-  if (modal) {
-    modal.addEventListener("shown.bs.modal", function () {
-      // Re-aplicar configuración cuando se abra el modal
-
-      setTimeout(() => {
-        setupAutoLineBreaks();
-
-        // Asegurar que el scroll funcione correctamente
-
-        const modalBody = modal.querySelector(".modal-body");
-
-        if (modalBody) {
-          modalBody.style.overflowY = "auto";
-
-          modalBody.style.overflowX = "hidden";
-
-          modalBody.style.maxHeight = "calc(95vh - 120px)";
-
-          // Forzar el scroll si es necesario
-
-          modalBody.scrollTop = 0;
-        }
-      }, 100);
-    });
-
-    // Prevenir que el modal se cierre al hacer scroll
-
-    modal.addEventListener("wheel", function (e) {
-      const modalBody = modal.querySelector(".modal-body");
-
-      if (modalBody && modalBody.scrollHeight > modalBody.clientHeight) {
-        e.stopPropagation();
-      }
-    });
-  }
-
-  // Botón de previsualizar
-
-  const previewBtn = document.getElementById("previewPaymentAgreementBtn");
-
-  if (previewBtn) {
-    previewBtn.addEventListener("click", function () {
-      // Validar monto mínimo
-
-      const saldoDeudor = document.getElementById("pa_saldo_deudor").value;
-
-      if (
-        saldoDeudor &&
-        parseFloat(saldoDeudor.replace(/[^0-9.-]/g, "")) < 10
-      ) {
-        Swal.fire({
-          icon: "warning",
-
-          title: "Monto inválido",
-
-          text: "El saldo deudor debe ser mínimo $10.00",
-
-          confirmButtonColor: "#003594",
-        });
-
-        return;
-      }
-
-      const data = getPaymentAgreementFormData();
-
-      // Usar la variable global del número de convenio
-      const convenioNumero = window.currentConvenioNumero || data.nro_ticket;
-      const html = buildPaymentAgreementHtml(data, convenioNumero);
-
-      const preview = document.getElementById("paymentAgreementPreview");
-
-      preview.src = "data:text/html;charset=utf-8," + encodeURIComponent(html);
-    });
-  }
-
-  // Botón de imprimir
-
-  const printBtn = document.getElementById("printPaymentAgreementBtn");
-
-  if (printBtn) {
-    // 1. Añadir el Listener de Clic al botón principal
-
-    printBtn.addEventListener("click", function () {
-      // Validar monto mínimo
-
-      const saldoDeudor = document.getElementById("pa_saldo_deudor").value;
-
-      if (
-        saldoDeudor &&
-        parseFloat(saldoDeudor.replace(/[^0-9.-]/g, "")) < 10
-      ) {
-        Swal.fire({
-          icon: "warning",
-
-          title: "Monto inválido",
-
-          text: "El saldo deudor debe ser mínimo $10.00",
-
-          confirmButtonColor: "#003594",
-        });
-
-        return;
-      }
-
-      const data = getPaymentAgreementFormData();
-
-      // Usar la variable global del número de convenio
-      const convenioNumero = window.currentConvenioNumero || data.nro_ticket;
-      const html = buildPaymentAgreementHtml(data, convenioNumero);
-
-      // 2. Mostrar la alerta de éxito
-
-      Swal.fire({
-        title: "¡Acuerdo de Pago generado!",
-
-        text: "El acuerdo de pago ha sido generado correctamente y está listo para imprimir.",
-
-        icon: "success",
-
-        confirmButtonText: "Imprimir",
-
-        confirmButtonColor: "#003594",
-
-        cancelButtonText: "Cerrar",
-
-        cancelButtonColor: "#6c757d",
-
-        color: "black",
-
-        showCancelButton: true,
-
-        allowOutsideClick: false,
-
-        allowEscapeKey: true,
-      }).then((result) => {
-        // 3. Ejecutar la lógica de impresión SÓLO si el usuario presiona el botón de Confirmación ('Imprimir')
-
-        if (result.isConfirmed) {
-          // Crear una nueva ventana para imprimir
-
-          const printWindow = window.open("", "_blank", "width=800,height=600");
-
-          if (printWindow) {
-            printWindow.document.open();
-
-            // Agregar script para cerrar automáticamente después de guardar
-
-            const htmlWithScript = html.replace(
-              "</body>",
-              `
-
-                        <script>
-
-                            // Función para cerrar la ventana y recargar la página principal
-
-                            function closeAndReload() {
-
-                                console.log('Cerrando ventana y recargando página principal...');
-
-                                if (window.opener) {
-
-                                    window.opener.location.reload();
-
-                                }
-
-                                window.close();
-
-                            }
-
-                            
-                            
-                            // Detectar cuando se completa la impresión/guardado
-
-                            window.addEventListener('afterprint', function() {
-
-                                console.log('Impresión completada - cerrando ventana');
-
-                                setTimeout(closeAndReload, 1000);
-
-                            });
-
-                            
-                            
-                            // Detectar cuando se pierde el foco (usuario interactúa con diálogo)
-
-                            window.addEventListener('blur', function() {
-
-                                console.log('Foco perdido - verificando si se cerró');
-
-                                setTimeout(function() {
-
-                                    if (document.hidden) {
-
-                                        closeAndReload();
-
-                                    }
-
-                                }, 3000);
-
-                            });
-
-                            
-                            
-                            // Botón manual de cierre (visible solo si es necesario)
-
-                            setTimeout(function() {
-
-                                if (!document.querySelector('.close-btn')) {
-
-                                    const closeBtn = document.createElement('button');
-
-                                    closeBtn.innerHTML = '✓ Documento Guardado - Cerrar';
-
-                                    closeBtn.className = 'close-btn';
-
-                                    closeBtn.style.cssText = \`
-
-                                        position: fixed;
-
-                                        top: 10px;
-
-                                        right: 10px;
-
-                                        background: #28a745;
-
-                                        color: white;
-
-                                        border: none;
-
-                                        padding: 10px 15px;
-
-                                        border-radius: 5px;
-
-                                        cursor: pointer;
-
-                                        font-size: 12px;
-
-                                        z-index: 9999;
-
-                                        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-
-                                    \`;
-
-                                    closeBtn.onclick = closeAndReload;
-
-                                    document.body.appendChild(closeBtn);
-
-                                }
-
-                            }, 5000); // Mostrar botón después de 5 segundos
-
-                        </script>
-
-                    </body>`
-            );
-
-            printWindow.document.write(htmlWithScript);
-
-            printWindow.document.close();
-
-            // Esperar a que se cargue el contenido y luego imprimir
-
-            printWindow.onload = function () {
-              printWindow.focus();
-
-              printWindow.print();
-
-              let reloadExecuted = false; // Flag para evitar recargas múltiples
-
-              let checkInterval = null;
-
-              // Función para recargar la página
-
-              const reloadPage = () => {
-                if (!reloadExecuted) {
-                  reloadExecuted = true;
-
-                  console.log(
-                    "Recargando página después de guardar documento..."
-                  );
-
-                  // Cerrar la ventana de impresión si aún está abierta
-
-                  if (printWindow && !printWindow.closed) {
-                    printWindow.close();
-                  }
-
-                  // Limpiar el intervalo
-
-                  if (checkInterval) {
-                    clearInterval(checkInterval);
-                  }
-
-                  // Recargar la página principal
-
-                  setTimeout(() => {
-                    window.location.reload();
-                  }, 1000);
-                }
-              };
-
-              // Método principal: Verificar periódicamente si la ventana se cerró
-
-              checkInterval = setInterval(() => {
-                try {
-                  if (printWindow.closed) {
-                    console.log(
-                      "Ventana cerrada detectada - ejecutando recarga"
-                    );
-
-                    reloadPage();
-                  }
-                } catch (e) {
-                  // Si hay error accediendo a la ventana, asumir que se cerró
-
-                  console.log(
-                    "Error accediendo a ventana - asumiendo que se cerró"
-                  );
-
-                  reloadPage();
-                }
-              }, 500); // Verificar cada 500ms
-
-              // Método alternativo: Detectar cuando se completa la impresión
-
-              printWindow.addEventListener("afterprint", function () {
-                console.log("Evento afterprint detectado");
-
-                reloadPage();
-              });
-
-              // Método alternativo: Detectar cuando se pierde el foco
-
-              printWindow.addEventListener("blur", function () {
-                console.log(
-                  "Evento blur detectado - usuario interactuando con diálogo"
-                );
-
-                // Esperar un poco y verificar si la ventana sigue abierta
-
-                setTimeout(() => {
-                  try {
-                    if (printWindow.closed) {
-                      reloadPage();
-                    }
-                  } catch (e) {
-                    reloadPage();
-                  }
-                }, 3000);
-              });
-
-              // Método de respaldo: Detectar cuando se cierra la ventana
-
-              printWindow.addEventListener("beforeunload", function () {
-                console.log("Evento beforeunload detectado");
-
-                reloadPage();
-              });
-
-              // Limpiar el intervalo después de 60 segundos para evitar loops infinitos
-
-              setTimeout(() => {
-                if (checkInterval) {
-                  clearInterval(checkInterval);
-
-                  console.log("Timeout alcanzado - limpiando intervalo");
-                }
-              }, 60000);
-            };
-          } else {
-            // Manejo si el navegador bloquea la nueva ventana (pop-up)
-
-            console.error("El navegador bloqueó la ventana de impresión.");
-
-            Swal.fire(
-              "Error",
-              "El navegador bloqueó la ventana de impresión. Por favor, permita pop-ups.",
-              "error"
-            );
-          }
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-          // El usuario hizo clic en "Cerrar"
-
-          console.log("Modal cerrado por el usuario");
-        }
-      });
-    });
-  }
-
-  // Botón de cerrar
-
-  const closeBtn = document.getElementById("closePaymentAgreementBtn");
-
-  if (closeBtn) {
-    closeBtn.addEventListener("click", function () {
-      // Usar la instancia global o crear una nueva si no existe
-
-      if (!paymentAgreementModalInstance) {
-        paymentAgreementModalInstance = new bootstrap.Modal(
-          document.getElementById("paymentAgreementModal")
-        );
-      }
-
-      paymentAgreementModalInstance.hide();
-    });
-  }
-});
-
-// Función para obtener los datos del formulario del modal
-
-function getPaymentAgreementFormData() {
-  return {
-    id_ticket: document.getElementById("pa_ticket_id").value,
-
-    fecha_actual: document.getElementById("pa_fecha").value,
-
-    nro_ticket: document.getElementById("pa_numero_ticket").value,
-
-    coddocumento: document.getElementById("pa_rif").value,
-
-    razonsocial: document.getElementById("pa_razon_social").value,
-
-    ejecutivo: document.getElementById("pa_ejecutivo_venta").value,
-
-    desc_modelo: document.getElementById("pa_marca_equipo").value,
-
-    fecha_instalacion: document.getElementById("pa_fecha_instalacion").value,
-
-    serialpos: document.getElementById("pa_serial").value,
-
-    desc_estatus: document.getElementById("pa_status_pos").value,
-
-    saldo_deudor: document.getElementById("pa_saldo_deudor").value,
-
-    propuesta: document.getElementById("pa_propuesta").value,
-
-    observaciones: document.getElementById("pa_observaciones").value,
-
-    acuerdo: document.getElementById("pa_acuerdo").value,
-
-    // Nuevos campos de configuración bancaria
-
-    numero_cuenta: document.getElementById("pa_numero_cuenta").value,
-
-    nombre_empresa: document.getElementById("pa_nombre_empresa").value,
-
-    rif_empresa: document.getElementById("pa_rif_empresa").value,
-
-    banco: document.getElementById("pa_banco").value,
-
-    correo: document.getElementById("pa_correo").value,
-  };
-}
-
-// Función para construir el HTML del Acuerdo de Pago
-
 function buildPaymentAgreementHtml(d, convenioNumero = null) {
   const safe = (s) => (s || "").toString();
 
@@ -4649,9 +4274,18 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
     if (!dateStr) return new Date().toLocaleDateString("es-ES");
 
     try {
-      return new Date(dateStr).toLocaleDateString("es-ES");
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        return new Date().toLocaleDateString("es-ES");
+      }
+      // Asegurar que solo se muestre la fecha sin hora
+      return date.toLocaleDateString("es-ES", {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
     } catch (e) {
-      return dateStr;
+      return new Date().toLocaleDateString("es-ES");
     }
   };
 
@@ -5853,9 +5487,7 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
                     <div class="info-label">Fecha</div>
 
-                    <div class="info-value">${formatDate(
-                      d.fecha_actual || new Date()
-                    )}</div>
+                    <div class="info-value"> ${formatDate(d.fecha_actual)}</div>
 
                 </div>
 
@@ -6139,6 +5771,602 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
     </html>`;
 }
 
+
+// Event listeners para el modal de acuerdo de pago
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Función para forzar saltos de línea cada cierto número de caracteres
+
+  function addLineBreaks(text, maxCharsPerLine = 25) {
+    if (!text) return text;
+
+    // Remover saltos de línea existentes para procesar todo el texto
+
+    const cleanText = text.replace(/\n/g, " ");
+
+    let result = "";
+
+    let currentLine = "";
+
+    for (let i = 0; i < cleanText.length; i++) {
+      const char = cleanText[i];
+
+      if (currentLine.length >= maxCharsPerLine) {
+        result += currentLine + "\n";
+
+        currentLine = char;
+      } else {
+        currentLine += char;
+      }
+    }
+
+    if (currentLine) {
+      result += currentLine;
+    }
+
+    return result;
+  }
+
+  // Aplicar saltos de línea automáticos a los campos de texto
+
+  function setupAutoLineBreaks() {
+    const textFields = ["pa_propuesta", "pa_observaciones", "pa_acuerdo"];
+
+    textFields.forEach((fieldId) => {
+      const field = document.getElementById(fieldId);
+
+      if (field) {
+        // Aplicar estilos adicionales
+
+        field.style.wordBreak = "break-all";
+
+        field.style.overflowWrap = "break-word";
+
+        field.style.whiteSpace = "pre-wrap";
+
+        field.addEventListener("input", function (e) {
+          const originalValue = e.target.value;
+
+          const withLineBreaks = addLineBreaks(originalValue, 25);
+
+          if (originalValue !== withLineBreaks) {
+            const cursorPosition = e.target.selectionStart;
+
+            e.target.value = withLineBreaks;
+
+            // Ajustar posición del cursor
+
+            const newPosition = Math.min(cursorPosition, withLineBreaks.length);
+
+            e.target.setSelectionRange(newPosition, newPosition);
+          }
+        });
+
+        field.addEventListener("blur", function (e) {
+          const originalValue = e.target.value;
+
+          const withLineBreaks = addLineBreaks(originalValue, 25);
+
+          if (originalValue !== withLineBreaks) {
+            e.target.value = withLineBreaks;
+          }
+        });
+
+        field.addEventListener("paste", function (e) {
+          setTimeout(() => {
+            const originalValue = e.target.value;
+
+            const withLineBreaks = addLineBreaks(originalValue, 25);
+
+            if (originalValue !== withLineBreaks) {
+              e.target.value = withLineBreaks;
+            }
+          }, 10);
+        });
+      }
+    });
+  }
+
+  // Formatear campo de saldo deudor mientras se escribe
+
+  const saldoDeudorField = document.getElementById("pa_saldo_deudor");
+
+  if (saldoDeudorField) {
+    // Formatear al perder el foco
+
+    saldoDeudorField.addEventListener("blur", function (e) {
+      let value = e.target.value;
+
+      if (value && !isNaN(parseFloat(value))) {
+        const numValue = parseFloat(value);
+
+        e.target.value = numValue.toFixed(2);
+      }
+    });
+
+    // Formatear al escribir para mostrar el $ después
+
+    saldoDeudorField.addEventListener("input", function (e) {
+      let value = e.target.value.replace(/[^0-9.]/g, ""); // Solo números y punto
+
+      // Permitir solo un punto decimal
+
+      const parts = value.split(".");
+
+      if (parts.length > 2) {
+        value = parts[0] + "." + parts.slice(1).join("");
+      }
+
+      // Limitar a 2 decimales
+
+      if (parts[1] && parts[1].length > 2) {
+        value = parts[0] + "." + parts[1].substring(0, 2);
+      }
+
+      e.target.value = value;
+    });
+  }
+
+  // Configurar saltos de línea automáticos
+
+  setupAutoLineBreaks();
+
+  // Aplicar estilos cuando se abra el modal
+
+  const modal = document.getElementById("paymentAgreementModal");
+
+  if (modal) {
+    modal.addEventListener("shown.bs.modal", function () {
+      // Re-aplicar configuración cuando se abra el modal
+
+      setTimeout(() => {
+        setupAutoLineBreaks();
+
+        // Asegurar que el scroll funcione correctamente
+
+        const modalBody = modal.querySelector(".modal-body");
+
+        if (modalBody) {
+          modalBody.style.overflowY = "auto";
+
+          modalBody.style.overflowX = "hidden";
+
+          modalBody.style.maxHeight = "calc(95vh - 120px)";
+
+          // Forzar el scroll si es necesario
+
+          modalBody.scrollTop = 0;
+        }
+      }, 100);
+    });
+
+    // Prevenir que el modal se cierre al hacer scroll
+
+    modal.addEventListener("wheel", function (e) {
+      const modalBody = modal.querySelector(".modal-body");
+
+      if (modalBody && modalBody.scrollHeight > modalBody.clientHeight) {
+        e.stopPropagation();
+      }
+    });
+  }
+
+  // Botón de previsualizar
+
+  const previewBtn = document.getElementById("previewPaymentAgreementBtn");
+
+  if (previewBtn) {
+    previewBtn.addEventListener("click", function () {
+      // Validar monto mínimo
+
+      const saldoDeudor = document.getElementById("pa_saldo_deudor").value;
+
+      if (
+        saldoDeudor &&
+        parseFloat(saldoDeudor.replace(/[^0-9.-]/g, "")) < 10
+      ) {
+        Swal.fire({
+          icon: "warning",
+
+          title: "Monto inválido",
+
+          text: "El saldo deudor debe ser mínimo $10.00",
+
+          confirmButtonColor: "#003594",
+        });
+
+        return;
+      }
+
+      const data = getPaymentAgreementFormData();
+
+      // Usar la variable global del número de convenio
+      const convenioNumero = window.currentConvenioNumero || data.nro_ticket;
+      const html = buildPaymentAgreementHtml(data, convenioNumero);
+
+      const preview = document.getElementById("paymentAgreementPreview");
+
+      preview.src = "data:text/html;charset=utf-8," + encodeURIComponent(html);
+    });
+  }
+
+  // Botón de imprimir
+
+  const printBtn = document.getElementById("printPaymentAgreementBtn");
+
+  if (printBtn) {
+    // 1. Añadir el Listener de Clic al botón principal
+
+    printBtn.addEventListener("click", function () {
+      // Validar monto mínimo
+
+      const saldoDeudor = document.getElementById("pa_saldo_deudor").value;
+
+      if (
+        saldoDeudor &&
+        parseFloat(saldoDeudor.replace(/[^0-9.-]/g, "")) < 10
+      ) {
+        Swal.fire({
+          icon: "warning",
+
+          title: "Monto inválido",
+
+          text: "El saldo deudor debe ser mínimo $10.00",
+
+          confirmButtonColor: "#003594",
+        });
+
+        return;
+      }
+
+      const data = getPaymentAgreementFormData();
+
+      // Usar la variable global del número de convenio
+      const convenioNumero = window.currentConvenioNumero || data.nro_ticket;
+      const html = buildPaymentAgreementHtml(data, convenioNumero);
+
+      // 2. Mostrar la alerta de éxito
+
+      Swal.fire({
+        title: "¡Acuerdo de Pago generado!",
+
+        text: "El acuerdo de pago ha sido generado correctamente y está listo para imprimir.",
+
+        icon: "success",
+
+        confirmButtonText: "Imprimir",
+
+        confirmButtonColor: "#003594",
+
+        cancelButtonText: "Cerrar",
+
+        cancelButtonColor: "#6c757d",
+
+        color: "black",
+
+        showCancelButton: true,
+
+        allowOutsideClick: false,
+
+        allowEscapeKey: true,
+      }).then((result) => {
+        // 3. Ejecutar la lógica de impresión SÓLO si el usuario presiona el botón de Confirmación ('Imprimir')
+
+        if (result.isConfirmed) {
+          // Crear una nueva ventana para imprimir
+
+          const printWindow = window.open("", "_blank", "width=800,height=600");
+
+          if (printWindow) {
+            printWindow.document.open();
+
+            // Agregar script para cerrar automáticamente después de guardar
+
+            const htmlWithScript = html.replace(
+              "</body>",
+              `
+
+                        <script>
+
+                            // Función para cerrar la ventana y recargar la página principal
+
+                            function closeAndReload() {
+
+                                console.log('Cerrando ventana y recargando página principal...');
+
+                                if (window.opener) {
+
+                                    window.opener.location.reload();
+
+                                }
+
+                                window.close();
+
+                            }
+
+                            
+                            
+                            // Detectar cuando se completa la impresión/guardado
+
+                            window.addEventListener('afterprint', function() {
+
+                                console.log('Impresión completada - cerrando ventana');
+
+                                setTimeout(closeAndReload, 1000);
+
+                            });
+
+                            
+                            
+                            // Detectar cuando se pierde el foco (usuario interactúa con diálogo)
+
+                            window.addEventListener('blur', function() {
+
+                                console.log('Foco perdido - verificando si se cerró');
+
+                                setTimeout(function() {
+
+                                    if (document.hidden) {
+
+                                        closeAndReload();
+
+                                    }
+
+                                }, 3000);
+
+                            });
+
+                            
+                            
+                            // Botón manual de cierre (visible solo si es necesario)
+
+                            setTimeout(function() {
+
+                                if (!document.querySelector('.close-btn')) {
+
+                                    const closeBtn = document.createElement('button');
+
+                                    closeBtn.innerHTML = '✓ Documento Guardado - Cerrar';
+
+                                    closeBtn.className = 'close-btn';
+
+                                    closeBtn.style.cssText = \`
+
+                                        position: fixed;
+
+                                        top: 10px;
+
+                                        right: 10px;
+
+                                        background: #28a745;
+
+                                        color: white;
+
+                                        border: none;
+
+                                        padding: 10px 15px;
+
+                                        border-radius: 5px;
+
+                                        cursor: pointer;
+
+                                        font-size: 12px;
+
+                                        z-index: 9999;
+
+                                        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+
+                                    \`;
+
+                                    closeBtn.onclick = closeAndReload;
+
+                                    document.body.appendChild(closeBtn);
+
+                                }
+
+                            }, 5000); // Mostrar botón después de 5 segundos
+
+                        </script>
+
+                    </body>`
+            );
+
+            printWindow.document.write(htmlWithScript);
+
+            printWindow.document.close();
+
+            // Esperar a que se cargue el contenido y luego imprimir
+
+            printWindow.onload = function () {
+              printWindow.focus();
+
+              printWindow.print();
+
+              let reloadExecuted = false; // Flag para evitar recargas múltiples
+
+              let checkInterval = null;
+
+              // Función para recargar la página
+
+              const reloadPage = () => {
+                if (!reloadExecuted) {
+                  reloadExecuted = true;
+
+                  console.log(
+                    "Recargando página después de guardar documento..."
+                  );
+
+                  // Cerrar la ventana de impresión si aún está abierta
+
+                  if (printWindow && !printWindow.closed) {
+                    printWindow.close();
+                  }
+
+                  // Limpiar el intervalo
+
+                  if (checkInterval) {
+                    clearInterval(checkInterval);
+                  }
+
+                  // Recargar la página principal
+
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1000);
+                }
+              };
+
+              // Método principal: Verificar periódicamente si la ventana se cerró
+
+              checkInterval = setInterval(() => {
+                try {
+                  if (printWindow.closed) {
+                    console.log(
+                      "Ventana cerrada detectada - ejecutando recarga"
+                    );
+
+                    reloadPage();
+                  }
+                } catch (e) {
+                  // Si hay error accediendo a la ventana, asumir que se cerró
+
+                  console.log(
+                    "Error accediendo a ventana - asumiendo que se cerró"
+                  );
+
+                  reloadPage();
+                }
+              }, 500); // Verificar cada 500ms
+
+              // Método alternativo: Detectar cuando se completa la impresión
+
+              printWindow.addEventListener("afterprint", function () {
+                console.log("Evento afterprint detectado");
+
+                reloadPage();
+              });
+
+              // Método alternativo: Detectar cuando se pierde el foco
+
+              printWindow.addEventListener("blur", function () {
+                console.log(
+                  "Evento blur detectado - usuario interactuando con diálogo"
+                );
+
+                // Esperar un poco y verificar si la ventana sigue abierta
+
+                setTimeout(() => {
+                  try {
+                    if (printWindow.closed) {
+                      reloadPage();
+                    }
+                  } catch (e) {
+                    reloadPage();
+                  }
+                }, 3000);
+              });
+
+              // Método de respaldo: Detectar cuando se cierra la ventana
+
+              printWindow.addEventListener("beforeunload", function () {
+                console.log("Evento beforeunload detectado");
+
+                reloadPage();
+              });
+
+              // Limpiar el intervalo después de 60 segundos para evitar loops infinitos
+
+              setTimeout(() => {
+                if (checkInterval) {
+                  clearInterval(checkInterval);
+
+                  console.log("Timeout alcanzado - limpiando intervalo");
+                }
+              }, 60000);
+            };
+          } else {
+            // Manejo si el navegador bloquea la nueva ventana (pop-up)
+
+            console.error("El navegador bloqueó la ventana de impresión.");
+
+            Swal.fire(
+              "Error",
+              "El navegador bloqueó la ventana de impresión. Por favor, permita pop-ups.",
+              "error"
+            );
+          }
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          // El usuario hizo clic en "Cerrar"
+
+          console.log("Modal cerrado por el usuario");
+        }
+      });
+    });
+  }
+
+  // Botón de cerrar
+
+  const closeBtn = document.getElementById("closePaymentAgreementBtn");
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", function () {
+      // Usar la instancia global o crear una nueva si no existe
+
+      if (!paymentAgreementModalInstance) {
+        paymentAgreementModalInstance = new bootstrap.Modal(
+          document.getElementById("paymentAgreementModal")
+        );
+      }
+
+      paymentAgreementModalInstance.hide();
+    });
+  }
+});
+
+function getPaymentAgreementFormData() {
+  return {
+    id_ticket: document.getElementById("pa_ticket_id").value,
+
+    fecha_actual: document.getElementById("pa_fecha").value,
+
+    nro_ticket: document.getElementById("pa_numero_ticket").value,
+
+    coddocumento: document.getElementById("pa_rif").value,
+
+    razonsocial: document.getElementById("pa_razon_social").value,
+
+    ejecutivo: document.getElementById("pa_ejecutivo_venta").value,
+
+    desc_modelo: document.getElementById("pa_marca_equipo").value,
+
+    fecha_instalacion: document.getElementById("pa_fecha_instalacion").value,
+
+    serialpos: document.getElementById("pa_serial").value,
+
+    desc_estatus: document.getElementById("pa_status_pos").value,
+
+    saldo_deudor: document.getElementById("pa_saldo_deudor").value,
+
+    propuesta: document.getElementById("pa_propuesta").value,
+
+    observaciones: document.getElementById("pa_observaciones").value,
+
+    acuerdo: document.getElementById("pa_acuerdo").value,
+
+    // Nuevos campos de configuración bancaria
+
+    numero_cuenta: document.getElementById("pa_numero_cuenta").value,
+
+    nombre_empresa: document.getElementById("pa_nombre_empresa").value,
+
+    rif_empresa: document.getElementById("pa_rif_empresa").value,
+
+    banco: document.getElementById("pa_banco").value,
+
+    correo: document.getElementById("pa_correo").value,
+  };
+}
+
 const closeButton = changeStatusDomiciliacionModalElement.querySelector("#close-button");
 
 if (closeIconBtn) {
@@ -6334,4 +6562,392 @@ function getMotivos() {
   // ¡Aquí se envía el documentType!
   const datos = `action=GetMotivos`;
   xhr.send(datos);
+}
+ 
+function showGenerateConvenioModal(ticketId = null, nroTicket = null) {
+  // ✅ FUNCIÓN MEJORADA: ACEPTA PARÁMETROS O USA FILTRO COMO FALLBACK
+  if (ticketId && nroTicket) {
+    // Si se pasan parámetros, usarlos directamente
+    showConvenioSwalModal(ticketId, nroTicket);
+  } else {
+    // Fallback: Obtener el primer ticket del filtro actual (status 4)
+    const dataTableInstance = $("#tabla-ticket").DataTable();
+    const filteredData = dataTableInstance.rows({ filter: "applied" }).data();
+
+    if (filteredData.length > 0) {
+      const firstTicket = filteredData[0];
+      const ticketId = firstTicket.id_ticket;
+      const nroTicket = firstTicket.nro_ticket;
+
+      // ✅ USAR SWEETALERT2 PARA MODAL IMPOSIBLE DE CERRAR CON ESC
+      showConvenioSwalModal(ticketId, nroTicket);
+
+    } else {
+      Swal.fire({
+        title: "Sin datos",
+        text: "No hay tickets de convenio firmado para procesar.",
+        icon: "warning",
+        confirmButtonColor: "#003594",
+      });
+    }
+  }
+}
+
+function showConvenioSwalModal(ticketId, nroTicket) {
+  // ✅ SWEETALERT2 CON CONFIGURACIÓN IMPOSIBLE DE CERRAR
+  Swal.fire({
+    title: `
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+        <div style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%); padding: 12px; border-radius: 50%; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);">
+          <i class="fas fa-file-contract" style="font-size: 1.6rem; color: white;"></i>
+        </div>
+        <div>
+          <h3 style="margin: 0; color: #2c3e50; font-weight: 600; font-size: 1.1rem;">Generar Documento de Convenio Firmado</h3>
+          <p style="margin: 4px 0 0 0; color: #6c757d; font-size: 13px;">Ticket: <span style="background: #e9ecef; padding: 2px 8px; border-radius: 12px; font-weight: 600;">${nroTicket}</span></p>
+        </div>
+      </div>
+    `,
+    html: `
+      <div style="text-align: center; padding: 15px 0;">
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 18px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+          <div style="background: #17a2b8; width: 35px; height: 35px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 2px 6px rgba(23, 162, 184, 0.3);">
+            <i class="fas fa-info-circle" style="font-size: 1.2rem; color: white;"></i>
+          </div>
+          <h4 style="color: #2c3e50; margin-bottom: 10px; font-weight: 600; font-size: 1rem;">Instrucciones</h4>
+          <p style="color: #495057; margin: 0; line-height: 1.5; font-size: 13px;">
+            Por favor genere el documento de <strong style="color: #ffc107;">Convenio Firmado</strong> para el ticket <strong style="color: #2c3e50;">${nroTicket}</strong>. 
+            Una vez generado, podrá subirlo al sistema para completar el proceso.
+          </p>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border: 1px solid #ffc107; border-radius: 10px; padding: 12px; margin-bottom: 15px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fas fa-exclamation-triangle" style="color: #856404; font-size: 1rem;"></i>
+            <span style="color: #856404; font-weight: 600; font-size: 13px;">Este proceso es obligatorio para continuar</span>
+          </div>
+        </div>
+      </div>
+    `,
+    showCancelButton: false,
+    confirmButtonText: `
+      <i class="fas fa-file-contract me-2"></i>Generar Convenio Firmado
+    `,
+    cancelButtonText: `
+      <i class="fas fa-times me-2"></i>Cancelar
+    `,
+    confirmButtonColor: "#ffc107",
+    cancelButtonColor: "#6c757d",
+    buttonsStyling: true,
+    customClass: {
+      popup: "swal-convenio-modal",
+      confirmButton: "swal-convenio-confirm",
+      cancelButton: "swal-convenio-cancel",
+    },
+    width: 450,
+    padding: "20px",
+    background: "#ffffff",
+    backdrop: "rgba(0,0,0,0.4)",
+    allowOutsideClick: false,  // ✅ NO CERRAR CON CLIC FUERA
+    allowEscapeKey: false,     // ✅ NO CERRAR CON ESC
+    keydownListenerCapture: true, // ✅ CAPTURAR EVENTOS DE TECLADO
+    showCloseButton: false,    // ✅ NO MOSTRAR BOTÓN X
+    focusConfirm: true,        // ✅ ENFOCAR BOTÓN CONFIRMAR
+    reverseButtons: false,     // ✅ ORDEN NORMAL DE BOTONES
+    didOpen: () => {
+      // ✅ APLICAR ESTILOS PERSONALIZADOS
+      const popup = document.querySelector('.swal-convenio-modal');
+      const confirmBtn = document.querySelector('.swal-convenio-confirm');
+      const cancelBtn = document.querySelector('.swal-convenio-cancel');
+      
+      if (popup) {
+        popup.style.borderRadius = '16px';
+        popup.style.boxShadow = '0 8px 25px rgba(0,0,0,0.25)';
+        popup.style.border = '2px solid #ffc107';
+      }
+      
+      if (confirmBtn) {
+        confirmBtn.style.fontSize = '14px';
+        confirmBtn.style.padding = '10px 20px';
+        confirmBtn.style.borderRadius = '8px';
+        confirmBtn.style.fontWeight = '600';
+        confirmBtn.style.boxShadow = '0 3px 10px rgba(255, 193, 7, 0.3)';
+        confirmBtn.style.transition = 'all 0.2s ease';
+      }
+      
+      if (cancelBtn) {
+        cancelBtn.style.fontSize = '14px';
+        cancelBtn.style.padding = '10px 20px';
+        cancelBtn.style.borderRadius = '8px';
+        cancelBtn.style.fontWeight = '500';
+      }
+      
+      // ✅ PREVENIR CUALQUIER INTENTO DE CERRAR CON TECLADO
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' || event.key === 'Enter' && event.ctrlKey) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          return false;
+        }
+      }, true);
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // ✅ SEGUIR EL CURSO ORIGINAL: ABRIR MODAL DE ACUERDO DE PAGO
+      openPaymentAgreementModal(ticketId, nroTicket);
+    }
+  });
+}
+
+function openPaymentAgreementModal(ticketId, nroTicket) {
+  // ✅ SEGUIR EL CURSO ORIGINAL: OBTENER DATOS Y ABRIR MODAL DE ACUERDO DE PAGO
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/documents/GetPaymentAgreementData`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== 4) return;
+
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const res = JSON.parse(xhr.responseText);
+
+        if (!res || !res.success || !res.rows) {
+          Swal.fire({
+            icon: "warning",
+            title: "No se encontraron datos",
+            text: "No se pudieron obtener los datos del ticket para generar el convenio.",
+            confirmButtonColor: "#003594",
+          });
+          return;
+        }
+
+        const d = res.rows[0];
+
+        // Generar número del convenio firmado
+        const serialPos = d.serialpos || d.serial_pos || "";
+        const lastFourSerialDigits = serialPos.slice(-4);
+        const convenioNumero = `CF-${ticketId}-${lastFourSerialDigits}`;
+
+        // Almacenar el número del convenio en una variable global
+        window.currentConvenioNumero = convenioNumero;
+
+        // ✅ LLENAR EL MODAL DE ACUERDO DE PAGO CON LOS DATOS
+        fillPaymentAgreementModal(d);
+
+        // ✅ MOSTRAR EL MODAL DE ACUERDO DE PAGO
+        const paymentAgreementModal = new bootstrap.Modal(
+          document.getElementById("paymentAgreementModal"),
+          {
+            backdrop: 'static',    // No cerrar al hacer clic fuera
+            keyboard: false,       // No cerrar con Esc
+            focus: true           // Mantener el foco
+          }
+        );
+
+        paymentAgreementModal.show();
+
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error al procesar datos",
+          text: "Hubo un error al procesar los datos del ticket.",
+          confirmButtonColor: "#dc3545",
+        });
+      }
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error del servidor",
+        text: `Error ${xhr.status}: ${xhr.statusText}`,
+        confirmButtonColor: "#dc3545",
+      });
+    }
+  };
+
+  xhr.onerror = function () {
+    Swal.fire({
+      icon: "error",
+      title: "Error de conexión",
+      text: "No se pudo conectar al servidor para obtener los datos del ticket.",
+      confirmButtonColor: "#dc3545",
+    });
+  };
+
+  const data = `action=GetPaymentAgreementData&id_ticket=${ticketId}`;
+  xhr.send(data);
+}
+
+function fillPaymentAgreementModal(data) {
+  // ✅ LLENAR EL MODAL DE ACUERDO DE PAGO CON LOS DATOS DEL TICKET
+  const today = new Date().toLocaleDateString("es-ES", {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  
+  // Datos básicos
+  document.getElementById("pa_ticket_id").value = data.id_ticket || "";
+  document.getElementById("pa_fecha").value = today;
+  document.getElementById("pa_numero_ticket").value = data.nro_ticket || "";
+  
+  // Datos del cliente
+  document.getElementById("pa_rif").value = data.coddocumento || "";
+  document.getElementById("pa_razon_social").value = data.razonsocial  || "";
+  
+  // Datos del equipo
+  document.getElementById("pa_ejecutivo_venta").value = data.ejecutivo || "";
+  document.getElementById("pa_marca_equipo").value = data.desc_modelo  || "";
+  document.getElementById("pa_serial").value = data.serialpos || "";
+  document.getElementById("pa_status_pos").value = data.desc_estatus  || "";
+  document.getElementById("pa_fecha_instalacion").value = data.fechainstalacion  || "";
+  
+  // Información del acuerdo
+  document.getElementById("pa_saldo_deudor").value = "";
+  document.getElementById("pa_propuesta").value = "";
+  document.getElementById("pa_observaciones").value = "";
+  document.getElementById("pa_acuerdo").value = "";
+  
+  // Datos bancarios (ya están con valores por defecto en el HTML)
+}
+
+function processConvenioGeneration(ticketId, nroTicket) {
+  // Obtener datos del ticket para generar el número del convenio
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/documents/GetPaymentAgreementData`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== 4) return;
+
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const res = JSON.parse(xhr.responseText);
+
+        if (!res || !res.success || !res.rows) {
+          Swal.fire({
+            icon: "warning",
+            title: "No se encontraron datos",
+            text: "No se pudieron obtener los datos del ticket para generar el convenio.",
+            confirmButtonColor: "#003594",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+          });
+          return;
+        }
+
+        const d = res.rows[0];
+
+        // Generar número del convenio firmado
+        const serialPos = d.serialpos || d.serial_pos || "";
+        const lastFourSerialDigits = serialPos.slice(-4);
+        const convenioNumero = `CF-${ticketId}-${lastFourSerialDigits}`;
+
+        // Almacenar el número del convenio en una variable global
+        window.currentConvenioNumero = convenioNumero;
+
+        // ✅ MOSTRAR LOADING CON SWEETALERT2
+        Swal.fire({
+          title: '🔄 Generando Convenio...',
+          html: `
+            <div style="text-align: center; padding: 20px;">
+              <div style="margin-bottom: 20px;">
+                <i class="fas fa-cog fa-spin" style="font-size: 3rem; color: #ffc107;"></i>
+              </div>
+              <h4 style="color: #2c3e50; margin-bottom: 15px;">Procesando Documento</h4>
+              <p style="color: #6c757d; margin: 0;">Por favor espere mientras se genera el documento del convenio...</p>
+              <div style="margin-top: 20px;">
+                <div style="background: #e9ecef; border-radius: 10px; height: 8px; overflow: hidden;">
+                  <div style="background: linear-gradient(90deg, #ffc107, #ffed4e); height: 100%; width: 0%; border-radius: 10px; animation: progress 2s ease-in-out infinite;"></div>
+                </div>
+              </div>
+            </div>
+            <style>
+              @keyframes progress {
+                0% { width: 0%; }
+                50% { width: 70%; }
+                100% { width: 100%; }
+              }
+            </style>
+          `,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          showConfirmButton: false,
+          showCloseButton: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        // Simular proceso de generación (reemplazar con llamada real a la API)
+        setTimeout(() => {
+          Swal.close();
+          
+          // ✅ MOSTRAR ÉXITO Y TRANSICIONAR
+          Swal.fire({
+            title: '✅ ¡Convenio Generado!',
+            html: `
+              <div style="text-align: center; padding: 20px;">
+                <div style="margin-bottom: 20px;">
+                  <i class="fas fa-check-circle" style="font-size: 4rem; color: #28a745;"></i>
+                </div>
+                <h4 style="color: #2c3e50; margin-bottom: 15px;">Documento Listo</h4>
+                <p style="color: #6c757d; margin-bottom: 20px;">
+                  El convenio firmado ha sido generado exitosamente.<br>
+                  <strong>Número: ${convenioNumero}</strong>
+                </p>
+                <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px;">
+                  <i class="fas fa-info-circle" style="color: #155724; margin-right: 8px;"></i>
+                  <span style="color: #155724;">Ahora puede proceder a subir el documento</span>
+                </div>
+              </div>
+            `,
+            confirmButtonText: '<i class="fas fa-upload me-2"></i>Subir Documento',
+            confirmButtonColor: '#28a745',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showCloseButton: false,
+          }).then(() => {
+            // ✅ MOSTRAR MODAL DE SUBIR DOCUMENTO
+            showUploadDocumentModal(ticketId, nroTicket);
+          });
+        }, 3000);
+        
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error al procesar datos",
+          text: "Hubo un error al procesar los datos del ticket.",
+          confirmButtonColor: "#dc3545",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+      }
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error del servidor",
+        text: `Error ${xhr.status}: ${xhr.statusText}`,
+        confirmButtonColor: "#dc3545",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+      });
+    }
+  };
+
+  xhr.onerror = function () {
+    Swal.fire({
+      icon: "error",
+      title: "Error de conexión",
+      text: "No se pudo conectar al servidor para obtener los datos del ticket.",
+      confirmButtonColor: "#dc3545",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+    });
+  };
+
+  const data = `action=GetPaymentAgreementData&id_ticket=${ticketId}`;
+  xhr.send(data);
 }

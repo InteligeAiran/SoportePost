@@ -205,7 +205,9 @@ function getTicketAprovalDocument() {
         razonsocial_cliente: "Razón Social",
         serial_pos: "Serial POS",
         name_status_payment: "Estatus Pago",
+        id_status_payment: "Id Estatus Pago",
         name_status_domiciliacion: "Estatus Domiciliación",
+        id_status_domiciliacion: "Id Estatus Domiciliacion",
         document_type: "Tipo Documento",
         original_filename: "Nombre Archivo",
         motivo_rechazo: "Motivo Rechazo",
@@ -241,8 +243,32 @@ function getTicketAprovalDocument() {
                             },
                         });
 
+                        // ✅ AGREGAR COLUMNAS OCULTAS PARA BÚSQUEDA POR ID
+                        if (allDataKeys.includes('id_status_payment')) {
+                            columnsConfig.push({
+                                data: 'id_status_payment',
+                                title: 'ID Status Payment',
+                                visible: false, // ✅ OCULTA PERO DISPONIBLE PARA BÚSQUEDA
+                                searchable: true
+                            });
+                        }
+                        
+                        if (allDataKeys.includes('id_status_domiciliacion')) {
+                            columnsConfig.push({
+                                data: 'id_status_domiciliacion',
+                                title: 'ID Status Domiciliación',
+                                visible: false, // ✅ OCULTA PERO DISPONIBLE PARA BÚSQUEDA
+                                searchable: true
+                            });
+                        }
+
                         for (const key in columnTitles) {
                             if (allDataKeys.includes(key)) {
+                                // ✅ EXCLUIR LAS COLUMNAS DE ID DEL LOOP PRINCIPAL
+                                if (key === 'id_status_payment' || key === 'id_status_domiciliacion') {
+                                    continue; // Saltar estas columnas ya que se agregaron arriba
+                                }
+
                                 const isVisible = TicketData.some((item) => {
                                     const value = item[key];
                                     return (
@@ -408,56 +434,102 @@ function getTicketAprovalDocument() {
                                     $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
                                 }
 
-                            // Función para verificar si hay datos en una búsqueda específica
-                            function checkDataExists(searchTerm) {
+                            // ✅ FUNCIÓN MEJORADA: Verificar si hay datos por ID
+                            function checkDataExistsById(searchTerms) {
                                 api.columns().search('').draw(false);
-                                api.column(5).search(searchTerm, true, false, true).draw();
-                                const rowCount = api.rows({ filter: 'applied' }).count();
-                                return rowCount > 0;
+                                
+                                let hasData = false;
+                                searchTerms.forEach(searchTerm => {
+                                    if (searchTerm.column === 'id_status_payment') {
+                                        // Buscar en columna de ID status payment (índice 1)
+                                        api.column(1).search(searchTerm.value, true, false, true).draw();
+                                        const rowCount = api.rows({ filter: 'applied' }).count();
+                                        if (rowCount > 0) hasData = true;
+                                        api.columns().search('').draw(false);
+                                    } else if (searchTerm.column === 'id_status_domiciliacion') {
+                                        // Buscar en columna de ID status domiciliación (índice 2)
+                                        api.column(2).search(searchTerm.value, true, false, true).draw();
+                                        const rowCount = api.rows({ filter: 'applied' }).count();
+                                        if (rowCount > 0) hasData = true;
+                                        api.columns().search('').draw(false);
+                                    }
+                                });
+                                
+                                return hasData;
                             }
 
-                            // Función para buscar automáticamente el primer botón con datos
+                            // ✅ FUNCIÓN MEJORADA: Buscar automáticamente el primer botón con datos
                             function findFirstButtonWithData() {
-                                const searchTerms = [
-                                    { button: "btn-por-asignar", term: "Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision" },
-                                    { button: "btn-recibidos", term: "Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)" },
-                                    { button: "btn-asignados", term: "Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado" }
+                                const searchConfigs = [
+                                    { 
+                                        button: "btn-por-asignar", 
+                                        searchTerms: [
+                                            { column: 'id_status_payment', value: '7|5' }
+                                        ]
+                                    },
+                                    { 
+                                        button: "btn-recibidos", 
+                                        searchTerms: [
+                                            { column: 'id_status_payment', value: '9|10|11' }
+                                        ]
+                                    },
+                                    { 
+                                        button: "btn-asignados", 
+                                        searchTerms: [
+                                            { column: 'id_status_payment', value: '12|13|14' },
+                                            { column: 'id_status_domiciliacion', value: '7' }
+                                        ]
+                                    }
                                 ];
 
-                                for (let i = 0; i < searchTerms.length; i++) {
-                                    const { button, term } = searchTerms[i];
+                                for (let i = 0; i < searchConfigs.length; i++) {
+                                    const { button, searchTerms } = searchConfigs[i];
                                     
-                                    if (checkDataExists(term)) {
+                                    if (checkDataExistsById(searchTerms)) {
                                         // Si hay datos, aplicar la búsqueda y activar el botón
                                         api.columns().search('').draw(false);
-                                        api.column(5).search(term, true, false, true).draw();
-                                        setActiveButton(button);
-
-                                        // Lógica de visibilidad de columnas para la búsqueda automática
+                                        
                                         if (button === "btn-por-asignar") {
-                                            api.column(6).visible(true);
-                                            api.column(7).visible(true);
-                                            api.column(8).visible(false);
-                                            api.column(9).visible(false);
+                                            api.column(1).search('7|5', true, false, true).draw();
+                                            api.column(11).visible(false);
                                         } else if (button === "btn-recibidos") {
-                                            api.column(6).visible(true);
-                                            api.column(7).visible(true);
-                                            api.column(8).visible(false);
+                                            api.column(1).search('9|10|11', true, false, true).draw();
+                                            api.column(11).visible(false);
+                                            api.column(12).visible(false);
+                                            api.column(10).visible(false);
                                             api.column(9).visible(false);
-                                        }else{
-                                            api.column(6).visible(true);
-                                            api.column(7).visible(true);    
-                                            api.column(8).visible(true);
+                                        } else if (button === "btn-asignados") {
+                                            api.search('').draw(false);
+                                            api.column(11).visible(true);
+                                            api.column(12).visible(true);
+                                            api.column(10).visible(true);
                                             api.column(9).visible(true);
+                                            // Filtrar manualmente para mostrar rechazados de payment Y domiciliación
+                                            api.rows().every(function() {
+                                                const data = this.data();
+                                                const idPayment = data.id_status_payment;
+                                                const idDomiciliacion = data.id_status_domiciliacion;
+                                                
+                                                const isPaymentRejected = [12, 13, 14].includes(parseInt(idPayment));
+                                                const isDomiciliacionRejected = parseInt(idDomiciliacion) === 7;
+                                                
+                                                if (isPaymentRejected || isDomiciliacionRejected) {
+                                                    $(this.node()).show();
+                                                } else {
+                                                    $(this.node()).hide();
+                                                }
+                                            });
                                         }
+                                  
+                                        setActiveButton(button);
                                         return true; // Encontramos datos
                                     }
                                 }
                                 
                                 // Si no hay datos en ningún botón, mostrar un mensaje
                                 api.columns().search('').draw(false);
-                                api.column(5).search("NO_DATA_FOUND").draw(); // Búsqueda que no devuelve resultados
-                                setActiveButton("btn-por-asignar"); // Mantener el primer botón activo por defecto
+                                api.column(1).search("NO_DATA_FOUND").draw();
+                                setActiveButton("btn-por-asignar");
 
                                 const tbody = document.querySelector("#tabla-ticket tbody");
                                 if (tbody) {
@@ -470,47 +542,81 @@ function getTicketAprovalDocument() {
                             // Ejecutar la búsqueda automática al inicializar
                             findFirstButtonWithData();
 
-                            // Event listeners para los botones (mantener la funcionalidad manual)
+                            // ✅ EVENT LISTENERS MEJORADOS: Usar búsqueda por ID
                                 $("#btn-por-asignar").on("click", function () {
-                                if (checkDataExists("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision")) {
-                                    api.columns().search('').draw(false);
-                                    api.column(6).visible(true);
-                                    api.column(7).visible(true);
-                                    api.column(8).visible(false);
-                                    api.column(9).visible(false);
-                                    api.column(5).search("Pago Anticipo Pendiente por Revision|Exoneracion Pendiente por Revision", true, false, true).draw();
-                                    setActiveButton("btn-por-asignar");
-                                } else {
-                                    findFirstButtonWithData();
-                                }
+                                    // ✅ LIMPIAR FILTROS PERSONALIZADOS
+                                    $.fn.dataTable.ext.search.pop();
+                                    
+                                    const searchTerms = [{ column: 'id_status_payment', value: '^7$|^5$' }];
+                                    if (checkDataExistsById(searchTerms)) {
+                                        api.columns().search('').draw(false);
+                                        api.column(1).search('^7$|^5$', true, false, true).draw();
+                                        api.column(11).visible(false);
+                                        setActiveButton("btn-por-asignar");
+                                    } else {
+                                        findFirstButtonWithData();
+                                    }
                                 });
 
                                 $("#btn-recibidos").on("click", function () {
-                                if (checkDataExists("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)")) {
-                                    api.columns().search('').draw(false);
-                                    api.column(6).visible(true); // Se aseguran de que las columnas sean visibles
-                                    api.column(7).visible(true); // Se aseguran de que las columnas sean visibless
-                                    api.column(8).visible(false); // Se aseguran de que las columnas sean visibles
-                                    api.column(9).visible(false);
-                                    api.column(5).search("Pendiente Por Cargar Documentos|Pendiente Por Cargar Documento\\(Pago anticipo o Exoneracion\\)|Pendiente Por Cargar Documento\\(PDF Envio ZOOM\\)", true, false, true).draw();
-                                    setActiveButton("btn-recibidos");
-                                } else {
-                                    findFirstButtonWithData();
-                                }
+                                    // ✅ LIMPIAR FILTROS PERSONALIZADOS
+                                    $.fn.dataTable.ext.search.pop();
+                                    
+                                    const searchTerms = [{ column: 'id_status_payment', value: '^9$|^10$|^11$' }];
+                                    if (checkDataExistsById(searchTerms)) {
+                                        api.columns().search('').draw(false);
+                                        api.column(1).search('^9$|^10$|^11$', true, false, true).draw();
+                                        api.column(11).visible(false);
+                                        api.column(12).visible(false);
+                                        api.column(10).visible(false);
+                                        api.column(9).visible(false);
+                                        setActiveButton("btn-recibidos");
+                                    } else {
+                                        findFirstButtonWithData();
+                                    }
                                 });
 
                                 $("#btn-asignados").on("click", function () {
-                                if (checkDataExists("Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado")) {
+                                    console.log('🔍 Filtrando por rechazados...');
+                                    
+                                    // ✅ LIMPIAR COMPLETAMENTE TODOS LOS FILTROS
                                     api.columns().search('').draw(false);
-                                    api.column(6).visible(true); // Se aseguran de que las columnas sean visibles
-                                    api.column(7).visible(true); // Se aseguran de que las columnas sean visibles
-                                    api.column(8).visible(true); // Se aseguran de que las columnas sean visibles
+                                    api.search('').draw(false);
+
+                                    api.column(11).visible(true);
+                                    api.column(12).visible(true);
+                                    api.column(10).visible(true);
                                     api.column(9).visible(true);
-                                    api.column(5).search("Documento de Exoneracion Rechazado|Documento de Anticipo Rechazado|Documento de Envio Rechazado", true, false, true).draw();
+                                    
+                                    // ✅ MOSTRAR TODAS LAS FILAS PRIMERO
+                                    api.rows().every(function() {
+                                        $(this.node()).show();
+                                    });
+                                    
+                                    // ✅ USAR FILTRO PERSONALIZADO DE DATATABLE PARA OR LÓGICO
+                                    // Limpiar filtros personalizados anteriores
+                                    $.fn.dataTable.ext.search.pop();
+                                    
+                                    // Agregar filtro personalizado para rechazados
+                                    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                                        // Solo aplicar este filtro en nuestra tabla
+                                        if (settings.nTable.id !== 'tabla-ticket') {
+                                            return true;
+                                        }
+                                        
+                                        const idPayment = parseInt(data[1]); // Columna 1: id_status_payment
+                                        const idDomiciliacion = parseInt(data[2]); // Columna 2: id_status_domiciliacion
+                                        
+                                        const isPaymentRejected = [12, 13, 14].includes(idPayment);
+                                        const isDomiciliacionRejected = idDomiciliacion === 7;
+                                        
+                                        return isPaymentRejected || isDomiciliacionRejected;
+                                    });
+                                    
+                                    // ✅ APLICAR EL FILTRO PERSONALIZADO
+                                    api.draw();
+                                    
                                     setActiveButton("btn-asignados");
-                                } else {
-                                    findFirstButtonWithData();
-                                }
                                 });
                             },
                         });
@@ -547,6 +653,7 @@ function getTicketAprovalDocument() {
                         // Event listener para subir nuevo documento
                         $("#tabla-ticket tbody").on("click", ".upload-new-doc-btn", function () {
                             const ticketId = $(this).data("id");
+                            currentSelectedTicket = ticketId;
                             const nroTicket = $(this).data("nro-ticket");
                             const serialPos = $(this).data("serial-pos");
                             const documentType = $(this).data("document-type");
@@ -945,7 +1052,7 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
         }
 
         // Mostrar indicador de carga
-        Swal.fire({
+        /*Swal.fire({
             title: 'Subiendo documento...',
             text: 'Por favor espere mientras se procesa el archivo.',
             allowOutsideClick: false,
@@ -953,7 +1060,7 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
             didOpen: () => {
                 Swal.showLoading();
             }
-        });
+        });*/
     };
 
     // Event listener para cerrar modal
@@ -998,7 +1105,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const currentTicketIdDisplay = document.getElementById('currentTicketIdDisplay');
     const currentImageTypeDisplay = document.getElementById('currentImageTypeDisplay');
-    const approveTicketFromImage = document.getElementById('approveTicketFromImage');
     
     const rechazoDocumentoBtn = document.getElementById('RechazoDocumento');
     const modalConfirmacionRechazoBtn = document.getElementById('modalConfirmacionRechazoBtn');
@@ -2397,4 +2503,2281 @@ function getMotivos(documentType) {
   // ¡Aquí se envía el documentType!
   const datos = `action=GetMotivos&documentType=${documentType}`;
   xhr.send(datos);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Función para forzar saltos de línea cada cierto número de caracteres
+
+  function addLineBreaks(text, maxCharsPerLine = 25) {
+    if (!text) return text;
+
+    // Remover saltos de línea existentes para procesar todo el texto
+
+    const cleanText = text.replace(/\n/g, " ");
+
+    let result = "";
+
+    let currentLine = "";
+
+    for (let i = 0; i < cleanText.length; i++) {
+      const char = cleanText[i];
+
+      if (currentLine.length >= maxCharsPerLine) {
+        result += currentLine + "\n";
+
+        currentLine = char;
+      } else {
+        currentLine += char;
+      }
+    }
+
+    if (currentLine) {
+      result += currentLine;
+    }
+
+    return result;
+  }
+
+  // Aplicar saltos de línea automáticos a los campos de texto
+
+  function setupAutoLineBreaks() {
+    const textFields = ["pa_propuesta", "pa_observaciones", "pa_acuerdo"];
+
+    textFields.forEach((fieldId) => {
+      const field = document.getElementById(fieldId);
+
+      if (field) {
+        // Aplicar estilos adicionales
+
+        field.style.wordBreak = "break-all";
+
+        field.style.overflowWrap = "break-word";
+
+        field.style.whiteSpace = "pre-wrap";
+
+        field.addEventListener("input", function (e) {
+          const originalValue = e.target.value;
+
+          const withLineBreaks = addLineBreaks(originalValue, 25);
+
+          if (originalValue !== withLineBreaks) {
+            const cursorPosition = e.target.selectionStart;
+
+            e.target.value = withLineBreaks;
+
+            // Ajustar posición del cursor
+
+            const newPosition = Math.min(cursorPosition, withLineBreaks.length);
+
+            e.target.setSelectionRange(newPosition, newPosition);
+          }
+        });
+
+        field.addEventListener("blur", function (e) {
+          const originalValue = e.target.value;
+
+          const withLineBreaks = addLineBreaks(originalValue, 25);
+
+          if (originalValue !== withLineBreaks) {
+            e.target.value = withLineBreaks;
+          }
+        });
+
+        field.addEventListener("paste", function (e) {
+          setTimeout(() => {
+            const originalValue = e.target.value;
+
+            const withLineBreaks = addLineBreaks(originalValue, 25);
+
+            if (originalValue !== withLineBreaks) {
+              e.target.value = withLineBreaks;
+            }
+          }, 10);
+        });
+      }
+    });
+  }
+
+  // Formatear campo de saldo deudor mientras se escribe
+
+  const saldoDeudorField = document.getElementById("pa_saldo_deudor");
+
+  if (saldoDeudorField) {
+    // Formatear al perder el foco
+
+    saldoDeudorField.addEventListener("blur", function (e) {
+      let value = e.target.value;
+
+      if (value && !isNaN(parseFloat(value))) {
+        const numValue = parseFloat(value);
+
+        e.target.value = numValue.toFixed(2);
+      }
+    });
+
+    // Formatear al escribir para mostrar el $ después
+
+    saldoDeudorField.addEventListener("input", function (e) {
+      let value = e.target.value.replace(/[^0-9.]/g, ""); // Solo números y punto
+
+      // Permitir solo un punto decimal
+
+      const parts = value.split(".");
+
+      if (parts.length > 2) {
+        value = parts[0] + "." + parts.slice(1).join("");
+      }
+
+      // Limitar a 2 decimales
+
+      if (parts[1] && parts[1].length > 2) {
+        value = parts[0] + "." + parts[1].substring(0, 2);
+      }
+
+      e.target.value = value;
+    });
+  }
+
+  // Configurar saltos de línea automáticos
+
+  setupAutoLineBreaks();
+
+  // Aplicar estilos cuando se abra el modal
+
+  const modal = document.getElementById("paymentAgreementModal");
+
+  if (modal) {
+    modal.addEventListener("shown.bs.modal", function () {
+      // Re-aplicar configuración cuando se abra el modal
+
+      setTimeout(() => {
+        setupAutoLineBreaks();
+
+        // Asegurar que el scroll funcione correctamente
+
+        const modalBody = modal.querySelector(".modal-body");
+
+        if (modalBody) {
+          modalBody.style.overflowY = "auto";
+
+          modalBody.style.overflowX = "hidden";
+
+          modalBody.style.maxHeight = "calc(95vh - 120px)";
+
+          // Forzar el scroll si es necesario
+
+          modalBody.scrollTop = 0;
+        }
+      }, 100);
+    });
+
+    // Prevenir que el modal se cierre al hacer scroll
+
+    modal.addEventListener("wheel", function (e) {
+      const modalBody = modal.querySelector(".modal-body");
+
+      if (modalBody && modalBody.scrollHeight > modalBody.clientHeight) {
+        e.stopPropagation();
+      }
+    });
+  }
+
+  // Botón de previsualizar
+
+  const previewBtn = document.getElementById("previewPaymentAgreementBtn");
+
+  if (previewBtn) {
+    previewBtn.addEventListener("click", function () {
+      // Validar monto mínimo
+
+      const saldoDeudor = document.getElementById("pa_saldo_deudor").value;
+
+      if (
+        saldoDeudor &&
+        parseFloat(saldoDeudor.replace(/[^0-9.-]/g, "")) < 10
+      ) {
+        Swal.fire({
+          icon: "warning",
+
+          title: "Monto inválido",
+
+          text: "El saldo deudor debe ser mínimo $10.00",
+
+          confirmButtonColor: "#003594",
+        });
+
+        return;
+      }
+
+      const data = getPaymentAgreementFormData();
+
+      // Usar la variable global del número de convenio
+      const convenioNumero = window.currentConvenioNumero || data.nro_ticket;
+      const html = buildPaymentAgreementHtml(data, convenioNumero);
+
+      const preview = document.getElementById("paymentAgreementPreview");
+
+      preview.src = "data:text/html;charset=utf-8," + encodeURIComponent(html);
+    });
+  }
+
+  // Botón de imprimir
+
+  const printBtn = document.getElementById("printPaymentAgreementBtn");
+
+  if (printBtn) {
+    // 1. Añadir el Listener de Clic al botón principal
+
+    printBtn.addEventListener("click", function () {
+      // Validar monto mínimo
+
+      const saldoDeudor = document.getElementById("pa_saldo_deudor").value;
+
+      if (
+        saldoDeudor &&
+        parseFloat(saldoDeudor.replace(/[^0-9.-]/g, "")) < 10
+      ) {
+        Swal.fire({
+          icon: "warning",
+
+          title: "Monto inválido",
+
+          text: "El saldo deudor debe ser mínimo $10.00",
+
+          confirmButtonColor: "#003594",
+        });
+
+        return;
+      }
+
+      const data = getPaymentAgreementFormData();
+
+      // Usar la variable global del número de convenio
+      const convenioNumero = window.currentConvenioNumero || data.nro_ticket;
+      const html = buildPaymentAgreementHtml(data, convenioNumero);
+
+      // 2. Mostrar la alerta de éxito
+
+      Swal.fire({
+        title: "¡Acuerdo de Pago generado!",
+
+        text: "El acuerdo de pago ha sido generado correctamente y está listo para imprimir.",
+
+        icon: "success",
+
+        confirmButtonText: "Imprimir",
+
+        confirmButtonColor: "#003594",
+
+        cancelButtonText: "Cerrar",
+
+        cancelButtonColor: "#6c757d",
+
+        color: "black",
+
+        showCancelButton: true,
+
+        allowOutsideClick: false,
+
+        allowEscapeKey: true,
+      }).then((result) => {
+        // 3. Ejecutar la lógica de impresión SÓLO si el usuario presiona el botón de Confirmación ('Imprimir')
+
+        if (result.isConfirmed) {
+          // Crear una nueva ventana para imprimir
+
+          const printWindow = window.open("", "_blank", "width=800,height=600");
+
+          if (printWindow) {
+            printWindow.document.open();
+
+            // Agregar script para cerrar automáticamente después de guardar
+
+            const htmlWithScript = html.replace(
+              "</body>",
+              `
+
+                        <script>
+
+                            // Función para cerrar la ventana y recargar la página principal
+
+                            function closeAndReload() {
+
+                                console.log('Cerrando ventana y recargando página principal...');
+
+                                if (window.opener) {
+
+                                    window.opener.location.reload();
+
+                                }
+
+                                window.close();
+
+                            }
+
+                            
+                            
+                            // Detectar cuando se completa la impresión/guardado
+
+                            window.addEventListener('afterprint', function() {
+
+                                console.log('Impresión completada - cerrando ventana');
+
+                                setTimeout(closeAndReload, 1000);
+
+                            });
+
+                            
+                            
+                            // Detectar cuando se pierde el foco (usuario interactúa con diálogo)
+
+                            window.addEventListener('blur', function() {
+
+                                console.log('Foco perdido - verificando si se cerró');
+
+                                setTimeout(function() {
+
+                                    if (document.hidden) {
+
+                                        closeAndReload();
+
+                                    }
+
+                                }, 3000);
+
+                            });
+
+                            
+                            
+                            // Botón manual de cierre (visible solo si es necesario)
+
+                            setTimeout(function() {
+
+                                if (!document.querySelector('.close-btn')) {
+
+                                    const closeBtn = document.createElement('button');
+
+                                    closeBtn.innerHTML = '✓ Documento Guardado - Cerrar';
+
+                                    closeBtn.className = 'close-btn';
+
+                                    closeBtn.style.cssText = \`
+
+                                        position: fixed;
+
+                                        top: 10px;
+
+                                        right: 10px;
+
+                                        background: #28a745;
+
+                                        color: white;
+
+                                        border: none;
+
+                                        padding: 10px 15px;
+
+                                        border-radius: 5px;
+
+                                        cursor: pointer;
+
+                                        font-size: 12px;
+
+                                        z-index: 9999;
+
+                                        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+
+                                    \`;
+
+                                    closeBtn.onclick = closeAndReload;
+
+                                    document.body.appendChild(closeBtn);
+
+                                }
+
+                            }, 5000); // Mostrar botón después de 5 segundos
+
+                        </script>
+
+                    </body>`
+            );
+
+            printWindow.document.write(htmlWithScript);
+
+            printWindow.document.close();
+
+            // Esperar a que se cargue el contenido y luego imprimir
+
+            printWindow.onload = function () {
+              printWindow.focus();
+
+              printWindow.print();
+
+              let reloadExecuted = false; // Flag para evitar recargas múltiples
+
+              let checkInterval = null;
+
+              // Función para recargar la página
+
+              const reloadPage = () => {
+                if (!reloadExecuted) {
+                  reloadExecuted = true;
+
+                  console.log(
+                    "Recargando página después de guardar documento..."
+                  );
+
+                  // Cerrar la ventana de impresión si aún está abierta
+
+                  if (printWindow && !printWindow.closed) {
+                    printWindow.close();
+                  }
+
+                  // Limpiar el intervalo
+
+                  if (checkInterval) {
+                    clearInterval(checkInterval);
+                  }
+
+                  // Recargar la página principal
+
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1000);
+                }
+              };
+
+              // Método principal: Verificar periódicamente si la ventana se cerró
+
+              checkInterval = setInterval(() => {
+                try {
+                  if (printWindow.closed) {
+                    console.log(
+                      "Ventana cerrada detectada - ejecutando recarga"
+                    );
+
+                    reloadPage();
+                  }
+                } catch (e) {
+                  // Si hay error accediendo a la ventana, asumir que se cerró
+
+                  console.log(
+                    "Error accediendo a ventana - asumiendo que se cerró"
+                  );
+
+                  reloadPage();
+                }
+              }, 500); // Verificar cada 500ms
+
+              // Método alternativo: Detectar cuando se completa la impresión
+
+              printWindow.addEventListener("afterprint", function () {
+                console.log("Evento afterprint detectado");
+
+                reloadPage();
+              });
+
+              // Método alternativo: Detectar cuando se pierde el foco
+
+              printWindow.addEventListener("blur", function () {
+                console.log(
+                  "Evento blur detectado - usuario interactuando con diálogo"
+                );
+
+                // Esperar un poco y verificar si la ventana sigue abierta
+
+                setTimeout(() => {
+                  try {
+                    if (printWindow.closed) {
+                      reloadPage();
+                    }
+                  } catch (e) {
+                    reloadPage();
+                  }
+                }, 3000);
+              });
+
+              // Método de respaldo: Detectar cuando se cierra la ventana
+
+              printWindow.addEventListener("beforeunload", function () {
+                console.log("Evento beforeunload detectado");
+
+                reloadPage();
+              });
+
+              // Limpiar el intervalo después de 60 segundos para evitar loops infinitos
+
+              setTimeout(() => {
+                if (checkInterval) {
+                  clearInterval(checkInterval);
+
+                  console.log("Timeout alcanzado - limpiando intervalo");
+                }
+              }, 60000);
+            };
+          } else {
+            // Manejo si el navegador bloquea la nueva ventana (pop-up)
+
+            console.error("El navegador bloqueó la ventana de impresión.");
+
+            Swal.fire(
+              "Error",
+              "El navegador bloqueó la ventana de impresión. Por favor, permita pop-ups.",
+              "error"
+            );
+          }
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          // El usuario hizo clic en "Cerrar"
+
+          console.log("Modal cerrado por el usuario");
+        }
+      });
+    });
+  }
+
+  // Botón de cerrar
+
+  const closeBtn = document.getElementById("closePaymentAgreementBtn");
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", function () {
+      // Usar la instancia global o crear una nueva si no existe
+
+      if (!paymentAgreementModalInstance) {
+        paymentAgreementModalInstance = new bootstrap.Modal(
+          document.getElementById("paymentAgreementModal")
+        );
+      }
+
+      paymentAgreementModalInstance.hide();
+    });
+  }
+});
+
+function getPaymentAgreementFormData() {
+  return {
+    id_ticket: document.getElementById("pa_ticket_id").value,
+
+    fecha_actual: document.getElementById("pa_fecha").value,
+
+    nro_ticket: document.getElementById("pa_numero_ticket").value,
+
+    coddocumento: document.getElementById("pa_rif").value,
+
+    razonsocial: document.getElementById("pa_razon_social").value,
+
+    ejecutivo: document.getElementById("pa_ejecutivo_venta").value,
+
+    desc_modelo: document.getElementById("pa_marca_equipo").value,
+
+    fecha_instalacion: document.getElementById("pa_fecha_instalacion").value,
+
+    serialpos: document.getElementById("pa_serial").value,
+
+    desc_estatus: document.getElementById("pa_status_pos").value,
+
+    saldo_deudor: document.getElementById("pa_saldo_deudor").value,
+
+    propuesta: document.getElementById("pa_propuesta").value,
+
+    observaciones: document.getElementById("pa_observaciones").value,
+
+    acuerdo: document.getElementById("pa_acuerdo").value,
+
+    // Nuevos campos de configuración bancaria
+
+    numero_cuenta: document.getElementById("pa_numero_cuenta").value,
+
+    nombre_empresa: document.getElementById("pa_nombre_empresa").value,
+
+    rif_empresa: document.getElementById("pa_rif_empresa").value,
+
+    banco: document.getElementById("pa_banco").value,
+
+    correo: document.getElementById("pa_correo").value,
+  };
+}
+
+
+function buildPaymentAgreementHtml(d, convenioNumero = null) {
+  const safe = (s) => (s || "").toString();
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return new Date().toLocaleDateString("es-ES");
+
+    try {
+      return new Date(dateStr).toLocaleDateString("es-ES");
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
+  // Función para formatear moneda
+
+  const formatCurrency = (amount) => {
+    if (!amount || amount === "") return "____.__$";
+
+    const numericAmount = parseFloat(amount.replace(/[^0-9.-]/g, ""));
+
+    if (isNaN(numericAmount)) return "____.__$";
+
+    return `${numericAmount.toFixed(2)}$`;
+  };
+
+  return `
+
+    <!DOCTYPE html>
+
+    <html lang="es">
+
+    <head>
+
+        <meta charset="utf-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Acuerdo de Pago - Inteligensa</title>
+
+        <style>
+
+        * {
+
+            margin: 0;
+
+            padding: 0;
+
+            box-sizing: border-box;
+
+        }
+
+        
+        
+        body {
+
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+            font-size: 11px;
+
+            line-height: 1.2;
+
+            color: #333;
+
+            background: #fff;
+
+            padding: 10px;
+
+            max-width: 100%;
+
+            margin: 0 auto;
+
+            overflow-x: hidden;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: flex-start;
+
+            min-height: 100vh;
+
+        }
+
+        
+        
+        .container {
+
+            max-width: 600px;
+
+            width: 100%;
+
+            margin: 0 auto;
+
+            background: white;
+
+            min-height: calc(100vh - 40px);
+
+            display: flex;
+
+            flex-direction: column;
+
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+
+            border-radius: 8px;
+
+        }
+
+        
+        
+        .header {
+
+            text-align: center;
+
+            margin-bottom: 12px;
+
+            padding: 8px 0;
+
+            border-bottom: 2px solid #2c5aa0;
+
+            position: relative;
+
+        }
+
+        
+        
+        .header::before {
+
+            content: '';
+
+            position: absolute;
+
+            top: 0;
+
+            left: 0;
+
+            right: 0;
+
+            height: 3px;
+
+            background: linear-gradient(90deg, #2c5aa0 0%, #4a90e2 50%, #2c5aa0 100%);
+
+        }
+
+        
+        
+        .company-logo-img {
+
+            max-width: 120px;
+
+            max-height: 60px;
+
+            margin-bottom: 8px;
+
+            display: block;
+
+            margin-left: auto;
+
+            margin-right: auto;
+
+        }
+
+        
+        
+        .company-address {
+
+            font-size: 10px;
+
+            color: #555;
+
+            margin-bottom: 8px;
+
+            line-height: 1.3;
+
+            text-align: center;
+
+            font-weight: 500;
+
+        }
+
+        
+        
+        .document-title {
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            color: #2c5aa0;
+
+            margin: 4px 0;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.5px;
+
+        }
+
+        
+        
+        .document-subtitle {
+
+            font-size: 11px;
+
+            color: #666;
+
+            font-weight: 500;
+
+        }
+
+        
+        
+        .document-info {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            margin: 10px 0;
+
+            padding: 8px;
+
+            background: #f8f9fa;
+
+            border-radius: 5px;
+
+            border-left: 3px solid #2c5aa0;
+
+            gap: 10px;
+
+        }
+
+        
+        
+        .info-item {
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            flex: 1;
+
+            min-width: 0;
+
+        }
+
+        
+        
+        .info-label {
+
+            font-size: 9px;
+
+            color: #666;
+
+            font-weight: 600;
+
+            text-transform: uppercase;
+
+            margin-bottom: 3px;
+
+        }
+
+        
+        
+        .info-value {
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+            color: #2c5aa0;
+
+        }
+
+        
+        
+        .content-wrapper {
+
+            flex: 1;
+
+            display: flex;
+
+            flex-direction: column;
+
+        }
+
+        
+        
+        .section {
+
+            margin: 6px 0;
+
+            background: #fff;
+
+            border-radius: 5px;
+
+            overflow: hidden;
+
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+
+            border: 1px solid #e9ecef;
+
+        }
+
+        
+        
+        .section-header {
+
+            background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%);
+
+            color: white;
+
+            padding: 6px 10px;
+
+            font-size: 11px;
+
+            font-weight: bold;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.3px;
+
+        }
+
+        
+        
+        .section-content {
+
+            padding: 8px 10px;
+
+        }
+
+        
+        
+        .field-row {
+
+            display: flex;
+
+            margin-bottom: 4px;
+
+            align-items: flex-start;
+
+        }
+
+        
+        
+        .field-row:last-child {
+
+            margin-bottom: 0;
+
+        }
+
+        
+        
+        .field-label {
+
+            font-weight: 600;
+
+            color: #555;
+
+            min-width: 110px;
+
+            margin-right: 8px;
+
+            font-size: 10px;
+
+            padding-top: 2px;
+
+        }
+
+        
+        
+        .field-value {
+
+            flex: 1;
+
+            color: #333;
+
+            font-weight: 500;
+
+            padding: 3px 8px;
+
+            background: #f8f9fa;
+
+            border-radius: 3px;
+
+            border-left: 2px solid #2c5aa0;
+
+            font-size: 10px;
+
+            min-height: 20px;
+
+            display: flex;
+
+            align-items: center;
+
+        }
+
+        
+        
+        .field-value.large {
+
+            min-height: 60px;
+
+            align-items: flex-start;
+
+            padding-top: 5px;
+
+        }
+
+        
+        
+        .two-columns {
+
+            display: flex;
+
+            gap: 15px;
+
+        }
+
+        
+        
+        .column {
+
+            flex: 1;
+
+        }
+
+        
+        
+        .column-title {
+
+            font-size: 11px;
+
+            font-weight: bold;
+
+            color: #2c5aa0;
+
+            margin-bottom: 8px;
+
+            text-align: center;
+
+            padding: 4px;
+
+            background: #f0f4f8;
+
+            border-radius: 3px;
+
+            border-left: 3px solid #2c5aa0;
+
+        }
+
+        
+        
+        .constancy {
+
+            background: #e8f4fd;
+
+            border: 1px solid #b3d9ff;
+
+            border-radius: 5px;
+
+            padding: 8px;
+
+            margin: 8px 0;
+
+            text-align: center;
+
+            font-size: 10px;
+
+            line-height: 1.4;
+
+            color: #2c5aa0;
+
+            font-weight: 500;
+
+        }
+
+        
+        
+        .signature-section {
+
+            margin-top: 15px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: flex-end;
+
+            gap: 20px;
+
+        }
+
+        
+        
+        .signature-box {
+
+            flex: 1;
+
+            max-width: 280px;
+
+            text-align: center;
+
+            padding: 12px;
+
+            border: 1px dashed #ccc;
+
+            border-radius: 5px;
+
+            background: #fafafa;
+
+            min-height: 80px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: flex-end;
+
+        }
+
+        
+        
+        .signature-line {
+
+            border-top: 2px solid #333;
+
+            margin: 15px auto 8px auto;
+
+            width: 180px;
+
+            display: block;
+
+        }
+
+        
+        
+        .signature-space {
+
+            height: 40px;
+
+            margin: 10px 0;
+
+        }
+
+        
+        
+        .signature-label {
+
+            font-weight: bold;
+
+            color: #2c5aa0;
+
+            margin-bottom: 3px;
+
+            font-size: 10px;
+
+        }
+
+        
+        
+        .signature-field {
+
+            color: #666;
+
+            font-size: 9px;
+
+            margin-bottom: 2px;
+
+        }
+
+        
+        
+        /* ✅ ESTILOS DEL FOOTER ACTUALIZADOS */
+
+        .footer {
+
+            margin-top: 8px;
+
+            padding-top: 6px;
+
+            border-top: 1px solid #ddd;
+
+            color: #666;
+
+            font-size: 8px;
+
+            line-height: 1.2;
+
+        }
+
+        
+        
+        .footer-content {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 8px;
+
+            padding: 8px 0;
+
+            border-bottom: 1px solid #eee;
+
+        }
+
+        
+        
+        .footer-left {
+
+            flex: 1;
+
+            text-align: left;
+
+        }
+
+        
+        
+        .footer-right {
+
+            flex: 1;
+
+            text-align: right;
+
+        }
+
+        
+        
+        .footer-logo {
+
+            max-height: 25px;
+
+            max-width: 100px;
+
+        }
+
+        
+        
+        .footer-rif {
+
+            font-size: 10px;
+
+            font-weight: bold;
+
+            color: #2c5aa0;
+
+        }
+
+        
+        
+        .footer-text {
+
+            text-align: center;
+
+            margin-top: 6px;
+
+        }
+
+        
+        
+        /* Optimizaciones críticas para impresión */
+
+        @media print {
+
+            * {
+
+                -webkit-print-color-adjust: exact !important;
+
+                print-color-adjust: exact !important;
+
+            }
+
+            
+            
+            /* Mostrar header y footer personalizados solo en impresión */
+
+            .print-header,
+
+            .print-footer {
+
+                display: block !important;
+
+            }
+
+            
+            
+            /* Ajustar el contenido para dar espacio al header/footer fijos */
+
+            body {
+
+                margin-top: 50px !important;
+
+                margin-bottom: 40px !important;
+
+            }
+
+            
+            
+            html, body {
+
+                width: 100% !important;
+
+                height: 100% !important;
+
+                margin: 0 !important;
+
+                padding: 0 !important;
+
+                overflow: visible !important;
+
+                display: block !important;
+
+            }
+
+            
+            
+            body {
+
+                font-size: 10px !important;
+
+                padding: 8px !important;
+
+                display: flex !important;
+
+                justify-content: center !important;
+
+                align-items: flex-start !important;
+
+                min-height: 100vh !important;
+
+            }
+
+            
+            
+            .container {
+
+                max-width: 600px !important;
+
+                width: 100% !important;
+
+                min-height: auto !important;
+
+                height: auto !important;
+
+                page-break-inside: avoid;
+
+                margin: 0 auto !important;
+
+                box-shadow: none !important;
+
+                border-radius: 0 !important;
+
+            }
+
+            
+            
+            .section {
+
+                box-shadow: none !important;
+
+                border: 1px solid #ddd !important;
+
+                margin: 4px 0 !important;
+
+                page-break-inside: avoid;
+
+            }
+
+            
+            
+            .header {
+
+                margin-bottom: 6px !important;
+
+                padding: 6px 0 !important;
+
+                page-break-after: avoid;
+
+            }
+
+            
+            
+            .company-logo-img {
+
+                max-width: 100px !important;
+
+                max-height: 50px !important;
+
+                margin-bottom: 6px !important;
+
+            }
+
+            
+            
+            .company-address {
+
+                font-size: 9px !important;
+
+                margin-bottom: 6px !important;
+
+            }
+
+            
+            
+            .document-title {
+
+                font-size: 14px !important;
+
+            }
+
+            
+            
+            .section-content {
+
+                padding: 6px 8px !important;
+
+            }
+
+            
+            
+            .two-columns {
+
+                gap: 10px !important;
+
+            }
+
+            
+            
+            .column-title {
+
+                font-size: 10px !important;
+
+                margin-bottom: 6px !important;
+
+            }
+
+            
+            
+            .constancy {
+
+                padding: 6px !important;
+
+                margin: 6px 0 !important;
+
+                page-break-inside: avoid;
+
+            }
+
+            
+            
+            .signature-section {
+
+                margin-top: 12px !important;
+
+                page-break-inside: avoid;
+
+                gap: 15px !important;
+
+            }
+
+            
+            
+            .signature-box {
+
+                min-height: 70px !important;
+
+                padding: 10px !important;
+
+            }
+
+            
+            
+            .signature-line {
+
+                width: 150px !important;
+
+                margin: 12px auto 6px auto !important;
+
+                display: block !important;
+
+            }
+
+            
+            
+            .signature-space {
+
+                height: 30px !important;
+
+                margin: 8px 0 !important;
+
+            }
+
+            
+            
+            /* ✅ ESTILOS DE IMPRESIÓN PARA FOOTER */
+
+            .footer {
+
+                margin-top: 6px !important;
+
+                padding-top: 4px !important;
+
+                page-break-before: avoid;
+
+            }
+
+            
+            
+            .footer-content {
+
+                margin-bottom: 6px !important;
+
+                padding: 6px 0 !important;
+
+            }
+
+            
+            
+            .footer-logo {
+
+                max-height: 20px !important;
+
+                max-width: 80px !important;
+
+            }
+
+            
+            
+            .footer-rif {
+
+                font-size: 9px !important;
+
+            }
+
+            
+            
+            .footer-text {
+
+                margin-top: 4px !important;
+
+            }
+
+            
+            
+            .field-row {
+
+                margin-bottom: 3px !important;
+
+                page-break-inside: avoid;
+
+            }
+
+            
+            
+            .document-info {
+
+                margin: 6px 0 !important;
+
+                padding: 6px !important;
+
+                page-break-after: avoid;
+
+                gap: 8px !important;
+
+            }
+
+            
+            
+            .section-header {
+
+                padding: 4px 8px !important;
+
+                font-size: 10px !important;
+
+            }
+
+        }
+
+        
+        
+        /* Configuración de página para impresión */
+
+        @page {
+
+            size: letter;
+
+            margin: 0.2in 0.5in;
+
+            padding: 0;
+
+            /* Ocultar header y footer del navegador */
+
+            @top-left { content: ""; }
+
+            @top-center { content: ""; }
+
+            @top-right { content: ""; }
+
+            @bottom-left { content: ""; }
+
+            @bottom-center { content: ""; }
+
+            @bottom-right { content: ""; }
+
+        }
+
+        
+        
+        /* Header personalizado para impresión */
+
+        .print-header {
+
+            display: none;
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            right: 0;
+
+            height: 40px;
+
+            background: white;
+
+            border-bottom: 1px solid #ddd;
+
+            z-index: 1000;
+
+            padding: 8px 20px;
+
+            box-sizing: border-box;
+
+        }
+
+        
+        
+        .print-header-content {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            height: 100%;
+
+        }
+
+        
+        
+        .print-header-logo {
+
+            max-height: 30px;
+
+            max-width: 80px;
+
+        }
+
+        
+        
+        .print-header-rif {
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+            color: #2c5aa0;
+
+        }
+
+        
+        
+        /* Footer personalizado para impresión */
+
+        .print-footer {
+
+            display: none;
+
+            position: fixed;
+
+            bottom: 0;
+
+            left: 0;
+
+            right: 0;
+
+            height: 30px;
+
+            background: white;
+
+            border-top: 1px solid #ddd;
+
+            z-index: 1000;
+
+            padding: 5px 20px;
+
+            box-sizing: border-box;
+
+        }
+
+        
+        
+        .print-footer-content {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            height: 100%;
+
+            font-size: 10px;
+
+            color: #666;
+
+        }
+
+        
+        
+        /* Evitar cortes de página en elementos críticos */
+
+        .header,
+
+        .document-info,
+
+        .section,
+
+        .constancy,
+
+        .signature-section,
+
+        .footer {
+
+            page-break-inside: avoid;
+
+        }
+
+    </style>
+
+    </head>
+
+    <body>
+
+        <!-- Header personalizado para impresión -->
+
+        <div class="print-header">
+
+            <div class="print-header-content">
+
+                <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="print-header-logo" onerror="this.style.display='none'">
+
+                <div class="print-header-rif">RIF: J-00291615-0</div>
+
+            </div>
+
+        </div>
+
+        
+        
+        <!-- Footer personalizado para impresión -->
+
+        <div class="print-footer">
+
+            <div class="print-footer-content">
+
+                <div></div>
+
+                <div></div>
+
+            </div>
+
+        </div>
+
+        
+        
+        <div class="container">
+
+            <div class="header">
+
+                <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="company-logo-img" onerror="this.style.display='none'">
+
+                <div class="company-address">
+
+                    Urbanización El Rosal. Av. Francisco de Miranda<br>
+
+                    Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
+
+                </div>
+
+                <div class="document-title">Acuerdo de Pago</div>
+
+                <div class="document-subtitle"></div>
+
+            </div>
+
+            
+            
+            <div class="document-info">
+
+                <div class="info-item">
+
+                    <div class="info-label">Fecha</div>
+
+                    <div class="info-value">${formatDate(
+                      d.fecha_actual || new Date()
+                    )}</div>
+
+                </div>
+
+                <div class="info-item">
+
+                    <div class="info-label">N° de Ticket</div>
+
+                    <div class="info-value">${safe(d.nro_ticket)}</div>
+
+                </div>
+
+                <div class="info-item">
+
+                    <div class="info-label">N° de Acuerdo</div>
+
+                    <div class="info-value">${
+                      convenioNumero || "No generado"
+                    }</div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="content-wrapper">
+
+                <div class="section">
+
+                    <div class="section-header">Datos del Cliente</div>
+
+                    <div class="section-content">
+
+                        <div class="field-row">
+
+                            <div class="field-label">R.I.F. / Identificación:</div>
+
+                            <div class="field-value">${
+                              safe(d.coddocumento) || "_____________________"
+                            }</div>
+
+                        </div>
+
+                        <div class="field-row">
+
+                            <div class="field-label">Razón Social:</div>
+
+                            <div class="field-value">${
+                              safe(d.razonsocial) || "_____________________"
+                            }</div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="section">
+
+                    <div class="section-header">Antecedentes del Equipo</div>
+
+                    <div class="section-content">
+
+                        <div class="field-row">
+
+                            <div class="field-label">Ejecutivo de Venta:</div>
+
+                            <div class="field-value">${
+                              safe(d.ejecutivo) || "_____________________"
+                            }</div>
+
+                        </div>
+
+                        <div class="field-row">
+
+                            <div class="field-label">Equipo MARCA:</div>
+
+                            <div class="field-value">${
+                              safe(d.desc_modelo) || "_____________________"
+                            }</div>
+
+                        </div>
+
+                        <div class="field-row">
+
+                            <div class="field-label">Fecha de Instalación:</div>
+
+                            <div class="field-value">${
+                              safe(d.fecha_instalacion) ||
+                              "_____________________"
+                            }</div>
+
+                        </div>
+
+                        <div class="field-row">
+
+                            <div class="field-label">Serial N°:</div>
+
+                            <div class="field-value">${
+                              safe(d.serialpos) || "_____________________"
+                            }</div>
+
+                        </div>
+
+                        <div class="field-row">
+
+                            <div class="field-label">Status del POS:</div>
+
+                            <div class="field-value">${
+                              safe(d.desc_estatus) || "_____________________"
+                            }</div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="section">
+
+                    <div class="section-header">Información del Acuerdo</div>
+
+                    <div class="section-content">
+
+                        <div class="two-columns">
+
+                            <div class="column">
+
+                                <div class="column-title">Saldo deudor</div>
+
+                                <div class="field-value">${formatCurrency(
+                                  d.saldo_deudor
+                                )}</div>
+
+                            </div>
+
+                            <div class="column">
+
+                                <div class="column-title">Propuesta</div>
+
+                                <div class="field-value large">${
+                                  safe(d.propuesta) || "_____________________"
+                                }</div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="two-columns">
+
+                            <div class="column">
+
+                                <div class="column-title">Observaciones</div>
+
+                                <div class="field-value large">${
+                                  safe(d.observaciones) ||
+                                  "_____________________"
+                                }</div>
+
+                            </div>
+
+                            <div class="column">
+
+                                <div class="column-title">Acuerdo</div>
+
+                                <div class="field-value large">${
+                                  safe(d.acuerdo) || "_____________________"
+                                }</div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="constancy">
+
+                    <h3 style="color: #2c5aa0; margin-bottom: 10px; font-size: 12px;">INSTRUCCIONES DE PAGO</h3>
+
+                    <p style="margin-bottom: 8px; font-size: 10px; line-height: 1.4; text-align: justify;">
+
+                        Los pagos aquí acordados, deberán realizarse a través de depósitos a la cuenta N° <strong>${
+                          safe(d.numero_cuenta) || "XXXX-XXXX-XX-XXXX"
+                        }</strong> a nombre de <strong>${
+    safe(d.nombre_empresa) ||
+    "Informática y Telecomunicaciones Integradas Inteligen, SA"
+  }</strong> ${safe(d.rif_empresa) || "J-00291615-0"} en el Banco <strong>${
+    safe(d.banco) || "XXXX"
+  }</strong> y notificar a través de este correo los siguientes datos: nombre y número de RIF de su comercio, número de referencia, nombre del titular de la cuenta y monto del pago <strong>${
+    safe(d.correo) || "domiciliación.intelipunto@inteligensa.com"
+  }</strong>. Recordar que cada vez que se realice un pago debe ser a la Tasa del BCV del día.
+
+                    </p>
+
+                </div>
+
+
+
+                <div class="signature-section">
+
+                    <div class="signature-box">
+
+                        <div class="signature-label">Firma del Cliente</div>
+
+                        <div class="signature-space"></div>
+
+                        <div class="signature-line"></div>
+
+                        <div class="signature-field">Nombre: _____________________</div>
+
+                        <div class="signature-field">C.I.: _____________________</div>
+
+                    </div>
+
+                    
+                    
+                    <div class="signature-box">
+
+                        <div class="signature-label">Firma de Inteligensa</div>
+
+                        <div class="signature-space"></div>
+
+                        <div class="signature-line"></div>
+
+                        <div class="signature-field">Nombre: ${
+                          safe(d.ejecutivo) || "_____________________"
+                        }</div>
+
+                        <div class="signature-field">C.I.: _____________________</div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ✅ FOOTER ACTUALIZADO CON LOGO Y RIF -->
+
+                <div class="footer">
+
+                    <div class="footer-content">
+
+                        <div class="footer-left">
+
+                            <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="footer-logo" onerror="this.style.display='none'">
+
+                        </div>
+
+                        <div class="footer-right">
+
+                            <div class="footer-rif">RIF: J-00291615-0'</div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="footer-text">
+
+                        <p>El cliente certifica su responsabilidad de cumplir con los términos y condiciones del acuerdo de pago establecido en este documento.</p>
+
+                        <p>Generado: ${new Date().toLocaleString("es-ES")}</p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </body>
+
+    </html>`;
+}
+
+  const generateNotaEntregaBtn = document.getElementById(
+      "generateNotaEntregaBtn"
+    );
+
+    if (generateNotaEntregaBtn) {
+      generateNotaEntregaBtn.addEventListener("click", function () {
+        if (!currentSelectedTicket) {
+          Swal.fire({
+            icon: "warning",
+
+            title: "Ticket no disponible",
+
+            text: "No se encontró el ID del ticket para generar el acuerdo de pago.",
+          });
+
+          return;
+        }
+
+        // Obtener datos del ticket para el acuerdo de pago
+
+        const xhr = new XMLHttpRequest();
+
+        xhr.open(
+          "POST",
+          `${ENDPOINT_BASE}${APP_PATH}api/documents/GetPaymentAgreementData`
+        );
+
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState !== 4) return;
+
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const res = JSON.parse(xhr.responseText);
+
+              if (!res || !res.success || !res.rows) {
+                Swal.fire({
+                  icon: "warning",
+
+                  title: "No se encontraron datos",
+
+                  text: "No se pudieron obtener los datos del ticket para generar el acuerdo de pago.",
+                });
+
+                return;
+              }
+
+              const d = res.rows[0];
+
+              window.currentPaymentAgreementData = d;
+
+              // Llenar el modal con los datos del ticket
+
+              fillPaymentAgreementModal(d);
+
+              // Cerrar el modal actual y abrir el modal de acuerdo de pago
+                const modal = document.getElementById('uploadDocumentModal');
+                const bootstrapModal = new bootstrap.Modal(modal);
+
+              bootstrapModal.hide();
+
+              setTimeout(() => {
+                // Usar la instancia global o crear una nueva si no existe
+
+                let paymentAgreementModalInstance = null;
+
+                if (!paymentAgreementModalInstance) {
+                  paymentAgreementModalInstance = new bootstrap.Modal(
+                    document.getElementById("paymentAgreementModal")
+                  );
+                }
+
+                paymentAgreementModalInstance.show();
+              }, 300);
+            } catch (error) {
+              console.error("Error parsing JSON:", error);
+
+              Swal.fire({
+                icon: "error",
+
+                title: "Error al procesar datos",
+
+                text: "Hubo un error al procesar los datos del ticket.",
+              });
+            }
+          } else {
+            Swal.fire({
+              icon: "error",
+
+              title: "Error del servidor",
+
+              text: `Error ${xhr.status}: ${xhr.statusText}`,
+            });
+          }
+        };
+
+        xhr.onerror = function () {
+          Swal.fire({
+            icon: "error",
+
+            title: "Error de conexión",
+
+            text: "No se pudo conectar al servidor para obtener los datos del ticket.",
+          });
+        };
+
+        const data = `action=GetPaymentAgreementData&id_ticket=${currentSelectedTicket}`;
+
+        xhr.send(data);
+      });
+    }
+
+    
+function fillPaymentAgreementModal(d) {
+  // Verificar que d existe
+
+  if (!d) {
+    console.error("No data provided to fillPaymentAgreementModal");
+
+    return;
+  }
+
+  const safe = (s) => (s || "").toString();
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return new Date().toLocaleDateString("es-ES");
+
+    try {
+      return new Date(dateStr).toLocaleDateString("es-ES");
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
+  // Llenar campos del modal
+
+  document.getElementById("pa_ticket_id").value = safe(d.id_ticket);
+
+  document.getElementById("pa_fecha").value = formatDate(d.fecha_actual);
+
+  const numeroTicketValue = window.currentConvenioNumero || safe(d.nro_ticket);
+  document.getElementById("pa_numero_ticket").value = numeroTicketValue;
+
+  document.getElementById("pa_rif").value = safe(d.coddocumento);
+
+  document.getElementById("pa_razon_social").value = safe(d.razonsocial);
+
+  document.getElementById("pa_ejecutivo_venta").value = safe(d.ejecutivo) || "";
+
+  document.getElementById("pa_marca_equipo").value =
+    safe(d.desc_modelo) || safe(d.tipo_pos) || "";
+
+  document.getElementById("pa_fecha_instalacion").value =
+    safe(d.fechainstalacion) || "";
+
+  document.getElementById("pa_serial").value = safe(d.serialpos);
+
+  document.getElementById("pa_status_pos").value = safe(d.desc_estatus) || "";
+
+  // Limpiar campos editables
+
+  document.getElementById("pa_saldo_deudor").value = "";
+
+  document.getElementById("pa_propuesta").value = "";
+
+  document.getElementById("pa_observaciones").value = "";
+
+  document.getElementById("pa_acuerdo").value = "";
+
+  // Limpiar campos de configuración bancaria (opcional - mantener valores por defecto)
+
+  // document.getElementById('pa_numero_cuenta').value = 'XXXX-XXXX-XX-XXXX';
+
+  // document.getElementById('pa_nombre_empresa').value = 'Informática y Telecomunicaciones Integradas Inteligen, SA';
+
+  // document.getElementById('pa_rif_empresa').value = 'J-00291615-0';
+
+  // document.getElementById('pa_banco').value = 'XXXX';
+
+  // document.getElementById('pa_correo').value = 'domiciliación.intelipunto@inteligensa.com';
 }
