@@ -3135,6 +3135,13 @@ $(document).ready(function () {
 
       const currentStatusId = $(this).data("current-status-id");
 
+      // ✅ SIMPLE: Obtener el valor de convenio_firmado de los datos de DataTables
+      const dataTableInstance = $("#tabla-ticket").DataTable();
+      const rowData = dataTableInstance.row($(this).closest('tr')).data();
+      const convenioFirmado = rowData.convenio_firmado || 'No';
+      
+      console.log('🔍 convenio_firmado:', convenioFirmado);
+
       document.getElementById("idTicket").value = idTicket;
 
       const getIdTicket = document.getElementById("idTicket").value;
@@ -3163,9 +3170,8 @@ $(document).ready(function () {
 
       // *** LLAMADA CLAVE: Cargar los estatus excluyendo el actual ***
 
-      // Pasa el ID del estado actual para que no se muestre en el select.
-
-      getStatusDom(currentStatusId);
+      // Pasa el ID del estado actual y el valor de convenio_firmado
+      getStatusDom(currentStatusId, convenioFirmado);
 
       // ABRIR EL MODAL EXPLICITAMENTE
 
@@ -3564,8 +3570,8 @@ function updateDomiciliacionStatus(
   xhr.send(datos);
 }
 
-function getStatusDom(currentStatusIdToExclude = null) {
-  // Acepta un parámetro opcional (ID del status actual)
+function getStatusDom(currentStatusIdToExclude = null, convenioFirmado = 'No') {
+  // Acepta parámetros: ID del status actual y si tiene convenio firmado
 
   const xhr = new XMLHttpRequest();
 
@@ -3593,6 +3599,14 @@ function getStatusDom(currentStatusIdToExclude = null) {
             response.estatus.forEach((status) => {
               // *** AQUÍ ESTÁ LA LÓGICA CLAVE: FILTRAR LA OPCIÓN ACTUAL POR ID ***
               if (status.id_status_domiciliacion != currentStatusIdToExclude) {
+                
+                // ✅ SIMPLE: Si no tiene documento, ocultar los estatus de convenio aprobado/rechazado
+                if (convenioFirmado !== 'Sí' && 
+                    (status.name_status_domiciliacion.includes('Convenio Firmado Aprovado') || 
+                     status.name_status_domiciliacion.includes('Convenio Firmado Rechazado'))) {
+                  return; // Saltar este estatus
+                }
+                
                 const option = document.createElement("option");
 
                 option.value = status.id_status_domiciliacion;
@@ -3692,92 +3706,63 @@ function getStatusDom(currentStatusIdToExclude = null) {
 
               Swal.fire({
                 title: "⚠️ CONFIRMACIÓN REQUERIDA ⚠️",
-
                 html: `
-
-                                    <div style="text-align: center; padding: 20px;">
-
-                                        <div style="font-size: 48px; color: #dc3545; margin-bottom: 20px;">🚨🚨🚨</div>
-
-                                        <h4 style="color: #dc3545; font-weight: bold; margin-bottom: 20px;">
-
-                                            ¿Seguro que desea colocar este estatus?
-
-                                        </h4>
-
-                                        <div style="background: linear-gradient(135deg, #fff3cd, #ffeaa7); padding: 20px; border-radius: 10px; border-left: 5px solid #ffc107; margin: 20px 0;">
-
-                                            <p style="color: #856404; font-size: 16px; margin: 0; font-weight: 500;">
-
-                                                <strong>⚠️ ADVERTENCIA:</strong> Esto ocasionará el <strong>CIERRE DEL TICKET</strong> y se le enviará un correo a los departamentos correspondientes.
-
-                                            </p>
-
-                                        </div>
-
-                                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 15px;">
-
-                                            <p style="color: black; margin: 0; font-size: 14px;">
-
-                                                <strong>Estatus:</strong> Deudor - Desafiliado con Deuda
-
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-                                `,
-
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="font-size: 48px; color: #dc3545; margin-bottom: 20px;">🚨🚨🚨</div>
+                        <h4 style="color: #dc3545; font-weight: bold; margin-bottom: 20px;">
+                            ¿Seguro que desea colocar este estatus?
+                        </h4>
+                        <div style="background: linear-gradient(135deg, #fff3cd, #ffeaa7); padding: 20px; border-radius: 10px; border-left: 5px solid #ffc107; margin: 20px 0;">
+                            <p style="color: #856404; font-size: 16px; margin: 0; font-weight: 500;">
+                                <strong>⚠️ ADVERTENCIA:</strong> Esto ocasionará el <strong>CIERRE DEL TICKET</strong> y se le enviará un correo a los departamentos correspondientes.
+                            </p>
+                        </div>
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <p style="color: black; margin: 0; font-size: 14px;">
+                                <strong>Estatus:</strong> Deudor - Desafiliado con Deuda
+                            </p>
+                        </div>
+                    </div>
+                `,
                 showCancelButton: true,
-
                 confirmButtonText: "Confirmar",
-
                 cancelButtonText: "Cancelar",
-
                 confirmButtonColor: "#003594",
-
                 cancelButtonColor: "#6c757d",
-
                 reverseButtons: true,
-
                 focusCancel: true,
-
                 allowOutsideClick: false,
-
                 allowEscapeKey: false,
-
                 keydownListenerCapture: true,
-
                 customClass: {
                   popup: "swal-wide",
-
                   title: "swal-title-danger",
-
                   confirmButton: "swal-confirm-danger",
-
                   cancelButton: "swal-cancel-safe",
                 },
-
                 width: "500px",
-
                 padding: "20px",
               }).then((result) => {
                 if (result.isConfirmed) {
-                  Swal.fire({
-                    title: "✅ ESTATUS ACTUALIZADO",
-
-                    text: "El ticket ha sido cerrado y se han enviado las notificaciones correspondientes.",
-
-                    icon: "success",
-
-                    confirmButtonColor: "#003594",
-
-                    color: "black",
-                  });
-                } else {
+                  // Proceder con el cambio de status
+                  // Obtener los valores necesarios para la actualización
+                  const idTicket = document.getElementById('idTicket').value || window.currentTicketId;
+                  const newStatusId = selectedValue; // El valor seleccionado en el select
+                  const id_user = document.getElementById('id_user').value || window.currentUserId;
+                  const changeStatusDomiciliacionModal = document.getElementById('changeStatusDomiciliacionModal');
+                  const observationsText = document.getElementById('observationsText');
+                  const observations = observationsText ? observationsText.value : '';
+                  
+                  // Llamar a la función de actualización
+                  updateDomiciliacionStatus(
+                    idTicket,
+                    newStatusId,
+                    id_user,
+                    changeStatusDomiciliacionModal,
+                    observations
+                  );
+                } else { // Si cancela (el bloque ELSE es correcto y se mantiene)
                   // Si cancela, resetear el select
-
                   const modalNewStatusDomiciliacionSelect =
                     document.getElementById(
                       "modalNewStatusDomiciliacionSelect"
@@ -3785,20 +3770,15 @@ function getStatusDom(currentStatusIdToExclude = null) {
 
                   if (modalNewStatusDomiciliacionSelect) {
                     modalNewStatusDomiciliacionSelect.value = "";
-
                     modalNewStatusDomiciliacionSelect.selectedIndex = 0;
-
                     modalNewStatusDomiciliacionSelect.style.color = "#6c757d";
                   }
 
                   // Ocultar campo de observaciones si está visible
-
                   if (observationsContainer) {
                     observationsContainer.style.display = "none";
-
                     const observationsText =
                       document.getElementById("observationsText");
-
                     if (observationsText) {
                       observationsText.value = "";
                     }
@@ -3806,15 +3786,17 @@ function getStatusDom(currentStatusIdToExclude = null) {
                 }
               });
             } else {
-              // Ocultar campo de observaciones
-
+              // Para cualquier otro status, ocultar observaciones
               if (observationsContainer) {
                 observationsContainer.style.display = "none";
-
-                document.getElementById("observationsText").value = "";
+                const observationsText = document.getElementById("observationsText");
+                if (observationsText) {
+                  observationsText.value = "";
+                }
               }
             }
           });
+
         } else {
           document.getElementById("rifMensaje").innerHTML +=
             "<br>Error al obtener los status.";
@@ -3839,6 +3821,8 @@ function getStatusDom(currentStatusIdToExclude = null) {
 
   xhr.send(datos);
 }
+
+
 
 document.addEventListener("DOMContentLoaded", function () {
   getStatusDom();

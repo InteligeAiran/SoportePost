@@ -580,6 +580,7 @@ class VirtualAssistant {
     }
     
     addAssistantMessage(message, data = null) {
+        console.log('🤖 addAssistantMessage llamada con:', message, data);
         const chatMessages = document.getElementById('chatMessages');
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message assistant-message';
@@ -601,6 +602,7 @@ class VirtualAssistant {
             </div>
         `;
         chatMessages.appendChild(messageDiv);
+        console.log('🤖 Mensaje agregado al DOM');
         
         // Forzar scroll después de agregar el mensaje
         setTimeout(() => {
@@ -629,26 +631,31 @@ class VirtualAssistant {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
     
-    async processAIQuery(query) {
+    async processAIQuery(query, params = {}) {
         try {
+            console.log('🤖 processAIQuery llamada con:', query, params);
+            
             // Hacer consulta real a la API
+            const bodyParams = { action: query, ...params };
+            console.log('🤖 Parámetros enviados:', bodyParams);
+            
             const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/ai/${query}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: new URLSearchParams({
-                    action: query
-                })
+                body: new URLSearchParams(bodyParams)
             });
 
-            console.log(response);
+            console.log('🤖 Respuesta recibida:', response);
+            console.log('🤖 Status:', response.status);
 
             if (!response.ok) {
                 throw new Error(`Error HTTP: ${response.status}`);
             }
 
             const result = await response.json();
+            console.log('🤖 Resultado JSON:', result);
             
             if (result.success) {
                 // Procesar respuesta exitosa
@@ -658,7 +665,7 @@ class VirtualAssistant {
                 throw new Error(result.message || 'Error en la consulta');
             }
         } catch (error) {
-            console.error('Error en consulta IA:', error);
+            console.error('🤖 Error en consulta IA:', error);
             this.hideChatLoading();
             this.addAssistantMessage('❌ Lo siento, hubo un error al procesar tu consulta. Intenta de nuevo en un momento.');
         }
@@ -727,6 +734,17 @@ class VirtualAssistant {
                     data: data
                 }
             );
+            break;
+
+        case 'technician_individual_efficiency':
+            // Mostrar lista de técnicos para seleccionar
+            console.log('🤖 Datos recibidos para technician_individual_efficiency:', data);
+            this.showTechnicianSelection(data);
+            break;
+
+        case 'technician_performance':
+            // Mostrar rendimiento del técnico seleccionado
+            this.showTechnicianPerformance(data);
             break;
 
         case 'pending_tickets':
@@ -912,6 +930,205 @@ addChartMessage(data) {
         });
     }
 
+    // Función para mostrar la lista de técnicos para seleccionar
+    showTechnicianSelection(technicians) {
+        console.log('🤖 showTechnicianSelection llamada con:', technicians);
+        console.log('🤖 Es array?', Array.isArray(technicians));
+        console.log('🤖 Longitud:', technicians ? technicians.length : 'undefined');
+        
+        if (!technicians || !Array.isArray(technicians) || technicians.length === 0) {
+            console.log('🤖 No se encontraron técnicos disponibles');
+            this.addAssistantMessage('❌ No se encontraron técnicos disponibles.');
+            return;
+        }
+
+        const techniciansHtml = `
+            <div class="technician-selection-container" style="margin-top: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef;">
+                <h5 style="text-align: center; color: #333; margin-bottom: 20px; font-weight: bold;">
+                    <i class="fas fa-users me-2"></i>Selecciona un Técnico
+                </h5>
+                <div class="technician-list" style="max-height: 300px; overflow-y: auto;">
+                    ${technicians.map(tech => `
+                        <div class="technician-item" style="margin-bottom: 10px; padding: 12px; background-color: #ffffff; border-radius: 8px; border: 1px solid #e9ecef; cursor: pointer; transition: all 0.3s ease;" 
+                             onclick="window.virtualAssistant.selectTechnician(${tech.id_user}, '${tech.name} ${tech.surname}')">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong style="color: #333; font-size: 14px;">${tech.name} ${tech.surname}</strong>
+                                    <div style="font-size: 12px; color: #666; margin-top: 2px;">
+                                        ${tech.email || 'Sin email'}
+                                    </div>
+                                </div>
+                                <div style="color: #007bff; font-size: 18px;">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        console.log('🤖 HTML generado para técnicos:', techniciansHtml);
+        
+        // Crear mensaje con HTML directamente
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message assistant-message';
+        messageDiv.innerHTML = `
+            <div class="message-avatar">
+                <img src="${APP_PATH}app/public/img/assistant/woman-avatar.png" alt="Ana" class="msg-avatar">
+            </div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    👨‍💼 Aquí tienes la lista de técnicos disponibles:
+                    ${techniciansHtml}
+                </div>
+                <div class="message-time">${new Date().toLocaleTimeString()}</div>
+            </div>
+        `;
+        chatMessages.appendChild(messageDiv);
+        console.log('🤖 Mensaje agregado al chat');
+        
+        // Forzar scroll después de agregar el mensaje
+        setTimeout(() => {
+            this.scrollToBottom();
+        }, 50);
+    }
+
+    // Función para seleccionar un técnico
+    selectTechnician(technicianId, technicianName) {
+        console.log('🤖 selectTechnician llamada con:', technicianId, technicianName);
+        
+        // Mostrar mensaje de carga
+        this.addAssistantMessage(`🔍 Analizando el rendimiento de <strong>${technicianName}</strong>...`);
+        
+        // Hacer consulta para obtener el rendimiento del técnico
+        this.processAIQuery('technician_performance', { technician_id: technicianId });
+    }
+
+    // Función para mostrar el rendimiento del técnico seleccionado
+    showTechnicianPerformance(data) {
+        console.log('🤖 showTechnicianPerformance llamada con:', data);
+        
+        if (!data) {
+            console.log('🤖 No hay datos de rendimiento');
+            this.addAssistantMessage('❌ No se pudo obtener el rendimiento del técnico.');
+            return;
+        }
+
+        // Parsear recent_tickets si viene como string JSON
+        let recentTickets = [];
+        if (data.recent_tickets) {
+            try {
+                if (typeof data.recent_tickets === 'string') {
+                    recentTickets = JSON.parse(data.recent_tickets);
+                } else if (Array.isArray(data.recent_tickets)) {
+                    recentTickets = data.recent_tickets;
+                }
+            } catch (e) {
+                console.error('🤖 Error parseando recent_tickets:', e);
+                recentTickets = [];
+            }
+        }
+
+        console.log('🤖 recentTickets parseado:', recentTickets);
+
+        const performanceHtml = `
+            <div class="technician-performance-container" style="margin-top: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef;">
+                <h5 style="text-align: center; color: #333; margin-bottom: 20px; font-weight: bold;">
+                    <i class="fas fa-chart-line me-2"></i>Rendimiento de ${data.technician_name}
+                </h5>
+                
+                <div class="performance-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div class="stat-card" style="background-color: #ffffff; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #28a745;">${data.total_tickets || 0}</div>
+                        <div style="font-size: 12px; color: #666;">Total Tickets</div>
+                    </div>
+                    <div class="stat-card" style="background-color: #ffffff; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff; text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #007bff;">${data.completed_tickets || 0}</div>
+                        <div style="font-size: 12px; color: #666;">Completados</div>
+                    </div>
+                    <div class="stat-card" style="background-color: #ffffff; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #ffc107;">${data.in_progress_tickets || 0}</div>
+                        <div style="font-size: 12px; color: #666;">En Proceso</div>
+                    </div>
+                    <div class="stat-card" style="background-color: #ffffff; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545; text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #dc3545;">${data.open_tickets || 0}</div>
+                        <div style="font-size: 12px; color: #666;">Abiertos</div>
+                    </div>
+                </div>
+
+                <div class="performance-details" style="background-color: #ffffff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                        <div class="detail-item">
+                            <span style="font-weight: bold; color: #333;">Eficiencia:</span>
+                            <span style="color: #28a745; font-weight: bold;">${data.efficiency_percentage || 0}%</span>
+                        </div>
+                        <div class="detail-item">
+                            <span style="font-weight: bold; color: #333;">Tasa de Completado:</span>
+                            <span style="color: #007bff; font-weight: bold;">${data.completion_rate || 0}%</span>
+                        </div>
+                        <div class="detail-item">
+                            <span style="font-weight: bold; color: #333;">Tiempo Promedio:</span>
+                            <span style="color: #6c757d; font-weight: bold;">${data.average_time || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span style="font-weight: bold; color: #333;">Último Ticket:</span>
+                            <span style="color: #6c757d; font-weight: bold;">${data.last_ticket_date_formatted || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                ${recentTickets && recentTickets.length > 0 ? `
+                    <div class="recent-tickets" style="background-color: #ffffff; padding: 15px; border-radius: 8px;">
+                        <h6 style="color: #333; margin-bottom: 15px; font-weight: bold;">
+                            <i class="fas fa-history me-2"></i>Tickets Recientes
+                        </h6>
+                        <div style="max-height: 200px; overflow-y: auto;">
+                            ${recentTickets.map(ticket => `
+                                <div style="padding: 8px; border-bottom: 1px solid #e9ecef; font-size: 12px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-weight: bold;">#${ticket.nro_ticket}</span>
+                                        <span style="color: ${ticket.status_color || '#6c757d'};">${ticket.status_name}</span>
+                                    </div>
+                                    <div style="color: #666; margin-top: 2px;">
+                                        ${ticket.date_created || 'Sin fecha'}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        console.log('🤖 HTML generado para rendimiento:', performanceHtml);
+        
+        // Crear mensaje con HTML directamente
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message assistant-message';
+        messageDiv.innerHTML = `
+            <div class="message-avatar">
+                <img src="${APP_PATH}app/public/img/assistant/woman-avatar.png" alt="Ana" class="msg-avatar">
+            </div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    📊 Aquí tienes el análisis detallado del rendimiento:
+                    ${performanceHtml}
+                </div>
+                <div class="message-time">${new Date().toLocaleTimeString()}</div>
+            </div>
+        `;
+        chatMessages.appendChild(messageDiv);
+        console.log('🤖 Mensaje de rendimiento agregado al chat');
+        
+        // Forzar scroll después de agregar el mensaje
+        setTimeout(() => {
+            this.scrollToBottom();
+        }, 50);
+    }
+
     
     formatDataResponse(data) {
         if (!data || !data.data) return '';
@@ -1038,7 +1255,7 @@ addChartMessage(data) {
                     formatted = `
                         <div class="data-response">
                             <div class="technician-efficiency-header">
-                                <h6>🏆 Ranking de Eficiencia de Técnicos</h6>
+                                <h6>🏆 <span style = "color:black;">Ranking de Eficiencia de Técnicos<span></h6>
                                 <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
                                     Análisis basado en tickets asignados, completados y tiempo de resolución (últimos 30 días)
                                 </p>
@@ -1156,7 +1373,7 @@ addChartMessage(data) {
 document.addEventListener('DOMContentLoaded', () => {
     // Esperar un poco para que se cargue el sidenav
     setTimeout(() => {
-        new VirtualAssistant();
+        window.virtualAssistant = new VirtualAssistant();
         console.log('🤖 Asistente Virtual Ana inicializado');
     }, 1000);
 });

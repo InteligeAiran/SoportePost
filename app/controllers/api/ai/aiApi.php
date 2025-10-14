@@ -56,6 +56,12 @@ class ai extends Controller
             case 'technician_efficiency':
                 $this->getTechnicianEfficiency();
                 break;
+            case 'technician_individual_efficiency':
+                $this->getTechnicianList();
+                break;
+            case 'technician_performance':
+                $this->getTechnicianPerformance();
+                break;
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -261,6 +267,76 @@ class ai extends Controller
             }
         } catch (Exception $e) {
             error_log('Error en getTechnicianEfficiency: ' . $e->getMessage());
+            $this->response([
+                'success' => false,
+                'message' => 'Error interno del servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtiene lista de técnicos para selección
+     */
+    private function getTechnicianList()
+    {
+        try {
+            $technicians = $this->aiRepository->getTechnicianList();
+            
+            if ($technicians) {
+                $this->response([
+                    'success' => true,
+                    'data' => $technicians,
+                    'message' => 'Lista de técnicos obtenida exitosamente'
+                ], 200);
+            } else {
+                $this->response([
+                    'success' => false,
+                    'message' => 'No se pudieron obtener los técnicos'
+                ], 500);
+            }
+        } catch (Exception $e) {
+            error_log('Error en getTechnicianList: ' . $e->getMessage());
+            $this->response([
+                'success' => false,
+                'message' => 'Error interno del servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtiene rendimiento de un técnico específico
+     */
+    private function getTechnicianPerformance()
+    {
+        try {
+            $technicianId = $_POST['technician_id'] ?? null;
+            error_log("aiApi::getTechnicianPerformance - technicianId: " . $technicianId);
+            
+            if (!$technicianId) {
+                $this->response([
+                    'success' => false,
+                    'message' => 'ID de técnico no proporcionado'
+                ], 400);
+                return;
+            }
+
+            $performance = $this->aiRepository->getTechnicianPerformance($technicianId);
+            error_log("aiApi::getTechnicianPerformance - performance: " . print_r($performance, true));
+            
+            if ($performance) {
+                $this->response([
+                    'success' => true,
+                    'data' => $performance,
+                    'message' => 'Rendimiento del técnico obtenido exitosamente'
+                ], 200);
+            } else {
+                $this->response([
+                    'success' => false,
+                    'message' => 'No se pudo obtener el rendimiento del técnico'
+                ], 500);
+            }
+        } catch (Exception $e) {
+            error_log('Error en getTechnicianPerformance: ' . $e->getMessage());
             $this->response([
                 'success' => false,
                 'message' => 'Error interno del servidor'

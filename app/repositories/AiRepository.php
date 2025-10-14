@@ -112,4 +112,54 @@ class AiRepository
             return null;
         }
     }
+
+    /**
+     * Obtiene lista de técnicos para selección
+     * Consulta simple para obtener técnicos activos
+     */
+    public function getTechnicianList()
+    {
+        try {
+            $result = $this->aiModel->getTechnicianList();
+            if ($result && $result['numRows'] > 0) {
+                $rows = [];
+                for ($i = 0; $i < $result['numRows']; $i++) {
+                    $rows[] = pg_fetch_assoc($result['query'], $i);
+                }
+                pg_free_result($result['query']);
+                return $rows;
+            } else {
+                return null;
+            }
+        } catch (Exception $e) {
+            error_log('Error en AiRepository::getTechnicianList: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Obtiene rendimiento de un técnico específico
+     * Consulta detallada para análisis individual
+     */
+    public function getTechnicianPerformance($technicianId)
+    {
+        try {
+            $result = $this->aiModel->getTechnicianPerformance($technicianId);
+            error_log("AiRepository::getTechnicianPerformance - Result: " . print_r($result, true));
+            
+            if ($result && $result['numRows'] > 0) {
+                // Para rendimiento individual, devolver solo el primer elemento como objeto
+                $row = pg_fetch_assoc($result['query'], 0);
+                error_log("AiRepository::getTechnicianPerformance - Row: " . print_r($row, true));
+                pg_free_result($result['query']);
+                return $row; // Devolver objeto en lugar de array
+            } else {
+                error_log("AiRepository::getTechnicianPerformance - No data found");
+                return null;
+            }
+        } catch (Exception $e) {
+            error_log('Error en AiRepository::getTechnicianPerformance: ' . $e->getMessage());
+            return null;
+        }
+    }
 }
