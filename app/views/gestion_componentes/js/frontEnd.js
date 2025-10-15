@@ -322,151 +322,711 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                     
                     // Crear HTML para mostrar la información del POS
                     let posInfoHtml = `
-                        <div class="text-start">
-                            <div class="row mb-4">
-                                <div class="col-12 text-center mb-3">
-                                    <h5 class="text-primary">
-                                        <i class="fas fa-desktop me-2"></i>
-                                        Información del POS
-                                    </h5>
-                                    <p class="text-muted">Se encontraron ${allPosData.length} registro(s) de componentes</p>
+                        <div class="pos-modal-container">
+                            <!-- Header con gradiente empresarial -->
+                            <div class="pos-header mb-4">
+                                <div class="d-flex align-items-center justify-content-center mb-3">
+                                    <div class="pos-icon-container">
+                                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <!-- Componente electrónico -->
+                                            <rect x="4" y="8" width="24" height="16" rx="2" fill="currentColor" opacity="0.8"/>
+                                            <rect x="6" y="10" width="20" height="12" rx="1" fill="currentColor"/>
+                                            <!-- Circuitos internos -->
+                                            <rect x="8" y="12" width="4" height="1" fill="white" opacity="0.7"/>
+                                            <rect x="8" y="14" width="6" height="1" fill="white" opacity="0.7"/>
+                                            <rect x="8" y="16" width="3" height="1" fill="white" opacity="0.7"/>
+                                            <rect x="8" y="18" width="5" height="1" fill="white" opacity="0.7"/>
+                                            <!-- Pines de conexión -->
+                                            <rect x="2" y="14" width="2" height="4" rx="1" fill="currentColor" opacity="0.6"/>
+                                            <rect x="28" y="14" width="2" height="4" rx="1" fill="currentColor" opacity="0.6"/>
+                                            <!-- Indicador LED -->
+                                            <circle cx="20" cy="16" r="1.5" fill="#00ff88"/>
+                                        </svg>
+                                    </div>
+                                    <div class="ms-3">
+                                        <h4 class="pos-title mb-1">Información del POS</h4>
+                                        <p class="pos-subtitle mb-0">Módulo Gestión de Periférico</p>
+                                    </div>
+                                </div>
+                                <div class="pos-stats">
+                                    <span class="badge pos-badge-primary">
+                                        <i class="fas fa-layer-group me-1"></i>
+                                        ${allPosData.length} Periférico${allPosData.length !== 1 ? 's' : ''} Registrado${allPosData.length !== 1 ? 's' : ''}
+                                    </span>
                                 </div>
                             </div>
                             
-                            <!-- Información del Ticket y Serial (común para todos) -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <div class="card border-primary">
-                                        <div class="card-header bg-primary text-white">
-                                            <strong><i class="fas fa-ticket-alt me-2"></i>Información del Ticket</strong>
+                            <!-- Información principal en grid responsivo -->
+                            <div class="row g-3 mb-4">
+                                <!-- Serial del POS -->
+                                <div class="col-xl-4 col-lg-6 col-md-6">
+                                    <div class="pos-card pos-card-info">
+                                        <div class="pos-card-header">
+                                            <i class="fas fa-barcode"></i>
+                                            <span>Serial POS</span>
                                         </div>
-                                        <div class="card-body">
-                                            <p class="mb-2"><strong>N° Ticket:</strong> ${nroTicket}</p>
-                                            <p class="mb-0"><strong>ID Ticket:</strong> ${idTicket}</p>
+                                        <div class="pos-card-body">
+                                            <div class="pos-info-item">
+                                                <span class="pos-value pos-serial">${serialPos}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="card border-info">
-                                        <div class="card-header bg-info text-white">
-                                            <strong><i class="fas fa-barcode me-2"></i>Serial del POS</strong>
+
+                                <!-- Información del Banco -->
+                                <div class="col-xl-4 col-lg-6 col-md-6">
+                                    <div class="pos-card pos-card-success">
+                                        <div class="pos-card-header">
+                                            <i class="fas fa-university"></i>
+                                            <span>Banco</span>
                                         </div>
-                                        <div class="card-body">
-                                            <p class="mb-0"><strong>Serial:</strong> ${serialPos}</p>
+                                        <div class="pos-card-body">
+                                            <div class="pos-info-item">
+                                                <span class="pos-value pos-bank">${allPosData[0].banco_ibp || 'No disponible'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tipo de POS -->
+                                <div class="col-xl-4 col-lg-6 col-md-6">
+                                    <div class="pos-card pos-card-warning">
+                                        <div class="pos-card-header">
+                                            <i class="fas fa-cogs"></i>
+                                            <span>Modelo</span>
+                                        </div>
+                                        <div class="pos-card-body">
+                                            <div class="pos-info-item">
+                                                <span class="pos-value pos-model">${allPosData[0].tipo_pos || 'No disponible'}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Información del Banco y Tipo de POS (común para todos) -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <div class="card border-success">
-                                        <div class="card-header bg-success text-white">
-                                            <strong><i class="fas fa-university me-2"></i>Información del Banco</strong>
-                                        </div>
-                                        <div class="card-body">
-                                            <p class="mb-0">
-                                                <strong>Banco:</strong><br>
-                                                <span class="text-break">${allPosData[0].banco_ibp || 'No disponible'}</span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="card border-warning">
-                                        <div class="card-header bg-warning text-dark">
-                                            <strong><i class="fas fa-cogs me-2"></i>Tipo de POS</strong>
-                                        </div>
-                                        <div class="card-body">
-                                            <p class="mb-0">
-                                                <strong>Modelo:</strong><br>
-                                                <span class="text-break">${allPosData[0].tipo_pos || 'No disponible'}</span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Componentes por Módulo (ITERAR TODOS LOS REGISTROS) -->
-                            <div class="row mb-3">
+                            <!-- Información del Ticket -->
+                            <div class="row mb-4">
                                 <div class="col-12">
-                                    <h6 class="text-primary mb-3">
-                                        <i class="fas fa-puzzle-piece me-2"></i>
-                                        Componentes por Módulo
-                                    </h6>
+                                    <div class="pos-card pos-card-primary">
+                                        <div class="pos-card-header">
+                                            <i class="fas fa-ticket-alt"></i>
+                                            <span>Información del Ticket</span>
+                                        </div>
+                                        <div class="pos-card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="pos-info-item">
+                                                        <label>N° Ticket</label>
+                                                        <span class="pos-value">${nroTicket}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="pos-info-item">
+                                                        <label>ID Ticket</label>
+                                                        <span class="pos-value">${idTicket}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Componentes por Módulo -->
+                            <div class="pos-modules-section">
+                                <div class="pos-section-header">
+                                    <h5 class="pos-section-title">
+                                        <i class="fas fa-puzzle-piece me-2"></i>
+                                        Periférico por Gestión
+                                    </h5>
+                                    <div class="pos-section-line"></div>
+                                </div>
+                                
+                                <div class="row g-3">
                     `;
 
                     // ITERAR TODOS LOS REGISTROS DE COMPONENTES
                     allPosData.forEach((posData, index) => {
                         posInfoHtml += `
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                    <div class="card border-secondary">
-                                        <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-                                            <strong>
-                                                <i class="fas fa-layer-group me-2"></i>
-                                                Módulo: ${posData.modulo_insert || 'No disponible'}
-                                            </strong>
-                                            <span class="badge bg-light text-dark">#${index + 1}</span>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <p class="mb-2">
-                                                        <strong><i class="fas fa-user me-2"></i>Usuario que Cargó:</strong><br>
-                                                        <span class="text-break">${posData.full_name || 'No disponible'}</span>
-                                                    </p>
+                                    <div class="col-12">
+                                        <div class="pos-module-card">
+                                            <div class="pos-module-header">
+                                                <div class="pos-module-title">
+                                                    <i class="fas fa-layer-group me-2"></i>
+                                                    <span>${posData.modulo_insert || 'Módulo Sin Nombre'}</span>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <p class="mb-2">
-                                                        <strong><i class="fas fa-calendar me-2"></i>Fecha de Carga:</strong><br>
-                                                        <span class="text-break">${posData.component_insert_date || 'No disponible'}</span>
-                                                    </p>
+                                                <div class="pos-module-badge">
+                                                    <span class="badge pos-module-number">#${index + 1}</span>
                                                 </div>
                                             </div>
-                                            <div class="row">
-                                                <div class="col-12">
-                                                    <p class="mb-0">
-                                                        <strong><i class="fas fa-puzzle-piece me-2"></i>Componentes:</strong><br>
-                                                        <span class="text-break badge bg-primary text-white p-2" style="font-size: 0.9em;">
-                                                            ${posData.aggregated_components_by_module || 'No disponible'}
-                                                        </span>
-                                                    </p>
+                                            <div class="pos-module-body">
+                                                <div class="pos-module-table">
+                                                    <div class="pos-module-row">
+                                                        <div class="pos-module-cell pos-module-cell-user">
+                                                            <div class="pos-module-cell-header">
+                                                                <i class="fas fa-user me-2"></i>
+                                                                <span>Usuario Responsable</span>
+                                                            </div>
+                                                            <div class="pos-module-cell-content">
+                                                                <span class="pos-module-value">${posData.full_name || 'No disponible'}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="pos-module-cell pos-module-cell-date">
+                                                            <div class="pos-module-cell-header">
+                                                                <i class="fas fa-calendar me-2"></i>
+                                                                <span>Fecha de Registro</span>
+                                                            </div>
+                                                            <div class="pos-module-cell-content">
+                                                                <span class="pos-module-value">${posData.component_insert_date || 'No disponible'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="pos-module-row pos-module-row-components">
+                                                        <div class="pos-module-cell pos-module-cell-full">
+                                                            <div class="pos-module-cell-header">
+                                                                <i class="fas fa-puzzle-piece me-2"></i>
+                                                                <span>Periférico Asociados</span>
+                                                            </div>
+                                                            <div class="pos-module-cell-content">
+                                                                <div class="pos-components-badge">
+                                                                    ${posData.aggregated_components_by_module || 'No disponible'}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
                         `;
                     });
 
                     posInfoHtml += `
-                            <!-- Nota informativa -->
-                            <div class="row mt-3">
-                                <div class="col-12">
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        <strong>Nota:</strong> Esta información se obtiene desde la base de datos de Intelipunto y muestra todos los registros de componentes registrados para este serial de POS, organizados por módulo.
+                                </div>
+                            </div>
+
+                            <!-- Nota informativa empresarial -->
+                            <div class="pos-footer-note">
+                                <div class="pos-note-content">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <div>
+                                        <strong>Información del Módulo</strong>
+                                        <p class="mb-0">Esta información se obtiene desde la base de datos de Soporte Post-Venta y muestra todos los registros de Periféricos registrados para este serial de POS, organizados por módulo de gestión técnica.</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <style>
+                            /* Estilos globales del modal */
+                            .pos-modal-popup {
+                                border-radius: 20px !important;
+                                overflow: hidden !important;
+                                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
+                                max-height: 95vh !important;
+                                margin-left: 16%;
+                            }
+                            
+                            .pos-modal-container-wrapper {
+                                padding: 0 !important;
+                            }
+                            
+                            .pos-modal-html-container {
+                                padding: 0 !important;
+                                max-height: 85vh !important;
+                                overflow-y: auto !important;
+                            }
+
+                            .pos-modal-container {
+                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                color: #2c3e50;
+                                max-height: 85vh;
+                                overflow-y: auto;
+                                background: #f8f9fa;
+                                padding: 1.5rem;
+                            }
+
+                            .pos-header {
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white;
+                                padding: 2rem;
+                                border-radius: 15px;
+                                text-align: center;
+                                position: relative;
+                                overflow: hidden;
+                            }
+
+                            .pos-header::before {
+                                content: '';
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                bottom: 0;
+                                background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+                                opacity: 0.3;
+                            }
+
+                            .pos-icon-container {
+                                width: 60px;
+                                height: 60px;
+                                background: rgba(255, 255, 255, 0.2);
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 24px;
+                                backdrop-filter: blur(10px);
+                                border: 2px solid rgba(255, 255, 255, 0.3);
+                            }
+
+                            .pos-title {
+                                font-size: 1.8rem;
+                                font-weight: 700;
+                                margin: 0;
+                                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                            }
+
+                            .pos-subtitle {
+                                font-size: 0.95rem;
+                                opacity: 0.9;
+                                font-weight: 300;
+                            }
+
+                            .pos-stats {
+                                position: relative;
+                                z-index: 1;
+                            }
+
+                            .pos-badge-primary {
+                                background: rgba(255, 255, 255, 0.2);
+                                color: white;
+                                padding: 0.5rem 1rem;
+                                border-radius: 25px;
+                                font-weight: 500;
+                                backdrop-filter: blur(10px);
+                                border: 1px solid rgba(255, 255, 255, 0.3);
+                            }
+
+                            .pos-card {
+                                background: white;
+                                border-radius: 12px;
+                                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                                border: 1px solid #e9ecef;
+                                transition: all 0.3s ease;
+                                height: 100%;
+                                overflow: hidden;
+                            }
+
+                            .pos-card:hover {
+                                transform: translateY(-2px);
+                                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+                            }
+
+                            .pos-card-header {
+                                padding: 1rem 1.25rem;
+                                font-weight: 600;
+                                font-size: 0.9rem;
+                                text-transform: uppercase;
+                                letter-spacing: 0.5px;
+                                display: flex;
+                                align-items: center;
+                                gap: 0.5rem;
+                            }
+
+                            .pos-card-primary .pos-card-header {
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white;
+                            }
+
+                            .pos-card-info .pos-card-header {
+                                background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+                                color: white;
+                            }
+
+                            .pos-card-success .pos-card-header {
+                                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                                color: white;
+                            }
+
+                            .pos-card-warning .pos-card-header {
+                                background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+                                color: #212529;
+                            }
+
+                            .pos-card-body {
+                                padding: 1.25rem;
+                            }
+
+                            .pos-info-item {
+                                margin-bottom: 1rem;
+                                text-align: center;
+                            }
+
+                            .pos-info-item:last-child {
+                                margin-bottom: 0;
+                            }
+
+                            .pos-info-item label {
+                                display: block;
+                                font-size: 0.8rem;
+                                font-weight: 600;
+                                color: #6c757d;
+                                text-transform: uppercase;
+                                letter-spacing: 0.5px;
+                                margin-bottom: 0.25rem;
+                                width: 97% !important;
+                            }
+
+                            .pos-value {
+                                display: block;
+                                font-size: 1rem;
+                                font-weight: 600;
+                                color: #2c3e50;
+                                word-break: break-word;
+                                text-align: center !important;
+                            }
+
+                            /* CSS específico para la sección del ticket */
+                            .pos-card-primary .pos-info-item {
+                                text-align: center !important;
+                            }
+
+                            .pos-card-primary .pos-info-item label {
+                                text-align: center !important;
+                            }
+
+                            .pos-card-primary .pos-info-item .pos-value {
+                                text-align: center !important;
+                            }
+
+                            .pos-serial {
+                                font-family: 'Courier New', monospace;
+                                background: #f8f9fa;
+                                padding: 0.25rem 0.5rem;
+                                border-radius: 4px;
+                                border: 1px solid #dee2e6;
+                            }
+
+                            .pos-bank, .pos-model {
+                                font-weight: 500;
+                                line-height: 1.4;
+                            }
+
+                            .pos-modules-section {
+                                margin-top: 2rem;
+                            }
+
+                            .pos-section-header {
+                                display: flex;
+                                align-items: center;
+                                margin-bottom: 1.5rem;
+                                position: relative;
+                            }
+
+                            .pos-section-title {
+                                font-size: 1.3rem;
+                                font-weight: 700;
+                                color: #2c3e50;
+                                margin: 0;
+                                background: white;
+                                padding-right: 1rem;
+                                z-index: 1;
+                                position: relative;
+                            }
+
+                            .pos-section-line {
+                                flex: 1;
+                                height: 2px;
+                                background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+                                border-radius: 1px;
+                                margin-left: 1rem;
+                            }
+
+                            .pos-module-card {
+                                background: white;
+                                border-radius: 12px;
+                                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                                border: 1px solid #e9ecef;
+                                transition: all 0.3s ease;
+                                overflow: hidden;
+                            }
+
+                            .pos-module-card:hover {
+                                transform: translateY(-2px);
+                                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+                            }
+
+                            .pos-module-header {
+                                background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+                                color: white;
+                                padding: 1rem 1.25rem;
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                            }
+
+                            .pos-module-title {
+                                font-weight: 600;
+                                font-size: 1rem;
+                                display: flex;
+                                align-items: center;
+                            }
+
+                            .pos-module-badge {
+                                display: flex;
+                                align-items: center;
+                            }
+
+                            .pos-module-number {
+                                background: rgba(255, 255, 255, 0.2);
+                                color: white;
+                                border: 1px solid rgba(255, 255, 255, 0.3);
+                                font-weight: 600;
+                                padding: 0.25rem 0.75rem;
+                                border-radius: 15px;
+                                font-size: 0.8rem;
+                            }
+
+                            .pos-module-body {
+                                padding: 1.5rem;
+                            }
+
+                            .pos-module-table {
+                                width: 100%;
+                            }
+
+                            .pos-module-row {
+                                display: flex;
+                                margin-bottom: 1rem;
+                                border-radius: 8px;
+                                overflow: hidden;
+                                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                            }
+
+                            .pos-module-row:last-child {
+                                margin-bottom: 0;
+                            }
+
+                            .pos-module-row-components {
+                                background: #f8f9fa;
+                                border: 1px solid #e9ecef;
+                            }
+
+                            .pos-module-cell {
+                                padding: 1rem;
+                                background: white;
+                                border-right: 1px solid #e9ecef;
+                                flex: 1;
+                            }
+
+                            .pos-module-cell:last-child {
+                                border-right: none;
+                            }
+
+                            .pos-module-cell-user {
+                                flex: 0 0 50%;
+                            }
+
+                            .pos-module-cell-date {
+                                flex: 0 0 50%;
+                            }
+
+                            .pos-module-cell-full {
+                                flex: 1;
+                            }
+
+                            .pos-module-cell-header {
+                                display: flex;
+                                align-items: center;
+                                margin-bottom: 0.5rem;
+                                font-size: 0.8rem;
+                                font-weight: 600;
+                                color: #6c757d;
+                                text-transform: uppercase;
+                                letter-spacing: 0.5px;
+                            }
+
+                            .pos-module-cell-content {
+                                display: flex;
+                                align-items: center;
+                            }
+
+                            .pos-module-value {
+                                font-size: 0.95rem;
+                                font-weight: 500;
+                                color: #2c3e50;
+                                line-height: 1.4;
+                            }
+
+                            .pos-components-badge {
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white;
+                                padding: 0.75rem 1rem;
+                                border-radius: 8px;
+                                font-size: 0.9rem;
+                                font-weight: 500;
+                                line-height: 1.4;
+                                word-break: break-word;
+                                display: inline-block;
+                                max-width: 100%;
+                            }
+
+                            .pos-footer-note {
+                                margin-top: 2rem;
+                                background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+                                border: 1px solid #bbdefb;
+                                border-radius: 12px;
+                                padding: 1.5rem;
+                            }
+
+                            .pos-note-content {
+                                display: flex;
+                                align-items: flex-start;
+                                gap: 1rem;
+                            }
+
+                            .pos-note-content i {
+                                color: #1976d2;
+                                font-size: 1.2rem;
+                                margin-top: 0.25rem;
+                            }
+
+                            .pos-note-content strong {
+                                color: #1976d2;
+                                font-size: 1rem;
+                                display: block;
+                                margin-bottom: 0.5rem;
+                            }
+
+                            .pos-note-content p {
+                                color: #424242;
+                                font-size: 0.9rem;
+                                line-height: 1.5;
+                                margin: 0;
+                            }
+
+                            /* Responsive Design */
+                            @media (min-width: 1400px) {
+                                .pos-modal-container {
+                                    padding: 2rem;
+                                }
+                                
+                                .pos-header {
+                                    padding: 2.5rem;
+                                }
+                                
+                                .pos-title {
+                                    font-size: 2rem;
+                                }
+                                
+                                .pos-card-body {
+                                    padding: 1.5rem;
+                                }
+                                
+                                .pos-module-body {
+                                    padding: 2rem;
+                                }
+                            }
+
+                            @media (max-width: 1200px) {
+                                .pos-header {
+                                    padding: 1.5rem;
+                                }
+                                
+                                .pos-title {
+                                    font-size: 1.5rem;
+                                }
+                            }
+
+                            @media (max-width: 768px) {
+                                .pos-header {
+                                    padding: 1.25rem;
+                                }
+                                
+                                .pos-icon-container {
+                                    width: 50px;
+                                    height: 50px;
+                                    font-size: 20px;
+                                }
+                                
+                                .pos-title {
+                                    font-size: 1.3rem;
+                                }
+                                
+                                .pos-subtitle {
+                                    font-size: 0.85rem;
+                                }
+                                
+                                .pos-module-row {
+                                    flex-direction: column;
+                                }
+                                
+                                .pos-module-cell {
+                                    border-right: none;
+                                    border-bottom: 1px solid #e9ecef;
+                                }
+                                
+                                .pos-module-cell:last-child {
+                                    border-bottom: none;
+                                }
+                                
+                                .pos-module-cell-user,
+                                .pos-module-cell-date {
+                                    flex: 1;
+                                }
+                            }
+
+                            @media (max-width: 576px) {
+                                .pos-header {
+                                    padding: 1rem;
+                                }
+                                
+                                .pos-card-body {
+                                    padding: 1rem;
+                                }
+                                
+                                .pos-module-body {
+                                    padding: 1rem;
+                                }
+                                
+                                .pos-footer-note {
+                                    padding: 1rem;
+                                }
+                                
+                                .pos-note-content {
+                                    flex-direction: column;
+                                    gap: 0.5rem;
+                                }
+                            }
+                        </style>
                     `;
 
                     // Mostrar el modal con la información del POS
                     Swal.fire({
-                        title: 'Información del POS',
+                        title: '',
                         html: posInfoHtml,
-                        icon: 'info',
+                        showConfirmButton: true,
                         confirmButtonText: 'Cerrar',
-                        confirmButtonColor: '#17a2b8',
-                        width: 900, // Aumentar el ancho para mostrar más información
+                        confirmButtonColor: '#667eea',
+                        width: '65%',
+                        maxWidth: '1400px',
+                        padding: '0',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
                         customClass: {
-                            popup: 'swal-wide'
+                            popup: 'pos-modal-popup',
+                            container: 'pos-modal-container-wrapper',
+                            htmlContainer: 'pos-modal-html-container'
+                        },
+                        didOpen: () => {
+                            // Aplicar estilos adicionales al modal
+                            const modal = document.querySelector('.pos-modal-popup');
+                            if (modal) {
+                                modal.style.borderRadius = '20px';
+                                modal.style.overflow = 'hidden';
+                                modal.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.25)';
+                            }
                         }
                     });
 
@@ -590,15 +1150,15 @@ function formatTicketDetailsPanel(d) {
   }
 
   return `
-        <div class="container-fluid">
+        <div class="container-fluid" style="height: 100%; overflow-y: auto;">
             <div class="row mb-3 align-items-center">
                 <div class="col-md-3 text-center">
                     <div id="device-image-container" class="p-2">
-                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}">
+                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" style="max-width: 100%; height: auto;">
                     </div>
                 </div>
                 <div class="col-md-9">
-                    <h4 style = "color: black;">Ticket #${d.nro_ticket}</h4>
+                    <h4 style="color: black;">Ticket #${d.nro_ticket}</h4>
                     <hr class="mt-2 mb-3">
                     <div class="row">
                         <div class="col-sm-6 mb-2">
@@ -608,38 +1168,43 @@ function formatTicketDetailsPanel(d) {
                         <div class="col-sm-6 mb-2">
                           <strong><div>Estatus POS:</div></strong>
                           ${d.estatus_inteliservices}
-                        </div><br>
+                        </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div>Fecha Instalación:</div></strong>
+                          <strong><div>Fecha Instalación:</div></strong>
                           ${d.fecha_instalacion || 'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div>Fecha último ticket:</div></strong>
+                          <strong><div>Fecha último ticket:</div></strong>
                           ${d.fecha_cierre_anterior || 'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div>Garantía:</div></strong>
+                          <strong><div>Garantía:</div></strong>
                           <span style="font-weight: bold; color: ${garantiaMessage.includes('Aplica') ? 'red' : 'green'};">${garantiaMessage}</span>
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div>Creación ticket:</div></strong>
+                          <strong><div>Creación ticket:</div></strong>
                           ${d.create_ticket}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div>Usuario Gestión:</div></strong>
+                          <strong><div>Usuario Gestión:</div></strong>
                           ${d.full_name_tecnico}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div>Dirección Instalación:</div></strong>
+                          <strong><div>Dirección Instalación:</div></strong>
                           ${d.nombre_estado_cliente || 'Sin datos'}
-                        </div><br>
-                         <div class="col-sm-6 mb-2">
-                            <br><strong><div>Estatus Ticket:</div></strong>
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                          <strong><div>Estatus Ticket:</div></strong>
                             ${d.name_status_ticket}
-                        </div><br>
-                        <br><div class="col-sm-6 mb-2">
-                              <br><strong><div>Falla Reportada:</div></strong>
-                             <span class="falla-reportada-texto">${d.name_failure}</span>
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                          <strong><div>Falla Reportada:</div></strong>
+                          <span class="falla-reportada-texto">${d.name_failure}</span>
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                          <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket="${d.id_ticket}" data-serial-pos="${d.serial_pos}">
+                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
+                          </button>
                         </div>
                     </div>
                 </div>
@@ -647,8 +1212,8 @@ function formatTicketDetailsPanel(d) {
             <hr class="mt-2 mb-3">
             <div class="row">
                 <div class="col-12">
-                    <h5 style = "color: black;" >Gestión / Historial:</h5>
-                    <div id="ticket-history-content">
+                    <h5 style="color: black;">Gestión / Historial:</h5>
+                    <div id="ticket-history-content" style="max-height: 300px; overflow-y: auto;">
                         <p>Selecciona un ticket para cargar su historial.</p>
                     </div>
                 </div>
@@ -1146,7 +1711,6 @@ function showElapsedLegend(e) {
         width: 520,
     });
 }
-
 $(document).ready(function () {
     const changeStatusDomiciliacionModalElement = document.getElementById("changeStatusDomiciliacionModal");
 

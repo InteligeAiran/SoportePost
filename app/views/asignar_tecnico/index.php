@@ -629,16 +629,15 @@ function mi_navbar() {}
                     <div class="modal-content">
                         <div class="modal-header bg-gradient-primary">
                             <h5 class="modal-title text-white" id="modalComponentesLabel">
-                                <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo
+                                <i class="bi bi-box-seam-fill me-2"></i>Lista de Periféricos del Dispositivo
                             </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <div class="row">
                                 <div class="col-12">
                                     <div class="alert bg-gradient-primary text-white" role="alert">
                                         <i class="bi bi-info-circle me-2"></i>
-                                        Selecciona los componentes que deseas cargar para este dispositivo.
+                                        Selecciona los Periféricos que deseas cargar para este dispositivo.
                                     </div>
                                 </div>
                             </div>
@@ -652,7 +651,7 @@ function mi_navbar() {}
                                                     <th>
                                                         <input type="checkbox" id="selectAllComponents" class="form-check-input">
                                                     </th>
-                                                    <th>Componente</th>
+                                                    <th>Periféricos</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="tbodyComponentes">
@@ -666,7 +665,7 @@ function mi_navbar() {}
                                 <div class="col-12">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
-                                            <span class="text-muted">Componentes seleccionados: </span>
+                                            <span class="text-muted">Periférico seleccionados: </span>
                                             <span id="contadorComponentes" class="badge bg-primary">0</span>
                                         </div>
                                         <div>

@@ -2153,7 +2153,7 @@ function buildDeliveryNoteHtml(d) {
               <div class="column">
                 <div class="column-title">Accesorios</div>
                 <div class="field-row">
-                  <div class="field-label">Componentes:</div>
+                  <div class="field-label">Periféricos:</div>
                   <div class="field-value">${safe(d.componentes || 'Sin accesorios adicionales')}</div>
                 </div>
               </div>
@@ -2896,7 +2896,7 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = ${d.id_ticket}" data-serial-pos = ${d.serial_pos}>
-                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Componentes del Dispositivo
+                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
                           </button>
                         </div>    
                     </div>
@@ -3165,7 +3165,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
                                                 </tr>
                                                 ${showComponents ? `
                                                     <tr>
-                                                        <th class="text-start">Componentes Asociados:</th>
+                                                        <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
                                                     </tr>
                                                 ` : ''}
@@ -3337,7 +3337,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_lab) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
-                        ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Componentes</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
@@ -3710,7 +3710,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                 if (response.success) {
                     Swal.fire({
                         title: '¡Éxito!',
-                        html: `Los componentes del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
+                        html: `Los Periféricos del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
                         icon: 'success',
                         confirmButtonText: 'Aceptar',
                         color: 'black',
@@ -3820,7 +3820,7 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                     
                     tbodyComponentes.innerHTML = componentsHtml;
                     document.getElementById('modalComponentesLabel').innerHTML = `
-                        <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
+                        <i class="bi bi-box-seam-fill me-2"></i>Lista de Periféricos del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
                     `;
 
                     // Finalmente, muestra el modal de Bootstrap
@@ -3880,7 +3880,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (allCheckboxes.length > 0 && allDisabledAndChecked) {
                 Swal.fire({
                     title: '¡Información!',
-                    html: `Todos los componentes del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
+                    html: `Todos los Periféricos del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
                     icon: 'info',
                     confirmButtonText: 'Aceptar',
                     color: 'black',

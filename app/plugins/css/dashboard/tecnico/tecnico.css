@@ -1,6 +1,6 @@
 @media screen and (min-width: 1490px) {
   .New-7210Dashboard{
-    margin-left: -10% !important;
+    margin-left: -80% !important;
     margin-bottom: 10% !important;
     width: 278% !important;
   }
@@ -9,6 +9,17 @@
     margin-left: -165%;
     margin-bottom: 24%;
     width: 351%;
+  }
+
+  .Kozen-P10Dashboard {
+    margin-left: -44px;
+    height: 331px;
+  }
+
+  .move-2500Dashboard {
+    margin-left: -69px !important;;
+    margin-bottom: 4% !important;;
+    width: 360% !important;;
   }
 }
 

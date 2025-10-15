@@ -754,7 +754,6 @@ function mi_navbar() {}
                                 <h5 class="modal-title text-white" id="modalComponentesLabel">
                                     <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo
                                 </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="row">

@@ -611,19 +611,18 @@ function mi_navbar() {}
                         <!-- Card Tickets En Taller -->
                             <div class="card" id="Card-Send-To-Taller">
                                 <div class="card-body">
-                                    <div class="card-content-wrapper">
+                                    <div class="card-content-wrapper" style="margin-top: -13%;">
                                         <div class="numbers">
                                             <p class="card-category" style="color: black">POS EN TALLER</p>
-                                            <h5 class="card-title" id="TotalEnviadoTaller">0</h5>
+                                            <h5 class="card-title font-weight-bolder" id="TotalEnviadoTaller">0</h5>
                                             <p class="card-text mb-0">
-                                                <span class="text-percentage" id="PorcentSendToTaller"></span>Del total
-                                                de tickets
+                                                <span class="text-percentage" id="PorcentSendToTaller"></span>Del total de tickets
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
                                             <div class="icon-shape bg-gradient-warning"> <svg
                                                     xmlns="http://www.w3.org/2000/svg" width="30" height="30"
-                                                    fill="currentColor" class="bi bi-wrench-adjustable"
+                                                    fill="white" class="bi bi-wrench-adjustable"
                                                     viewBox="0 0 16 16">
                                                     <path
                                                         d="M16 4.5a4.5 4.5 0 0 1-1.703 3.526L13 5l2.959-1.11q.04.3.041.61" />
