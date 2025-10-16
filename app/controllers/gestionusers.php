@@ -48,6 +48,34 @@ class gestionusers extends Controller {
     }
 
     public function index(): void {
+
+    $referer = $_SERVER['HTTP_REFERER'] ?? null;
+    
+    // Obtener la URL base de tu aplicación
+    // Se asume que self::getURL() devuelve la base (ej: http://localhost:8080/SoportePost/)
+    $base_url = self::getURL(); 
+
+    // Definir la URL interna válida de origen (tu dashboard, por ejemplo)
+    $url_dashboard = $base_url . 'dashboard'; 
+    
+    // Condición de Bloqueo:
+    // Si NO hay referer (acceso directo tecleado) 
+    // O si el referer existe, PERO NO contiene la base_url Y NO es el dashboard permitido.
+    if (
+        !$referer || 
+        (strpos($referer, $base_url) === false && $referer !== $url_dashboard)
+    ) {
+        
+        // CERRAR SESIÓN DE INMEDIATO (Política estricta)
+        session_unset();
+        session_destroy();
+        setcookie(session_name(), '', time() - 3600, '/'); 
+        
+        // Redirigir al login
+        header('Location: ' . $base_url . 'login?');
+        exit();
+    }
+
         Model::exists('consulta_rif');
         Model::exists('login');
 

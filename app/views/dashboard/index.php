@@ -834,7 +834,7 @@ function mi_navbar() {}
                                 </div>
 
                                 <!-- Tabla de Resumen de Tickets por Módulo -->
-                                    <div class="p-4">
+                                    <div class="p-4" style="max-height: 400px; overflow-y: auto;">
                                         <div class="table-responsive">
                                             <table id="ticketCountSummaryTable" class="min-w-full leading-normal" style="width: 100%;">
                                                 <thead class="bg-gray-100">
