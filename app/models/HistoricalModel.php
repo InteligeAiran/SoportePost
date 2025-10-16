@@ -212,16 +212,6 @@ class HistoricalModel extends Model
             // ... (Tu lógica para cerrar la conexión si aplica) ...
         }
     }
-
-    public function GetTicketHistory1($id_ticket){ // id_user es el ID del usuario/coordinador que marca como recibido
-      try {
-            $sql = "SELECT * FROM public.get_ticket_history_details1(".$id_ticket.");";
-            $result = $this->getResult($sql, $this->db);
-            return $result;
-        } catch (Throwable $e) {
-            // Handle exception
-        }
-    }       
 }
 ?>
 

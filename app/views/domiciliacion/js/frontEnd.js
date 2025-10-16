@@ -955,12 +955,9 @@ function searchDomiciliacionTickets() {
                   (t) => t.id_ticket == ticketId
                 );
 
-                if (selectedTicketDetails) {
-                  detailsPanel.innerHTML = formatTicketDetailsPanel(
-                    selectedTicketDetails
-                  );
-
-                  loadTicketHistory(ticketId, currentTicketNroForImage);
+                detailsPanel.innerHTML = formatTicketDetailsPanel(selectedTicketDetails);
+                loadTicketHistory(ticketId, selectedTicketDetails.nro_ticket, selectedTicketDetails.serial_pos || '');
+                if (selectedTicketDetails.serial_pos) {
 
                   if (selectedTicketDetails.serial_pos) {
                     downloadImageModal(selectedTicketDetails.serial_pos);
@@ -1941,1115 +1938,874 @@ function formatTicketDetailsPanel(d) {
 
 // Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
 
-function loadTicketHistory(ticketId, currentTicketNroForImage) {
-  const historyPanel = $("#ticket-history-content");
+// Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
+function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
+    const historyPanel = $("#ticket-history-content");
+    historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
 
-  historyPanel.html(
-    '<p class="text-center text-muted">Cargando historial...</p>'
-  );
+    const parseCustomDate = (dateStr) => {
+        const parts = dateStr.split(' ');
+        if (parts.length !== 2) return null;
+        const [day, month, year] = parts[0].split('-');
+        const [hours, minutes] = parts[1].split(':');
+        return new Date(year, month - 1, day, hours, minutes);
+    };
 
-  const parseCustomDate = (dateStr) => {
-    const parts = dateStr.split(" ");
+    const calculateTimeElapsed = (startDateStr, endDateStr) => {
+        if (!startDateStr || !endDateStr) return null;
 
-    if (parts.length !== 2) return null;
+        const start = parseCustomDate(startDateStr);
+        const end = parseCustomDate(endDateStr);
 
-    const [day, month, year] = parts[0].split("-");
-
-    const [hours, minutes] = parts[1].split(":");
-
-    return new Date(year, month - 1, day, hours, minutes);
-  };
-
-  const calculateTimeElapsed = (startDateStr, endDateStr) => {
-    if (!startDateStr || !endDateStr) return null;
-
-    const start = parseCustomDate(startDateStr);
-
-    const end = parseCustomDate(endDateStr);
-
-    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return null;
-    }
-
-    const diffMs = end - start;
-
-    if (diffMs <= 0) {
-      return null;
-    }
-
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-
-    const diffHours = Math.floor(diffMinutes / 60);
-
-    const diffDays = Math.floor(diffHours / 24);
-
-    const diffWeeks = Math.floor(diffDays / 7);
-
-    const diffMonths = Math.floor(diffDays / 30.44);
-
-    const calculateBusinessDays = (startDateObj, endDateObj) => {
-      const holidays2025 = [
-        "2025-01-01",
-        "2025-01-06",
-        "2025-02-17",
-        "2025-02-18",
-        "2025-03-24",
-        "2025-03-25",
-        "2025-03-26",
-        "2025-03-27",
-        "2025-03-28",
-        "2025-04-19",
-        "2025-05-01",
-        "2025-06-24",
-        "2025-07-05",
-        "2025-07-24",
-        "2025-10-12",
-        "2025-12-25",
-      ];
-
-      let businessDays = 0;
-
-      const current = new Date(startDateObj);
-
-      const end = new Date(endDateObj);
-
-      while (current <= end) {
-        const dayOfWeek = current.getDay();
-
-        const dateString = current.toISOString().split("T")[0];
-
-        if (
-          dayOfWeek >= 1 &&
-          dayOfWeek <= 5 &&
-          !holidays2025.includes(dateString)
-        ) {
-          businessDays++;
+        if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return null;
         }
 
-        current.setDate(current.getDate() + 1);
-      }
+        const diffMs = end - start;
+        if (diffMs <= 0) {
+            return null;
+        }
 
-      return businessDays;
+        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        const diffWeeks = Math.floor(diffDays / 7);
+        const diffMonths = Math.floor(diffDays / 30.44);
+
+        const calculateBusinessDays = (startDateObj, endDateObj) => {
+            const holidays2025 = [
+                '2025-01-01', '2025-01-06', '2025-02-17', '2025-02-18', '2025-03-24', '2025-03-25', '2025-03-26', '2025-03-27', '2025-03-28', '2025-04-19', '2025-05-01', '2025-06-24', '2025-07-05', '2025-07-24', '2025-10-12', '2025-12-25'
+            ];
+            let businessDays = 0;
+            const current = new Date(startDateObj);
+            const end = new Date(endDateObj);
+
+            while (current <= end) {
+                const dayOfWeek = current.getDay();
+                const dateString = current.toISOString().split('T')[0];
+                if (dayOfWeek >= 1 && dayOfWeek <= 5 && !holidays2025.includes(dateString)) {
+                    businessDays++;
+                }
+                current.setDate(current.getDate() + 1);
+            }
+            return businessDays;
+        };
+
+        const businessDays = calculateBusinessDays(start, end);
+        let timeText = '';
+
+        if (diffMonths > 0) {
+            const remainingDays = diffDays % 30.44;
+            timeText = `${diffMonths}M ${Math.floor(remainingDays)}D`;
+        } else if (diffWeeks > 0) {
+            const remainingDays = diffDays % 7;
+            timeText = `${diffWeeks}W ${remainingDays}D`;
+        } else if (diffDays > 0) {
+            const remainingHours = diffHours % 24;
+            const remainingMinutes = diffMinutes % 60;
+            timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}M`;
+        } else if (diffHours > 0) {
+            const remainingMinutes = diffMinutes % 60;
+            timeText = `${diffHours}H ${remainingMinutes}M`;
+        } else if (diffMinutes > 0) {
+            timeText = `${diffMinutes}M`;
+        } else {
+            return null;
+        }
+
+        return {
+            text: timeText,
+            ms: diffMs,
+            minutes: diffMinutes,
+            hours: diffHours,
+            days: diffDays,
+            weeks: diffWeeks,
+            months: diffMonths,
+            businessDays: businessDays
+        };
     };
 
-    const businessDays = calculateBusinessDays(start, end);
-
-    let timeText = "";
-
-    if (diffMonths > 0) {
-      const remainingDays = diffDays % 30.44;
-
-      timeText = `${diffMonths}M ${Math.floor(remainingDays)}D`;
-    } else if (diffWeeks > 0) {
-      const remainingDays = diffDays % 7;
-
-      timeText = `${diffWeeks}W ${remainingDays}D`;
-    } else if (diffDays > 0) {
-      const remainingHours = diffHours % 24;
-
-      const remainingMinutes = diffMinutes % 60;
-
-      timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}M`;
-    } else if (diffHours > 0) {
-      const remainingMinutes = diffMinutes % 60;
-
-      timeText = `${diffHours}H ${remainingMinutes}M`;
-    } else if (diffMinutes > 0) {
-      timeText = `${diffMinutes}M`;
-    } else {
-      return null;
-    }
-
-    return {
-      text: timeText,
-
-      ms: diffMs,
-
-      minutes: diffMinutes,
-
-      hours: diffHours,
-
-      days: diffDays,
-
-      weeks: diffWeeks,
-
-      months: diffMonths,
-
-      businessDays: businessDays,
-    };
-  };
-
-  $.ajax({
-    url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
-
-    type: "POST",
-
-    data: {
-      action: "GetTicketHistory",
-
-      id_ticket: ticketId,
-    },
-
-    dataType: "json",
-
-    success: function (response) {
-      if (response.success && response.history && response.history.length > 0) {
-        let historyHtml = `
-
+    $.ajax({
+        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
+        type: "POST",
+        data: {
+            action: "GetTicketHistory",
+            id_ticket: ticketId,
+        },
+        dataType: "json",
+        success: function(response) {
+            if (response.success && response.history && response.history.length > 0) {
+                let historyHtml = `
                     <div class="d-flex justify-content-end mb-2">
-
-                        <button class="btn btn-secondary" onclick="printHistory('${ticketId}', '${encodeURIComponent(
-          JSON.stringify(response.history)
-        )}', '${currentTicketNroForImage}')">
-
+                        <button class="btn btn-secondary" onclick="printHistory('${ticketId}', '${encodeURIComponent(JSON.stringify(response.history))}', '${currentTicketNroForImage}', '${serialPos}')">
                             <i class="fas fa-print"></i> Imprimir Historial
-
                         </button>
-
                     </div>
-
                     <div class="accordion" id="ticketHistoryAccordion">
-
                 `;
 
-        response.history.forEach((item, index) => {
-          const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+                response.history.forEach((item, index) => {
+                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
+                    const isLatest = index === 0;
+                    const prevItem = response.history[index + 1] || {};
 
-          const headingId = `headingHistoryItem_${ticketId}_${index}`;
+                    let timeElapsed = null;
+                    let timeBadge = '';
 
-          const isLatest = index === 0;
+                    if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
+                        timeElapsed = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
+                        if (timeElapsed) {
+                            let badgeColor = 'success';
+                            if (timeElapsed.months > 0 || timeElapsed.businessDays > 5) {
+                                badgeColor = 'danger';
+                            } else if (timeElapsed.weeks > 0 || timeElapsed.businessDays > 2) {
+                                badgeColor = 'warning';
+                            } else if (timeElapsed.days > 0 || timeElapsed.hours > 8) {
+                                badgeColor = 'orange';
+                            } else if (timeElapsed.hours >= 1) {
+                                badgeColor = 'purple';
+                            }
 
-          const prevItem = response.history[index + 1] || {};
+                            let backgroundColor = '#28a745';
+                            if (badgeColor === 'purple') backgroundColor = '#6f42c1';
+                            else if (badgeColor === 'orange') backgroundColor = '#fd7e14';
+                            else if (badgeColor === 'warning') backgroundColor = '#ffc107';
+                            else if (badgeColor === 'danger') backgroundColor = '#dc3545';
 
-          let timeElapsed = null;
+                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
+                        }
+                    }
+                    
+                    const cleanString = (str) => str && str.replace(/\s/g, ' ').trim() || null;
+                    const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
 
-          let timeBadge = "";
+                    const isCreation = cleanString(item.name_accion_ticket) === 'Ticket Creado';
+                    const creationBadge = isCreation && item.fecha_de_cambio ? 
+                        `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: help; background-color: #17a2b8 !important; color: white !important;" title="Fecha de creación">${item.fecha_de_cambio}</span>` : '';
 
-          if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
-            timeElapsed = calculateTimeElapsed(
-              prevItem.fecha_de_cambio,
-              item.fecha_de_cambio
-            );
+                    const accionChanged = getChange(item.name_accion_ticket, prevItem.name_accion_ticket);
+                    const coordChanged = getChange(item.full_name_coordinador, prevItem.full_name_coordinador);
+                    const usuarioGestionChanged = getChange(item.usuario_gestion, prevItem.usuario_gestion);
+                    const tecnicoChanged = getChange(item.full_name_tecnico_n2_history, prevItem.full_name_tecnico_n2_history);
+                    const statusLabChanged = getChange(item.name_status_lab, prevItem.name_status_lab);
+                    const statusDomChanged = getChange(item.name_status_domiciliacion, prevItem.name_status_domiciliacion);
+                    const statusPaymentChanged = getChange(item.name_status_payment, prevItem.name_status_payment);
+                    const estatusTicketChanged = getChange(item.name_status_ticket, prevItem.name_status_ticket);
+                    const componentsChanged = getChange(item.components_list, prevItem.components_list);
+                    const motivoRechazoChanged = getChange(item.name_motivo_rechazo, prevItem.name_motivo_rechazo);
+                    const pagoChanged = getChange(item.pago, prevItem.pago);
+                    const exoneracionChanged = getChange(item.exoneracion, prevItem.exoneracion);
+                    const envioChanged = getChange(item.envio, prevItem.envio);
+                    const envioDestinoChanged = getChange(item.envio_destino, prevItem.envio_destino);
 
-            if (timeElapsed) {
-              let badgeColor = "success";
+                    const showComponents = cleanString(item.name_accion_ticket) === 'Actualización de Componentes' && cleanString(item.components_list);
+                    const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
-              if (timeElapsed.months > 0 || timeElapsed.businessDays > 5) {
-                badgeColor = "danger";
-              } else if (
-                timeElapsed.weeks > 0 ||
-                timeElapsed.businessDays > 2
-              ) {
-                badgeColor = "warning";
-              } else if (timeElapsed.days > 0 || timeElapsed.hours > 8) {
-                badgeColor = "orange";
-              } else if (timeElapsed.hours >= 1) {
-                badgeColor = "purple";
-              }
+                    const rejectedActions = ['Documento de Exoneracion Rechazado', 'Documento de Anticipo Rechazado'];
+                    const showMotivoRechazo = rejectedActions.includes(cleanString(item.name_status_payment)) && cleanString(item.name_motivo_rechazo);
 
-              let backgroundColor = "#28a745";
+                    const showCommentDevolution = cleanString(item.name_accion_ticket) === 'En espera de Confirmar Devolución' && cleanString(item.comment_devolution) && cleanString(item.envio_destino) !== 'Sí';
+                    const showCommentReasignation = cleanString(item.name_accion_ticket) === 'Reasignado al Técnico' && cleanString(item.comment_reasignation);
 
-              if (badgeColor === "purple") backgroundColor = "#6f42c1";
-              else if (badgeColor === "orange") backgroundColor = "#fd7e14";
-              else if (badgeColor === "warning") backgroundColor = "#ffc107";
-              else if (badgeColor === "danger") backgroundColor = "#dc3545";
+                    const headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    const textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
 
-              timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
-            }
-          }
+                    let statusHeaderText = cleanString(item.name_status_ticket) || "Desconocido";
+                    if (cleanString(item.name_accion_ticket) === "Enviado a taller" || cleanString(item.name_accion_ticket) === "En Taller") {
+                        statusHeaderText = cleanString(item.name_status_lab) || "Desconocido";
+                    }
 
-          const cleanString = (str) =>
-            (str && str.replace(/\s/g, " ").trim()) || null;
+                    // Se define el texto del botón aquí con la condición ternaria
+                    const buttonText = isCreation
+                        ? `${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`
+                        : `${item.fecha_de_cambio || "N/A"} - ${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`;
 
-          const getChange = (itemVal, prevVal) =>
-            cleanString(itemVal) !== cleanString(prevVal);
-
-          const isCreation =
-            cleanString(item.name_accion_ticket) === "Ticket Creado";
-
-          const creationBadge =
-            isCreation && item.fecha_de_cambio
-              ? `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: help; background-color: #17a2b8 !important; color: white !important;" title="Fecha de creación">${item.fecha_de_cambio}</span>`
-              : "";
-
-          const accionChanged = getChange(
-            item.name_accion_ticket,
-            prevItem.name_accion_ticket
-          );
-
-          const coordChanged = getChange(
-            item.full_name_coordinador,
-            prevItem.full_name_coordinador
-          );
-
-          const usuarioGestionChanged = getChange(
-            item.usuario_gestion,
-            prevItem.usuario_gestion
-          );
-
-          const tecnicoChanged = getChange(
-            item.full_name_tecnico_n2_history,
-            prevItem.full_name_tecnico_n2_history
-          );
-
-          const statusLabChanged = getChange(
-            item.name_status_lab,
-            prevItem.name_status_lab
-          );
-
-          const statusDomChanged = getChange(
-            item.name_status_domiciliacion,
-            prevItem.name_status_domiciliacion
-          );
-
-          const statusPaymentChanged = getChange(
-            item.name_status_payment,
-            prevItem.name_status_payment
-          );
-
-          const estatusTicketChanged = getChange(
-            item.name_status_ticket,
-            prevItem.name_status_ticket
-          );
-
-          const componentsChanged = getChange(
-            item.components_list,
-            prevItem.components_list
-          );
-
-          const motivoRechazoChanged = getChange(
-            item.name_motivo_rechazo,
-            prevItem.name_motivo_rechazo
-          );
-
-          const pagoChanged = getChange(item.pago, prevItem.pago);
-
-          const exoneracionChanged = getChange(
-            item.exoneracion,
-            prevItem.exoneracion
-          );
-
-          const envioChanged = getChange(item.envio, prevItem.envio);
-
-          const envioDestinoChanged = getChange(
-            item.envio_destino,
-            prevItem.envio_destino
-          );
-
-          const showComponents =
-            cleanString(item.name_accion_ticket) ===
-              "Actualización de Componentes" &&
-            cleanString(item.components_list);
-
-          const shouldHighlightComponents =
-            showComponents && (accionChanged || componentsChanged);
-
-          const rejectedActions = [
-            "Documento de Exoneracion Rechazado",
-            "Documento de Anticipo Rechazado",
-          ];
-
-          const showMotivoRechazo =
-            rejectedActions.includes(cleanString(item.name_status_payment)) &&
-            cleanString(item.name_motivo_rechazo);
-
-          const showCommentDevolution =
-            cleanString(item.name_accion_ticket) ===
-              "En espera de Confirmar Devolución" &&
-            cleanString(item.comment_devolution) &&
-            cleanString(item.envio_destino) !== "Sí";
-
-          const showCommentReasignation =
-            cleanString(item.name_accion_ticket) === "Reasignado al Técnico" &&
-            cleanString(item.comment_reasignation);
-
-          const headerStyle = isLatest
-            ? "background-color: #ffc107;"
-            : "background-color: #5d9cec;";
-
-          const textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
-
-          let statusHeaderText =
-            cleanString(item.name_status_ticket) || "Desconocido";
-
-          if (
-            cleanString(item.name_accion_ticket) === "Enviado a taller" ||
-            cleanString(item.name_accion_ticket) === "En Taller"
-          ) {
-            statusHeaderText =
-              cleanString(item.name_status_lab) || "Desconocido";
-          }
-
-          // Se define el texto del botón aquí con la condición ternaria
-
-          const buttonText = isCreation
-            ? `${
-                cleanString(item.name_accion_ticket) || "N/A"
-              } (${statusHeaderText})`
-            : `${item.fecha_de_cambio || "N/A"} - ${
-                cleanString(item.name_accion_ticket) || "N/A"
-              } (${statusHeaderText})`;
-
-          historyHtml += `
-
+                    historyHtml += `
                         <div class="card mb-3 custom-history-card position-relative">
-
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
-
                                 ${creationBadge}
-
                                 ${timeBadge}
-
                                 <h2 class="mb-0">
-
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
-
                                         data-toggle="collapse" data-target="#${collapseId}"
-
                                         aria-expanded="false" aria-controls="${collapseId}"
-
                                         style="${textColor}">
-
                                         ${buttonText}
-
                                     </button>
-
                                 </h2>
-
                             </div>
-
                             <div id="${collapseId}" class="collapse" aria-labelledby="${headingId}" data-parent="#ticketHistoryAccordion">
-
                                 <div class="card-body">
-
                                     <div class="table-responsive">
-
                                         <table class="table table-sm table-borderless mb-0">
-
                                             <tbody>
-
                                                 <tr>
-
                                                     <th class="text-start" style="width: 40%;">Fecha y Hora:</th>
-
-                                                    <td>${
-                                                      item.fecha_de_cambio ||
-                                                      "N/A"
-                                                    }</td>
-
+                                                    <td>${item.fecha_de_cambio || "N/A"}</td>
                                                 </tr>
-
                                                 <tr>
-
                                                     <th class="text-start">Acción:</th>
-
-                                                    <td class="${
-                                                      accionChanged
-                                                        ? "highlighted-change"
-                                                        : ""
-                                                    }">${
-            cleanString(item.name_accion_ticket) || "N/A"
-          }</td>
-
+                                                    <td class="${accionChanged ? "highlighted-change" : ""}">${cleanString(item.name_accion_ticket) || "N/A"}</td>
                                                 </tr>
-
                                                 <tr>
-
                                                     <th class="text-start">Operador Ticket:</th>
-
-                                                    <td>${
-                                                      cleanString(
-                                                        item.operador_ticket
-                                                      ) || "N/A"
-                                                    }</td>
-
+                                                    <td>${cleanString(item.operador_ticket) || "N/A"}</td>
                                                 </tr>
-
                                                 <tr>
-
                                                     <th class="text-start">Usuario Gestión:</th>
-
-                                                    <td class="${
-                                                      usuarioGestionChanged
-                                                        ? "highlighted-change"
-                                                        : ""
-                                                    }">${
-            cleanString(item.usuario_gestion) || "N/A"
-          }</td>
-
+                                                    <td class="${usuarioGestionChanged ? "highlighted-change" : ""}">${cleanString(item.usuario_gestion) || "N/A"}</td>
                                                 </tr>
-
                                                 <tr>
-
                                                     <th class="text-start">Coordinador:</th>
-
-                                                    <td class="${
-                                                      coordChanged
-                                                        ? "highlighted-change"
-                                                        : ""
-                                                    }">${
-            cleanString(item.full_name_coordinador) || "N/A"
-          }</td>
-
+                                                    <td class="${coordChanged ? "highlighted-change" : ""}">${cleanString(item.full_name_coordinador) || "N/A"}</td>
                                                 </tr>
-
                                                 <tr>
-
                                                     <th class="text-start">Coordinación:</th>
-
-                                                    <td>${
-                                                      cleanString(
-                                                        item.nombre_coordinacion
-                                                      ) || "N/A"
-                                                    }</td>
-
+                                                    <td>${cleanString(item.nombre_coordinacion) || "N/A"}</td>
                                                 </tr>
-
                                                 <tr>
-
                                                     <th class="text-start">Técnico Asignado:</th>
-
-                                                    <td class="${
-                                                      tecnicoChanged
-                                                        ? "highlighted-change"
-                                                        : ""
-                                                    }">
-
-                                                        ${
-                                                          cleanString(
-                                                            item.full_name_tecnico_n2_history
-                                                          ) ||
-                                                          "Pendiente por Asignar"
-                                                        }
-
+                                                    <td class="${tecnicoChanged ? "highlighted-change" : ""}">
+                                                        ${cleanString(item.full_name_tecnico_n2_history) || "Pendiente por Asignar"}
                                                     </td>
-
                                                 </tr>
-
                                                 <tr>
-
                                                     <th class="text-start">Estatus Ticket:</th>
-
-                                                    <td class="${
-                                                      estatusTicketChanged
-                                                        ? "highlighted-change"
-                                                        : ""
-                                                    }">${
-            cleanString(item.name_status_ticket) || "N/A"
-          }</td>
-
+                                                    <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_ticket) || "N/A"}</td>
                                                 </tr>
-
                                                 <tr>
-
                                                     <th class="text-start">Estatus Taller:</th>
-
-                                                    <td class="${
-                                                      statusLabChanged
-                                                        ? "highlighted-change"
-                                                        : ""
-                                                    }">${
-            cleanString(item.name_status_lab) || "N/A"
-          }</td>
-
+                                                    <td class="${statusLabChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_lab) || "N/A"}</td>
                                                 </tr>
-
                                                 <tr>
-
                                                     <th class="text-start">Estatus Domiciliación:</th>
-
-                                                    <td class="${
-                                                      statusDomChanged
-                                                        ? "highlighted-change"
-                                                        : ""
-                                                    }">${
-            cleanString(item.name_status_domiciliacion) || "N/A"
-          }</td>
-
+                                                    <td class="${statusDomChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_domiciliacion) || "N/A"}</td>
                                                 </tr>
-
                                                 <tr>
-
                                                     <th class="text-start">Estatus Pago:</th>
-
-                                                    <td class="${
-                                                      statusPaymentChanged
-                                                        ? "highlighted-change"
-                                                        : ""
-                                                    }">${
-            cleanString(item.name_status_payment) || "N/A"
-          }</td>
-
+                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_payment) || "N/A"}</td>
                                                 </tr>
-
-                                                ${
-                                                  showComponents
-                                                    ? `
-
+                                                ${showComponents ? `
                                                     <tr>
-
-                                                        <th class="text-start">Componentes Asociados:</th>
-
-                                                        <td class="${
-                                                          shouldHighlightComponents
-                                                            ? "highlighted-change"
-                                                            : ""
-                                                        }">${cleanString(
-                                                        item.components_list
-                                                      )}</td>
-
+                                                        <th class="text-start">Periféricos Asociados:</th>
+                                                        <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
                                                     </tr>
-
-                                                `
-                                                    : ""
-                                                }
-
-                                                ${
-                                                  showMotivoRechazo
-                                                    ? `
-
+                                                ` : ''}
+                                                ${showMotivoRechazo ? `
                                                     <tr>
-
                                                         <th class="text-start">Motivo Rechazo Documento:</th>
-
-                                                        <td class="${
-                                                          motivoRechazoChanged
-                                                            ? "highlighted-change"
-                                                            : ""
-                                                        }">${
-                                                        cleanString(
-                                                          item.name_motivo_rechazo
-                                                        ) || "N/A"
-                                                      }</td>
-
+                                                        <td class="${motivoRechazoChanged ? "highlighted-change" : ""}">${cleanString(item.name_motivo_rechazo) || "N/A"}</td>
                                                     </tr>
-
-                                                `
-                                                    : ""
-                                                }
-
-                                                ${
-                                                  showCommentDevolution
-                                                    ? `
-
+                                                ` : ''}
+                                                ${showCommentDevolution ? `
                                                     <tr>
-
                                                         <th class="text-start">Comentario de Devolución:</th>
-
-                                                        <td class="highlighted-change">${
-                                                          cleanString(
-                                                            item.comment_devolution
-                                                          ) || "N/A"
-                                                        }</td>
-
+                                                        <td class="highlighted-change">${cleanString(item.comment_devolution) || "N/A"}</td>
                                                     </tr>
-
-                                                `
-                                                    : ""
-                                                }
-
-                                                ${
-                                                  showCommentReasignation
-                                                    ? `
-
+                                                ` : ''}
+                                                ${showCommentReasignation ? `
                                                     <tr>
-
                                                         <th class="text-start">Comentario de Reasignación:</th>
-
-                                                        <td class="highlighted-change">${
-                                                          cleanString(
-                                                            item.comment_reasignation
-                                                          ) || "N/A"
-                                                        }</td>
-
+                                                        <td class="highlighted-change">${cleanString(item.comment_reasignation) || "N/A"}</td>
                                                     </tr>
-
-                                                `
-                                                    : ""
-                                                }
-
-                                                ${
-                                                  cleanString(item.pago) ===
-                                                  "Sí"
-                                                    ? `
-
+                                                ` : ''}
+                                                ${cleanString(item.pago) === 'Sí' ? `
                                                     <tr>
-
                                                         <th class="text-start">Documento de Pago:</th>
-
-                                                        <td class="${
-                                                          pagoChanged
-                                                            ? "highlighted-change"
-                                                            : ""
-                                                        }">✓ Cargado</td>
-
+                                                        <td class="${pagoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
                                                     </tr>
-
-                                                `
-                                                    : ""
-                                                }
-
-                                                ${
-                                                  cleanString(
-                                                    item.exoneracion
-                                                  ) === "Sí"
-                                                    ? `
-
+                                                ` : ''}
+                                                ${cleanString(item.exoneracion) === 'Sí' ? `
                                                     <tr>
-
                                                         <th class="text-start">Documento de Exoneración:</th>
-
-                                                        <td class="${
-                                                          exoneracionChanged
-                                                            ? "highlighted-change"
-                                                            : ""
-                                                        }">✓ Cargado</td>
-
+                                                        <td class="${exoneracionChanged ? "highlighted-change" : ""}">✓ Cargado</td>
                                                     </tr>
-
-                                                `
-                                                    : ""
-                                                }
-
-                                                ${
-                                                  cleanString(item.envio) ===
-                                                  "Sí"
-                                                    ? `
-
+                                                ` : ''}
+                                                ${cleanString(item.envio) === 'Sí' ? `
                                                     <tr>
-
                                                         <th class="text-start">Documento de Envío:</th>
-
-                                                        <td class="${
-                                                          envioChanged
-                                                            ? "highlighted-change"
-                                                            : ""
-                                                        }">✓ Cargado</td>
-
+                                                        <td class="${envioChanged ? "highlighted-change" : ""}">✓ Cargado</td>
                                                     </tr>
-
-                                                `
-                                                    : ""
-                                                }
-
-                                                ${
-                                                  cleanString(
-                                                    item.envio_destino
-                                                  ) === "Sí"
-                                                    ? `
-
+                                                ` : ''}
+                                                ${cleanString(item.envio_destino) === 'Sí' ? `
                                                     <tr>
-
                                                         <th class="text-start">Documento de Envío a Destino:</th>
-
-                                                        <td class="${
-                                                          envioDestinoChanged
-                                                            ? "highlighted-change"
-                                                            : ""
-                                                        }">✓ Cargado</td>
-
+                                                        <td class="${envioDestinoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
                                                     </tr>
-
-                                                `
-                                                    : ""
-                                                }
-
+                                                ` : ''}
                                             </tbody>
-
                                         </table>
-
                                     </div>
-
                                 </div>
-
                             </div>
-
                         </div>`;
-        });
+                });
 
-        historyHtml += "</div>";
-
-        historyPanel.html(historyHtml);
-      } else {
-        historyPanel.html(
-          '<p class="text-center text-muted">No hay historial disponible para este ticket.</p>'
-        );
-      }
-    },
-
-    error: function (jqXHR, textStatus, errorThrown) {
-      console.error("Error completo de AJAX:", {
-        jqXHR,
-        textStatus,
-        errorThrown,
-      });
-
-      let errorMessage =
-        '<p class="text-center text-danger">Error al cargar el historial.</p>';
-
-      if (jqXHR.status === 0) {
-        errorMessage =
-          '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
-      } else if (jqXHR.status == 404) {
-        errorMessage = `<div class="text-center text-muted py-5">
-
+                historyHtml += "</div>";
+                historyPanel.html(historyHtml);
+            } else {
+                historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("Error completo de AJAX:", { jqXHR, textStatus, errorThrown });
+            let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
+            if (jqXHR.status === 0) {
+                errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
+            } else if (jqXHR.status == 404) {
+                errorMessage = `<div class="text-center text-muted py-5">
                     <div class="d-flex flex-column align-items-center">
-
                         <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-
                             <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-
                         </svg>
-
                         <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-
                         <p class="text-muted mb-0">No hay datos en el historial.</p>
-
                     </div>
-
                 </div>`;
-      } else if (jqXHR.status == 500) {
-        errorMessage =
-          '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
-      } else if (textStatus === "parsererror") {
-        errorMessage =
-          '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
-      } else if (textStatus === "timeout") {
-        errorMessage =
-          '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
-      } else if (textStatus === "abort") {
-        errorMessage =
-          '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
-      }
-
-      historyPanel.html(errorMessage);
-
-      console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-    },
-  });
+            } else if (jqXHR.status == 500) {
+                errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
+            } else if (textStatus === "parsererror") {
+                errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
+            } else if (textStatus === "timeout") {
+                errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
+            } else if (textStatus === "abort") {
+                errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
+            }
+            historyPanel.html(errorMessage);
+            console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+        },
+    });
 }
 
-function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
-  const decodeHistorySafe = (encoded) => {
-    try {
-      if (!encoded) return [];
-
-      return JSON.parse(decodeURIComponent(encoded));
-    } catch (e) {
-      console.error("Error decoding history:", e);
-
-      return [];
-    }
-  };
-
-  const cleanString = (str) =>
-    typeof str === "string" ? str.replace(/\s/g, " ").trim() : str ?? "";
-
-  const parseCustomDate = (dateStr) => {
-    if (!dateStr) return null;
-
-    const parts = String(dateStr).split(" ");
-
-    if (parts.length !== 2) return null;
-
-    const [day, month, year] = parts[0].split("-");
-
-    const [hours, minutes] = parts[1].split(":");
-
-    const d = new Date(
-      year,
-      (Number(month) || 1) - 1,
-      Number(day) || 1,
-      Number(hours) || 0,
-      Number(minutes) || 0
-    );
-
-    return isNaN(d.getTime()) ? null : d;
-  };
-
-  const calculateTimeElapsed = (startDateStr, endDateStr) => {
-    if (!startDateStr || !endDateStr) return null;
-
-    const start = parseCustomDate(startDateStr);
-
-    const end = parseCustomDate(endDateStr);
-
-    if (!start || !end) return null;
-
-    const diffMs = end - start;
-
-    if (diffMs <= 0) return null;
-
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-
-    const diffHours = Math.floor(diffMinutes / 60);
-
-    const diffDays = Math.floor(diffHours / 24);
-
-    const diffWeeks = Math.floor(diffDays / 7);
-
-    const diffMonths = Math.floor(diffDays / 30.44);
-
-    let text = "";
-
-    if (diffMonths > 0) {
-      const remainingDays = Math.floor(diffDays % 30.44);
-
-      text = `${diffMonths}M ${remainingDays}D`;
-    } else if (diffWeeks > 0) {
-      text = `${diffWeeks}W ${diffDays % 7}D`;
-    } else if (diffDays > 0) {
-      text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
-    } else if (diffHours > 0) {
-      text = `${diffHours}H ${diffMinutes % 60}M`;
-    } else if (diffMinutes > 0) {
-      // Mostrar minutos cuando es al menos 1 minuto
-
-      text = `${diffMinutes}M`;
-    } else {
-      // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
-
-      text = `N/A`;
-    }
-
-    return {
-      text,
-      ms: diffMs,
-      minutes: diffMinutes,
-      hours: diffHours,
-      days: diffDays,
-      weeks: diffWeeks,
-      months: diffMonths,
+function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serialPos = '') {
+    const decodeHistorySafe = (encoded) => {
+        try {
+            if (!encoded) return [];
+            return JSON.parse(decodeURIComponent(encoded));
+        } catch (e) {
+            console.error('Error decoding history:', e);
+            return [];
+        }
     };
-  };
 
-  const history = decodeHistorySafe(historyEncoded);
+    const cleanString = (str) => (typeof str === 'string' ? str.replace(/\s/g, ' ').trim() : (str ?? ''));
 
-  let itemsHtml = "";
+    const parseCustomDate = (dateStr) => {
+        if (!dateStr) return null;
+        const parts = String(dateStr).split(' ');
+        if (parts.length !== 2) return null;
+        const [day, month, year] = parts[0].split('-');
+        const [hours, minutes] = parts[1].split(':');
+        const d = new Date(year, (Number(month) || 1) - 1, Number(day) || 1, Number(hours) || 0, Number(minutes) || 0);
+        return isNaN(d.getTime()) ? null : d;
+    };
 
-  history.forEach((item, index) => {
-    const previous = history[index + 1] || null;
+    const calculateTimeElapsed = (startDateStr, endDateStr) => {
+        if (!startDateStr || !endDateStr) return null;
+        const start = parseCustomDate(startDateStr);
+        const end = parseCustomDate(endDateStr);
+        if (!start || !end) return null;
+        const diffMs = end - start;
+        if (diffMs <= 0) return null;
+        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        const diffWeeks = Math.floor(diffDays / 7);
+        const diffMonths = Math.floor(diffDays / 30.44);
+        let text = '';
+        if (diffMonths > 0) {
+            const remainingDays = Math.floor(diffDays % 30.44);
+            text = `${diffMonths}M ${remainingDays}D`;
+        } else if (diffWeeks > 0) {
+            text = `${diffWeeks}W ${diffDays % 7}D`;
+        } else if (diffDays > 0) {
+            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
+        } else if (diffHours > 0) {
+            text = `${diffHours}H ${diffMinutes % 60}M`;
+        } else if (diffMinutes > 0) {
+            // Mostrar minutos cuando es al menos 1 minuto
+            text = `${diffMinutes}M`;
+        } else {
+            // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
+            text = `N/A`;
+        }
+        return { text, ms: diffMs, minutes: diffMinutes, hours: diffHours, days: diffDays, weeks: diffWeeks, months: diffMonths };
+    };
 
-    const elapsed = previous
-      ? calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio)
-      : null;
+    const history = decodeHistorySafe(historyEncoded);
 
-    const elapsedText = elapsed ? elapsed.text : "N/A";
+    // Generar nombre del archivo con formato: nro_ticket-last4digits_serial.pdf
+    const generateFileName = (ticketNumber, serial) => {
+        let fileName = `Historial_Ticket_${ticketNumber}`;
+        
+        if (serial && serial.length >= 4) {
+            const lastFourDigits = serial.slice(-4);
+            fileName += `-${lastFourDigits}`;
+        }
+        
+        return `${fileName}.pdf`;
+    };
 
-    itemsHtml += `
+    const fileName = generateFileName(currentTicketNroForImage, serialPos);
 
-            <div style="border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 12px;">
+    let itemsHtml = '';
+    history.forEach((item, index) => {
+        const previous = history[index + 1] || null;
+        const elapsed = previous ? calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio) : null;
+        const elapsedText = elapsed ? elapsed.text : 'N/A';
 
-                <div style="font-weight: bold; color: #003594; margin-bottom: 6px;">${
-                  cleanString(item.fecha_de_cambio) || "N/A"
-                } - ${cleanString(item.name_accion_ticket) || "N/A"} (${
-      cleanString(item.name_status_ticket) || "N/A"
-    })</div>
-
-                <table style="width:100%; border-collapse: collapse; font-size: 12px;">
-
+        itemsHtml += `
+            <div style="border: 1px solid #ddd; border-radius: 8px; margin: 15px 0; padding: 0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%); color: white; padding: 12px 15px; font-weight: bold; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    ${cleanString(item.fecha_de_cambio) || 'N/A'} - ${cleanString(item.name_accion_ticket) || 'N/A'} (${cleanString(item.name_status_ticket) || 'N/A'})
+                </div>
+                <div style="padding: 15px; background: #fafafa;">
+                    <table style="width:100%; border-collapse: collapse; font-size: 12px;">
                     <tbody>
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Ticket</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.nro_ticket) || nro_ticket
-                        }</td></tr>
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Acción</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.name_accion_ticket) || "N/A"
-                        }</td></tr>
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Ticket</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.name_status_ticket) || "N/A"
-                        }</td></tr>
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Fecha Cambio</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.fecha_de_cambio) || "N/A"
-                        }</td></tr>
-
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Ticket</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.nro_ticket) || nro_ticket}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Acción</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_accion_ticket) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Ticket</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_ticket) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Fecha Cambio</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.fecha_de_cambio) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo desde gestión anterior</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${elapsedText}</td></tr>
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Coordinador</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.full_name_coordinador) || "N/A"
-                        }</td></tr>
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Coordinación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.nombre_coordinacion) || "N/A"
-                        }</td></tr>
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Operador Ticket (Técnico N1)</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.operador_ticket) || "N/A"
-                        }</td></tr>
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Usuario Gestión</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.usuario_gestion) || "N/A"
-                        }</td></tr>
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Rol en Gestión</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.full_name_tecnico_gestion) || "N/A"
-                        }</td></tr>
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Técnico Asignado (N2)</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.full_name_tecnico_n2_history) ||
-                          "No Asignado"
-                        }</td></tr>
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.name_status_lab) || "N/A"
-                        }</td></tr>
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.name_status_domiciliacion) || "N/A"
-                        }</td></tr>
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.name_status_payment) || "N/A"
-                        }</td></tr>
-
-                        ${
-                          cleanString(item.components_list)
-                            ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Componentes</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(
-                                item.components_list
-                              )}</td></tr>`
-                            : ""
-                        }
-
-                        ${
-                          cleanString(item.name_motivo_rechazo)
-                            ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(
-                                item.name_motivo_rechazo
-                              )}</td></tr>`
-                            : ""
-                        }
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.pago) || "No"
-                        }</td></tr>
-
-                        ${
-                          cleanString(item.pago_fecha)
-                            ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(
-                                item.pago_fecha
-                              )}</td></tr>`
-                            : ""
-                        }
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Exoneración</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.exoneracion) || "No"
-                        }</td></tr>
-
-                        ${
-                          cleanString(item.exoneracion_fecha)
-                            ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Exoneración Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(
-                                item.exoneracion_fecha
-                              )}</td></tr>`
-                            : ""
-                        }
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Envío</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.envio) || "No"
-                        }</td></tr>
-
-                        ${
-                          cleanString(item.envio_fecha)
-                            ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Envío Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(
-                                item.envio_fecha
-                              )}</td></tr>`
-                            : ""
-                        }
-
-                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Envío a Destino</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${
-                          cleanString(item.envio_destino) || "No"
-                        }</td></tr>
-
-                        ${
-                          cleanString(item.envio_destino_fecha)
-                            ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Envío Destino Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(
-                                item.envio_destino_fecha
-                              )}</td></tr>`
-                            : ""
-                        }
-
-                        ${
-                          cleanString(item.comment_devolution)
-                            ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Devolución</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(
-                                item.comment_devolution
-                              )}</td></tr>`
-                            : ""
-                        }
-
-                        ${
-                          cleanString(item.comment_reasignation)
-                            ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Reasignación</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(
-                                item.comment_reasignation
-                              )}</td></tr>`
-                            : ""
-                        }
-
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Coordinador</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_coordinador) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Coordinación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.nombre_coordinacion) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Operador Ticket (Técnico N1)</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.operador_ticket) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Usuario Gestión</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.usuario_gestion) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Rol en Gestión</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_gestion) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Técnico Asignado (N2)</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_n2_history) || 'No Asignado'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_lab) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
+                        ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
+                        ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Exoneración</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.exoneracion) || 'No'}</td></tr>
+                        ${cleanString(item.exoneracion_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Exoneración Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.exoneracion_fecha)}</td></tr>` : ''}
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Envío</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.envio) || 'No'}</td></tr>
+                        ${cleanString(item.envio_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Envío Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.envio_fecha)}</td></tr>` : ''}
+                        <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Envío a Destino</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.envio_destino) || 'No'}</td></tr>
+                        ${cleanString(item.envio_destino_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Envío Destino Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.envio_destino_fecha)}</td></tr>` : ''}
+                        ${cleanString(item.comment_devolution) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Devolución</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_devolution)}</td></tr>` : ''}
+                        ${cleanString(item.comment_reasignation) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Reasignación</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_reasignation)}</td></tr>` : ''}
                     </tbody>
-
-                </table>
-
+                    </table>
+                </div>
             </div>
-
         `;
-  });
+    });
 
-  const printContent = `
+    const printContent = `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${fileName}</title>
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                
+                body {
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    font-size: 11px;
+                    line-height: 1.2;
+                    color: #333;
+                    background: #fff;
+                    padding: 10px;
+                    max-width: 100%;
+                    margin: 0 auto;
+                    overflow-x: hidden;
+                    display: flex;
+                    justify-content: center;
+                    align-items: flex-start;
+                    min-height: 100vh;
+                }
+                
+                .container {
+                    max-width: 800px;
+                    width: 100%;
+                    margin: 0 auto;
+                    background: white;
+                    min-height: calc(100vh - 40px);
+                    display: flex;
+                    flex-direction: column;
+                    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+                    border-radius: 8px;
+                }
+                
+                .header {
+                    text-align: center;
+                    margin-bottom: 12px;
+                    padding: 8px 0;
+                    border-bottom: 2px solid #2c5aa0;
+                    position: relative;
+                }
+                
+                .header::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 3px;
+                    background: linear-gradient(90deg, #2c5aa0 0%, #4a90e2 50%, #2c5aa0 100%);
+                }
+                
+                .company-logo-img {
+                    max-width: 120px;
+                    max-height: 60px;
+                    margin-bottom: 8px;
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                
+                .company-address {
+                    font-size: 10px;
+                    color: #555;
+                    margin-bottom: 8px;
+                    line-height: 1.3;
+                    text-align: center;
+                    font-weight: 500;
+                }
+                
+                .document-title {
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #2c5aa0;
+                    margin: 4px 0;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                
+                .document-info {
+                    display: flex;
+                    justify-content: space-between;
+                    margin: 10px 0;
+                    padding: 8px;
+                    background: #f8f9fa;
+                    border-radius: 5px;
+                    border-left: 3px solid #2c5aa0;
+                    gap: 10px;
+                }
+                
+                .info-item {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    flex: 1;
+                    min-width: 0;
+                }
+                
+                .info-label {
+                    font-size: 9px;
+                    color: #666;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    margin-bottom: 3px;
+                }
+                
+                .info-value {
+                    font-size: 12px;
+                    font-weight: bold;
+                    color: #2c5aa0;
+                }
+                
+                .content-wrapper {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                }
+                
+                .history-section {
+                    margin: 6px 0;
+                    background: #fff;
+                    border-radius: 5px;
+                    overflow: hidden;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                    border: 1px solid #e9ecef;
+                }
+                
+                .section-header {
+                    background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%);
+                    color: white;
+                    padding: 6px 10px;
+                    font-size: 11px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    letter-spacing: 0.3px;
+                }
+                
+                .section-content {
+                    padding: 8px 10px;
+                }
+                
+                .history-item {
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    margin: 15px 0;
+                    padding: 0;
+                    overflow: hidden;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    background: #fafafa;
+                }
+                
+                .history-item-header {
+                    background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%);
+                    color: white;
+                    padding: 12px 15px;
+                    font-weight: bold;
+                    font-size: 13px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin: 0;
+                }
+                
+                .history-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 11px;
+                }
+                
+                .history-table td {
+                    padding: 4px;
+                    border-bottom: 1px solid #eee;
+                }
+                
+                .history-table td:first-child {
+                    font-weight: bold;
+                    color: #555;
+                    width: 40%;
+                }
+                
+                .footer {
+                    margin-top: 8px;
+                    padding-top: 6px;
+                    border-top: 1px solid #ddd;
+                    color: #666;
+                    font-size: 8px;
+                    line-height: 1.2;
+                }
+                
+                .footer-content {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 8px;
+                    padding: 8px 0;
+                    border-bottom: 1px solid #eee;
+                }
+                
+                .footer-left {
+                    flex: 1;
+                    text-align: left;
+                }
+                
+                .footer-right {
+                    flex: 1;
+                    text-align: right;
+                }
+                
+                .footer-logo {
+                    max-height: 25px;
+                    max-width: 100px;
+                }
+                
+                .footer-rif {
+                    font-size: 10px;
+                    font-weight: bold;
+                    color: #2c5aa0;
+                }
+                
+                .footer-text {
+                    text-align: center;
+                    margin-top: 6px;
+                }
+                
+                /* Optimizaciones para impresión */
+                @media print {
+                    * {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    
+                    body {
+                        margin-top: 50px !important;
+                        margin-bottom: 40px !important;
+                    }
+                    
+                    html, body {
+                        width: 100% !important;
+                        height: 100% !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        overflow: visible !important;
+                        display: block !important;
+                    }
+                    
+                    body {
+                        font-size: 10px !important;
+                        padding: 8px !important;
+                        display: flex !important;
+                        justify-content: center !important;
+                        align-items: flex-start !important;
+                        min-height: 100vh !important;
+                    }
+                    
+                    .container {
+                        max-width: 800px !important;
+                        width: 100% !important;
+                        min-height: auto !important;
+                        height: auto !important;
+                        page-break-inside: avoid;
+                        margin: 0 auto !important;
+                        box-shadow: none !important;
+                        border-radius: 0 !important;
+                    }
+                    
+                    .header {
+                        margin-bottom: 6px !important;
+                        padding: 6px 0 !important;
+                        page-break-after: avoid;
+                    }
+                    
+                    .company-logo-img {
+                        max-width: 100px !important;
+                        max-height: 50px !important;
+                        margin-bottom: 6px !important;
+                    }
+                    
+                    .company-address {
+                        font-size: 9px !important;
+                        margin-bottom: 6px !important;
+                    }
+                    
+                    .document-title {
+                        font-size: 14px !important;
+                    }
+                    
+                    .section-content {
+                        padding: 6px 8px !important;
+                    }
+                    
+                    .history-item {
+                        margin: 10px 0 !important;
+                        padding: 0 !important;
+                        page-break-inside: avoid;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+                    }
+                    
+                    .history-item-header {
+                        padding: 10px 12px !important;
+                        font-size: 12px !important;
+                    }
+                    
+                    .history-table {
+                        font-size: 10px !important;
+                    }
+                    
+                    .footer {
+                        margin-top: 6px !important;
+                        padding-top: 4px !important;
+                        page-break-before: avoid;
+                    }
+                    
+                    .footer-content {
+                        margin-bottom: 6px !important;
+                        padding: 6px 0 !important;
+                    }
+                    
+                    .footer-logo {
+                        max-height: 20px !important;
+                        max-width: 80px !important;
+                    }
+                    
+                    .footer-rif {
+                        font-size: 9px !important;
+                    }
+                    
+                    .footer-text {
+                        margin-top: 4px !important;
+                    }
+                }
+                
+                @page {
+                    size: letter;
+                    margin: 0.2in 0.5in;
+                    padding: 0;
+                    @top-left { content: ""; }
+                    @top-center { content: ""; }
+                    @top-right { content: ""; }
+                    @bottom-left { content: ""; }
+                    @bottom-center { content: ""; }
+                    @bottom-right { content: ""; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <img src="../../../public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="company-logo-img" onerror="this.style.display='none'">
+                    <div class="company-address">
+                        Urbanización El Rosal. Av. Francisco de Miranda<br>
+                        Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
+                    </div>
+                    <div class="document-title">Historial del Ticket</div>
+                </div>
+                
+                <div class="document-info">
+                    <div class="info-item">
+                        <div class="info-label">Ticket Nro</div>
+                        <div class="info-value">${currentTicketNroForImage}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Fecha de Impresión</div>
+                        <div class="info-value">${new Date().toLocaleString()}</div>
+                    </div>
+                </div>
 
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
+                <div class="content-wrapper">
+                    <div class="history-section">
+                        <div class="section-header">Detalle del Historial</div>
+                        <div class="section-content">
+                            <p style="margin: 0 0 14px 0; color: #6c757d; font-size: 12px; text-align: center;">
+                                <strong>Nota:</strong> En la columna "Tiempo desde gestión anterior" con un valor "N/A" indica que la gestión se realizó en menos de 1 minuto.
+                            </p>
+                            ${itemsHtml || '<p style="text-align:center; color:#666;">Sin historial disponible.</p>'}
+                        </div>
+                    </div>
+                </div>
 
-            <div style="text-align:center;">
-
-                <h2 style="color: #003594; margin-bottom: 6px;">Historial del Ticket</h2>
-
-                <p style="margin: 0 0 8px 0;"><strong>Ticket Nro:</strong> ${currentTicketNroForImage}</p>
-
-                <p style="margin: 0 0 14px 0; color: #555;">Fecha de Impresión: ${new Date().toLocaleString()}</p>
-
-                <p style="margin: 0 0 14px 0; color: #6c757d; font-size: 12px;">Nota: En la columna "Tiempo desde gestión anterior" con un valor "N/A" indica que la gestión se realizó en menos de 1 minuto.</p>
-
+                <div class="footer">
+                    <div class="footer-content">
+                        <div class="footer-left">
+                            <img src="../../../public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="footer-logo" onerror="this.style.display='none'">
+                        </div>
+                        <div class="footer-right">
+                            <div class="footer-rif">RIF: J-00291615-0</div>
+                        </div>
+                    </div>
+                    <div class="footer-text">
+                        <p>Documento generado automáticamente por el sistema de gestión de tickets de Inteligensa.</p>
+                        <p>Generado: ${new Date().toLocaleString("es-ES")}</p>
+                    </div>
+                </div>
             </div>
-
-            ${
-              itemsHtml ||
-              '<p style="text-align:center; color:#666;">Sin historial disponible.</p>'
-            }
-
-        </div>
-
+        </body>
+        </html>
     `;
 
-  const printWindow = window.open("", "", "height=800,width=1024");
-
-  printWindow.document.write("<html><head><title>Historial del Ticket</title>");
-
-  printWindow.document.write("<style>");
-
-  printWindow.document.write(
-    "body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; }"
-  );
-
-  printWindow.document.write("h2 { color: #003594; }");
-
-  printWindow.document.write(
-    "@media print { body { -webkit-print-color-adjust: exact; } }"
-  );
-
-  printWindow.document.write("</style>");
-
-  printWindow.document.write("</head><body>");
-
-  printWindow.document.write(printContent);
-
-  printWindow.document.write("</body></html>");
-
-  printWindow.document.close();
-
-  printWindow.focus();
-
-  printWindow.print();
-
-  printWindow.close();
+    const printWindow = window.open('', '', 'height=800,width=1024');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
 }
 
 function showElapsedLegend(e) {
@@ -5754,9 +5510,6 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
     </html>`;
 }
-
-
-// Event listeners para el modal de acuerdo de pago
 
 document.addEventListener("DOMContentLoaded", function () {
   // Función para forzar saltos de línea cada cierto número de caracteres
