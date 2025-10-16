@@ -176,7 +176,7 @@ function SearchTicketsComponents() {
                                     (t) => t.id_ticket == ticketId
                                 );
 
-                                 if (selectedTicketDetails) {
+                                if (selectedTicketDetails) {
                                     detailsPanel.innerHTML = formatTicketDetailsPanel(selectedTicketDetails);
                                     loadTicketHistory(ticketId, selectedTicketDetails.nro_ticket, selectedTicketDetails.serial_pos || '');
                                     if (selectedTicketDetails.serial_pos) {
@@ -366,10 +366,10 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                         <div class="pos-card-body">
                                             <div class="pos-info-item">
                                                 <span class="pos-value pos-serial">${serialPos}</span>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                                        </div>
 
                                 <!-- Información del Banco -->
                                 <div class="col-xl-4 col-lg-6 col-md-6">
@@ -381,10 +381,10 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                         <div class="pos-card-body">
                                             <div class="pos-info-item">
                                                 <span class="pos-value pos-bank">${allPosData[0].banco_ibp || 'No disponible'}</span>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
                                 <!-- Tipo de POS -->
                                 <div class="col-xl-4 col-lg-6 col-md-6">
@@ -396,9 +396,9 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                         <div class="pos-card-body">
                                             <div class="pos-info-item">
                                                 <span class="pos-value pos-model">${allPosData[0].tipo_pos || 'No disponible'}</span>
-                                            </div>
                                         </div>
                                     </div>
+                                </div>
                                 </div>
                             </div>
 
@@ -412,11 +412,11 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                         </div>
                                         <div class="pos-card-body">
                                             <div class="row">
-                                                <div class="col-md-6">
+                                <div class="col-md-6">
                                                     <div class="pos-info-item">
                                                         <label>N° Ticket</label>
                                                         <span class="pos-value">${nroTicket}</span>
-                                                    </div>
+                                        </div>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="pos-info-item">
@@ -446,17 +446,17 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                     // ITERAR TODOS LOS REGISTROS DE COMPONENTES
                     allPosData.forEach((posData, index) => {
                         posInfoHtml += `
-                                    <div class="col-12">
+                                <div class="col-12">
                                         <div class="pos-module-card">
                                             <div class="pos-module-header">
                                                 <div class="pos-module-title">
-                                                    <i class="fas fa-layer-group me-2"></i>
+                                                <i class="fas fa-layer-group me-2"></i>
                                                     <span>${posData.modulo_insert || 'Módulo Sin Nombre'}</span>
-                                                </div>
+                                        </div>
                                                 <div class="pos-module-badge">
                                                     <span class="badge pos-module-number">#${index + 1}</span>
                                                 </div>
-                                            </div>
+                                                </div>
                                             <div class="pos-module-body">
                                                 <div class="pos-module-table">
                                                     <div class="pos-module-row">
@@ -464,7 +464,7 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                                             <div class="pos-module-cell-header">
                                                                 <i class="fas fa-user me-2"></i>
                                                                 <span>Usuario Responsable</span>
-                                                            </div>
+                                            </div>
                                                             <div class="pos-module-cell-content">
                                                                 <span class="pos-module-value">${posData.full_name || 'No disponible'}</span>
                                                             </div>
@@ -487,15 +487,15 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                                             </div>
                                                             <div class="pos-module-cell-content">
                                                                 <div class="pos-components-badge">
-                                                                    ${posData.aggregated_components_by_module || 'No disponible'}
+                                                            ${posData.aggregated_components_by_module || 'No disponible'}
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
                         `;
                     });
 
@@ -506,7 +506,7 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                             <!-- Nota informativa empresarial -->
                             <div class="pos-footer-note">
                                 <div class="pos-note-content">
-                                    <i class="fas fa-info-circle me-2"></i>
+                                        <i class="fas fa-info-circle me-2"></i>
                                     <div>
                                         <strong>Información del Módulo</strong>
                                         <p class="mb-0">Esta información se obtiene desde la base de datos de Soporte Post-Venta y muestra todos los registros de Periféricos registrados para este serial de POS, organizados por módulo de gestión técnica.</p>
@@ -1203,7 +1203,7 @@ function formatTicketDetailsPanel(d) {
                           <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = ${d.id_ticket}" data-serial-pos = ${d.serial_pos}>
                             <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
                           </button>
-                        </div>    
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1642,7 +1642,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     ${cleanString(item.fecha_de_cambio) || 'N/A'} - ${cleanString(item.name_accion_ticket) || 'N/A'} (${cleanString(item.name_status_ticket) || 'N/A'})
                 </div>
                 <div style="padding: 15px; background: #fafafa;">
-                    <table style="width:100%; border-collapse: collapse; font-size: 12px;">
+                <table style="width:100%; border-collapse: collapse; font-size: 12px;">
                     <tbody>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Ticket</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.nro_ticket) || nro_ticket}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Acción</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_accion_ticket) || 'N/A'}</td></tr>
@@ -1671,7 +1671,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         ${cleanString(item.comment_devolution) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Devolución</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_devolution)}</td></tr>` : ''}
                         ${cleanString(item.comment_reasignation) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Reasignación</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_reasignation)}</td></tr>` : ''}
                     </tbody>
-                    </table>
+                </table>
                 </div>
             </div>
         `;
@@ -2035,7 +2035,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     <div class="company-address">
                         Urbanización El Rosal. Av. Francisco de Miranda<br>
                         Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
-                    </div>
+            </div>
                     <div class="document-title">Historial del Ticket</div>
                 </div>
                 
@@ -2057,8 +2057,8 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                             <p style="margin: 0 0 14px 0; color: #6c757d; font-size: 12px; text-align: center;">
                                 <strong>Nota:</strong> En la columna "Tiempo desde gestión anterior" con un valor "N/A" indica que la gestión se realizó en menos de 1 minuto.
                             </p>
-                            ${itemsHtml || '<p style="text-align:center; color:#666;">Sin historial disponible.</p>'}
-                        </div>
+            ${itemsHtml || '<p style="text-align:center; color:#666;">Sin historial disponible.</p>'}
+        </div>
                     </div>
                 </div>
 

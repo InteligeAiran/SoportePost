@@ -963,7 +963,7 @@ function getTicketDataFinaljs() {
                   (t) => t.id_ticket == ticketId
                 );
 
-               if (selectedTicketDetails) {
+                if (selectedTicketDetails) {
                 detailsPanel.innerHTML = formatTicketDetailsPanel(selectedTicketDetails);
                 loadTicketHistory(ticketId, selectedTicketDetails.nro_ticket, selectedTicketDetails.serial_pos || '');
                   if (selectedTicketDetails.serial_pos) {
@@ -2029,7 +2029,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     ${cleanString(item.fecha_de_cambio) || 'N/A'} - ${cleanString(item.name_accion_ticket) || 'N/A'} (${cleanString(item.name_status_ticket) || 'N/A'})
                 </div>
                 <div style="padding: 15px; background: #fafafa;">
-                    <table style="width:100%; border-collapse: collapse; font-size: 12px;">
+                <table style="width:100%; border-collapse: collapse; font-size: 12px;">
                     <tbody>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Ticket</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.nro_ticket) || nro_ticket}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Acción</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_accion_ticket) || 'N/A'}</td></tr>
@@ -2058,7 +2058,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         ${cleanString(item.comment_devolution) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Devolución</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_devolution)}</td></tr>` : ''}
                         ${cleanString(item.comment_reasignation) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Reasignación</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_reasignation)}</td></tr>` : ''}
                     </tbody>
-                    </table>
+                </table>
                 </div>
             </div>
         `;
@@ -2422,7 +2422,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     <div class="company-address">
                         Urbanización El Rosal. Av. Francisco de Miranda<br>
                         Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
-                    </div>
+            </div>
                     <div class="document-title">Historial del Ticket</div>
                 </div>
                 
@@ -2444,8 +2444,8 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                             <p style="margin: 0 0 14px 0; color: #6c757d; font-size: 12px; text-align: center;">
                                 <strong>Nota:</strong> En la columna "Tiempo desde gestión anterior" con un valor "N/A" indica que la gestión se realizó en menos de 1 minuto.
                             </p>
-                            ${itemsHtml || '<p style="text-align:center; color:#666;">Sin historial disponible.</p>'}
-                        </div>
+            ${itemsHtml || '<p style="text-align:center; color:#666;">Sin historial disponible.</p>'}
+        </div>
                     </div>
                 </div>
 

@@ -9,6 +9,14 @@ let usuariosAcciones = {
     acciones: [3, 4],
   },
 
+  cerrado: {
+    modulo: 'domiciliacion',
+    modalId: 'ResolveTicketsModal', // Replace with actual modal ID
+    buttonId: 'btn-desafiliado-deuda',
+    filterTerm: 'Deudor - Desafiliado con Deuda',
+    acciones: [5], // id_accion_ticket = 5 para "Cerrado"
+  },
+
   tecnico: {
     modulo: 'tecnico',
     modalId: 'tecnicoModal', // Replace with actual modal ID (e.g., for Recibido/Reasignado)
@@ -40,6 +48,15 @@ function redirigirPorAccion(idStatusAccion, idTicket, nroTicket) {
   for (const usuario in usuariosAcciones) {
     if (usuariosAcciones[usuario].acciones.includes(idStatusAccion)) {
       const modulo = usuariosAcciones[usuario].modulo;
+      
+      // Para tickets cerrados (domiciliación), guardar información para activar filtro automáticamente
+      if (modulo === 'domiciliacion' && usuariosAcciones[usuario].acciones.includes(5)) {
+        // Guardar información para activar el filtro después de la redirección
+        sessionStorage.setItem('activarFiltroDesafiliado', 'true');
+        sessionStorage.setItem('ticketId', idTicket);
+        sessionStorage.setItem('ticketNro', nroTicket);
+      }
+      
       const url = `${modulo}?id_ticket=${idTicket}&nro_ticket=${encodeURIComponent(nroTicket)}`;
       window.location.href = url; // Perform the redirect
       return;

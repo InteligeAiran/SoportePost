@@ -46,6 +46,11 @@ function searchDomiciliacionTickets() {
     `${ENDPOINT_BASE}${APP_PATH}api/reportes/getDomiciliacionTickets`
   );
 
+  // Read nro_ticket from URL query parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const nroTicket = urlParams.get('nro_ticket');
+
+  
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   const tableContainerParent = document.getElementById("tableContainerParent");
@@ -660,99 +665,173 @@ function searchDomiciliacionTickets() {
 
                 // Función para verificar si hay datos en una búsqueda específica
 
-                function checkDataExists(searchTerm, columnIndex) {
-                  dataTableInstance.columns().search("").draw(false);
-
-                  const filteredData = dataTableInstance
-                    .column(columnIndex)
-                    .search(searchTerm, true, false)
-                    .draw();
-
-                  const rowCount = dataTableInstance
-                    .rows({ filter: "applied" })
-                    .count();
-
+                function checkDataExists(api, searchTerm, columnIndex) {
+                  api.columns().search('').draw(false);
+                  api.column(columnIndex).search(searchTerm, true, false).draw();
+                  const rowCount = api.rows({ filter: 'applied' }).count();
                   return rowCount > 0;
+                }
+
+                // Función para limpiar todos los filtros
+
+                function clearFilters(api) {
+                  api.columns().search('').draw(false);
+                  api.search('').draw(false);
                 }
 
                 // Función para buscar automáticamente el primer botón con datos
 
                 function findFirstButtonWithData() {
-                  // Buscar ID 1 (Pendiente Por revisar domiciliacion) en la columna de ID de Domiciliación (índice 5 - oculta)
+                  console.log('🔍 findFirstButtonWithData iniciado');
+                  console.log('nroTicket:', nroTicket);
+                  
+                  // Debug: Ver todos los datos disponibles
+                  const allData = dataTableInstance.rows().data().toArray();
+                  console.log('📊 Todos los datos disponibles:', allData);
+                  console.log('📊 Total de tickets:', allData.length);
+                  
+                  // Debug: Ver la estructura del primer ticket
+                  if (allData.length > 0) {
+                    console.log('🔍 Estructura del primer ticket:', allData[0]);
+                    console.log('🔍 Columnas del primer ticket:', allData[0].length);
+                    console.log('🔍 nro_ticket del primer ticket:', allData[0][1]);
+                  }
+                  
+                  // Debug: Ver todos los nro_ticket disponibles
+                  const allTickets = allData.map(row => row.nro_ticket);
+                  console.log('🎫 Todos los nro_ticket disponibles:', allTickets);
+                  
+                  // Debug: Ver el ticket específico si existe
+                  const targetTicket = allData.find(row => row.nro_ticket === nroTicket);
+                  if (targetTicket) {
+                    console.log('🎯 Ticket encontrado:', targetTicket);
+                    console.log('🎯 id_status_domiciliacion del ticket:', targetTicket.id_status_domiciliacion);
+                    console.log('🎯 name_status_domiciliacion del ticket:', targetTicket.name_status_domiciliacion);
+                  } else {
+                    console.log('❌ Ticket no encontrado en los datos');
+                  }
+                  
+                  const searchTerms = [
+                    { button: "btn-pendiente-revisar", term: "^1$", column: 5, status: "Pendiente", action: "Pendiente Por revisar domiciliacion" },
+                    { button: "btn-solvente", term: "^2$|^6$", column: 5, status: "Solvente", action: "Tickets Solventes" },
+                    { button: "btn-gestion-comercial", term: "^3$", column: 5, status: "Gestión Comercial", action: "Gestión Comercial" },
+                    { button: "btn-convenio-firmado", term: "^4$", column: 5, status: "Convenio Firmado", action: "Deudor - Convenio Firmado" },
+                    { button: "btn-desafiliado-deuda", term: "^5$", column: 5, status: "Desafiliado", action: "Deudor - Desafiliado con Deuda" }
+                  ];
 
-                  if (checkDataExists("^1$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^1$", true, false)
-                      .draw();
-
-                    setActiveButton("btn-pendiente-revisar");
-
-                    return true;
+                  // Si hay un nroTicket, buscar el filtro que contenga ese ticket
+                  if (nroTicket) {
+                    console.log('🎯 Buscando ticket específico:', nroTicket);
+                    let ticketFound = false;
+                    
+                    for (const { button, term, column, status, action } of searchTerms) {
+                      console.log(`🔍 Probando filtro: ${button} con término: ${term}`);
+                      clearFilters(dataTableInstance);
+                      dataTableInstance.column(column).search(term, true, false).draw();
+                      const filteredData = dataTableInstance.rows({ filter: 'applied' }).data().toArray();
+                      const filteredTickets = filteredData.map(row => row.nro_ticket);
+                      console.log(`📋 Tickets en filtro ${button}:`, filteredTickets);
+                      console.log(`📋 Datos completos del filtro ${button}:`, filteredData);
+                      const ticketExists = filteredData.some(row => row.nro_ticket === nroTicket);
+                      console.log(`✅ Ticket ${nroTicket} encontrado en filtro ${button}:`, ticketExists);
+                      
+                      if (ticketExists) {
+                        console.log(`🎯 ¡TICKET ENCONTRADO! Activando filtro: ${button}`);
+                        clearFilters(dataTableInstance);
+                        dataTableInstance.column(column).search(term, true, false).draw();
+                        if (button === "btn-desafiliado-deuda") {
+                          dataTableInstance.column(9).visible(false);
+                        } else {
+                          dataTableInstance.column(9).visible(true);
+                        }
+                        console.log('🎯 Llamando setActiveButton para:', button);
+                        setActiveButton(button);
+                        
+                        // Aplicar búsqueda del ticket DESPUÉS de activar el filtro
+                        console.log('🔍 Aplicando búsqueda del ticket después del filtro');
+                        const searchInput = $('.dataTables_filter input');
+                        searchInput.val(nroTicket);
+                        dataTableInstance.search(nroTicket).draw();
+                        console.log('✅ Búsqueda del ticket aplicada:', searchInput.val());
+                        
+                        // Resaltar la fila del ticket encontrado
+                        setTimeout(() => {
+                          dataTableInstance.rows().every(function() {
+                            const rowData = this.data();
+                            if (rowData.nro_ticket === nroTicket) {
+                              $(this.node()).addClass('table-active').css('background-color', '#e0f2f7');
+                              console.log('🎨 Fila del ticket resaltada con color azul claro');
+                            } else {
+                              $(this.node()).removeClass('table-active').css('background-color', '');
+                            }
+                          });
+                        }, 100);
+                        
+                        ticketFound = true;
+                        return true;
+                      }
+                    }
+                    
+                    // Si no se encuentra el ticket en ningún filtro
+                    if (!ticketFound) {
+                      console.log('❌ Ticket no encontrado en ningún filtro');
+                      Swal.fire({
+                        icon: 'warning',
+                        title: 'Ticket no encontrado',
+                        text: `El ticket ${nroTicket} no se encuentra en los datos disponibles.`,
+                        confirmButtonText: 'Ok',
+                        color: 'black',
+                        confirmButtonColor: '#003594'
+                      });
+                      $('.dataTables_filter input').val(''); // Limpiar el input de búsqueda
+                      return false; // No continuar con la búsqueda del primer filtro
+                    }
                   }
 
-                  // Buscar ID 2 (Solvente) en la columna de ID de Domiciliación (índice 5 - oculta)
-
-                  if (checkDataExists("^2$|^6$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^2$|^6$", true, false)
-                      .draw();
-
-                    setActiveButton("btn-solvente");
-
-                    return true;
+                  // Buscar el primer filtro con datos
+                  console.log('🔍 Buscando primer filtro con datos');
+                  for (const { button, term, column, status, action } of searchTerms) {
+                    const hasData = checkDataExists(dataTableInstance, term, column);
+                    console.log(`📊 Filtro ${button} tiene datos:`, hasData);
+                    if (hasData) {
+                      console.log(`🎯 Activando primer filtro con datos: ${button}`);
+                      clearFilters(dataTableInstance);
+                      dataTableInstance.column(column).search(term, true, false).draw();
+                      if (button === "btn-desafiliado-deuda") {
+                        dataTableInstance.column(9).visible(false);
+                      } else {
+                        dataTableInstance.column(9).visible(true);
+                      }
+                      setActiveButton(button);
+                      
+                      // Aplicar búsqueda del ticket DESPUÉS de activar el filtro
+                      if (nroTicket) {
+                        console.log('🔍 Aplicando búsqueda del ticket después del filtro');
+                        const searchInput = $('.dataTables_filter input');
+                        searchInput.val(nroTicket);
+                        dataTableInstance.search(nroTicket).draw();
+                        console.log('✅ Búsqueda del ticket aplicada:', searchInput.val());
+                        
+                        // Resaltar la fila del ticket encontrado
+                        setTimeout(() => {
+                          dataTableInstance.rows().every(function() {
+                            const rowData = this.data();
+                            if (rowData.nro_ticket === nroTicket) {
+                              $(this.node()).addClass('table-active').css('background-color', '#e0f2f7');
+                              console.log('🎨 Fila del ticket resaltada con color azul claro');
+                            } else {
+                              $(this.node()).removeClass('table-active').css('background-color', '');
+                            }
+                          });
+                        }, 100);
+                      }
+                      
+                      return true;
+                    }
                   }
 
-                  // Buscar ID 3 (Gestión Comercial) en la columna de ID de Domiciliación (índice 5 - oculta)
-
-                  if (checkDataExists("^3$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^3$", true, false)
-                      .draw();
-
-                    setActiveButton("btn-gestion-comercial");
-
-                    return true;
-                  }
-
-                  // Buscar ID 4 (Deudor - Convenio Firmado) en la columna de ID de Domiciliación (índice 5 - oculta)
-
-                  if (checkDataExists("^4$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^4$", true, false)
-                      .draw();
-
-                    setActiveButton("btn-convenio-firmado");
-
-                    return true;
-                  }
-
-                  // Buscar ID 5 (Deudor - Desafiliado con Deuda) en la columna de ID de Domiciliación (índice 5 - oculta)
-
-                  if (checkDataExists("^5$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^5$", true, false)
-                      .draw();
-
-                    setActiveButton("btn-desafiliado-deuda");
-
-                    return true;
-                  }
-
+                  // Si no hay datos
+                  console.log('❌ No hay datos en ningún filtro');
                   return false;
                 }
 
@@ -760,78 +839,69 @@ function searchDomiciliacionTickets() {
 
                 findFirstButtonWithData();
 
+                // Funciones para manejar la visibilidad de la columna de Acciones
+                function hideActionsColumn() {
+                  // La columna de Acciones es la última (índice 9)
+                  dataTableInstance.column(9).visible(false);
+                }
+
+                function showActionsColumn() {
+                  // La columna de Acciones es la última (índice 9)
+                  dataTableInstance.column(9).visible(true);
+                }
+
                 // Event listeners para los botones
 
                 $("#btn-solvente").on("click", function () {
-                  if (checkDataExists("^2$|^6$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^2$|^6$", true, false, true)
-                      .draw();
-
+                  if (checkDataExists(dataTableInstance, "^2$|^6$", 5)) {
+                    clearFilters(dataTableInstance);
+                    dataTableInstance.column(5).search("^2$|^6$", true, false).draw();
                     setActiveButton("btn-solvente");
+                    showActionsColumn();
                   } else {
                     findFirstButtonWithData();
                   }
                 });
 
                 $("#btn-gestion-comercial").on("click", function () {
-                  if (checkDataExists("^3$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^3$", true, false)
-                      .draw();
-
+                  if (checkDataExists(dataTableInstance, "^3$", 5)) {
+                    clearFilters(dataTableInstance);
+                    dataTableInstance.column(5).search("^3$", true, false).draw();
                     setActiveButton("btn-gestion-comercial");
+                    showActionsColumn();
                   } else {
                     findFirstButtonWithData();
                   }
                 });
 
                 $("#btn-pendiente-revisar").on("click", function () {
-                  if (checkDataExists("^1$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^1$", true, false)
-                      .draw();
-
+                  if (checkDataExists(dataTableInstance, "^1$", 5)) {
+                    clearFilters(dataTableInstance);
+                    dataTableInstance.column(5).search("^1$", true, false).draw();
                     setActiveButton("btn-pendiente-revisar");
+                    showActionsColumn();
                   } else {
                     findFirstButtonWithData();
                   }
                 });
 
                 $("#btn-convenio-firmado").on("click", function () {
-                  if (checkDataExists("^4$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^4$", true, false)
-                      .draw();
-
+                  if (checkDataExists(dataTableInstance, "^4$", 5)) {
+                    clearFilters(dataTableInstance);
+                    dataTableInstance.column(5).search("^4$", true, false).draw();
                     setActiveButton("btn-convenio-firmado");
+                    showActionsColumn();
                   } else {
                     findFirstButtonWithData();
                   }
                 });
 
                 $("#btn-desafiliado-deuda").on("click", function () {
-                  if (checkDataExists("^5$", 5)) {
-                    dataTableInstance.columns().search("").draw(false);
-
-                    dataTableInstance
-                      .column(5)
-                      .search("^5$", true, false)
-                      .draw();
-
+                  if (checkDataExists(dataTableInstance, "^5$", 5)) {
+                    clearFilters(dataTableInstance);
+                    dataTableInstance.column(5).search("^5$", true, false).draw();
                     setActiveButton("btn-desafiliado-deuda");
+                    hideActionsColumn();
                   } else {
                     findFirstButtonWithData();
                   }
@@ -1939,102 +2009,102 @@ function formatTicketDetailsPanel(d) {
 // Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
 
 function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
-    const historyPanel = $("#ticket-history-content");
+  const historyPanel = $("#ticket-history-content");
     historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
 
-    const parseCustomDate = (dateStr) => {
+  const parseCustomDate = (dateStr) => {
         const parts = dateStr.split(' ');
-        if (parts.length !== 2) return null;
+    if (parts.length !== 2) return null;
         const [day, month, year] = parts[0].split('-');
         const [hours, minutes] = parts[1].split(':');
-        return new Date(year, month - 1, day, hours, minutes);
-    };
+    return new Date(year, month - 1, day, hours, minutes);
+  };
 
-    const calculateTimeElapsed = (startDateStr, endDateStr) => {
-        if (!startDateStr || !endDateStr) return null;
+  const calculateTimeElapsed = (startDateStr, endDateStr) => {
+    if (!startDateStr || !endDateStr) return null;
 
-        const start = parseCustomDate(startDateStr);
-        const end = parseCustomDate(endDateStr);
+    const start = parseCustomDate(startDateStr);
+    const end = parseCustomDate(endDateStr);
 
-        if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
-            return null;
-        }
+    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return null;
+    }
 
-        const diffMs = end - start;
-        if (diffMs <= 0) {
-            return null;
-        }
+    const diffMs = end - start;
+    if (diffMs <= 0) {
+      return null;
+    }
 
-        const diffMinutes = Math.floor(diffMs / (1000 * 60));
-        const diffHours = Math.floor(diffMinutes / 60);
-        const diffDays = Math.floor(diffHours / 24);
-        const diffWeeks = Math.floor(diffDays / 7);
-        const diffMonths = Math.floor(diffDays / 30.44);
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffWeeks = Math.floor(diffDays / 7);
+    const diffMonths = Math.floor(diffDays / 30.44);
 
-        const calculateBusinessDays = (startDateObj, endDateObj) => {
-            const holidays2025 = [
+    const calculateBusinessDays = (startDateObj, endDateObj) => {
+      const holidays2025 = [
                 '2025-01-01', '2025-01-06', '2025-02-17', '2025-02-18', '2025-03-24', '2025-03-25', '2025-03-26', '2025-03-27', '2025-03-28', '2025-04-19', '2025-05-01', '2025-06-24', '2025-07-05', '2025-07-24', '2025-10-12', '2025-12-25'
             ];
-            let businessDays = 0;
-            const current = new Date(startDateObj);
-            const end = new Date(endDateObj);
+      let businessDays = 0;
+      const current = new Date(startDateObj);
+      const end = new Date(endDateObj);
 
-            while (current <= end) {
-                const dayOfWeek = current.getDay();
+      while (current <= end) {
+        const dayOfWeek = current.getDay();
                 const dateString = current.toISOString().split('T')[0];
                 if (dayOfWeek >= 1 && dayOfWeek <= 5 && !holidays2025.includes(dateString)) {
-                    businessDays++;
-                }
-                current.setDate(current.getDate() + 1);
-            }
-            return businessDays;
-        };
-
-        const businessDays = calculateBusinessDays(start, end);
-        let timeText = '';
-
-        if (diffMonths > 0) {
-            const remainingDays = diffDays % 30.44;
-            timeText = `${diffMonths}M ${Math.floor(remainingDays)}D`;
-        } else if (diffWeeks > 0) {
-            const remainingDays = diffDays % 7;
-            timeText = `${diffWeeks}W ${remainingDays}D`;
-        } else if (diffDays > 0) {
-            const remainingHours = diffHours % 24;
-            const remainingMinutes = diffMinutes % 60;
-            timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}M`;
-        } else if (diffHours > 0) {
-            const remainingMinutes = diffMinutes % 60;
-            timeText = `${diffHours}H ${remainingMinutes}M`;
-        } else if (diffMinutes > 0) {
-            timeText = `${diffMinutes}M`;
-        } else {
-            return null;
+          businessDays++;
         }
-
-        return {
-            text: timeText,
-            ms: diffMs,
-            minutes: diffMinutes,
-            hours: diffHours,
-            days: diffDays,
-            weeks: diffWeeks,
-            months: diffMonths,
-            businessDays: businessDays
-        };
+        current.setDate(current.getDate() + 1);
+      }
+      return businessDays;
     };
 
-    $.ajax({
-        url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
-        type: "POST",
-        data: {
-            action: "GetTicketHistory",
-            id_ticket: ticketId,
-        },
-        dataType: "json",
+    const businessDays = calculateBusinessDays(start, end);
+        let timeText = '';
+
+    if (diffMonths > 0) {
+      const remainingDays = diffDays % 30.44;
+      timeText = `${diffMonths}M ${Math.floor(remainingDays)}D`;
+    } else if (diffWeeks > 0) {
+      const remainingDays = diffDays % 7;
+      timeText = `${diffWeeks}W ${remainingDays}D`;
+    } else if (diffDays > 0) {
+      const remainingHours = diffHours % 24;
+      const remainingMinutes = diffMinutes % 60;
+      timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}M`;
+    } else if (diffHours > 0) {
+      const remainingMinutes = diffMinutes % 60;
+      timeText = `${diffHours}H ${remainingMinutes}M`;
+    } else if (diffMinutes > 0) {
+      timeText = `${diffMinutes}M`;
+    } else {
+      return null;
+    }
+
+    return {
+      text: timeText,
+      ms: diffMs,
+      minutes: diffMinutes,
+      hours: diffHours,
+      days: diffDays,
+      weeks: diffWeeks,
+      months: diffMonths,
+            businessDays: businessDays
+    };
+  };
+
+  $.ajax({
+    url: `${ENDPOINT_BASE}${APP_PATH}api/historical/GetTicketHistory`,
+    type: "POST",
+    data: {
+      action: "GetTicketHistory",
+      id_ticket: ticketId,
+    },
+    dataType: "json",
         success: function(response) {
-            if (response.success && response.history && response.history.length > 0) {
-                let historyHtml = `
+      if (response.success && response.history && response.history.length > 0) {
+        let historyHtml = `
                     <div class="d-flex justify-content-end mb-2">
                         <button class="btn btn-secondary" onclick="printHistory('${ticketId}', '${encodeURIComponent(JSON.stringify(response.history))}', '${currentTicketNroForImage}', '${serialPos}')">
                             <i class="fas fa-print"></i> Imprimir Historial
@@ -2043,26 +2113,26 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     <div class="accordion" id="ticketHistoryAccordion">
                 `;
 
-                response.history.forEach((item, index) => {
-                    const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
-                    const headingId = `headingHistoryItem_${ticketId}_${index}`;
-                    const isLatest = index === 0;
-                    const prevItem = response.history[index + 1] || {};
+        response.history.forEach((item, index) => {
+          const collapseId = `collapseHistoryItem_${ticketId}_${index}`;
+          const headingId = `headingHistoryItem_${ticketId}_${index}`;
+          const isLatest = index === 0;
+          const prevItem = response.history[index + 1] || {};
 
-                    let timeElapsed = null;
+          let timeElapsed = null;
                     let timeBadge = '';
 
-                    if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
+          if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
                         timeElapsed = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
-                        if (timeElapsed) {
+            if (timeElapsed) {
                             let badgeColor = 'success';
-                            if (timeElapsed.months > 0 || timeElapsed.businessDays > 5) {
+              if (timeElapsed.months > 0 || timeElapsed.businessDays > 5) {
                                 badgeColor = 'danger';
                             } else if (timeElapsed.weeks > 0 || timeElapsed.businessDays > 2) {
                                 badgeColor = 'warning';
-                            } else if (timeElapsed.days > 0 || timeElapsed.hours > 8) {
+              } else if (timeElapsed.days > 0 || timeElapsed.hours > 8) {
                                 badgeColor = 'orange';
-                            } else if (timeElapsed.hours >= 1) {
+              } else if (timeElapsed.hours >= 1) {
                                 badgeColor = 'purple';
                             }
 
@@ -2072,10 +2142,10 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                             else if (badgeColor === 'warning') backgroundColor = '#ffc107';
                             else if (badgeColor === 'danger') backgroundColor = '#dc3545';
 
-                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
-                        }
-                    }
-                    
+              timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
+            }
+          }
+
                     const cleanString = (str) => str && str.replace(/\s/g, ' ').trim() || null;
                     const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
 
@@ -2093,9 +2163,9 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const estatusTicketChanged = getChange(item.name_status_ticket, prevItem.name_status_ticket);
                     const componentsChanged = getChange(item.components_list, prevItem.components_list);
                     const motivoRechazoChanged = getChange(item.name_motivo_rechazo, prevItem.name_motivo_rechazo);
-                    const pagoChanged = getChange(item.pago, prevItem.pago);
+          const pagoChanged = getChange(item.pago, prevItem.pago);
                     const exoneracionChanged = getChange(item.exoneracion, prevItem.exoneracion);
-                    const envioChanged = getChange(item.envio, prevItem.envio);
+          const envioChanged = getChange(item.envio, prevItem.envio);
                     const envioDestinoChanged = getChange(item.envio_destino, prevItem.envio_destino);
 
                     const showComponents = cleanString(item.name_accion_ticket) === 'Actualización de Componentes' && cleanString(item.components_list);
@@ -2108,19 +2178,19 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const showCommentReasignation = cleanString(item.name_accion_ticket) === 'Reasignado al Técnico' && cleanString(item.comment_reasignation);
 
                     const headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-                    const textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+          const textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
 
                     let statusHeaderText = cleanString(item.name_status_ticket) || "Desconocido";
                     if (cleanString(item.name_accion_ticket) === "Enviado a taller" || cleanString(item.name_accion_ticket) === "En Taller") {
                         statusHeaderText = cleanString(item.name_status_lab) || "Desconocido";
-                    }
+          }
 
-                    // Se define el texto del botón aquí con la condición ternaria
-                    const buttonText = isCreation
+          // Se define el texto del botón aquí con la condición ternaria
+          const buttonText = isCreation
                         ? `${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`
                         : `${item.fecha_de_cambio || "N/A"} - ${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`;
 
-                    historyHtml += `
+          historyHtml += `
                         <div class="card mb-3 custom-history-card position-relative">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
                                 ${creationBadge}
@@ -2239,21 +2309,21 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                 </div>
                             </div>
                         </div>`;
-                });
+        });
 
-                historyHtml += "</div>";
-                historyPanel.html(historyHtml);
-            } else {
+        historyHtml += "</div>";
+        historyPanel.html(historyHtml);
+      } else {
                 historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.error("Error completo de AJAX:", { jqXHR, textStatus, errorThrown });
             let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
-            if (jqXHR.status === 0) {
+      if (jqXHR.status === 0) {
                 errorMessage = '<p class="text-center text-danger">Error de red: No se pudo conectar al servidor.</p>';
-            } else if (jqXHR.status == 404) {
-                errorMessage = `<div class="text-center text-muted py-5">
+      } else if (jqXHR.status == 404) {
+        errorMessage = `<div class="text-center text-muted py-5">
                     <div class="d-flex flex-column align-items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
                             <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
@@ -2262,77 +2332,77 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                         <p class="text-muted mb-0">No hay datos en el historial.</p>
                     </div>
                 </div>`;
-            } else if (jqXHR.status == 500) {
+      } else if (jqXHR.status == 500) {
                 errorMessage = '<p class="text-center text-danger">Error interno del servidor. (Error 500)</p>';
-            } else if (textStatus === "parsererror") {
+      } else if (textStatus === "parsererror") {
                 errorMessage = '<p class="text-center text-danger">Error al procesar la respuesta del servidor (JSON inválido).</p>';
-            } else if (textStatus === "timeout") {
+      } else if (textStatus === "timeout") {
                 errorMessage = '<p class="text-center text-danger">Tiempo de espera agotado al cargar el historial.</p>';
-            } else if (textStatus === "abort") {
+      } else if (textStatus === "abort") {
                 errorMessage = '<p class="text-center text-danger">Solicitud de historial cancelada.</p>';
-            }
-            historyPanel.html(errorMessage);
-            console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
-        },
-    });
+      }
+      historyPanel.html(errorMessage);
+      console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+    },
+  });
 }
 
 function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serialPos = '') {
-    const decodeHistorySafe = (encoded) => {
-        try {
-            if (!encoded) return [];
-            return JSON.parse(decodeURIComponent(encoded));
-        } catch (e) {
+  const decodeHistorySafe = (encoded) => {
+    try {
+      if (!encoded) return [];
+      return JSON.parse(decodeURIComponent(encoded));
+    } catch (e) {
             console.error('Error decoding history:', e);
-            return [];
-        }
-    };
+      return [];
+    }
+  };
 
     const cleanString = (str) => (typeof str === 'string' ? str.replace(/\s/g, ' ').trim() : (str ?? ''));
 
-    const parseCustomDate = (dateStr) => {
-        if (!dateStr) return null;
+  const parseCustomDate = (dateStr) => {
+    if (!dateStr) return null;
         const parts = String(dateStr).split(' ');
-        if (parts.length !== 2) return null;
+    if (parts.length !== 2) return null;
         const [day, month, year] = parts[0].split('-');
         const [hours, minutes] = parts[1].split(':');
         const d = new Date(year, (Number(month) || 1) - 1, Number(day) || 1, Number(hours) || 0, Number(minutes) || 0);
-        return isNaN(d.getTime()) ? null : d;
-    };
+    return isNaN(d.getTime()) ? null : d;
+  };
 
-    const calculateTimeElapsed = (startDateStr, endDateStr) => {
-        if (!startDateStr || !endDateStr) return null;
-        const start = parseCustomDate(startDateStr);
-        const end = parseCustomDate(endDateStr);
-        if (!start || !end) return null;
-        const diffMs = end - start;
-        if (diffMs <= 0) return null;
-        const diffMinutes = Math.floor(diffMs / (1000 * 60));
-        const diffHours = Math.floor(diffMinutes / 60);
-        const diffDays = Math.floor(diffHours / 24);
-        const diffWeeks = Math.floor(diffDays / 7);
-        const diffMonths = Math.floor(diffDays / 30.44);
+  const calculateTimeElapsed = (startDateStr, endDateStr) => {
+    if (!startDateStr || !endDateStr) return null;
+    const start = parseCustomDate(startDateStr);
+    const end = parseCustomDate(endDateStr);
+    if (!start || !end) return null;
+    const diffMs = end - start;
+    if (diffMs <= 0) return null;
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffWeeks = Math.floor(diffDays / 7);
+    const diffMonths = Math.floor(diffDays / 30.44);
         let text = '';
-        if (diffMonths > 0) {
-            const remainingDays = Math.floor(diffDays % 30.44);
-            text = `${diffMonths}M ${remainingDays}D`;
-        } else if (diffWeeks > 0) {
-            text = `${diffWeeks}W ${diffDays % 7}D`;
-        } else if (diffDays > 0) {
-            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
-        } else if (diffHours > 0) {
-            text = `${diffHours}H ${diffMinutes % 60}M`;
-        } else if (diffMinutes > 0) {
-            // Mostrar minutos cuando es al menos 1 minuto
-            text = `${diffMinutes}M`;
-        } else {
-            // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
-            text = `N/A`;
-        }
+    if (diffMonths > 0) {
+      const remainingDays = Math.floor(diffDays % 30.44);
+      text = `${diffMonths}M ${remainingDays}D`;
+    } else if (diffWeeks > 0) {
+      text = `${diffWeeks}W ${diffDays % 7}D`;
+    } else if (diffDays > 0) {
+      text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
+    } else if (diffHours > 0) {
+      text = `${diffHours}H ${diffMinutes % 60}M`;
+    } else if (diffMinutes > 0) {
+      // Mostrar minutos cuando es al menos 1 minuto
+      text = `${diffMinutes}M`;
+    } else {
+      // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
+      text = `N/A`;
+    }
         return { text, ms: diffMs, minutes: diffMinutes, hours: diffHours, days: diffDays, weeks: diffWeeks, months: diffMonths };
-    };
+  };
 
-    const history = decodeHistorySafe(historyEncoded);
+  const history = decodeHistorySafe(historyEncoded);
 
     // Generar nombre del archivo con formato: nro_ticket-last4digits_serial.pdf
     const generateFileName = (ticketNumber, serial) => {
@@ -2360,7 +2430,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     ${cleanString(item.fecha_de_cambio) || 'N/A'} - ${cleanString(item.name_accion_ticket) || 'N/A'} (${cleanString(item.name_status_ticket) || 'N/A'})
                 </div>
                 <div style="padding: 15px; background: #fafafa;">
-                    <table style="width:100%; border-collapse: collapse; font-size: 12px;">
+                <table style="width:100%; border-collapse: collapse; font-size: 12px;">
                     <tbody>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Ticket</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.nro_ticket) || nro_ticket}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Acción</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_accion_ticket) || 'N/A'}</td></tr>
@@ -2801,10 +2871,10 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
 
     const printWindow = window.open('', '', 'height=800,width=1024');
     printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+  printWindow.close();
 }
 
 function showElapsedLegend(e) {
