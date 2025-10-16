@@ -371,8 +371,8 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function UpdateDomiciliacionStatus($id_new_status, $id_ticket, $id_user){
-        $result = $this->model->UpdateStatusDomiciliacion($id_new_status,$id_ticket, $id_user);
+    public function UpdateDomiciliacionStatus($id_new_status, $id_ticket, $id_user, $observation){
+        $result = $this->model->UpdateStatusDomiciliacion($id_new_status,$id_ticket, $id_user, $observation);
         return $result;
     }
 
@@ -730,8 +730,8 @@ class TechnicalConsultionRepository
         }
     }
     
-    public function SendToRegion($ticketId, $id_user, $component, $serial){
-        $result = $this->model->SendToRegion($ticketId, $id_user, $component, $serial);
+    public function SendToRegion($ticketId, $id_user, $component, $serial, $modulo){
+        $result = $this->model->SendToRegion($ticketId, $id_user, $component, $serial, $modulo);
         return $result;
     }
 
@@ -853,5 +853,63 @@ class TechnicalConsultionRepository
         }
         return false;
     }
+
+    public function GetTicketDataGestionComercial($id_user){
+        $result = $this->model->GetTicketDataGestionComercial($id_user);
+        if ($result) {
+            //var_dump($result);  
+            $ticket = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            //var_dump($agente);
+            return $ticket;
+        } else {
+            return null;
+        }
+    }
+    public function GetBancoTicket(){
+        $result = $this->model->GetBancoTicket();
+    
+        for ($i = 0; $i < $result['numRows']; $i++) {
+            $agente = pg_fetch_assoc($result['query'], $i);
+            $tipousers[] = $agente;
+            //var_dump($agente);
+        }
+        return $tipousers;
+    }
+
+    public function GetTicketDataComponent(){
+        $result = $this->model->GetTicketDataComponent();
+        if ($result) {
+            //var_dump($result);  
+            $ticket = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            //var_dump($agente);
+            return $ticket;
+        } else {
+            return null;
+        }
+    }
+
+    public function GetComponentsBySerial($id_ticket, $serial){
+        $result = $this->model->GetComponentsBySerial($id_ticket, $serial);
+        if ($result) {
+            $ticket = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            return $ticket;
+        } else {
+            return null;
+        }
+    }
+
+
 }
 ?>

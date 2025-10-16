@@ -5,6 +5,12 @@
 
     /* Ocultar el sidebar en pantallas pequeñas (menores de 1199px) */
     @media (min-width: 1198px) {
+    #sidenav-main:hover{
+        transform: translateY(-5px);
+         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+
         .sidenav {
             left: -250px; /* Oculto fuera de la pantalla */
         }
@@ -93,19 +99,122 @@
     }
 
     .sidenav .navbar-nav .nav-item {
-        margin-bottom: 5px;
+        margin-bottom: 2px;
+        /* Asegurar que los elementos no se corten */
+        padding: 2px 0;
+        box-sizing: border-box;
     }
 
     .sidenav .navbar-nav .nav-item:last-child {
         margin-bottom: 0;
     }
 
+    /* Scroll para el navbar cuando se reduce el espacio */
+    .sidenav .navbar-nav {
+        max-height: calc(100vh - 250px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 10px 0 10px 5px;
+        margin-right: 0;
+        /* Asegurar que siempre tenga scroll cuando sea necesario */
+        min-height: 0;
+        /* Asegurar que los elementos no se corten */
+        box-sizing: border-box;
+        /* Forzar que el scroll aparezca dentro del navbar */
+        position: relative;
+        /* Asegurar que el contenido tenga espacio suficiente */
+        width: 100%;
+    }
+
+    /* Estilos para el scrollbar personalizado */
+    .sidenav .navbar-nav::-webkit-scrollbar {
+        width: 8px;
+        position: absolute;
+        right: 0;
+    }
+
+    .sidenav .navbar-nav::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        margin: 5px 0;
+    }
+
+    .sidenav .navbar-nav::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .sidenav .navbar-nav::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Estilos responsivos para cuando se abre la consola del navegador */
+    @media (max-height: 700px) {
+        .sidenav .navbar-nav {
+            max-height: calc(100vh - 200px);
+        }
+    }
+
+    @media (max-height: 600px) {
+        .sidenav .navbar-nav {
+            max-height: calc(100vh - 150px);
+        }
+    }
+
+    @media (max-height: 500px) {
+        .sidenav .navbar-nav {
+            max-height: calc(100vh - 120px);
+        }
+    }
+
+    @media (max-height: 400px) {
+        .sidenav .navbar-nav {
+            max-height: calc(100vh - 100px);
+        }
+    }
+
     .sidenav .navbar-nav .nav-link .nav-link-text {
         font-weight: 600;
+        font-size: 0.9rem; /* Reducir tamaño de fuente de los textos del navbar */
+        width: 100%;
+        /* Asegurar que el texto no se corte */
+        padding: 0;
+        display: block;
+        line-height: 1.3;
+        /* Asegurar que el texto completo sea visible */
+        white-space: nowrap;
+        overflow: visible;
     }
 
     .sidenav .navbar-nav .nav-link svg {
         margin-right: 8px;
+    }
+
+    /* Asegurar que los enlaces de navegación tengan el espacio adecuado */
+    .sidenav .navbar-nav .nav-link {
+        padding: 12px 15px 12px 20px;
+        display: flex;
+        align-items: center;
+        min-height: 50px;
+        box-sizing: border-box;
+        /* Asegurar que no se extienda fuera del navbar */
+        width: 100%;
+        max-width: 100%;
+        /* Asegurar que el contenido no se corte */
+        overflow: visible;
+        white-space: nowrap;
+    }
+
+    /* Asegurar que el navbar tenga ancho fijo y el scroll esté dentro */
+    .sidenav {
+        width: 250px !important;
+        overflow: hidden;
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        z-index: 1000;
     }
 
     /* Estilos para las clases 'active' y 'sidenav-open' */
@@ -154,7 +263,7 @@
         min-width: 200px; /* Ajusta el ancho mínimo del dropdown */
         padding: 5px 0;
         margin: 0;
-        font-size: 1rem;
+        font-size: 0.9rem; /* Reducir tamaño de fuente del dropdown */
         color: #212529;
         text-align: left;
         list-style: none;
@@ -175,6 +284,7 @@
         padding: 0.25rem 1.5rem;
         clear: both;
         font-weight: 400;
+        font-size: 0.9em; /* Reducir tamaño de fuente de los elementos del dropdown */
         color: #212529;
         text-align: inherit;
         white-space: nowrap;

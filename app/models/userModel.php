@@ -336,7 +336,8 @@ class userModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en getEmailByUsername: " . $e->getMessage());
+            return null; // Devolver null en caso de error
         }
     }
 
@@ -485,7 +486,9 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            // Loguear el error para depuración
+            error_log("Error en getEmailByUsername: " . $e->getMessage());
+            return null; // Devolver null en caso de error
         }
     }
 
@@ -541,7 +544,7 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
 
     public function GetTechniciansAndCurrentTicketTechnician($id_ticket){
         try {
-            $sql = "SELECT * FROM  get_tecnico_asignacion(".$id_ticket.");";
+            $sql = "SELECT * FROM get_tecnico_asignacion(".$id_ticket.");";
             //var_dump($sql); // Para depuración
             $result = Model::getResult($sql, $this->db);
             return $result;
@@ -563,7 +566,7 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
 
             // --- PASO 1: Obtener datos del ticket existente para mantenerlos ---
             // Usamos el ID del ticket sanitizado
-            $data_sql = "SELECT id_ticket, date_sendcoordinator, id_coordinador, date_create_ticket, date_end_ticket, id_tecnico_n1 FROM users_tickets WHERE id_ticket = " . $safe_id_ticket;
+            $data_sql = "SELECT id_ticket, date_sendcoordinator, id_department, date_create_ticket, date_end_ticket, id_tecnico_n1,  id_coordinador FROM users_tickets WHERE id_ticket = " . $safe_id_ticket . ";";
             $result_select_initial = Model::getResult($data_sql, $this->db); // Usando tu método Model::getResult
 
             $existing_data = null;
@@ -596,19 +599,21 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
             // Los valores se asumen seguros si provienen de $existing_data que fue de la DB
             // y se vuelven a escapar si son strings para el INSERT.
             $date_sendcoordinator = $existing_data['date_sendcoordinator'] ?? 'NULL';
-            $id_coordinator = $existing_data['id_coordinator'] ?? 'NULL'; // Numérico, no necesita comillas
+            $id_coordinator = $existing_data['id_coordinador'] ?? 'NULL'; // Numérico, no necesita comillas
             $date_create_ticket = $existing_data['date_create_ticket'] ?? 'NULL';
             $date_end_ticket = $existing_data['date_end_ticket'] ? "'" . pg_escape_literal($this->db->getConnection(), $existing_data['date_end_ticket']) . "'" : 'NULL';
             $id_tecnico_n1 = $existing_data['id_tecnico_n1'] ?? 'NULL'; // Numérico, no necesita comillas
+            $id_department = $existing_data['id_department'] ?? 'NULL';
 
             // --- PASO 2: Realizar el INSERT en users_tickets ---
             // Usamos los IDs sanitizados
             $sql_insert_ticket = "INSERT INTO public.users_tickets
-            (id_ticket, date_sendcoordinator, id_coordinador, date_assign_tec2, id_tecnico_n2, date_create_ticket, date_end_ticket, id_tecnico_n1, commentchangetec)
+            (id_ticket, date_sendcoordinator, id_department,  id_coordinador, date_assign_tec2, id_tecnico_n2, date_create_ticket, date_end_ticket, id_tecnico_n1, commentchangetec)
             VALUES (
                 " . $safe_id_ticket . ", 
                 '" . $date_sendcoordinator . "', 
-                " . $id_coordinator . ", 
+                " . $id_coordinator . ",
+                ". $id_department.",
                 NOW(), 
                 " . $safe_id_technician . ", 
                 '" . $date_create_ticket . "', 

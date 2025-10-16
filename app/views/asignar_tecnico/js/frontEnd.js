@@ -9,10 +9,14 @@ let currentTicketIdForImage = null;
 let currentTicketNroForImage = null;
 let DocumentType = null;
 
+let currentTicketOldTechnicianId = null; 
 let EnvioInput = null;
 let ExoInput = null;
 let PagoInput = null;
 
+// Variables globales para la reasignación de tickets
+let currentTicketNro = null;
+let currentTicketData = null;
 
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -178,12 +182,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // Referencias a elementos dentro de los modales
   const ticketNumberSpan = document.getElementById("ticketNumberSpan");
   const ticketserialPos = document.getElementById("ticketserialPos");
-  const currentTechnicianName = document.getElementById(
-    "currentTechnicianName"
-  );
-  const confirmReassignYesBtn = document.getElementById(
-    "confirmReassignYesBtn"
-  );
+  const currentTechnicianName = document.getElementById("currentTechnicianName");
+  const confirmReassignYesBtn = document.getElementById("confirmReassignYesBtn");
   const assignTechnicianBtn = document.getElementById("assignTechnicianBtn");
 
   // Evento para el botón "Sí" del modal de confirmación
@@ -192,53 +192,132 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Evento para el botón "Asignar" del modal de selección de técnico
-  assignTechnicianBtn.addEventListener("click", async function () {
-    const newTechnicianId = technicianSelect.value;
-    const newTechnicianName = technicianSelect.options[technicianSelect.selectedIndex].textContent; // Para el alert
+  // Evento para el botón "Asignar" del modal de selección de técnico
+assignTechnicianBtn.addEventListener("click", async function () {
+  const newTechnicianId = technicianSelect.value;
+  const newTechnicianName = technicianSelect.options[technicianSelect.selectedIndex].textContent;
 
-    if (newTechnicianId) {
-      // Deshabilitar botón para evitar múltiples clics
-      assignTechnicianBtn.disabled = true;
-      assignTechnicianBtn.textContent = "Asignando...";
+  if (newTechnicianId) {
+    // Deshabilitar botón para evitar múltiples clics
+    assignTechnicianBtn.disabled = true;
+    assignTechnicianBtn.textContent = "Asignando...";
 
-      try {
-        const success = await reassignTicket(currentTicketId, newTechnicianId);
+    try {
+      const success = await reassignTicket(currentTicketId, newTechnicianId);
 
-        if (success) {
-          Swal.fire({
-            icon: 'success',
-            title: '¡Reasignación Exitosa!',
-            html: `El Ticket <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNro}</span> ha sido reasignado con éxito a <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${newTechnicianName}</span>.`,
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#003594'
-          }).then(() => { // El .then() se ejecuta cuando el usuario hace clic en el botón
-            location.reload(); // Recarga la página inmediatamente
-          });
-        } else {
-          alert(
-            `Error al reasignar el ticket ${currentTicketNro}. Por favor, intente de nuevo.`
-          );
-        }
-      } catch (error) {
-        console.error("Error al reasignar el ticket:", error);
-        console.error(`Ocurrió un error al reasignar el ticket ${currentTicketNro}.`);
-      } finally {
-        selectTechnicianModalInstance.hide(); // Oculta el modal de selección
-        assignTechnicianBtn.disabled = false;
-        assignTechnicianBtn.textContent = "Asignar";
+      if (success) {
+        const emailSuccess = await sendReassignmentEmails(
+          currentTicketId,
+          currentTicketOldTechnicianId,
+          newTechnicianId
+        );
+        Swal.fire({
+          icon: "success",
+          title: "¡Reasignación Exitosa!",
+          html: `El Ticket <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNro}</span> ha sido reasignado con éxito a <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${newTechnicianName}</span>.`,
+          confirmButtonText: "Ok",
+          color: "black",
+          confirmButtonColor: "#003594",
+        }).then(() => {
+          location.reload();
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: `Error al reasignar el ticket ${currentTicketNro}. Por favor, intente de nuevo.`,
+          confirmButtonText: "Aceptar",
+          color: "black",
+          confirmButtonColor: "#003594",
+        });
       }
-    } else {
+    } catch (error) {
       Swal.fire({
-        title: "Notificación!",
-        text: "Debe seleccionar un técnico para reasignar el ticket.",
-        icon: "warning",
+        icon: "error",
+        title: "Error",
+        text: `Ocurrió un error al reasignar el ticket ${currentTicketNro}: ${error.message}`,
         confirmButtonText: "Aceptar",
         color: "black",
         confirmButtonColor: "#003594",
       });
+    } finally {
+      selectTechnicianModalInstance.hide();
+      assignTechnicianBtn.disabled = false;
+      assignTechnicianBtn.textContent = "Asignar";
     }
-  });
+  } else {
+    Swal.fire({
+      title: "Notificación!",
+      text: "Debe seleccionar un técnico para reasignar el ticket.",
+      icon: "warning",
+      confirmButtonText: "Aceptar",
+      color: "black",
+      confirmButtonColor: "#003594",
+    });
+  }
+});
+
+// Función para enviar correos de reasignación (convertida a async/await)
+async function sendReassignmentEmails(ticketId, oldTechnicianId, newTechnicianId) {
+  try {
+    console.log("DEBUG: Iniciando sendReassignmentEmails", {
+      ticketId,
+      oldTechnicianId,
+      newTechnicianId,
+    });
+
+    const xhrEmail = new XMLHttpRequest();
+    const url = `${ENDPOINT_BASE}${APP_PATH}api/email/send_reassignment_email`;
+    const params = `action=send_reassignment_email&ticket_id=${encodeURIComponent(
+      ticketId
+    )}&old_technician_id=${encodeURIComponent(
+      oldTechnicianId
+    )}&new_technician_id=${encodeURIComponent(newTechnicianId)}`;
+
+    xhrEmail.open("POST", url);
+    xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    // Convertir xhrEmail a Promise para usar await
+    const response = await new Promise((resolve, reject) => {
+      xhrEmail.onload = function () {
+        console.log("DEBUG: Respuesta recibida del servidor", {
+          status: xhrEmail.status,
+          responseText: xhrEmail.responseText,
+        });
+
+        if (xhrEmail.status === 200) {
+          try {
+            const responseEmail = JSON.parse(xhrEmail.responseText);
+            resolve(responseEmail);
+          } catch (error) {
+            reject(error);
+          }
+        } else {
+          console.error("DEBUG: Error en la solicitud HTTP:", {
+            status: xhrEmail.status,
+            statusText: xhrEmail.statusText,
+            responseText: xhrEmail.responseText,
+          });
+          reject(new Error(`HTTP error! status: ${xhrEmail.status}`));
+        }
+      };
+
+      xhrEmail.onerror = function () {
+        reject(new Error("Error de red"));
+      };
+
+      xhrEmail.send(params);
+    });
+
+    if (response.success) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return false;
+  }
+}
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -340,10 +419,7 @@ function getTicketDataCoordinator() {
                   data-ticket-id="${data.id_ticket}"
                   data-nro-ticket="${data.nro_ticket}"
                   data-serial-pos="${data.serial_pos}">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/>
-                    <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                  </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16"><path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/></svg>
                 </button>
                 <button id="myUniqueAssingmentButton"
                   class="btn btn-sm btn-assign-tech"
@@ -937,6 +1013,8 @@ function getTechnicianData(ticketIdToFetch) {
             // *** ESTA ES LA LÍNEA CRÍTICA ***
             // 1. Asigna el valor del técnico actual a la variable global 'inputTecnicoActual'
             inputTecnicoActual = response.technicians.full_tecnicoassig1 || "No Asignado";
+            currentTicketOldTechnicianId = response.technicians.id_tecnico;
+
 
             // 2. Luego, usa inputTecnicoActual (o directamente response.technicians.full_tecnicoassig1) para actualizar el DOM
             // Ya tienes 'inputNtecnico' que es la referencia a "currentTechnicianDisplay"
@@ -986,8 +1064,8 @@ function getTechnicianData(ticketIdToFetch) {
   });
 }
 
-function reassignTicket(ticketId, newTechnicianId) {
-  return new Promise((resolve, reject) => {
+async function reassignTicket(ticketId, newTechnicianId) {
+  try {
     const xhr = new XMLHttpRequest();
     const id_user = document.getElementById("id_user").value; // Asumiendo que tienes el ID del usuario logueado
     const comment = document.getElementById("reassignObservation").value; // Asumiendo que tienes el comentario del usuario
@@ -996,33 +1074,41 @@ function reassignTicket(ticketId, newTechnicianId) {
     xhr.open("POST", API_URL_REASSIGN);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-    xhr.onload = function () {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          resolve(response.success);
-        } catch (error) {
-          console.error("Error parsing JSON para reasignar ticket:", error);
-          reject(error);
-        }
-      } else {
-        console.error(
-          "Error en la solicitud para reasignar ticket:",
-          xhr.status,
-          xhr.statusText
-        );
-        reject(new Error(`HTTP error! status: ${xhr.status}`));
-      }
-    };
-
-    xhr.onerror = function () {
-      console.error("Error de red al intentar reasignar ticket.");
-      reject(new Error("Error de red"));
-    };
-
     const dataToSend = `action=ReassignTicket&ticket_id=${ticketId}&new_technician_id=${newTechnicianId}&id_user=${id_user}&comment=${comment}`;
-    xhr.send(dataToSend);
-  });
+
+    // Convertir el callback de xhr a una promesa para usar await
+    const response = await new Promise((resolve, reject) => {
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response.success);
+          } catch (error) {
+            console.error("Error parsing JSON para reasignar ticket:", error);
+            reject(error);
+          }
+        } else {
+          console.error(
+            "Error en la solicitud para reasignar ticket:",
+            xhr.status,
+            xhr.statusText
+          );
+          reject(new Error(`HTTP error! status: ${xhr.status}`));
+        }
+      };
+
+      xhr.onerror = function () {
+        console.error("Error de red al intentar reasignar ticket.");
+        reject(new Error("Error de red"));
+      };
+
+      xhr.send(dataToSend);
+    });
+
+    return response;
+  } catch (error) {
+    throw error; // Relanzar el error para que pueda ser manejado por el llamador
+  }
 }
 
 function downloadImageModal(serial) {
@@ -1142,7 +1228,7 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = ${d.id_ticket}" data-serial-pos = ${d.serial_pos}>
-                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Componentes del Dispositivo
+                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
                           </button>
                         </div>    
                     </div>
@@ -1411,7 +1497,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
                                                 </tr>
                                                 ${showComponents ? `
                                                     <tr>
-                                                        <th class="text-start">Componentes Asociados:</th>
+                                                        <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
                                                     </tr>
                                                 ` : ''}
@@ -1583,7 +1669,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_lab) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
-                        ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Componentes</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
@@ -2132,6 +2218,7 @@ function limpiarSeleccion() {
 // CORRECCIÓN PRINCIPAL: Se modificó la función para que reciba los componentes seleccionados
 function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos) {
   const id_user = document.getElementById('id_user').value;
+  const modulo = 'Coordinación Post-Venta';
 
   const xhr = new XMLHttpRequest();
   xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
@@ -2144,7 +2231,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
         if (response.success) {
           Swal.fire({
             title: '¡Éxito!',
-            html: `Los componentes del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
+            html: `Los Periféricos del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
             icon: 'success',
             confirmButtonText: 'Aceptar',
             color: 'black',
@@ -2191,7 +2278,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
     });
   };
 
-  const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}`;
+  const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}&modulo=${encodeURIComponent(modulo)}`;
   xhr.send(dataToSend);
 }
 
@@ -2214,7 +2301,7 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
   const xhr = new XMLHttpRequest();
 
   // Limpia el contenido previo y muestra un mensaje de carga
-  tbodyComponentes.innerHTML = `<tr><td colspan="2" class="text-center text-muted">Cargando componentes...</td></tr>`;
+  tbodyComponentes.innerHTML = `<tr><td colspan="2" class="text-center text-muted">Cargando Periféricos...</td></tr>`;
 
   const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetComponents`;
   const dataToSendString = `action=GetComponents&ticketId=${ticketId}`;
@@ -2256,7 +2343,7 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
 
           tbodyComponentes.innerHTML = componentsHtml;
           document.getElementById('modalComponentesLabel').innerHTML = `
-                        <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
+                        <i class="bi bi-box-seam-fill me-2"></i>Lista de Periféricos del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
                     `;
 
           // Finalmente, muestra el modal de Bootstrap
@@ -2316,7 +2403,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (allCheckboxes.length > 0 && allDisabledAndChecked) {
         Swal.fire({
           title: '¡Información!',
-          html: `Todos los componentes del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
+          html: `Todos los Periféricos del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
           icon: 'info',
           confirmButtonText: 'Aceptar',
           color: 'black',

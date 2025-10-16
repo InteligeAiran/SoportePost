@@ -178,4 +178,10 @@ class EmailRepository
          $result = $this->model->GetEmailAreaAdmin();
         return $result ? $result['row'] : null;
     }
+
+    public function GetTicketDataById($ticketId){
+        // Lógica para obtener datos del ticket por ID
+        $result = $this->model->GetTicketDataById($ticketId);
+        return $result ? $result['row'] : null;
+    }
 }

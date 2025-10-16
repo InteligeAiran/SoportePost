@@ -238,5 +238,17 @@ class emailModel extends Model{
             // Handle exception
         }
     }
+
+    public function GetTicketDataById($ticketId){
+        try{
+            $escaped_ticket_id = pg_escape_literal($this->db->getConnection(), $ticketId);
+            $sql = "SELECT * FROM getdataticket_by_id(".$escaped_ticket_id.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetTicketDataById: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
 }
 ?>

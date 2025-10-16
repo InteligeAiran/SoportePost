@@ -19,5 +19,15 @@ class documentsModel extends Model{
             // Handle exception
         } 
     }
+
+    public function GetPaymentAgreementData($id_ticket){
+         try{
+            $sql = "SELECT * FROM get_payment_agreement_data(".$id_ticket.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        } 
+    }
 }
 ?>

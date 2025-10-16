@@ -513,6 +513,18 @@ function mi_navbar() {}
                 border-color: #576370;
             }
 
+            /* Botón de Ver Convenio Firmado (gris oscuro) */
+            #VerConvenio {
+                background-color: #6e6e6e;
+                border-color: #6e6e6e;
+                color: white;
+            }
+
+            #VerConvenio:hover {
+                background-color: #5c5c5c;
+                border-color: #5c5c5c;
+            }
+
         /* Estilos comunes para todos los botones en el modal */
             .modal-body button {
                 width: 100%;
@@ -742,7 +754,6 @@ function mi_navbar() {}
                                 <h5 class="modal-title text-white" id="modalComponentesLabel">
                                     <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo
                                 </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="row">
@@ -841,8 +852,8 @@ function mi_navbar() {}
 
                             <div class="col-12"><strong>Detalles del Equipo</strong></div>
                             <div class="col-md-6">
-                                <label class="form-label">Tipo de Equipo</label>
-                                <input type="text" id="ne_tipo_equipo" class="form-control" readonly>
+                                <label class="form-label">Proveedor</label>
+                                <input type="text" id="ne_proveedor" class="form-control" readonly>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Modelo</label>
@@ -852,14 +863,23 @@ function mi_navbar() {}
                                 <label class="form-label">Número de Serie</label>
                                 <input type="text" id="ne_serial" class="form-control" readonly>
                             </div>
+                            <!-- ✅ AGREGAR ESTOS CAMPOS -->
+                            <div class="col-md-6">
+                                <label class="form-label">Banco</label>
+                                <input type="text" id="ne_banco" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Componentes</label>
+                                <input type="text" id="ne_componentes" class="form-control" readonly>
+                            </div>
 
                             <div class="col-12"><strong>Información del Envío</strong></div>
                             <div class="col-md-6">
-                                <label class="form-label">Región de Origen</label>
+                                <label class="form-label">Estado de Origen</label>
                                 <input type="text" id="ne_region_origen" class="form-control" readonly>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Región de Destino</label>
+                                <label class="form-label">Estado de Destino</label>
                                 <input type="text" id="ne_region_destino" class="form-control" readonly>
                             </div>
                             <div class="col-12">

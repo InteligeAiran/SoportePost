@@ -12,6 +12,7 @@
     <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
     <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/navbar/styleGeneral.css" />
     <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/navbar/desktop/form.css" />
+    <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/navbar/virtual-assistant.css" />
 
     <script>
         const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
@@ -148,6 +149,7 @@
     <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
+    <script src="<?php echo APP; ?>app/core/components/navbar/js/virtual-assistant.js"></script>
 
     <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>

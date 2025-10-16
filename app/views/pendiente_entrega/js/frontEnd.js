@@ -568,50 +568,60 @@ function getTicketDataFinaljs() {
 
                       // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
                       if (name_accion_ticket === "En espera de confirmar recibido en el Rosal") {
-                          actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
+                          actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn" title = "Marcar Como Recibido En el rosal"
                                               data-id-ticket="${idTicket}"
                                               data-serial-pos="${serialPos}"
-                                              data-nro-ticket="${nroTicket}">
-                                              <i class="fas fa-hand-holding-box"></i> Recibido
+                                              data-nro-ticket="${nroTicket}" id = "marcarrecibido">
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16"><path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/></svg>
                                           </button>`;
                       }
                       // Prioridad 2: Validar si el ticket es de Caracas o Miranda y está Reparado
                       else if ((currentStatusLab === "Reparado") && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas")) {
-                          actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn"
+                          actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn" title = "Entregar al Cliente"
                                               data-id-ticket="${idTicket}"
                                               data-serial-pos="${serialPos}"
                                               data-nro-ticket="${nroTicket}">
-                                              Entregar al Cliente
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16">
+                                                <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5z"/>
+                                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708"/>
+                                              </svg>
                                           </button>`;
                       }else if((currentStatusLab === "Reparado" || currentStatusLab === "") && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas") && (name_accion_ticket == "En espera de Confirmar Devolución")){
-                         actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-bt"
+                         actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-bt" title = "Entregar al Cliente"
                                               data-id-ticket="${idTicket}"
                                               data-serial-pos="${serialPos}"
                                               data-nro-ticket="${nroTicket}">
-                                              Entregar al Cliente
-                                          </button>`;
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16">
+                                                <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5z"/>
+                                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708"/>
+                                              </svg>
+                                            </button>`;
 
                       }
                       else {
                           const commonConditions = ((currentStatusLab === "Reparado" || currentStatusLab === "") && !(nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas"));
                           
                           if (commonConditions && isDocumentMissing) {
-                              actionButton = `<button type="button" id="openModalButton" class="btn btn-info btn-sm upload-document-btn"
+                              actionButton = `<button type="button" id="openModalButton" class="btn btn-primary btn-sm upload-document-btn" title = "Subir Documento"
                                                   data-id-ticket="${idTicket}"
                                                   data-nro-ticket="${nroTicket}"
                                                   data-bs-toggle="modal"
                                                   data-bs-target="#uploadDocumentModal">
-                                                  Subir Documento
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-arrow-up-fill" viewBox="0 0 16 16">
+                                                    <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M7.5 6.707 6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0z"/>
+                                                  </svg>
                                               </button>`;
                           }
                           // Si cumple las condiciones base y YA se subió el documento
                           else if (commonConditions && hasEnvioDestinoDocument) {
-                              actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn"
+                              actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn" title = "Enviar a Región: ${nombre_estado_cliente}"
                                                   data-id-ticket="${idTicket}"
                                                   data-region-name="${nombre_estado_cliente || 'No tiene Asignado'}"  
                                                   data-serial-pos="${serialPos}"
                                                   data-nro-ticket="${nroTicket}">
-                                                  Enviar a Región: ${nombre_estado_cliente} 
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck-front-fill" viewBox="0 0 16 16">
+                                                    <path d="M3.5 0A2.5 2.5 0 0 0 1 2.5v9c0 .818.393 1.544 1 2v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5V14h6v1.5a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-2c.607-.456 1-1.182 1-2v-9A2.5 2.5 0 0 0 12.5 0zM3 3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3.9c0 .625-.562 1.092-1.17.994C10.925 7.747 9.208 7.5 8 7.5s-2.925.247-3.83.394A1.008 1.008 0 0 1 3 6.9zm1 9a1 1 0 1 1 0-2 1 1 0 0 1 0 2m8 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2m-5-2h2a1 1 0 1 1 0 2H7a1 1 0 1 1 0-2"/>
+                                                  </svg>
                                               </button>`;
                           }
                       }
@@ -632,24 +642,25 @@ function getTicketDataFinaljs() {
                       const name_accion_ticket = (row.name_accion_ticket || "").trim();
                       const reentry_lab = row.reentry_lab;
                   
-                      console.log(reentry_lab);
                       let actionButton = '';
 
                       // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
                       if (name_accion_ticket === "En espera de confirmar recibido en el Rosal") {
-                        actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn"
+                        actionButton = `<button type="button" class="btn btn-warning btn-sm received-ticket-btn" title = "Recibido"
                           data-id-ticket="${idTicket}"
                           data-serial-pos="${serialPos}"
                           data-nro-ticket="${nroTicket}">
-                          <i class="fas fa-hand-holding-box"></i> Recibido
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16"><path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/></svg>
                         </button>`;
                       }else if(reentry_lab === null || reentry_lab ===  'f' || reentry_lab === ""){
-                        actionButton = `<button type="button"
+                        actionButton = `<button type="button" title = "Devolver a Taller"
                           class="btn btn-warning btn-sm send-back-to-lab-btn"
                           data-id-ticket="${idTicket}"
                           data-serial-pos="${serialPos}"
                           data-nro-ticket="${nroTicket}">
-                          Devolver a Taller
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16">
+                            <path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/>
+                          </svg>
                         </button>`;
                       }else{
                        actionButton =  `<button type="button"
@@ -677,6 +688,7 @@ function getTicketDataFinaljs() {
                     const accionllaves = row.name_accion_ticket;
                     const fechaLlavesEnviada = row.date_sendkey; // CORREGIDO: Usar date_sendkey
                     const fechaCargaLlaves = row.date_receivekey; // CORREGIDO: Usar date_receivekey
+                    const recibidoRosal = row.confirmrosal;
 
                     // Lógica para el checkbox "Cargar Llave"
                     // shouldShowLoadKeyCheckbox ahora se basa en 'confirmreceive'
@@ -702,7 +714,13 @@ function getTicketDataFinaljs() {
                                     data-nro-ticket="${row.nro_ticket}"
                                      data-serial-pos="${row.serial_pos} 
                                     title="Es devolucion" checked disabled>`;
-                        } else {
+                        } else if(recibidoRosal === 'f' || recibidoRosal === false || recibidoRosal === '' || recibidoRosal === null){
+                           return `<input type="checkbox" class="receive-key-checkbox" 
+                                    data-id-ticket="${idTicket}" 
+                                    data-nro-ticket="${row.nro_ticket}"
+                                     data-serial-pos="${row.serial_pos} 
+                                    title="Confirmar recibido" disabled>`;
+                        }else{
                           return `<input type="checkbox" class="receive-key-checkbox" 
                                     data-id-ticket="${idTicket}" 
                                     data-nro-ticket="${row.nro_ticket}"
@@ -835,7 +853,6 @@ function getTicketDataFinaljs() {
                                   $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
                                   $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
                                   $("#btn-llaves-cargadas").removeClass("btn-primary").addClass("btn-secondary");
-                                  $("#btn-devuelto").removeClass("btn-primary").addClass("btn-secondary");
                                   $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
                               }
 
@@ -852,7 +869,7 @@ function getTicketDataFinaljs() {
                                   const searchTerms = [
                                       { button: "btn-por-asignar", term: "En espera de confirmar recibido en el Rosal|En espera de Confirmar Devolución", status: "En proceso", action: ["En espera de confirmar recibido en el Rosal", "En espera de Confirmar Devolución"]},
                                       { button: "btn-asignados", term: "^En el Rosal$", status: "En proceso", action: "En el Rosal"},
-                                      { button: "btn-recibidos", term: "Entregado a Cliente", status: "Cerrado", action: "Entregado a Cliente"},
+                                      { button: "btn-recibidos", term: "En espera confirmación carga de llaves", status: "En proceso", action: "En espera confirmación carga de llaves"},
                                       { button: "btn-llaves-cargadas", term: "Llaves Cargadas", status: "En proceso", action: "Llaves Cargadas"}
                                   ];
 
@@ -881,7 +898,7 @@ function getTicketDataFinaljs() {
                                               dataTableInstance.column(18).visible(false);
                                               dataTableInstance.column(19).visible(false);
                                               dataTableInstance.column(20).visible(false);
-                                              showTicketStatusIndicator('Cerrado', "Entregado a Cliente");
+                                              showTicketStatusIndicator('En proceso', "En espera confirmación carga de llaves");
                                           } else if (button === "btn-llaves-cargadas") {
                                               dataTableInstance.column(17).visible(true);
                                               dataTableInstance.column(18).visible(true);
@@ -960,7 +977,7 @@ function getTicketDataFinaljs() {
                                       dataTableInstance.column(19).visible(false);
                                       dataTableInstance.column(20).visible(false);
                                       setActiveButton("btn-recibidos");
-                                      showTicketStatusIndicator('Cerrado', "Entregado a Cliente");
+                                      showTicketStatusIndicator('En proceso', "En espera confirmación carga de llaves");
                                   } else {
                                       findFirstButtonWithData();
                                   }
@@ -1051,7 +1068,7 @@ function getTicketDataFinaljs() {
 
                                                           const beautifulHtmlContent = `
                                                               <div style="text-align: left; padding: 15px;">
-                                                                  <h3 style="color: #28a745; margin-bottom: 15px; text-align: center;">↩️ ¡Ticket Devueto! ↩️</h3>
+                                                                  <h3 style="color: #28a745; margin-bottom: 15px; text-align: center;">↩️ ¡POS Devueto! ↩️</h3>
                                                                   <p style="font-size: 1.1em; margin-bottom: 10px;">
                                                                       <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.nro_ticket}</span>
                                                                   </p>
@@ -1124,8 +1141,8 @@ function getTicketDataFinaljs() {
                                                                   // ENVIAR CORREO DESPUÉS DE CERRAR EL MODAL
                                                                   enviarCorreoTicketDevuelto(ticketData);
                                                                   
-                                                                  // Usuario hizo clic en "Cerrar"
-                                                                  window.location.reload();
+                                                                  // NO recargar la página aquí - la cola de correos manejará la recarga
+                                                                  // después de mostrar el toast
                                                               }
                                                           });
                                                       } else {
@@ -1333,7 +1350,6 @@ function getTicketDataFinaljs() {
                                     }).then((result) => {
                                       if (result.isConfirmed) {
                                         enviarCorreoTicketCerrado(ticketData);
-                                        window.location.reload();
                                       }
                                     });
                                   } else {
@@ -1345,7 +1361,6 @@ function getTicketDataFinaljs() {
                                       confirmButtonText: "Cerrar",
                                       confirmButtonColor: "#003594"
                                     }).then(() => {
-                                      window.location.reload();
                                     });
                                   }
                                 },
@@ -1492,13 +1507,13 @@ function getTicketDataFinaljs() {
           $("#tabla-ticket tbody")
             .off("click", ".send-back-to-lab-btn")
             .on("click", ".send-back-to-lab-btn", function (e){
-               e.stopPropagation();
+              e.stopPropagation();
 
-                  const ticketId = $(this).data("id-ticket");
-    const nroTicket = $(this).data("nro-ticket");
-    const serialPos = $(this).data("serial-pos") || "";
+              const ticketId = $(this).data("id-ticket");
+              const nroTicket = $(this).data("nro-ticket");
+              const serialPos = $(this).data("serial-pos") || "";
 
-    const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+            const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
 
     Swal.fire({
         title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
@@ -1731,74 +1746,299 @@ function getTicketDataFinaljs() {
 
 document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
 
-// Función para enviar correo cuando se cierra el ticket
+// ✅ SISTEMA DE COLA DE CORREOS PARA PENDIENTE_ENTREGA
+let emailQueuePendiente = [];
+let isProcessingPendiente = false;
+
+function processEmailQueuePendiente() {
+    if (isProcessingPendiente || emailQueuePendiente.length === 0) {
+        return;
+    }
+
+    isProcessingPendiente = true;
+    const emailData = emailQueuePendiente.shift();
+
+    console.log(`🔄 Procesando correo ${emailData.type} para ticket: ${emailData.ticketNumber}`);
+
+    const xhrEmail = new XMLHttpRequest();
+    xhrEmail.open("POST", emailData.endpoint);
+    xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhrEmail.timeout = 10000; // Timeout de 10 segundos
+
+    xhrEmail.onload = function() {
+        if (xhrEmail.status === 200) {
+            try {
+                const responseEmail = JSON.parse(xhrEmail.responseText);
+                console.log(`📧 Respuesta del envío de correo (${emailData.type}):`, responseEmail);
+                
+                if (responseEmail.success) {
+                    // ✅ NOTIFICACIÓN TOAST DE ÉXITO - INMEDIATA
+                        Swal.fire({
+                            icon: "success",
+                            title: "Correo Enviado",
+                        text: `Correo de notificación (${emailData.type}) enviado exitosamente para el ticket #${emailData.ticketNumber} - Cliente: ${emailData.ticketData?.razonsocial_cliente || emailData.ticketData?.razon_social || 'N/A'} (${emailData.ticketData?.rif_cliente || emailData.ticketData?.rif || 'N/A'})`,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end',
+                            color: 'black',
+                        timer: 2500,
+                            timerProgressBar: true
+                        });
+                    
+                    // Recargar la página después del timer
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2500); // 2.5 segundos para dar tiempo al toast
+                } else {
+                    console.error(`❌ Error al enviar correo (${emailData.type}):`, responseEmail.message);
+                    // Recargar la página incluso si hay error
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error(`❌ Error al parsear respuesta del correo (${emailData.type}):`, error);
+                // Recargar la página incluso si hay error
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        } else {
+            console.error(`❌ Error al solicitar el envío de correo (${emailData.type}):`, xhrEmail.status);
+            // Recargar la página incluso si hay error
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+
+        // Procesar siguiente correo en la cola
+        isProcessingPendiente = false;
+        if (emailQueuePendiente.length > 0) {
+            setTimeout(() => {
+                processEmailQueuePendiente();
+            }, 100); // Pausa mínima de 100ms entre correos
+        }
+    };
+
+    xhrEmail.onerror = function() {
+        console.error(`❌ Error de red al enviar correo (${emailData.type})`);
+        isProcessingPendiente = false;
+        if (emailQueuePendiente.length > 0) {
+            setTimeout(() => {
+                processEmailQueuePendiente();
+            }, 200); // Pausa mínima en caso de error
+        }
+    };
+
+    xhrEmail.ontimeout = function() {
+        console.error(`⏰ Timeout al enviar correo (${emailData.type})`);
+        isProcessingPendiente = false;
+        if (emailQueuePendiente.length > 0) {
+            setTimeout(() => {
+                processEmailQueuePendiente();
+            }, 200); // Pausa mínima en caso de timeout
+        }
+    };
+
+    xhrEmail.send(emailData.params);
+}
+
+// ✅ FUNCIÓN PARA TICKET CERRADO (con cola de correos)
+function processEmailQueue() {
+    if (emailQueue.length === 0) {
+        isProcessing = false;
+        console.log("✅ Cola de correos vacía. Procesamiento detenido.");
+        return;
+    }
+
+    isProcessing = true;
+    const emailData = emailQueue[0]; // Tomar el primer correo de la cola
+
+    console.log(`🔄 Procesando correo para ticket: ${emailData.ticketData.Nr_ticket}`);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.timeout = 10000; // Timeout de 10 segundos
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    console.log(`✅ Correo enviado exitosamente para ticket: ${emailData.ticketData.Nr_ticket}`, response.message);
+                    
+                    // Mostrar notificación de éxito
+                    if (typeof Swal !== "undefined") {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Correo Enviado",
+                            text: `Correo de notificación enviado exitosamente para el ticket #${emailData.ticketData.Nr_ticket} - Cliente: ${emailData.ticketData?.razonsocial_cliente || emailData.ticketData?.razon_social || 'N/A'} (${emailData.ticketData?.rif_cliente || emailData.ticketData?.rif || 'N/A'})`,
+                            timer: 3000,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end',
+                            color: 'black'
+                        });
+                    }
+                } else {
+                    console.error(`❌ Error al enviar correo para ticket ${emailData.ticketData.Nr_ticket}:`, response.message);
+                }
+            } catch (error) {
+                console.error(`❌ Error al parsear respuesta de correo para ticket ${emailData.ticketData.Nr_ticket}:`, error);
+            }
+        } else {
+            console.error(`❌ Error HTTP en envío de correo para ticket ${emailData.ticketData.Nr_ticket}:`, xhr.status);
+        }
+
+        // Remover el correo procesado de la cola
+        emailQueue.shift();
+        console.log(`📧 Correo removido de la cola. Restantes: ${emailQueue.length}`);
+        
+        // Procesar la siguiente solicitud en la cola
+        if (emailQueue.length > 0) {
+            // Pequeña pausa antes del siguiente correo (1 segundo)
+            setTimeout(() => {
+                processEmailQueue();
+            }, 1000);
+        } else {
+            isProcessing = false;
+            console.log("🎉 Todos los correos de la cola han sido procesados.");
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error(`❌ Error de red al enviar correo para ticket ${emailData.ticketData.Nr_ticket}`);
+        
+        if (typeof Swal !== "undefined") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: `No se pudo conectar con el servidor para enviar el correo del ticket #${emailData.ticketData.Nr_ticket}.`,
+                color: 'black',
+                timer: 5000,
+                timerProgressBar: true
+            });
+        }
+        
+        // Remover el correo fallido de la cola
+        emailQueue.shift();
+        console.log(`📧 Correo fallido removido de la cola. Restantes: ${emailQueue.length}`);
+        
+        // Procesar la siguiente solicitud en la cola
+        if (emailQueue.length > 0) {
+            setTimeout(() => {
+                processEmailQueue();
+            }, 200); // Pausa mínima en caso de error
+        } else {
+            isProcessing = false;
+        }
+    };
+
+    xhr.ontimeout = function() {
+        console.error(`⏰ Timeout al enviar correo para ticket ${emailData.ticketData.Nr_ticket}`);
+        
+        if (typeof Swal !== "undefined") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Tiempo de espera agotado',
+                text: `La solicitud de envío de correo para el ticket #${emailData.ticketData.Nr_ticket} tomó demasiado tiempo.`,
+                color: 'black',
+                timer: 5000,
+                timerProgressBar: true
+            });
+        }
+        
+        // Remover el correo fallido de la cola
+        emailQueue.shift();
+        console.log(`📧 Correo con timeout removido de la cola. Restantes: ${emailQueue.length}`);
+        
+        // Procesar la siguiente solicitud en la cola
+        if (emailQueue.length > 0) {
+            setTimeout(() => {
+                processEmailQueue();
+            }, 200); // Pausa mínima en caso de timeout
+        } else {
+            isProcessing = false;
+        }
+    };
+    
+    const params = `id_user=${encodeURIComponent(emailData.id_user)}`;
+    xhr.send(params);
+}
+
 function enviarCorreoTicketCerrado(ticketData) {
-    const xhrEmail = new XMLHttpRequest();
-    xhrEmail.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/email/send_end_ticket`);
-    xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-    xhrEmail.onload = function() {
-        if (xhrEmail.status === 200) {
-            try {
-                const responseEmail = JSON.parse(xhrEmail.responseText);
-                if (responseEmail.success) {
-                  
-                } else {
-                    console.error("❌ Error al enviar correo:", responseEmail.message);
-                }
-            } catch (error) {
-                console.error("❌ Error al parsear respuesta del correo:", error);
-            }
-        } else {
-            console.error("❌ Error en solicitud de correo:", xhrEmail.status);
-        }
-    };
-
-    xhrEmail.onerror = function() {
-        console.error("❌ Error de red al enviar correo");
-    };
-
-    // Obtener el coordinador del ticket (ajusta según tu estructura de datos)
+    // Obtener datos necesarios
     const coordinador = ticketData.user_coordinator_id || ticketData.id_coordinator || '';
     const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
+    const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
     
-    const params = `id_user=${encodeURIComponent(id_user)}`;
-    xhrEmail.send(params);
+    console.log(`📧 Agregando correo de Ticket Cerrado a la cola para ticket: ${ticketNumber}`);
+    
+    // Agregar a la cola de correos
+    emailQueuePendiente.push({
+        endpoint: `${ENDPOINT_BASE}${APP_PATH}api/email/send_end_ticket`,
+        params: `id_user=${encodeURIComponent(id_user)}`,
+        type: 'Ticket Cerrado',
+        ticketNumber: ticketNumber,
+        ticketData: ticketData
+    });
+
+    // Procesar la cola
+    processEmailQueuePendiente();
 }
 
+// ✅ FUNCIÓN PARA TICKET DEVUELTO (con cola de correos)
 function enviarCorreoTicketDevuelto(ticketData) {
-    const xhrEmail = new XMLHttpRequest();
-    xhrEmail.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/email/send_devolution_ticket`);
-    xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-    xhrEmail.onload = function() {
-        if (xhrEmail.status === 200) {
-            try {
-                const responseEmail = JSON.parse(xhrEmail.responseText);
-                if (responseEmail.success) {
-                  
-                } else {
-                    console.error("❌ Error al enviar correo:", responseEmail.message);
-                }
-            } catch (error) {
-                console.error("❌ Error al parsear respuesta del correo:", error);
-            }
-        } else {
-            console.error("❌ Error en solicitud de correo:", xhrEmail.status);
-        }
-    };
-
-    xhrEmail.onerror = function() {
-        console.error("❌ Error de red al enviar correo");
-    };
-
-    // Obtener el coordinador del ticket (ajusta según tu estructura de datos)
+    // Obtener datos necesarios
     const coordinador = ticketData.user_coordinator_id || ticketData.id_coordinator || '';
     const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
+    const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
     
-    const params = `id_coordinador=${encodeURIComponent(coordinador)}&id_user=${encodeURIComponent(id_user)}`;
-    xhrEmail.send(params);
+    console.log(`📧 Agregando correo de Ticket Devuelto a la cola para ticket: ${ticketNumber}`);
+    
+    // Agregar a la cola de correos
+    emailQueuePendiente.push({
+        endpoint: `${ENDPOINT_BASE}${APP_PATH}api/email/send_devolution_ticket`,
+        params: `id_coordinador=${encodeURIComponent(coordinador)}&id_user=${encodeURIComponent(id_user)}`,
+        type: 'Ticket Devuelto',
+        ticketNumber: ticketNumber,
+        ticketData: ticketData
+    });
+
+    // Procesar la cola
+    processEmailQueuePendiente();
 }
+
+// ✅ FUNCIÓN PARA MOSTRAR ESTADO DE COLA DE PENDIENTE_ENTREGA (opcional, para debugging)
+function mostrarEstadoColaPendiente() {
+    console.log(`📊 Estado de la cola de correos (Pendiente Entrega):`);
+    console.log(`   - Correos en cola: ${emailQueuePendiente.length}`);
+    console.log(`   - Procesando: ${isProcessingPendiente ? 'Sí' : 'No'}`);
+    
+    if (emailQueuePendiente.length > 0) {
+        console.log(`   - Próximo correo: ${emailQueuePendiente[0].type} - Ticket #${emailQueuePendiente[0].ticketNumber}`);
+    }
+    
+    if (typeof Swal !== "undefined") {
+        Swal.fire({
+            icon: 'info',
+            title: 'Estado de Cola de Correos (Pendiente Entrega)',
+            html: `
+                <div style="text-align: left;">
+                    <p><strong>Correos en cola:</strong> ${emailQueuePendiente.length}</p>
+                    <p><strong>Procesando:</strong> ${isProcessingPendiente ? 'Sí' : 'No'}</p>
+                    ${emailQueuePendiente.length > 0 ? `<p><strong>Próximo correo:</strong> ${emailQueuePendiente[0].type} - Ticket #${emailQueuePendiente[0].ticketNumber}</p>` : ''}
+                </div>
+            `,
+            color: 'black',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#003594'
+        });
+    }
+}
+
+// Exponer función globalmente para debugging (opcional)
 
 /**
  * Muestra un modal de SweetAlert para seleccionar componentes antes de enviar el ticket.
@@ -2149,6 +2389,8 @@ $(document).ready(function () {
       const nroTicket = $(this).data('nro-ticket');
 
       $('#uploadDocumentModal').attr('data-id-ticket', idTicket);
+      $("#htmlTemplateTicketId").val(idTicket);
+
 
 
 
@@ -2424,9 +2666,10 @@ function sendToRegion(ticketId, selectedComponents, serial_Pos) {
     const id_user = document.getElementById("userId").value; // Obtiene el ID del usuario desde el formulario
     const component = selectedComponents;
     const pos_serial = serial_Pos;
+    const modulo = "Gestión Rosal";
 
     const regionalApiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/SendToRegion`; // Reemplaza con la URL real de tu API
-    const dataToSendString = `action=SendToRegion&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}&components=${encodeURIComponent(component)}&pos_serial=${encodeURIComponent(pos_serial)}`;
+    const dataToSendString = `action=SendToRegion&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}&components=${encodeURIComponent(component)}&pos_serial=${encodeURIComponent(pos_serial)}&modulo=${encodeURIComponent(modulo)}`;
 
     const xhr = new XMLHttpRequest();
     xhr.open("POST", regionalApiUrl, true);
@@ -3497,3 +3740,1066 @@ function CloseTicket(ticketId) {
     )}`;
     xhr.send(data);
 }
+
+$(document).on('click', '#generateNotaEntregaBtn', function () {
+    const ticketId = document.getElementById('htmlTemplateTicketId').value;
+    if (!ticketId) {
+        Swal.fire({ icon: 'warning', title: 'Ticket no disponible' });
+        return;
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/documents/GetDeliveryNoteData`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState !== 4) return;
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const res = JSON.parse(xhr.responseText);
+                if (!res || !res.success || !res.rows) {
+                    Swal.fire({ icon: 'warning', title: 'No se encontraron datos' });
+                    return;
+                }
+
+                const d = res.rows[0];
+                window.currentDeliveryData = d;
+                const serialPos = d.serialpos || d.serial_pos || '';
+                const lastFourSerialDigits = serialPos.slice(-4);
+                const notaNumero = `NE-${ticketId}-${lastFourSerialDigits}`;
+                const regDes = 'Caracas';
+
+                $('#htmlTemplateTicketId').val(ticketId);
+                $('#ne_fecha').val(d.fecha_actual || new Date().toLocaleDateString());
+                $('#ne_numero').val(notaNumero);
+                $('#ne_rif').val(d.coddocumento || '');
+                $('#ne_razon').val(d.razonsocial || '');
+                $('#ne_responsable').val(d.rlegal || '');
+                $('#ne_contacto').val(d.telf1 || 'Sin número de Contacto');
+                $('#ne_tipo_equipo').val(d.tipo_equipo || d.tipo_pos || 'POS');
+                $('#ne_modelo').val(d.modelo || d.desc_modelo || '');
+                $('#ne_serial').val(d.serialpos || d.serial_pos || '');
+                $('#ne_region_origen').val(regDes);
+                $('#ne_region_destino').val(d.estado_final || d.estado || '');
+                $('#ne_observaciones').val('');
+                $('#ne_componentes').val(d.componentes || 'Sin componentes');
+                
+                // ✅ AGREGAR ESTOS CAMPOS
+                $('#ne_banco').val(d.ibp || 'Sin banco');
+                $('#ne_proveedor').val(d.proveedor || 'Sin proveedor');
+
+                // 1. Obtiene la instancia del modal o la crea si no existe
+                const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
+                htmlModal.show();
+                
+                // 2. Adjunta el evento de clic al botón de cerrar
+                $('#closeHtmlTemplateBtn').on('click', function () {
+                     htmlModal.hide();
+                });
+
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'Respuesta inválida del servidor' });
+            }
+        } else {
+            Swal.fire({ icon: 'error', title: 'Error de red/servidor' });
+        }
+    };
+
+    const params = `action=GetDeliveryNoteData&id_ticket=${encodeURIComponent(ticketId)}`;
+    xhr.send(params);
+});
+
+// ✅ FUNCIÓN ACTUALIZADA
+$(document).on('click', '#previewHtmlTemplateBtn', function () {
+  const data = {
+    fecha: $('#ne_fecha').val(),
+    numero: $('#ne_numero').val(),
+    rif: $('#ne_rif').val(),
+    razon: $('#ne_razon').val(),
+    responsable: $('#ne_responsable').val(),
+    tipo_equipo: $('#ne_tipo_equipo').val(),
+    modelo: $('#ne_modelo').val(),
+    serial: $('#ne_serial').val(),
+    region_origen: $('#ne_region_origen').val(),
+    region_destino: $('#ne_region_destino').val(),
+    observaciones: $('#ne_observaciones').val(),
+    componentes: $('#ne_componentes').val(),
+    banco: $('#ne_banco').val(), // ✅ AGREGAR
+    proveedor: $('#ne_proveedor').val(), // ✅ AGREGAR
+    tecnico_responsable: window.currentDeliveryData?.full_name_tecnico_responsable || 'Sin técnico asignado'
+  };
+
+  const html = buildDeliveryNoteHtml(data);
+  console.log('Datos para buildDeliveryNoteHtml:', data);
+
+  const iframe = document.getElementById('htmlTemplatePreview');
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+});
+
+function buildDeliveryNoteHtml(d) {
+  const safe = (s) => (s || '').toString();
+  return `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota de Entrega y Envío de Equipo</title>
+      <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 11px;
+        line-height: 1.2;
+        color: #333;
+        background: #fff;
+        padding: 10px;
+        max-width: 100%;
+        margin: 0 auto;
+        overflow-x: hidden;
+      }
+      
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        min-height: calc(100vh - 40px);
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .header {
+        text-align: center;
+        margin-bottom: 12px;
+        padding: 8px 0;
+        border-bottom: 2px solid #2c5aa0;
+        position: relative;
+      }
+      
+      .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #2c5aa0 0%, #4a90e2 50%, #2c5aa0 100%);
+      }
+      
+      .company-logo-img {
+        max-width: 120px;
+        max-height: 60px;
+        margin-bottom: 8px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      
+      .company-address {
+        font-size: 10px;
+        color: #555;
+        margin-bottom: 8px;
+        line-height: 1.3;
+        text-align: center;
+        font-weight: 500;
+      }
+      
+      .document-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin: 4px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .document-subtitle {
+        font-size: 11px;
+        color: #666;
+        font-weight: 500;
+      }
+      
+      .document-info {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+        padding: 8px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        border-left: 3px solid #2c5aa0;
+      }
+      
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+      }
+      
+      .info-label {
+        font-size: 9px;
+        color: #666;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+      
+      .info-value {
+        font-size: 12px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      .content-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .section {
+        margin: 6px 0;
+        background: #fff;
+        border-radius: 5px;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        border: 1px solid #e9ecef;
+      }
+      
+      .section-header {
+        background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%);
+        color: white;
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+      
+      .section-content {
+        padding: 8px 10px;
+      }
+      
+      .two-columns {
+        display: flex;
+        gap: 15px;
+      }
+      
+      .column {
+        flex: 1;
+      }
+      
+      .column-title {
+        font-size: 11px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin-bottom: 8px;
+        text-align: center;
+        padding: 4px;
+        background: #f0f4f8;
+        border-radius: 3px;
+        border-left: 3px solid #2c5aa0;
+      }
+      
+      .field-row {
+        display: flex;
+        margin-bottom: 4px;
+        align-items: flex-start;
+      }
+      
+      .field-row:last-child {
+        margin-bottom: 0;
+      }
+      
+      .field-label {
+        font-weight: 600;
+        color: #555;
+        min-width: 110px;
+        margin-right: 8px;
+        font-size: 10px;
+        padding-top: 2px;
+      }
+      
+      .field-value {
+        flex: 1;
+        color: #333;
+        font-weight: 500;
+        padding: 3px 8px;
+        background: #f8f9fa;
+        border-radius: 3px;
+        border-left: 2px solid #2c5aa0;
+        font-size: 10px;
+        min-height: 20px;
+        display: flex;
+        align-items: center;
+      }
+      
+      .field-value.observations {
+        background: #fff;
+        border: 1px solid #ddd;
+        min-height: 25px;
+        font-style: italic;
+        align-items: flex-start;
+        padding-top: 5px;
+      }
+      
+      .constancy {
+        background: #e8f4fd;
+        border: 1px solid #b3d9ff;
+        border-radius: 5px;
+        padding: 8px;
+        margin: 8px 0;
+        text-align: center;
+        font-size: 10px;
+        line-height: 1.4;
+        color: #2c5aa0;
+        font-weight: 500;
+      }
+      
+      .signature-section {
+        margin-top: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 20px;
+      }
+      
+      .signature-box {
+        flex: 1;
+        max-width: 280px;
+        text-align: center;
+        padding: 12px;
+        border: 1px dashed #ccc;
+        border-radius: 5px;
+        background: #fafafa;
+        min-height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      
+      .signature-line {
+        border-top: 2px solid #333;
+        margin: 15px auto 8px auto;
+        width: 180px;
+        display: block;
+      }
+      
+      .signature-space {
+        height: 40px;
+        margin: 10px 0;
+      }
+      
+      .signature-label {
+        font-weight: bold;
+        color: #2c5aa0;
+        margin-bottom: 3px;
+        font-size: 10px;
+      }
+      
+      .signature-field {
+        color: #666;
+        font-size: 9px;
+        margin-bottom: 2px;
+      }
+      
+      /* ✅ ESTILOS DEL FOOTER ACTUALIZADOS */
+      .footer {
+        margin-top: 8px;
+        padding-top: 6px;
+        border-top: 1px solid #ddd;
+        color: #666;
+        font-size: 8px;
+        line-height: 1.2;
+      }
+      
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+      }
+      
+      .footer-left {
+        flex: 1;
+        text-align: left;
+      }
+      
+      .footer-right {
+        flex: 1;
+        text-align: right;
+      }
+      
+      .footer-logo {
+        max-height: 25px;
+        max-width: 100px;
+      }
+      
+      .footer-rif {
+        font-size: 10px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      .footer-text {
+        text-align: center;
+        margin-top: 6px;
+      }
+      
+      /* Optimizaciones críticas para impresión */
+      @media print {
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        /* Mostrar header y footer personalizados solo en impresión */
+        .print-header,
+        .print-footer {
+          display: block !important;
+        }
+        
+        /* Ajustar el contenido para dar espacio al header/footer fijos */
+        body {
+          margin-top: 50px !important;
+          margin-bottom: 40px !important;
+        }
+        
+        html, body {
+          width: 100% !important;
+          height: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: visible !important;
+        }
+        
+        body {
+          font-size: 10px !important;
+          padding: 8px !important;
+        }
+        
+        .container {
+          max-width: 100% !important;
+          width: 100% !important;
+          min-height: auto !important;
+          height: auto !important;
+          page-break-inside: avoid;
+        }
+        
+        .section {
+          box-shadow: none !important;
+          border: 1px solid #ddd !important;
+          margin: 4px 0 !important;
+          page-break-inside: avoid;
+        }
+        
+        .header {
+          margin-bottom: 6px !important;
+          padding: 6px 0 !important;
+          page-break-after: avoid;
+        }
+        
+        .company-logo-img {
+          max-width: 100px !important;
+          max-height: 50px !important;
+          margin-bottom: 6px !important;
+        }
+        
+        .company-address {
+          font-size: 9px !important;
+          margin-bottom: 6px !important;
+        }
+        
+        .document-title {
+          font-size: 14px !important;
+        }
+        
+        .section-content {
+          padding: 6px 8px !important;
+        }
+        
+        .two-columns {
+          gap: 10px !important;
+        }
+        
+        .column-title {
+          font-size: 10px !important;
+          margin-bottom: 6px !important;
+        }
+        
+        .constancy {
+          padding: 6px !important;
+          margin: 6px 0 !important;
+          page-break-inside: avoid;
+        }
+        
+        .signature-section {
+          margin-top: 12px !important;
+          page-break-inside: avoid;
+          gap: 15px !important;
+        }
+        
+        .signature-box {
+          min-height: 70px !important;
+          padding: 10px !important;
+        }
+        
+        .signature-line {
+          width: 150px !important;
+          margin: 12px auto 6px auto !important;
+          display: block !important;
+        }
+        
+        .signature-space {
+          height: 30px !important;
+          margin: 8px 0 !important;
+        }
+        
+        /* ✅ ESTILOS DE IMPRESIÓN PARA FOOTER */
+        .footer {
+          margin-top: 6px !important;
+          padding-top: 4px !important;
+          page-break-before: avoid;
+        }
+        
+        .footer-content {
+          margin-bottom: 6px !important;
+          padding: 6px 0 !important;
+        }
+        
+        .footer-logo {
+          max-height: 20px !important;
+          max-width: 80px !important;
+        }
+        
+        .footer-rif {
+          font-size: 9px !important;
+        }
+        
+        .footer-text {
+          margin-top: 4px !important;
+        }
+        
+        .field-row {
+          margin-bottom: 3px !important;
+          page-break-inside: avoid;
+        }
+        
+        .document-info {
+          margin: 6px 0 !important;
+          padding: 6px !important;
+          page-break-after: avoid;
+        }
+        
+        .section-header {
+          padding: 4px 8px !important;
+          font-size: 10px !important;
+        }
+      }
+      
+      /* Configuración de página para impresión */
+      @page {
+        size: letter;
+        margin: 0.2in 0.5in;
+        padding: 0;
+        /* Ocultar header y footer del navegador */
+        @top-left { content: ""; }
+        @top-center { content: ""; }
+        @top-right { content: ""; }
+        @bottom-left { content: ""; }
+        @bottom-center { content: ""; }
+        @bottom-right { content: ""; }
+      }
+      
+      /* Header personalizado para impresión */
+      .print-header {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 40px;
+        background: white;
+        border-bottom: 1px solid #ddd;
+        z-index: 1000;
+        padding: 8px 20px;
+        box-sizing: border-box;
+      }
+      
+      .print-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+      }
+      
+      .print-header-logo {
+        max-height: 30px;
+        max-width: 80px;
+      }
+      
+      .print-header-rif {
+        font-size: 12px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      /* Footer personalizado para impresión */
+      .print-footer {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        background: white;
+        border-top: 1px solid #ddd;
+        z-index: 1000;
+        padding: 5px 20px;
+        box-sizing: border-box;
+      }
+      
+      .print-footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+        font-size: 10px;
+        color: #666;
+      }
+      
+      /* Evitar cortes de página en elementos críticos */
+      .header,
+      .document-info,
+      .section,
+      .constancy,
+      .signature-section,
+      .footer {
+        page-break-inside: avoid;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header personalizado para impresión -->
+    <div class="print-header">
+      <div class="print-header-content">
+        <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="print-header-logo" onerror="this.style.display='none'">
+        <div class="print-header-rif">RIF: J-002916150</div>
+      </div>
+    </div>
+    
+    <!-- Footer personalizado para impresión -->
+    <div class="print-footer">
+      <div class="print-footer-content">
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+    
+    <div class="container">
+      <div class="header">
+        <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="company-logo-img" onerror="this.style.display='none'">
+        <div class="company-address">
+          Urbanización El Rosal. Av. Francisco de Miranda<br>
+          Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
+        </div>
+        <div class="document-title">Nota de Entrega</div>
+        <div class="document-subtitle"></div>
+      </div>
+      
+      <div class="document-info">
+        <div class="info-item">
+          <div class="info-label">Fecha</div>
+          <div class="info-value">${safe(d.fecha)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">N° de Nota</div>
+          <div class="info-value">${safe(d.numero)}</div>
+        </div>
+      </div>
+
+      <div class="content-wrapper">
+        <div class="section">
+          <div class="section-header">Datos del Cliente</div>
+          <div class="section-content">
+            <div class="field-row">
+              <div class="field-label">R.I.F. / Identificación:</div>
+              <div class="field-value">${safe(d.rif)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Razón Social:</div>
+              <div class="field-value">${safe(d.razon)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Representante Legal:</div>
+              <div class="field-value">${safe(d.responsable)}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">Detalles del Equipo</div>
+          <div class="section-content">
+            <div class="two-columns">
+              <div class="column">
+                <div class="column-title">Información del Equipo</div>
+                <div class="field-row">
+                  <div class="field-label">Proveedor:</div>
+                  <div class="field-value">${safe(d.proveedor)}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">Modelo:</div>
+                  <div class="field-value">${safe(d.modelo)}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">Número de Serie:</div>
+                  <div class="field-value">${safe(d.serial)}</div>
+                </div>
+                 <div class="field-row">
+                  <div class="field-label">Banco:</div>
+                  <div class="field-value">${safe(d.banco)}</div>
+                </div>
+              </div>
+              
+              <div class="column">
+                <div class="column-title">Accesorios</div>
+                <div class="field-row">
+                  <div class="field-label">Componentes:</div>
+                  <div class="field-value">${safe(d.componentes || 'Sin accesorios adicionales')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">Información del Envío</div>
+          <div class="section-content">
+            <div class="field-row">
+              <div class="field-label">Estado de Origen:</div>
+              <div class="field-value">${safe(d.region_origen)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Estado de Destino:</div>
+              <div class="field-value">${safe(d.region_destino)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Observaciones:</div>
+              <div class="field-value observations">${safe(d.observaciones) || ''}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="signature-section">
+          <div class="signature-box">
+            <div class="signature-label">Recibe</div>
+            <div class="signature-space"></div>
+            <div class="signature-line"></div>
+            <div class="signature-field">Nombre: _____________________</div>
+            <div class="signature-field">C.I.: _____________________</div>
+          </div>
+          
+          <div class="signature-box">
+            <div class="signature-label">Firma de Conformidad</div>
+            <div class="signature-space"></div>
+            <div class="signature-line"></div>
+            <div class="signature-field">Nombre: ${safe(d.tecnico_responsable)}</div>
+            <div class="signature-field">C.I.: _____________________</div>
+          </div>
+        </div>
+
+        <!-- ✅ FOOTER ACTUALIZADO CON LOGO Y RIF -->
+        <div class="footer">
+          <div class="footer-content">
+            <div class="footer-left">
+              <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="footer-logo" onerror="this.style.display='none'">
+            </div>
+            <div class="footer-right">
+              <div class="footer-rif">RIF: J-002916150</div>
+            </div>
+          </div>
+          <div class="footer-text">
+            <p>Documento válido como constancia oficial de entrega del equipo especificado.</p>
+            <p>Generado: ${new Date().toLocaleString('es-ES')}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>`;
+}
+
+$(document).on('click', '#printHtmlTemplateBtn', function () {
+    try {
+        const iframe = document.getElementById('htmlTemplatePreview');
+        if (!iframe || !iframe.contentWindow) return;
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        if (!doc) return;
+
+        const originalIframeTitle = doc.title || '';
+        const originalWindowTitle = window.document.title || ''; // Guardar el título de la ventana principal
+
+        const ticketId = (document.getElementById('htmlTemplateTicketId') || {}).value || 'Ticket';
+        const neNumero = (document.getElementById('ne_numero') || {}).value || '';
+        const fecha = new Date();
+        const y = fecha.getFullYear();
+        const m = String(fecha.getMonth() + 1).padStart(2, '0');
+        const d = String(fecha.getDate()).padStart(2, '0');
+        const fechaStr = `${y}${m}${d}`;
+        const sanitizedNumero = String(neNumero).replace(/[^A-Za-z0-9_-]+/g, '');
+        
+        // Crear el nombre del archivo
+        const filename = `NotaEntrega_${ticketId}${sanitizedNumero ? '_' + sanitizedNumero : ''}_${fechaStr}`;
+        
+        // --- PREPARACIÓN DEL MODAL DE SUBIDA (Lógica movida para configurar antes) ---
+        const ticketIdValue = (document.getElementById('htmlTemplateTicketId') || {}).value || '';
+        const idTicketInput = document.getElementById('id_ticket');
+        const typeDocInput = document.getElementById('type_document');
+        const modalTicketIdSpan = document.getElementById('modalTicketId');
+        
+        if (idTicketInput) idTicketInput.value = ticketIdValue;
+        if (typeDocInput) typeDocInput.value = 'Envio';
+        if (modalTicketIdSpan) modalTicketIdSpan.textContent = ticketIdValue;
+        
+        // 1. Mostrar el modal de éxito del "Guardado" (o Registro de NE) y preguntar qué hacer
+        Swal.fire({
+            icon: 'success',
+            title: 'Nota de Entrega',
+            text: 'El archivo se generó correctamente. Puedes guardarlo como PDF.',
+            showCancelButton: true,
+            confirmButtonText: 'Imprimir', // Opción que dispara window.print()
+            cancelButtonText: 'Cerrar', // Opción que cierra la vista previa
+            confirmButtonColor: '#003594',
+            cancelButtonColor: '#808080', // Color para el botón "Cerrar Ventana"
+            color: 'black'
+        }).then((result) => {
+            // Si el usuario presiona "Imprimir / Guardar PDF"
+            if (result.isConfirmed) {
+                
+                // Asignar el nombre del archivo al título de la ventana principal
+                window.document.title = filename;
+
+                // Llamar a la función de impresión
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+
+                // Usa setTimeout para restaurar el título después de que el diálogo de impresión se lance
+                // Se usa un tiempo corto, ya no necesitamos esperar que el usuario interactúe
+                setTimeout(() => {
+                    doc.title = originalIframeTitle; // Restaurar el título del iframe
+                    window.document.title = originalWindowTitle; // Restaurar el título de la ventana principal
+                    
+                    // Aquí puedes mostrar el modal de "Subir Documento" si lo deseas
+                     const uploadDocumentModal = new bootstrap.Modal(document.getElementById('uploadDocumentModal'));
+                     uploadDocumentModal.show();
+                    
+                    // O simplemente recargar la página principal
+                    window.location.reload(); 
+                    
+                }, 500); // 100ms es suficiente para que el título se aplique a la ventana de impresión
+
+            } else {
+                // Si el usuario presiona "Cerrar Ventana"
+                // 2. Cerrar el modal actual (si es que estás usando uno para la vista previa)
+                const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
+                htmlModal.hide();
+                
+                // O recargar la página, dependiendo de la necesidad de tu flujo
+                // window.location.reload();
+            }
+        });
+        
+    } catch (e) {
+        console.error('Error:', e);
+        // Si hay un error, aún intenta imprimir sin cambiar el nombre (Opción de fallback)
+        const iframe = document.getElementById('htmlTemplatePreview');
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        }
+    }
+});
+
+// ========================================
+// FUNCIONES PARA PENDIENTE_ENTREGA
+// ========================================
+
+function processEmailQueuePendiente() {
+    if (isProcessingPendiente || emailQueuePendiente.length === 0) {
+        return;
+    }
+
+    isProcessingPendiente = true;
+    const emailData = emailQueuePendiente.shift();
+
+    console.log(`🔄 Procesando correo ${emailData.type} para ticket: ${emailData.ticketNumber}`);
+
+    const xhrEmail = new XMLHttpRequest();
+    xhrEmail.open("POST", emailData.endpoint);
+    xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhrEmail.timeout = 10000; // Timeout de 10 segundos
+
+    xhrEmail.onload = function() {
+        if (xhrEmail.status === 200) {
+            try {
+                const responseEmail = JSON.parse(xhrEmail.responseText);
+                console.log(`📧 Respuesta del envío de correo (${emailData.type}):`, responseEmail);
+                
+                if (responseEmail.success) {
+                    // ✅ NOTIFICACIÓN TOAST DE ÉXITO - INMEDIATA
+                    Swal.fire({
+                        icon: "success",
+                        title: "Correo Enviado",
+                        text: `Correo de notificación (${emailData.type}) enviado exitosamente para el ticket #${emailData.ticketNumber} - Cliente: ${emailData.ticketData?.razonsocial_cliente || emailData.ticketData?.razon_social || 'N/A'} (${emailData.ticketData?.rif_cliente || emailData.ticketData?.rif || 'N/A'})`,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end',
+                        color: 'black',
+                        timer: 2500,
+                        timerProgressBar: true
+                    });
+                    
+                    // Recargar la página después del timer
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2500); // 2.5 segundos para dar tiempo al toast
+                } else {
+                    console.error(`❌ Error al enviar correo (${emailData.type}):`, responseEmail.message);
+                    // Recargar la página incluso si hay error
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error(`❌ Error al parsear respuesta del correo (${emailData.type}):`, error);
+                // Recargar la página incluso si hay error
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        } else {
+            console.error(`❌ Error al solicitar el envío de correo (${emailData.type}):`, xhrEmail.status);
+            // Recargar la página incluso si hay error
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+
+        // Procesar siguiente correo en la cola
+        isProcessingPendiente = false;
+        if (emailQueuePendiente.length > 0) {
+            setTimeout(() => {
+                processEmailQueuePendiente();
+            }, 100); // Pausa mínima de 100ms entre correos
+        }
+    };
+
+    xhrEmail.onerror = function() {
+        console.error(`❌ Error de red al enviar correo (${emailData.type})`);
+        isProcessingPendiente = false;
+        if (emailQueuePendiente.length > 0) {
+            setTimeout(() => {
+                processEmailQueuePendiente();
+            }, 200); // Pausa mínima en caso de error
+        }
+    };
+
+    xhrEmail.ontimeout = function() {
+        console.error(`⏰ Timeout al enviar correo (${emailData.type})`);
+        isProcessingPendiente = false;
+        if (emailQueuePendiente.length > 0) {
+            setTimeout(() => {
+                processEmailQueuePendiente();
+            }, 200); // Pausa mínima en caso de timeout
+        }
+    };
+
+    xhrEmail.send(emailData.params);
+}
+
+// ✅ FUNCIÓN PARA TICKET CERRADO (con cola de correos)
+function enviarCorreoTicketCerrado(ticketData) {
+    // Obtener datos necesarios
+    const coordinador = ticketData.user_coordinator_id || ticketData.id_coordinator || '';
+    const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
+    const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
+    
+    console.log(`📧 Agregando correo de Ticket Cerrado a la cola para ticket: ${ticketNumber}`);
+    
+    // Agregar a la cola de correos
+    emailQueuePendiente.push({
+        endpoint: `${ENDPOINT_BASE}${APP_PATH}api/email/send_end_ticket`,
+        params: `id_user=${encodeURIComponent(id_user)}`,
+        type: 'Ticket Cerrado',
+        ticketNumber: ticketNumber,
+        ticketData: ticketData
+    });
+
+    // Procesar la cola
+    processEmailQueuePendiente();
+}
+
+// ✅ FUNCIÓN PARA TICKET DEVUELTO (con cola de correos)
+function enviarCorreoTicketDevuelto(ticketData) {
+    // Obtener datos necesarios
+    const coordinador = ticketData.user_coordinator_id || ticketData.id_coordinator || '';
+    const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
+    const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
+    
+    console.log(`📧 Agregando correo de Ticket Devuelto a la cola para ticket: ${ticketNumber}`);
+    
+    // Agregar a la cola de correos
+    emailQueuePendiente.push({
+        endpoint: `${ENDPOINT_BASE}${APP_PATH}api/email/send_devolution_ticket`,
+        params: `id_coordinador=${encodeURIComponent(coordinador)}&id_user=${encodeURIComponent(id_user)}`,
+        type: 'Ticket Devuelto',
+        ticketNumber: ticketNumber,
+        ticketData: ticketData
+    });
+
+    // Procesar la cola
+    processEmailQueuePendiente();
+}
+
+// ✅ FUNCIÓN PARA MOSTRAR ESTADO DE COLA DE PENDIENTE_ENTREGA (opcional, para debugging)
+function mostrarEstadoColaPendiente() {
+    console.log(`📊 Estado de la cola de correos (Pendiente Entrega):`);
+    console.log(`   - Correos en cola: ${emailQueuePendiente.length}`);
+    console.log(`   - Procesando: ${isProcessingPendiente ? 'Sí' : 'No'}`);
+    
+    if (emailQueuePendiente.length > 0) {
+        console.log(`   - Próximo correo: ${emailQueuePendiente[0].type} - Ticket #${emailQueuePendiente[0].ticketNumber}`);
+    }
+    
+    if (typeof Swal !== "undefined") {
+        Swal.fire({
+            icon: 'info',
+            title: 'Estado de Cola de Correos (Pendiente Entrega)',
+            html: `
+                <div style="text-align: left;">
+                    <p><strong>Correos en cola:</strong> ${emailQueuePendiente.length}</p>
+                    <p><strong>Procesando:</strong> ${isProcessingPendiente ? 'Sí' : 'No'}</p>
+                    ${emailQueuePendiente.length > 0 ? `<p><strong>Próximo correo:</strong> ${emailQueuePendiente[0].type} - Ticket #${emailQueuePendiente[0].ticketNumber}</p>` : ''}
+                </div>
+            `,
+            color: 'black',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#003594'
+        });
+    }
+}
+
+// Exponer funciones globalmente para debugging (opcional)
+window.mostrarEstadoColaPendiente = mostrarEstadoColaPendiente;
+window.enviarCorreoTicketCerrado = enviarCorreoTicketCerrado;
+window.enviarCorreoTicketDevuelto = enviarCorreoTicketDevuelto;

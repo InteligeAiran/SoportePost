@@ -117,6 +117,37 @@
         transition: background-color 0.3s, color 0.3s;
         font-family: 'Arial', sans-serif;
     }*/
+
+    /* Estilos para hiperbinComponents en pantallas medianas */
+    @media screen and (min-width: 1490px) {
+        #hiperbinComponents {
+            position: relative !important;
+            margin-bottom: -24% !important;
+            border-radius: 0.3rem !important;
+            background-color: #e0f7fa !important;
+            color: #007C12 !important;
+            font-size: 105% !important;
+            margin-left: -48% !important;
+            width: 239% !important;
+            display: inline-block !important;
+            text-decoration: none !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        /* Asegurar que el botón mantenga su funcionalidad */
+        #hiperbinComponents:hover {
+            background-color: #b3e5fc !important;
+            color: #005a0a !important;
+            text-decoration: none !important;
+        }
+        
+        #hiperbinComponents:focus {
+            outline: 2px solid #007C12 !important;
+            outline-offset: 2px !important;
+        }
+    }
+
     .modal-contenido {
         /*background-color: #f9f9f9;*/
         background-color: #F9F9F1;
@@ -667,6 +698,17 @@
         font-size: 105%;
         margin-left: 34%;
         width: 100%;
+    }
+
+    #hiperbinComponents:hover {
+        background-color: #b3e5fc !important;
+        color: #005a0a !important;
+        text-decoration: none !important;
+    }
+    
+    #hiperbinComponents:focus {
+        outline: 2px solid #007C12 !important;
+        outline-offset: 2px !important;
     }
 
     #LabelCoordinador{

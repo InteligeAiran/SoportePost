@@ -20,7 +20,6 @@ class reportsModel extends Model
             $escaped_id_region = pg_escape_literal($this->db->getConnection(), $id_region); // Assuming '$this->db' is now a valid PgSql\Connection
             $sql = "SELECT * FROM public.GetTicketsByRegion(".$escaped_id_region.");";  
             $result = $this->getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception
@@ -32,7 +31,6 @@ class reportsModel extends Model
             $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif); // Assuming '$this->db' is now a valid PgSql\Connection
             $sql = "SELECT * FROM getticketsbyrif('%" . substr($escaped_rif, 1, -1) . "%')";
             $result = Model::getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception
@@ -45,7 +43,6 @@ class reportsModel extends Model
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); // Assuming '$this->db' is now a valid PgSql\Connection
             $sql = "SELECT * FROM GetTicketsBySearchSerial('%" . substr($escaped_serial, 1, -1) . "%')";
             $result = Model::getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception
@@ -387,19 +384,28 @@ class reportsModel extends Model
  */
 private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_being_uploaded) {
     try {
-        // Primero, verificar el estado actual del ticket para ver si ya tiene documentos aprobados
-        $current_status_sql = "SELECT id_status_payment FROM tickets WHERE nro_ticket = '".$nro_ticket."'";
-        $current_status_result = Model::getResult($current_status_sql, $this->db);
-        
-        if ($current_status_result && isset($current_status_result['query']) && $current_status_result['numRows'] > 0) {
-            $current_status = pg_fetch_result($current_status_result['query'], 0, 'id_status_payment');
+        // ✅ NUEVA VALIDACIÓN: Si es convenio_firmado, actualizar domiciliación
+        if ($document_type_being_uploaded === 'convenio_firmado') {
+            // Actualizar tickets_status_domiciliacion a 6
+            $domiciliacion_sql = "UPDATE tickets_status_domiciliacion 
+                                 SET id_status_domiciliacion = 4
+                                 WHERE id_ticket = (SELECT id_ticket FROM tickets WHERE nro_ticket = '".$nro_ticket."')";
             
-            // Si el ticket ya tiene documentos aprobados (status 4 = Exoneracion Aprobada, 6 = Anticipo Aprobado)
-            // y se está subiendo un documento de traslado o envio, mantener el status aprobado
-            if (($current_status == 4 || $current_status == 6) && 
-                ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio')) {
-                return $current_status; // Mantener el status aprobado
+            $domiciliacion_result = Model::getResult($domiciliacion_sql, $this->db);
+            
+            if (!$domiciliacion_result) {
+                error_log("Error al actualizar tickets_status_domiciliacion para convenio_firmado");
             }
+            
+            // Retornar el status payment actual sin cambios
+            $current_status_sql = "SELECT id_status_payment FROM tickets WHERE nro_ticket = '".$nro_ticket."'";
+            $current_status_result = Model::getResult($current_status_sql, $this->db);
+            
+            if ($current_status_result && isset($current_status_result['query']) && $current_status_result['numRows'] > 0) {
+                return pg_fetch_result($current_status_result['query'], 0, 'id_status_payment');
+            }
+            
+            return 10; // Valor por defecto
         }
         
         // Obtener todos los documentos para este ticket (excluyendo el que se está subiendo)
@@ -1024,7 +1030,7 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function SaveComponents($id_ticket, $components, $serial_pos, $id_user){
+    public function SaveComponents($id_ticket, $components, $serial_pos, $id_user, $modulo){
         try {
             $id_ticket1 = (int)$id_ticket;
             
@@ -1053,7 +1059,7 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
                     (int)$idticket,        // int
                     (int)$comp_id,         // int (debe existir en tabla components)
                     (int)$id_user,         // int (debe existir en users)
-                    'coordinador'          // text/varchar (verifica tipo de modulo_insert)
+                    $modulo         // text/varchar (verifica tipo de modulo_insert)
                     ];
 
                     $res = pg_query_params($this->db->getConnection(), $sqlcomponents, $params);
@@ -1206,6 +1212,16 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
             $sql = "SELECT * FROM get_individual_card_comercial()";
             $result = Model::getResult($sql, $this->db);
             return $result;
+        }catch(Throwable $e){
+            return null;
+        }
+    }
+
+    public function SearchBanco($banco){
+        try {
+            $sql = "SELECT * FROM getticketsbybanco(".$banco.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
         } catch (Throwable $e) {
             // Handle exception
         }
@@ -1213,14 +1229,7 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
 
     public function GetTicketCounts(){
         try {
-            $sql = "SELECT 
-                        at.id_accion_ticket,
-                        at.name_accion_ticket,
-                        COUNT(t.id_ticket) as total_tickets
-                    FROM accions_tickets at
-                    LEFT JOIN tickets t ON at.id_accion_ticket = t.id_accion_ticket
-                    GROUP BY at.id_accion_ticket, at.name_accion_ticket
-                    ORDER BY at.id_accion_ticket";
+            $sql = "SELECT * FROM get_ticket_counts_by_accion();";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

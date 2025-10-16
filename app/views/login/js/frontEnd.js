@@ -5,6 +5,9 @@
     console.log(`Alto de la pantalla: ${altoPantalla}px`);
 });*/
 
+let emailQueue = []; // Cola para almacenar las solicitudes de correo
+let isProcessing = false; // Indicador de si se está procesando una solicitud
+
 // Get the input field
 var input1 = document.getElementById("username");
 var input2 = document.getElementById("password");
@@ -45,7 +48,7 @@ input3.addEventListener("keypress", function(event) {
       // Trigger the button element with a click
       document.getElementById("Sendmail").click();
     }
-  });
+});
   
 
 $("#username").keyup(function(){
@@ -261,174 +264,168 @@ function SendForm() {
     const datos = `action=access&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
     xhr.send(datos);
 }
+function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+       clearTimeout(timeoutId);
+       timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+}
 
-function checkUser() {
+// Función principal para verificar usuario con Promise
+async function checkUser() {
     const input = document.getElementById('username');
     const mensajeDiv = document.getElementById('usernameError');
     const mensajeDivt = document.getElementById('usernameVerification');
 
+    // Limpiar mensajes y clases previas
     mensajeDiv.innerHTML = '';
-
+    mensajeDivt.innerHTML = '';
+    mensajeDivt.classList.remove('loading', 'error', 'success');
+      
     if (input.value === '') {
-        mensajeDivt.innerHTML = 'Campo vacío'; // Muestra el mensaje en rojo directamente
-        mensajeDivt.style.color = 'red';
-    } else {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/checkUser`);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        mensajeDivt.innerHTML = 'Campo vacío';
+        mensajeDivt.classList.add('error');
 
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    mensajeDivt.innerHTML = response.message;
-                    mensajeDivt.style.color = response.color; // Aplica el color del mensaje
-                } catch (error) {
-                    console.error('Error parsing JSON:', error);
-                    mensajeDiv.innerHTML = 'Error al procesar la respuesta del servidor.';
-                }
-            } else {
-                console.error('Error:', xhr.status, xhr.statusText);
-                mensajeDiv.innerHTML = 'Error de conexión con el servidor.';
-            }
-        };
+        return;
+    }
 
-        const datos = `action=checkUsername&username=${encodeURIComponent(input.value)}`;
-        xhr.send(datos);
+    // Mostrar spinner y texto de carga
+    mensajeDivt.innerHTML = `
+    <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Cargando, por favor espere...</span>
+    </div> 
+    `;
+    mensajeDivt.classList.add('loading');
+
+    try {
+        const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/users/checkUser`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: `action=checkUsername&username=${encodeURIComponent(input.value)}`
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // --- LIMPIEZA CLAVE ---
+            mensajeDivt.classList.remove('loading'); 
+        // ---------------------
+
+        const data = await response.json();
+        mensajeDivt.innerHTML = data.message;
+       // Aplicar clase basada en el color (asumiendo que data.color es 'green' para success, 'red' para error)
+       console.log(data.color);
+        if (data.color === "green") {
+          mensajeDivt.classList.add('success');
+        } else if (data.color === 'red') {
+          mensajeDivt.classList.add('error');
+        } else {
+          // Fallback por si hay otros colores
+          mensajeDivt.style.color = data.color;
+        }
+
+    } catch (error) {
+        console.error('Error en la petición:', error);
+        mensajeDiv.innerHTML = 'Error de conexión con el servidor.';
+        mensajeDivt.classList.add('error');
     }
 }
 
-function GetEmailByUsername() {
+// Versión con debounce (500ms de espera después de tipear)
+const debouncedCheckUser = debounce(checkUser, 500);
+
+async function GetEmailByUsername() {
     const usernameInput = document.getElementById('restoreUsername');
     const emailInput = document.getElementById('email');
     const usernameErrorDiv = document.getElementById('restoreUsernameError');
-    const usernameVerificationDiv = document.getElementById('restoreUsernameVerification'); // Este div mostrará el mensaje
+    const usernameVerificationDiv = document.getElementById('restoreUsernameVerification'); 
 
-    // Clear previous messages and styles for username input
+    // 1. Limpieza inicial
     usernameErrorDiv.innerHTML = '';
     usernameVerificationDiv.innerHTML = '';
-    usernameVerificationDiv.style.color = '';
-    usernameInput.style.borderColor = '';
-
-    // Always clear the email input when a new username check starts
+    usernameVerificationDiv.classList.remove('loading', 'error', 'success');
+    
     emailInput.value = '';
     emailInput.style.borderColor = '';
     document.getElementById('emailError').innerHTML = '';
     document.getElementById('emailVerification').innerHTML = '';
+    
+    const username = usernameInput.value.trim();
 
-    if (usernameInput.value.trim() === '') {
+    if (username === '') {
         usernameVerificationDiv.innerHTML = 'Campo de usuario vacío';
-        usernameVerificationDiv.style.color = 'red';
+        usernameVerificationDiv.classList.add('error');
         usernameInput.style.borderColor = 'red';
         return;
     }
 
-    const xhr = new XMLHttpRequest();
-    // La URL de tu API
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/users/getEmailByUsername`);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    // 2. Mostrar Spinner y 'loading'
+    usernameVerificationDiv.innerHTML = `
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+            <span class="visually-hidden">Cargando, por favor espere...</span>
+        </div> 
+    `;
+    usernameVerificationDiv.classList.add('loading');
 
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) { // Éxito (HTTP 200)
-            try {
-                const response = JSON.parse(xhr.responseText);
+    try {
+        const bodyData = `action=getEmailByUsername&username=${encodeURIComponent(username)}`;
+        
+        const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/users/getEmailByUsername`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: bodyData
+        });
+        
+        // --- SECCIÓN CLAVE ---
+        
+        // 3. Manejo de error de servidor (ej. 500, o si la ruta del API falla y devuelve un 404 real)
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}. Hubo un problema de conexión con la API.`);
+        }
 
-                if (response.success && response.email) {
-                    usernameVerificationDiv.innerHTML = 'Usuario encontrado. Email asociado cargado.';
-                    usernameVerificationDiv.style.color = 'green';
-                    usernameInput.style.borderColor = 'green';
-                    emailInput.value = response.email;
-                    emailInput.style.borderColor = 'green';
-                } else {
-                    // Si success es false (lo que pasa con status 404 en tu PHP),
-                    // o email no es proporcionado (aunque el status sea 200, por si acaso)
-                    usernameVerificationDiv.innerHTML = response.message || 'Usuario no encontrado o sin email asociado.';
-                    usernameVerificationDiv.style.color = 'red';
-                    usernameInput.style.borderColor = 'red';
-                    emailInput.value = '';
-                    emailInput.style.borderColor = 'red';
-                }
-            } catch (error) {
-                console.error('Error parsing JSON for GetEmailByUsername:', error);
-                usernameErrorDiv.innerHTML = 'Error al procesar la respuesta del servidor.';
-                usernameInput.style.borderColor = 'red';
-                emailInput.value = '';
-                emailInput.style.borderColor = 'red';
-            }
-        } else if (xhr.status === 404) { // Manejo específico para "No encontrado"
-            try {
-                const errorResponse = JSON.parse(xhr.responseText);
-                usernameVerificationDiv.innerHTML = errorResponse.message || 'El usuario no existe.'; // Muestra el mensaje del servidor
-                usernameVerificationDiv.style.color = 'red';
-                usernameInput.style.borderColor = 'red';
-                emailInput.value = '';
-                emailInput.style.borderColor = 'red';
-            } catch (error) {
-                console.error('Error parsing JSON for 404 response:', error);
-                usernameErrorDiv.innerHTML = 'Usuario no encontrado';
-                usernameInput.style.borderColor = 'red';
-                emailInput.value = '';
-                emailInput.style.borderColor = 'red';
-            }
-        } else { // Otros errores HTTP (ej. 500 Internal Server Error, 400 Bad Request, etc.)
-            console.error('Error en GetEmailByUsername:', xhr.status, xhr.statusText);
-            usernameErrorDiv.innerHTML = 'Error de conexión con el servidor. Código: ' + xhr.status; // Más descriptivo
+        const data = await response.json();
+
+        // 4. Limpieza de 'loading' y procesamiento de respuesta JSON
+        usernameVerificationDiv.classList.remove('loading'); 
+
+        // Aplicar mensaje y estilos basados en data.success
+        usernameVerificationDiv.innerHTML = data.message || (data.success ? 'Usuario encontrado.' : 'Usuario no encontrado.');
+
+        if (data.success && data.email) {
+            // ÉXITO: Usuario encontrado (success: true)
+            usernameVerificationDiv.classList.add('success');
+            usernameInput.style.borderColor = 'green';
+            emailInput.value = data.email;
+            emailInput.style.borderColor = 'green';
+        } else {
+            // FALLO DE DATOS: Usuario no encontrado (success: false)
+            usernameVerificationDiv.classList.add('error');
             usernameInput.style.borderColor = 'red';
             emailInput.value = '';
             emailInput.style.borderColor = 'red';
         }
-    };
-    xhr.onerror = function() { // Maneja errores de red puros (sin respuesta del servidor)
-        console.error('Network Error for GetEmailByUsername');
-        usernameErrorDiv.innerHTML = 'Error de red. No se pudo conectar con el servidor.';
+
+    } catch (error) {
+        // 5. Manejo de errores de red, parseo, o error fatal (500)
+        usernameVerificationDiv.classList.remove('loading');
+        console.error('Error en la petición GetEmailByUsername:', error);
+        
+        usernameErrorDiv.innerHTML = 'Error de conexión con el servidor.';
+        usernameVerificationDiv.classList.add('error');
         usernameInput.style.borderColor = 'red';
         emailInput.value = '';
         emailInput.style.borderColor = 'red';
-    };
-
-    const datos = `action=getEmailByUsername&username=${encodeURIComponent(usernameInput.value)}`;
-    xhr.send(datos);
-}
-
-function checkEmail() {
-    const input = document.getElementById('email');
-    const mensajeDiv = document.getElementById('emailError');
-    const mensajeDivt = document.getElementById('emailVerification');
-
-    mensajeDiv.innerHTML = '';
-    mensajeDivt.innerHTML = '';
-    mensajeDivt.style.color = ''; // Resetear el color del mensaje
-    input.style.borderColor = ''; // Resetear el borde a su estado original
-
-    if (input.value.trim() === '') { // Usar .trim() para quitar espacios en blanco
-        mensajeDivt.innerHTML = 'Campo vacío';
-        mensajeDivt.style.color = 'red';
-        input.style.borderColor = 'red'; // Pone el borde rojo
-    } else {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/checkEmail`);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    mensajeDivt.innerHTML = response.message;
-                    mensajeDivt.style.color = response.color; // Aplica el color del mensaje
-                     input.style.borderColor = response.color; // Pone el borde rojo
-                } catch (error) {
-                    console.error('Error parsing JSON:', error);
-                    mensajeDiv.innerHTML = 'Error al procesar la respuesta del servidor.';
-                }
-            } else {
-                console.error('Error:', xhr.status, xhr.statusText);
-                mensajeDiv.innerHTML = 'Error de conexión con el servidor.';
-            }
-        };
-        const datos = `action=checkEmail&email=${encodeURIComponent(input.value)}`;
-        xhr.send(datos);
     }
 }
+
+// Versión con debounce (500ms de espera después de tipear)
+const debouncedCheckEmail = debounce(GetEmailByUsername, 500);
 
 // Obtener el modal
 var modal = document.getElementById("modal");
@@ -447,12 +444,34 @@ function ModalPass(event) {
 
 // Cuando el usuario hace clic en <span> (x), cerrar el modal
 span.onclick = function() {
+    const usernameInput = document.getElementById("restoreUsername");
+    const emailInput = document.getElementById("email");
+
+    const usernameErrorDiv = document.getElementById("restoreUsernameError");
+    const usernameVerificationDiv = document.getElementById("restoreUsernameVerification");
+    
+    // 1. Limpiar el valor de los campos de entrada (IMPORTANTE: usar .value)
+    usernameInput.value = ""; 
+    emailInput.value = "";
+    
+    // 2. Limpiar los mensajes de error/verificación
+    usernameErrorDiv.innerHTML = "";
+    usernameVerificationDiv.innerHTML = "";
+    
+    // 3. Limpiar las clases de estado (loading, error, success) y bordes
+    usernameVerificationDiv.classList.remove('loading', 'error', 'success');
+    usernameInput.style.borderColor = ""; // Opcional: para quitar bordes de color
+    emailInput.style.borderColor = "";   // Opcional: para quitar bordes de color
+
+    // 4. Ocultar el modal
     modal.style.display = "none";
 }
 
 // Cuando el usuario hace clic en cualquier lugar fuera del modal, cerrarlo
 window.onclick = function(event) {
     if (event.target == modal) {
+        username.innerHTML = "";
+        correo.innerHTML = "";
         modal.style.display = "none";
     }
 }
@@ -462,7 +481,6 @@ document.getElementById('restore_passForm').addEventListener('submit', function(
     event.preventDefault(); // Evitar el envío del formulario por defecto
     const correo = document.getElementById('correo').value;
     // Aquí puedes agregar tu lógica para enviar el correo con el enlace de restablecimiento
-    console.log('Correo para restablecer contraseña:', correo);
     modal.style.display = "none"; // Cerrar el modal después de enviar el correo
 });
 
@@ -481,12 +499,31 @@ setTimeout(function() {
 
 function SendEmail() {
     const email = document.getElementById('email').value;
+    
+    // Agregar el correo a la cola
+    emailQueue.push(email);
+    
+    // Procesar la cola si no hay una solicitud en curso
+    if (!isProcessing) {
+        processQueue();
+    }
+}
+
+function processQueue() {
+    if (emailQueue.length === 0) {
+        isProcessing = false;
+        return;
+    }
+
+    isProcessing = true;
+    const email = emailQueue[0]; // Tomar el primer correo de la cola
+
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/resetPassword`);
-
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
     mostrarCargando(); // Muestra el "cargando"
+    xhr.timeout = 5000; // Timeout de 5 segundos
 
     xhr.onload = function() {
         ocultarCargando(); // Oculta el "cargando"
@@ -496,26 +533,25 @@ function SendEmail() {
                 Swal.fire({
                     icon: 'success',
                     title: 'Se ha enviado la nueva contraseña con éxito. Verifique su bandeja de entrada.',
-                    text: response.message, // Muestra el mensaje específico del backend
+                    text: response.message,
                     color: 'black',
-                    timer: 5000, // Cierra el modal después de 2.5 segundos (2500 ms)
-                    timerProgressBar: true, // Opcional: muestra una barra de progreso del tiempo
+                    timer: 5000,
+                    timerProgressBar: true,
                     didOpen: () => {
-                     Swal.showLoading();
+                        Swal.showLoading();
                     },
                     willClose: () => {
                         setTimeout(() => {
-                            location.reload(); // Recarga la página después del temporizador
-                        }, 5000); // Espera 2.5 segundos (igual que el temporizador)
+                            location.reload();
+                        }, 5000);
                     }
                 });
-                document.getElementById('modal').style.display = 'none'; // Cierra el modal
-                //mostrarModalCodigo(email); // Mostrar el modal para ingresar el código
+                document.getElementById('modal').style.display = 'none';
             } else {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error al enviar el correo',
-                    text: response.message, // Muestra el mensaje específico del backend
+                    text: response.message,
                     color: 'black'
                 });
             }
@@ -523,10 +559,43 @@ function SendEmail() {
             Swal.fire({
                 icon: 'error',
                 title: 'Error al enviar el correo',
-                text: 'Error en la solicitud. Por favor, inténtalo de nuevo.', // Mensaje genérico para errores de solicitud
+                text: 'Error en la solicitud. Por favor, inténtalo de nuevo.',
                 color: 'black'
             });
         }
+
+        // Remover el correo procesado de la cola
+        emailQueue.shift();
+        // Procesar la siguiente solicitud en la cola
+        processQueue();
+    };
+
+    xhr.onerror = function() {
+        ocultarCargando();
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de conexión',
+            text: 'No se pudo conectar con el servidor. Por favor, inténtalo de nuevo.',
+            color: 'black'
+        });
+        // Remover el correo fallido de la cola
+        emailQueue.shift();
+        // Procesar la siguiente solicitud en la cola
+        processQueue();
+    };
+
+    xhr.ontimeout = function() {
+        ocultarCargando();
+        Swal.fire({
+            icon: 'error',
+            title: 'Tiempo de espera agotado',
+            text: 'La solicitud tomó demasiado tiempo. Por favor, inténtalo de nuevo.',
+            color: 'black'
+        });
+        // Remover el correo fallido de la cola
+        emailQueue.shift();
+        // Procesar la siguiente solicitud en la cola
+        processQueue();
     };
     const datos = `action=resetPassword&email=${encodeURIComponent(email)}`;
     xhr.send(datos);

@@ -239,8 +239,11 @@ class UserRepository
     
     public function checkUserStatus($id_user){
         // Lógica para verificar el estado del usuario
-        $result = $this->model->checkUserStatus($id_user); 
-        return $result['row'];
+        $result = $this->model->checkUserStatus($id_user);
+        if($result && isset($result['row'])){
+            return $result['row'];
+        }
+        return null;
     }
 
     public function updatePassword($id_user, $contrase){
@@ -249,10 +252,13 @@ class UserRepository
         return $result;
     }
 
-    public function getEmailByUsername($username){
+    public function getEmailByUsername($username) {
         // Lógica para obtener el correo electrónico de un usuario por su nombre de usuario
         $result = $this->model->getEmailByUsername($username);
-        return $result['row']['email']; // Devuelve el correo electrónico o null si no se encuentra
+        if ($result && isset($result['row']['email'])) {
+            return $result['row']['email']; // Devuelve el correo electrónico
+        }
+        return null; // Devuelve null si no se encuentra el usuario o hay un error
     }
 
     public function InvalidateAllSessionsForUser($userId) {

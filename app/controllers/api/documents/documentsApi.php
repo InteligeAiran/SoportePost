@@ -40,6 +40,10 @@ class documents extends Controller {
                     $this->handleGetDeliveryNoteData();
                 break;
 
+                case 'GetPaymentAgreementData':
+                    $this->handleGetPaymentAgreementData();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en email'], 404);
                 break;
@@ -60,12 +64,28 @@ class documents extends Controller {
         exit();
     }
 
-   public function handleGetDeliveryNoteData(){
+    public function handleGetDeliveryNoteData(){
         $id_ticket = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
         $repository = new DocumentsRepository(); // Inicializa el LoginRepository aquí
 
         if($id_ticket != '') {
             $result = $repository->GetDeliveryNoteData($id_ticket);
+            if ($result > 0) {
+                $this->response([ 'success' => true, 'rows' => $result]);
+            }else{
+                $this->response(['success' => false, 'message' => 'Correo No Existe', 'color'=> 'red']);
+            }
+        }else{
+            $this->response(['success' => false, 'message' => 'Campo vacíos', 'color'=> 'red']);
+        }
+    }
+
+    public function handleGetPaymentAgreementData(){
+        $id_ticket = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
+        $repository = new DocumentsRepository(); // Inicializa el LoginRepository aquí
+
+          if($id_ticket != '') {
+            $result = $repository->GetPaymentAgreementData($id_ticket);
             if ($result > 0) {
                 $this->response([ 'success' => true, 'rows' => $result]);
             }else{

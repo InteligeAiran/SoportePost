@@ -77,6 +77,9 @@ function getIconSvgForName(name) {
     case "Documentos":
       iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-archive-fill me-2" viewBox="0 0 16 16"><path d="M12.643 15C13.979 15 15 13.845 15 12.5V5H1v7.5C1 13.845 2.021 15 3.357 15zM5.5 7h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1M.8 1a.8.8 0 0 0-.8.8V3a.8.8 0 0 0 .8.8h14.4A.8.8 0 0 0 16 3V1.8a.8.8 0 0 0-.8-.8z"/></svg>'
     break;
+    case "Periférico POS":
+      iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-seam-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15.528 2.973a.75.75 0 0 1 .472.696v8.662a.75.75 0 0 1-.472.696l-7.25 2.9a.75.75 0 0 1-.557 0l-7.25-2.9A.75.75 0 0 1 0 12.331V3.669a.75.75 0 0 1 .471-.696L7.443.184l.01-.003.268-.108a.75.75 0 0 1 .558 0l.269.108.01.003zM10.404 2 4.25 4.461 1.846 3.5 1 3.839v.4l6.5 2.6v7.922l.5.2.5-.2V6.84l6.5-2.6v-.4l-.846-.339L8 5.961 5.596 5l6.154-2.461z"/></svg>';
+    break;
     case "Cerrar Sesión":
     iconSvg ='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-left me-2" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z"/><path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z"/></svg>';
     break;
@@ -149,7 +152,10 @@ function setupCustomDropdown(toggleElement, menuElement, moduleId = null) {
       moduleId &&
       menuElement.dataset.submodulesLoaded !== "true"
     ) {
+      //console.log(`🎯 CLICK EN DROPDOWN - Iniciando carga de submódulos para módulo ID: ${moduleId}`);
       loadSubmodulesForModule(moduleId, menuElement);
+    } else if (menuElement.dataset.submodulesLoaded === "true") {
+      //console.log(`🎯 CLICK EN DROPDOWN - Submódulos ya cargados para módulo ID: ${moduleId}`);
     }
 
     // Asegura que los menús padres permanezcan abiertos y activos (o se abran si estaban cerrados)
@@ -331,10 +337,11 @@ function buildDropdownMenu(items, parentAnchorId, itemType) {
 function loadSubmodulesForModule(moduleId, targetUlElement) {
   // Verifica si los submódulos ya fueron cargados para evitar peticiones redundantes
   if (targetUlElement.dataset.submodulesLoaded === "true") {
-    console.log(`Submódulos para el módulo ${moduleId} ya cargados.`);
+    //console.log(`🔄 Submódulos para el módulo ${moduleId} ya cargados.`);
     return;
   }
 
+ // console.log(`🔍 SOLICITANDO SUBMÓDULOS para módulo ID: ${moduleId}`);
   targetUlElement.innerHTML =
     '<div class="p-2 text-white-50">Cargando submódulos...</div>';
 
@@ -349,6 +356,7 @@ function loadSubmodulesForModule(moduleId, targetUlElement) {
     if (xhr.status === 200) {
       try {
         const response = JSON.parse(xhr.responseText);
+       // console.log(`📡 Respuesta recibida para módulo ${moduleId}:`, response);
 
         // AQUÍ ESTÁ EL CAMBIO CLAVE: Usa 'response.submodules' en lugar de 'response.sub_modules'
         if (response.success && Array.isArray(response.submodules)) {
@@ -356,20 +364,25 @@ function loadSubmodulesForModule(moduleId, targetUlElement) {
           targetUlElement.innerHTML = ""; // Limpia el mensaje de carga
           if (response.submodules.length === 0) {
             // <-- Y AQUÍ
+            //console.log(`📭 No hay submódulos disponibles para módulo ${moduleId}`);
             targetUlElement.innerHTML =
               '<div class="p-2 text-white-50">No hay submódulos disponibles.</div>';
           } else {
+            //console.log(`📋 Cargando ${response.submodules.length} submódulos para módulo ${moduleId}:`);
             // Construye los submódulos y sus posibles sub-submódulos
-            response.submodules.forEach((sub_module) => {
+            response.submodules.forEach((sub_module, index) => {
               // <-- Y AQUÍ
+              //console.log(`  📦 Submódulo ${index + 1}: "${sub_module.desc_submodulo || sub_module.name_sub_module || 'Sin nombre'}" (ID: ${sub_module.id_submodulo || sub_module.id_sub_module || 'N/A'})`);
               const li = buildMenuItem(sub_module, "submodule");
               targetUlElement.appendChild(li);
+              //console.log(`  ✅ Submódulo "${sub_module.desc_submodulo || sub_module.name_sub_module || 'Sin nombre'}" - LISTO`);
 
               // Si este submódulo tiene sub-submódulos, inicializa su dropdown
               if (
                 sub_module.subsub_modules &&
                 sub_module.subsub_modules.length > 0
               ) {
+                //console.log(`    🔗 Submódulo tiene ${sub_module.subsub_modules.length} sub-submódulos`);
                 const subSubUl = buildDropdownMenu(
                   sub_module.subsub_modules,
                   li.querySelector("a").id,
@@ -380,11 +393,12 @@ function loadSubmodulesForModule(moduleId, targetUlElement) {
                 setupCustomDropdown(li.querySelector("a"), subSubUl);
               }
             });
+            //console.log(`🎉 TODOS LOS SUBMÓDULOS cargados para módulo ${moduleId}`);
           }
           targetUlElement.dataset.submodulesLoaded = "true"; // Marca como cargado
         } else {
           console.error(
-            "Formato de respuesta inválido para submódulos: Se esperaba 'success: true' y un array 'submodules'.",
+            "❌ Formato de respuesta inválido para submódulos: Se esperaba 'success: true' y un array 'submodules'.",
             response
           ); // Actualiza el mensaje de error para reflejar el nombre correcto
           targetUlElement.innerHTML =
@@ -401,7 +415,7 @@ function loadSubmodulesForModule(moduleId, targetUlElement) {
         }
       } catch (error) {
         console.error(
-          "Error al analizar la respuesta JSON de submódulos:",
+          "❌ Error al analizar la respuesta JSON de submódulos:",
           error
         );
         targetUlElement.innerHTML =
@@ -418,7 +432,7 @@ function loadSubmodulesForModule(moduleId, targetUlElement) {
       }
     } else {
       console.error(
-        `Error al obtener submódulos para el módulo ${moduleId}: ${xhr.status} ${xhr.statusText}`
+        `❌ Error al obtener submódulos para el módulo ${moduleId}: ${xhr.status} ${xhr.statusText}`
       );
       targetUlElement.innerHTML = `<div class="p-2 text-danger">Error ${xhr.status} al cargar.</div>`;
       if (typeof Swal !== "undefined") {
@@ -434,7 +448,7 @@ function loadSubmodulesForModule(moduleId, targetUlElement) {
   };
 
   xhr.onerror = function () {
-    console.error("Network Error al cargar los submódulos.");
+    console.error("❌ Network Error al cargar los submódulos.");
     targetUlElement.innerHTML =
       '<div class="p-2 text-danger">Error de red.</div>';
     if (typeof Swal !== "undefined") {
@@ -451,6 +465,7 @@ function loadSubmodulesForModule(moduleId, targetUlElement) {
   const datos = `action=getSubmodulesForModule&id_module=${encodeURIComponent(
     moduleId
   )}`;
+  //console.log(`📤 Enviando petición para módulo ${moduleId}:`, datos);
   xhr.send(datos);
 }
 
@@ -468,6 +483,7 @@ async function loadFullNavbar(options = {}) {
         console.error(
             "Elemento con ID 'main-navbar-nav' no encontrado. No se puede poblar la barra de navegación."
         );
+        hideLoadingOverlay();
         return;
     }
 
@@ -476,11 +492,16 @@ async function loadFullNavbar(options = {}) {
         console.error(
             "Elemento con ID 'id_user' no encontrado. Asegúrate de que existe en tu HTML."
         );
+        hideLoadingOverlay();
         return;
     }
     const id_usuario = id_usuario_element.value;
 
+    // Limpiar navbar y agregar elementos estáticos
     navbarNav.innerHTML = "";
+    updateLoadingProgress(10, 'Preparando navegación...');
+    
+    // Agregar "Inicio"
     const inicioLi = document.createElement("li");
     inicioLi.className = "nav-item";
     inicioLi.id = "inicio-link";
@@ -496,6 +517,8 @@ async function loadFullNavbar(options = {}) {
     const hrAfterInicio = document.createElement("hr");
     hrAfterInicio.className = "horizontal dark my-3";
     navbarNav.appendChild(hrAfterInicio);
+
+    updateLoadingProgress(20, 'Cargando módulos principales...');
 
     try {
         const url = `${ENDPOINT_BASE}${APP_PATH}${apiPath}`;
@@ -517,40 +540,57 @@ async function loadFullNavbar(options = {}) {
         }
 
         const data = await response.json();
+        updateLoadingProgress(40, 'Procesando módulos...');
 
         if (data.success && Array.isArray(data.modules)) {
-            const modulesData = data.modules;
+            const modulesData = data.modules.filter(module => module.activo === "t");
+            const totalModules = modulesData.length;
+            
+            updateLoadingProgress(50, `Cargando ${totalModules} módulos...`);
 
-            modulesData.forEach((module, index) => {
-                if (module.activo === "t") {
-                    const mainLi = buildMenuItem(module, "module");
-                    const mainAnchor = mainLi.querySelector("a");
-                    const subUl = document.createElement("ul");
-                    subUl.className = "dropdown-menu";
-                    subUl.setAttribute("aria-labelledby", mainAnchor.id);
-                    subUl.setAttribute("data-submodules-loaded", "false");
-                    subUl.innerHTML = '<div class="p-2 text-white-50">Cargando...</div>';
-                    mainLi.appendChild(subUl);
+            // Cargar módulos secuencialmente con delay
+            //console.log(`🚀 INICIANDO CARGA SECUENCIAL DE ${totalModules} MÓDULOS`);
+            for (let index = 0; index < modulesData.length; index++) {
+                const module = modulesData[index];
+                const progressIncrement = 30 / totalModules; // 30% del progreso total para módulos
+                const currentProgress = 50 + (index * progressIncrement);
+                
+                //console.log(`📦 Cargando módulo ${index + 1}/${totalModules}: "${module.desc_modulo}" (ID: ${module.idmodulo})`);
+                updateLoadingProgress(Math.round(currentProgress), `Cargando módulo: ${module.desc_modulo}...`);
+                
+                // Crear el módulo
+                const mainLi = buildMenuItem(module, "module");
+                const mainAnchor = mainLi.querySelector("a");
+                const subUl = document.createElement("ul");
+                subUl.className = "dropdown-menu";
+                subUl.setAttribute("aria-labelledby", mainAnchor.id);
+                subUl.setAttribute("data-submodules-loaded", "false");
+                subUl.innerHTML = '<div class="p-2 text-white-50">Cargando...</div>';
+                mainLi.appendChild(subUl);
 
-                    setupCustomDropdown(mainAnchor, subUl, module.idmodulo);
-                    navbarNav.appendChild(mainLi);
+                setupCustomDropdown(mainAnchor, subUl, module.idmodulo);
+                navbarNav.appendChild(mainLi);
 
-                    if (index < modulesData.length - 1) {
-                        const nextModule = modulesData[index + 1];
-                        if (nextModule && nextModule.activo === "t") {
-                            const hr = document.createElement("hr");
-                            hr.className = "horizontal dark my-3";
-                            navbarNav.appendChild(hr);
-                        }
-                    }
-                } else {
-                    console.log(
-                        `Módulo ${module.desc_modulo} (ID: ${module.idmodulo}) está inactivo y no se mostrará.`
-                    );
+                //console.log(`✅ Módulo "${module.desc_modulo}" - LISTO`);
+
+                // Agregar separador HR si no es el último módulo
+                if (index < modulesData.length - 1) {
+                    const hr = document.createElement("hr");
+                    hr.className = "horizontal dark my-3";
+                    navbarNav.appendChild(hr);
                 }
-            });
 
-            // Add "Cerrar Sesión" at the very end
+                // Delay entre módulos para no sobrecargar el servidor
+                if (index < modulesData.length - 1) {
+                   // console.log(`⏳ Esperando 200ms antes del siguiente módulo...`);
+                    await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay
+                }
+            }
+            //console.log(`🎉 TODOS LOS MÓDULOS CARGADOS SECUENCIALMENTE`);
+
+            updateLoadingProgress(85, 'Agregando opciones finales...');
+
+            // Agregar "Cerrar Sesión" al final
             const logoutLi = document.createElement("li");
             logoutLi.className = "nav-item";
             const logoutAnchor = document.createElement("a");
@@ -570,11 +610,26 @@ async function loadFullNavbar(options = {}) {
             logoutAnchor.appendChild(logoutText);
             logoutLi.appendChild(logoutAnchor);
             navbarNav.appendChild(logoutLi);
+
+            updateLoadingProgress(95, 'Finalizando configuración...');
+
+            // Pequeño delay final para que se vea el 95%
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            updateLoadingProgress(100, '¡Dashboard listo!');
+            
+            // Ocultar overlay después de un momento
+            setTimeout(() => {
+                hideLoadingOverlay();
+            }, 1000);
+
         } else {
-            console.error(
-                "Formato de respuesta inválido: Se esperaba 'success: true' y un array 'modules'.",
-                data
-            );
+            console.error("Formato de respuesta inválido:", data);
+            updateLoadingProgress(100, 'Error en la carga');
+            setTimeout(() => {
+                hideLoadingOverlay();
+            }, 1000);
+            
             if (typeof Swal !== "undefined") {
                 Swal.fire({
                     title: "Error",
@@ -587,8 +642,13 @@ async function loadFullNavbar(options = {}) {
         }
     } catch (error) {
         console.error("Error al procesar la respuesta o de red:", error);
+        updateLoadingProgress(100, 'Error en la carga');
+        setTimeout(() => {
+            hideLoadingOverlay();
+        }, 1000);
+        
         const errorMessage = error.message.includes("HTTP")
-            ? `Error de conexión con el servidor al cargar módulos: ${error.message}`
+            ? `Error de conexión con el servidor: ${error.message}`
             : "Ocurrió un error al procesar los módulos del servidor.";
 
         if (typeof Swal !== "undefined") {
@@ -788,7 +848,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Carga la barra de navegación principal cuando el DOM esté completamente cargado
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadFullNavbar(); // Llama a la función para cargar los módulos principales
+  //console.log(`🌟 INICIANDO SISTEMA DE CARGA SECUENCIAL DE MÓDULOS`);
+  
+  // Mostrar overlay de carga
+  showLoadingOverlay();
+  //console.log(`📱 Modal de carga mostrado`);
+  
+  // Iniciar progreso automático
+  startLoadingProgress();
+  //console.log(`⚡ Progreso automático iniciado`);
+  
+  // Cargar navbar secuencialmente
+// console.log(`🚀 Iniciando carga de navbar...`);
+  await loadFullNavbar();
+  //console.log(`✅ Carga de navbar completada`);
+  
+  // Detener progreso automático
+  stopLoadingProgress();
+ // console.log(`🏁 Sistema de carga secuencial FINALIZADO`);
 });
 
 // Function to build menu items (main modules or submodules)
@@ -867,11 +944,11 @@ function buildMenuItem(itemData, type) {
 // Function to load submodules for a specific module ID
 function loadSubmodulesForModule(moduleId, menuElement) {
   if (menuElement.dataset.submodulesLoaded === "true") {
-    console.log(`Submódulos para el módulo ${moduleId} ya cargados.`);
+    //console.log(`Submódulos para el módulo ${moduleId} ya cargados.`);
     return; // Already loaded, do nothing
   }
 
-  console.log(`Cargando submódulos para el módulo ID: ${moduleId}`);
+  //console.log(`Cargando submódulos para el módulo ID: ${moduleId}`);
   menuElement.innerHTML =
     '<div class="p-2 text-white-50">Cargando submódulos...</div>'; // Loading feedback
 
@@ -899,7 +976,7 @@ function loadSubmodulesForModule(moduleId, menuElement) {
     if (xhrSubmodules.status === 200) {
       try {
         const response = JSON.parse(xhrSubmodules.responseText);
-        console.log(`Respuesta de submódulos para ${moduleId}:`, response);
+        //console.log(`Respuesta de submódulos para ${moduleId}:`, response);
 
         if (response.success && Array.isArray(response.submodules)) {
           menuElement.innerHTML = ""; // Clear loading message
@@ -915,9 +992,7 @@ function loadSubmodulesForModule(moduleId, menuElement) {
                 const li = buildMenuItem(submodule, "submodule");
                 menuElement.appendChild(li);
               } else {
-                console.log(
-                  `Submódulo ${submodule.desc_submodulo} (ID: ${submodule.id_submodulo}) está inactivo y no se mostrará.`
-                );
+                //console.log(`Submódulo ${submodule.desc_submodulo} (ID: ${submodule.id_submodulo}) está inactivo y no se mostrará.`);
               }
             });
           }
@@ -953,8 +1028,6 @@ function loadSubmodulesForModule(moduleId, menuElement) {
   const datos = `action=getSubmodulesForModule&moduleId=${encodeURIComponent(
     moduleId
   )}&id_usuario=${encodeURIComponent(id_usuario)}`;
-  //console.log(moduleId);
-  console.log(id_usuario);
   xhrSubmodules.send(datos);
 }
 
@@ -1165,3 +1238,70 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 });
+
+// ==================== SISTEMA DE CARGA SECUENCIAL DE MÓDULOS ====================
+
+// Variables globales para el control de carga
+let loadingProgress = 0;
+let loadingStatus = '';
+let loadingInterval = null;
+
+// Función para actualizar el progreso y estado del loading
+function updateLoadingProgress(progress, status) {
+    const progressBar = document.querySelector('.loading-progress-bar');
+    const statusElement = document.getElementById('loading-status');
+    
+    if (progressBar) {
+        progressBar.style.width = `${progress}%`;
+    }
+    
+    if (statusElement) {
+        statusElement.textContent = status;
+    }
+    
+   // console.log(`📊 PROGRESO: ${progress}% - ${status}`);
+    
+    loadingProgress = progress;
+    loadingStatus = status;
+}
+
+// Función para mostrar/ocultar el modal de carga
+function showLoadingOverlay() {
+    const overlay = document.getElementById('dashboard-loading-overlay');
+    if (overlay) {
+        overlay.style.display = 'flex';
+        updateLoadingProgress(0, 'Inicializando...');
+    }
+}
+
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('dashboard-loading-overlay');
+    if (overlay) {
+        // Esperar un momento para que el usuario vea el 100%
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 500);
+    }
+}
+
+// Función para simular progreso automático durante la carga
+function startLoadingProgress() {
+    let progress = 0;
+    const maxProgress = 90; // Máximo 90% automático, el resto se completa manualmente
+    const increment = 1;
+    const interval = 60; // Cada 60ms incrementa 1%
+    
+    loadingInterval = setInterval(() => {
+        if (progress < maxProgress) {
+            progress += increment;
+            updateLoadingProgress(progress, 'Cargando sistema...');
+        }
+    }, interval);
+}
+
+function stopLoadingProgress() {
+    if (loadingInterval) {
+        clearInterval(loadingInterval);
+        loadingInterval = null;
+    }
+}

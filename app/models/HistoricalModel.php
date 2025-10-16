@@ -19,7 +19,6 @@ class HistoricalModel extends Model
         try {
             $sql = "SELECT * FROM public.get_ticket_history_details(".$id_ticket.");";
             $result = $this->getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception
@@ -218,7 +217,6 @@ class HistoricalModel extends Model
       try {
             $sql = "SELECT * FROM public.get_ticket_history_details1(".$id_ticket.");";
             $result = $this->getResult($sql, $this->db);
-            $this->db->closeConnection(); // Close the connection if needed
             return $result;
         } catch (Throwable $e) {
             // Handle exception

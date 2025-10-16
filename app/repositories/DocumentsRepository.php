@@ -24,6 +24,20 @@ class DocumentsRepository
         } else {
             return [];
         }
-        return $result;
+    }
+
+    public function GetPaymentAgreementData($id_ticket){
+       // Lógica para cambiar la contraseña por código
+        $result = $this->model->GetPaymentAgreementData($id_ticket);
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        } 
     }
 }

@@ -43,7 +43,6 @@ class cerrar_session extends Controller {
 
         // Llamar al método en usuarioModel para actualizar el estado del usuario
         $usuarioModel->UpdateSession($usuario_id,  $session_id);
-        var_dump($usuarioModel->UpdateSession($usuario_id,  $session_id)); // Verifica el resultado de la actualización
     }
 
 }

@@ -27,6 +27,43 @@ function mi_navbar() {}
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
 
         <style>
+             @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            .loading-overlay {
+                backdrop-filter: blur(2px);
+                -webkit-backdrop-filter: blur(2px);
+            }
+            
+            .loading-spinner {
+                box-shadow: 0 4px 15px rgba(0, 53, 148, 0.2);
+            }
+            
+            .card-loading {
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .card-loading::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+                animation: shimmer 2s infinite;
+                z-index: 1;
+            }
+            
+            @keyframes shimmer {
+                0% { left: -100%; }
+                100% { left: 100%; }
+            }
+
+            
             .card-header.bg-primary.text-white {
                 cursor: pointer; /* Changes the cursor to indicate clickability */
                 transition: all 0.3s ease; /* Smooth transition for hover effects */
@@ -134,6 +171,57 @@ function mi_navbar() {}
 
             .modern-swal-cancel:hover {
                 transform: translateY(-2px) !important;
+            }
+
+            /* Estilos para el botón de expandir/contraer en tabla */
+            .btn-expand-collapse {
+                background: #007bff !important;
+                border: 1px solid #007bff !important;
+                border-radius: 8px;
+                padding: 8px 16px;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: #ffffff !important;
+                transition: all 0.2s ease;
+                font-family: 'Open Sans', sans-serif;
+                text-decoration: none;
+                outline: none;
+            }
+
+            .btn-expand-collapse:hover {
+                background: #0056b3 !important;
+                border-color: #0056b3 !important;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+                color: #ffffff !important;
+            }
+
+            .btn-expand-collapse:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+                background: #004085 !important;
+                border-color: #004085 !important;
+                color: #ffffff !important;
+            }
+
+            .btn-expand-collapse:focus {
+                box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+                color: #ffffff !important;
+            }
+
+            .expand-icon {
+                transition: transform 0.3s ease;
+                flex-shrink: 0;
+                color: #ffffff !important;
+            }
+
+            .expand-text {
+                white-space: nowrap;
+                color: #ffffff !important;
             }
 
             input[type="text"], input[type="password"]{
@@ -272,6 +360,20 @@ function mi_navbar() {}
         <?php require_once 'app/core/components/navbar/index.php';
         mi_navbar(); ?>
         <div class="min-height-300 bg-dark position-absolute w-100"></div>
+        <!-- Loading Overlay -->
+            <div id="dashboard-loading-overlay" class="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <div class="loading-container" style="text-align: center;">
+                    <div class="loading-spinner" style="width: 80px; height: 80px; border: 6px solid #f3f3f3; border-top: 6px solid #003594; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                    <h4 style="color: #003594; margin-bottom: 10px; font-weight: 600;">Cargando Dashboard</h4>
+                    <p style="color: #666; margin-bottom: 0; font-size: 14px;">Preparando datos y estadísticas...</p>
+                    <div class="loading-progress" style="width: 300px; height: 4px; background: #e9ecef; border-radius: 2px; margin: 20px auto 0; overflow: hidden;">
+                        <div class="loading-progress-bar" style="height: 100%; background: linear-gradient(90deg, #003594, #007bff); width: 0%; transition: width 0.3s ease; border-radius: 2px;"></div>
+                    </div>
+                    <p id="loading-status" style="color: #888; margin-top: 10px; font-size: 12px;">Inicializando...</p>
+                </div>
+            </div>
+        <!-- Loading Overlay -->
+
         <main class="main-content position-relative border-radius-lg ">
             <div class="container-fluid py-4">
                 <div class="row">
@@ -483,7 +585,7 @@ function mi_navbar() {}
                                             <div class="numbers">
                                                 <p class="card-category" style="color: black">Total Tickets</p>
                                                 <h5 id="TotalTicket" class="card-title">0</h5>
-                                                <p class="card-text mb-0"><br><br>
+                                                <p class="card-text mb-0"><br><br><br>
                                                 </p>
                                             </div>
                                             <div class="icon-on-right">
@@ -509,19 +611,18 @@ function mi_navbar() {}
                         <!-- Card Tickets En Taller -->
                             <div class="card" id="Card-Send-To-Taller">
                                 <div class="card-body">
-                                    <div class="card-content-wrapper">
+                                    <div class="card-content-wrapper" style="margin-top: -13%;">
                                         <div class="numbers">
                                             <p class="card-category" style="color: black">POS EN TALLER</p>
-                                            <h5 class="card-title" id="TotalEnviadoTaller">0</h5>
+                                            <h5 class="card-title font-weight-bolder" id="TotalEnviadoTaller">0</h5>
                                             <p class="card-text mb-0">
-                                                <span class="text-percentage" id="PorcentSendToTaller"></span>Del total
-                                                de tickets
+                                                <span class="text-percentage" id="PorcentSendToTaller"></span>Del total de tickets
                                             </p>
                                         </div>
                                         <div class="icon-on-right">
                                             <div class="icon-shape bg-gradient-warning"> <svg
                                                     xmlns="http://www.w3.org/2000/svg" width="30" height="30"
-                                                    fill="currentColor" class="bi bi-wrench-adjustable"
+                                                    fill="white" class="bi bi-wrench-adjustable"
                                                     viewBox="0 0 16 16">
                                                     <path
                                                         d="M16 4.5a4.5 4.5 0 0 1-1.703 3.526L13 5l2.959-1.11q.04.3.041.61" />
@@ -727,13 +828,13 @@ function mi_navbar() {}
                                 <div class="card-header pb-0 p-4 border-b border-gray-200">
                                     <div class="flex justify-between items-center">
                                         <div class="card-header bg-gradient-primary">
-                                            <h6 class="chart-title text-white">Estadísticas de Tickets por Módulo</h6>
+                                            <h6 class="chart-title text-white" style="font-size: 1.2rem;">Estadísticas de Tickets por Módulo</h6>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Tabla de Resumen de Tickets por Módulo -->
-                                    <div class="p-4">
+                                    <div class="p-4" style="max-height: 400px; overflow-y: auto;">
                                         <div class="table-responsive">
                                             <table id="ticketCountSummaryTable" class="min-w-full leading-normal" style="width: 100%;">
                                                 <thead class="bg-gray-100">
@@ -765,7 +866,7 @@ function mi_navbar() {}
                         <div class="col-lg-5">
                             <div class="card shadow-md rounded-xl">
                                 <div class="card-header pb-0 p-4 border-b border-gray-200 bg-gradient-info">
-                                    <h6 class="text-2xl font-semibold text-gray-800">Categorías de Tickets</h6>
+                                    <h6 class="text-2xl font-semibold text-gray-800" style="font-size: 1.2rem;">Categorías de Tickets</h6>
                                 </div>
                                 <div class="card-body p-4">
                                     <ul class="list-group">

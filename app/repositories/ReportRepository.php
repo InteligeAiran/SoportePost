@@ -561,9 +561,9 @@ class ReportRepository
         }
     }
 
-    public function SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user){
+    public function SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user, $modulo){
         // Lógica para guardar los componentes del ticket
-        $result = $this->model->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user);
+        $result = $this->model->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user, $modulo);
         return $result;
     }
 
@@ -613,6 +613,22 @@ class ReportRepository
         } else {
             return [];
         }
+    }   
+
+    public function SearchBanco($banco)
+    {
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->SearchBanco($banco); // Asumiendo que tienes este método en tu modelo
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result(result: $result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
     }
 
     public function GetTicketCounts(){
@@ -628,7 +644,7 @@ class ReportRepository
         } else {
             return [];
         }
-    }
+    } 
 
     public function EntregadoClienteDetails(){
         // Lógica para obtener todos los usuarios
@@ -639,6 +655,7 @@ class ReportRepository
                 $rows[] = pg_fetch_assoc($result['query'], $i);
             }
             pg_free_result(result: $result['query']);
+            pg_free_result($result['query']);
             return $rows;
         } else {
             return [];

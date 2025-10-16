@@ -17,7 +17,6 @@ use App\Repositories\technicalConsultionRepository;
 use Controller;
 use DatabaseCon;
 use DateTime;
-use DateInterval;
 
 class Consulta extends Controller
 {
@@ -119,6 +118,10 @@ class Consulta extends Controller
 
                 case 'GetTicketData':
                     $this->handleGetTicketData();
+                    break;
+                
+                case 'GetTicketDataGestionComercial':
+                    $this->handleGetTicketDataGestionComercial();
                     break;
 
                 case 'GetCoordinador':
@@ -295,6 +298,18 @@ class Consulta extends Controller
 
                 case 'CloseTicket':
                     $this->handelCloseTicket();
+                    break;
+
+                case 'getBancoTicket':
+                    $this->handleGetBancoTicket();
+                    break;   
+                    
+                case 'GetTicketsComponentes':
+                    $this->handleGetTicketsComponentes();
+                    break;
+                
+                case 'GetPOSInfo':
+                    $this->handleGetPOSInfo();
                     break;
 
                 default:
@@ -1198,7 +1213,7 @@ class Consulta extends Controller
         if ($id_new_status != '') {
             if ($result) {
                 $this->response(['success' => true, 'message' => 'Ticket actualizado con éxito.'], 200);
-                var_dump($result);
+               // var_dump($result);
             } else {
                 $this->response(['success' => false, 'message' => 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
             }
@@ -1245,9 +1260,10 @@ class Consulta extends Controller
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
         $id_ticket = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
         $id_new_status = isset($_POST['new_status_id']) ? $_POST['new_status_id'] : '';
+        $observation = isset($_POST['observations']) ? $_POST['observations'] : '';
 
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
-        $result = $repository->UpdateDomiciliacionStatus($id_new_status, $id_ticket, $id_user);
+        $result = $repository->UpdateDomiciliacionStatus($id_new_status, $id_ticket, $id_user, $observation);
         if ($id_new_status != '') {
             if ($result) {
                 $this->response(['success' => true, 'message' => 'Ticket actualizado con éxito.'], 200);
@@ -1739,6 +1755,7 @@ class Consulta extends Controller
         $ticketId = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
         $serial = isset($_POST['pos_serial']) ? $_POST['pos_serial'] : '';
+        $modulo = isset($_POST['modulo']) ? $_POST['modulo'] : '';
 
         // --- CORRECCIÓN AQUÍ ---
         // Recibe la cadena de texto de componentes, ej. "1,2"
@@ -1772,7 +1789,7 @@ class Consulta extends Controller
 
         $repository = new technicalConsultionRepository();
         // Pasa el array decodificado al repositorio
-        $result = $repository->SendToRegion($ticketId, $id_user, $componentes_array, $serial);
+        $result = $repository->SendToRegion($ticketId, $id_user, $componentes_array, $serial, $modulo);
         if ($result) {
             $this->response(['success' => true, 'message' => 'El ticket ha sido enviado a la región exitosamente.'], 200);
         } else {
@@ -1893,7 +1910,7 @@ class Consulta extends Controller
     }
 
     public function handleGetMotivos(){
-        $documentType = isset($_POST['documentType']) ? $_POST['documentType'] : '';
+        $documentType = 'Convenio_Firmado';
 
         if (!$documentType) {
             $this->response(['success' => false, 'message' => 'Tipo de documento requerido.'], 400);
@@ -1915,13 +1932,13 @@ class Consulta extends Controller
         $id_motivo = isset($_POST['motivoId'])? $_POST['motivoId'] : '';
         $nro_ticket = isset($_POST['nroTicket'])? $_POST['nroTicket'] : '';
         $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
-        $document_type = isset($_POST['documentType'])? $_POST['documentType'] : '';
-
+        $document_type = isset($_POST['documentType']) ? $_POST['documentType'] : '';
 
         if (!$id_ticket || !$id_motivo || !$nro_ticket || !$id_user || !$document_type) {
             $this->response(['success' => false, 'message' => 'Faltan los datos necesarios.'], 400);
             return;
         }
+        
 
         $repository = new technicalConsultionRepository();
         $result = $repository->RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type);
@@ -2046,6 +2063,68 @@ class Consulta extends Controller
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         } 
+    }
+
+    public function handleGetTicketDataGestionComercial(){
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+    
+        if (!$id_user) {
+            $this->response(['success' => false, 'message' => 'Faltan el id_user.'], 400);
+            return;
+        }
+    
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetTicketDataGestionComercial($id_user);
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Se ha encontrado la información del ticket.', 'ticket_data' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleGetBancoTicket(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetBancoTicket();
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay serial disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los serial'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Coloque un serial']);
+    }
+
+    public function handleGetTicketsComponentes(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetTicketDataComponent();
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Se ha encontrado la información del ticket.', 'tickets' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleGetPOSInfo(){
+        $ticket_id = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $serial = isset($_POST['serial'])? $_POST['serial'] : '';
+
+    
+        if (!$ticket_id || !$serial) {
+            $this->response(['success' => false, 'message' => 'Faltan el id_ticket y el serial.'], 400);
+            return;
+        } 
+        
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetComponentsBySerial($ticket_id, $serial);
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Se ha encontrado la información del ticket.', 'tickets' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
+        }
     }
 }
 ?>

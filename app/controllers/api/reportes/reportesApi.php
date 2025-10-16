@@ -231,6 +231,10 @@ class reportes extends Controller {
                 case 'GetTicketEntregadoClienteDetails':
                     $this->handleEntregadoClienteDetails();
 
+                case 'SearchBancoData':
+                    $this->handleSearchBancoData();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
                 break;
@@ -1163,6 +1167,8 @@ class reportes extends Controller {
         $components_json = isset($_POST['selectedComponents']) ? trim($_POST['selectedComponents']) : null;
         $serial_pos = isset($_POST['serialPos']) ? trim($_POST['serialPos']) : null;
         $id_user = isset($_POST['id_user']) ? trim($_POST['id_user']) : null;
+        $modulo = isset($_POST['modulo']) ? trim ($_POST['modulo']) : null;
+
 
         // --- CORRECCIÓN AQUÍ ---
         // Inicializa array de componentes
@@ -1182,7 +1188,7 @@ class reportes extends Controller {
         }
 
         $repository = new ReportRepository();
-        $result = $repository->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user);
+        $result = $repository->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user, $modulo);
         if ($result !== false) {
             $this->response(['success' => true, 'message' => 'Componentes guardados correctamente'], 200);
         } else {
@@ -1281,5 +1287,20 @@ class reportes extends Controller {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
+
+    public function handleSearchBancoData(){
+        $banco = isset($_POST['banco'])? $_POST['banco'] : null;
+        $repository = new ReportRepository(); // Inicializa el repositorio
+        $result = $repository->SearchBanco($banco);
+        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay serial disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los serial'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Coloque un serial']);
+    }
+
 }
 ?>

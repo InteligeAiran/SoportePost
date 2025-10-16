@@ -15,6 +15,7 @@ let currentEstado;
 let url_envio;
 let url_exoneracion;
 let url_pago;
+let url_convenio;
 
 function getTicketData() {
   const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
@@ -281,8 +282,10 @@ function getTicketData() {
                   data-pdf-zoom-url="${ticket.pdf_zoom_url || ""}"
                   data-img-exoneracion-url="${ticket.img_exoneracion_url || ""}"
                   data-pdf-pago-url="${ticket.pdf_pago_url || ""}"
+                  data-pdf-convenio-url="${ticket.pdf_convenio_url || ""}"
                   data-exo-file="${ticket.img_exoneracion_filename || ""}"
                   data-pago-file="${ticket.pdf_pago_filename || ""}"
+                  data-convenio-file="${ticket.pdf_convenio_filename || ""}"
                   data-zoom-file="${ticket.pdf_zoom_filename || ""}"
                   data-estado-cliente="${ticket.nombre_estado_cliente}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
@@ -312,6 +315,7 @@ function getTicketData() {
                   data-url_zoom="${ticket.pdf_zoom_url || ''}"
                   data-url_exo="${ticket.img_exoneracion_url || ''}"
                   data-url_pago="${ticket.pdf_pago_url || ''}"
+                  data-url_convenio="${ticket.pdf_convenio_url || ''}"
                   data-estado="${ticket.nombre_estado_cliente}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
               </button>`;
@@ -459,11 +463,24 @@ function getTicketData() {
             // Event listener para el input de búsqueda general
             $('.dataTables_filter input').on('input', function () {
               const searchValue = $(this).val();
-              clearFilters(dataTableInstance);
-              if (searchValue) {
-                dataTableInstance.column(1).search(searchValue, true, false).draw();
+              // Aplicar búsqueda general en DataTables (igual que coordinador)
+              dataTableInstance.search(searchValue).draw();
+              
+              // Resaltar la fila si se encuentra el ticket
+              if (searchValue.trim() !== '') {
+                const filteredRows = dataTableInstance.rows({ filter: 'applied' });
+                filteredRows.every(function () {
+                  const rowData = this.data();
+                  if (rowData[1] === searchValue) {
+                    $(this.node()).addClass('table-active');
+                    this.node().scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return false;
+                  }
+                  return true;
+                });
               } else {
-                dataTableInstance.column(1).search('').draw();
+                // Limpiar resaltado si no hay búsqueda
+                $('#tabla-ticket tbody tr').removeClass('table-active');
               }
             });
 
@@ -618,6 +635,7 @@ function getTicketData() {
                 const pdfZoomUrl = $(this).data("url_zoom") || "";
                 const imgExoneracionUrl = $(this).data("url_exo") || "";
                 const pdfPagoUrl = $(this).data("url_pago") || "";
+                const pdfConvenioUrl = $(this).data("url_convenio") || "";
                 const serialPos = $(this).data("serial_pos") || "No disponible";
                 const estado = $(this).data("estado");
 
@@ -631,6 +649,7 @@ function getTicketData() {
                 url_envio = pdfZoomUrl;
                 url_exoneracion = imgExoneracionUrl;
                 url_pago = pdfPagoUrl;
+                url_convenio = pdfConvenioUrl;
 
                 if (actionSelectionModalInstance) {
                   actionSelectionModalInstance.show();
@@ -644,6 +663,19 @@ function getTicketData() {
               const id_domiciliacion = currentDomiciliacion;
               let showButton = false;
               const isEstadoSinEnvio = currentEstado && ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'].includes(currentEstado);
+
+              // Validación específica para Convenio Firmado (id_status_domiciliacion = 4)
+              if (id_domiciliacion == 4 && (url_convenio === "" || url_convenio === null || url_convenio === undefined)) {
+                Swal.fire({
+                  icon: 'warning',
+                  title: '¡Advertencia!',
+                  text: 'Como el estatus de domiciliación es "Deudor - Convenio Firmado", por favor debe cargar el documento del convenio para enviar a taller.',
+                  confirmButtonText: 'Ok',
+                  confirmButtonColor: '#003594',
+                  color: 'black',
+                });
+                return;
+              }
 
               if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
                 showButton = true;
@@ -960,10 +992,12 @@ function getTicketData() {
     const pdfZoomUrl = $(this).data('pdf-zoom-url');
     const imgExoneracionUrl = $(this).data('img-exoneracion-url');
     const pdfPagoUrl = $(this).data('pdf-pago-url');
+    const pdfConvenioUrl = $(this).data('pdf-convenio-url');
     const nro_ticket = $(this).data('nro-ticket');
     const ExoneracionFile_name = $(this).data('exo-file');
     const PagoFile_name = $(this).data('pago-file');
     const ZoomFile_name = $(this).data('zoom-file');
+    const ConvenioFile_name = $(this).data('convenio-file');
     const estado_cliente = $(this).data('estado-cliente');
 
     const modalTitle = $('#modalTicketId');
@@ -1095,6 +1129,20 @@ function getTicketData() {
         }
     }
 
+    // Agregar botón de Ver Documento de Convenio Firmado si existe
+    if (pdfConvenioUrl && pdfConvenioUrl.trim() !== '') {
+        modalButtonsHTML += `
+            <button id="VerConvenio" class="btn btn-secondary btn-block btn-view-document mb-2" 
+                    data-ticket-id="${ticketId}" 
+                    data-document-type="convenio_firmado" 
+                    data-file-url="${pdfConvenioUrl}" 
+                    data-file-name="${ConvenioFile_name}" 
+                    data-nro-ticket="${nro_ticket}">
+                Ver Documento de Convenio Firmado
+            </button>
+        `;
+    }
+
     buttonsContainer.html(modalButtonsHTML);
     documentActionsModal.show();
 });
@@ -1121,43 +1169,67 @@ $(document).on('click', '#printHtmlTemplateBtn', function () {
         // Crear el nombre del archivo
         const filename = `NotaEntrega_${ticketId}${sanitizedNumero ? '_' + sanitizedNumero : ''}_${fechaStr}`;
         
-        // Asignar el nombre del archivo al título de la ventana principal
-        window.document.title = filename;
+        // --- PREPARACIÓN DEL MODAL DE SUBIDA (Lógica movida para configurar antes) ---
+        const ticketIdValue = (document.getElementById('htmlTemplateTicketId') || {}).value || '';
+        const idTicketInput = document.getElementById('id_ticket');
+        const typeDocInput = document.getElementById('type_document');
+        const modalTicketIdSpan = document.getElementById('modalTicketId');
+        
+        if (idTicketInput) idTicketInput.value = ticketIdValue;
+        if (typeDocInput) typeDocInput.value = 'Envio';
+        if (modalTicketIdSpan) modalTicketIdSpan.textContent = ticketIdValue;
+        
+        // 1. Mostrar el modal de éxito del "Guardado" (o Registro de NE) y preguntar qué hacer
+        Swal.fire({
+            icon: 'success',
+            title: 'Nota de Entrega',
+            text: 'El archivo se generó correctamente. Puedes guardarlo como PDF.',
+            showCancelButton: true,
+            confirmButtonText: 'Imprimir', // Opción que dispara window.print()
+            cancelButtonText: 'Cerrar', // Opción que cierra la vista previa
+            confirmButtonColor: '#003594',
+            cancelButtonColor: '#808080', // Color para el botón "Cerrar Ventana"
+            color: 'black'
+        }).then((result) => {
+            // Si el usuario presiona "Imprimir / Guardar PDF"
+            if (result.isConfirmed) {
+                
+                // Asignar el nombre del archivo al título de la ventana principal
+                window.document.title = filename;
 
-        // Llamar a la función de impresión
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
+                // Llamar a la función de impresión
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
 
-        // Usa setTimeout para restaurar el título después de que el diálogo de impresión se lance
-        setTimeout(() => {
-            doc.title = originalIframeTitle; // Restaurar el título del iframe
-            window.document.title = originalWindowTitle; // Restaurar el título de la ventana principal
-            
-            const ticketIdValue = (document.getElementById('htmlTemplateTicketId') || {}).value || '';
-            const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
-            const uploadDocumentModal = new bootstrap.Modal(document.getElementById('uploadDocumentModal'));
-            
-            const idTicketInput = document.getElementById('id_ticket');
-            const typeDocInput = document.getElementById('type_document');
-            const modalTicketIdSpan = document.getElementById('modalTicketId');
-            
-            if (idTicketInput) idTicketInput.value = ticketIdValue;
-            if (typeDocInput) typeDocInput.value = 'Envio';
-            if (modalTicketIdSpan) modalTicketIdSpan.textContent = ticketIdValue;
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'Nota de Entrega Guardada',
-                text: 'El archivo se generó correctamente. Puedes subirlo ahora.',
-                confirmButtonColor: '#003594',
-                color: 'black'
-            }).then(() => {
-             window.location.reload();
-            });
-        }, 600);
+                // Usa setTimeout para restaurar el título después de que el diálogo de impresión se lance
+                // Se usa un tiempo corto, ya no necesitamos esperar que el usuario interactúe
+                setTimeout(() => {
+                    doc.title = originalIframeTitle; // Restaurar el título del iframe
+                    window.document.title = originalWindowTitle; // Restaurar el título de la ventana principal
+                    
+                    // Aquí puedes mostrar el modal de "Subir Documento" si lo deseas
+                     const uploadDocumentModal = new bootstrap.Modal(document.getElementById('uploadDocumentModal'));
+                     uploadDocumentModal.show();
+                    
+                    // O simplemente recargar la página principal
+                    window.location.reload(); 
+                    
+                }, 500); // 100ms es suficiente para que el título se aplique a la ventana de impresión
+
+            } else {
+                // Si el usuario presiona "Cerrar Ventana"
+                // 2. Cerrar el modal actual (si es que estás usando uno para la vista previa)
+                const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
+                htmlModal.hide();
+                
+                // O recargar la página, dependiendo de la necesidad de tu flujo
+                // window.location.reload();
+            }
+        });
+        
     } catch (e) {
         console.error('Error:', e);
-        // Si hay un error, aún intenta imprimir sin cambiar el nombre
+        // Si hay un error, aún intenta imprimir sin cambiar el nombre (Opción de fallback)
         const iframe = document.getElementById('htmlTemplatePreview');
         if (iframe && iframe.contentWindow) {
             iframe.contentWindow.focus();
@@ -1372,6 +1444,7 @@ $(document).on('click', '#generateNotaEntregaBtn', function () {
                 }
 
                 const d = res.rows[0];
+                window.currentDeliveryData = d;
                 const serialPos = d.serialpos || d.serial_pos || '';
                 const lastFourSerialDigits = serialPos.slice(-4);
                 const notaNumero = `NE-${ticketId}-${lastFourSerialDigits}`;
@@ -1382,21 +1455,25 @@ $(document).on('click', '#generateNotaEntregaBtn', function () {
                 $('#ne_numero').val(notaNumero);
                 $('#ne_rif').val(d.coddocumento || '');
                 $('#ne_razon').val(d.razonsocial || '');
-                $('#ne_responsable').val(d.rlegal || d.rlegal || '');
+                $('#ne_responsable').val(d.rlegal || '');
                 $('#ne_contacto').val(d.telf1 || 'Sin número de Contacto');
                 $('#ne_tipo_equipo').val(d.tipo_equipo || d.tipo_pos || 'POS');
                 $('#ne_modelo').val(d.modelo || d.desc_modelo || '');
                 $('#ne_serial').val(d.serialpos || d.serial_pos || '');
-                $('#ne_region_origen').val(d.estado_final || d.estado_final || '');
+                $('#ne_region_origen').val(d.estado_final || d.estado || '');
                 $('#ne_region_destino').val(regDes);
                 $('#ne_observaciones').val('');
+                $('#ne_componentes').val(d.componentes || 'Sin componentes');
+                
+                // ✅ AGREGAR ESTOS CAMPOS
+                $('#ne_banco').val(d.ibp || 'Sin banco');
+                $('#ne_proveedor').val(d.proveedor || 'Sin proveedor');
 
                 // 1. Obtiene la instancia del modal o la crea si no existe
                 const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
                 htmlModal.show();
                 
                 // 2. Adjunta el evento de clic al botón de cerrar
-                // Es mejor usar jQuery para unificar el manejo de eventos
                 $('#closeHtmlTemplateBtn').on('click', function () {
                      htmlModal.hide();
                 });
@@ -1413,7 +1490,7 @@ $(document).on('click', '#generateNotaEntregaBtn', function () {
     xhr.send(params);
 });
 
-// Previsualizar y enviar (si usas un modal separado #htmlTemplateModal)
+// ✅ FUNCIÓN ACTUALIZADA
 $(document).on('click', '#previewHtmlTemplateBtn', function () {
   const data = {
     fecha: $('#ne_fecha').val(),
@@ -1426,10 +1503,15 @@ $(document).on('click', '#previewHtmlTemplateBtn', function () {
     serial: $('#ne_serial').val(),
     region_origen: $('#ne_region_origen').val(),
     region_destino: $('#ne_region_destino').val(),
-    observaciones: $('#ne_observaciones').val()
+    observaciones: $('#ne_observaciones').val(),
+    componentes: $('#ne_componentes').val(),
+    banco: $('#ne_banco').val(), // ✅ AGREGAR
+    proveedor: $('#ne_proveedor').val(), // ✅ AGREGAR
+    tecnico_responsable: window.currentDeliveryData?.full_name_tecnico_responsable || 'Sin técnico asignado'
   };
 
   const html = buildDeliveryNoteHtml(data);
+
   const iframe = document.getElementById('htmlTemplatePreview');
   const doc = iframe.contentDocument || iframe.contentWindow.document;
   doc.open();
@@ -1446,7 +1528,7 @@ function buildDeliveryNoteHtml(d) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nota de Entrega y Envío de Equipo</title>
-    <style>
+      <style>
       * {
         margin: 0;
         padding: 0;
@@ -1455,20 +1537,30 @@ function buildDeliveryNoteHtml(d) {
       
       body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        font-size: 14px;
-        line-height: 1.6;
+        font-size: 11px;
+        line-height: 1.2;
         color: #333;
         background: #fff;
-        padding: 20px;
-        max-width: 800px;
+        padding: 10px;
+        max-width: 100%;
         margin: 0 auto;
+        overflow-x: hidden;
+      }
+      
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        min-height: calc(100vh - 40px);
+        display: flex;
+        flex-direction: column;
       }
       
       .header {
         text-align: center;
-        margin-bottom: 30px;
-        padding: 20px 0;
-        border-bottom: 3px solid #2c5aa0;
+        margin-bottom: 12px;
+        padding: 8px 0;
+        border-bottom: 2px solid #2c5aa0;
         position: relative;
       }
       
@@ -1478,28 +1570,39 @@ function buildDeliveryNoteHtml(d) {
         top: 0;
         left: 0;
         right: 0;
-        height: 4px;
+        height: 3px;
         background: linear-gradient(90deg, #2c5aa0 0%, #4a90e2 50%, #2c5aa0 100%);
       }
       
-      .company-logo {
-        font-size: 18px;
-        font-weight: bold;
-        color: #2c5aa0;
-        margin-bottom: 5px;
+      .company-logo-img {
+        max-width: 120px;
+        max-height: 60px;
+        margin-bottom: 8px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      
+      .company-address {
+        font-size: 10px;
+        color: #555;
+        margin-bottom: 8px;
+        line-height: 1.3;
+        text-align: center;
+        font-weight: 500;
       }
       
       .document-title {
-        font-size: 24px;
+        font-size: 16px;
         font-weight: bold;
         color: #2c5aa0;
-        margin: 10px 0;
+        margin: 4px 0;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
       }
       
       .document-subtitle {
-        font-size: 16px;
+        font-size: 11px;
         color: #666;
         font-weight: 500;
       }
@@ -1507,11 +1610,11 @@ function buildDeliveryNoteHtml(d) {
       .document-info {
         display: flex;
         justify-content: space-between;
-        margin: 20px 0;
-        padding: 15px;
+        margin: 10px 0;
+        padding: 8px;
         background: #f8f9fa;
-        border-radius: 8px;
-        border-left: 4px solid #2c5aa0;
+        border-radius: 5px;
+        border-left: 3px solid #2c5aa0;
       }
       
       .info-item {
@@ -1522,44 +1625,72 @@ function buildDeliveryNoteHtml(d) {
       }
       
       .info-label {
-        font-size: 12px;
+        font-size: 9px;
         color: #666;
         font-weight: 600;
         text-transform: uppercase;
-        margin-bottom: 5px;
+        margin-bottom: 3px;
       }
       
       .info-value {
-        font-size: 16px;
+        font-size: 12px;
         font-weight: bold;
         color: #2c5aa0;
       }
       
+      .content-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
       .section {
-        margin: 25px 0;
+        margin: 6px 0;
         background: #fff;
-        border-radius: 8px;
+        border-radius: 5px;
         overflow: hidden;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        border: 1px solid #e9ecef;
       }
       
       .section-header {
         background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%);
         color: white;
-        padding: 12px 20px;
-        font-size: 16px;
+        padding: 6px 10px;
+        font-size: 11px;
         font-weight: bold;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.3px;
       }
       
       .section-content {
-        padding: 20px;
+        padding: 8px 10px;
+      }
+      
+      .two-columns {
+        display: flex;
+        gap: 15px;
+      }
+      
+      .column {
+        flex: 1;
+      }
+      
+      .column-title {
+        font-size: 11px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin-bottom: 8px;
+        text-align: center;
+        padding: 4px;
+        background: #f0f4f8;
+        border-radius: 3px;
+        border-left: 3px solid #2c5aa0;
       }
       
       .field-row {
         display: flex;
-        margin-bottom: 15px;
+        margin-bottom: 4px;
         align-items: flex-start;
       }
       
@@ -1570,57 +1701,65 @@ function buildDeliveryNoteHtml(d) {
       .field-label {
         font-weight: 600;
         color: #555;
-        min-width: 200px;
-        margin-right: 15px;
-        font-size: 13px;
+        min-width: 110px;
+        margin-right: 8px;
+        font-size: 10px;
+        padding-top: 2px;
       }
       
       .field-value {
         flex: 1;
         color: #333;
         font-weight: 500;
-        padding: 8px 12px;
+        padding: 3px 8px;
         background: #f8f9fa;
-        border-radius: 4px;
-        border-left: 3px solid #2c5aa0;
+        border-radius: 3px;
+        border-left: 2px solid #2c5aa0;
+        font-size: 10px;
+        min-height: 20px;
+        display: flex;
+        align-items: center;
       }
       
       .field-value.observations {
         background: #fff;
         border: 1px solid #ddd;
-        min-height: 60px;
+        min-height: 25px;
         font-style: italic;
+        align-items: flex-start;
+        padding-top: 5px;
       }
       
       .constancy {
         background: #e8f4fd;
         border: 1px solid #b3d9ff;
-        border-radius: 8px;
-        padding: 20px;
-        margin: 20px 0;
+        border-radius: 5px;
+        padding: 8px;
+        margin: 8px 0;
         text-align: center;
-        font-size: 15px;
-        line-height: 1.8;
+        font-size: 10px;
+        line-height: 1.4;
         color: #2c5aa0;
         font-weight: 500;
       }
       
       .signature-section {
-        margin-top: 40px;
+        margin-top: 15px;
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
+        gap: 20px;
       }
       
       .signature-box {
         flex: 1;
-        margin: 0 10px;
+        max-width: 280px;
         text-align: center;
-        padding: 20px;
-        border: 2px dashed #ccc;
-        border-radius: 8px;
+        padding: 12px;
+        border: 1px dashed #ccc;
+        border-radius: 5px;
         background: #fafafa;
-        min-height: 120px;
+        min-height: 80px;
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
@@ -1628,133 +1767,452 @@ function buildDeliveryNoteHtml(d) {
       
       .signature-line {
         border-top: 2px solid #333;
-        margin: 20px 0 10px 0;
-        width: 200px;
-        margin-left: auto;
-        margin-right: auto;
+        margin: 15px auto 8px auto;
+        width: 180px;
+        display: block;
+      }
+      
+      .signature-space {
+        height: 40px;
+        margin: 10px 0;
       }
       
       .signature-label {
         font-weight: bold;
         color: #2c5aa0;
-        margin-bottom: 5px;
+        margin-bottom: 3px;
+        font-size: 10px;
       }
       
       .signature-field {
         color: #666;
-        font-size: 13px;
+        font-size: 9px;
+        margin-bottom: 2px;
       }
       
+      /* ✅ ESTILOS DEL FOOTER ACTUALIZADOS */
       .footer {
-        margin-top: 40px;
-        padding-top: 20px;
+        margin-top: 8px;
+        padding-top: 6px;
         border-top: 1px solid #ddd;
-        text-align: center;
         color: #666;
-        font-size: 12px;
+        font-size: 8px;
+        line-height: 1.2;
       }
       
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+      }
+      
+      .footer-left {
+        flex: 1;
+        text-align: left;
+      }
+      
+      .footer-right {
+        flex: 1;
+        text-align: right;
+      }
+      
+      .footer-logo {
+        max-height: 25px;
+        max-width: 100px;
+      }
+      
+      .footer-rif {
+        font-size: 10px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      .footer-text {
+        text-align: center;
+        margin-top: 6px;
+      }
+      
+      /* Optimizaciones críticas para impresión */
       @media print {
-        body { padding: 0; }
-        .section { box-shadow: none; border: 1px solid #ddd; }
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        /* Mostrar header y footer personalizados solo en impresión */
+        .print-header,
+        .print-footer {
+          display: block !important;
+        }
+        
+        /* Ajustar el contenido para dar espacio al header/footer fijos */
+        body {
+          margin-top: 50px !important;
+          margin-bottom: 40px !important;
+        }
+        
+        html, body {
+          width: 100% !important;
+          height: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: visible !important;
+        }
+        
+        body {
+          font-size: 10px !important;
+          padding: 8px !important;
+        }
+        
+        .container {
+          max-width: 100% !important;
+          width: 100% !important;
+          min-height: auto !important;
+          height: auto !important;
+          page-break-inside: avoid;
+        }
+        
+        .section {
+          box-shadow: none !important;
+          border: 1px solid #ddd !important;
+          margin: 4px 0 !important;
+          page-break-inside: avoid;
+        }
+        
+        .header {
+          margin-bottom: 6px !important;
+          padding: 6px 0 !important;
+          page-break-after: avoid;
+        }
+        
+        .company-logo-img {
+          max-width: 100px !important;
+          max-height: 50px !important;
+          margin-bottom: 6px !important;
+        }
+        
+        .company-address {
+          font-size: 9px !important;
+          margin-bottom: 6px !important;
+        }
+        
+        .document-title {
+          font-size: 14px !important;
+        }
+        
+        .section-content {
+          padding: 6px 8px !important;
+        }
+        
+        .two-columns {
+          gap: 10px !important;
+        }
+        
+        .column-title {
+          font-size: 10px !important;
+          margin-bottom: 6px !important;
+        }
+        
+        .constancy {
+          padding: 6px !important;
+          margin: 6px 0 !important;
+          page-break-inside: avoid;
+        }
+        
+        .signature-section {
+          margin-top: 12px !important;
+          page-break-inside: avoid;
+          gap: 15px !important;
+        }
+        
+        .signature-box {
+          min-height: 70px !important;
+          padding: 10px !important;
+        }
+        
+        .signature-line {
+          width: 150px !important;
+          margin: 12px auto 6px auto !important;
+          display: block !important;
+        }
+        
+        .signature-space {
+          height: 30px !important;
+          margin: 8px 0 !important;
+        }
+        
+        /* ✅ ESTILOS DE IMPRESIÓN PARA FOOTER */
+        .footer {
+          margin-top: 6px !important;
+          padding-top: 4px !important;
+          page-break-before: avoid;
+        }
+        
+        .footer-content {
+          margin-bottom: 6px !important;
+          padding: 6px 0 !important;
+        }
+        
+        .footer-logo {
+          max-height: 20px !important;
+          max-width: 80px !important;
+        }
+        
+        .footer-rif {
+          font-size: 9px !important;
+        }
+        
+        .footer-text {
+          margin-top: 4px !important;
+        }
+        
+        .field-row {
+          margin-bottom: 3px !important;
+          page-break-inside: avoid;
+        }
+        
+        .document-info {
+          margin: 6px 0 !important;
+          padding: 6px !important;
+          page-break-after: avoid;
+        }
+        
+        .section-header {
+          padding: 4px 8px !important;
+          font-size: 10px !important;
+        }
+      }
+      
+      /* Configuración de página para impresión */
+      @page {
+        size: letter;
+        margin: 0.2in 0.5in;
+        padding: 0;
+        /* Ocultar header y footer del navegador */
+        @top-left { content: ""; }
+        @top-center { content: ""; }
+        @top-right { content: ""; }
+        @bottom-left { content: ""; }
+        @bottom-center { content: ""; }
+        @bottom-right { content: ""; }
+      }
+      
+      /* Header personalizado para impresión */
+      .print-header {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 40px;
+        background: white;
+        border-bottom: 1px solid #ddd;
+        z-index: 1000;
+        padding: 8px 20px;
+        box-sizing: border-box;
+      }
+      
+      .print-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+      }
+      
+      .print-header-logo {
+        max-height: 30px;
+        max-width: 80px;
+      }
+      
+      .print-header-rif {
+        font-size: 12px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      /* Footer personalizado para impresión */
+      .print-footer {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        background: white;
+        border-top: 1px solid #ddd;
+        z-index: 1000;
+        padding: 5px 20px;
+        box-sizing: border-box;
+      }
+      
+      .print-footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+        font-size: 10px;
+        color: #666;
+      }
+      
+      /* Evitar cortes de página en elementos críticos */
+      .header,
+      .document-info,
+      .section,
+      .constancy,
+      .signature-section,
+      .footer {
+        page-break-inside: avoid;
       }
     </style>
   </head>
   <body>
-    <div class="header">
-      <div class="company-logo">SOPORTE POST VENTA</div>
-      <div class="document-title">Nota de Entrega y Envío de Equipo</div>
-      <div class="document-subtitle">Documento Oficial de Entrega</div>
+    <!-- Header personalizado para impresión -->
+    <div class="print-header">
+      <div class="print-header-content">
+        <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="print-header-logo" onerror="this.style.display='none'">
+        <div class="print-header-rif">RIF: J-002916150</div>
+      </div>
     </div>
     
-    <div class="document-info">
-      <div class="info-item">
-        <div class="info-label">Fecha</div>
-        <div class="info-value">${safe(d.fecha)}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">N° de Nota</div>
-        <div class="info-value">${safe(d.numero)}</div>
+    <!-- Footer personalizado para impresión -->
+    <div class="print-footer">
+      <div class="print-footer-content">
+        <div></div>
+        <div></div>
       </div>
     </div>
+    
+    <div class="container">
+      <div class="header">
+        <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="company-logo-img" onerror="this.style.display='none'">
+        <div class="company-address">
+          Urbanización El Rosal. Av. Francisco de Miranda<br>
+          Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
+        </div>
+        <div class="document-title">Nota de Entrega</div>
+        <div class="document-subtitle"></div>
+      </div>
+      
+      <div class="document-info">
+        <div class="info-item">
+          <div class="info-label">Fecha</div>
+          <div class="info-value">${safe(d.fecha)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">N° de Nota</div>
+          <div class="info-value">${safe(d.numero)}</div>
+        </div>
+      </div>
 
-    <div class="section">
-      <div class="section-header">
-        <i class="fas fa-user"></i> Datos del Cliente
-      </div>
-      <div class="section-content">
-        <div class="field-row">
-          <div class="field-label">R.I.F. / Identificación:</div>
-          <div class="field-value">${safe(d.rif)}</div>
+      <div class="content-wrapper">
+        <div class="section">
+          <div class="section-header">Datos del Cliente</div>
+          <div class="section-content">
+            <div class="field-row">
+              <div class="field-label">R.I.F. / Identificación:</div>
+              <div class="field-value">${safe(d.rif)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Razón Social:</div>
+              <div class="field-value">${safe(d.razon)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Representante Legal:</div>
+              <div class="field-value">${safe(d.responsable)}</div>
+            </div>
+          </div>
         </div>
-        <div class="field-row">
-          <div class="field-label">Razón Social de la Empresa:</div>
-          <div class="field-value">${safe(d.razon)}</div>
-        </div>
-        <div class="field-row">
-          <div class="field-label">Responsable:</div>
-          <div class="field-value">${safe(d.responsable)}</div>
-        </div>
-      </div>
-    </div>
 
-    <div class="section">
-      <div class="section-header">
-        <i class="fas fa-desktop"></i> Detalles del Equipo
-      </div>
-      <div class="section-content">
-        <div class="field-row">
-          <div class="field-label">Tipo de Equipo:</div>
-          <div class="field-value">${safe(d.tipo_equipo)}</div>
+        <div class="section">
+          <div class="section-header">Detalles del Equipo</div>
+          <div class="section-content">
+            <div class="two-columns">
+              <div class="column">
+                <div class="column-title">Información del Equipo</div>
+                <div class="field-row">
+                  <div class="field-label">Proveedor:</div>
+                  <div class="field-value">${safe(d.proveedor)}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">Modelo:</div>
+                  <div class="field-value">${safe(d.modelo)}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">Número de Serie:</div>
+                  <div class="field-value">${safe(d.serial)}</div>
+                </div>
+                 <div class="field-row">
+                  <div class="field-label">Banco:</div>
+                  <div class="field-value">${safe(d.banco)}</div>
+                </div>
+              </div>
+              
+              <div class="column">
+                <div class="column-title">Accesorios</div>
+                <div class="field-row">
+                  <div class="field-label">Periféricos:</div>
+                  <div class="field-value">${safe(d.componentes || 'Sin accesorios adicionales')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="field-row">
-          <div class="field-label">Modelo del Equipo:</div>
-          <div class="field-value">${safe(d.modelo)}</div>
-        </div>
-        <div class="field-row">
-          <div class="field-label">Número de Serie:</div>
-          <div class="field-value">${safe(d.serial)}</div>
-        </div>
-      </div>
-    </div>
 
-    <div class="section">
-      <div class="section-header">
-        <i class="fas fa-truck"></i> Información del Envío
-      </div>
-      <div class="section-content">
-        <div class="field-row">
-          <div class="field-label">Región de Origen:</div>
-          <div class="field-value">${safe(d.region_origen)}</div>
+        <div class="section">
+          <div class="section-header">Información del Envío</div>
+          <div class="section-content">
+            <div class="field-row">
+              <div class="field-label">Estado de Origen:</div>
+              <div class="field-value">${safe(d.region_origen)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Estado de Destino:</div>
+              <div class="field-value">${safe(d.region_destino)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Observaciones:</div>
+              <div class="field-value observations">${safe(d.observaciones) || ''}</div>
+            </div>
+          </div>
         </div>
-        <div class="field-row">
-          <div class="field-label">Región de Destino:</div>
-          <div class="field-value">${safe(d.region_destino)}</div>
+
+        <div class="signature-section">
+          <div class="signature-box">
+            <div class="signature-label">Recibe</div>
+            <div class="signature-space"></div>
+            <div class="signature-line"></div>
+            <div class="signature-field">Nombre: _____________________</div>
+            <div class="signature-field">C.I.: _____________________</div>
+          </div>
+          
+          <div class="signature-box">
+            <div class="signature-label">Firma de Conformidad</div>
+            <div class="signature-space"></div>
+            <div class="signature-line"></div>
+            <div class="signature-field">Nombre: ${safe(d.tecnico_responsable)}</div>
+            <div class="signature-field">C.I.: _____________________</div>
+          </div>
         </div>
-        <div class="field-row">
-          <div class="field-label">Observaciones de Envío:</div>
-          <div class="field-value observations">${safe(d.observaciones) || 'Sin observaciones adicionales'}</div>
+
+        <!-- ✅ FOOTER ACTUALIZADO CON LOGO Y RIF -->
+        <div class="footer">
+          <div class="footer-content">
+            <div class="footer-left">
+              <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="footer-logo" onerror="this.style.display='none'">
+            </div>
+            <div class="footer-right">
+              <div class="footer-rif">RIF: J-002916150</div>
+            </div>
+          </div>
+          <div class="footer-text">
+            <p>Documento válido como constancia oficial de entrega del equipo especificado.</p>
+            <p>Generado: ${new Date().toLocaleString('es-ES')}</p>
+          </div>
         </div>
       </div>
-    </div>
-
-    <div class="constancy">
-      <strong>CONSTANCIA DE ENTREGA</strong><br>
-      El equipo detallado en la presente nota ha sido entregado en perfectas condiciones de embalaje y funcionamiento al responsable designado.
-    </div>
-
-    <div class="signature-section">
-      <div class="signature-box">
-        <div class="signature-label">Firma de Conformidad</div>
-        <div class="signature-line"></div>
-        <div class="signature-field">Nombre: ${safe(d.responsable)}</div>
-        <div class="signature-field">C.I./DNI: __________________________</div>
-      </div>
-    </div>
-
-    <div class="footer">
-      <p>Este documento es válido como constancia oficial de entrega del equipo especificado.</p>
-      <p>Fecha de generación: ${new Date().toLocaleString('es-ES')}</p>
     </div>
   </body>
   </html>`;
@@ -2438,7 +2896,7 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-sm-6 mb-2">
                           <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = ${d.id_ticket}" data-serial-pos = ${d.serial_pos}>
-                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Componentes del Dispositivo
+                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
                           </button>
                         </div>    
                     </div>
@@ -2707,7 +3165,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
                                                 </tr>
                                                 ${showComponents ? `
                                                     <tr>
-                                                        <th class="text-start">Componentes Asociados:</th>
+                                                        <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
                                                     </tr>
                                                 ` : ''}
@@ -2879,7 +3337,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_lab) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
-                        ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Componentes</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
@@ -3239,6 +3697,7 @@ function limpiarSeleccion() {
 // CORRECCIÓN PRINCIPAL: Se modificó la función para que reciba los componentes seleccionados
 function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos) {
     const id_user = document.getElementById('id_user').value;
+    const modulo = "Gestión Técnico";
     
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
@@ -3251,7 +3710,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                 if (response.success) {
                     Swal.fire({
                         title: '¡Éxito!',
-                        html: `Los componentes del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
+                        html: `Los Periféricos del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
                         icon: 'success',
                         confirmButtonText: 'Aceptar',
                         color: 'black',
@@ -3296,7 +3755,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
         confirmButtonText: 'Aceptar'
       });
     };
-  const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}`;
+  const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}&modulo=${encodeURIComponent(modulo)}`;
   xhr.send(dataToSend);
 }
 
@@ -3361,7 +3820,7 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                     
                     tbodyComponentes.innerHTML = componentsHtml;
                     document.getElementById('modalComponentesLabel').innerHTML = `
-                        <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
+                        <i class="bi bi-box-seam-fill me-2"></i>Lista de Periféricos del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
                     `;
 
                     // Finalmente, muestra el modal de Bootstrap
@@ -3421,7 +3880,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (allCheckboxes.length > 0 && allDisabledAndChecked) {
                 Swal.fire({
                     title: '¡Información!',
-                    html: `Todos los componentes del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
+                    html: `Todos los Periféricos del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
                     icon: 'info',
                     confirmButtonText: 'Aceptar',
                     color: 'black',

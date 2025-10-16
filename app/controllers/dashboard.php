@@ -6,46 +6,79 @@ session_start();
 
 class dashboard extends Controller {
 
+    private $db;
+
     private $userModel; 
 
     function __construct() {
         parent::__construct();
+        $this->db = DatabaseCon::getInstance(bd_hostname, mvc_port, bd_usuario, bd_clave, database); // Ensure getInstance() returns a PgSql\Connection
 
         if (empty($_SESSION["id_user"])) {
-            // Redirigir siempre con header para evitar respuestas vacías
+            $this->db->closeConnection(); 
             header('Location: ' . self::getURL() . 'login');
             exit();
         }
 
-        Model::exists('user'); // Si Model::exists() carga la clase, esto es bueno.
-        $this->userModel = new UserModel(); 
-    
-        if (isset($_SESSION['id_user']) && isset($_SESSION['session_id'])) {
-            $model = new UserModel(); // O pásalo por inyección de dependencias
-            // Verifica si la sesión actual del navegador está activa en la DB
-            // Verifica si la sesión actual del navegador sigue siendo activa en la DB
-            if (!$model->IsSessionActuallyActive($_SESSION['session_id'], $_SESSION['id_user'])) {
-                // La sesión no es activa en la DB (fue invalidada por otro login)
-                
-                session_unset();     // Elimina todas las variables de sesión
-                session_destroy();   // Destruye la sesión actual
-                setcookie(session_name(), '', time() - 3600, '/'); // Borra la cookie de sesión del navegador
-                
-                // Redirige al usuario al login con un mensaje
-                header('Location: login'); // O una URL de login con un mensaje
-                exit();
-            }
-        } else if (!isset($_SESSION['id_user']) && !empty($_COOKIE[session_name()])) {
-            // Si la cookie de sesión existe pero PHP no cargó una sesión (ej. sesión destruida), forzar logout.
-            session_unset();
-            session_destroy();
-            setcookie(session_name(), '', time() - 3600, '/');
+       try {
+            Model::exists('user');
+            $this->userModel = new UserModel();
+        } catch (Exception $e) {
+            error_log("Error al cargar UserModel: " . $e->getMessage());
+            $this->db->closeConnection();
             header('Location: ' . self::getURL() . 'login');
             exit();
+        } 
+        
+        // Solo validar sesión si es una petición AJAX o cada 5 minutos
+        $shouldValidateSession = (
+            !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || 
+            !isset($_SESSION['last_session_check']) || 
+            (time() - $_SESSION['last_session_check']) > 1800 // 30 minutos
+        );
+        
+        if ($shouldValidateSession && isset($_SESSION['id_user']) && isset($_SESSION['session_id'])) {
+            $model = new UserModel();
+            if (!$model->IsSessionActuallyActive($_SESSION['session_id'], $_SESSION['id_user'])) {
+                session_unset();                
+                setcookie(session_name(), '', time() - 3600, '/');
+                header('Location: ' . self::getURL() . 'login');
+                exit();
+            }
+            $_SESSION['last_session_check'] = time();
         }
     }
 
     function index() {
+
+    $referer = $_SERVER['HTTP_REFERER'] ?? null;
+    
+    // Obtener la URL base de tu aplicación
+    // Se asume que self::getURL() devuelve la base (ej: http://localhost:8080/SoportePost/)
+    $base_url = self::getURL(); 
+
+    // Definir la URL interna válida de origen (tu dashboard, por ejemplo)
+    $url_dashboard = $base_url . 'dashboard'; 
+    
+    // Condición de Bloqueo:
+    // Si NO hay referer (acceso directo tecleado) 
+    // O si el referer existe, PERO NO contiene la base_url Y NO es el dashboard permitido.
+    if (
+        !$referer || 
+        (strpos($referer, $base_url) === false && $referer !== $url_dashboard)
+    ) {
+        
+        // CERRAR SESIÓN DE INMEDIATO (Política estricta)
+        session_unset();
+        session_destroy();
+        setcookie(session_name(), '', time() - 3600, '/'); 
+        
+        // Redirigir al login
+        header('Location: ' . $base_url . 'login?');
+        exit();
+    }
+
+
         Model::exists('login');
 
         // Agregar sessionLifetime a la respuesta
@@ -74,14 +107,11 @@ class dashboard extends Controller {
         // Obtener las sesiones expiradas del usuario
         $expires_session = $usuarioModel->GetExpiredSessions($usuario_id, $ahora);
 
-        // Verificar si hay sesiones expiradas
         if ($expires_session && $expires_session['numRows'] > 0) {
-            for ($i = 0; $i < $expires_session['numRows']; $i++) {
             $this->view->expired_sessions = true;
             $this->view->message = 'Su sesión está a punto de expirar.';
             $this->view->redirect = 'login';
             $this->view->usuario_id = $usuario_id;
-            }
         } else {
             $this->view->expired_sessions = false;
         }
