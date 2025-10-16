@@ -584,8 +584,8 @@ function mi_navbar() {}
                                         <div class="card-content-wrapper">
                                             <div class="numbers">
                                                 <p class="card-category" style="color: black">Total Tickets</p>
-                                                <h5 id="TotalTicket" class="card-title">0</h5>
-                                                <p class="card-text mb-0"><br><br><br>
+                                                <h5 id="TotalTicket" class="card-title font-weight-bolder">0</h5>
+                                                <p class="card-text mb-0">total de tickets
                                                 </p>
                                             </div>
                                             <div class="icon-on-right">
@@ -611,7 +611,7 @@ function mi_navbar() {}
                         <!-- Card Tickets En Taller -->
                             <div class="card" id="Card-Send-To-Taller">
                                 <div class="card-body">
-                                    <div class="card-content-wrapper" style="margin-top: -13%;">
+                                    <div class="card-content-wrapper" id="Cart-postaller">
                                         <div class="numbers">
                                             <p class="card-category" style="color: black">POS EN TALLER</p>
                                             <h5 class="card-title font-weight-bolder" id="TotalEnviadoTaller">0</h5>
@@ -693,7 +693,7 @@ function mi_navbar() {}
                                         <div class="card-content-wrapper">
                                             <div class="numbers">
                                                 <p class="card-category" style="color: black">GESTI&OacuteN COMERCIAL</p>
-                                                <h5 class="card-title" id="ticketGestionComercialCount">0</h5>
+                                                <h5 class="card-title font-weight-bolder" id="ticketGestionComercialCount">0</h5>
                                                 <p class="card-text mb-0">
                                                     <span class="text-percentage" id="PorcentGestionComercial"></span>Del total de tickets
                                                 </p>
