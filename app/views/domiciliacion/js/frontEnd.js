@@ -1938,7 +1938,6 @@ function formatTicketDetailsPanel(d) {
 
 // Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
 
-// Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
 function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
     const historyPanel = $("#ticket-history-content");
     historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
@@ -2887,7 +2886,6 @@ $(document).ready(function () {
       const nroTicket = $(this).data("nro-ticket");
 
       const currentStatusName = $(this).data("current-status-name");
-      console.log("currentStatusName obtenido:", currentStatusName);
 
       const currentStatusId = $(this).data("current-status-id");
 
@@ -3578,8 +3576,6 @@ function getStatusDom(currentStatusIdToExclude = null, convenioFirmado = 'No') {
   xhr.send(datos);
 }
 
-
-
 document.addEventListener("DOMContentLoaded", function () {
   getStatusDom();
 
@@ -4030,7 +4026,6 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
   };
 
   // Función para formatear moneda
-
   const formatCurrency = (amount) => {
     if (!amount || amount === "") return "____.__$";
 
@@ -4040,6 +4035,20 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
     return `${numericAmount.toFixed(2)}$`;
   };
+
+  // Generar nombre del archivo con formato: ConvenioFirmado_CF-id_ticket-last4digits_serial.pdf
+  const generateConvenioFileName = (ticketId, serial) => {
+    let fileName = `ConvenioFirmado_CF-${ticketId}`;
+    
+    if (serial && serial.length >= 4) {
+      const lastFourDigits = serial.slice(-4);
+      fileName += `-${lastFourDigits}`;
+    }
+    
+    return `${fileName}.pdf`;
+  };
+
+  const fileName = generateConvenioFileName(d.id_ticket, d.serialpos || d.serial_pos || '');
 
   return `
 
@@ -4053,7 +4062,7 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title>Acuerdo de Pago - Inteligensa</title>
+        <title>${fileName}</title>
 
         <style>
 
