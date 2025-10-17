@@ -125,14 +125,6 @@ class VirtualAssistant {
                                 <span class="option-icon">📊</span>
                                 <span class="option-text">Eficiencia de técnicos en general</span>
                             </button>
-                            <button class="chat-option-btn" data-query="technician_efficiency">
-                                <span class="option-icon">📈</span>
-                                <span class="option-text">Eficiencia de técnicos individuales</span>
-                            </button>
-                            <button class="chat-option-btn" data-query="user_performance">
-                                <span class="option-icon">👥</span>
-                                <span class="option-text">Rendimiento de técnicos</span>
-                            </button>
                             <button class="chat-option-btn" data-query="pending_tickets">
                                 <span class="option-icon">⏳</span>
                                 <span class="option-text">Tickets pendientes</span>
@@ -716,25 +708,7 @@ class VirtualAssistant {
             );
             break;
 
-        case 'user_performance':
-            this.addAssistantMessage(
-                '👥 Análisis del rendimiento de técnicos:',
-                {
-                    type: 'performance',
-                    data: data
-                }
-            );
-            break;
 
-        case 'technician_efficiency':
-            this.addAssistantMessage(
-                '📊 Análisis detallado de eficiencia de técnicos individuales:',
-                {
-                    type: 'technician_efficiency',
-                    data: data
-                }
-            );
-            break;
 
         case 'technician_individual_efficiency':
             // Mostrar lista de técnicos para seleccionar
@@ -805,28 +779,6 @@ addChartMessage(data) {
             </h5>
             <div style="position: relative; height: 350px; width: 100%; margin-bottom: 25px;">
                 <canvas id="${chartId}" width="400" height="350"></canvas>
-            </div>
-            <div class="chart-legend" style="margin-top: 20px; text-align: center; padding-top: 15px; border-top: 1px solid #dee2e6;">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="legend-item" style="margin-bottom: 10px;">
-                            <span class="legend-color" style="background-color: #36A2EB; width: 15px; height: 15px; display: inline-block; margin-right: 8px; border-radius: 3px;"></span>
-                            <strong style="font-size: 14px;">Cerrados: ${formatNumber(resolved)}%</strong>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="legend-item" style="margin-bottom: 10px;">
-                            <span class="legend-color" style="background-color: #FFCE56; width: 15px; height: 15px; display: inline-block; margin-right: 8px; border-radius: 3px;"></span>
-                            <strong style="font-size: 14px;">En Proceso: ${formatNumber(inProcess)}%</strong>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="legend-item" style="margin-bottom: 10px;">
-                            <span class="legend-color" style="background-color: #FF6384; width: 15px; height: 15px; display: inline-block; margin-right: 8px; border-radius: 3px;"></span>
-                            <strong style="font-size: 14px;">Abiertos: ${formatNumber(open)}%</strong>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
         <div style="height: 20px; clear: both;"></div>
