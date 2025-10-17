@@ -16,7 +16,8 @@ function mi_navbar() {}
         <!-- Nucleo Icons -->
         <!--     Fonts and icons     -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-        <!-- Nucleo Icons -->
+        <!-- Nucleo Icons -->        
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/General.css" />
    
         <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/user/desktop/desktop.css" />
         <!-- CSS Files -->
