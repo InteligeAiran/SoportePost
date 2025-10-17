@@ -285,7 +285,7 @@ class users extends Controller {
     $_SESSION['name_rol']     = $userData['name_rol'];
     $_SESSION['status']       = (int) $userData['status'];
     
-    $session_lifetime = 10; // Ejemplo: 1200seg = 20 minutos
+    $session_lifetime = 3600; // Ejemplo: 1200seg = 20 minutos
                               //          1800seg = 30 minutos
                               //          3600seg = 1 hora
     $_SESSION['session_lifetime'] = $session_lifetime;
