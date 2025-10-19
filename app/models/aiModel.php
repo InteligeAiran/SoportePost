@@ -84,27 +84,7 @@ class AiModel extends Model
      * Obtiene tickets pendientes agrupados por prioridad
      * Consulta eficiente con filtros optimizados
      */
-    public function getPendingTicketsByPriority()
-    {
-        try {
-            $sql = "
-                SELECT 
-                    COUNT(CASE WHEN prioridad = 'critica' THEN 1 END) as criticos,
-                    COUNT(CASE WHEN prioridad = 'alta' THEN 1 END) as altos,
-                    COUNT(CASE WHEN prioridad = 'media' THEN 1 END) as medios,
-                    COUNT(CASE WHEN prioridad = 'baja' THEN 1 END) as bajos
-                FROM tickets 
-                WHERE estado IN ('pendiente', 'en_proceso')
-                    AND fecha_creacion >= CURRENT_DATE - INTERVAL '7 days';
-            ";
-            
-            $result = Model::getResult($sql, $this->db);
-            return $result;
-        } catch (Throwable $e) {
-            error_log("Error en getPendingTicketsByPriority: " . $e->getMessage());
-            return ['query' => null, 'row' => null, 'numRows' => 0];
-        }
-    }
+  
 
     /**
      * Obtiene análisis de clientes
@@ -299,6 +279,53 @@ class AiModel extends Model
             return $result;
         } catch (Throwable $e) {
             error_log("Error en getCustomQuery: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
+
+    /**
+     * Obtiene tickets pendientes categorizados por prioridad
+     * @param int $daysCritical Días para considerar un ticket como crítico
+     * @return array Resultado de la consulta
+     */
+    public function getPendingTicketsByPriority($daysCritical)
+    {
+        try {
+
+            if($daysCritical == ""){
+                $daysCritical = 5;
+            }
+            $sql = "SELECT * FROM public.get_pending_tickets_by_priority(" . (int)$daysCritical . ");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en getPendingTicketsByPriority: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
+
+    /**
+     * Obtiene tickets específicos por prioridad
+     * @param string $priority Prioridad específica (critico, alto, medio, bajo)
+     * @param int $daysCritical Días para considerar un ticket como crítico
+     * @return array Resultado de la consulta
+     */
+    public function getTicketsByPriority($priority, $daysCritical = 5)
+    {
+        try {
+            if($priority == ""){
+                $priority = "critico";
+            }
+            if($daysCritical == ""){
+                $daysCritical = 5;
+            }
+            $safe_priority = pg_escape_string($this->db->getConnection(), $priority);
+            $sql = "SELECT * FROM public.get_tickets_by_priority('" . $safe_priority . "', " . (int)$daysCritical . ");";
+            
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en getTicketsByPriority: " . $e->getMessage());
             return ['query' => null, 'row' => null, 'numRows' => 0];
         }
     }

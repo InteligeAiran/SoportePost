@@ -452,20 +452,13 @@ class VirtualAssistant {
         this.overlay.classList.add('show');
         document.body.style.overflow = 'hidden';
         
-        // Cargar posición guardada o usar posición centrada por defecto
-        if (this.loadPanelPosition()) {
-            this.panel.style.left = `${this.panelPosition.x}px`;
-            this.panel.style.top = `${this.panelPosition.y}px`;
-            this.panel.style.transform = 'none';
-        } else {
-            // Posición centrada por defecto
-            this.panel.style.left = '';
-            this.panel.style.top = '';
-            this.panel.style.transform = 'translate(-50%, -50%)';
-        }
+        // Siempre aparecer centrado cuando se abre
+        this.panel.style.left = '';
+        this.panel.style.top = '';
+        this.panel.style.transform = 'translate(-50%, -50%)';
         
         // Log para debugging
-        console.log('🤖 Panel del asistente virtual abierto');
+        console.log('🤖 Panel del asistente virtual abierto - Posición centrada');
     }
     
     closePanel() {
@@ -474,8 +467,42 @@ class VirtualAssistant {
         this.overlay.classList.remove('show');
         document.body.style.overflow = '';
         
+        // Borrar el chat al cerrar
+        this.clearChat();
+        
         // Log para debugging
-        console.log('🤖 Panel del asistente virtual cerrado');
+        console.log('🤖 Panel del asistente virtual cerrado - Chat borrado');
+    }
+    
+    // Función para borrar el chat (manteniendo mensaje inicial de Ana y posición del panel)
+    clearChat() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            // Guardar la posición actual del panel antes de borrar
+            const currentLeft = this.panel.style.left;
+            const currentTop = this.panel.style.top;
+            const currentTransform = this.panel.style.transform;
+            
+            // Buscar el mensaje inicial de Ana
+            const initialMessage = chatMessages.querySelector('.message.assistant-message');
+            
+            // Si hay un mensaje inicial de Ana, mantenerlo
+            if (initialMessage && initialMessage.textContent.includes('¡Hola! Soy Ana')) {
+                // Borrar todo y volver a agregar solo el mensaje inicial
+                chatMessages.innerHTML = '';
+                chatMessages.appendChild(initialMessage);
+                console.log('🤖 Chat borrado - Manteniendo mensaje inicial de Ana');
+            } else {
+                // Si no hay mensaje inicial, borrar todo
+                chatMessages.innerHTML = '';
+                console.log('🤖 Chat completamente borrado');
+            }
+            
+            // Restaurar la posición del panel
+            this.panel.style.left = currentLeft;
+            this.panel.style.top = currentTop;
+            this.panel.style.transform = currentTransform;
+        }
     }
     
     toggleCategory(categoryName) {
@@ -579,7 +606,12 @@ class VirtualAssistant {
         
         let messageContent = message;
         if (data) {
-            messageContent += this.formatDataResponse(data);
+            if (data.type === 'custom') {
+                // Para tipo custom, usar directamente el HTML
+                messageContent = data.html || message;
+            } else {
+                messageContent += this.formatDataResponse(data);
+            }
         }
         
         messageDiv.innerHTML = `
@@ -722,13 +754,13 @@ class VirtualAssistant {
             break;
 
         case 'pending_tickets':
-            this.addAssistantMessage(
-                '⏳ Tickets pendientes que requieren atención:',
-                {
-                    type: 'pending',
-                    data: data
-                }
-            );
+            // Mostrar configuración de días críticos y tickets pendientes
+            this.showPendingTicketsWithConfig(data);
+            break;
+
+        case 'tickets_by_priority':
+            // Mostrar lista de tickets por prioridad específica
+            this.showTicketsList(data);
             break;
 
         case 'client_analysis':
@@ -1202,6 +1234,10 @@ addChartMessage(data) {
                 `;
                 break;
                 
+            case 'custom':
+                formatted = data.html || '';
+                break;
+                
         }
         
         return formatted;
@@ -1248,6 +1284,192 @@ addChartMessage(data) {
                 }, 1000);
             }
         }, 2000);
+    }
+
+    // Función para mostrar tickets pendientes con configuración de días críticos
+    showPendingTicketsWithConfig(data) {
+        console.log('🤖 showPendingTicketsWithConfig llamada con:', data);
+        console.log('🤖 Tipo de data:', typeof data);
+        console.log('🤖 Keys de data:', Object.keys(data || {}));
+        
+        if (!data) {
+            this.addAssistantMessage('❌ No se pudieron obtener los tickets pendientes.');
+            return;
+        }
+
+        const daysCritical = data.days_critical || 5;
+        console.log('🤖 daysCritical:', daysCritical);
+        
+        // Generar ID único para el input
+        const inputId = `daysCriticalInput_${Date.now()}`;
+        
+        const configHtml = `<div class="pending-tickets-container" style="margin-top: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef;">
+                <div class="config-section" style="margin-bottom: 20px; padding: 15px; background-color: #ffffff; border-radius: 8px; border: 1px solid #e9ecef;">
+                    <h6 style="color: #333; margin-bottom: 15px; font-weight: bold;">
+                        <i class="fas fa-cog me-2"></i>Configuración de Prioridades
+                    </h6>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <label style="font-weight: 500; color: #555;">Días para crítico:</label>
+                        <input type="number" id="${inputId}" value="${daysCritical}" min="1" max="30" 
+                               style="width: 80px; padding: 5px 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
+                        <button onclick="window.virtualAssistant.updateDaysCritical('${inputId}')" 
+                                style="padding: 5px 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            <i class="fas fa-sync-alt me-1"></i>Actualizar
+                        </button>
+                    </div>
+                    <div style="font-size: 12px; color: #666; background-color: #f8f9fa; padding: 8px; border-radius: 4px;">
+                        <strong>Lógica:</strong> Críticos ≥ ${daysCritical} días | Altos ≥ ${Math.round(daysCritical * 0.75)} días | Medios ≥ ${Math.round(daysCritical * 0.5)} días | Bajos < ${Math.round(daysCritical * 0.5)} días
+                    </div>
+                </div>
+                
+                <div class="priority-results" style="background-color: #ffffff; border-radius: 8px; padding: 15px;">
+                    <h6 style="color: #333; margin-bottom: 15px; font-weight: bold;">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Tickets Pendientes (Mes Actual)
+                    </h6>
+                    <div class="priority-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
+                        <div class="priority-item critical" style="text-align: center; padding: 12px; background-color: #dc3545; color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" 
+                             onclick="window.virtualAssistant.showTicketsByPriority('critico', ${daysCritical})">
+                            <div style="font-size: 24px; font-weight: bold;">${data.criticos || 0}</div>
+                            <div style="font-size: 12px; font-weight: 500;">🚨 Críticos</div>
+                            <div style="font-size: 10px; opacity: 0.9;">≥ ${daysCritical} días</div>
+                        </div>
+                        <div class="priority-item high" style="text-align: center; padding: 12px; background-color: #fd7e14; color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" 
+                             onclick="window.virtualAssistant.showTicketsByPriority('alto', ${daysCritical})">
+                            <div style="font-size: 24px; font-weight: bold;">${data.altos || 0}</div>
+                            <div style="font-size: 12px; font-weight: 500;">⚠️ Altos</div>
+                            <div style="font-size: 10px; opacity: 0.9;">≥ ${Math.round(daysCritical * 0.75)} días</div>
+                        </div>
+                        <div class="priority-item medium" style="text-align: center; padding: 12px; background-color: #ffc107; color: #333; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" 
+                             onclick="window.virtualAssistant.showTicketsByPriority('medio', ${daysCritical})">
+                            <div style="font-size: 24px; font-weight: bold;">${data.medios || 0}</div>
+                            <div style="font-size: 12px; font-weight: 500;">📋 Medios</div>
+                            <div style="font-size: 10px; opacity: 0.8;">≥ ${Math.round(daysCritical * 0.5)} días</div>
+                        </div>
+                        <div class="priority-item low" style="text-align: center; padding: 12px; background-color: #28a745; color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" 
+                             onclick="window.virtualAssistant.showTicketsByPriority('bajo', ${daysCritical})">
+                            <div style="font-size: 24px; font-weight: bold;">${data.bajos || 0}</div>
+                            <div style="font-size: 12px; font-weight: 500;">✅ Bajos</div>
+                            <div style="font-size: 10px; opacity: 0.9;">< ${Math.round(daysCritical * 0.5)} días</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.addAssistantMessage('⏳ Tickets pendientes que requieren atención:', {
+            type: 'custom',
+            html: configHtml
+        });
+        
+        console.log('🤖 Mensaje enviado con HTML personalizado');
+    }
+
+    // Función para actualizar días críticos
+    updateDaysCritical(inputId) {
+        const input = document.getElementById(inputId);
+        
+        if (!input) {
+            console.error('🤖 No se encontró el input con ID:', inputId);
+            this.addAssistantMessage('❌ Error: No se encontró el campo de configuración.');
+            return;
+        }
+        
+        const daysCritical = parseInt(input.value);
+        
+        if (isNaN(daysCritical) || daysCritical < 1 || daysCritical > 30) {
+            this.addAssistantMessage('❌ Por favor ingresa un número válido entre 1 y 30 días.');
+            return;
+        }
+
+        console.log('🤖 Actualizando días críticos a:', daysCritical);
+        console.log('🤖 Input value:', input.value);
+        console.log('🤖 Input ID:', inputId);
+        
+        // Mostrar mensaje de carga
+        this.addAssistantMessage(`🔄 Actualizando prioridades con ${daysCritical} días críticos...`);
+        
+        // Hacer nueva consulta con los días críticos actualizados
+        console.log('🤖 Enviando consulta con days_critical:', daysCritical);
+        this.processAIQuery('pending_tickets', { days_critical: daysCritical });
+    }
+
+    // Función para mostrar tickets por prioridad específica
+    showTicketsByPriority(priority, daysCritical) {
+        console.log('🤖 showTicketsByPriority llamada con:', priority, daysCritical);
+        
+        // Mostrar mensaje de carga
+        const priorityNames = {
+            'critico': 'Críticos',
+            'alto': 'Altos', 
+            'medio': 'Medios',
+            'bajo': 'Bajos'
+        };
+        
+        this.addAssistantMessage(`🔍 Obteniendo tickets ${priorityNames[priority]}...`);
+        
+        // Hacer consulta para obtener los tickets específicos (solo prioridad)
+        this.processAIQuery('tickets_by_priority', { 
+            priority: priority 
+        });
+    }
+
+    // Función para mostrar la lista de tickets por prioridad
+    showTicketsList(data) {
+        console.log('🤖 showTicketsList llamada con:', data);
+        
+        if (!data || !data.tickets) {
+            this.addAssistantMessage('❌ No se pudieron obtener los tickets.');
+            return;
+        }
+
+        const tickets = data.tickets;
+        const priority = data.priority;
+        const count = data.count || tickets.length;
+        
+        const priorityNames = {
+            'critico': 'Críticos',
+            'alto': 'Altos', 
+            'medio': 'Medios',
+            'bajo': 'Bajos'
+        };
+        
+        const priorityColors = {
+            'critico': '#dc3545',
+            'alto': '#fd7e14', 
+            'medio': '#ffc107',
+            'bajo': '#28a745'
+        };
+
+            const ticketsHtml = `
+                <div class="tickets-list-container" style="margin-top: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef;">
+                    <h6 style="color: #333; margin-bottom: 15px; font-weight: bold;">
+                        <i class="fas fa-list me-2"></i>Tickets ${priorityNames[priority]} (${count} tickets)
+                    </h6>
+                    <div class="tickets-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                        ${tickets.map(ticket => `
+                            <div class="ticket-item" style="padding: 12px; background-color: #ffffff; border-radius: 8px; border-left: 4px solid ${priorityColors[priority]}; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="font-weight: bold; color: #333; margin-bottom: 5px;">
+                                    #${ticket.nro_ticket}
+                                </div>
+                                <div style="font-size: 12px; color: #666; margin-bottom: 3px;">
+                                    <strong>Técnico:</strong> ${ticket.tecnico_nombre || 'Sin asignar'}
+                                </div>
+                                <div style="font-size: 12px; color: #666; margin-bottom: 3px;">
+                                    <strong>Días:</strong> ${ticket.dias_transcurridos} días
+                                </div>
+                                <div style="font-size: 12px; color: #666;">
+                                    <strong>Asignado:</strong> ${ticket.fecha_asignacion ? new Date(ticket.fecha_asignacion).toLocaleDateString() : 'N/A'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+        this.addAssistantMessage(`📋 Aquí tienes los tickets ${priorityNames[priority]}:`, {
+            type: 'custom',
+            html: ticketsHtml
+        });
     }
 }
 
