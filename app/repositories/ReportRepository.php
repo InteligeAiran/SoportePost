@@ -111,10 +111,10 @@ class ReportRepository
         return $result['row']['total_tickets_resuelto'];
     }
 
-    public function getTicketsTotalCount()
+    public function getTicketsTotalCount($id_user)
     {
         // Lógica para obtener la cantidad de usuarios
-        $result = $this->model->getTicketsTotalCount(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->getTicketsTotalCount($id_user); // Asumiendo que tienes este método en tu modelo
         return $result['row']['get_total_tickets'];
     }
 

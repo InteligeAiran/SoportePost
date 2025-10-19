@@ -353,7 +353,14 @@ class reportes extends Controller {
 
     public function handlegetTicketsTotalCount(){
         $repository = new ReportRepository();
-        $result = $repository->getTicketsTotalCount();
+        $id_user = isset($_POST['user_id'])? $_POST['user_id'] : null;
+
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            return;
+        }
+
+        $result = $repository->getTicketsTotalCount($id_user);
         if ($result) {
             $this->response(['success' => true, 'count' => $result], 200);
         } else {

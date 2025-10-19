@@ -3978,7 +3978,15 @@ async function getTicketsgestionComercialporcent() {
 
 async function getTicketTotal() {
     try {
-        const body = new URLSearchParams({ action: 'getTicketsTotalCount' });
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+        
+        const body = new URLSearchParams({ 
+            action: 'getTicketsTotalCount',
+            user_id: userId
+        });
+        
         const data = await fetchJsonByAction('getTicketsTotalCount', {
             method: 'POST',
             headers: {

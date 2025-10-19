@@ -91,9 +91,9 @@ class reportsModel extends Model
         }
     }
 
-    public function getTicketsTotalCount(){
+    public function getTicketsTotalCount($id_user){
         try{
-            $sql = "SELECT * FROM get_total_tickets()";
+            $sql = "SELECT * FROM get_total_tickets(".$id_user.");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
