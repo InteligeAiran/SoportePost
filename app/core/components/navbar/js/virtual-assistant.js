@@ -506,52 +506,62 @@ class VirtualAssistant {
     }
     
     toggleCategory(categoryName) {
-        // Cerrar todas las categorías abiertas
-        const allCategoryOptions = document.querySelectorAll('.category-options');
-        const allCategoryHeaders = document.querySelectorAll('.category-header');
-        
-        allCategoryOptions.forEach(options => {
-            options.style.display = 'none';
-        });
-        
-        allCategoryHeaders.forEach(header => {
-            header.classList.remove('active');
-            const arrow = header.querySelector('.category-arrow svg');
-            if (arrow) {
-                arrow.style.transform = 'rotate(0deg)';
-            }
-        });
-        
-        // Si la categoría clickeada no estaba abierta, abrirla
         const targetOptions = document.getElementById(`${categoryName}-options`);
         const targetHeader = document.querySelector(`[data-category="${categoryName}"]`);
         
-        if (targetOptions && targetHeader) {
-            const isCurrentlyOpen = targetOptions.style.display !== 'none';
-            
-            if (!isCurrentlyOpen) {
-                // Abrir la categoría
-                targetOptions.style.display = 'block';
-                targetHeader.classList.add('active');
-                const arrow = targetHeader.querySelector('.category-arrow svg');
-                if (arrow) {
-                    arrow.style.transform = 'rotate(90deg)';
-                }
-                
-                // Animación suave
-                targetOptions.style.opacity = '0';
-                targetOptions.style.transform = 'translateY(-10px)';
-                
-                setTimeout(() => {
-                    targetOptions.style.transition = 'all 0.3s ease';
-                    targetOptions.style.opacity = '1';
-                    targetOptions.style.transform = 'translateY(0)';
-                }, 10);
-                
-                console.log(`🤖 Categoría "${categoryName}" abierta`);
-            } else {
-                console.log(`🤖 Categoría "${categoryName}" cerrada`);
+        if (!targetOptions || !targetHeader) {
+            console.log(`🤖 No se encontró la categoría "${categoryName}"`);
+            return;
+        }
+        
+        // Verificar si la categoría actual está abierta
+        const isCurrentlyOpen = targetOptions.style.display !== 'none' && targetHeader.classList.contains('active');
+        
+        if (isCurrentlyOpen) {
+            // Si está abierta, cerrarla
+            targetOptions.style.display = 'none';
+            targetHeader.classList.remove('active');
+            const arrow = targetHeader.querySelector('.category-arrow svg');
+            if (arrow) {
+                arrow.style.transform = 'rotate(0deg)';
             }
+            console.log(`🤖 Categoría "${categoryName}" cerrada`);
+        } else {
+            // Si está cerrada, cerrar todas las demás y abrir esta
+            const allCategoryOptions = document.querySelectorAll('.category-options');
+            const allCategoryHeaders = document.querySelectorAll('.category-header');
+            
+            allCategoryOptions.forEach(options => {
+                options.style.display = 'none';
+            });
+            
+            allCategoryHeaders.forEach(header => {
+                header.classList.remove('active');
+                const arrow = header.querySelector('.category-arrow svg');
+                if (arrow) {
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            });
+            
+            // Abrir la categoría seleccionada
+            targetOptions.style.display = 'block';
+            targetHeader.classList.add('active');
+            const arrow = targetHeader.querySelector('.category-arrow svg');
+            if (arrow) {
+                arrow.style.transform = 'rotate(90deg)';
+            }
+            
+            // Animación suave
+            targetOptions.style.opacity = '0';
+            targetOptions.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                targetOptions.style.transition = 'all 0.3s ease';
+                targetOptions.style.opacity = '1';
+                targetOptions.style.transform = 'translateY(0)';
+            }, 10);
+            
+            console.log(`🤖 Categoría "${categoryName}" abierta`);
         }
     }
     
