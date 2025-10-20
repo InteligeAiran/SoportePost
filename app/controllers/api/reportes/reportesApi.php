@@ -330,8 +330,14 @@ class reportes extends Controller {
     }
 
     public function handlegetgetTicketAbiertoCount(){
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            return;
+        }
         $repository = new ReportRepository();
-        $result = $repository->getTicketabiertoCount();
+        $result = $repository->getTicketabiertoCount($id_user);
         if ($result !== null) {
             $this->response(['success' => true, 'count' => $result], 200);
         } else {

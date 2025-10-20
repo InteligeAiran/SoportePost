@@ -71,9 +71,9 @@ class reportsModel extends Model
         }
     }
 
-    public function getTicketabiertoCount(){
+    public function getTicketabiertoCount($id_user){
         try{
-            $sql = "SELECT * FROM get_total_open_tickets();";
+            $sql = "SELECT * FROM get_total_open_tickets(".$id_user.");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

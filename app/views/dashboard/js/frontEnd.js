@@ -3501,7 +3501,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 async function getTicketOpen() {
     try {
-        const body = new URLSearchParams({ action: 'getTicketAbiertoCount' });
+        // Obtener el ID del usuario
+        const id_user = document.getElementById("userIdForPassword").value;
+        
+        const body = new URLSearchParams({ 
+            action: 'getTicketAbiertoCount',
+            id_user: id_user
+        });
+        
         const data = await fetchJsonByAction('getTicketAbiertoCount', {
             method: 'POST',
             headers: {

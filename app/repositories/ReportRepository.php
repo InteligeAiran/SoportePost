@@ -97,10 +97,10 @@ class ReportRepository
         }
     }
 
-    public function getTicketabiertoCount()
+    public function getTicketabiertoCount($id_user)
     {
         // Lógica para obtener la cantidad de usuarios
-        $result = $this->model->getTicketabiertoCount(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->getTicketabiertoCount($id_user); // Asumiendo que tienes este método en tu modelo
         return $result['row']['get_total_open_tickets'];
     }
 
