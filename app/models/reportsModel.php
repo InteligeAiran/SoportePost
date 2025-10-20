@@ -101,10 +101,10 @@ class reportsModel extends Model
         }
     }
 
-    public function getTicketCountsForPercentage() {
+    public function getTicketCountsForPercentage($id_user) {
         try {
             // Tickets abiertos de hoy
-            $sqlToday = "SELECT * FROM get_percentage_open_tickets()";
+            $sqlToday = "SELECT * FROM get_percentage_open_tickets(".$id_user.");";
             $resultToday = Model::getResult($sqlToday, $this->db);
             return $resultToday;
         } catch (Throwable $e) {

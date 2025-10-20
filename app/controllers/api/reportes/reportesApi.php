@@ -331,7 +331,7 @@ class reportes extends Controller {
 
     public function handlegetgetTicketAbiertoCount(){
         $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
-        
+
         if (!$id_user) {
             $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
             return;
@@ -358,7 +358,6 @@ class reportes extends Controller {
     }
 
     public function handlegetTicketsTotalCount(){
-        $repository = new ReportRepository();
         $id_user = isset($_POST['user_id'])? $_POST['user_id'] : null;
 
         if (!$id_user) {
@@ -366,6 +365,7 @@ class reportes extends Controller {
             return;
         }
 
+        $repository = new ReportRepository();
         $result = $repository->getTicketsTotalCount($id_user);
         if ($result) {
             $this->response(['success' => true, 'count' => $result], 200);
@@ -377,9 +377,15 @@ class reportes extends Controller {
 
     // Luego, crea la función handleGetTicketPercentage
     public function handleGetTicketPercentage(){
+        $id_user = isset($_POST['user_id'])? $_POST['user_id'] : null;
+
+         if (!$id_user) {
+            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            return;
+        }
+
         $repository = new ReportRepository();
-        $result = $repository->getTicketPercentageData();
-        
+        $result = $repository->getTicketPercentageData($id_user);
         if ($result) {
             $this->response(['success' => true, 'count' => $result], 200);
         } else {

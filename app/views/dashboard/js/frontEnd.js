@@ -3823,6 +3823,10 @@ document.getElementById('Card-Ticket-open').addEventListener('click', function()
 
 async function getTicketPercentage() {
     try {
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+        
         const actionPath = 'getTicketPercentage';
         const fetchOptions = {
             method: 'POST',
@@ -3830,7 +3834,8 @@ async function getTicketPercentage() {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                action: 'getTicketPercentage'
+                action: 'getTicketPercentage',
+                user_id: userId
             })
         };
 

@@ -118,9 +118,9 @@ class ReportRepository
         return $result['row']['get_total_tickets'];
     }
 
-    public function getTicketPercentageData()
+    public function getTicketPercentageData($id_user)
     {
-        $result = $this->model->getTicketCountsForPercentage();
+        $result = $this->model->getTicketCountsForPercentage($id_user);
         return $result['row']['get_percentage_open_tickets'];
     }
 
