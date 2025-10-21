@@ -6,6 +6,8 @@ require_once __DIR__ . '/../../../../libs/database_cn.php';
 require_once __DIR__ . '/../../../../libs/View.php';
 require_once __DIR__ . '/../../../../libs/database.php';
 require_once __DIR__ . '/../../../repositories/ReportRepository.php';
+require_once __DIR__ . '/../../../repositories/UserRepository.php';
+
 require_once __DIR__ . '/../../../../config/paths.php';
 
 ini_set('display_errors', 1);
@@ -13,6 +15,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 use App\Repositories\ReportRepository;
+use App\Repositories\UserRepository;
 use Controller;
 use DatabaseCon;
 
@@ -330,14 +333,24 @@ class reportes extends Controller {
     }
 
     public function handlegetgetTicketAbiertoCount(){
+        $repository = new ReportRepository();
+        $repositoryUser = new UserRepository();
+
         $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
 
         if (!$id_user) {
             $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
             return;
         }
-        $repository = new ReportRepository();
-        $result = $repository->getTicketabiertoCount($id_user);
+
+        $id_rol = $repositoryUser->getUserRol($id_user);
+
+        if(!$id_rol){
+            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            return;
+        }
+
+        $result = $repository->getTicketabiertoCount($id_rol, $id_user);
         if ($result !== null) {
             $this->response(['success' => true, 'count' => $result], 200);
         } else {
@@ -358,6 +371,8 @@ class reportes extends Controller {
     }
 
     public function handlegetTicketsTotalCount(){
+        $repository = new ReportRepository();
+        $repositoryUser = new UserRepository();
         $id_user = isset($_POST['user_id'])? $_POST['user_id'] : null;
 
         if (!$id_user) {
@@ -365,8 +380,14 @@ class reportes extends Controller {
             return;
         }
 
-        $repository = new ReportRepository();
-        $result = $repository->getTicketsTotalCount($id_user);
+        $id_rol = $repositoryUser->getUserRol($id_user);
+
+        if(!$id_rol){
+            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            return;
+        }
+
+        $result = $repository->getTicketsTotalCount($id_rol, $id_user);
         if ($result) {
             $this->response(['success' => true, 'count' => $result], 200);
         } else {
@@ -377,15 +398,23 @@ class reportes extends Controller {
 
     // Luego, crea la función handleGetTicketPercentage
     public function handleGetTicketPercentage(){
+        $repository = new ReportRepository();
+        $repositoryUser = new UserRepository();
         $id_user = isset($_POST['user_id'])? $_POST['user_id'] : null;
 
-         if (!$id_user) {
+        if (!$id_user) {
             $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
-        $repository = new ReportRepository();
-        $result = $repository->getTicketPercentageData($id_user);
+        $id_rol = $repositoryUser->getUserRol($id_user);
+
+        if(!$id_rol){
+            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            return;
+        }
+
+        $result = $repository->getTicketPercentageData($id_rol, $id_user);
         if ($result) {
             $this->response(['success' => true, 'count' => $result], 200);
         } else {
@@ -964,7 +993,23 @@ class reportes extends Controller {
 
     public function handleGetTicketOpenDetails(){
         $repository = new ReportRepository();
-        $result = $repository->GetTicketOpenDetails();
+        $repositoryUser = new UserRepository();
+
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            return;
+        }
+
+        $id_rol = $repositoryUser->getUserRol($id_user);
+
+        if(!$id_rol){
+            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            return;
+        }
+
+        $result = $repository->GetTicketOpenDetails($id_rol, $id_user);
 
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
@@ -1096,8 +1141,14 @@ class reportes extends Controller {
     }
 
     public function handlegetTotalTicketsInProcess(){
+        $id_user = isset($_POST['user_id'])? $_POST['user_id'] : null;
+
+        if($id_user === null){
+            $this->response(['success' => false,'message' => 'Falta el id_user'], 400); // Código 400 Bad Request
+        }
+
         $repository = new ReportRepository();
-        $result = $repository->GetTotalTicketsInProcess();
+        $result = $repository->GetTotalTicketsInProcess($id_user);
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'count' => $result], 200);
         } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
@@ -1109,7 +1160,22 @@ class reportes extends Controller {
 
     public function handlegetTotalTicketsPercentageinprocess(){
         $repository = new ReportRepository();
-        $result = $repository->GetTotalTicketsPercentageInProcess();
+        $repositoryUser = new UserRepository();
+
+        $id_user = isset($_POST['user_id'])? $_POST['user_id'] : null;
+
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            return;
+        }
+
+        $id_rol = $repositoryUser->getUserRol($id_user);
+
+        if(!$id_rol){
+            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            return;
+        }
+        $result = $repository->GetTotalTicketsPercentageInProcess($id_rol, $id_user);
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'porcent' => $result], 200);
         } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
@@ -1121,7 +1187,23 @@ class reportes extends Controller {
 
     public function handleGetTicketsInProcess(){
         $repository = new ReportRepository();
-        $result = $repository->GetTicketsInProcess();
+        $repositoryUser = new UserRepository();
+
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            return;
+        }
+
+        $id_rol = $repositoryUser->getUserRol($id_user);
+
+        if(!$id_rol){
+            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            return;
+        }
+
+        $result = $repository->GetTicketsInProcess($id_rol, $id_user);
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
         } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores

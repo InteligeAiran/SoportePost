@@ -65,16 +65,31 @@ class userModel extends Model{
         }
     }
 
-     public function GetRegionUsersById($id_user){
+    //CON ESTA SOLO OBTIENES EL NOMBRE DE LA REGION DEL USUARIO
+        public function GetRegionUsersById($id_user){
+            try{
+                $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+                $sql = "SELECT * FROM GetUserRegion(".$escaped_id_user.")";
+                $result = Model::getResult($sql, $this->db);
+                return $result;
+            } catch (Throwable $e) {
+                // Manejar excepciones
+            }
+        }
+    //
+
+    public function getUserRol($id_user){
         try{
             $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
-            $sql = "SELECT * FROM GetUserRegion(".$escaped_id_user.")";
+            $sql = "SELECT * FROM getrolUser(".$escaped_id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
             // Manejar excepciones
         }
     }
+    
+
 
 
     public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $encry_passw, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel){

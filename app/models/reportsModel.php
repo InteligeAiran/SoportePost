@@ -71,9 +71,9 @@ class reportsModel extends Model
         }
     }
 
-    public function getTicketabiertoCount($id_user){
+    public function getTicketabiertoCount($id_rol, $id_user){
         try{
-            $sql = "SELECT * FROM get_total_open_tickets(".$id_user.");";
+            $sql = "SELECT * FROM get_total_open_tickets(".$id_rol.", ".$id_user.");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -91,9 +91,9 @@ class reportsModel extends Model
         }
     }
 
-    public function getTicketsTotalCount($id_user){
+    public function getTicketsTotalCount($id_region, $id_user){
         try{
-            $sql = "SELECT * FROM get_total_tickets(".$id_user.");";
+            $sql = "SELECT * FROM get_total_tickets(".$id_region.", ".$id_user.");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -101,10 +101,10 @@ class reportsModel extends Model
         }
     }
 
-    public function getTicketCountsForPercentage($id_user) {
+    public function getTicketCountsForPercentage($id_rol, $id_user ) {
         try {
             // Tickets abiertos de hoy
-            $sqlToday = "SELECT * FROM get_percentage_open_tickets(".$id_user.");";
+            $sqlToday = "SELECT * FROM get_percentage_open_tickets(".$id_rol.", $id_user);";
             $resultToday = Model::getResult($sqlToday, $this->db);
             return $resultToday;
         } catch (Throwable $e) {
@@ -859,9 +859,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetTicketOpenDetails(){
+    public function GetTicketOpenDetails($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_individual_open_tickets_details()";
+            $sql = "SELECT * FROM get_individual_open_tickets_details(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -879,9 +879,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetTotalTicketsInProcess(){
+    public function GetTotalTicketsInProcess($id_user){
         try {
-            $sql = "SELECT * FROM get_total_in_processtickets()";
+            $sql = "SELECT * FROM get_total_in_processtickets(".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -979,9 +979,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetTotalTicketsPercentageInProcess(){
+    public function GetTotalTicketsPercentageInProcess($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_percentage_in_process_tickets()";
+            $sql = "SELECT * FROM get_percentage_in_process_tickets(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -989,9 +989,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetTicketsInProcess(){
+    public function GetTicketsInProcess($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_individual_tickets_in_procesos()";
+            $sql = "SELECT * FROM get_individual_tickets_in_procesos(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

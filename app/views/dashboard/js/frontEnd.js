@@ -1735,7 +1735,27 @@ function loadOpenTicketDetails() {
     contentDiv.innerHTML = "<p>Cargando información de tickets Abiertos...</p>"; // Mensaje de carga
     searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketOpenDetails`)
+    // Obtener el ID del usuario
+    const userIdElement = document.getElementById("userIdForPassword");
+    const userId = userIdElement ? userIdElement.value : null;
+
+    if (!userId) {
+        contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+        return;
+    }
+
+    // Crear el cuerpo de la petición con el ID del usuario
+    const body = new URLSearchParams({ 
+        id_user: userId
+    });
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketOpenDetails`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: body
+    })
         .then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -2017,7 +2037,27 @@ function loadIndividualProceess() {
     contentDiv.innerHTML = "<p>Cargando información de los POS en Proceso..</p>";
     searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsInProcess`)
+    // Obtener el ID del usuario
+    const userIdElement = document.getElementById("userIdForPassword");
+    const userId = userIdElement ? userIdElement.value : null;
+
+    if (!userId) {
+        contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+        return;
+    }
+
+    // Crear el cuerpo de la petición con el ID del usuario
+    const body = new URLSearchParams({ 
+        id_user: userId
+    });
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsInProcess`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: body
+    })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -4121,6 +4161,10 @@ async function getTotalPorcentageticket_in_process() {
     const thresholdForGood = 50;
 
     try {
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+        
         const actionPath = 'getTotalTicketsPercentageinprocess';
         const fetchOptions = {
             method: 'POST',
@@ -4128,7 +4172,8 @@ async function getTotalPorcentageticket_in_process() {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                action: 'getTotalTicketsPercentageinprocess'
+                action: 'getTotalTicketsPercentageinprocess',
+                user_id: userId
             })
         };
 
@@ -4170,7 +4215,14 @@ async function getTotalPorcentageticket_in_process() {
 
 async function getTotalTicketsInProcess() {
     try {
-        const body = new URLSearchParams({ action: 'getTotalTicketsInProcess' });
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        const body = new URLSearchParams({ 
+            action: 'getTotalTicketsInProcess',
+            user_id: userId
+        });
         const data = await fetchJsonByAction('getTotalTicketsInProcess', {
             method: 'POST',
             headers: {
