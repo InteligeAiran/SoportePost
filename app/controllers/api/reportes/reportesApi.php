@@ -903,7 +903,22 @@ class reportes extends Controller {
 
     function GetMonthlyTicketDetails(){
         $repository = new ReportRepository();
-        $result = $repository->GetMonthlyTicketDetails();
+        $repositoryUser = new UserRepository();
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            return;
+        }
+
+        $id_rol = $repositoryUser->getUserRol($id_user);
+
+        if(!$id_rol){
+            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            return;
+        }
+
+        $result = $repository->GetMonthlyTicketDetails($id_rol, $id_user);
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
@@ -915,10 +930,25 @@ class reportes extends Controller {
 
     function GetIndividualTicketDetails(){
         $repository = new ReportRepository();
+        $repositoryUser = new UserRepository();
         $month = isset($_POST['month'])? $_POST['month'] : null;
         $status = isset($_POST['status'])? $_POST['status'] : null;
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            return;
+        }
+
+        $id_rol = $repositoryUser->getUserRol($id_user);
+
+        if(!$id_rol){
+            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            return;
+        }
+
         if ($month && $status) {
-            $result = $repository->GetIndividualTicketDetails($status, $month);
+            $result = $repository->GetIndividualTicketDetails($id_rol, $id_user, $month, $status);
             if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
                 $this->response(['success' => true, 'details' => $result], 200);
             } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
@@ -933,7 +963,22 @@ class reportes extends Controller {
 
     public function GetMonthlyCreatedTicketsForChart(){
         $repository = new ReportRepository();
-        $result = $repository->GetMonthlyCreatedTicketsForChart();
+        $repositoryUser = new UserRepository();
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            return;
+        }
+
+        $id_rol = $repositoryUser->getUserRol($id_user);
+
+        if(!$id_rol){
+            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            return;
+        }
+
+        $result = $repository->GetMonthlyCreatedTicketsForChart($id_rol, $id_user);
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
@@ -945,7 +990,21 @@ class reportes extends Controller {
 
     public function GetMonthlyCreatedTicketsForChartForState(){
         $repository = new ReportRepository();
-        $result = $repository->GetMonthlyCreatedTicketsForChartForState();
+        $repositoryUser = new UserRepository();
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            return;
+        }
+
+        $id_rol = $repositoryUser->getUserRol($id_user);
+
+        if(!$id_rol){
+            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            return;
+        }
+        $result = $repository->GetMonthlyCreatedTicketsForChartForState($id_rol, $id_user);
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
         } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
@@ -969,7 +1028,23 @@ class reportes extends Controller {
 
     public function GetMonthlyTicketPercentageChange(){
         $repository = new ReportRepository();
-        $result = $repository->GetMonthlyTicketPercentageChange();
+        $repositoryUser = new UserRepository();
+
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            return;
+        }
+
+        $id_rol = $repositoryUser->getUserRol($id_user);
+
+        if(!$id_rol){
+            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            return;
+        }
+
+        $result = $repository->GetMonthlyTicketPercentageChange($id_rol, $id_user);
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'porcent' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
@@ -981,9 +1056,24 @@ class reportes extends Controller {
 
     public function GetIndividualTicketDetailsByRegion(){
         $repository = new ReportRepository();
+        $repositoryUser = new UserRepository();
         $id_region = isset($_POST['region'])? $_POST['region'] : null;
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+
+        if (!$id_user) {
+            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            return;
+        }
+
+        $id_rol = $repositoryUser->getUserRol($id_user);
+
+        if(!$id_rol){
+            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            return;
+        }
+
         if ($id_region) {
-            $result = $repository->GetIndividualTicketDetailsByRegion($id_region);
+            $result = $repository->GetIndividualTicketDetailsByRegion($id_rol, $id_user, $id_region);
             if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
                 $this->response(['success' => true, 'details' => $result], 200);
             } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
@@ -1475,7 +1565,7 @@ class reportes extends Controller {
     public function handleGetDetalleTicketComercial(){
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-         $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
 
         if (!$id_user) {
             $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);

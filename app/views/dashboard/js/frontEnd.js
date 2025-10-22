@@ -1476,11 +1476,21 @@ function loadIndividualTicketDetails(month, status) {
     searchInput.style.display = "inline-block";
   }
 
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
   // Usar la API fetch para la petición
   const dataToSend = new URLSearchParams({
     action: "GetIndividualTicketDetails",
     month: month,
     status: status,
+    id_user: userId
   }).toString();
 
   fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetIndividualTicketDetails`, {
@@ -1625,7 +1635,27 @@ function loadMonthlyTicketDetails() {
   const contentDiv = document.getElementById("monthlyTicketsContent");
   contentDiv.innerHTML = "<p>Cargando información...</p>"; // Mensaje de carga
 
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyTicketDetails`)
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
+  // Crear el cuerpo de la petición con el ID del usuario
+  const body = new URLSearchParams({ 
+    id_user: userId
+  });
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyTicketDetails`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: body
+  })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -4371,9 +4401,28 @@ function loadRegionTicketDetails() {
   const contentDiv = document.getElementById("RegionTicketsContent");
   contentDiv.innerHTML = "<p>Cargando información regional...</p>"; // Mensaje de carga
 
-  fetch(
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChartForState`
-  )
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
+  // Usar fetch con POST para enviar el id_user
+  const dataToSend = new URLSearchParams({
+    action: "GetMonthlyCreatedTicketsForChartForState",
+    id_user: userId
+  }).toString();
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChartForState`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: dataToSend,
+  })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -4550,90 +4599,75 @@ function loadIndividualRegionTicketDetails(region) {
     searchInput.style.display = "inline-block";
   }
 
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetIndividualTicketDetailsByRegion`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success && response.details) {
-          allRegionTickets = response.details; // Almacenar todos los tickets
-          displayFilteredTickets(allRegionTickets, 'RegionTicketsContent', currentMonth, currentStatus);
-          
-          // Añadir event listener para el input de búsqueda
-          if (searchInput) {
-            if (regionTicketSearchHandler) {
-              searchInput.removeEventListener('input', regionTicketSearchHandler);
-            }
-            regionTicketSearchHandler = (e) => {
-              handleTicketSearch(e, allRegionTickets, 'RegionTicketsContent');
-            };
-            searchInput.addEventListener('input', regionTicketSearchHandler);
-          }
-        } else {
-          contentDiv.innerHTML =
-            `<p>Error al cargar el detalle de tickets: ` +
-            (response.message || "Error desconocido") +
-            `</p>`;
-          console.error(
-            "Error en los datos de la API para tickets individuales por región:",
-            response.message
-          );
-          allRegionTickets = [];
-          if (searchInput && regionTicketSearchHandler) {
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
+  // Usar fetch con POST para enviar el id_user
+  const dataToSend = new URLSearchParams({
+    action: "GetIndividualTicketDetailsByRegion",
+    region: region,
+    id_user: userId
+  }).toString();
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetIndividualTicketDetailsByRegion`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: dataToSend,
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success && data.details) {
+        allRegionTickets = data.details; // Almacenar todos los tickets
+        displayFilteredTickets(allRegionTickets, 'RegionTicketsContent', currentMonth, currentStatus);
+        
+        // Añadir event listener para el input de búsqueda
+        if (searchInput) {
+          if (regionTicketSearchHandler) {
             searchInput.removeEventListener('input', regionTicketSearchHandler);
-            regionTicketSearchHandler = null;
           }
+          regionTicketSearchHandler = (e) => {
+            handleTicketSearch(e, allRegionTickets, 'RegionTicketsContent');
+          };
+          searchInput.addEventListener('input', regionTicketSearchHandler);
         }
-      } catch (error) {
+      } else {
+        contentDiv.innerHTML =
+          `<p>Error al cargar el detalle de tickets: ` +
+          (data.message || "Error desconocido") +
+          `</p>`;
         console.error(
-          "Error parsing JSON for individual regional ticket details:",
-          error
+          "Error en los datos de la API para tickets individuales por región:",
+          data.message
         );
-        contentDiv.innerHTML = `<p>Error de procesamiento de datos al cargar el detalle de tickets.</p>`;
         allRegionTickets = [];
         if (searchInput && regionTicketSearchHandler) {
           searchInput.removeEventListener('input', regionTicketSearchHandler);
           regionTicketSearchHandler = null;
         }
       }
-    } else {
-      console.error(
-        "Error fetching individual regional ticket details:",
-        xhr.status,
-        xhr.statusText
-      );
+    })
+    .catch((error) => {
+      console.error("Error fetching individual regional ticket details:", error);
       contentDiv.innerHTML = `<p>Error de red al cargar el detalle de tickets. Por favor, intente de nuevo más tarde.</p>`;
       allRegionTickets = [];
       if (searchInput && regionTicketSearchHandler) {
         searchInput.removeEventListener('input', regionTicketSearchHandler);
         regionTicketSearchHandler = null;
       }
-    }
-  };
-
-  xhr.onerror = function () {
-    console.error(
-      "Network error during individual regional ticket details fetch."
-    );
-    contentDiv.innerHTML = `<p>Error de conexión al cargar el detalle de tickets.</p>`;
-    allRegionTickets = [];
-    if (searchInput && regionTicketSearchHandler) {
-      searchInput.removeEventListener('input', regionTicketSearchHandler);
-      regionTicketSearchHandler = null;
-    }
-  };
-
-  // Prepara los datos a enviar: solo la región
-  let dataToSend = `action=GetIndividualTicketDetailsByRegion&region=${encodeURIComponent(
-    region
-  )}`;
-  xhr.send(dataToSend);
+    });
 }
 
 let monthlyTicketsChartInstance; // Variable global para la instancia del gráfico
@@ -4809,8 +4843,25 @@ async function loadMonthlyCreatedTicketsChart() {
     hideChartErrorMessage(chartCanvasId);
 
     try {
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
         // Usa fetchJsonByAction para manejar la llamada a la API
-        const data = await fetchJsonByAction('GetMonthlyCreatedTicketsForChart');
+        const data = await fetchJsonByAction('GetMonthlyCreatedTicketsForChart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                id_user: userId
+            })
+        });
 
         if (data.success && data.details && data.details.length > 0) {
             const labels = data.details.map((item) => `${item.month_name} ${item.year_month.substring(0, 4)}`);
@@ -4906,11 +4957,42 @@ async function updateTicketMonthlyPercentageChange() {
 
   if (porcentElement) porcentElement.textContent = "Cargando...";
 
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    if (porcentElement) {
+      porcentElement.textContent = "Error: No se pudo obtener el ID del usuario.";
+      porcentElement.style.color = "red";
+    }
+    return;
+  }
+
   try {
-    // Usa fetchJsonByAction para obtener los datos de la API
-    // La función se encarga de la llamada fetch, la validación de la respuesta
-    // y el análisis del JSON.
-    const data = await fetchJsonByAction("GetMonthlyTicketPercentageChange");
+    // Usar fetch con POST para enviar el id_user
+    const dataToSend = new URLSearchParams({
+      action: "GetMonthlyTicketPercentageChange",
+      id_user: userId
+    }).toString();
+
+    const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyTicketPercentageChange`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: dataToSend,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || "Error en la respuesta de la API");
+    }
 
     // ** CAMBIO CRÍTICO AQUÍ: Accede directamente a data.porcent **
     let percentage = data.porcent; // Toma el número directamente
@@ -4974,9 +5056,39 @@ async function loadMonthlyCreatedTicketsChartForState() {
     // Ocultar mensaje de error previo
     hideChartErrorMessage(chartCanvasId);
 
+    // Obtener el ID del usuario
+    const userIdElement = document.getElementById("userIdForPassword");
+    const userId = userIdElement ? userIdElement.value : null;
+
+    if (!userId) {
+        displayChartErrorMessage(chartCanvasId, "Error: No se pudo obtener el ID del usuario", 'error');
+        return;
+    }
+
     try {
-        // Use fetchJsonByAction to handle the API call
-        const data = await fetchJsonByAction('GetMonthlyCreatedTicketsForChartForState');
+        // Usar fetch con POST para enviar el id_user
+        const dataToSend = new URLSearchParams({
+            action: "GetMonthlyCreatedTicketsForChartForState",
+            id_user: userId
+        }).toString();
+
+        const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChartForState`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: dataToSend,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || "Error en la respuesta de la API");
+        }
 
         if (data.success && data.details && data.details.length > 0) {
             const labels = data.details.map((item) => `${item.region_name}`);

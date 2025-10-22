@@ -252,9 +252,9 @@ class ReportRepository
         }
     }
 
-    public function GetMonthlyTicketDetails(){
+    public function GetMonthlyTicketDetails($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetMonthlyTicketDetails(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetMonthlyTicketDetails($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -267,9 +267,9 @@ class ReportRepository
         }
     }
 
-    public function GetIndividualTicketDetails($month, $status){
+    public function GetIndividualTicketDetails($id_rol, $id_user, $month, $status){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetIndividualTicketDetails($month, $status); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetIndividualTicketDetails($id_rol, $id_user, $month, $status); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -282,9 +282,9 @@ class ReportRepository
         }
     }
 
-    public function GetMonthlyCreatedTicketsForChart(){
+    public function GetMonthlyCreatedTicketsForChart($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetMonthlyCreatedTicketsForChart(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetMonthlyCreatedTicketsForChart($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -297,9 +297,9 @@ class ReportRepository
         }
     }
 
-    public function GetMonthlyCreatedTicketsForChartForState(){
+    public function GetMonthlyCreatedTicketsForChartForState($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetMonthlyCreatedTicketsForChartForState(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetMonthlyCreatedTicketsForChartForState($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -327,15 +327,15 @@ class ReportRepository
         }
     }
 
-    public function GetMonthlyTicketPercentageChange(){
+    public function GetMonthlyTicketPercentageChange($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetMonthlyTicketPercentageChange(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetMonthlyTicketPercentageChange($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         return $result['row']['average_monthly_percentage_change'];
     }
 
-    public function GetIndividualTicketDetailsByRegion($id_region){
+    public function GetIndividualTicketDetailsByRegion($id_rol, $id_user, $id_region){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetIndividualTicketDetailsByRegion($id_region); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetIndividualTicketDetailsByRegion($id_rol, $id_user, $id_region); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {

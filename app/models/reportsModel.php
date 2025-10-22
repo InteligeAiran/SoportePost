@@ -766,9 +766,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetMonthlyTicketDetails(){
+    public function GetMonthlyTicketDetails($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_monthly_ticket_details()";
+            $sql = "SELECT * FROM get_monthly_ticket_details(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -776,10 +776,10 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetIndividualTicketDetailsByRegion($id_region){
+    public function GetIndividualTicketDetailsByRegion($id_rol, $id_user, $id_region){
         try {
             $escaped_id_region = pg_escape_literal($this->db->getConnection(), $id_region);
-            $sql = "SELECT * FROM get_individual_ticket_details_by_region(".$escaped_id_region.")";
+            $sql = "SELECT * FROM get_individual_ticket_details_by_region(".$id_rol.", ".$id_user.", ".$escaped_id_region.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -787,11 +787,11 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetIndividualTicketDetails($month, $status){
+    public function GetIndividualTicketDetails($id_rol, $id_user, $month, $status){
         try {
             $escaped_month = pg_escape_literal($this->db->getConnection(), $month);
             $escaped_status = pg_escape_literal($this->db->getConnection(), $status);
-            $sql = "SELECT * FROM get_individual_ticket_details(".$escaped_status.", ".$escaped_month.")";
+            $sql = "SELECT * FROM get_individual_ticket_details(".$id_rol.", ".$id_user.", ".$escaped_status.", ".$escaped_month.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -799,9 +799,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetMonthlyCreatedTicketsForChart(){
+    public function GetMonthlyCreatedTicketsForChart($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_monthly_created_tickets_for_chart()";
+            $sql = "SELECT * FROM get_monthly_created_tickets_for_chart(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -809,9 +809,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetMonthlyTicketPercentageChange(){
+    public function GetMonthlyTicketPercentageChange($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_latest_monthly_ticket_percentage_change()";
+            $sql = "SELECT * FROM get_latest_monthly_ticket_percentage_change(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -819,9 +819,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetMonthlyCreatedTicketsForChartForState(){
+    public function GetMonthlyCreatedTicketsForChartForState($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM GetTicketsByRegion()";
+            $sql = "SELECT * FROM GetTicketsByRegion(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
