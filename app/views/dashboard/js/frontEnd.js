@@ -2121,7 +2121,27 @@ function loadResolveTicketDetails() {
   contentDiv.innerHTML = "<p>Cargando información de Tickets Resueltos...</p>"; // Mensaje de carga
   searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
 
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetResolveTicketsForCard`)
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
+  // Crear el cuerpo de la petición con el ID del usuario
+  const body = new URLSearchParams({ 
+    id_user: userId
+  });
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetResolveTicketsForCard`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: body
+  })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -2185,7 +2205,27 @@ function loadDetalleTicketComercial() {
   contentDiv.innerHTML = "<p>Cargando información de tickets Comerciales...</p>"; // Mensaje de carga
   searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
 
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetDetalleTicketComercial`)
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
+  // Crear el cuerpo de la petición con el ID del usuario
+  const body = new URLSearchParams({ 
+    id_user: userId
+  });
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetDetalleTicketComercial`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: body
+  })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -2249,7 +2289,27 @@ function loadTallerTicketDetails() {
   contentDiv.innerHTML = "<p>Cargando información de Tickets de Taller...</p>"; // Mensaje de carga
   searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
 
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTallerTicketsForCard`)
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
+  // Crear el cuerpo de la petición con el ID del usuario
+  const body = new URLSearchParams({ 
+    id_user: userId
+  });
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTallerTicketsForCard`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: body
+  })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -3913,6 +3973,15 @@ async function getTicketPercentage() {
 
 async function getTicketResolve() {
     try {
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
         const actionPath = 'getTicketsResueltosCount';
         const fetchOptions = {
             method: 'POST',
@@ -3920,7 +3989,8 @@ async function getTicketResolve() {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                action: 'getTicketsResueltosCount'
+                action: 'getTicketsResueltosCount',
+                id_user: userId
             })
         };
 
@@ -3942,7 +4012,19 @@ async function getTicketsResueltosPercentage() {
     const thresholdForGood = 50;
 
     try {
-        const body = new URLSearchParams({ action: 'getTicketsResueltosPercentage' });
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
+        const body = new URLSearchParams({ 
+            action: 'getTicketsResueltosPercentage',
+            id_user: userId
+        });
         const data = await fetchJsonByAction('getTicketsResueltosPercentage', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -3988,7 +4070,19 @@ async function getTicketsgestionComercialporcent() {
     const thresholdForGood = 50;
 
     try {
-        const body = new URLSearchParams({ action: 'getTicketsgestioncomercialPorcent' });
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
+        const body = new URLSearchParams({ 
+            action: 'getTicketsgestioncomercialPorcent',
+            id_user: userId
+        });
         const data = await fetchJsonByAction('getTicketsgestioncomercialPorcent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -4059,6 +4153,15 @@ async function getTicketTotal() {
 
 async function getTicketGestionComercial() {
     try {
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
         const actionPath = 'getTicketGestionComercialCount';
         const fetchOptions = {
             method: 'POST',
@@ -4066,7 +4169,8 @@ async function getTicketGestionComercial() {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                action: 'getTicketGestionComercialCount'
+                action: 'getTicketGestionComercialCount',
+                id_user: userId
             })
         };
 
@@ -4085,7 +4189,19 @@ async function getTicketGestionComercial() {
 
 async function getTicketTotalSendTotaller() {
     try {
-        const body = new URLSearchParams({ action: 'getTicketsSendTallerTotalCount' });
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
+        const body = new URLSearchParams({ 
+            action: 'getTicketsSendTallerTotalCount',
+            id_user: userId
+        });
         const data = await fetchJsonByAction('getTicketsSendTallerTotalCount', {
             method: 'POST',
             headers: {
@@ -4109,6 +4225,15 @@ async function getTotalTicketsPercentageOFSendTaller() {
     const thresholdForGood = 50;
 
     try {
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
         const actionPath = 'getTotalTicketsPercentageSendToTaller';
         const fetchOptions = {
             method: 'POST',
@@ -4116,7 +4241,8 @@ async function getTotalTicketsPercentageOFSendTaller() {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                action: 'getTotalTicketsPercentageSendToTaller'
+                action: 'getTotalTicketsPercentageSendToTaller',
+                id_user: userId
             })
         };
 

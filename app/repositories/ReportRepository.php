@@ -104,11 +104,11 @@ class ReportRepository
         return $result['row']['get_total_open_tickets'];
     }
 
-    public function getTicketsResueltosCount()
+    public function getTicketsResueltosCount($id_rol, $id_user)
     {
         // Lógica para obtener la cantidad de usuarios
-        $result = $this->model->getTicketsResueltosCount(); // Asumiendo que tienes este método en tu modelo
-        return $result['row']['total_tickets_resuelto'];
+        $result = $this->model->getTicketsResueltosCount($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
+        return $result['row']['get_total_resolve_tickets'];
     }
 
     public function getTicketsTotalCount($id_region, $id_user)
@@ -124,9 +124,9 @@ class ReportRepository
         return $result['row']['get_percentage_open_tickets'];
     }
 
-    public function getTicketsResueltosPercentageData()
+    public function getTicketsResueltosPercentageData($id_rol, $id_user)
     {
-        $result = $this->model->getTicketsResueltosCountsForPercentage();
+        $result = $this->model->getTicketsResueltosCountsForPercentage($id_rol, $id_user);
         return $result['row']['get_percentage_resolved_tickets'];
     }
 
@@ -348,15 +348,15 @@ class ReportRepository
         }
     }
 
-    public function GetTicketsSendTallerTotalCount(){
+    public function GetTicketsSendTallerTotalCount($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTicketsSendTallerTotalCount(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTicketsSendTallerTotalCount($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         return $result['row']['get_total_tickets_lab'];
     }
 
-    public function GetTotalTicketsPercentageSendToTaller(){
+    public function GetTotalTicketsPercentageSendToTaller($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTotalTicketsPercentageSendToTaller(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTotalTicketsPercentageSendToTaller($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         return $result['row']['get_percentage_tickets_in_lab_of_total'];
     }
 
@@ -375,9 +375,9 @@ class ReportRepository
         }
     }
 
-    public function GetResolveTicketsForCard(){
+    public function GetResolveTicketsForCard($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetResolveTicketsForCard(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetResolveTicketsForCard($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -390,9 +390,9 @@ class ReportRepository
         }
     }
 
-    public function GetTallerTicketsForCard(){
+    public function GetTallerTicketsForCard($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTallerTicketsForCard(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTallerTicketsForCard($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -582,15 +582,15 @@ class ReportRepository
         }
     }
 
-    public function GetTicketsGestionComercialPorcent(){
+    public function GetTicketsGestionComercialPorcent($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTicketsGestionComercialPorcent(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTicketsGestionComercialPorcent($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         return $result['row']['get_percentage_gestion_comercial_tickets'];
     }
 
-    public function getTicketagestioncomercialCount(){
+    public function getTicketagestioncomercialCount($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->getTicketagestioncomercialCount(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->getTicketagestioncomercialCount($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         return $result['row']['getticketagestioncomercialcount'];
     }
 
@@ -600,9 +600,9 @@ class ReportRepository
         return $result['row']['get_entregado_cliente'];
     }
 
-    public function GetDetalleTicketComercial(){
+    public function GetDetalleTicketComercial($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetDetalleTicketComercial(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetDetalleTicketComercial($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
