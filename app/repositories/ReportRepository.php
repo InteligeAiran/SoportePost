@@ -631,17 +631,22 @@ class ReportRepository
         }
     }
 
-    public function GetTicketCounts(){
-        // Lógica para obtener conteos de tickets por módulo
-        $result = $this->model->GetTicketCounts();
-        if ($result && $result['numRows'] > 0) {
-            $rows = [];
-            for ($i = 0; $i < $result['numRows']; $i++) {
-                $rows[] = pg_fetch_assoc($result['query'], $i);
+    public function GetTicketCounts($id_rol, $id_user){
+        try {
+            // Lógica para obtener conteos de tickets por módulo
+            $result = $this->model->GetTicketCounts($id_rol, $id_user);
+            if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+                $rows = [];
+                for ($i = 0; $i < $result['numRows']; $i++) {
+                    $rows[] = pg_fetch_assoc($result['query'], $i);
+                }
+                pg_free_result(result: $result['query']);
+                return $rows;
+            } else {
+                return [];
             }
-            pg_free_result(result: $result['query']);
-            return $rows;
-        } else {
+        } catch (Exception $e) {
+            error_log("Error in ReportRepository->GetTicketCounts: " . $e->getMessage());
             return [];
         }
     } 

@@ -1227,13 +1227,14 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetTicketCounts(){
+    public function GetTicketCounts($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_ticket_counts_by_accion();";
+            $sql = "SELECT * FROM get_tickets_by_action(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
             // Handle exception
+            error_log("Error in GetTicketCounts: " . $e->getMessage());
             return false;
         }
     }

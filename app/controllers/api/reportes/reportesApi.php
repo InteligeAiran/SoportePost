@@ -1589,14 +1589,34 @@ class reportes extends Controller {
     }
 
     public function handleGetTicketCounts(){
-        $repository = new ReportRepository();
-        $result = $repository->GetTicketCounts();
-        if ($result !== false && !empty($result)) {
-            $this->response(['success' => true, 'counts' => $result], 200);
-        } elseif ($result !== false && empty($result)) {
-            $this->response(['success' => false, 'message' => 'No hay tickets disponibles'], 404);
-        } else {
-            $this->response(['success' => false, 'message' => 'Error al obtener los tickets'], 500);
+        try {
+            $repository = new ReportRepository();
+            $repositoryUser = new UserRepository();
+
+            $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+
+            if (!$id_user) {
+                $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+                return;
+            }
+
+            $id_rol = $repositoryUser->getUserRol($id_user);
+
+            if(!$id_rol){
+                $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+                return;
+            }
+            
+            $result = $repository->GetTicketCounts($id_rol, $id_user);
+            
+            if (is_array($result)) {
+                $this->response(['success' => true, 'counts' => $result], 200);
+            } else {
+                $this->response(['success' => false, 'message' => 'Error al obtener los tickets'], 500);
+            }
+        } catch (Exception $e) {
+            error_log("Error in handleGetTicketCounts: " . $e->getMessage());
+            $this->response(['success' => false, 'message' => 'Error interno del servidor'], 500);
         }
     }
 

@@ -5192,15 +5192,52 @@ async function getTicketCounts() {
         </tr>
     `;
 
+    // Obtener el ID del usuario
+    const userIdElement = document.getElementById("userIdForPassword");
+    const userId = userIdElement ? userIdElement.value : null;
+
+    if (!userId) {
+        tbodyCounts.innerHTML = `
+            <tr>
+                <td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">
+                    Error: No se pudo obtener el ID del usuario.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
     try {
-        const data = await fetchJsonByAction('GetTicketCounts');
+        // Usar fetch con POST para enviar el id_user
+        const dataToSend = new URLSearchParams({
+            action: "GetTicketCounts",
+            id_user: userId
+        }).toString();
+
+        const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketCounts`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: dataToSend,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || "Error en la respuesta de la API");
+        }
 
         // Limpiar el contenido de la tabla antes de renderizar
         tbodyCounts.innerHTML = '';
 
         if (data.success && Array.isArray(data.counts) && data.counts.length > 0) {
             // Filtrar solo elementos con total_tickets > 0 y almacenar globalmente
-            ticketCountsData = data.counts.filter(item => item.total_tickets > 0);
+            ticketCountsData = data.counts.filter(item => parseInt(item.total_tickets) > 0);
             
             if (ticketCountsData.length === 0) {
                 tbodyCounts.innerHTML = `
@@ -5252,7 +5289,7 @@ function renderTicketCountsTable() {
     const rowsToShow = ticketCountsData.length;
     const isExpanded = visibleRowsLimit >= ticketCountsData.length;
     const showExpandButton = rowsToShow > 5; // Siempre mostrar botón si hay más de 5 filas
-    const currentVisibleRows = visibleRowsLimit;
+    const currentVisibleRows = Math.min(visibleRowsLimit, ticketCountsData.length);
     const hiddenRows = rowsToShow - 5;
 
     // Renderizar las filas visibles
@@ -5260,9 +5297,10 @@ function renderTicketCountsTable() {
         const item = ticketCountsData[i];
         const tr = document.createElement('tr');
         const moduleName = item.name_accion_ticket;
+        const totalTickets = parseInt(item.total_tickets);
         tr.innerHTML = `
             <td class="px-5 py-5 border-b border-gray-200 text-sm">${moduleName}</td>
-            <td class="px-5 py-5 border-b border-gray-200 text-sm">${item.total_tickets}</td>
+            <td class="px-5 py-5 border-b border-gray-200 text-sm">${totalTickets}</td>
         `;
         tbodyCounts.appendChild(tr);
     }
