@@ -868,7 +868,7 @@ function mi_navbar() {}
                         <div class="col-lg-5">
                             <div class="card shadow-md rounded-xl">
                                 <div class="card-header pb-0 p-4 border-b border-gray-200 bg-gradient-info">
-                                    <h6 class="text-2xl font-semibold text-gray-800" style="font-size: 1.2rem;">Categorías de Tickets</h6>
+                                    <h6 class="text-2xl font-semibold text-gray-800" style="font-size: 1.2rem;">Estatus De Taller</h6>
                                 </div>
                                 <div class="card-body p-4">
                                     <ul class="list-group">
@@ -1080,7 +1080,7 @@ function mi_navbar() {}
 
                 <!-- Card ver Tickets Entregados a Cliente -->
                     <div class="modal fade" id="entregadoClienteModal" tabindex="-1" aria-labelledby="entregadoClienteModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-xl">
+                        <div class="modal-dialog modal-xl modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header bg-gradient-primary">
                                     <h5 class="modal-title text-white" id="entregadoClienteModalLabel">POS Entregado a Cliente</h5>
@@ -1195,10 +1195,6 @@ function mi_navbar() {}
             </div>
         <!-- END MODAL PARA NUEVA CONTRASENA -->
 
-        <!-- ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
-        <input type="hidden" id="userIdForPassword" value="<?php echo $_SESSION['id_user']; ?>">
-        <!-- END ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
-
         <footer class="footer" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2.5rem 0; margin-top: 3rem; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
             <div class="container-fluid">
                 <div class="row align-items-center justify-content-between">
@@ -1238,6 +1234,10 @@ function mi_navbar() {}
                         </div>
                     </div>
                 </div>
+
+                <!-- ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
+                    <input type="hidden" id="userIdForPassword" value="<?php echo $_SESSION['id_user']; ?>">
+                <!-- END ID USER PARA LA REVISION DE ESTATUS DEL USUARIO -->
                 
                 <hr style="border: none; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); margin: 2rem 0 1.5rem;">
                 
@@ -1353,7 +1353,6 @@ function mi_navbar() {}
         <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
         <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
-        .
 
         <!-- Chart -->
         <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>

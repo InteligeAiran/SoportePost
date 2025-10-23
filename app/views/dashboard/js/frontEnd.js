@@ -867,68 +867,84 @@ function displayFilteredTickets(ticketsToDisplay, containerId, month = null, sta
   attachMarkReceivedListeners();
 }
 
-function loadIndividualIrreparable() {
-    const contentDiv = document.getElementById("IrreparableTikModalTicketsContent");
-    const searchInput = document.getElementById("ticketSearchInputIrreparable");
+  function loadIndividualIrreparable() {
+      const contentDiv = document.getElementById("IrreparableTikModalTicketsContent");
+      const searchInput = document.getElementById("ticketSearchInputIrreparable");
 
-    contentDiv.innerHTML = "<p>Cargando información de los POS Irreparables...</p>"; // Loading message
-    searchInput.value = ''; // Clear the search input on reload
+      contentDiv.innerHTML = "<p>Cargando información de los POS Irreparables...</p>"; // Loading message
+      searchInput.value = ''; // Clear the search input on reload
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsIrreparables`)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then((data) => {
-            if (data.success) {
-                allIrreparableTickets = data.details; // Store all irreparable tickets
-                displayFilteredTickets(allIrreparableTickets, 'IrreparableTikModalTicketsContent'); // Display all tickets initially
+      const userId = document.getElementById("userIdForPassword").value;
+      if (!userId) {
+          console.error("userId not found");
+          contentDiv.innerHTML = "<p>Error: No se encontró el ID del usuario.</p>";
+          return;
+      }
 
-                // Add event listener for search input with stable reference
-                if (allIrreparableTicketsSearchHandler) {
-                    searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
-                }
-                allIrreparableTicketsSearchHandler = (e) => {
-                    handleTicketSearch(e, allIrreparableTickets, 'IrreparableTikModalTicketsContent');
-                };
-                searchInput.addEventListener('input', allIrreparableTicketsSearchHandler);
-            } else {
-                contentDiv.innerHTML =
-                    "<p>Error al cargar los detalles de tickets irreparables: " +
-                    (data.message || "Error desconocido") +
-                    "</p>";
-                console.error(
-                    "Error en los datos de la API para tickets irreparables:",
-                    data.message
-                );
-                allIrreparableTickets = []; // Clear on error
-                if (allIrreparableTicketsSearchHandler) {
-                    searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
-                    allIrreparableTicketsSearchHandler = null;
-                }
-            }
-        })
-        .catch((error) => {
-            contentDiv.innerHTML =
-                `<div class="text-center text-muted py-5">
-                    <div class="d-flex flex-column align-items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                        </svg>
-                        <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                        <p class="text-muted mb-0">No hay tickets en Taller con estatus irreparable.</p>
-                    </div>
-                </div>`;
-            console.error("Error fetching irreparable ticket details:", error);
-            allIrreparableTickets = []; // Clear on error
-            if (allIrreparableTicketsSearchHandler) {
-                searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
-                allIrreparableTicketsSearchHandler = null;
-            }
-        });
-}
+      const body = new URLSearchParams({
+          action: 'GetTicketsIrreparables',
+          id_user: userId
+      }).toString();
+
+      fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsIrreparables`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: body,
+      })
+          .then((response) => {
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.json();
+          })
+          .then((data) => {
+              if (data.success) {
+                  allIrreparableTickets = data.details; // Store all irreparable tickets
+                  displayFilteredTickets(allIrreparableTickets, 'IrreparableTikModalTicketsContent'); // Display all tickets initially
+
+                  // Add event listener for search input with stable reference
+                  if (allIrreparableTicketsSearchHandler) {
+                      searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
+                  }
+                  allIrreparableTicketsSearchHandler = (e) => {
+                      handleTicketSearch(e, allIrreparableTickets, 'IrreparableTikModalTicketsContent');
+                  };
+                  searchInput.addEventListener('input', allIrreparableTicketsSearchHandler);
+              } else {
+                  contentDiv.innerHTML =
+                      "<p>Error al cargar los detalles de tickets irreparables: " +
+                      (data.message || "Error desconocido") +
+                      "</p>";
+                  console.error(
+                      "Error en los datos de la API para tickets irreparables:",
+                      data.message
+                  );
+                  allIrreparableTickets = []; // Clear on error
+                  if (allIrreparableTicketsSearchHandler) {
+                      searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
+                      allIrreparableTicketsSearchHandler = null;
+                  }
+              }
+          })
+          .catch((error) => {
+              contentDiv.innerHTML =
+                  `<div class="text-center text-muted py-5">
+                      <div class="d-flex flex-column align-items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                          </svg>
+                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                          <p class="text-muted mb-0">No hay tickets en Taller con estatus irreparable.</p>
+                      </div>
+                  </div>`;
+              console.error("Error fetching irreparable ticket details:", error);
+              allIrreparableTickets = []; // Clear on error
+              if (allIrreparableTicketsSearchHandler) {
+                  searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
+                  allIrreparableTicketsSearchHandler = null;
+              }
+          });
+  }
 
 function formatIrreparableTicketsDetails(details){
 if (!Array.isArray(details)) {
@@ -1019,7 +1035,22 @@ function loadIndividualPendienteRepuesto() {
     contentDiv.innerHTML = "<p>Cargando información de los POS Pendientes por Repuestos...</p>"; // Loading message
     searchInput.value = ''; // Clear the search input on reload
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendientesPorRepuestos`)
+    const userId = document.getElementById("userIdForPassword").value;
+    if (!userId) {
+        console.error("userId not found");
+        contentDiv.innerHTML = "<p>Error: No se encontró el ID del usuario.</p>";
+        return;
+    }
+
+    const body = new URLSearchParams({
+        id_user: userId
+    }).toString();
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendientesPorRepuestos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body,
+    })
         .then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -1170,7 +1201,22 @@ function loadIndividualReparado() {
     contentDiv.innerHTML = "<p>Cargando información de los POS Reparados...</p>"; // Loading message
     searchInput.value = ''; // Clear the search input on reload
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsYaEstanReparados`)
+    const userId = document.getElementById("userIdForPassword").value;
+    if (!userId) {
+        console.error("userId not found");
+        contentDiv.innerHTML = "<p>Error: No se encontró el ID del usuario.</p>";
+        return;
+    }
+
+    const body = new URLSearchParams({
+        id_user: userId
+    }).toString();
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsYaEstanReparados`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body,
+    })
         .then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -1318,7 +1364,22 @@ function loadIndividualProceessReparacion() {
     contentDiv.innerHTML = "<p>Cargando información de los POS en proceso de reparación...</p>"; // Mensaje de carga
     searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendienteReparacion`)
+    const userId = document.getElementById("userIdForPassword").value;
+    if (!userId) {
+        console.error("userId not found");
+        contentDiv.innerHTML = "<p>Error: No se encontró el ID del usuario.</p>";
+        return;
+    }
+
+    const body = new URLSearchParams({
+        id_user: userId
+    }).toString();
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendienteReparacion`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body,
+    })
         .then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -1952,7 +2013,22 @@ function loadEntregadoClienteDetails() {
     contentDiv.innerHTML = "<p>Cargando información de tickets entregados al cliente...</p>"; // Loading message
     searchInput.value = ''; // Clear the search input on reload
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketEntregadoClienteDetails`)
+    const userId = document.getElementById("userIdForPassword").value;
+    if (!userId) {
+        console.error("userId not found");
+        contentDiv.innerHTML = "<p>Error: No se encontró el ID del usuario.</p>";
+        return;
+    }
+
+    const body = new URLSearchParams({
+        id_user: userId
+    }).toString();
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketEntregadoClienteDetails`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body,
+    })
         .then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -2764,94 +2840,175 @@ function drawTimelineLine() {
 
 async function getTicketProcessReparacion() {
     try {
-        const data = await fetchJsonByAction('getTicketsProcessReparacionCount', {
+        const userId = document.getElementById("userIdForPassword").value;
+        if (!userId) {
+            console.error("userId not found");
+            document.getElementById("CountProcessReparacion").textContent = "0";
+            return;
+        }
+
+        const body = new URLSearchParams({
+            action: "getTicketsProcessReparacionCount",
+            id_user: userId
+        }).toString();
+
+        const data = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsProcessReparacionCount`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: "action=getTicketsProcessReparacionCount",
+            body: body,
         });
 
-        if (data.success) {
-            document.getElementById("CountProcessReparacion").textContent = data.count;
+        const response = await data.json();
+
+        if (response.success) {
+            document.getElementById("CountProcessReparacion").textContent = response.count;
         } else {
-            console.error("Error:", data.message);
+            console.error("Error:", response.message);
+            document.getElementById("CountProcessReparacion").textContent = "0";
         }
     } catch (error) {
         console.error("Error al obtener el conteo de tickets:", error);
+        document.getElementById("CountProcessReparacion").textContent = "0";
     }
 }
 
 async function getTicketReparados() {
     try {
-        const data = await fetchJsonByAction('getTicketsReparadosCount', {
+        const userId = document.getElementById("userIdForPassword").value;
+        if (!userId) {
+            console.error("userId not found");
+            document.getElementById("ReparadopsCount").textContent = "0";
+            return;
+        }
+
+        const body = new URLSearchParams({
+            action: "getTicketsReparadosCount",
+            id_user: userId
+        }).toString();
+
+        const data = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsReparadosCount`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: "action=getTicketsReparadosCount",
+            body: body,
         });
 
-        if (data.success) {
-            document.getElementById("ReparadopsCount").textContent = data.count;
+        const response = await data.json();
+
+        if (response.success) {
+            document.getElementById("ReparadopsCount").textContent = response.count;
         } else {
-            console.error("Error:", data.message);
+            console.error("Error:", response.message);
+            document.getElementById("ReparadopsCount").textContent = "0";
         }
     } catch (error) {
         console.error("Error al obtener el conteo de tickets reparados:", error);
+        document.getElementById("ReparadopsCount").textContent = "0";
     }
 }
 
 async function getTicketPendienteRepuesto() {
     try {
-        const body = new URLSearchParams({ action: 'getTicketPendienteRepuestoCount' });
-        const data = await fetchJsonByAction('getTicketPendienteRepuestoCount', {
+        const userId = document.getElementById("userIdForPassword").value;
+        if (!userId) {
+            console.error("userId not found");
+            document.getElementById("PendientePorRepuesto").textContent = "0";
+            return;
+        }
+
+        const body = new URLSearchParams({
+            action: 'getTicketPendienteRepuestoCount',
+            id_user: userId
+        }).toString();
+
+        const data = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketPendienteRepuestoCount`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body
+            body: body
         });
 
-        if (data.success) {
-            document.getElementById("PendientePorRepuesto").textContent = data.count;
+        const response = await data.json();
+
+        if (response.success) {
+            document.getElementById("PendientePorRepuesto").textContent = response.count;
         } else {
-            console.error("Server Error:", data.message);
+            console.error("Server Error:", response.message);
+            document.getElementById("PendientePorRepuesto").textContent = "0";
         }
     } catch (error) {
         console.error("Failed to fetch pending ticket count:", error);
+        document.getElementById("PendientePorRepuesto").textContent = "0";
     }
 }
 
 async function getTicketEntregadoCliente() {
     try {
-        const body = new URLSearchParams({ action: 'getTicketEntregadoCliente' });
-        const data = await fetchJsonByAction('getTicketEntregadoCliente', {
+        const userId = document.getElementById("userIdForPassword").value;
+        if (!userId) {
+            console.error("userId not found");
+            document.getElementById("EntregadosCliente").textContent = "0";
+            return;
+        }
+
+        const body = new URLSearchParams({
+            action: 'getTicketEntregadoCliente',
+            id_user: userId
+        }).toString();
+
+        const data = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketEntregadoCliente`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body
+            body: body
         });
 
-        if (data.success) {
-            document.getElementById("EntregadosCliente").textContent = data.count;
+        const response = await data.json();
+
+        if (response.success) {
+            document.getElementById("EntregadosCliente").textContent = response.count;
         } else {
-            console.error("Server Error:", data.message);
+            console.error("Server Error:", response.message);
+            document.getElementById("EntregadosCliente").textContent = "0";
         }
     } catch (error) {
         console.error("Failed to fetch tickets delivered to client:", error);
+        document.getElementById("EntregadosCliente").textContent = "0";
     }
 }
 
 async function getTicketIrreparables() {
     try {
-        const body = new URLSearchParams({ action: 'getTicketIrreparablesCount' });
-        const data = await fetchJsonByAction('getTicketIrreparablesCount', {
+        const userId = document.getElementById("userIdForPassword").value;
+        if (!userId) {
+            console.error("userId not found");
+            document.getElementById("CountIrreparable").textContent = "0";
+            return;
+        }
+
+        const body = new URLSearchParams({
+            action: 'getTicketIrreparablesCount',
+            id_user: userId
+        }).toString();
+
+        const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketIrreparablesCount`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body
+            body: body
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
 
         if (data.success) {
             document.getElementById("CountIrreparable").textContent = data.count;
         } else {
             console.error("Server Error:", data.message);
+            document.getElementById("CountIrreparable").textContent = "0";
         }
     } catch (error) {
         console.error("Failed to fetch irreparable ticket count:", error);
+        document.getElementById("CountIrreparable").textContent = "0";
     }
 }
 

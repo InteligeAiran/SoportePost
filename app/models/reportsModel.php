@@ -899,9 +899,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetTicketsPendienteReparacion(){
+    public function GetTicketsPendienteReparacion($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_individual_tickets_in_PendienteReparacion()";
+            $sql = "SELECT * FROM get_individual_tickets_in_PendienteReparacion(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -909,9 +909,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetTicketsProcessReparacionCount(){
+    public function GetTicketsProcessReparacionCount($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_total_proceso_reparacion()";
+            $sql = "SELECT * FROM get_total_proceso_reparacion(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -919,9 +919,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetTicketsReparadosCount(){
+    public function GetTicketsReparadosCount($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_total_reparados()";
+            $sql = "SELECT * FROM get_total_reparados(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -929,9 +929,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function handleGetTicketsReparado(){
+    public function handleGetTicketsReparado($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_individual_tickets_reparados()";
+            $sql = "SELECT * FROM get_individual_tickets_reparados(".$id_rol.", ".$id_user."    )";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -939,9 +939,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetTicketsPendientesPorRepuestos(){
+    public function GetTicketsPendientesPorRepuestos($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_individual_tickets_pendientes_por_repuestos()";
+            $sql = "SELECT * FROM get_individual_tickets_pendientes_por_repuestos(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -949,9 +949,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetTicketPendienteRepuestoCount(){
+    public function GetTicketPendienteRepuestoCount($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_total_pendiente_repuesto()";
+            $sql = "SELECT * FROM get_total_pendiente_repuesto(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -959,9 +959,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetTicketIrreparablesCount(){
+    public function GetTicketIrreparablesCount($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_total_irreparable()";
+            $sql = "SELECT * FROM get_total_irreparable(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -969,9 +969,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetTicketsIrreparables(){
+    public function GetTicketsIrreparables($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_individual_tickets_irreparables()";
+            $sql = "SELECT * FROM get_individual_tickets_irreparables(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -1197,9 +1197,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function handlegetTicketEntregadoCliente(){
+    public function handlegetTicketEntregadoCliente($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_entregado_cliente()";
+            $sql = "SELECT * FROM get_entregado_cliente(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -1239,9 +1239,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function EntregadoClienteDetails(){
+    public function EntregadoClienteDetails($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_individual_entregadoCliente_tickets_details()";
+            $sql = "SELECT * FROM get_individual_entregadoCliente_tickets_details(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

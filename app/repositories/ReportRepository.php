@@ -5,6 +5,7 @@ require_once __DIR__ . '/../models/reportsModel.php'; // Asegúrate de que el mo
 
 use PDO;
 use reportsModel; // Asegúrate de que tu modelo de usuario exista
+use Exception;
 
 class ReportRepository
 {
@@ -405,9 +406,9 @@ class ReportRepository
         }
     }
 
-    public function GetTicketsPendienteReparacion(){
+    public function GetTicketsPendienteReparacion($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTicketsPendienteReparacion(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTicketsPendienteReparacion($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -420,21 +421,21 @@ class ReportRepository
         }
     }
 
-    public function GetTicketsProcessReparacionCount(){
+    public function GetTicketsProcessReparacionCount($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTicketsProcessReparacionCount(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTicketsProcessReparacionCount($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         return $result['row']['get_total_proceso_reparacion'];
     }
 
-    public function GetTicketsReparadosCount(){
+    public function GetTicketsReparadosCount($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTicketsReparadosCount(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTicketsReparadosCount($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         return $result['row']['get_total_reparados'];
     }
 
-    public function handleGetTicketsReparado(){
+    public function handleGetTicketsReparado($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->handleGetTicketsReparado(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->handleGetTicketsReparado($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -447,9 +448,9 @@ class ReportRepository
         }
     }
 
-    public function GetTicketsPendientesPorRepuestos(){
+    public function GetTicketsPendientesPorRepuestos($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTicketsPendientesPorRepuestos(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTicketsPendientesPorRepuestos($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -462,21 +463,21 @@ class ReportRepository
         }
     }
 
-    public function GetTicketPendienteRepuestoCount(){
+    public function GetTicketPendienteRepuestoCount($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTicketPendienteRepuestoCount(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTicketPendienteRepuestoCount($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         return $result['row']['get_total_pendiente_repuesto'];
     }
 
-    public function GetTicketIrreparablesCount(){
+    public function GetTicketIrreparablesCount($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTicketIrreparablesCount(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTicketIrreparablesCount($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         return $result['row']['get_total_irreparable'];
     }
 
-    public function GetTicketsIrreparables(){
+    public function GetTicketsIrreparables($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTicketsIrreparables(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTicketsIrreparables($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -594,9 +595,9 @@ class ReportRepository
         return $result['row']['getticketagestioncomercialcount'];
     }
 
-    public function handlegetTicketEntregadoCliente(){
+    public function handlegetTicketEntregadoCliente($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->handlegetTicketEntregadoCliente(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->handlegetTicketEntregadoCliente($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         return $result['row']['get_entregado_cliente'];
     }
 
@@ -651,16 +652,15 @@ class ReportRepository
         }
     } 
 
-    public function EntregadoClienteDetails(){
+    public function EntregadoClienteDetails($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->EntregadoClienteDetails(); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->EntregadoClienteDetails($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
                 $rows[] = pg_fetch_assoc($result['query'], $i);
             }
             pg_free_result(result: $result['query']);
-            pg_free_result($result['query']);
             return $rows;
         } else {
             return [];
