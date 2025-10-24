@@ -9,6 +9,14 @@ let usuariosAcciones = {
     acciones: [3, 4],
   },
 
+  cerrado: {
+    modulo: 'domiciliacion',
+    modalId: 'ResolveTicketsModal', // Replace with actual modal ID
+    buttonId: 'btn-desafiliado-deuda',
+    filterTerm: 'Deudor - Desafiliado con Deuda',
+    acciones: [5], // id_accion_ticket = 5 para "Cerrado"
+  },
+
   tecnico: {
     modulo: 'tecnico',
     modalId: 'tecnicoModal', // Replace with actual modal ID (e.g., for Recibido/Reasignado)
@@ -40,6 +48,15 @@ function redirigirPorAccion(idStatusAccion, idTicket, nroTicket) {
   for (const usuario in usuariosAcciones) {
     if (usuariosAcciones[usuario].acciones.includes(idStatusAccion)) {
       const modulo = usuariosAcciones[usuario].modulo;
+      
+      // Para tickets cerrados (domiciliación), guardar información para activar filtro automáticamente
+      if (modulo === 'domiciliacion' && usuariosAcciones[usuario].acciones.includes(5)) {
+        // Guardar información para activar el filtro después de la redirección
+        sessionStorage.setItem('activarFiltroDesafiliado', 'true');
+        sessionStorage.setItem('ticketId', idTicket);
+        sessionStorage.setItem('ticketNro', nroTicket);
+      }
+      
       const url = `${modulo}?id_ticket=${idTicket}&nro_ticket=${encodeURIComponent(nroTicket)}`;
       window.location.href = url; // Perform the redirect
       return;
@@ -850,68 +867,84 @@ function displayFilteredTickets(ticketsToDisplay, containerId, month = null, sta
   attachMarkReceivedListeners();
 }
 
-function loadIndividualIrreparable() {
-    const contentDiv = document.getElementById("IrreparableTikModalTicketsContent");
-    const searchInput = document.getElementById("ticketSearchInputIrreparable");
+  function loadIndividualIrreparable() {
+      const contentDiv = document.getElementById("IrreparableTikModalTicketsContent");
+      const searchInput = document.getElementById("ticketSearchInputIrreparable");
 
-    contentDiv.innerHTML = "<p>Cargando información de los POS Irreparables...</p>"; // Loading message
-    searchInput.value = ''; // Clear the search input on reload
+      contentDiv.innerHTML = "<p>Cargando información de los POS Irreparables...</p>"; // Loading message
+      searchInput.value = ''; // Clear the search input on reload
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsIrreparables`)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then((data) => {
-            if (data.success) {
-                allIrreparableTickets = data.details; // Store all irreparable tickets
-                displayFilteredTickets(allIrreparableTickets, 'IrreparableTikModalTicketsContent'); // Display all tickets initially
+      const userId = document.getElementById("userIdForPassword").value;
+      if (!userId) {
+          console.error("userId not found");
+          contentDiv.innerHTML = "<p>Error: No se encontró el ID del usuario.</p>";
+          return;
+      }
 
-                // Add event listener for search input with stable reference
-                if (allIrreparableTicketsSearchHandler) {
-                    searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
-                }
-                allIrreparableTicketsSearchHandler = (e) => {
-                    handleTicketSearch(e, allIrreparableTickets, 'IrreparableTikModalTicketsContent');
-                };
-                searchInput.addEventListener('input', allIrreparableTicketsSearchHandler);
-            } else {
-                contentDiv.innerHTML =
-                    "<p>Error al cargar los detalles de tickets irreparables: " +
-                    (data.message || "Error desconocido") +
-                    "</p>";
-                console.error(
-                    "Error en los datos de la API para tickets irreparables:",
-                    data.message
-                );
-                allIrreparableTickets = []; // Clear on error
-                if (allIrreparableTicketsSearchHandler) {
-                    searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
-                    allIrreparableTicketsSearchHandler = null;
-                }
-            }
-        })
-        .catch((error) => {
-            contentDiv.innerHTML =
-                `<div class="text-center text-muted py-5">
-                    <div class="d-flex flex-column align-items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                        </svg>
-                        <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                        <p class="text-muted mb-0">No hay tickets en Taller con estatus irreparable.</p>
-                    </div>
-                </div>`;
-            console.error("Error fetching irreparable ticket details:", error);
-            allIrreparableTickets = []; // Clear on error
-            if (allIrreparableTicketsSearchHandler) {
-                searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
-                allIrreparableTicketsSearchHandler = null;
-            }
-        });
-}
+      const body = new URLSearchParams({
+          action: 'GetTicketsIrreparables',
+          id_user: userId
+      }).toString();
+
+      fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsIrreparables`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: body,
+      })
+          .then((response) => {
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.json();
+          })
+          .then((data) => {
+              if (data.success) {
+                  allIrreparableTickets = data.details; // Store all irreparable tickets
+                  displayFilteredTickets(allIrreparableTickets, 'IrreparableTikModalTicketsContent'); // Display all tickets initially
+
+                  // Add event listener for search input with stable reference
+                  if (allIrreparableTicketsSearchHandler) {
+                      searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
+                  }
+                  allIrreparableTicketsSearchHandler = (e) => {
+                      handleTicketSearch(e, allIrreparableTickets, 'IrreparableTikModalTicketsContent');
+                  };
+                  searchInput.addEventListener('input', allIrreparableTicketsSearchHandler);
+              } else {
+                  contentDiv.innerHTML =
+                      "<p>Error al cargar los detalles de tickets irreparables: " +
+                      (data.message || "Error desconocido") +
+                      "</p>";
+                  console.error(
+                      "Error en los datos de la API para tickets irreparables:",
+                      data.message
+                  );
+                  allIrreparableTickets = []; // Clear on error
+                  if (allIrreparableTicketsSearchHandler) {
+                      searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
+                      allIrreparableTicketsSearchHandler = null;
+                  }
+              }
+          })
+          .catch((error) => {
+              contentDiv.innerHTML =
+                  `<div class="text-center text-muted py-5">
+                      <div class="d-flex flex-column align-items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                              <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                          </svg>
+                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
+                          <p class="text-muted mb-0">No hay tickets en Taller con estatus irreparable.</p>
+                      </div>
+                  </div>`;
+              console.error("Error fetching irreparable ticket details:", error);
+              allIrreparableTickets = []; // Clear on error
+              if (allIrreparableTicketsSearchHandler) {
+                  searchInput.removeEventListener('input', allIrreparableTicketsSearchHandler);
+                  allIrreparableTicketsSearchHandler = null;
+              }
+          });
+  }
 
 function formatIrreparableTicketsDetails(details){
 if (!Array.isArray(details)) {
@@ -1002,7 +1035,22 @@ function loadIndividualPendienteRepuesto() {
     contentDiv.innerHTML = "<p>Cargando información de los POS Pendientes por Repuestos...</p>"; // Loading message
     searchInput.value = ''; // Clear the search input on reload
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendientesPorRepuestos`)
+    const userId = document.getElementById("userIdForPassword").value;
+    if (!userId) {
+        console.error("userId not found");
+        contentDiv.innerHTML = "<p>Error: No se encontró el ID del usuario.</p>";
+        return;
+    }
+
+    const body = new URLSearchParams({
+        id_user: userId
+    }).toString();
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendientesPorRepuestos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body,
+    })
         .then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -1153,7 +1201,22 @@ function loadIndividualReparado() {
     contentDiv.innerHTML = "<p>Cargando información de los POS Reparados...</p>"; // Loading message
     searchInput.value = ''; // Clear the search input on reload
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsYaEstanReparados`)
+    const userId = document.getElementById("userIdForPassword").value;
+    if (!userId) {
+        console.error("userId not found");
+        contentDiv.innerHTML = "<p>Error: No se encontró el ID del usuario.</p>";
+        return;
+    }
+
+    const body = new URLSearchParams({
+        id_user: userId
+    }).toString();
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsYaEstanReparados`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body,
+    })
         .then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -1301,7 +1364,22 @@ function loadIndividualProceessReparacion() {
     contentDiv.innerHTML = "<p>Cargando información de los POS en proceso de reparación...</p>"; // Mensaje de carga
     searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendienteReparacion`)
+    const userId = document.getElementById("userIdForPassword").value;
+    if (!userId) {
+        console.error("userId not found");
+        contentDiv.innerHTML = "<p>Error: No se encontró el ID del usuario.</p>";
+        return;
+    }
+
+    const body = new URLSearchParams({
+        id_user: userId
+    }).toString();
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsPendienteReparacion`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body,
+    })
         .then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -1459,11 +1537,21 @@ function loadIndividualTicketDetails(month, status) {
     searchInput.style.display = "inline-block";
   }
 
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
   // Usar la API fetch para la petición
   const dataToSend = new URLSearchParams({
     action: "GetIndividualTicketDetails",
     month: month,
     status: status,
+    id_user: userId
   }).toString();
 
   fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetIndividualTicketDetails`, {
@@ -1608,7 +1696,27 @@ function loadMonthlyTicketDetails() {
   const contentDiv = document.getElementById("monthlyTicketsContent");
   contentDiv.innerHTML = "<p>Cargando información...</p>"; // Mensaje de carga
 
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyTicketDetails`)
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
+  // Crear el cuerpo de la petición con el ID del usuario
+  const body = new URLSearchParams({ 
+    id_user: userId
+  });
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyTicketDetails`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: body
+  })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -1718,7 +1826,27 @@ function loadOpenTicketDetails() {
     contentDiv.innerHTML = "<p>Cargando información de tickets Abiertos...</p>"; // Mensaje de carga
     searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketOpenDetails`)
+    // Obtener el ID del usuario
+    const userIdElement = document.getElementById("userIdForPassword");
+    const userId = userIdElement ? userIdElement.value : null;
+
+    if (!userId) {
+        contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+        return;
+    }
+
+    // Crear el cuerpo de la petición con el ID del usuario
+    const body = new URLSearchParams({ 
+        id_user: userId
+    });
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketOpenDetails`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: body
+    })
         .then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -1885,7 +2013,22 @@ function loadEntregadoClienteDetails() {
     contentDiv.innerHTML = "<p>Cargando información de tickets entregados al cliente...</p>"; // Loading message
     searchInput.value = ''; // Clear the search input on reload
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketEntregadoClienteDetails`)
+    const userId = document.getElementById("userIdForPassword").value;
+    if (!userId) {
+        console.error("userId not found");
+        contentDiv.innerHTML = "<p>Error: No se encontró el ID del usuario.</p>";
+        return;
+    }
+
+    const body = new URLSearchParams({
+        id_user: userId
+    }).toString();
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketEntregadoClienteDetails`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body,
+    })
         .then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -2000,7 +2143,27 @@ function loadIndividualProceess() {
     contentDiv.innerHTML = "<p>Cargando información de los POS en Proceso..</p>";
     searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
 
-    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsInProcess`)
+    // Obtener el ID del usuario
+    const userIdElement = document.getElementById("userIdForPassword");
+    const userId = userIdElement ? userIdElement.value : null;
+
+    if (!userId) {
+        contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+        return;
+    }
+
+    // Crear el cuerpo de la petición con el ID del usuario
+    const body = new URLSearchParams({ 
+        id_user: userId
+    });
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketsInProcess`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: body
+    })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -2064,7 +2227,27 @@ function loadResolveTicketDetails() {
   contentDiv.innerHTML = "<p>Cargando información de Tickets Resueltos...</p>"; // Mensaje de carga
   searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
 
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetResolveTicketsForCard`)
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
+  // Crear el cuerpo de la petición con el ID del usuario
+  const body = new URLSearchParams({ 
+    id_user: userId
+  });
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetResolveTicketsForCard`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: body
+  })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -2128,7 +2311,27 @@ function loadDetalleTicketComercial() {
   contentDiv.innerHTML = "<p>Cargando información de tickets Comerciales...</p>"; // Mensaje de carga
   searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
 
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetDetalleTicketComercial`)
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
+  // Crear el cuerpo de la petición con el ID del usuario
+  const body = new URLSearchParams({ 
+    id_user: userId
+  });
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetDetalleTicketComercial`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: body
+  })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -2192,7 +2395,27 @@ function loadTallerTicketDetails() {
   contentDiv.innerHTML = "<p>Cargando información de Tickets de Taller...</p>"; // Mensaje de carga
   searchInput.value = ''; // Limpiar el campo de búsqueda al recargar
 
-  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTallerTicketsForCard`)
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
+  // Crear el cuerpo de la petición con el ID del usuario
+  const body = new URLSearchParams({ 
+    id_user: userId
+  });
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTallerTicketsForCard`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: body
+  })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -2617,94 +2840,175 @@ function drawTimelineLine() {
 
 async function getTicketProcessReparacion() {
     try {
-        const data = await fetchJsonByAction('getTicketsProcessReparacionCount', {
+        const userId = document.getElementById("userIdForPassword").value;
+        if (!userId) {
+            console.error("userId not found");
+            document.getElementById("CountProcessReparacion").textContent = "0";
+            return;
+        }
+
+        const body = new URLSearchParams({
+            action: "getTicketsProcessReparacionCount",
+            id_user: userId
+        }).toString();
+
+        const data = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsProcessReparacionCount`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: "action=getTicketsProcessReparacionCount",
+            body: body,
         });
 
-        if (data.success) {
-            document.getElementById("CountProcessReparacion").textContent = data.count;
+        const response = await data.json();
+
+        if (response.success) {
+            document.getElementById("CountProcessReparacion").textContent = response.count;
         } else {
-            console.error("Error:", data.message);
+            console.error("Error:", response.message);
+            document.getElementById("CountProcessReparacion").textContent = "0";
         }
     } catch (error) {
         console.error("Error al obtener el conteo de tickets:", error);
+        document.getElementById("CountProcessReparacion").textContent = "0";
     }
 }
 
 async function getTicketReparados() {
     try {
-        const data = await fetchJsonByAction('getTicketsReparadosCount', {
+        const userId = document.getElementById("userIdForPassword").value;
+        if (!userId) {
+            console.error("userId not found");
+            document.getElementById("ReparadopsCount").textContent = "0";
+            return;
+        }
+
+        const body = new URLSearchParams({
+            action: "getTicketsReparadosCount",
+            id_user: userId
+        }).toString();
+
+        const data = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketsReparadosCount`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: "action=getTicketsReparadosCount",
+            body: body,
         });
 
-        if (data.success) {
-            document.getElementById("ReparadopsCount").textContent = data.count;
+        const response = await data.json();
+
+        if (response.success) {
+            document.getElementById("ReparadopsCount").textContent = response.count;
         } else {
-            console.error("Error:", data.message);
+            console.error("Error:", response.message);
+            document.getElementById("ReparadopsCount").textContent = "0";
         }
     } catch (error) {
         console.error("Error al obtener el conteo de tickets reparados:", error);
+        document.getElementById("ReparadopsCount").textContent = "0";
     }
 }
 
 async function getTicketPendienteRepuesto() {
     try {
-        const body = new URLSearchParams({ action: 'getTicketPendienteRepuestoCount' });
-        const data = await fetchJsonByAction('getTicketPendienteRepuestoCount', {
+        const userId = document.getElementById("userIdForPassword").value;
+        if (!userId) {
+            console.error("userId not found");
+            document.getElementById("PendientePorRepuesto").textContent = "0";
+            return;
+        }
+
+        const body = new URLSearchParams({
+            action: 'getTicketPendienteRepuestoCount',
+            id_user: userId
+        }).toString();
+
+        const data = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketPendienteRepuestoCount`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body
+            body: body
         });
 
-        if (data.success) {
-            document.getElementById("PendientePorRepuesto").textContent = data.count;
+        const response = await data.json();
+
+        if (response.success) {
+            document.getElementById("PendientePorRepuesto").textContent = response.count;
         } else {
-            console.error("Server Error:", data.message);
+            console.error("Server Error:", response.message);
+            document.getElementById("PendientePorRepuesto").textContent = "0";
         }
     } catch (error) {
         console.error("Failed to fetch pending ticket count:", error);
+        document.getElementById("PendientePorRepuesto").textContent = "0";
     }
 }
 
 async function getTicketEntregadoCliente() {
     try {
-        const body = new URLSearchParams({ action: 'getTicketEntregadoCliente' });
-        const data = await fetchJsonByAction('getTicketEntregadoCliente', {
+        const userId = document.getElementById("userIdForPassword").value;
+        if (!userId) {
+            console.error("userId not found");
+            document.getElementById("EntregadosCliente").textContent = "0";
+            return;
+        }
+
+        const body = new URLSearchParams({
+            action: 'getTicketEntregadoCliente',
+            id_user: userId
+        }).toString();
+
+        const data = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketEntregadoCliente`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body
+            body: body
         });
 
-        if (data.success) {
-            document.getElementById("EntregadosCliente").textContent = data.count;
+        const response = await data.json();
+
+        if (response.success) {
+            document.getElementById("EntregadosCliente").textContent = response.count;
         } else {
-            console.error("Server Error:", data.message);
+            console.error("Server Error:", response.message);
+            document.getElementById("EntregadosCliente").textContent = "0";
         }
     } catch (error) {
         console.error("Failed to fetch tickets delivered to client:", error);
+        document.getElementById("EntregadosCliente").textContent = "0";
     }
 }
 
 async function getTicketIrreparables() {
     try {
-        const body = new URLSearchParams({ action: 'getTicketIrreparablesCount' });
-        const data = await fetchJsonByAction('getTicketIrreparablesCount', {
+        const userId = document.getElementById("userIdForPassword").value;
+        if (!userId) {
+            console.error("userId not found");
+            document.getElementById("CountIrreparable").textContent = "0";
+            return;
+        }
+
+        const body = new URLSearchParams({
+            action: 'getTicketIrreparablesCount',
+            id_user: userId
+        }).toString();
+
+        const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/getTicketIrreparablesCount`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body
+            body: body
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
 
         if (data.success) {
             document.getElementById("CountIrreparable").textContent = data.count;
         } else {
             console.error("Server Error:", data.message);
+            document.getElementById("CountIrreparable").textContent = "0";
         }
     } catch (error) {
         console.error("Failed to fetch irreparable ticket count:", error);
+        document.getElementById("CountIrreparable").textContent = "0";
     }
 }
 
@@ -3484,7 +3788,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 async function getTicketOpen() {
     try {
-        const body = new URLSearchParams({ action: 'getTicketAbiertoCount' });
+        // Obtener el ID del usuario
+        const id_user = document.getElementById("userIdForPassword").value;
+        
+        const body = new URLSearchParams({ 
+            action: 'getTicketAbiertoCount',
+            id_user: id_user
+        });
+        
         const data = await fetchJsonByAction('getTicketAbiertoCount', {
             method: 'POST',
             headers: {
@@ -3799,6 +4110,10 @@ document.getElementById('Card-Ticket-open').addEventListener('click', function()
 
 async function getTicketPercentage() {
     try {
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+        
         const actionPath = 'getTicketPercentage';
         const fetchOptions = {
             method: 'POST',
@@ -3806,7 +4121,8 @@ async function getTicketPercentage() {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                action: 'getTicketPercentage'
+                action: 'getTicketPercentage',
+                user_id: userId
             })
         };
 
@@ -3844,6 +4160,15 @@ async function getTicketPercentage() {
 
 async function getTicketResolve() {
     try {
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
         const actionPath = 'getTicketsResueltosCount';
         const fetchOptions = {
             method: 'POST',
@@ -3851,7 +4176,8 @@ async function getTicketResolve() {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                action: 'getTicketsResueltosCount'
+                action: 'getTicketsResueltosCount',
+                id_user: userId
             })
         };
 
@@ -3873,7 +4199,19 @@ async function getTicketsResueltosPercentage() {
     const thresholdForGood = 50;
 
     try {
-        const body = new URLSearchParams({ action: 'getTicketsResueltosPercentage' });
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
+        const body = new URLSearchParams({ 
+            action: 'getTicketsResueltosPercentage',
+            id_user: userId
+        });
         const data = await fetchJsonByAction('getTicketsResueltosPercentage', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -3919,7 +4257,19 @@ async function getTicketsgestionComercialporcent() {
     const thresholdForGood = 50;
 
     try {
-        const body = new URLSearchParams({ action: 'getTicketsgestioncomercialPorcent' });
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
+        const body = new URLSearchParams({ 
+            action: 'getTicketsgestioncomercialPorcent',
+            id_user: userId
+        });
         const data = await fetchJsonByAction('getTicketsgestioncomercialPorcent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -3961,7 +4311,15 @@ async function getTicketsgestionComercialporcent() {
 
 async function getTicketTotal() {
     try {
-        const body = new URLSearchParams({ action: 'getTicketsTotalCount' });
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+        
+        const body = new URLSearchParams({ 
+            action: 'getTicketsTotalCount',
+            user_id: userId
+        });
+        
         const data = await fetchJsonByAction('getTicketsTotalCount', {
             method: 'POST',
             headers: {
@@ -3982,6 +4340,15 @@ async function getTicketTotal() {
 
 async function getTicketGestionComercial() {
     try {
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
         const actionPath = 'getTicketGestionComercialCount';
         const fetchOptions = {
             method: 'POST',
@@ -3989,7 +4356,8 @@ async function getTicketGestionComercial() {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                action: 'getTicketGestionComercialCount'
+                action: 'getTicketGestionComercialCount',
+                id_user: userId
             })
         };
 
@@ -4008,7 +4376,19 @@ async function getTicketGestionComercial() {
 
 async function getTicketTotalSendTotaller() {
     try {
-        const body = new URLSearchParams({ action: 'getTicketsSendTallerTotalCount' });
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
+        const body = new URLSearchParams({ 
+            action: 'getTicketsSendTallerTotalCount',
+            id_user: userId
+        });
         const data = await fetchJsonByAction('getTicketsSendTallerTotalCount', {
             method: 'POST',
             headers: {
@@ -4032,6 +4412,15 @@ async function getTotalTicketsPercentageOFSendTaller() {
     const thresholdForGood = 50;
 
     try {
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
         const actionPath = 'getTotalTicketsPercentageSendToTaller';
         const fetchOptions = {
             method: 'POST',
@@ -4039,7 +4428,8 @@ async function getTotalTicketsPercentageOFSendTaller() {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                action: 'getTotalTicketsPercentageSendToTaller'
+                action: 'getTotalTicketsPercentageSendToTaller',
+                id_user: userId
             })
         };
 
@@ -4084,6 +4474,10 @@ async function getTotalPorcentageticket_in_process() {
     const thresholdForGood = 50;
 
     try {
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+        
         const actionPath = 'getTotalTicketsPercentageinprocess';
         const fetchOptions = {
             method: 'POST',
@@ -4091,7 +4485,8 @@ async function getTotalPorcentageticket_in_process() {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                action: 'getTotalTicketsPercentageinprocess'
+                action: 'getTotalTicketsPercentageinprocess',
+                user_id: userId
             })
         };
 
@@ -4133,7 +4528,14 @@ async function getTotalPorcentageticket_in_process() {
 
 async function getTotalTicketsInProcess() {
     try {
-        const body = new URLSearchParams({ action: 'getTotalTicketsInProcess' });
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        const body = new URLSearchParams({ 
+            action: 'getTotalTicketsInProcess',
+            user_id: userId
+        });
         const data = await fetchJsonByAction('getTotalTicketsInProcess', {
             method: 'POST',
             headers: {
@@ -4156,9 +4558,28 @@ function loadRegionTicketDetails() {
   const contentDiv = document.getElementById("RegionTicketsContent");
   contentDiv.innerHTML = "<p>Cargando información regional...</p>"; // Mensaje de carga
 
-  fetch(
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChartForState`
-  )
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
+  // Usar fetch con POST para enviar el id_user
+  const dataToSend = new URLSearchParams({
+    action: "GetMonthlyCreatedTicketsForChartForState",
+    id_user: userId
+  }).toString();
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChartForState`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: dataToSend,
+  })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -4335,90 +4756,75 @@ function loadIndividualRegionTicketDetails(region) {
     searchInput.style.display = "inline-block";
   }
 
-  const xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${ENDPOINT_BASE}${APP_PATH}api/reportes/GetIndividualTicketDetailsByRegion`
-  );
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success && response.details) {
-          allRegionTickets = response.details; // Almacenar todos los tickets
-          displayFilteredTickets(allRegionTickets, 'RegionTicketsContent', currentMonth, currentStatus);
-          
-          // Añadir event listener para el input de búsqueda
-          if (searchInput) {
-            if (regionTicketSearchHandler) {
-              searchInput.removeEventListener('input', regionTicketSearchHandler);
-            }
-            regionTicketSearchHandler = (e) => {
-              handleTicketSearch(e, allRegionTickets, 'RegionTicketsContent');
-            };
-            searchInput.addEventListener('input', regionTicketSearchHandler);
-          }
-        } else {
-          contentDiv.innerHTML =
-            `<p>Error al cargar el detalle de tickets: ` +
-            (response.message || "Error desconocido") +
-            `</p>`;
-          console.error(
-            "Error en los datos de la API para tickets individuales por región:",
-            response.message
-          );
-          allRegionTickets = [];
-          if (searchInput && regionTicketSearchHandler) {
+  if (!userId) {
+    contentDiv.innerHTML = "<p>Error: No se pudo obtener el ID del usuario.</p>";
+    return;
+  }
+
+  // Usar fetch con POST para enviar el id_user
+  const dataToSend = new URLSearchParams({
+    action: "GetIndividualTicketDetailsByRegion",
+    region: region,
+    id_user: userId
+  }).toString();
+
+  fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetIndividualTicketDetailsByRegion`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: dataToSend,
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.success && data.details) {
+        allRegionTickets = data.details; // Almacenar todos los tickets
+        displayFilteredTickets(allRegionTickets, 'RegionTicketsContent', currentMonth, currentStatus);
+        
+        // Añadir event listener para el input de búsqueda
+        if (searchInput) {
+          if (regionTicketSearchHandler) {
             searchInput.removeEventListener('input', regionTicketSearchHandler);
-            regionTicketSearchHandler = null;
           }
+          regionTicketSearchHandler = (e) => {
+            handleTicketSearch(e, allRegionTickets, 'RegionTicketsContent');
+          };
+          searchInput.addEventListener('input', regionTicketSearchHandler);
         }
-      } catch (error) {
+      } else {
+        contentDiv.innerHTML =
+          `<p>Error al cargar el detalle de tickets: ` +
+          (data.message || "Error desconocido") +
+          `</p>`;
         console.error(
-          "Error parsing JSON for individual regional ticket details:",
-          error
+          "Error en los datos de la API para tickets individuales por región:",
+          data.message
         );
-        contentDiv.innerHTML = `<p>Error de procesamiento de datos al cargar el detalle de tickets.</p>`;
         allRegionTickets = [];
         if (searchInput && regionTicketSearchHandler) {
           searchInput.removeEventListener('input', regionTicketSearchHandler);
           regionTicketSearchHandler = null;
         }
       }
-    } else {
-      console.error(
-        "Error fetching individual regional ticket details:",
-        xhr.status,
-        xhr.statusText
-      );
+    })
+    .catch((error) => {
+      console.error("Error fetching individual regional ticket details:", error);
       contentDiv.innerHTML = `<p>Error de red al cargar el detalle de tickets. Por favor, intente de nuevo más tarde.</p>`;
       allRegionTickets = [];
       if (searchInput && regionTicketSearchHandler) {
         searchInput.removeEventListener('input', regionTicketSearchHandler);
         regionTicketSearchHandler = null;
       }
-    }
-  };
-
-  xhr.onerror = function () {
-    console.error(
-      "Network error during individual regional ticket details fetch."
-    );
-    contentDiv.innerHTML = `<p>Error de conexión al cargar el detalle de tickets.</p>`;
-    allRegionTickets = [];
-    if (searchInput && regionTicketSearchHandler) {
-      searchInput.removeEventListener('input', regionTicketSearchHandler);
-      regionTicketSearchHandler = null;
-    }
-  };
-
-  // Prepara los datos a enviar: solo la región
-  let dataToSend = `action=GetIndividualTicketDetailsByRegion&region=${encodeURIComponent(
-    region
-  )}`;
-  xhr.send(dataToSend);
+    });
 }
 
 let monthlyTicketsChartInstance; // Variable global para la instancia del gráfico
@@ -4594,8 +5000,25 @@ async function loadMonthlyCreatedTicketsChart() {
     hideChartErrorMessage(chartCanvasId);
 
     try {
+        // Obtener el ID del usuario
+        const userIdElement = document.getElementById("userIdForPassword");
+        const userId = userIdElement ? userIdElement.value : null;
+
+        if (!userId) {
+            console.error("No se pudo obtener el ID del usuario");
+            return;
+        }
+
         // Usa fetchJsonByAction para manejar la llamada a la API
-        const data = await fetchJsonByAction('GetMonthlyCreatedTicketsForChart');
+        const data = await fetchJsonByAction('GetMonthlyCreatedTicketsForChart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                id_user: userId
+            })
+        });
 
         if (data.success && data.details && data.details.length > 0) {
             const labels = data.details.map((item) => `${item.month_name} ${item.year_month.substring(0, 4)}`);
@@ -4691,11 +5114,42 @@ async function updateTicketMonthlyPercentageChange() {
 
   if (porcentElement) porcentElement.textContent = "Cargando...";
 
+  // Obtener el ID del usuario
+  const userIdElement = document.getElementById("userIdForPassword");
+  const userId = userIdElement ? userIdElement.value : null;
+
+  if (!userId) {
+    if (porcentElement) {
+      porcentElement.textContent = "Error: No se pudo obtener el ID del usuario.";
+      porcentElement.style.color = "red";
+    }
+    return;
+  }
+
   try {
-    // Usa fetchJsonByAction para obtener los datos de la API
-    // La función se encarga de la llamada fetch, la validación de la respuesta
-    // y el análisis del JSON.
-    const data = await fetchJsonByAction("GetMonthlyTicketPercentageChange");
+    // Usar fetch con POST para enviar el id_user
+    const dataToSend = new URLSearchParams({
+      action: "GetMonthlyTicketPercentageChange",
+      id_user: userId
+    }).toString();
+
+    const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyTicketPercentageChange`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: dataToSend,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || "Error en la respuesta de la API");
+    }
 
     // ** CAMBIO CRÍTICO AQUÍ: Accede directamente a data.porcent **
     let percentage = data.porcent; // Toma el número directamente
@@ -4759,9 +5213,39 @@ async function loadMonthlyCreatedTicketsChartForState() {
     // Ocultar mensaje de error previo
     hideChartErrorMessage(chartCanvasId);
 
+    // Obtener el ID del usuario
+    const userIdElement = document.getElementById("userIdForPassword");
+    const userId = userIdElement ? userIdElement.value : null;
+
+    if (!userId) {
+        displayChartErrorMessage(chartCanvasId, "Error: No se pudo obtener el ID del usuario", 'error');
+        return;
+    }
+
     try {
-        // Use fetchJsonByAction to handle the API call
-        const data = await fetchJsonByAction('GetMonthlyCreatedTicketsForChartForState');
+        // Usar fetch con POST para enviar el id_user
+        const dataToSend = new URLSearchParams({
+            action: "GetMonthlyCreatedTicketsForChartForState",
+            id_user: userId
+        }).toString();
+
+        const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetMonthlyCreatedTicketsForChartForState`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: dataToSend,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || "Error en la respuesta de la API");
+        }
 
         if (data.success && data.details && data.details.length > 0) {
             const labels = data.details.map((item) => `${item.region_name}`);
@@ -4865,15 +5349,52 @@ async function getTicketCounts() {
         </tr>
     `;
 
+    // Obtener el ID del usuario
+    const userIdElement = document.getElementById("userIdForPassword");
+    const userId = userIdElement ? userIdElement.value : null;
+
+    if (!userId) {
+        tbodyCounts.innerHTML = `
+            <tr>
+                <td colspan="2" class="px-5 py-5 border-b border-gray-200 text-sm text-center text-gray-500">
+                    Error: No se pudo obtener el ID del usuario.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
     try {
-        const data = await fetchJsonByAction('GetTicketCounts');
+        // Usar fetch con POST para enviar el id_user
+        const dataToSend = new URLSearchParams({
+            action: "GetTicketCounts",
+            id_user: userId
+        }).toString();
+
+        const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/reportes/GetTicketCounts`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: dataToSend,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || "Error en la respuesta de la API");
+        }
 
         // Limpiar el contenido de la tabla antes de renderizar
         tbodyCounts.innerHTML = '';
 
         if (data.success && Array.isArray(data.counts) && data.counts.length > 0) {
             // Filtrar solo elementos con total_tickets > 0 y almacenar globalmente
-            ticketCountsData = data.counts.filter(item => item.total_tickets > 0);
+            ticketCountsData = data.counts.filter(item => parseInt(item.total_tickets) > 0);
             
             if (ticketCountsData.length === 0) {
                 tbodyCounts.innerHTML = `
@@ -4925,7 +5446,7 @@ function renderTicketCountsTable() {
     const rowsToShow = ticketCountsData.length;
     const isExpanded = visibleRowsLimit >= ticketCountsData.length;
     const showExpandButton = rowsToShow > 5; // Siempre mostrar botón si hay más de 5 filas
-    const currentVisibleRows = visibleRowsLimit;
+    const currentVisibleRows = Math.min(visibleRowsLimit, ticketCountsData.length);
     const hiddenRows = rowsToShow - 5;
 
     // Renderizar las filas visibles
@@ -4933,9 +5454,10 @@ function renderTicketCountsTable() {
         const item = ticketCountsData[i];
         const tr = document.createElement('tr');
         const moduleName = item.name_accion_ticket;
+        const totalTickets = parseInt(item.total_tickets);
         tr.innerHTML = `
             <td class="px-5 py-5 border-b border-gray-200 text-sm">${moduleName}</td>
-            <td class="px-5 py-5 border-b border-gray-200 text-sm">${item.total_tickets}</td>
+            <td class="px-5 py-5 border-b border-gray-200 text-sm">${totalTickets}</td>
         `;
         tbodyCounts.appendChild(tr);
     }

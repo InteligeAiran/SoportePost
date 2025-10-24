@@ -125,14 +125,6 @@ class VirtualAssistant {
                                 <span class="option-icon">📊</span>
                                 <span class="option-text">Eficiencia de técnicos en general</span>
                             </button>
-                            <button class="chat-option-btn" data-query="technician_efficiency">
-                                <span class="option-icon">📈</span>
-                                <span class="option-text">Eficiencia de técnicos individuales</span>
-                            </button>
-                            <button class="chat-option-btn" data-query="user_performance">
-                                <span class="option-icon">👥</span>
-                                <span class="option-text">Rendimiento de técnicos</span>
-                            </button>
                             <button class="chat-option-btn" data-query="pending_tickets">
                                 <span class="option-icon">⏳</span>
                                 <span class="option-text">Tickets pendientes</span>
@@ -460,20 +452,13 @@ class VirtualAssistant {
         this.overlay.classList.add('show');
         document.body.style.overflow = 'hidden';
         
-        // Cargar posición guardada o usar posición centrada por defecto
-        if (this.loadPanelPosition()) {
-            this.panel.style.left = `${this.panelPosition.x}px`;
-            this.panel.style.top = `${this.panelPosition.y}px`;
-            this.panel.style.transform = 'none';
-        } else {
-            // Posición centrada por defecto
-            this.panel.style.left = '';
-            this.panel.style.top = '';
-            this.panel.style.transform = 'translate(-50%, -50%)';
-        }
+        // Siempre aparecer centrado cuando se abre
+        this.panel.style.left = '';
+        this.panel.style.top = '';
+        this.panel.style.transform = 'translate(-50%, -50%)';
         
         // Log para debugging
-        console.log('🤖 Panel del asistente virtual abierto');
+        console.log('🤖 Panel del asistente virtual abierto - Posición centrada');
     }
     
     closePanel() {
@@ -482,57 +467,101 @@ class VirtualAssistant {
         this.overlay.classList.remove('show');
         document.body.style.overflow = '';
         
+        // Borrar el chat al cerrar
+        this.clearChat();
+        
         // Log para debugging
-        console.log('🤖 Panel del asistente virtual cerrado');
+        console.log('🤖 Panel del asistente virtual cerrado - Chat borrado');
+    }
+    
+    // Función para borrar el chat (manteniendo mensaje inicial de Ana y posición del panel)
+    clearChat() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            // Guardar la posición actual del panel antes de borrar
+            const currentLeft = this.panel.style.left;
+            const currentTop = this.panel.style.top;
+            const currentTransform = this.panel.style.transform;
+            
+            // Buscar el mensaje inicial de Ana
+            const initialMessage = chatMessages.querySelector('.message.assistant-message');
+            
+            // Si hay un mensaje inicial de Ana, mantenerlo
+            if (initialMessage && initialMessage.textContent.includes('¡Hola! Soy Ana')) {
+                // Borrar todo y volver a agregar solo el mensaje inicial
+                chatMessages.innerHTML = '';
+                chatMessages.appendChild(initialMessage);
+                console.log('🤖 Chat borrado - Manteniendo mensaje inicial de Ana');
+            } else {
+                // Si no hay mensaje inicial, borrar todo
+                chatMessages.innerHTML = '';
+                console.log('🤖 Chat completamente borrado');
+            }
+            
+            // Restaurar la posición del panel
+            this.panel.style.left = currentLeft;
+            this.panel.style.top = currentTop;
+            this.panel.style.transform = currentTransform;
+        }
     }
     
     toggleCategory(categoryName) {
-        // Cerrar todas las categorías abiertas
-        const allCategoryOptions = document.querySelectorAll('.category-options');
-        const allCategoryHeaders = document.querySelectorAll('.category-header');
-        
-        allCategoryOptions.forEach(options => {
-            options.style.display = 'none';
-        });
-        
-        allCategoryHeaders.forEach(header => {
-            header.classList.remove('active');
-            const arrow = header.querySelector('.category-arrow svg');
-            if (arrow) {
-                arrow.style.transform = 'rotate(0deg)';
-            }
-        });
-        
-        // Si la categoría clickeada no estaba abierta, abrirla
         const targetOptions = document.getElementById(`${categoryName}-options`);
         const targetHeader = document.querySelector(`[data-category="${categoryName}"]`);
         
-        if (targetOptions && targetHeader) {
-            const isCurrentlyOpen = targetOptions.style.display !== 'none';
-            
-            if (!isCurrentlyOpen) {
-                // Abrir la categoría
-                targetOptions.style.display = 'block';
-                targetHeader.classList.add('active');
-                const arrow = targetHeader.querySelector('.category-arrow svg');
-                if (arrow) {
-                    arrow.style.transform = 'rotate(90deg)';
-                }
-                
-                // Animación suave
-                targetOptions.style.opacity = '0';
-                targetOptions.style.transform = 'translateY(-10px)';
-                
-                setTimeout(() => {
-                    targetOptions.style.transition = 'all 0.3s ease';
-                    targetOptions.style.opacity = '1';
-                    targetOptions.style.transform = 'translateY(0)';
-                }, 10);
-                
-                console.log(`🤖 Categoría "${categoryName}" abierta`);
-            } else {
-                console.log(`🤖 Categoría "${categoryName}" cerrada`);
+        if (!targetOptions || !targetHeader) {
+            console.log(`🤖 No se encontró la categoría "${categoryName}"`);
+            return;
+        }
+        
+        // Verificar si la categoría actual está abierta
+        const isCurrentlyOpen = targetOptions.style.display !== 'none' && targetHeader.classList.contains('active');
+        
+        if (isCurrentlyOpen) {
+            // Si está abierta, cerrarla
+            targetOptions.style.display = 'none';
+            targetHeader.classList.remove('active');
+            const arrow = targetHeader.querySelector('.category-arrow svg');
+            if (arrow) {
+                arrow.style.transform = 'rotate(0deg)';
             }
+            console.log(`🤖 Categoría "${categoryName}" cerrada`);
+        } else {
+            // Si está cerrada, cerrar todas las demás y abrir esta
+            const allCategoryOptions = document.querySelectorAll('.category-options');
+            const allCategoryHeaders = document.querySelectorAll('.category-header');
+            
+            allCategoryOptions.forEach(options => {
+                options.style.display = 'none';
+            });
+            
+            allCategoryHeaders.forEach(header => {
+                header.classList.remove('active');
+                const arrow = header.querySelector('.category-arrow svg');
+                if (arrow) {
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            });
+            
+            // Abrir la categoría seleccionada
+            targetOptions.style.display = 'block';
+            targetHeader.classList.add('active');
+            const arrow = targetHeader.querySelector('.category-arrow svg');
+            if (arrow) {
+                arrow.style.transform = 'rotate(90deg)';
+            }
+            
+            // Animación suave
+            targetOptions.style.opacity = '0';
+            targetOptions.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                targetOptions.style.transition = 'all 0.3s ease';
+                targetOptions.style.opacity = '1';
+                targetOptions.style.transform = 'translateY(0)';
+            }, 10);
+            
+            console.log(`🤖 Categoría "${categoryName}" abierta`);
         }
     }
     
@@ -587,7 +616,12 @@ class VirtualAssistant {
         
         let messageContent = message;
         if (data) {
-            messageContent += this.formatDataResponse(data);
+            if (data.type === 'custom') {
+                // Para tipo custom, usar directamente el HTML
+                messageContent = data.html || message;
+            } else {
+                messageContent += this.formatDataResponse(data);
+            }
         }
         
         messageDiv.innerHTML = `
@@ -716,25 +750,7 @@ class VirtualAssistant {
             );
             break;
 
-        case 'user_performance':
-            this.addAssistantMessage(
-                '👥 Análisis del rendimiento de técnicos:',
-                {
-                    type: 'performance',
-                    data: data
-                }
-            );
-            break;
 
-        case 'technician_efficiency':
-            this.addAssistantMessage(
-                '📊 Análisis detallado de eficiencia de técnicos individuales:',
-                {
-                    type: 'technician_efficiency',
-                    data: data
-                }
-            );
-            break;
 
         case 'technician_individual_efficiency':
             // Mostrar lista de técnicos para seleccionar
@@ -748,13 +764,13 @@ class VirtualAssistant {
             break;
 
         case 'pending_tickets':
-            this.addAssistantMessage(
-                '⏳ Tickets pendientes que requieren atención:',
-                {
-                    type: 'pending',
-                    data: data
-                }
-            );
+            // Mostrar configuración de días críticos y tickets pendientes
+            this.showPendingTicketsWithConfig(data);
+            break;
+
+        case 'tickets_by_priority':
+            // Mostrar lista de tickets por prioridad específica
+            this.showTicketsList(data);
             break;
 
         case 'client_analysis':
@@ -805,28 +821,6 @@ addChartMessage(data) {
             </h5>
             <div style="position: relative; height: 350px; width: 100%; margin-bottom: 25px;">
                 <canvas id="${chartId}" width="400" height="350"></canvas>
-            </div>
-            <div class="chart-legend" style="margin-top: 20px; text-align: center; padding-top: 15px; border-top: 1px solid #dee2e6;">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="legend-item" style="margin-bottom: 10px;">
-                            <span class="legend-color" style="background-color: #36A2EB; width: 15px; height: 15px; display: inline-block; margin-right: 8px; border-radius: 3px;"></span>
-                            <strong style="font-size: 14px;">Cerrados: ${formatNumber(resolved)}%</strong>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="legend-item" style="margin-bottom: 10px;">
-                            <span class="legend-color" style="background-color: #FFCE56; width: 15px; height: 15px; display: inline-block; margin-right: 8px; border-radius: 3px;"></span>
-                            <strong style="font-size: 14px;">En Proceso: ${formatNumber(inProcess)}%</strong>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="legend-item" style="margin-bottom: 10px;">
-                            <span class="legend-color" style="background-color: #FF6384; width: 15px; height: 15px; display: inline-block; margin-right: 8px; border-radius: 3px;"></span>
-                            <strong style="font-size: 14px;">Abiertos: ${formatNumber(open)}%</strong>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
         <div style="height: 20px; clear: both;"></div>
@@ -1250,76 +1244,10 @@ addChartMessage(data) {
                 `;
                 break;
                 
-            case 'technician_efficiency':
-                if (Array.isArray(data.data) && data.data.length > 0) {
-                    formatted = `
-                        <div class="data-response">
-                            <div class="technician-efficiency-header">
-                                <h6>🏆 <span style = "color:black;">Ranking de Eficiencia de Técnicos<span></h6>
-                                <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
-                                    Análisis basado en tickets asignados, completados y tiempo de resolución (últimos 30 días)
-                                </p>
-                            </div>
-                            <div class="technician-list">
-                                ${data.data.map((tech, index) => {
-                                    const rank = index + 1;
-                                    const isTopThree = index < 3;
-                                    const efficiencyColor = tech.efficiency_score >= 80 ? '#28a745' : tech.efficiency_score >= 60 ? '#ffc107' : '#dc3545';
-                                    const borderColor = isTopThree ? '#28a745' : '#6c757d';
-                                    
-                                    return `
-                                        <div class="technician-item" style="margin-bottom: 15px; padding: 12px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid ${borderColor};">
-                                            <div class="technician-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                                <div class="technician-name">
-                                                    <strong style="color: #333;">#${rank} ${tech.technician_name} ${tech.technician_surname}</strong>
-                                                    ${isTopThree ? `<span style="margin-left: 8px; font-size: 12px; background-color: #28a745; color: white; padding: 2px 6px; border-radius: 3px;">TOP ${rank}</span>` : ''}
-                                                </div>
-                                                <div class="efficiency-score" style="font-size: 18px; font-weight: bold; color: ${efficiencyColor};">
-                                                    ${tech.efficiency_score}%
-                                                </div>
-                                            </div>
-                                            <div class="technician-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; font-size: 12px;">
-                                                <div class="stat-item">
-                                                    <span class="stat-label">Tickets:</span>
-                                                    <span class="stat-value">${tech.total_tickets_assigned}</span>
-                                                </div>
-                                                <div class="stat-item">
-                                                    <span class="stat-label">Completados:</span>
-                                                    <span class="stat-value" style="color: #28a745;">${tech.tickets_completed}</span>
-                                                </div>
-                                                <div class="stat-item">
-                                                    <span class="stat-label">En Proceso:</span>
-                                                    <span class="stat-value" style="color: #ffc107;">${tech.tickets_in_progress}</span>
-                                                </div>
-                                                <div class="stat-item">
-                                                    <span class="stat-label">Abiertos:</span>
-                                                    <span class="stat-value" style="color: #dc3545;">${tech.tickets_open}</span>
-                                                </div>
-                                                <div class="stat-item">
-                                                    <span class="stat-label">Tasa:</span>
-                                                    <span class="stat-value">${tech.completion_rate}%</span>
-                                                </div>
-                                                <div class="stat-item">
-                                                    <span class="stat-label">Tiempo Prom:</span>
-                                                    <span class="stat-value">${tech.average_resolution_time || 'N/A'}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    formatted = `
-                        <div class="data-response">
-                            <div class="no-data">
-                                <p>No hay datos de eficiencia de técnicos disponibles.</p>
-                            </div>
-                        </div>
-                    `;
-                }
+            case 'custom':
+                formatted = data.html || '';
                 break;
+                
         }
         
         return formatted;
@@ -1366,6 +1294,192 @@ addChartMessage(data) {
                 }, 1000);
             }
         }, 2000);
+    }
+
+    // Función para mostrar tickets pendientes con configuración de días críticos
+    showPendingTicketsWithConfig(data) {
+        console.log('🤖 showPendingTicketsWithConfig llamada con:', data);
+        console.log('🤖 Tipo de data:', typeof data);
+        console.log('🤖 Keys de data:', Object.keys(data || {}));
+        
+        if (!data) {
+            this.addAssistantMessage('❌ No se pudieron obtener los tickets pendientes.');
+            return;
+        }
+
+        const daysCritical = data.days_critical || 5;
+        console.log('🤖 daysCritical:', daysCritical);
+        
+        // Generar ID único para el input
+        const inputId = `daysCriticalInput_${Date.now()}`;
+        
+        const configHtml = `<div class="pending-tickets-container" style="margin-top: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef;">
+                <div class="config-section" style="margin-bottom: 20px; padding: 15px; background-color: #ffffff; border-radius: 8px; border: 1px solid #e9ecef;">
+                    <h6 style="color: #333; margin-bottom: 15px; font-weight: bold;">
+                        <i class="fas fa-cog me-2"></i>Configuración de Prioridades
+                    </h6>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <label style="font-weight: 500; color: #555;">Días para crítico:</label>
+                        <input type="number" id="${inputId}" value="${daysCritical}" min="1" max="30" 
+                               style="width: 80px; padding: 5px 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
+                        <button onclick="window.virtualAssistant.updateDaysCritical('${inputId}')" 
+                                style="padding: 5px 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            <i class="fas fa-sync-alt me-1"></i>Actualizar
+                        </button>
+                    </div>
+                    <div style="font-size: 12px; color: #666; background-color: #f8f9fa; padding: 8px; border-radius: 4px;">
+                        <strong>Lógica:</strong> Críticos ≥ ${daysCritical} días | Altos ≥ ${Math.round(daysCritical * 0.75)} días | Medios ≥ ${Math.round(daysCritical * 0.5)} días | Bajos < ${Math.round(daysCritical * 0.5)} días
+                    </div>
+                </div>
+                
+                <div class="priority-results" style="background-color: #ffffff; border-radius: 8px; padding: 15px;">
+                    <h6 style="color: #333; margin-bottom: 15px; font-weight: bold;">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Tickets Pendientes (Mes Actual)
+                    </h6>
+                    <div class="priority-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
+                        <div class="priority-item critical" style="text-align: center; padding: 12px; background-color: #dc3545; color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" 
+                             onclick="window.virtualAssistant.showTicketsByPriority('critico', ${daysCritical})">
+                            <div style="font-size: 24px; font-weight: bold;">${data.criticos || 0}</div>
+                            <div style="font-size: 12px; font-weight: 500;">🚨 Críticos</div>
+                            <div style="font-size: 10px; opacity: 0.9;">≥ ${daysCritical} días</div>
+                        </div>
+                        <div class="priority-item high" style="text-align: center; padding: 12px; background-color: #fd7e14; color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" 
+                             onclick="window.virtualAssistant.showTicketsByPriority('alto', ${daysCritical})">
+                            <div style="font-size: 24px; font-weight: bold;">${data.altos || 0}</div>
+                            <div style="font-size: 12px; font-weight: 500;">⚠️ Altos</div>
+                            <div style="font-size: 10px; opacity: 0.9;">≥ ${Math.round(daysCritical * 0.75)} días</div>
+                        </div>
+                        <div class="priority-item medium" style="text-align: center; padding: 12px; background-color: #ffc107; color: #333; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" 
+                             onclick="window.virtualAssistant.showTicketsByPriority('medio', ${daysCritical})">
+                            <div style="font-size: 24px; font-weight: bold;">${data.medios || 0}</div>
+                            <div style="font-size: 12px; font-weight: 500;">📋 Medios</div>
+                            <div style="font-size: 10px; opacity: 0.8;">≥ ${Math.round(daysCritical * 0.5)} días</div>
+                        </div>
+                        <div class="priority-item low" style="text-align: center; padding: 12px; background-color: #28a745; color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" 
+                             onclick="window.virtualAssistant.showTicketsByPriority('bajo', ${daysCritical})">
+                            <div style="font-size: 24px; font-weight: bold;">${data.bajos || 0}</div>
+                            <div style="font-size: 12px; font-weight: 500;">✅ Bajos</div>
+                            <div style="font-size: 10px; opacity: 0.9;">< ${Math.round(daysCritical * 0.5)} días</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.addAssistantMessage('⏳ Tickets pendientes que requieren atención:', {
+            type: 'custom',
+            html: configHtml
+        });
+        
+        console.log('🤖 Mensaje enviado con HTML personalizado');
+    }
+
+    // Función para actualizar días críticos
+    updateDaysCritical(inputId) {
+        const input = document.getElementById(inputId);
+        
+        if (!input) {
+            console.error('🤖 No se encontró el input con ID:', inputId);
+            this.addAssistantMessage('❌ Error: No se encontró el campo de configuración.');
+            return;
+        }
+        
+        const daysCritical = parseInt(input.value);
+        
+        if (isNaN(daysCritical) || daysCritical < 1 || daysCritical > 30) {
+            this.addAssistantMessage('❌ Por favor ingresa un número válido entre 1 y 30 días.');
+            return;
+        }
+
+        console.log('🤖 Actualizando días críticos a:', daysCritical);
+        console.log('🤖 Input value:', input.value);
+        console.log('🤖 Input ID:', inputId);
+        
+        // Mostrar mensaje de carga
+        this.addAssistantMessage(`🔄 Actualizando prioridades con ${daysCritical} días críticos...`);
+        
+        // Hacer nueva consulta con los días críticos actualizados
+        console.log('🤖 Enviando consulta con days_critical:', daysCritical);
+        this.processAIQuery('pending_tickets', { days_critical: daysCritical });
+    }
+
+    // Función para mostrar tickets por prioridad específica
+    showTicketsByPriority(priority, daysCritical) {
+        console.log('🤖 showTicketsByPriority llamada con:', priority, daysCritical);
+        
+        // Mostrar mensaje de carga
+        const priorityNames = {
+            'critico': 'Críticos',
+            'alto': 'Altos', 
+            'medio': 'Medios',
+            'bajo': 'Bajos'
+        };
+        
+        this.addAssistantMessage(`🔍 Obteniendo tickets ${priorityNames[priority]}...`);
+        
+        // Hacer consulta para obtener los tickets específicos (solo prioridad)
+        this.processAIQuery('tickets_by_priority', { 
+            priority: priority 
+        });
+    }
+
+    // Función para mostrar la lista de tickets por prioridad
+    showTicketsList(data) {
+        console.log('🤖 showTicketsList llamada con:', data);
+        
+        if (!data || !data.tickets) {
+            this.addAssistantMessage('❌ No se pudieron obtener los tickets.');
+            return;
+        }
+
+        const tickets = data.tickets;
+        const priority = data.priority;
+        const count = data.count || tickets.length;
+        
+        const priorityNames = {
+            'critico': 'Críticos',
+            'alto': 'Altos', 
+            'medio': 'Medios',
+            'bajo': 'Bajos'
+        };
+        
+        const priorityColors = {
+            'critico': '#dc3545',
+            'alto': '#fd7e14', 
+            'medio': '#ffc107',
+            'bajo': '#28a745'
+        };
+
+            const ticketsHtml = `
+                <div class="tickets-list-container" style="margin-top: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef;">
+                    <h6 style="color: #333; margin-bottom: 15px; font-weight: bold;">
+                        <i class="fas fa-list me-2"></i>Tickets ${priorityNames[priority]} (${count} tickets)
+                    </h6>
+                    <div class="tickets-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                        ${tickets.map(ticket => `
+                            <div class="ticket-item" style="padding: 12px; background-color: #ffffff; border-radius: 8px; border-left: 4px solid ${priorityColors[priority]}; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="font-weight: bold; color: #333; margin-bottom: 5px;">
+                                    #${ticket.nro_ticket}
+                                </div>
+                                <div style="font-size: 12px; color: #666; margin-bottom: 3px;">
+                                    <strong>Técnico:</strong> ${ticket.tecnico_nombre || 'Sin asignar'}
+                                </div>
+                                <div style="font-size: 12px; color: #666; margin-bottom: 3px;">
+                                    <strong>Días:</strong> ${ticket.dias_transcurridos} días
+                                </div>
+                                <div style="font-size: 12px; color: #666;">
+                                    <strong>Asignado:</strong> ${ticket.fecha_asignacion ? new Date(ticket.fecha_asignacion).toLocaleDateString() : 'N/A'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+        this.addAssistantMessage(`📋 Aquí tienes los tickets ${priorityNames[priority]}:`, {
+            type: 'custom',
+            html: ticketsHtml
+        });
     }
 }
 

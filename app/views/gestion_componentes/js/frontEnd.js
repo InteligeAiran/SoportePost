@@ -177,10 +177,8 @@ function SearchTicketsComponents() {
                                 );
 
                                 if (selectedTicketDetails) {
-                                    detailsPanel.innerHTML = formatTicketDetailsPanel(
-                                        selectedTicketDetails
-                                    );
-                                    loadTicketHistory(ticketId, currentTicketNroForImage);
+                                    detailsPanel.innerHTML = formatTicketDetailsPanel(selectedTicketDetails);
+                                    loadTicketHistory(ticketId, selectedTicketDetails.nro_ticket, selectedTicketDetails.serial_pos || '');
                                     if (selectedTicketDetails.serial_pos) {
                                         downloadImageModal(selectedTicketDetails.serial_pos);
                                     } else {
@@ -368,10 +366,10 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                         <div class="pos-card-body">
                                             <div class="pos-info-item">
                                                 <span class="pos-value pos-serial">${serialPos}</span>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                                        </div>
 
                                 <!-- Información del Banco -->
                                 <div class="col-xl-4 col-lg-6 col-md-6">
@@ -383,10 +381,10 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                         <div class="pos-card-body">
                                             <div class="pos-info-item">
                                                 <span class="pos-value pos-bank">${allPosData[0].banco_ibp || 'No disponible'}</span>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
                                 <!-- Tipo de POS -->
                                 <div class="col-xl-4 col-lg-6 col-md-6">
@@ -398,9 +396,9 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                         <div class="pos-card-body">
                                             <div class="pos-info-item">
                                                 <span class="pos-value pos-model">${allPosData[0].tipo_pos || 'No disponible'}</span>
-                                            </div>
                                         </div>
                                     </div>
+                                </div>
                                 </div>
                             </div>
 
@@ -414,11 +412,11 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                         </div>
                                         <div class="pos-card-body">
                                             <div class="row">
-                                                <div class="col-md-6">
+                                <div class="col-md-6">
                                                     <div class="pos-info-item">
                                                         <label>N° Ticket</label>
                                                         <span class="pos-value">${nroTicket}</span>
-                                                    </div>
+                                        </div>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="pos-info-item">
@@ -448,17 +446,17 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                     // ITERAR TODOS LOS REGISTROS DE COMPONENTES
                     allPosData.forEach((posData, index) => {
                         posInfoHtml += `
-                                    <div class="col-12">
+                                <div class="col-12">
                                         <div class="pos-module-card">
                                             <div class="pos-module-header">
                                                 <div class="pos-module-title">
-                                                    <i class="fas fa-layer-group me-2"></i>
+                                                <i class="fas fa-layer-group me-2"></i>
                                                     <span>${posData.modulo_insert || 'Módulo Sin Nombre'}</span>
-                                                </div>
+                                        </div>
                                                 <div class="pos-module-badge">
                                                     <span class="badge pos-module-number">#${index + 1}</span>
                                                 </div>
-                                            </div>
+                                                </div>
                                             <div class="pos-module-body">
                                                 <div class="pos-module-table">
                                                     <div class="pos-module-row">
@@ -466,7 +464,7 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                                             <div class="pos-module-cell-header">
                                                                 <i class="fas fa-user me-2"></i>
                                                                 <span>Usuario Responsable</span>
-                                                            </div>
+                                            </div>
                                                             <div class="pos-module-cell-content">
                                                                 <span class="pos-module-value">${posData.full_name || 'No disponible'}</span>
                                                             </div>
@@ -489,15 +487,15 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                                             </div>
                                                             <div class="pos-module-cell-content">
                                                                 <div class="pos-components-badge">
-                                                                    ${posData.aggregated_components_by_module || 'No disponible'}
+                                                            ${posData.aggregated_components_by_module || 'No disponible'}
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
                         `;
                     });
 
@@ -508,7 +506,7 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                             <!-- Nota informativa empresarial -->
                             <div class="pos-footer-note">
                                 <div class="pos-note-content">
-                                    <i class="fas fa-info-circle me-2"></i>
+                                        <i class="fas fa-info-circle me-2"></i>
                                     <div>
                                         <strong>Información del Módulo</strong>
                                         <p class="mb-0">Esta información se obtiene desde la base de datos de Soporte Post-Venta y muestra todos los registros de Periféricos registrados para este serial de POS, organizados por módulo de gestión técnica.</p>
@@ -1150,15 +1148,15 @@ function formatTicketDetailsPanel(d) {
   }
 
   return `
-        <div class="container-fluid" style="height: 100%; overflow-y: auto;">
+        <div class="container-fluid">
             <div class="row mb-3 align-items-center">
                 <div class="col-md-3 text-center">
                     <div id="device-image-container" class="p-2">
-                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}" style="max-width: 100%; height: auto;">
+                      <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}">
                     </div>
                 </div>
                 <div class="col-md-9">
-                    <h4 style="color: black;">Ticket #${d.nro_ticket}</h4>
+                    <h4 style = "color: black;">Ticket #${d.nro_ticket}</h4>
                     <hr class="mt-2 mb-3">
                     <div class="row">
                         <div class="col-sm-6 mb-2">
@@ -1168,41 +1166,41 @@ function formatTicketDetailsPanel(d) {
                         <div class="col-sm-6 mb-2">
                           <strong><div>Estatus POS:</div></strong>
                           ${d.estatus_inteliservices}
-                        </div>
+                        </div><br>
                         <div class="col-sm-6 mb-2">
-                          <strong><div>Fecha Instalación:</div></strong>
+                          <br><strong><div>Fecha Instalación:</div></strong>
                           ${d.fecha_instalacion || 'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <strong><div>Fecha último ticket:</div></strong>
+                          <br><strong><div>Fecha último ticket:</div></strong>
                           ${d.fecha_cierre_anterior || 'No posee'}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <strong><div>Garantía:</div></strong>
+                          <br><strong><div>Garantía:</div></strong>
                           <span style="font-weight: bold; color: ${garantiaMessage.includes('Aplica') ? 'red' : 'green'};">${garantiaMessage}</span>
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <strong><div>Creación ticket:</div></strong>
+                          <br><strong><div>Creación ticket:</div></strong>
                           ${d.create_ticket}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <strong><div>Usuario Gestión:</div></strong>
+                          <br><strong><div>Usuario Gestión:</div></strong>
                           ${d.full_name_tecnico}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <strong><div>Dirección Instalación:</div></strong>
+                          <br><strong><div>Dirección Instalación:</div></strong>
                           ${d.nombre_estado_cliente || 'Sin datos'}
-                        </div>
-                        <div class="col-sm-6 mb-2">
-                          <strong><div>Estatus Ticket:</div></strong>
+                        </div><br>
+                         <div class="col-sm-6 mb-2">
+                            <br><strong><div>Estatus Ticket:</div></strong>
                             ${d.name_status_ticket}
+                        </div><br>
+                        <br><div class="col-sm-6 mb-2">
+                              <br><strong><div>Falla Reportada:</div></strong>
+                             <span class="falla-reportada-texto">${d.name_failure}</span>
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <strong><div>Falla Reportada:</div></strong>
-                          <span class="falla-reportada-texto">${d.name_failure}</span>
-                        </div>
-                        <div class="col-sm-6 mb-2">
-                          <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket="${d.id_ticket}" data-serial-pos="${d.serial_pos}">
+                          <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = ${d.id_ticket}" data-serial-pos = ${d.serial_pos}>
                             <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
                           </button>
                         </div>
@@ -1212,8 +1210,8 @@ function formatTicketDetailsPanel(d) {
             <hr class="mt-2 mb-3">
             <div class="row">
                 <div class="col-12">
-                    <h5 style="color: black;">Gestión / Historial:</h5>
-                    <div id="ticket-history-content" style="max-height: 300px; overflow-y: auto;">
+                    <h5 style = "color: black;" >Gestión / Historial:</h5>
+                    <div id="ticket-history-content">
                         <p>Selecciona un ticket para cargar su historial.</p>
                     </div>
                 </div>
@@ -1221,9 +1219,8 @@ function formatTicketDetailsPanel(d) {
         </div>
     `;
 }
-
 // Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
-function loadTicketHistory(ticketId, currentTicketNroForImage) {
+function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
     const historyPanel = $("#ticket-history-content");
     historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
 
@@ -1321,7 +1318,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
             if (response.success && response.history && response.history.length > 0) {
                 let historyHtml = `
                     <div class="d-flex justify-content-end mb-2">
-                        <button class="btn btn-secondary" onclick="printHistory('${ticketId}', '${encodeURIComponent(JSON.stringify(response.history))}', '${currentTicketNroForImage}')">
+                        <button class="btn btn-secondary" onclick="printHistory('${ticketId}', '${encodeURIComponent(JSON.stringify(response.history))}', '${currentTicketNroForImage}', '${serialPos}')">
                             <i class="fas fa-print"></i> Imprimir Historial
                         </button>
                     </div>
@@ -1472,7 +1469,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
                                                 </tr>
                                                 ${showComponents ? `
                                                     <tr>
-                                                        <th class="text-start">Componentes Asociados:</th>
+                                                        <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
                                                     </tr>
                                                 ` : ''}
@@ -1562,7 +1559,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage) {
     });
 }
 
-function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
+function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serialPos = '') {
     const decodeHistorySafe = (encoded) => {
         try {
             if (!encoded) return [];
@@ -1619,6 +1616,20 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
 
     const history = decodeHistorySafe(historyEncoded);
 
+    // Generar nombre del archivo con formato: nro_ticket-last4digits_serial.pdf
+    const generateFileName = (ticketNumber, serial) => {
+        let fileName = `Historial_Ticket_${ticketNumber}`;
+        
+        if (serial && serial.length >= 4) {
+            const lastFourDigits = serial.slice(-4);
+            fileName += `-${lastFourDigits}`;
+        }
+        
+        return `${fileName}.pdf`;
+    };
+
+    const fileName = generateFileName(currentTicketNroForImage, serialPos);
+
     let itemsHtml = '';
     history.forEach((item, index) => {
         const previous = history[index + 1] || null;
@@ -1626,8 +1637,11 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
         const elapsedText = elapsed ? elapsed.text : 'N/A';
 
         itemsHtml += `
-            <div style="border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 12px;">
-                <div style="font-weight: bold; color: #003594; margin-bottom: 6px;">${cleanString(item.fecha_de_cambio) || 'N/A'} - ${cleanString(item.name_accion_ticket) || 'N/A'} (${cleanString(item.name_status_ticket) || 'N/A'})</div>
+            <div style="border: 1px solid #ddd; border-radius: 8px; margin: 15px 0; padding: 0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%); color: white; padding: 12px 15px; font-weight: bold; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    ${cleanString(item.fecha_de_cambio) || 'N/A'} - ${cleanString(item.name_accion_ticket) || 'N/A'} (${cleanString(item.name_status_ticket) || 'N/A'})
+                </div>
+                <div style="padding: 15px; background: #fafafa;">
                 <table style="width:100%; border-collapse: collapse; font-size: 12px;">
                     <tbody>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Ticket</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.nro_ticket) || nro_ticket}</td></tr>
@@ -1644,7 +1658,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_lab) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
-                        ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Componentes</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
@@ -1658,32 +1672,417 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage) {
                         ${cleanString(item.comment_reasignation) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Reasignación</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_reasignation)}</td></tr>` : ''}
                     </tbody>
                 </table>
+                </div>
             </div>
         `;
     });
 
     const printContent = `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-            <div style="text-align:center;">
-                <h2 style="color: #003594; margin-bottom: 6px;">Historial del Ticket</h2>
-                <p style="margin: 0 0 8px 0;"><strong>Ticket Nro:</strong> ${currentTicketNroForImage}</p>
-                <p style="margin: 0 0 14px 0; color: #555;">Fecha de Impresión: ${new Date().toLocaleString()}</p>
-                <p style="margin: 0 0 14px 0; color: #6c757d; font-size: 12px;">Nota: En la columna "Tiempo desde gestión anterior" con un valor "N/A" indica que la gestión se realizó en menos de 1 minuto.</p>
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${fileName}</title>
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                
+                body {
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    font-size: 11px;
+                    line-height: 1.2;
+                    color: #333;
+                    background: #fff;
+                    padding: 10px;
+                    max-width: 100%;
+                    margin: 0 auto;
+                    overflow-x: hidden;
+                    display: flex;
+                    justify-content: center;
+                    align-items: flex-start;
+                    min-height: 100vh;
+                }
+                
+                .container {
+                    max-width: 800px;
+                    width: 100%;
+                    margin: 0 auto;
+                    background: white;
+                    min-height: calc(100vh - 40px);
+                    display: flex;
+                    flex-direction: column;
+                    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+                    border-radius: 8px;
+                }
+                
+                .header {
+                    text-align: center;
+                    margin-bottom: 12px;
+                    padding: 8px 0;
+                    border-bottom: 2px solid #2c5aa0;
+                    position: relative;
+                }
+                
+                .header::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 3px;
+                    background: linear-gradient(90deg, #2c5aa0 0%, #4a90e2 50%, #2c5aa0 100%);
+                }
+                
+                .company-logo-img {
+                    max-width: 120px;
+                    max-height: 60px;
+                    margin-bottom: 8px;
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                
+                .company-address {
+                    font-size: 10px;
+                    color: #555;
+                    margin-bottom: 8px;
+                    line-height: 1.3;
+                    text-align: center;
+                    font-weight: 500;
+                }
+                
+                .document-title {
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #2c5aa0;
+                    margin: 4px 0;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                
+                .document-info {
+                    display: flex;
+                    justify-content: space-between;
+                    margin: 10px 0;
+                    padding: 8px;
+                    background: #f8f9fa;
+                    border-radius: 5px;
+                    border-left: 3px solid #2c5aa0;
+                    gap: 10px;
+                }
+                
+                .info-item {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    flex: 1;
+                    min-width: 0;
+                }
+                
+                .info-label {
+                    font-size: 9px;
+                    color: #666;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    margin-bottom: 3px;
+                }
+                
+                .info-value {
+                    font-size: 12px;
+                    font-weight: bold;
+                    color: #2c5aa0;
+                }
+                
+                .content-wrapper {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                }
+                
+                .history-section {
+                    margin: 6px 0;
+                    background: #fff;
+                    border-radius: 5px;
+                    overflow: hidden;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                    border: 1px solid #e9ecef;
+                }
+                
+                .section-header {
+                    background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%);
+                    color: white;
+                    padding: 6px 10px;
+                    font-size: 11px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    letter-spacing: 0.3px;
+                }
+                
+                .section-content {
+                    padding: 8px 10px;
+                }
+                
+                .history-item {
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    margin: 15px 0;
+                    padding: 0;
+                    overflow: hidden;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    background: #fafafa;
+                }
+                
+                .history-item-header {
+                    background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%);
+                    color: white;
+                    padding: 12px 15px;
+                    font-weight: bold;
+                    font-size: 13px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin: 0;
+                }
+                
+                .history-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 11px;
+                }
+                
+                .history-table td {
+                    padding: 4px;
+                    border-bottom: 1px solid #eee;
+                }
+                
+                .history-table td:first-child {
+                    font-weight: bold;
+                    color: #555;
+                    width: 40%;
+                }
+                
+                .footer {
+                    margin-top: 8px;
+                    padding-top: 6px;
+                    border-top: 1px solid #ddd;
+                    color: #666;
+                    font-size: 8px;
+                    line-height: 1.2;
+                }
+                
+                .footer-content {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 8px;
+                    padding: 8px 0;
+                    border-bottom: 1px solid #eee;
+                }
+                
+                .footer-left {
+                    flex: 1;
+                    text-align: left;
+                }
+                
+                .footer-right {
+                    flex: 1;
+                    text-align: right;
+                }
+                
+                .footer-logo {
+                    max-height: 25px;
+                    max-width: 100px;
+                }
+                
+                .footer-rif {
+                    font-size: 10px;
+                    font-weight: bold;
+                    color: #2c5aa0;
+                }
+                
+                .footer-text {
+                    text-align: center;
+                    margin-top: 6px;
+                }
+                
+                /* Optimizaciones para impresión */
+                @media print {
+                    * {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    
+                    body {
+                        margin-top: 50px !important;
+                        margin-bottom: 40px !important;
+                    }
+                    
+                    html, body {
+                        width: 100% !important;
+                        height: 100% !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        overflow: visible !important;
+                        display: block !important;
+                    }
+                    
+                    body {
+                        font-size: 10px !important;
+                        padding: 8px !important;
+                        display: flex !important;
+                        justify-content: center !important;
+                        align-items: flex-start !important;
+                        min-height: 100vh !important;
+                    }
+                    
+                    .container {
+                        max-width: 800px !important;
+                        width: 100% !important;
+                        min-height: auto !important;
+                        height: auto !important;
+                        page-break-inside: avoid;
+                        margin: 0 auto !important;
+                        box-shadow: none !important;
+                        border-radius: 0 !important;
+                    }
+                    
+                    .header {
+                        margin-bottom: 6px !important;
+                        padding: 6px 0 !important;
+                        page-break-after: avoid;
+                    }
+                    
+                    .company-logo-img {
+                        max-width: 100px !important;
+                        max-height: 50px !important;
+                        margin-bottom: 6px !important;
+                    }
+                    
+                    .company-address {
+                        font-size: 9px !important;
+                        margin-bottom: 6px !important;
+                    }
+                    
+                    .document-title {
+                        font-size: 14px !important;
+                    }
+                    
+                    .section-content {
+                        padding: 6px 8px !important;
+                    }
+                    
+                    .history-item {
+                        margin: 10px 0 !important;
+                        padding: 0 !important;
+                        page-break-inside: avoid;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+                    }
+                    
+                    .history-item-header {
+                        padding: 10px 12px !important;
+                        font-size: 12px !important;
+                    }
+                    
+                    .history-table {
+                        font-size: 10px !important;
+                    }
+                    
+                    .footer {
+                        margin-top: 6px !important;
+                        padding-top: 4px !important;
+                        page-break-before: avoid;
+                    }
+                    
+                    .footer-content {
+                        margin-bottom: 6px !important;
+                        padding: 6px 0 !important;
+                    }
+                    
+                    .footer-logo {
+                        max-height: 20px !important;
+                        max-width: 80px !important;
+                    }
+                    
+                    .footer-rif {
+                        font-size: 9px !important;
+                    }
+                    
+                    .footer-text {
+                        margin-top: 4px !important;
+                    }
+                }
+                
+                @page {
+                    size: letter;
+                    margin: 0.2in 0.5in;
+                    padding: 0;
+                    @top-left { content: ""; }
+                    @top-center { content: ""; }
+                    @top-right { content: ""; }
+                    @bottom-left { content: ""; }
+                    @bottom-center { content: ""; }
+                    @bottom-right { content: ""; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <img src="../../../public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="company-logo-img" onerror="this.style.display='none'">
+                    <div class="company-address">
+                        Urbanización El Rosal. Av. Francisco de Miranda<br>
+                        Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
             </div>
+                    <div class="document-title">Historial del Ticket</div>
+                </div>
+                
+                <div class="document-info">
+                    <div class="info-item">
+                        <div class="info-label">Ticket Nro</div>
+                        <div class="info-value">${currentTicketNroForImage}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Fecha de Impresión</div>
+                        <div class="info-value">${new Date().toLocaleString()}</div>
+                    </div>
+                </div>
+
+                <div class="content-wrapper">
+                    <div class="history-section">
+                        <div class="section-header">Detalle del Historial</div>
+                        <div class="section-content">
+                            <p style="margin: 0 0 14px 0; color: #6c757d; font-size: 12px; text-align: center;">
+                                <strong>Nota:</strong> En la columna "Tiempo desde gestión anterior" con un valor "N/A" indica que la gestión se realizó en menos de 1 minuto.
+                            </p>
             ${itemsHtml || '<p style="text-align:center; color:#666;">Sin historial disponible.</p>'}
         </div>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    <div class="footer-content">
+                        <div class="footer-left">
+                            <img src="../../../public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="footer-logo" onerror="this.style.display='none'">
+                        </div>
+                        <div class="footer-right">
+                            <div class="footer-rif">RIF: J-00291615-0</div>
+                        </div>
+                    </div>
+                    <div class="footer-text">
+                        <p>Documento generado automáticamente por el sistema de gestión de tickets de Inteligensa.</p>
+                        <p>Generado: ${new Date().toLocaleString("es-ES")}</p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
     `;
 
     const printWindow = window.open('', '', 'height=800,width=1024');
-    printWindow.document.write('<html><head><title>Historial del Ticket</title>');
-    printWindow.document.write('<style>');
-    printWindow.document.write('body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; }');
-    printWindow.document.write('h2 { color: #003594; }');
-    printWindow.document.write('@media print { body { -webkit-print-color-adjust: exact; } }');
-    printWindow.document.write('</style>');
-    printWindow.document.write('</head><body>');
     printWindow.document.write(printContent);
-    printWindow.document.write('</body></html>');
     printWindow.document.close();
     printWindow.focus();
     printWindow.print();

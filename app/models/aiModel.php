@@ -84,27 +84,7 @@ class AiModel extends Model
      * Obtiene tickets pendientes agrupados por prioridad
      * Consulta eficiente con filtros optimizados
      */
-    public function getPendingTicketsByPriority()
-    {
-        try {
-            $sql = "
-                SELECT 
-                    COUNT(CASE WHEN prioridad = 'critica' THEN 1 END) as criticos,
-                    COUNT(CASE WHEN prioridad = 'alta' THEN 1 END) as altos,
-                    COUNT(CASE WHEN prioridad = 'media' THEN 1 END) as medios,
-                    COUNT(CASE WHEN prioridad = 'baja' THEN 1 END) as bajos
-                FROM tickets 
-                WHERE estado IN ('pendiente', 'en_proceso')
-                    AND fecha_creacion >= CURRENT_DATE - INTERVAL '7 days';
-            ";
-            
-            $result = Model::getResult($sql, $this->db);
-            return $result;
-        } catch (Throwable $e) {
-            error_log("Error en getPendingTicketsByPriority: " . $e->getMessage());
-            return ['query' => null, 'row' => null, 'numRows' => 0];
-        }
-    }
+  
 
     /**
      * Obtiene análisis de clientes
@@ -213,20 +193,7 @@ class AiModel extends Model
     public function getTechnicianList()
     {
         try {
-            $sql = "
-               
-                SELECT DISTINCT
-                    u.id_user,
-                    u.name,
-                    u.surname,
-                    u.email,
-                    u.username
-                FROM users u
-                WHERE u.id_rolusr IN (2, 3, 4) -- Roles de técnicos
-                    AND u.id_statususr = 1 -- Usuarios activos
-                ORDER BY u.name, u.surname;;
-            ";
-            
+            $sql = "SELECT * FROM get_technician_list();";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -242,88 +209,7 @@ class AiModel extends Model
     public function getTechnicianPerformance($technicianId)
     {
         try {
-            $sql = "
-                WITH technician_stats AS (
-                    SELECT 
-                        u.id_user,
-                        CONCAT(u.name, ' ', u.surname) as technician_name,
-                        COUNT(ut.id_ticket) as total_tickets,
-                        COUNT(CASE WHEN t.id_status_ticket = 3 THEN 1 END) as completed_tickets,
-                        COUNT(CASE WHEN t.id_status_ticket = 2 THEN 1 END) as in_progress_tickets,
-                        COUNT(CASE WHEN t.id_status_ticket = 1 THEN 1 END) as open_tickets,
-                        CASE 
-                            WHEN COUNT(ut.id_ticket) > 0 
-                            THEN ROUND((COUNT(CASE WHEN t.id_status_ticket = 3 THEN 1 END)::numeric / COUNT(ut.id_ticket)::numeric) * 100, 2)
-                            ELSE 0 
-                        END as completion_rate,
-                        CASE 
-                            WHEN COUNT(ut.id_ticket) > 0 
-                            THEN ROUND((COUNT(CASE WHEN t.id_status_ticket = 3 THEN 1 END)::numeric / COUNT(ut.id_ticket)::numeric) * 100, 2)
-                            ELSE 0 
-                        END as efficiency_percentage,
-                        MAX(ut.date_create_ticket) as last_ticket_date,
-                        AVG(
-                            CASE 
-                                WHEN ut.date_end_ticket IS NOT NULL AND ut.date_create_ticket IS NOT NULL 
-                                THEN EXTRACT(EPOCH FROM (ut.date_end_ticket - ut.date_create_ticket))/3600 
-                                ELSE NULL 
-                            END
-                        ) as average_time_hours
-                    FROM users u
-                    LEFT JOIN users_tickets ut ON u.id_user = ut.id_tecnico_n1
-                    LEFT JOIN users_tickets uts ON u.id_user = uts.id_tecnico_n2
-                    LEFT JOIN tickets t ON ut.id_ticket = t.id_ticket
-                    WHERE u.id_user OR uts.id_user = " . (int)$technicianId . "
-                    GROUP BY u.id_user, u.name, u.surname
-                ),
-                recent_tickets AS (
-                    SELECT 
-                        t.nro_ticket,
-                        st.name_status_ticket as status_name,
-                        CASE 
-                            WHEN t.id_status_ticket = 1 THEN '#dc3545'
-                            WHEN t.id_status_ticket = 2 THEN '#ffc107'
-                            WHEN t.id_status_ticket = 3 THEN '#28a745'
-                            ELSE '#6c757d'
-                        END as status_color,
-                        TO_CHAR(ut.date_create_ticket, 'DD-MM-YYYY') as date_created
-                    FROM users_tickets ut
-                    INNER JOIN tickets t ON ut.id_ticket = t.id_ticket
-                    INNER JOIN status_tickets st ON t.id_status_ticket = st.id_status_ticket
-                    WHERE ut.id_tecnico_n1 = " . (int)$technicianId . "
-                    ORDER BY ut.date_create_ticket DESC
-                    LIMIT 5
-                )
-                SELECT 
-                    ts.*,
-                    CASE 
-                        WHEN ts.average_time_hours IS NOT NULL 
-                        THEN ROUND(ts.average_time_hours::numeric, 1) || ' horas'
-                        ELSE 'N/A'
-                    END as average_time,
-                    CASE 
-                        WHEN ts.last_ticket_date IS NOT NULL 
-                        THEN TO_CHAR(ts.last_ticket_date, 'DD-MM-YYYY')
-                        ELSE 'N/A'
-                    END as last_ticket_date,
-                    COALESCE(
-                        json_agg(
-                            json_build_object(
-                                'nro_ticket', rt.nro_ticket,
-                                'status_name', rt.status_name,
-                                'status_color', rt.status_color,
-                                'date_created', rt.date_created
-                            )
-                        ) FILTER (WHERE rt.nro_ticket IS NOT NULL), 
-                        '[]'::json
-                    ) as recent_tickets
-                FROM technician_stats ts
-                LEFT JOIN recent_tickets rt ON true
-                GROUP BY ts.id_user, ts.technician_name, ts.total_tickets, ts.completed_tickets, 
-                         ts.in_progress_tickets, ts.open_tickets, ts.completion_rate, 
-                         ts.efficiency_percentage, ts.last_ticket_date, ts.average_time_hours;
-            ";
-            
+            $sql = "SELECT * FROM get_technician_performance(" . (int)$technicianId . ");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -393,6 +279,53 @@ class AiModel extends Model
             return $result;
         } catch (Throwable $e) {
             error_log("Error en getCustomQuery: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
+
+    /**
+     * Obtiene tickets pendientes categorizados por prioridad
+     * @param int $daysCritical Días para considerar un ticket como crítico
+     * @return array Resultado de la consulta
+     */
+    public function getPendingTicketsByPriority($daysCritical)
+    {
+        try {
+
+            if($daysCritical == ""){
+                $daysCritical = 5;
+            }
+            $sql = "SELECT * FROM public.get_pending_tickets_by_priority(" . (int)$daysCritical . ");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en getPendingTicketsByPriority: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
+
+    /**
+     * Obtiene tickets específicos por prioridad
+     * @param string $priority Prioridad específica (critico, alto, medio, bajo)
+     * @param int $daysCritical Días para considerar un ticket como crítico
+     * @return array Resultado de la consulta
+     */
+    public function getTicketsByPriority($priority, $daysCritical = 5)
+    {
+        try {
+            if($priority == ""){
+                $priority = "critico";
+            }
+            if($daysCritical == ""){
+                $daysCritical = 5;
+            }
+            $safe_priority = pg_escape_string($this->db->getConnection(), $priority);
+            $sql = "SELECT * FROM public.get_tickets_by_priority('" . $safe_priority . "', " . (int)$daysCritical . ");";
+            
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en getTicketsByPriority: " . $e->getMessage());
             return ['query' => null, 'row' => null, 'numRows' => 0];
         }
     }

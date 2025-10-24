@@ -45,21 +45,6 @@ class AiRepository
     }
 
     /**
-     * Obtiene tickets pendientes agrupados por prioridad
-     * Consulta eficiente con filtros optimizados
-     */
-    public function getPendingTicketsByPriority()
-    {
-        try {
-            $result = $this->aiModel->getPendingTicketsByPriority();
-            return $result ? $result['row'] : null;
-        } catch (Exception $e) {
-            error_log('Error en AiRepository::getPendingTicketsByPriority: ' . $e->getMessage());
-            return null;
-        }
-    }
-
-    /**
      * Obtiene análisis de clientes
      * Consulta compleja optimizada para análisis de patrones
      */
@@ -159,6 +144,50 @@ class AiRepository
             }
         } catch (Exception $e) {
             error_log('Error en AiRepository::getTechnicianPerformance: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Obtiene tickets pendientes categorizados por prioridad
+     * @param int $daysCritical Días para considerar un ticket como crítico
+     * @return array|null Datos de tickets pendientes por prioridad
+     */
+
+    public function getPendingTicketsByPriority($daysCritical)
+    {
+        try {
+            $result = $this->aiModel->getPendingTicketsByPriority($daysCritical);
+            return $result ? $result['row'] : null;
+        } catch (Exception $e) {
+            error_log('Error en AiRepository::getPendingTicketsByPriority: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+      /**
+     * Obtiene tickets específicos por prioridad
+     * @param string $priority Prioridad específica (critico, alto, medio, bajo)
+     * @param int $daysCritical Días para considerar un ticket como crítico
+     * @return array|null Lista de tickets por prioridad
+     */
+    public function getTicketsByPriority($priority, $daysCritical)
+    {
+        try {
+            $result = $this->aiModel->getTicketsByPriority($priority, $daysCritical);
+            
+            if ($result && $result['numRows'] > 0) {
+                $rows = [];
+                for ($i = 0; $i < $result['numRows']; $i++) {
+                    $rows[] = pg_fetch_assoc($result['query'], $i);
+                }
+                pg_free_result($result['query']);
+                return $rows;
+            } else {
+                return null;
+            }
+        } catch (Exception $e) {
+            error_log('Error en AiRepository::getTicketsByPriority: ' . $e->getMessage());
             return null;
         }
     }

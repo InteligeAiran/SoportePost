@@ -47,6 +47,9 @@ class ai extends Controller
             case 'pending_tickets':
                 $this->getPendingTickets();
                 break;
+            case 'tickets_by_priority':
+                $this->getTicketsByPriority();
+                break;
             case 'client_analysis':
                 $this->getClientAnalysis();
                 break;
@@ -149,7 +152,11 @@ class ai extends Controller
     private function getPendingTickets()
     {
         try {
-            $pending = $this->aiRepository->getPendingTicketsByPriority();
+            $daysCritical = $_POST['days_critical'] ?? 5; // Parámetro configurable desde frontend
+            error_log("aiApi::getPendingTickets - daysCritical: " . $daysCritical);
+            
+            $pending = $this->aiRepository->getPendingTicketsByPriority($daysCritical);
+            error_log("aiApi::getPendingTickets - pending: " . print_r($pending, true));
             
             if ($pending) {
                 $this->response([
@@ -158,9 +165,10 @@ class ai extends Controller
                         'criticos' => $pending['criticos'] ?? 0,
                         'altos' => $pending['altos'] ?? 0,
                         'medios' => $pending['medios'] ?? 0,
-                        'bajos' => $pending['bajos'] ?? 0
+                        'bajos' => $pending['bajos'] ?? 0,
+                        'days_critical' => $daysCritical // Para mostrar en frontend
                     ],
-                    'message' => 'Tickets pendientes obtenidos'
+                    'message' => 'Tickets pendientes obtenidos exitosamente'
                 ], 200);
             } else {
                 $this->response([
@@ -170,6 +178,46 @@ class ai extends Controller
             }
         } catch (Exception $e) {
             error_log('Error en getPendingTickets: ' . $e->getMessage());
+            $this->response([
+                'success' => false,
+                'message' => 'Error interno del servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtiene tickets específicos por prioridad
+     */
+    private function getTicketsByPriority()
+    {
+        try {
+            $priority = $_POST['priority'] ?? 'critico';
+            $daysCritical = $_POST['days_critical'] ?? 5; // Obtener días críticos del POST
+            
+            error_log("aiApi::getTicketsByPriority - priority: " . $priority);
+            error_log("aiApi::getTicketsByPriority - daysCritical: " . $daysCritical);
+            
+            $tickets = $this->aiRepository->getTicketsByPriority($priority, $daysCritical);
+            error_log("aiApi::getTicketsByPriority - tickets: " . print_r($tickets, true));
+            
+            if ($tickets !== null) {
+                $this->response([
+                    'success' => true,
+                    'data' => [
+                        'tickets' => $tickets,
+                        'priority' => $priority,
+                        'count' => count($tickets)
+                    ],
+                    'message' => 'Tickets obtenidos exitosamente'
+                ], 200);
+            } else {
+                $this->response([
+                    'success' => false,
+                    'message' => 'No se pudieron obtener los tickets'
+                ], 500);
+            }
+        } catch (Exception $e) {
+            error_log('Error en getTicketsByPriority: ' . $e->getMessage());
             $this->response([
                 'success' => false,
                 'message' => 'Error interno del servidor'

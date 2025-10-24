@@ -35,6 +35,42 @@
     flex-direction: column;
 }
 
+/* Asegurar altura uniforme para todas las tarjetas del dashboard */
+.col-xl-3 .card {
+    min-height: 200px !important;
+    height: 200px !important;
+}
+
+/* Responsive para pantallas medianas */
+@media (max-width: 1550px) {
+    .col-xl-3 .card {
+        min-height: 200px !important;
+        height: 200px !important;
+    }
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 1200px) {
+    .col-xl-3 .card {
+        min-height: 200px !important;
+        height: 200px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .col-xl-3 .card {
+        min-height: 180px !important;
+        height: 180px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .col-xl-3 .card {
+        min-height: 160px !important;
+        height: 160px !important;
+    }
+}
+
 /* Efecto hover para la tarjeta */
 .card:hover {
     transform: translateY(-5px);
@@ -45,6 +81,10 @@
 .card-body {
     padding: 1.5rem;
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
 }
 
 /* Nuevo: Estilos para el contenedor de contenido y el icono */
@@ -52,20 +92,23 @@
     display: flex; /* Habilitar Flexbox */
     justify-content: space-between; /* Empuja el icono a la derecha y el texto a la izquierda */
     align-items: center; /* Alinea los elementos verticalmente al centro */
-    gap: 1rem; /* Espacio entre el texto y el icono */
+    gap: 0.5rem; /* Espacio reducido entre el texto y el icono */
+    height: 100%;
+    flex-grow: 1;
 }
 
 /* Estilos para el contenedor de números/texto (dentro de la tarjeta) */
 .numbers {
-    align-items: center; /* Alinea los elementos verticalmente al centro */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
     gap: 0.5rem; /* Espacio entre los números */
     padding: 0.5rem; /* Padding para los números */
     border-radius: 0.25rem; /* Redondeado */
     width: 100%; /* Ajusta el ancho al contenedor de contenido */
-    justify-content: center; /* Alinea los elementos horizontalmente al centro */
-    align-items: center; /* Alinea los elementos verticalmente al centro */
     flex-grow: 1; /* Ajusta el ancho al contenedor de contenido */
-    /* No se necesita un width fijo aquí, Flexbox lo ajustará */
+    min-width: 0;
 }
 
 /* Estilos para el párrafo del título de la tarjeta */
@@ -119,11 +162,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3.5rem; /* Tamaño del cuadrado (56px) */
-    height: 3.5rem; /* Tamaño del cuadrado (56px) */
+    width: 2.5rem; /* Tamaño reducido (40px) */
+    height: 2.5rem; /* Tamaño reducido (40px) */
     border-radius: 0.75rem; /* Bordes redondeados para el cuadrado del icono */
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Sombra para el cuadrado del icono */
-    /* overflow: hidden; /* Puede ser útil si el SVG es más grande que el contenedor */
+    flex-shrink: 0; /* Evita que el icono se encoja */
 }
 
 /* Colores de fondo para los iconos (ahora para .icon-shape) */

@@ -74,6 +74,13 @@ class UserRepository
         return $region;
     }
 
+    public function getUserRol($id_user){
+        $result = $this->model->getUserRol($id_user);
+    
+        $id_rolusr = $result['row']['id_rolusr'];
+        return $id_rolusr;
+    }
+
     public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel){
 
         $defaul_pass = 1234567;

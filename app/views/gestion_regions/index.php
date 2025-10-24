@@ -23,6 +23,7 @@ function mi_navbar() {}
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
         <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/General.css" />
 
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
 
