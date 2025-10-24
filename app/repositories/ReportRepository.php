@@ -15,10 +15,10 @@ class ReportRepository
         $this->model = new reportsModel(); // Instancia tu modelo de usuario
     }
 
-    public function GetAllDataTicket($id_region)
+    public function GetAllDataTicket($id_region,$id_user,$idtipouser)
     {
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTicketsByRegion($id_region); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTicketsByRegion($id_region,$id_user,$idtipouser); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -31,10 +31,10 @@ class ReportRepository
         }
     }
 
-    public function SearchRif($rif)
+    public function SearchRif($rif,$id_user,$idtipouser )
     {
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTicketsByRif($rif); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTicketsByRif($rif,$id_user,$idtipouser); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -47,9 +47,9 @@ class ReportRepository
         }
     }
 
-    public function SearchSerial($serial)
+    public function SearchSerial($serial,$id_user,$idtipouser)
     {
-        $result = $this->model->SearchSerial($serial);
+        $result = $this->model->SearchSerial($serial,$id_user,$idtipouser);
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -79,9 +79,9 @@ class ReportRepository
         }
     }
 
-    public function SearchRangeData($ini_date, $end_date)
+    public function SearchRangeData($ini_date, $end_date,$id_user, $idtipouser)
     {
-        $result = $this->model->SearchRangeData($ini_date, $end_date);
+        $result = $this->model->SearchRangeData($ini_date, $end_date,$id_user, $idtipouser);
 
         if ($result) {
             //var_dump($result);  
@@ -567,9 +567,9 @@ class ReportRepository
         return $result;
     }
 
-    public function GetDataEstatusTicket($estatus){
+    public function GetDataEstatusTicket($estatus, $id_user, $idtipouser){
         // Lógica para obtener los estados del ticket
-        $result = $this->model->GetDataEstatusTicket($estatus);
+        $result = $this->model->GetDataEstatusTicket($estatus,$id_user, $idtipouser);
          if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
@@ -615,10 +615,10 @@ class ReportRepository
         }
     }   
 
-    public function SearchBanco($banco)
+    public function SearchBanco($banco,$id_user,$idtipouser)
     {
         // Lógica para obtener todos los usuarios
-        $result = $this->model->SearchBanco($banco); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->SearchBanco($banco,$id_user,$idtipouser); // Asumiendo que tienes este método en tu modelo
         if ($result && $result['numRows'] > 0) {
             $rows = [];
             for ($i = 0; $i < $result['numRows']; $i++) {

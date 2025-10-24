@@ -385,6 +385,8 @@ require 'app/footer.php';
     </style>
     </head>
     <body id="fondo" class="g-sidenav-show bg-gray-100">
+    <input type="hidden" name="idtipouser" id="idtipouser" value="<?php echo $_SESSION['id_rol']?> ">
+
         <div class="min-height-300 bg-dark position-absolute w-100"></div>
         <div class="d-lg-none fixed-top bg-dark p-2">
             <button class="btn btn-dark" id="filter-toggle">
@@ -417,7 +419,7 @@ require 'app/footer.php';
                               <br>
                               <div class="col-lg-16">
                               <select class="form-control" name="regiones" id="regiones" required >
-                                <option value="0">Seleccione Región</option>
+                                <option value="0">Seleccione</option>
                                     <option value="1">Rango de Fecha</option>
                                     <option value="2">Serial</option>
                                     <option value="3">Rif</option>

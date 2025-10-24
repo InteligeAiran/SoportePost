@@ -520,6 +520,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 function getRegionUsuarios() {
+
+  const id_user = document.getElementById('id_user').value;
+  
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getRegionTicket`);
 
@@ -569,7 +572,7 @@ function getRegionUsuarios() {
     }
   };
 
-  const datos = `action=GetRegionUsers`; // Cambia la acción para que coincida con el backend
+  const datos = `action=GetRegionUsers&id_user=${encodeURIComponent(id_user)}`; // Cambia la acción para que coincida con el backend
   xhr.send(datos);
 }
 
@@ -700,6 +703,11 @@ function SendRegions() {
   const selectElement = document.getElementById("SelectRgions");
   const selectedOptionIndex = selectElement.selectedIndex;
   const regionName = selectElement.options[selectedOptionIndex].text;
+
+  const id_user = document.getElementById('id_user').value;
+  const idtipouser = document.getElementById('idtipouser').value;
+
+
 
   // Mover la validación al principio para detener la ejecución si no hay región
   if (!RegionSelectValue) {
@@ -1078,15 +1086,16 @@ function SendRegions() {
         }
       }
     } else {
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "No hay datos en su búsqueda.";
-      mainTableCard.appendChild(errorMessage);
-      console.error("Error:", xhr.status, xhr.statusText);
-      // Show the welcome message if there's a connection error
-      if (welcomeMessage) {
-        welcomeMessage.style.visibility = "visible";
-        welcomeMessage.style.opacity = "1";
-      }
+      // const errorMessage = document.createElement("p");
+      // errorMessage.textContent = "No hay datos en su búsqueda.";
+      // mainTableCard.appendChild(errorMessage);
+      // console.error("Error:", xhr.status, xhr.statusText);
+      // // Show the welcome message if there's a connection error
+      // if (welcomeMessage) {
+      //   welcomeMessage.style.visibility = "visible";
+      //   welcomeMessage.style.opacity = "1";
+      // }
+      Swal.fire("No hay resultados para la búsqueda!");
     }
   };
 
@@ -1110,9 +1119,11 @@ function SendRegions() {
     }
   };
 
-  const datos = `action=SearchRegionData&id_region=${encodeURIComponent(RegionSelectValue)}`;
+  const datos = `action=SearchRegionData&id_region=${encodeURIComponent(RegionSelectValue)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }
+
+
 
 function SendRif() {
   // Get the welcome message element and show it at the start
@@ -1125,6 +1136,9 @@ function SendRif() {
   const tipoRif = document.getElementById("rifTipo").value;
   const numeroRif = document.getElementById("rifInput").value.trim();
   const rifCompleto = tipoRif + numeroRif;
+
+  const id_user = document.getElementById('id_user').value;
+  const idtipouser = document.getElementById('idtipouser').value;
 
   // Mover la validación al principio para detener la ejecución si no hay RIF
   if (!numeroRif) {
@@ -1502,15 +1516,16 @@ function SendRif() {
         }
       }
     } else {
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "No hay datos en su búsqueda.";
-      razonCountTableCard.appendChild(errorMessage);
-      console.error("Error:", xhr.status, xhr.statusText);
-      // Show the welcome message if there's a connection error
-      if (welcomeMessage) {
-        welcomeMessage.style.visibility = "visible";
-        welcomeMessage.style.opacity = "1";
-      }
+      // const errorMessage = document.createElement("p");
+      // errorMessage.textContent = "No hay datos en su búsqueda.";
+      // razonCountTableCard.appendChild(errorMessage);
+      // console.error("Error:", xhr.status, xhr.statusText);
+      // // Show the welcome message if there's a connection error
+      // if (welcomeMessage) {
+      //   welcomeMessage.style.visibility = "visible";
+      //   welcomeMessage.style.opacity = "1";
+      // }
+      Swal.fire("No hay resultados para la búsqueda!");
     }
   };
 
@@ -1534,7 +1549,7 @@ function SendRif() {
     }
   };
 
-  const datos = `action=SearchRifData&rif=${encodeURIComponent(rifCompleto)}`;
+  const datos = `action=SearchRifData&rif=${encodeURIComponent(rifCompleto)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }
 
@@ -1925,15 +1940,15 @@ function SendSerial() {
         }
       }
     } else {
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "No hay Datos en su búsqueda.";
-      razonCountTableCard.appendChild(errorMessage);
-      console.error("Error:", xhr.status, xhr.statusText);
-      // Show the welcome message if there's a connection error
-      if (welcomeMessage) {
-        welcomeMessage.style.visibility = "visible";
-        welcomeMessage.style.opacity = "1";
-      }
+      // const errorMessage = document.createElement("p");
+      // errorMessage.textContent = "No hay Datos en su búsqueda.";
+      // razonCountTableCard.appendChild(errorMessage);
+      // console.error("Error:", xhr.status, xhr.statusText);
+      // // Show the welcome message if there's a connection error
+      // if (welcomeMessage) {
+      //   welcomeMessage.style.visibility = "visible";
+      //   welcomeMessage.style.opacity = "1";
+      // }
     }
   };
 
@@ -1974,7 +1989,8 @@ function SendStatus() {
   const selectedOptionIndex = selectElement.selectedIndex;
   const EstatusName = selectElement.options[selectedOptionIndex].text;
 
-
+  const id_user = document.getElementById('id_user').value;
+  const idtipouser = document.getElementById('idtipouser').value;
 
 
   // Mover la validación al principio para detener la ejecución si no hay serial
@@ -2353,15 +2369,16 @@ function SendStatus() {
         }
       }
     } else {
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "No hay Datos en su búsqueda.";
-      razonCountTableCard.appendChild(errorMessage);
-      console.error("Error:", xhr.status, xhr.statusText);
-      // Show the welcome message if there's a connection error
-      if (welcomeMessage) {
-        welcomeMessage.style.visibility = "visible";
-        welcomeMessage.style.opacity = "1";
-      }
+      // const errorMessage = document.createElement("p");
+      // errorMessage.textContent = "No hay Datos en su búsqueda.";
+      // razonCountTableCard.appendChild(errorMessage);
+      // console.error("Error:", xhr.status, xhr.statusText);
+      // // Show the welcome message if there's a connection error
+      // if (welcomeMessage) {
+      //   welcomeMessage.style.visibility = "visible";
+      //   welcomeMessage.style.opacity = "1";
+      // }
+      Swal.fire("No hay resultados para la búsqueda!");
     }
   };
 
@@ -2385,7 +2402,7 @@ function SendStatus() {
     }
   };
 
-  const datos = `action=SearchSerialData&estatus=${encodeURIComponent(EstatusSelectValue)}`;
+  const datos = `action=SearchEstatusData&estatus=${encodeURIComponent(EstatusSelectValue)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }
 
@@ -2399,6 +2416,10 @@ function SendRango() {
 
   const initialDate = document.getElementById("date-ini").value;
   const endDate = document.getElementById("date-end").value;
+  
+  const id_user = document.getElementById('id_user').value;
+  const idtipouser = document.getElementById('idtipouser').value;
+
 
   if (!initialDate || !endDate) {
     Swal.fire({
@@ -2762,15 +2783,16 @@ function SendRango() {
         }
       }
     } else {
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "No hay datos en su búsqueda.";
-      razonCountTableCard.appendChild(errorMessage);
-      console.error("Error:", xhr.status, xhr.statusText);
-      // Show the welcome message if there's a connection error
-      if (welcomeMessage) {
-        welcomeMessage.style.visibility = "visible";
-        welcomeMessage.style.opacity = "1";
-      }
+      // const errorMessage = document.createElement("p");
+      // errorMessage.textContent = "No hay datos en su búsqueda.";
+      // razonCountTableCard.appendChild(errorMessage);
+      // console.error("Error:", xhr.status, xhr.statusText);
+      // // Show the welcome message if there's a connection error
+      // if (welcomeMessage) {
+      //   welcomeMessage.style.visibility = "visible";
+      //   welcomeMessage.style.opacity = "1";
+      // }
+      Swal.fire("No hay resultados para la búsqueda!");
     }
   };
 
@@ -2787,7 +2809,7 @@ function SendRango() {
     }
   };
 
-  const datos = `action=SearchRangeDate&initial=${encodeURIComponent(initialDate)}&second=${encodeURIComponent(endDate)}`;
+  const datos = `action=SearchRangeDate&initial=${encodeURIComponent(initialDate)}&second=${encodeURIComponent(endDate)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }
 
@@ -2796,6 +2818,7 @@ function SendRango() {
 function getBancoTicket() {
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getBancoTicket`);
+
 
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
@@ -2865,7 +2888,8 @@ function SendBancos() {
   const selectElementBco = document.getElementById("SelectBancosInput");
   // const selectedOptionIndex = selectElementBco.selectedIndex;
   // const EstatusName = selectElementBco.options[selectedOptionIndex].text;
-
+  const id_user = document.getElementById('id_user').value;
+  const idtipouser = document.getElementById('idtipouser').value;
 
 
 
@@ -3244,15 +3268,18 @@ function SendBancos() {
         }
       }
     } else {
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "No hay Datos en su búsqueda.";
-      razonCountTableCard.appendChild(errorMessage);
-      console.error("Error:", xhr.status, xhr.statusText);
-      // Show the welcome message if there's a connection error
-      if (welcomeMessage) {
-        welcomeMessage.style.visibility = "visible";
-        welcomeMessage.style.opacity = "1";
-      }
+      // const errorMessage = document.createElement("p");
+      // errorMessage.textContent = "No hay Datos en su búsqueda.";
+      // razonCountTableCard.appendChild(errorMessage);
+      // console.error("Error:", xhr.status, xhr.statusText);
+      // // Show the welcome message if there's a connection error
+      // if (welcomeMessage) {
+      //   welcomeMessage.style.visibility = "visible";
+      //   welcomeMessage.style.opacity = "1";
+      // }
+      Swal.fire("No hay resultados para la búsqueda!");
+
+      console.log('errorr');
     }
   };
 
@@ -3276,6 +3303,6 @@ function SendBancos() {
     }
   };
 
-  const datos = `action=SearchBancoData&banco=${encodeURIComponent(selectBanco)}`;
+  const datos = `action=SearchBancoData&banco=${encodeURIComponent(selectBanco)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }

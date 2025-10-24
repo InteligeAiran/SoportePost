@@ -257,8 +257,11 @@ class reportes extends Controller {
 
     private function handleSearchRegionData() {
         $id_region = isset($_POST['id_region'])? $_POST['id_region'] : null;
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $idtipouser = isset($_POST['idtipouser'])? $_POST['idtipouser'] : null;
+
         $repository = new ReportRepository(); // Inicializa el repositorio
-        $result = $repository->GetAllDataTicket($id_region);
+        $result = $repository->GetAllDataTicket($id_region,$id_user,$idtipouser);
         //var_dump($result);
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -273,8 +276,11 @@ class reportes extends Controller {
 
     public function handleSearchRifData(){
         $rif = isset($_POST['rif'])? $_POST['rif'] : null;
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $idtipouser = isset($_POST['idtipouser'])? $_POST['idtipouser'] : null;
+
         $repository = new ReportRepository(); // Inicializa el repositorio
-        $result = $repository->SearchRif($rif);
+        $result = $repository->SearchRif($rif,$id_user,$idtipouser);
 
          if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
@@ -288,8 +294,12 @@ class reportes extends Controller {
 
     public function handleSearchSerialData(){
         $serial = isset($_POST['serial'])? $_POST['serial'] : null;
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $idtipouser = isset($_POST['idtipouser'])? $_POST['idtipouser'] : null;
+
         $repository = new ReportRepository(); // Inicializa el repositorio
-        $result = $repository->SearchSerial($serial);
+        $result = $repository->SearchSerial($serial,$id_user,$idtipouser);
+
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
         } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
@@ -304,7 +314,10 @@ class reportes extends Controller {
         $repository = new ReportRepository();
         $ini_date = isset($_POST['initial'])? $_POST['initial'] : null;
         $end_date = isset($_POST['second'])? $_POST['second'] : null; 
-        $result = $repository->SearchRangeData($ini_date, $end_date);
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $idtipouser = isset($_POST['idtipouser'])? $_POST['idtipouser'] : null;
+
+        $result = $repository->SearchRangeData($ini_date, $end_date, $id_user, $idtipouser);
         if($ini_date !== null && $end_date !== null) {
             if ($result) {
                 $this->response(['success' => true, 'ticket' => $result], 200);
@@ -1198,6 +1211,8 @@ class reportes extends Controller {
 
     public function SearchEstatusData(){
         $estatus = isset($_POST['estatus'])? $_POST['estatus'] : null;
+        $id_user = isset($_POST['id_user']) ? trim($_POST['id_user']) : null;
+        $idtipouser = isset($_POST['idtipouser']) ? trim ($_POST['idtipouser']) : null;
         
         if (!$estatus) {
             $this->response(['success' => false, 'message' => 'Debe seleccionar un estatus'], 400);
@@ -1205,7 +1220,7 @@ class reportes extends Controller {
         }
         
         $repository = new ReportRepository();
-        $result = $repository->GetDataEstatusTicket($estatus);
+        $result = $repository->GetDataEstatusTicket($estatus,$id_user,$idtipouser);
 
         if ($result !== false && !empty($result)) {
             $this->response(['success' => true, 'ticket' => $result], 200);
@@ -1290,8 +1305,12 @@ class reportes extends Controller {
 
     public function handleSearchBancoData(){
         $banco = isset($_POST['banco'])? $_POST['banco'] : null;
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $idtipouser = isset($_POST['idtipouser'])? $_POST['idtipouser'] : null;
+
         $repository = new ReportRepository(); // Inicializa el repositorio
-        $result = $repository->SearchBanco($banco);
+        $result = $repository->SearchBanco($banco,$id_user,$idtipouser);
+        
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
         } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores

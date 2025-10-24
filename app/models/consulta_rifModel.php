@@ -5676,11 +5676,11 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
 
 
-    public function GetRegionTicket(){
+    public function GetRegionTicket($id_user){
 
         try{
 
-            $sql = "SELECT * FROM sp_verregionusers()";
+            $sql = "SELECT * FROM sp_verregionusers(".$id_user.")";
 
             $result = Model::getResult($sql, $this->db);
 
