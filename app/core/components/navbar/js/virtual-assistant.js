@@ -13,6 +13,574 @@ let text = null;
 
 
 
+// Sistema de Tutorial/Onboarding para Gestión de Tickets
+class TicketManagementTutorial {
+    constructor() {
+        this.currentStep = 0;
+        this.isActive = false;
+        this.overlay = null;
+        this.highlightedElement = null;
+        this.tutorialSteps = [
+            {
+                selector: '.dashboard-card[data-card="open-tickets"]',
+                title: 'Tickets Abiertos',
+                description: 'Aquí puedes ver todos los tickets que están abiertos y requieren atención. Este es el punto de partida para la gestión de tickets.',
+                position: 'bottom'
+            },
+            {
+                selector: '.dashboard-card[data-card="in-process-tickets"]',
+                title: 'Tickets en Proceso',
+                description: 'Estos son los tickets que están siendo procesados actualmente por los técnicos. Muestra el progreso activo del trabajo.',
+                position: 'top'
+            },
+            {
+                selector: '.dashboard-card[data-card="resolved-tickets"]',
+                title: 'Tickets Resueltos',
+                description: 'Aquí encuentras los tickets que ya han sido resueltos exitosamente. Representa el trabajo completado del equipo.',
+                position: 'left'
+            },
+            {
+                selector: '.dashboard-card[data-card="lab-tickets"]',
+                title: 'Tickets en Taller',
+                description: 'Los tickets que están en el taller para reparación o mantenimiento físico de equipos.',
+                position: 'right'
+            },
+            {
+                selector: '.dashboard-card[data-card="commercial-management"]',
+                title: 'Gestión Comercial',
+                description: 'Tickets relacionados con gestión comercial y ventas. Incluye procesos de facturación y seguimiento comercial.',
+                position: 'bottom'
+            },
+            {
+                selector: '#ticketCountSummaryTable',
+                title: 'Estadísticas de Tickets por Módulo',
+                description: 'Esta tabla muestra un resumen detallado de todos los tickets organizados por módulo y estado. Te permite ver la distribución completa del trabajo en el sistema.',
+                position: 'bottom'
+            },
+        {
+            selector: '#EstatusTallerList',
+            title: 'Estatus de Taller',
+            description: 'Esta sección muestra el estado actual de todos los equipos en el taller, incluyendo reparaciones en proceso, equipos reparados, pendientes por repuestos, entregados a clientes e irreparables.',
+            position: 'bottom'
+        },
+            {
+                selector: '#chart-line',
+                title: 'Gráfica de Tickets Mensuales',
+                description: 'Esta gráfica muestra la evolución de tickets a lo largo de los meses. Te permite identificar tendencias, picos de trabajo y planificar recursos según la demanda histórica.',
+                position: 'top'
+            },
+            {
+                selector: '#ticketsChart',
+                title: 'Gráfica de Tickets por Región',
+                description: 'Esta gráfica muestra la distribución de tickets por regiones geográficas. Te ayuda a identificar qué regiones requieren más atención y recursos.',
+                position: 'top'
+            }
+        ];
+    }
+
+    // Iniciar el tutorial
+    startTutorial() {
+        if (this.isActive) return;
+        
+        this.isActive = true;
+        this.currentStep = 0;
+        this.createOverlay();
+        this.hideChatbot();
+        this.showStep(0);
+    }
+
+    // Crear overlay oscuro
+    createOverlay() {
+        this.overlay = document.createElement('div');
+        this.overlay.id = 'tutorial-overlay';
+        this.overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9998;
+            transition: opacity 0.3s ease;
+        `;
+        document.body.appendChild(this.overlay);
+    }
+
+    // Mostrar paso específico del tutorial
+    async showStep(stepIndex) {
+        console.log(`🤖 Tutorial: Mostrando paso ${stepIndex + 1} de ${this.tutorialSteps.length}`);
+        
+        if (stepIndex >= this.tutorialSteps.length) {
+            console.log('🤖 Tutorial: Finalizando tutorial - todos los pasos completados');
+            this.endTutorial();
+            return;
+        }
+
+        const step = this.tutorialSteps[stepIndex];
+        console.log(`🤖 Tutorial: Buscando elemento para "${step.title}" con selector: ${step.selector}`);
+        
+        let element = document.querySelector(step.selector);
+        
+        // Si no se encuentra el elemento, intentar con selectores alternativos
+        if (!element) {
+            console.log(`🤖 Tutorial: Elemento no encontrado con selector principal, buscando alternativos...`);
+            element = this.findAlternativeElement(step);
+        }
+        
+        if (!element) {
+            console.warn(`🤖 Tutorial: Elemento no encontrado para "${step.title}". Saltando al siguiente paso.`);
+            // Esperar un poco antes de continuar para evitar bucles infinitos
+            setTimeout(() => {
+                this.nextStep();
+            }, 1000);
+            return;
+        }
+
+        console.log(`🤖 Tutorial: Elemento encontrado para "${step.title}"`);
+
+        // Remover highlight anterior
+        this.removeHighlight();
+
+        // Hacer scroll previo si es necesario para elementos en la parte inferior
+        await this.prepareElementForHighlight(element);
+
+        // Crear highlight para el elemento actual
+        this.highlightElement(element);
+        
+        // Crear tooltip
+        this.createTooltip(element, step);
+        
+        // Agregar listeners
+        this.addStepListeners();
+        
+        console.log(`🤖 Tutorial: Paso ${stepIndex + 1} configurado correctamente`);
+    }
+    
+    // Buscar elemento alternativo si el selector principal no funciona
+    findAlternativeElement(step) {
+        const alternativeSelectors = {
+            'Gráfica de Tickets Mensuales': [
+                '#chart-line',
+                'canvas#chart-line',
+                '#monthlyTicketsModal',
+                '.modal#monthlyTicketsModal',
+                '.chart-container canvas:first-of-type',
+                '.chart canvas:first-of-type',
+                'canvas:first-of-type',
+                '.chart:first-of-type canvas',
+                '#monthlyTicketsCard canvas'
+            ],
+            'Gráfica de Tickets por Región': [
+                '#ticketsChart',
+                'canvas#ticketsChart',
+                '.chart-container canvas:last-of-type',
+                '.chart canvas:last-of-type',
+                'canvas:last-of-type',
+                '.chart:last-of-type canvas',
+                '#RegionTicketsCard canvas'
+            ],
+            'Estatus de Taller': [
+                '#EstatusTallerList',
+                '.card-header.pb-0.p-4.border-b.border-gray-200.bg-gradient-info',
+                '.card-header.bg-gradient-info',
+                '.card-header:contains("Estatus De Taller")',
+                '.card:has(.card-header:contains("Estatus"))',
+                '.list-group:has(.list-group-item-custom)',
+                '.card-header:contains("Estatus")',
+                '.card:has(.list-group)',
+                '.list-group-item-custom',
+                'h6:contains("Estatus De Taller")',
+                '.card:has(h6:contains("Estatus De Taller"))'
+            ],
+            'Estadísticas de Tickets por Módulo': [
+                '#ticketCountSummaryTable',
+                'table[id*="ticket"]',
+                'table[id*="summary"]',
+                '.table-responsive table',
+                'table:has(th:contains("Módulo"))'
+            ]
+        };
+        
+        const selectors = alternativeSelectors[step.title];
+        if (selectors) {
+            console.log(`🤖 Tutorial: Buscando selectores alternativos para "${step.title}"`);
+            for (const selector of selectors) {
+                try {
+                    const element = document.querySelector(selector);
+                    if (element) {
+                        console.log(`🤖 Tutorial: Elemento alternativo encontrado para "${step.title}": ${selector}`);
+                        return element;
+                    }
+                } catch (e) {
+                    console.log(`🤖 Tutorial: Error con selector alternativo "${selector}": ${e.message}`);
+                }
+            }
+        }
+        
+        console.log(`🤖 Tutorial: No se encontraron elementos alternativos para "${step.title}"`);
+        return null;
+    }
+    
+    // Preparar elemento para el highlight (scroll previo si es necesario)
+    prepareElementForHighlight(element) {
+        const rect = element.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const elementCenter = rect.top + (rect.height / 2);
+        const viewportCenter = viewportHeight / 2;
+        
+        // Si el elemento no está centrado, hacer scroll para centrarlo
+        if (Math.abs(elementCenter - viewportCenter) > 100) {
+            const scrollToPosition = Math.max(0, window.pageYOffset + elementCenter - viewportCenter);
+            window.scrollTo({
+                top: scrollToPosition,
+                behavior: 'smooth'
+            });
+            
+            // Esperar un poco para que termine el scroll antes de continuar
+            return new Promise(resolve => {
+                setTimeout(resolve, 800);
+            });
+        }
+        
+        return Promise.resolve();
+    }
+
+    // Resaltar elemento específico
+    highlightElement(element) {
+        this.highlightedElement = element;
+        
+        const rect = element.getBoundingClientRect();
+        const highlight = document.createElement('div');
+        highlight.id = 'tutorial-highlight';
+        highlight.style.cssText = `
+            position: fixed;
+            top: ${rect.top - 5}px;
+            left: ${rect.left - 5}px;
+            width: ${rect.width + 10}px;
+            height: ${rect.height + 10}px;
+            border: 3px solid #007bff;
+            border-radius: 8px;
+            background: rgba(0, 123, 255, 0.1);
+            z-index: 9999;
+            pointer-events: none;
+            animation: tutorial-pulse 2s infinite;
+        `;
+
+        // Agregar animación CSS
+        if (!document.getElementById('tutorial-styles')) {
+            const style = document.createElement('style');
+            style.id = 'tutorial-styles';
+            style.textContent = `
+                @keyframes tutorial-pulse {
+                    0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); }
+                    70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+                    100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(highlight);
+    }
+
+    // Crear tooltip informativo
+    createTooltip(element, step) {
+        const tooltip = document.createElement('div');
+        tooltip.id = 'tutorial-tooltip';
+        
+        const rect = element.getBoundingClientRect();
+        const tooltipWidth = 350;
+        const tooltipHeight = 140;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        let top, left;
+        
+        // Calcular posición inicial basada en la preferencia
+        switch (step.position) {
+            case 'top':
+                top = rect.top - tooltipHeight - 20;
+                left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+                break;
+            case 'bottom':
+                top = rect.bottom + 30;
+                left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+                break;
+            case 'left':
+                top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+                left = rect.left - tooltipWidth - 20;
+                break;
+            case 'right':
+                top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+                left = rect.right + 20;
+                break;
+            default:
+                // Por defecto, mostrar debajo del elemento
+                top = rect.bottom + 30;
+                left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+        }
+        
+        // Ajustar posición para que esté dentro del viewport
+        // Ajustar horizontalmente
+        if (left < 20) {
+            left = 20;
+        } else if (left + tooltipWidth > viewportWidth - 20) {
+            left = viewportWidth - tooltipWidth - 20;
+        }
+        
+        // Ajustar verticalmente
+        if (top < 20) {
+            // Si no cabe arriba, intentar ponerlo abajo
+            const bottomPosition = rect.bottom + 30;
+            if (bottomPosition + tooltipHeight <= viewportHeight - 20) {
+                top = bottomPosition;
+            } else {
+                // Si tampoco cabe abajo, centrarlo verticalmente
+                top = Math.max(20, (viewportHeight - tooltipHeight) / 2);
+            }
+        } else if (top + tooltipHeight > viewportHeight - 20) {
+            // Si no cabe abajo, intentar ponerlo arriba
+            const topPosition = rect.top - tooltipHeight - 20;
+            if (topPosition >= 20) {
+                top = topPosition;
+            } else {
+                // Si tampoco cabe arriba, centrarlo verticalmente
+                top = Math.max(20, (viewportHeight - tooltipHeight) / 2);
+            }
+        }
+        
+        // Hacer scroll automático para centrar el elemento en la pantalla
+        const elementRect = element.getBoundingClientRect();
+        const elementCenter = elementRect.top + (elementRect.height / 2);
+        const viewportCenter = viewportHeight / 2;
+        
+        // Si el elemento no está centrado, hacer scroll suave
+        if (Math.abs(elementCenter - viewportCenter) > 100) {
+            const scrollToPosition = window.pageYOffset + elementCenter - viewportCenter;
+            window.scrollTo({
+                top: Math.max(0, scrollToPosition),
+                behavior: 'smooth'
+            });
+        }
+
+        // Debug final para "Estatus de Taller"
+        if (step.title === 'Estatus de Taller') {
+            console.log(`🤖 Tutorial: Estatus de Taller - Posición final: top=${top}, left=${left}`);
+        }
+
+        tooltip.style.cssText = `
+            position: fixed;
+            top: ${top}px;
+            left: ${left}px;
+            width: 350px;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            border: 1px solid #e9ecef;
+        `;
+
+        // Agregar información adicional según el paso
+        let additionalInfo = '';
+        if (step.title === 'Estadísticas de Tickets por Módulo') {
+            additionalInfo = '<div style="margin-top: 12px; padding: 10px; background-color: #f8f9fa; border-radius: 6px; font-size: 14px; color: #666;"><strong>💡 Tip:</strong> Esta tabla se actualiza en tiempo real y te ayuda a identificar qué módulos requieren más atención.</div>';
+        } else if (step.title === 'Estatus de Taller') {
+            additionalInfo = '<div style="margin-top: 12px; padding: 10px; background-color: #e3f2fd; border-radius: 6px; font-size: 14px; color: #1976d2;"><strong>🔧 Información:</strong> Cada elemento muestra el estado actual de los equipos POS en el taller, desde reparación hasta entrega al cliente.</div>';
+        } else if (step.title === 'Gráfica de Tickets Mensuales') {
+            additionalInfo = '<div style="margin-top: 12px; padding: 10px; background-color: #fff3cd; border-radius: 6px; font-size: 14px; color: #856404;"><strong>📈 Análisis:</strong> Observa los picos y valles para planificar recursos y identificar patrones estacionales en la demanda.</div>';
+        } else if (step.title === 'Gráfica de Tickets por Región') {
+            additionalInfo = '<div style="margin-top: 12px; padding: 10px; background-color: #d1ecf1; border-radius: 6px; font-size: 14px; color: #0c5460;"><strong>🗺️ Distribución:</strong> Identifica qué regiones tienen mayor carga de trabajo para optimizar la distribución de técnicos.</div>';
+        } else if (step.title.includes('Tickets')) {
+            additionalInfo = '<div style="margin-top: 12px; padding: 10px; background-color: #f3e5f5; border-radius: 6px; font-size: 14px; color: #7b1fa2;"><strong>📊 Métricas:</strong> Los números y porcentajes te ayudan a evaluar el rendimiento y la carga de trabajo del equipo.</div>';
+        }
+
+        tooltip.innerHTML = `
+            <div style="margin-bottom: 15px;">
+                <h4 style="margin: 0 0 12px 0; color: #333; font-size: 20px; font-weight: bold;">${step.title}</h4>
+                <p style="margin: 0; color: #555; font-size: 16px; line-height: 1.5; font-weight: 500;">${step.description}</p>
+                ${additionalInfo}
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 12px;">
+                <div style="font-size: 13px; color: #666; font-weight: 500;">
+                    Paso ${this.currentStep + 1} de ${this.tutorialSteps.length}
+                </div>
+                <div>
+                    <button id="tutorial-skip" style="
+                        background: #6c757d; 
+                        color: white; 
+                        border: none; 
+                        padding: 10px 18px; 
+                        border-radius: 6px; 
+                        margin-right: 10px; 
+                        cursor: pointer;
+                        font-size: 13px;
+                        font-weight: 500;
+                        transition: all 0.2s ease;
+                    " onmouseover="this.style.backgroundColor='#5a6268'" onmouseout="this.style.backgroundColor='#6c757d'">Saltar</button>
+                    ${this.currentStep === this.tutorialSteps.length - 1 ? 
+                        '<button id="tutorial-finish" style="background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor=\'#218838\'" onmouseout="this.style.backgroundColor=\'#28a745\'">Finalizar</button>' :
+                        '<button id="tutorial-next" style="background: #007bff; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor=\'#0056b3\'" onmouseout="this.style.backgroundColor=\'#007bff\'">Siguiente</button>'
+                    }
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(tooltip);
+        
+        // Sin ajustes adicionales para evitar problemas de posicionamiento
+    }
+    
+    // Asegurar que el tooltip sea completamente visible
+    ensureTooltipVisibility(tooltip) {
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+        
+        // Verificar si el tooltip está fuera del viewport verticalmente
+        if (tooltipRect.top < 0 || tooltipRect.bottom > viewportHeight) {
+            // Hacer scroll suave para centrar el tooltip
+            const scrollTop = window.pageYOffset + tooltipRect.top - (viewportHeight / 2) + (tooltipRect.height / 2);
+            window.scrollTo({
+                top: Math.max(0, scrollTop),
+                behavior: 'smooth'
+            });
+        }
+        
+        // Verificar si el tooltip está fuera del viewport horizontalmente
+        if (tooltipRect.left < 0 || tooltipRect.right > viewportWidth) {
+            // Ajustar posición horizontal si es necesario
+            const newLeft = Math.max(20, Math.min(tooltipRect.left, viewportWidth - tooltipRect.width - 20));
+            tooltip.style.left = `${newLeft}px`;
+        }
+        
+        // Verificar también el elemento resaltado
+        if (this.highlightedElement) {
+            const elementRect = this.highlightedElement.getBoundingClientRect();
+            
+            // Si el elemento está fuera del viewport, hacer scroll para centrarlo
+            if (elementRect.top < 0 || elementRect.bottom > viewportHeight) {
+                const elementScrollTop = window.pageYOffset + elementRect.top - (viewportHeight / 2) + (elementRect.height / 2);
+                window.scrollTo({
+                    top: Math.max(0, elementScrollTop),
+                    behavior: 'smooth'
+                });
+            }
+        }
+    }
+
+    // Agregar listeners para controles del tutorial
+    addStepListeners() {
+        const nextBtn = document.getElementById('tutorial-next');
+        const finishBtn = document.getElementById('tutorial-finish');
+        const skipBtn = document.getElementById('tutorial-skip');
+
+        if (nextBtn) {
+            nextBtn.onclick = () => this.nextStep();
+        }
+
+        if (finishBtn) {
+            finishBtn.onclick = () => this.endTutorial();
+        }
+
+        if (skipBtn) {
+            skipBtn.onclick = () => this.endTutorial();
+        }
+
+        // Permitir click en el elemento resaltado para avanzar
+        if (this.highlightedElement) {
+            this.highlightedElement.style.pointerEvents = 'auto';
+            this.highlightedElement.style.cursor = 'pointer';
+            this.highlightedElement.onclick = () => {
+                if (this.currentStep === this.tutorialSteps.length - 1) {
+                    this.endTutorial();
+                } else {
+                    this.nextStep();
+                }
+            };
+        }
+    }
+
+    // Siguiente paso
+    async nextStep() {
+        this.currentStep++;
+        this.removeHighlight();
+        this.removeTooltip();
+        await this.showStep(this.currentStep);
+    }
+
+    // Finalizar tutorial
+    endTutorial() {
+        this.isActive = false;
+        this.removeHighlight();
+        this.removeTooltip();
+        this.removeOverlay();
+        this.removeStyles();
+        this.showChatbot();
+    }
+    
+    // Ocultar el chatbot durante el tutorial
+    hideChatbot() {
+        const chatbotPanel = document.getElementById('assistantPanel');
+        const chatbotAvatar = document.getElementById('assistantAvatar');
+        
+        if (chatbotPanel) {
+            chatbotPanel.style.display = 'none';
+        }
+        if (chatbotAvatar) {
+            chatbotAvatar.style.display = 'none';
+        }
+    }
+    
+    // Mostrar el chatbot después del tutorial
+    showChatbot() {
+        const chatbotPanel = document.getElementById('assistantPanel');
+        const chatbotAvatar = document.getElementById('assistantAvatar');
+        
+        if (chatbotPanel) {
+            chatbotPanel.style.display = '';
+        }
+        if (chatbotAvatar) {
+            chatbotAvatar.style.display = '';
+        }
+    }
+
+    // Limpiar elementos del tutorial
+    removeHighlight() {
+        const highlight = document.getElementById('tutorial-highlight');
+        if (highlight) {
+            highlight.remove();
+        }
+        if (this.highlightedElement) {
+            this.highlightedElement.style.pointerEvents = '';
+            this.highlightedElement.style.cursor = '';
+            this.highlightedElement.onclick = null;
+        }
+    }
+
+    removeTooltip() {
+        const tooltip = document.getElementById('tutorial-tooltip');
+        if (tooltip) {
+            tooltip.remove();
+        }
+    }
+
+    removeOverlay() {
+        if (this.overlay) {
+            this.overlay.remove();
+            this.overlay = null;
+        }
+    }
+
+    removeStyles() {
+        const styles = document.getElementById('tutorial-styles');
+        if (styles) {
+            styles.remove();
+        }
+    }
+}
+
 class VirtualAssistant {
     constructor() {
         this.panel = null;
@@ -22,6 +590,7 @@ class VirtualAssistant {
         this.isDragging = false;
         this.dragOffset = { x: 0, y: 0 };
         this.panelPosition = { x: 0, y: 0 };
+        this.ticketTutorial = new TicketManagementTutorial();
         
         this.init();
     }
@@ -161,6 +730,10 @@ class VirtualAssistant {
                             <button class="chat-option-btn" data-query="help_technical">
                                 <span class="option-icon">🔧</span>
                                 <span class="option-text">Soporte técnico</span>
+                            </button>
+                            <button class="chat-option-btn" data-query="help_tutorial">
+                                <span class="option-icon">🎓</span>
+                                <span class="option-text">Tutorial de gestión de tickets</span>
                             </button>
                         </div>
                     </div>
@@ -575,21 +1148,42 @@ class VirtualAssistant {
         buttonElement.disabled = true;
         buttonElement.style.opacity = '0.6';
         
-        // Mostrar indicador de carga
-        this.showChatLoading();
+        // Verificar si es una consulta de ayuda que se maneja localmente
+        const localHelpQueries = ['help_general', 'help_tickets', 'help_reports', 'help_technical', 'help_tutorial'];
         
-        // Esperar un poco antes de agregar el mensaje del usuario para evitar superposición
-        setTimeout(() => {
-            // Agregar mensaje del usuario después de un delay
-            this.addUserMessage(queryText);
+        if (localHelpQueries.includes(query)) {
+            // Mostrar indicador de carga
+            this.showChatLoading();
             
-            // Procesar la consulta IA después de agregar el mensaje del usuario
+            // Esperar un poco antes de agregar el mensaje del usuario para evitar superposición
             setTimeout(() => {
-                this.processAIQuery(query);
-                buttonElement.disabled = false;
-                buttonElement.style.opacity = '1';
-            }, 500); // Delay adicional para separar mensaje del usuario de la respuesta
-        }, 200); // Delay inicial para evitar superposición
+                // Agregar mensaje del usuario después de un delay
+                this.addUserMessage(queryText);
+                
+                // Procesar la consulta local después de agregar el mensaje del usuario
+                setTimeout(() => {
+                    this.processLocalHelpQuery(query);
+                    buttonElement.disabled = false;
+                    buttonElement.style.opacity = '1';
+                }, 500); // Delay adicional para separar mensaje del usuario de la respuesta
+            }, 200); // Delay inicial para evitar superposición
+        } else {
+            // Mostrar indicador de carga
+            this.showChatLoading();
+            
+            // Esperar un poco antes de agregar el mensaje del usuario para evitar superposición
+            setTimeout(() => {
+                // Agregar mensaje del usuario después de un delay
+                this.addUserMessage(queryText);
+                
+                // Procesar la consulta IA después de agregar el mensaje del usuario
+                setTimeout(() => {
+                    this.processAIQuery(query);
+                    buttonElement.disabled = false;
+                    buttonElement.style.opacity = '1';
+                }, 500); // Delay adicional para separar mensaje del usuario de la respuesta
+            }, 200); // Delay inicial para evitar superposición
+        }
     }
     
     addUserMessage(message) {
@@ -792,6 +1386,7 @@ class VirtualAssistant {
                 }
             );
             break;
+
 
         default:
             this.addAssistantMessage('Lo siento, no pude procesar esa consulta. ¿Podrías intentar con otra opción?');
@@ -1480,6 +2075,114 @@ addChartMessage(data) {
             type: 'custom',
             html: ticketsHtml
         });
+    }
+
+    // Método para iniciar el tutorial de tickets
+    startTicketTutorial() {
+        console.log('🤖 Iniciando tutorial de gestión de tickets');
+        this.ticketTutorial.startTutorial();
+    }
+
+    // Procesar consultas de ayuda localmente (sin hacer peticiones HTTP)
+    processLocalHelpQuery(query) {
+        console.log('🤖 Procesando consulta de ayuda local:', query);
+        
+        // Ocultar indicador de carga
+        this.hideChatLoading();
+        
+        switch (query) {
+            case 'help_general':
+                this.addAssistantMessage(
+                    '💡 **Ayuda General del Sistema**\n\n' +
+                    'Bienvenido al sistema de gestión de tickets. Aquí puedes:\n\n' +
+                    '• **Gestionar tickets** - Crear, asignar y seguir tickets\n' +
+                    '• **Generar reportes** - Análisis y estadísticas del sistema\n' +
+                    '• **Administrar técnicos** - Gestionar el equipo técnico\n' +
+                    '• **Configurar el sistema** - Ajustes y preferencias\n\n' +
+                    '¿En qué más te puedo ayudar?'
+                );
+                break;
+                
+            case 'help_tickets':
+                this.addAssistantMessage(
+                    '🎫 **Cómo Gestionar Tickets**\n\n' +
+                    '**Para crear un ticket:**\n' +
+                    '1. Ve a "Gestión de Tickets"\n' +
+                    '2. Haz clic en "Nuevo Ticket"\n' +
+                    '3. Completa la información requerida\n' +
+                    '4. Asigna a un técnico\n\n' +
+                    '**Para seguir un ticket:**\n' +
+                    '• Usa el número de ticket para consultar su estado\n' +
+                    '• Revisa el historial de cambios\n' +
+                    '• Actualiza el progreso según sea necesario\n\n' +
+                    '¿Necesitas ayuda con algún proceso específico?'
+                );
+                break;
+                
+            case 'help_reports':
+                this.addAssistantMessage(
+                    '📊 **Cómo Generar Reportes**\n\n' +
+                    '**Reportes disponibles:**\n' +
+                    '• **Eficiencia de técnicos** - Rendimiento individual y general\n' +
+                    '• **Estadísticas de tickets** - Distribución por estado\n' +
+                    '• **Análisis de clientes** - Satisfacción y actividad\n' +
+                    '• **Estado del sistema** - Salud y rendimiento\n\n' +
+                    '**Para generar un reporte:**\n' +
+                    '1. Ve a la sección "Reportes"\n' +
+                    '2. Selecciona el tipo de reporte\n' +
+                    '3. Configura los filtros\n' +
+                    '4. Genera y descarga el reporte\n\n' +
+                    '¿Te gustaría que te ayude con algún reporte específico?'
+                );
+                break;
+                
+            case 'help_technical':
+                this.addAssistantMessage(
+                    '🔧 **Soporte Técnico**\n\n' +
+                    '**Problemas comunes y soluciones:**\n\n' +
+                    '**Error de conexión:**\n' +
+                    '• Verifica tu conexión a internet\n' +
+                    '• Recarga la página (F5)\n' +
+                    '• Limpia la caché del navegador\n\n' +
+                    '**Problemas de rendimiento:**\n' +
+                    '• Cierra pestañas innecesarias\n' +
+                    '• Verifica que tu navegador esté actualizado\n' +
+                    '• Contacta al administrador del sistema\n\n' +
+                    '**¿Necesitas más ayuda?**\n' +
+                    'Contacta al equipo de soporte técnico para asistencia especializada.'
+                );
+                break;
+                
+            case 'help_tutorial':
+                this.addAssistantMessage(
+                    '🎓 ¡Perfecto! Te voy a mostrar un tutorial interactivo sobre cómo gestionar tickets en el sistema.',
+                    {
+                        type: 'custom',
+                        html: `
+                            <div style="margin-top: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef;">
+                                <h5 style="text-align: center; color: #333; margin-bottom: 20px; font-weight: bold;">
+                                    <i class="fas fa-graduation-cap me-2"></i>Tutorial de Gestión de Tickets
+                                </h5>
+                                <p style="color: #666; margin-bottom: 20px; text-align: center;">
+                                    Te guiaré paso a paso por las diferentes secciones del dashboard para que aprendas a gestionar tickets eficientemente.
+                                </p>
+                                <div style="text-align: center;">
+                                    <button onclick="window.virtualAssistant.startTicketTutorial()" 
+                                            style="padding: 12px 24px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease;"
+                                            onmouseover="this.style.backgroundColor='#0056b3'" 
+                                            onmouseout="this.style.backgroundColor='#007bff'">
+                                        <i class="fas fa-play me-2"></i>Iniciar Tutorial
+                                    </button>
+                                </div>
+                            </div>
+                        `
+                    }
+                );
+                break;
+                
+            default:
+                this.addAssistantMessage('Lo siento, no pude procesar esa consulta de ayuda. ¿Podrías intentar con otra opción?');
+        }
     }
 }
 

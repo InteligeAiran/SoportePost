@@ -382,7 +382,7 @@ function mi_navbar() {}
                     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
                             <!-- Card Tickets Abiertos -->
-                                <div class="card" id="Card-Ticket-open">
+                                <div class="card dashboard-card" id="Card-Ticket-open" data-card="open-tickets">
                                     <div class="card-body">
                                         <div class="card-content-wrapper">
                                             <div class="numbers">
@@ -435,7 +435,7 @@ function mi_navbar() {}
                     <!-- Card Tickets Proceso -->
                         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                             <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
-                                <div class="card"  id="Card-Ticket-process">
+                                <div class="card dashboard-card"  id="Card-Ticket-process" data-card="in-process-tickets">
                                     <div class="card-body">
                                         <div class="card-content-wrapper">
                                             <div class="numbers">
@@ -527,7 +527,7 @@ function mi_navbar() {}
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
 
                         <!-- Card Tickets Cerrados -->
-                            <div class="card" id="Card-resolve-ticket">
+                            <div class="card dashboard-card" id="Card-resolve-ticket" data-card="resolved-tickets">
                                 <div class="card-body">
                                     <div class="card-content-wrapper">
                                         <div class="numbers">
@@ -611,7 +611,7 @@ function mi_navbar() {}
                         <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
                         
                         <!-- Card Tickets En Taller -->
-                            <div class="card" id="Card-Send-To-Taller">
+                            <div class="card dashboard-card" id="Card-Send-To-Taller" data-card="lab-tickets">
                                 <div class="card-body">
                                     <div class="card-content-wrapper" id="Cart-postaller">
                                         <div class="numbers">
@@ -690,7 +690,7 @@ function mi_navbar() {}
                     <!-- Card Gesti&oacuten Comercial -->
                         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                             <div class="card shadow-md rounded-xl transform transition-all duration-300 hover:scale-105">
-                                <div class="card"  id="Card-Comercial-Ticket">
+                                <div class="card dashboard-card"  id="Card-Comercial-Ticket" data-card="commercial-management">
                                     <div class="card-body">
                                         <div class="card-content-wrapper">
                                             <div class="numbers">
@@ -871,8 +871,7 @@ function mi_navbar() {}
                                     <h6 class="text-2xl font-semibold text-gray-800" style="font-size: 1.2rem;">Estatus De Taller</h6>
                                 </div>
                                 <div class="card-body p-4">
-                                    <ul class="list-group">
-
+                                    <ul class="list-group" id="EstatusTallerList">
                                         <li class="list-group-item list-group-item-custom" id="ModalPostReparacion">
                                             <div class="item-content-wrapper">
                                                 <div class="icon-wrapper">
@@ -1367,6 +1366,10 @@ function mi_navbar() {}
         <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
+
+        <!-- Tutorial System for Ticket Management -->
+        <script src="<?php echo APP; ?>app/views/dashboard/js/ticketTutorial.js"></script>
+        <script src="<?php echo APP; ?>app/views/dashboard/js/anaChatIntegration.js"></script>
 
         <?php
             if (isset($this->js)) {

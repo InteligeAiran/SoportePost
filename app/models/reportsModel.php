@@ -879,9 +879,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetTotalTicketsInProcess($id_user){
+    public function GetTotalTicketsInProcess($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_total_in_processtickets(".$id_user.")";
+            $sql = "SELECT * FROM get_total_in_processtickets(".$id_rol.", ".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
