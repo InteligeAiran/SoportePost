@@ -1367,10 +1367,6 @@ function mi_navbar() {}
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
 
-        <!-- Tutorial System for Ticket Management -->
-        <script src="<?php echo APP; ?>app/views/dashboard/js/ticketTutorial.js"></script>
-        <script src="<?php echo APP; ?>app/views/dashboard/js/anaChatIntegration.js"></script>
-
         <?php
             if (isset($this->js)) {
                 foreach ($this->js as $js) {

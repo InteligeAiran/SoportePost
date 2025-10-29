@@ -2,7 +2,8 @@
  * Sistema de Asistente Virtual
  * Maneja la interacción con el asistente virtual femenino
  */
-
+const id_usuario_element = document.getElementById("id_user");
+let id_usuario = id_usuario_element.value;
 let text = null;
 
     // Agregar esta función al inicio de tu archivo virtual-assistant.js
@@ -581,6 +582,340 @@ class TicketManagementTutorial {
     }
 }
 
+class ConsultaRIFTutorial {
+    constructor() {
+        this.currentStep = 0;
+        this.isActive = false;
+        this.overlay = null;
+        this.highlightedElement = null;
+        this.tutorialSteps = [
+            {
+                selector: '#buscarPorRifBtn',
+                title: 'Buscar por RIF',
+                description: 'Haz clic aquí para buscar un cliente usando su RIF (ej: J-12345678-9).',
+                position: 'bottom',
+            },
+            {
+                selector: '#buscarPorSerialBtn',
+                title: 'Buscar por Serial',
+                description: 'Busca un equipo POS específico usando su número de serial (ej: 10000CT27000041).',
+                position: 'bottom'
+            },
+            {
+                selector: '#buscarPorNombreBtn',
+                title: 'Buscar por Razón Social',
+                description: 'Encuentra clientes por el nombre de su empresa (ej: "Mi Empresa, C.A.").',
+                position: 'bottom'
+            },
+{
+    selector: '#RazonInput',
+    title: 'Campo de Búsqueda',
+    description: 'Aquí ingresas el RIF completo (con guión). Ejemplo: <strong>V-12345678</strong>',
+    position: 'bottom',
+
+    waitFor: () => {
+        const input = document.getElementById('RazonInput');
+        if (!input) return false;
+
+        const style = window.getComputedStyle(input);
+        return input.offsetParent !== null &&
+               style.display !== 'none' &&
+               style.visibility !== 'hidden';
+    },
+
+    onShow: () => {
+        setTimeout(() => {
+            const input = document.getElementById('RazonInput');
+            if (input) {
+                input.focus();
+                input.value = 'V-12345678'; // Ejemplo realista
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }, 500);
+    }
+},
+
+// PASO: Resaltar el BOTÓN "BUSCAR"
+{
+    selector: '#buscarRazon',
+    title: 'Botón Buscar',
+    description: 'Presiona este botón para iniciar la búsqueda del cliente.',
+    position: 'right',
+
+    waitFor: () => {
+        const btn = document.getElementById('buscarRazon');
+        if (!btn) return false;
+
+        const input = document.getElementById('RazonInput');
+        const hasValue = input && input.value.trim().length > 0;
+
+        return btn.offsetParent !== null && !btn.disabled && hasValue;
+    },
+
+    // OPCIONAL: Clic automático al avanzar
+    onNext: () => new Promise(resolve => {
+        const btn = document.getElementById('buscarRazon');
+        if (!btn || btn.disabled) return resolve();
+
+        const tutorial = window.virtualAssistant?.rifTutorial;
+        const overlay = tutorial?.overlay;
+
+        if (overlay) {
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none';
+            overlay.style.transition = 'opacity 0.2s ease-out';
+        }
+
+        setTimeout(() => {
+            btn.click();
+            console.log('Búsqueda iniciada: V-12345678');
+
+            setTimeout(() => {
+                if (overlay) {
+                    overlay.style.opacity = '1';
+                    overlay.style.pointerEvents = 'auto';
+                    overlay.style.transition = 'opacity 0.3s ease-in';
+                }
+                setTimeout(resolve, 600);
+            }, 1000); // Espera a que cargue el resultado
+        }, 300);
+    })
+},
+            {
+                selector: '#rifCountTable',
+                title: 'Resultados de Búsqueda',
+                description: 'Aquí aparecerán todos los POS asociados al cliente. Haz clic en el <strong>Serial POS</strong> para ver detalles.',
+                position: 'top',
+                waitFor: () => document.querySelector('#rifCountTable tbody tr td')?.textContent !== 'No hay datos'
+            },
+            {
+                selector: '.serial-pos-column',
+                title: 'Serial del POS',
+                description: 'Haz clic en cualquier serial para ver los detalles del equipo y crear un ticket.',
+                position: 'bottom'
+            },
+            {
+                selector: '#ModalSerial',
+                title: 'Detalles del POS',
+                description: 'Aquí ves toda la información del equipo: modelo, banco, dirección, etc.',
+                position: 'center',
+                waitFor: () => document.getElementById('ModalSerial').style.display === 'block'
+            },
+            {
+                selector: '#createTicketFalla1Btn',
+                title: 'Crear Ticket Falla 1',
+                description: 'Usa este botón para reportar una falla crítica (ej: equipo no enciende).',
+                position: 'top'
+            },
+            {
+                selector: '#createTicketFalla2Btn',
+                title: 'Crear Ticket Falla 2',
+                description: 'Para fallas menores (ej: pantalla rota, botón dañado).',
+                position: 'top'
+            }
+        ];
+    }
+
+    startTutorial() {
+        if (this.isActive) return;
+        this.isActive = true;
+        this.currentStep = 0;
+        this.createOverlay();
+        this.hideChatbot();
+        this.showStep(0);
+    }
+
+    createOverlay() {
+        this.overlay = document.createElement('div');
+        this.overlay.id = 'tutorial-overlay';
+        this.overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); z-index: 9998;
+        `;
+        document.body.appendChild(this.overlay);
+    }
+
+    async showStep(stepIndex) {
+        if (stepIndex >= this.tutorialSteps.length) {
+            this.endTutorial();
+            return;
+        }
+
+        const step = this.tutorialSteps[stepIndex];
+
+        // Esperar a que el elemento exista o condición
+        if (step.waitFor) {
+            await this.waitForCondition(step.waitFor);
+        }
+
+        let element = document.querySelector(step.selector);
+        if (!element) {
+            console.warn(`Elemento no encontrado: ${step.selector}`);
+            this.nextStep();
+            return;
+        }
+
+        this.removeHighlight();
+        await this.prepareElementForHighlight(element);
+        this.highlightElement(element);
+        this.createTooltip(element, step);
+        this.addStepListeners();
+    }
+
+    waitForCondition(condition) {
+        return new Promise(resolve => {
+            const check = () => {
+                if (condition()) {
+                    setTimeout(resolve, 300);
+                } else {
+                    setTimeout(check, 200);
+                }
+            };
+            check();
+        });
+    }
+
+    prepareElementForHighlight(element) {
+        const rect = element.getBoundingClientRect();
+        const centerY = rect.top + rect.height / 2;
+        const viewportCenter = window.innerHeight / 2;
+
+        if (Math.abs(centerY - viewportCenter) > 100) {
+            window.scrollTo({
+                top: window.pageYOffset + centerY - viewportCenter,
+                behavior: 'smooth'
+            });
+            return new Promise(r => setTimeout(r, 800));
+        }
+        return Promise.resolve();
+    }
+
+    highlightElement(element) {
+        this.highlightedElement = element;
+        const rect = element.getBoundingClientRect();
+        const highlight = document.createElement('div');
+        highlight.id = 'tutorial-highlight';
+        highlight.style.cssText = `
+            position: fixed; top: ${rect.top - 5}px; left: ${rect.left - 5}px;
+            width: ${rect.width + 10}px; height: ${rect.height + 10}px;
+            border: 3px solid #007bff; border-radius: 8px;
+            background: rgba(0, 123, 255, 0.1); z-index: 9999;
+            pointer-events: none; animation: tutorial-pulse 2s infinite;
+        `;
+        if (!document.getElementById('tutorial-styles')) {
+            const style = document.createElement('style');
+            style.id = 'tutorial-styles';
+            style.textContent = `@keyframes tutorial-pulse {
+                0%, 100% { box-shadow: 0 0 0 0 rgba(0,123,255,0.7); }
+                70% { box-shadow: 0 0 0 10px rgba(0,123,255,0); }
+            }`;
+            document.head.appendChild(style);
+        }
+        document.body.appendChild(highlight);
+    }
+
+    createTooltip(element, step) {
+        const tooltip = document.createElement('div');
+        tooltip.id = 'tutorial-tooltip';
+        const rect = element.getBoundingClientRect();
+        const width = 380, height = 160;
+        let top, left;
+
+        switch (step.position) {
+            case 'top': top = rect.top - height - 20; left = rect.left + rect.width/2 - width/2; break;
+            case 'bottom': top = rect.bottom + 20; left = rect.left + rect.width/2 - width/2; break;
+            case 'left': top = rect.top + rect.height/2 - height/2; left = rect.left - width - 20; break;
+            case 'right': top = rect.top + rect.height/2 - height/2; left = rect.right + 20; break;
+            case 'center': top = window.innerHeight/2 - height/2; left = window.innerWidth/2 - width/2; break;
+            default: top = rect.bottom + 20; left = rect.left + rect.width/2 - width/2;
+        }
+
+        // Ajustar límites
+        left = Math.max(20, Math.min(left, window.innerWidth - width - 20));
+        top = Math.max(20, Math.min(top, window.innerHeight - height - 20));
+
+        tooltip.style.cssText = `
+            position: fixed; top: ${top}px; left: ${left}px; width: ${width}px;
+            background: white; border-radius: 12px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            z-index: 10000; font-family: -apple-system, sans-serif; border: 1px solid #e9ecef;
+        `;
+
+        tooltip.innerHTML = `
+            <h4 style="margin:0 0 12px; color:#333; font-size:20px; font-weight:bold;">${step.title}</h4>
+            <p style="margin:0; color:#555; font-size:16pxpx; line-height:1.5;">${step.description}</p>
+            <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #e9ecef; padding-top:12px;">
+                <div style="font-size:13px; color:#666;">Paso ${this.currentStep + 1} de ${this.tutorialSteps.length}</div>
+                <div>
+                    <button id="tutorial-skip" style="background:#6c757d; color:white; border:none; padding:8px 16px; border-radius:6px; margin-right:8px; cursor:pointer;">Saltar</button>
+                    ${this.currentStep === this.tutorialSteps.length - 1
+                        ? '<button id="tutorial-finish" style="background:#28a745; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Finalizar</button>'
+                        : '<button id="tutorial-next" style="background:#007bff; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Siguiente</button>'
+                    }
+                </div>
+            </div>
+        `;
+        document.body.appendChild(tooltip);
+
+        // Click en elemento avanza
+        element.style.cursor = 'pointer';
+        element.onclick = () => this.nextStep();
+    }
+
+    addStepListeners() {
+        const next = document.getElementById('tutorial-next');
+        const finish = document.getElementById('tutorial-finish');
+        const skip = document.getElementById('tutorial-skip');
+        if (next) next.onclick = () => this.nextStep();
+        if (finish) finish.onclick = () => this.endTutorial();
+        if (skip) skip.onclick = () => this.endTutorial();
+    }
+
+    async nextStep() {
+        this.currentStep++;
+        this.removeHighlight();
+        this.removeTooltip();
+        await this.showStep(this.currentStep);
+    }
+
+    endTutorial() {
+        this.isActive = false;
+        this.removeHighlight();
+        this.removeTooltip();
+        this.removeOverlay();
+        this.removeStyles();
+        this.showChatbot();
+    }
+
+    removeHighlight() {
+        const h = document.getElementById('tutorial-highlight');
+        if (h) h.remove();
+        if (this.highlightedElement) {
+            this.highlightedElement.style.cursor = '';
+            this.highlightedElement.onclick = null;
+        }
+    }
+
+    removeTooltip() { const t = document.getElementById('tutorial-tooltip'); if (t) t.remove(); }
+    removeOverlay() { if (this.overlay) this.overlay.remove(); }
+    removeStyles() { const s = document.getElementById('tutorial-styles'); if (s) s.remove(); }
+
+    hideChatbot() {
+        const panel = document.getElementById('assistantPanel');
+        const avatar = document.getElementById('assistantAvatar');
+        if (panel) panel.style.display = 'none';
+        if (avatar) avatar.style.display = 'none';
+    }
+
+    showChatbot() {
+        const panel = document.getElementById('assistantPanel');
+        const avatar = document.getElementById('assistantAvatar');
+        if (panel) panel.style.display = '';
+        if (avatar) avatar.style.display = '';
+    }
+}
+
+
 class VirtualAssistant {
     constructor() {
         this.panel = null;
@@ -591,6 +926,7 @@ class VirtualAssistant {
         this.dragOffset = { x: 0, y: 0 };
         this.panelPosition = { x: 0, y: 0 };
         this.ticketTutorial = new TicketManagementTutorial();
+        this.rifTutorial = new ConsultaRIFTutorial();
         
         this.init();
     }
@@ -1387,6 +1723,10 @@ class VirtualAssistant {
             );
             break;
 
+        case 'ticket_management_tutorial':
+            // Mostrar selección de módulos para tutorial
+            this.showModuleTutorialSelection();
+            break;
 
         default:
             this.addAssistantMessage('Lo siento, no pude procesar esa consulta. ¿Podrías intentar con otra opción?');
@@ -2083,6 +2423,21 @@ addChartMessage(data) {
         this.ticketTutorial.startTutorial();
     }
 
+    startRifTutorial() {
+        console.log('🤖 Iniciando tutorial de gestión de RIF');
+        this.rifTutorial.startTutorial();
+    }
+
+    startReportsTutorial() {
+        console.log('Iniciando tutorial: Reportes');
+        // this.reportsTutorial.startT  utorial();
+    }
+
+    startTechnicianTutorial() {
+        console.log('Iniciando tutorial: Gestión de Técnicos');
+        // this.technicianTutorial.startTutorial();
+    }
+
     // Procesar consultas de ayuda localmente (sin hacer peticiones HTTP)
     processLocalHelpQuery(query) {
         console.log('🤖 Procesando consulta de ayuda local:', query);
@@ -2164,14 +2519,14 @@ addChartMessage(data) {
                                     <i class="fas fa-graduation-cap me-2"></i>Tutorial de Gestión de Tickets
                                 </h5>
                                 <p style="color: #666; margin-bottom: 20px; text-align: center;">
-                                    Te guiaré paso a paso por las diferentes secciones del dashboard para que aprendas a gestionar tickets eficientemente.
+                                    Selecciona el módulo del cual quieres ver el tutorial paso a paso para aprender a gestionar tickets eficientemente.
                                 </p>
                                 <div style="text-align: center;">
-                                    <button onclick="window.virtualAssistant.startTicketTutorial()" 
+                                    <button onclick="window.virtualAssistant.showModuleTutorialSelection()" 
                                             style="padding: 12px 24px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease;"
                                             onmouseover="this.style.backgroundColor='#0056b3'" 
                                             onmouseout="this.style.backgroundColor='#007bff'">
-                                        <i class="fas fa-play me-2"></i>Iniciar Tutorial
+                                        <i class="fas fa-list me-2"></i>Ver Módulos Disponibles
                                     </button>
                                 </div>
                             </div>
@@ -2183,6 +2538,568 @@ addChartMessage(data) {
             default:
                 this.addAssistantMessage('Lo siento, no pude procesar esa consulta de ayuda. ¿Podrías intentar con otra opción?');
         }
+    }
+
+    // Función para mostrar selección de módulos para tutorial
+    showModuleTutorialSelection() {
+        // Obtener módulos del usuario usando la misma API que el navbar
+        this.getUserModules().then(modules => {
+            this.createModuleSelectionModal(modules);
+        }).catch(error => {
+            console.error('Error obteniendo módulos:', error);
+            this.addAssistantMessage('❌ Error al obtener los módulos disponibles. Intenta de nuevo.');
+        });
+    }
+
+    // Obtener módulos del usuario
+    async getUserModules() {
+        try {
+            const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/getModulesUsers`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=getModulesUsers&id_usuario=${id_usuario}`
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('📋 Datos recibidos del API:', data);
+            
+            if (data.success && Array.isArray(data.modules)) {
+                // Filtrar solo módulos activos y con permisos
+                return data.modules.filter(module => module.activo === "t");
+            } else {
+                throw new Error('Formato de respuesta inválido');
+            }
+        } catch (error) {
+            console.error('Error en getUserModules:', error);
+            throw error;
+        }
+    }
+
+    // Crear modal de selección de módulos
+    createModuleSelectionModal(modules) {
+        // Crear overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'module-tutorial-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        `;
+
+        // Crear modal
+        const modal = document.createElement('div');
+        modal.id = 'module-tutorial-modal';
+        modal.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        `;
+
+        // Crear contenido del modal
+        modal.innerHTML = `
+            <div style="text-align: center; margin-bottom: 25px;">
+                <h2 style="margin: 0 0 10px 0; color: #333; font-size: 24px;">📚 Selecciona un Módulo</h2>
+                <p style="margin: 0; color: #666; font-size: 14px;">Elige el módulo del cual quieres ver el tutorial</p>
+            </div>
+            
+            <div id="modules-list" style="display: grid; gap: 15px;">
+                ${modules.map(module => `
+                    <div class="module-card" data-module-id="${module.idmodulo}" style="
+                        border: 2px solid #e9ecef;
+                        border-radius: 8px;
+                        padding: 20px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        background: #f8f9fa;
+                    ">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="
+                                width: 50px;
+                                height: 50px;
+                                background: #007bff;
+                                border-radius: 8px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: white;
+                                font-size: 20px;
+                                font-weight: bold;
+                            ">
+                                ${this.getModuleIcon(module.desc_modulo)}
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 5px 0; color: #333; font-size: 16px;">${module.desc_modulo}</h4>
+                                <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Código: ${module.codmod} - Módulo del sistema</p>
+                            </div>
+                            <div style="color: #007bff; font-size: 18px;">→</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div style="text-align: center; margin-top: 25px;">
+                <button id="close-module-modal" style="
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 14px;
+                ">Cancelar</button>
+            </div>
+        `;
+
+        // Agregar estilos CSS
+        if (!document.getElementById('module-tutorial-styles')) {
+            const style = document.createElement('style');
+            style.id = 'module-tutorial-styles';
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                
+                @keyframes slideIn {
+                    from { transform: translateY(-50px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                
+                .module-card:hover {
+                    border-color: #007bff !important;
+                    background: #e3f2fd !important;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        // Agregar event listeners
+        this.addModuleSelectionListeners();
+    }
+
+    // Obtener icono para cada módulo
+    getModuleIcon(moduleName) {
+        const icons = {
+            'Dashboard': '📊',
+            'Gestión Coordinador': '👨‍💼',
+            'Gestión Técnicos': '🔧',
+            'Gestión Taller': '🏭',
+            'Gestión Rosal': '📦',
+            'Gestión Regiones': '🗺️',
+            'Consultas y Reportes': '📋',
+            'Administración': '⚙️',
+            'Configuración': '🔧',
+            'Centro de Solicitudes': '📝'
+        };
+        return icons[moduleName] || '📋';
+    }
+
+
+    // Agregar event listeners al modal
+    addModuleSelectionListeners() {
+        // Cerrar modal
+        const closeBtn = document.getElementById('close-module-modal');
+        const overlay = document.getElementById('module-tutorial-overlay');
+        
+        closeBtn.onclick = () => this.closeModuleModal();
+        overlay.onclick = (e) => {
+            if (e.target === overlay) {
+                this.closeModuleModal();
+            }
+        };
+
+        // Seleccionar módulo
+        const moduleCards = document.querySelectorAll('.module-card');
+        moduleCards.forEach(card => {
+            card.onclick = () => {
+                const moduleId = card.dataset.moduleId;
+                const moduleName = card.querySelector('h4').textContent;
+                this.showSubmodulesForModule(moduleId, moduleName);
+            };
+        });
+    }
+
+    // Cerrar modal
+    closeModuleModal() {
+        const overlay = document.getElementById('module-tutorial-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+    }
+
+    // Mostrar submódulos para un módulo específico
+    async showSubmodulesForModule(moduleId, moduleName) {
+        try {
+            // Cerrar modal actual
+            this.closeModuleModal();
+            
+            // Mostrar loading
+            this.showLoadingMessage('Cargando submódulos...');
+            
+            // Obtener submódulos
+            const submodules = await this.getSubmodulesForModule(moduleId);
+            
+            // Crear modal de submódulos
+            this.createSubmodulesModal(moduleName, submodules);
+            
+        } catch (error) {
+            console.error('Error obteniendo submódulos:', error);
+            this.addAssistantMessage('❌ Error al obtener los submódulos disponibles. Intenta de nuevo.');
+        }
+    }
+
+    // Obtener submódulos de un módulo específico
+    async getSubmodulesForModule(moduleId) {
+        try {
+            const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/getSubmodulesForModule`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=getSubmodulesForModule&moduleId=${moduleId}&id_usuario=${id_usuario}`
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('📋 Submódulos recibidos:', data);
+            console.log('📋 Estructura del primer submódulo:', data.submodules && data.submodules[0]);
+            
+            if (data.success && Array.isArray(data.submodules)) {
+                return data.submodules;
+            } else {
+                throw new Error('Formato de respuesta inválido para submódulos');
+            }
+        } catch (error) {
+            console.error('Error en getSubmodulesForModule:', error);
+            throw error;
+        }
+    }
+
+    // Crear modal de submódulos
+    createSubmodulesModal(moduleName, submodules) {
+        console.log('📋 Creando modal para submódulos:', submodules);
+        
+        // Crear overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'submodules-tutorial-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        `;
+
+        // Crear modal
+        const modal = document.createElement('div');
+        modal.id = 'submodules-tutorial-modal';
+        modal.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        `;
+
+        // Crear contenido del modal
+        modal.innerHTML = `
+            <div style="text-align: center; margin-bottom: 25px;">
+                <h2 style="margin: 0 0 10px 0; color: #333; font-size: 24px;">📚 Submódulos de ${moduleName}</h2>
+                <p style="margin: 0; color: #666; font-size: 14px;">Elige el submódulo del cual quieres ver el tutorial</p>
+            </div>
+            
+            <div id="submodules-list" style="display: grid; gap: 15px;">
+                ${submodules.map(submodule => `
+                    <div class="submodule-card" data-url-archivo="${submodule.url_archivo}" style="
+                        border: 2px solid #e9ecef;
+                        border-radius: 8px;
+                        padding: 20px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        background: #f8f9fa;
+                    ">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="
+                                width: 50px;
+                                height: 50px;
+                                background: #28a745;
+                                border-radius: 8px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: white;
+                                font-size: 20px;
+                                font-weight: bold;
+                            ">
+                                ${this.getSubmoduleIcon(submodule.desc_submodulo)}
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 5px 0; color: #333; font-size: 16px;">${submodule.desc_submodulo}</h4>
+                                <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">${submodule.description || 'Submódulo del sistema'}
+                                ${!submodule.url_archivo ? '<br><small style="color: #dc3545;">Tutorial no disponible</small>' : ''}</p>
+                            </div>
+                            <div style="color: #28a745; font-size: 18px;">→</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div style="text-align: center; margin-top: 25px;">
+                <button id="back-to-modules" style="
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    margin-right: 10px;
+                ">← Volver a Módulos</button>
+                <button id="close-submodules-modal" style="
+                    background: #dc3545;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 14px;
+                ">Cancelar</button>
+            </div>
+        `;
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        // Agregar event listeners
+        this.addSubmodulesListeners();
+    }
+
+    // Obtener icono para submódulos
+    getSubmoduleIcon(submoduleName) {
+        const icons = {
+            'Dashboard': '📊',
+            'Asignar Técnico': '👨‍💼',
+            'Gestión Técnico': '🔧',
+            'Gestión Taller': '🏭',
+            'Gestión Rosal': '📦',
+            'Gestión Regiones': '🗺️',
+            'Consulta Rif': '🔍',
+            'Reporte Ticket': '📈',
+            'Usuarios': '👥',
+            'Configuración': '⚙️'
+        };
+        return icons[submoduleName] || '📋';
+    }
+
+    // Agregar event listeners para submódulos
+    addSubmodulesListeners() {
+        // Cerrar modal
+        const closeBtn = document.getElementById('close-submodules-modal');
+        const backBtn = document.getElementById('back-to-modules');
+        const overlay = document.getElementById('submodules-tutorial-overlay');
+        
+        closeBtn.onclick = () => this.closeSubmodulesModal();
+        backBtn.onclick = () => {
+            this.closeSubmodulesModal();
+            this.showModuleTutorialSelection();
+        };
+        
+        overlay.onclick = (e) => {
+            if (e.target === overlay) {
+                this.closeSubmodulesModal();
+            }
+        };
+
+        // En addSubmodulesListeners()
+        const submoduleCards = document.querySelectorAll('.submodule-card');
+        submoduleCards.forEach(card => {
+            card.onclick = () => {
+                const urlArchivo = card.dataset.urlArchivo?.trim();
+                
+                if (!urlArchivo) {
+                    console.warn('Este submódulo no tiene tutorial disponible');
+                    return;
+                }
+
+                // Construir URL completa una sola vez
+                const fullUrl = this.buildSubmoduleUrl(urlArchivo);
+
+                // Pasar directamente a startSubmoduleTutorial
+                this.startSubmoduleTutorial(fullUrl);
+            };
+        });
+    }
+
+   buildSubmoduleUrl(urlArchivo) {
+        // Asegúrate de que urlArchivo sea algo como: "consulta_rif" o "reporte_ticket"
+        const cleanPath = urlArchivo.trim().replace(/^\/+/, ''); // Quita slashes iniciales
+        return `${window.location.origin}/SoportePost/${cleanPath}`;
+    }
+
+    // Cerrar modal de submódulos
+    closeSubmodulesModal() {
+        const overlay = document.getElementById('submodules-tutorial-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+    }
+
+    // Mapeo de archivo → tipo de tutorial
+    getTutorialParam(urlArchivo) {
+        const map = {
+            'consulta_rif': 'rif',
+            'gestion_tickets': 'tickets',
+            'reporte_ticket': 'reportes',
+            'asignar_tecnico': 'tecnicos',
+            'gestion_tecnico': 'tecnicos',
+            'configuracion': 'config'
+        };
+
+        const clean = urlArchivo.trim()
+            .replace(/^\//, '')
+            .split('?')[0]
+            .split('.')[0]; // quita .php, .html, etc.
+
+        return map[clean] || null;
+    }
+
+    // Iniciar tutorial de submódulo específico
+  // Iniciar tutorial de submódulo específico
+    startSubmoduleTutorial(fullUrl) {
+        this.closeSubmodulesModal();
+        this.showRedirectMessage();
+
+        setTimeout(() => {
+            const tutorialUrl = new URL(fullUrl);
+            const urlArchivo = tutorialUrl.pathname.split('/').pop().split('?')[0];
+            const tutorialType = this.getTutorialParam(urlArchivo);
+
+            if (tutorialType) {
+                tutorialUrl.searchParams.set('tutorial', tutorialType);
+                console.log(`Redirigiendo con tutorial: ${tutorialType}`);
+            } else {
+                console.log(`Submódulo sin tutorial: ${urlArchivo} → redirigiendo sin parámetro`);
+                // NO agrega 'tutorial=active'
+            }
+
+            window.location.href = tutorialUrl.toString();
+        }, 1500);
+    }
+
+    // Mostrar mensaje de loading
+    showLoadingMessage(message) {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.id = 'loading-message';
+        loadingDiv.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #007bff;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            z-index: 10001;
+            font-size: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        `;
+        loadingDiv.innerHTML = `
+            <div style="text-align: center;">
+                <div style="font-size: 24px; margin-bottom: 10px;">⏳</div>
+                <div>${message}</div>
+            </div>
+        `;
+        
+        document.body.appendChild(loadingDiv);
+        
+        // Remover después de 2 segundos
+        setTimeout(() => {
+            loadingDiv.remove();
+        }, 2000);
+    }
+
+    // Iniciar tutorial de módulo específico
+    startModuleTutorial(moduleId, moduleHref) {
+        // Cerrar modal
+        this.closeModuleModal();
+
+        // Mostrar mensaje de redirección
+        this.showRedirectMessage(moduleHref);
+        
+        // Redirigir después de un breve delay
+        setTimeout(() => {
+            window.location.href = `${window.location.origin}${window.location.pathname}?module=${moduleHref}`;
+        }, 1500);
+    }
+
+    // Mostrar mensaje de redirección
+    showRedirectMessage(moduleHref) {
+        const message = document.createElement('div');
+        message.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #007bff;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            z-index: 10001;
+            font-size: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        `;
+        message.innerHTML = `
+            <div style="text-align: center;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🔄</div>
+                <div>Redirigiendo al módulo...</div>
+                <div style="font-size: 12px; margin-top: 5px; opacity: 0.8;">El tutorial comenzará automáticamente</div>
+            </div>
+        `;
+        
+        document.body.appendChild(message);
+        
+        // Remover después de 2 segundos
+        setTimeout(() => {
+            message.remove();
+        }, 2000);
     }
 }
 
@@ -2359,3 +3276,56 @@ const additionalStyles = `
 const styleSheet = document.createElement('style');
 styleSheet.textContent = additionalStyles;
 document.head.appendChild(styleSheet);
+
+// === DETECCIÓN Y EJECUCIÓN AUTOMÁTICA DEL TUTORIAL ===
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    let tutorialParam = urlParams.get('tutorial');
+
+    // Soporte para ?tutorial-rif o ?tutorial=rif
+    if (!tutorialParam) {
+        const match = window.location.search.match(/[?&]tutorial[-=]([a-z]+)/i);
+        if (match) {
+            tutorialParam = match[1].toLowerCase();
+        }
+    }
+
+    if (!tutorialParam) return;
+
+    // Mapeo de tipos de tutorial
+    const tutorialMap = {
+        'rif': 'startRifTutorial',
+        'tickets': 'startTicketTutorial',
+        'reportes': 'startReportsTutorial',
+        'tecnicos': 'startTechnicianTutorial'
+    };
+
+    const methodName = tutorialMap[tutorialParam];
+    if (!methodName) {
+        console.warn(`Tipo de tutorial no reconocido: ${tutorialParam}`);
+        return;
+    }
+
+    console.log(`Tutorial activado desde URL: ?tutorial=${tutorialParam}`);
+
+    // Limpiar URL
+    const cleanUrl = window.location.pathname + window.location.hash;
+    window.history.replaceState({}, document.title, cleanUrl);
+
+    // Esperar a que el asistente esté listo
+    const waitForAssistant = setInterval(() => {
+        if (window.virtualAssistant && typeof window.virtualAssistant[methodName] === 'function') {
+            clearInterval(waitForAssistant);
+            console.log(`Ejecutando tutorial: ${methodName}()`);
+            window.virtualAssistant[methodName]();
+        }
+    }, 200);
+
+    // Timeout de seguridad (10 segundos)
+    setTimeout(() => {
+        clearInterval(waitForAssistant);
+        if (window.virtualAssistant && typeof window.virtualAssistant[methodName] !== 'function') {
+            console.error(`Método de tutorial no encontrado después de espera: ${methodName}`);
+        }
+    }, 10000);
+});

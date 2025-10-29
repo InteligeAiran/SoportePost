@@ -3931,6 +3931,8 @@ function SendRazon() {
             const rifCell = row.insertCell();
             const name_modeloposCell = row.insertCell();
             const serial_posCell = row.insertCell();
+            serial_posCell.className = 'serial-pos-column'; // AÑADE ESTA LÍNEA
+
             const desc_posCell = row.insertCell();
             const afiliacionCell = row.insertCell();
             const fechainstallCell = row.insertCell();
@@ -4608,9 +4610,6 @@ modalComponentesEl.addEventListener('show.bs.modal', function () {
 });
 
 // Función para actualizar el contador de componentes seleccionados
-// Función para actualizar el contador de componentes seleccionados
-
-// Función para actualizar el contador de componentes seleccionados
 function actualizarContador() {
   const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
   const selectAllCheckbox = document.getElementById('selectAllComponents');
@@ -4863,7 +4862,6 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
     xhr.send(dataToSendString);
 }
 
-// Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
 // Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
 document.addEventListener('DOMContentLoaded', function () {
     const modalComponentesEl = document.getElementById('modalComponentes');

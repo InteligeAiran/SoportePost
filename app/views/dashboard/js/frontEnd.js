@@ -1,5 +1,304 @@
 let ModalTimelineInstance = null; // Variable para la instancia del modal de línea de tiempo
 
+this.consultaRifTutorialSteps = [
+    {
+        selector: '#buscarPorRifBtn',
+        title: 'Buscar por RIF',
+        description: 'Haz clic aquí para iniciar una búsqueda de cliente por su RIF. Este es el primer paso para consultar información de un cliente.',
+        position: 'bottom'
+    },
+    {
+        selector: '#RifDiv',
+        title: 'Selecciona el Tipo de RIF',
+        description: 'Elige el tipo de documento: <strong>V</strong> (persona natural), <strong>J</strong> (empresa), <strong>E</strong> (extranjero) o <strong>G</strong> (gubernamental).',
+        position: 'bottom'
+    },
+    {
+        selector: '#rifInput',
+        title: 'Ingresa el RIF',
+        description: 'Escribe el RIF completo sin guiones ni espacios. Ejemplo: <code>J123456789</code> o <code>V12345678</code>.',
+        position: 'bottom'
+    },
+    {
+        selector: '#buscarRif',
+        title: 'Haz clic en Buscar',
+        description: 'Presiona este botón para iniciar la búsqueda del cliente en la base de datos.',
+        position: 'bottom'
+    },
+    {
+        selector: '#rifCountTable',
+        title: 'Resultados de la Búsqueda',
+        description: 'Aquí aparecerán todos los clientes que coinciden con el RIF ingresado. Puedes ver su razón social, seriales POS, estado, banco, dirección, etc.',
+        position: 'top'
+    },
+    {
+        selector: '.serial-pos-column',
+        title: 'Haz clic en un Serial POS',
+        description: 'Haz clic en cualquier <strong>Serial POS</strong> para ver los detalles completos del equipo (modelo, imagen, componentes, garantía).',
+        position: 'top'
+    },
+    {
+        selector: '#createTicketFalla1Btn, #createTicketFalla2Btn',
+        title: 'Crear un Ticket',
+        description: 'Desde los detalles del POS, puedes crear un ticket de <strong>Falla 1</strong> (reparación) o <strong>Falla 2</strong> (reemplazo).',
+        position: 'bottom'
+    }
+];
+
+// === TUTORIAL DE CONSULTA POR RIF ===
+class ConsultaRifTutorial {
+    constructor() {
+        this.currentStep = 0;
+        this.isActive = false;
+        this.overlay = null;
+        this.highlightedElement = null;
+        this.tutorialSteps = [
+            {
+                selector: '#buscarPorRifBtn',
+                title: 'Buscar por RIF',
+                description: 'Haz clic aquí para iniciar una búsqueda de cliente por su RIF. Este es el primer paso para consultar información de un cliente.',
+                position: 'bottom'
+            },
+            {
+                selector: '#RifDiv',
+                title: 'Selecciona el Tipo de RIF',
+                description: 'Elige el tipo de documento: <strong>V</strong> (persona natural), <strong>J</strong> (empresa), <strong>E</strong> (extranjero) o <strong>G</strong> (gubernamental).',
+                position: 'bottom'
+            },
+            {
+                selector: '#rifInput',
+                title: 'Ingresa el RIF',
+                description: 'Escribe el RIF completo sin guiones ni espacios. Ejemplo: <code>J123456789</code> o <code>V12345678</code>.',
+                position: 'bottom'
+            },
+            {
+                selector: '#buscarRif',
+                title: 'Haz clic en Buscar',
+                description: 'Presiona este botón para iniciar la búsqueda del cliente en la base de datos.',
+                position: 'bottom'
+            },
+            {
+                selector: '#rifCountTable',
+                title: 'Resultados de la Búsqueda',
+                description: 'Aquí aparecerán todos los clientes que coinciden con el RIF ingresado. Puedes ver su razón social, seriales POS, estado, banco, dirección, etc.',
+                position: 'top'
+            },
+            {
+                selector: '.serial-pos-column',
+                title: 'Haz clic en un Serial POS',
+                description: 'Haz clic en cualquier <strong>Serial POS</strong> para ver los detalles completos del equipo (modelo, imagen, componentes, garantía).',
+                position: 'top'
+            },
+            {
+                selector: '#createTicketFalla1Btn, #createTicketFalla2Btn',
+                title: 'Crear un Ticket',
+                description: 'Desde los detalles del POS, puedes crear un ticket de <strong>Falla 1</strong> (reparación) o <strong>Falla 2</strong> (reemplazo).',
+                position: 'bottom'
+            }
+        ];
+    }
+
+    startTutorial() {
+        if (this.isActive) return;
+        this.isActive = true;
+        this.currentStep = 0;
+        this.createOverlay();
+        this.hideChatbot();
+        this.showStep(0);
+    }
+
+    createOverlay() {
+        this.overlay = document.createElement('div');
+        this.overlay.id = 'tutorial-overlay';
+        this.overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 9998; transition: opacity 0.3s ease;
+        `;
+        document.body.appendChild(this.overlay);
+    }
+
+    async showStep(stepIndex) {
+        if (stepIndex >= this.tutorialSteps.length) {
+            this.endTutorial();
+            return;
+        }
+
+        const step = this.tutorialSteps[stepIndex];
+        let element = document.querySelector(step.selector);
+
+        // Mostrar campos ocultos si es necesario
+        if (stepIndex === 1) {
+            const rifDiv = document.getElementById('RifDiv');
+            if (rifDiv) rifDiv.style.display = 'flex';
+            const select = document.getElementById('rifTipo');
+            const input = document.getElementById('rifInput');
+            const btn = document.getElementById('buscarRif');
+            if (select) select.style.display = 'block';
+            if (input) input.style.display = 'block';
+            if (btn) btn.style.display = 'block';
+        }
+
+        if (!element && stepIndex >= 4) {
+            setTimeout(() => this.nextStep(), 1000);
+            return;
+        }
+
+        if (!element) {
+            console.warn(`Elemento no encontrado: ${step.selector}`);
+            setTimeout(() => this.nextStep(), 1000);
+            return;
+        }
+
+        this.removeHighlight();
+        await this.prepareElementForHighlight(element);
+        this.highlightElement(element);
+        this.createTooltip(element, step);
+        this.addStepListeners();
+    }
+
+    prepareElementForHighlight(element) {
+        const rect = element.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const elementCenter = rect.top + (rect.height / 2);
+        const viewportCenter = viewportHeight / 2;
+
+        if (Math.abs(elementCenter - viewportCenter) > 100) {
+            const scrollTo = window.pageYOffset + elementCenter - viewportCenter;
+            window.scrollTo({ top: Math.max(0, scrollTo), behavior: 'smooth' });
+            return new Promise(resolve => setTimeout(resolve, 800));
+        }
+        return Promise.resolve();
+    }
+
+    highlightElement(element) {
+        this.highlightedElement = element;
+        const rect = element.getBoundingClientRect();
+        const highlight = document.createElement('div');
+        highlight.id = 'tutorial-highlight';
+        highlight.style.cssText = `
+            position: fixed; top: ${rect.top - 5}px; left: ${rect.left - 5}px;
+            width: ${rect.width + 10}px; height: ${rect.height + 10}px;
+            border: 3px solid #007bff; border-radius: 8px;
+            background: rgba(0,123,255,0.1); z-index: 9999; pointer-events: none;
+            animation: tutorial-pulse 2s infinite;
+        `;
+        if (!document.getElementById('tutorial-styles')) {
+            const style = document.createElement('style');
+            style.id = 'tutorial-styles';
+            style.textContent = `@keyframes tutorial-pulse {
+                0% { box-shadow: 0 0 0 0 rgba(0,123,255,0.7); }
+                70% { box-shadow: 0 0 0 10px rgba(0,123,255,0); }
+                100% { box-shadow: 0 0 0 0 rgba(0,123,255,0); }
+            }`;
+            document.head.appendChild(style);
+        }
+        document.body.appendChild(highlight);
+    }
+
+    createTooltip(element, step) {
+        const tooltip = document.createElement('div');
+        tooltip.id = 'tutorial-tooltip';
+        const rect = element.getBoundingClientRect();
+        const tooltipWidth = 380;
+        const tooltipHeight = 160;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        let top, left;
+        switch (step.position) {
+            case 'top': top = rect.top - tooltipHeight - 20; left = rect.left + (rect.width / 2) - (tooltipWidth / 2); break;
+            case 'bottom': top = rect.bottom + 30; left = rect.left + (rect.width / 2) - (tooltipWidth / 2); break;
+            case 'left': top = rect.top + (rect.height / 2) - (tooltipHeight / 2); left = rect.left - tooltipWidth - 20; break;
+            case 'right': top = rect.top + (rect.height / 2) - (tooltipHeight / 2); left = rect.right + 20; break;
+            default: top = rect.bottom + 30; left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+        }
+
+        if (left < 20) left = 20;
+        if (left + tooltipWidth > viewportWidth - 20) left = viewportWidth - tooltipWidth - 20;
+        if (top < 20) top = rect.bottom + 30;
+        if (top + tooltipHeight > viewportHeight - 20) top = Math.max(20, (viewportHeight - tooltipHeight) / 2);
+
+        tooltip.style.cssText = `
+            position: fixed; top: ${top}px; left: ${left}px; width: ${tooltipWidth}px;
+            background: white; border-radius: 12px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            z-index: 10000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            border: 1px solid #e9ecef;
+        `;
+
+        const isLastStep = this.currentStep === this.tutorialSteps.length - 1;
+        tooltip.innerHTML = `
+            <div style="margin-bottom: 15px;">
+                <h4 style="margin: 0 0 12px 0; color: #333; font-size: 20px; font-weight: bold;">${step.title}</h4>
+                <p style="margin: 0; color: #555; font-size: 16px; line-height: 1.5; font-weight: 500;">${step.description}</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 12px;">
+                <div style="font-size: 13px; color: #666; font-weight: 500;">
+                    Paso ${this.currentStep + 1} de ${this.tutorialSteps.length}
+                </div>
+                <div>
+                    <button id="tutorial-skip" style="background:#6c757d;color:white;border:none;padding:10px 18px;border-radius:6px;margin-right:10px;cursor:pointer;font-size:13px;font-weight:500;">
+                        Saltar
+                    </button>
+                    ${isLastStep 
+                        ? '<button id="tutorial-finish" style="background:#28a745;color:white;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;">Finalizar</button>'
+                        : '<button id="tutorial-next" style="background:#007bff;color:white;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;">Siguiente</button>'
+                    }
+                </div>
+            </div>
+        `;
+        document.body.appendChild(tooltip);
+
+        // Botones
+        document.getElementById('tutorial-next')?.addEventListener('click', () => this.nextStep());
+        document.getElementById('tutorial-finish')?.addEventListener('click', () => this.endTutorial());
+        document.getElementById('tutorial-skip')?.addEventListener('click', () => this.endTutorial());
+
+        // Click en elemento avanza
+        element.style.pointerEvents = 'auto';
+        element.style.cursor = 'pointer';
+        element.onclick = () => isLastStep ? this.endTutorial() : this.nextStep();
+    }
+
+    nextStep() {
+        this.currentStep++;
+        this.removeHighlight();
+        this.removeTooltip();
+        this.showStep(this.currentStep);
+    }
+
+    endTutorial() {
+        this.isActive = false;
+        this.removeHighlight();
+        this.removeTooltip();
+        this.removeOverlay();
+        this.removeStyles();
+        this.showChatbot();
+    }
+
+    removeHighlight() {
+        document.getElementById('tutorial-highlight')?.remove();
+        if (this.highlightedElement) {
+            this.highlightedElement.style.pointerEvents = '';
+            this.highlightedElement.style.cursor = '';
+            this.highlightedElement.onclick = null;
+        }
+    }
+
+    removeTooltip() { document.getElementById('tutorial-tooltip')?.remove(); }
+    removeOverlay() { this.overlay?.remove(); this.overlay = null; }
+    removeStyles() { document.getElementById('tutorial-styles')?.remove(); }
+
+    hideChatbot() {
+        document.getElementById('assistantPanel')?.style.setProperty('display', 'none', 'important');
+        document.getElementById('assistantAvatar')?.style.setProperty('display', 'none', 'important');
+    }
+
+    showChatbot() {
+        document.getElementById('assistantPanel')?.style.removeProperty('display');
+        document.getElementById('assistantAvatar')?.style.removeProperty('display');
+    }
+}
+
 let usuariosAcciones = {
   coordinador: {
     modulo: 'asignar_tecnico',

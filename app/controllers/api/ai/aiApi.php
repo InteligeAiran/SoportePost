@@ -65,6 +65,9 @@ class ai extends Controller
             case 'technician_performance':
                 $this->getTechnicianPerformance();
                 break;
+            case 'ticket_management_tutorial':
+                $this->getTicketManagementTutorial();
+                break;
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -385,6 +388,32 @@ class ai extends Controller
             }
         } catch (Exception $e) {
             error_log('Error en getTechnicianPerformance: ' . $e->getMessage());
+            $this->response([
+                'success' => false,
+                'message' => 'Error interno del servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtiene información para el tutorial de gestión de tickets
+     */
+    private function getTicketManagementTutorial()
+    {
+        try {
+            error_log("aiApi::getTicketManagementTutorial - Iniciando consulta de tutorial");
+            
+            // Respuesta simple para indicar que el tutorial está disponible
+            $this->response([
+                'success' => true,
+                'data' => [
+                    'tutorial_available' => true,
+                    'message' => 'Tutorial de gestión de tickets disponible'
+                ],
+                'message' => 'Tutorial obtenido exitosamente'
+            ], 200);
+        } catch (Exception $e) {
+            error_log('Error en getTicketManagementTutorial: ' . $e->getMessage());
             $this->response([
                 'success' => false,
                 'message' => 'Error interno del servidor'

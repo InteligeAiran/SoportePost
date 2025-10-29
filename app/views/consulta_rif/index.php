@@ -932,6 +932,7 @@ function mi_navbar() {}
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
         <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
+        <script src="<?php echo APP; ?>app/assets/js/tutorial-auto.js"></script>
 
         <!-- Bootstrap-->
         <script src="<?php echo APP; ?>app/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -979,6 +980,12 @@ function mi_navbar() {}
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
         <script src="<?php echo APP; ?>app/views/consulta_rif/js/frontEnd.js"></script>
+
+        <script>
+            function startConsultaRIFTutorial() {
+                new ConsultaRIFTutorial().startTutorial();
+            }
+            </script>
 
         <?php
             if (isset($this->js)) {
