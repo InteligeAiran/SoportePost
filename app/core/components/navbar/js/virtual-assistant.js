@@ -14,7 +14,7 @@ let text = null;
 
 
 
-// Sistema de Tutorial/Onboarding para Gestión de Tickets
+// TUTORIAL DEL DASHBOARD
 class TicketManagementTutorial {
     constructor() {
         this.currentStep = 0;
@@ -224,26 +224,49 @@ class TicketManagementTutorial {
     
     // Preparar elemento para el highlight (scroll previo si es necesario)
     prepareElementForHighlight(element) {
+        return new Promise(resolve => {
+            // Si el elemento NO está dentro del modal → scroll normal de página
+            const modal = document.getElementById('ModalSerial');
+            if (!modal || !element.closest('#ModalSerial')) {
         const rect = element.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const elementCenter = rect.top + (rect.height / 2);
-        const viewportCenter = viewportHeight / 2;
-        
-        // Si el elemento no está centrado, hacer scroll para centrarlo
-        if (Math.abs(elementCenter - viewportCenter) > 100) {
-            const scrollToPosition = Math.max(0, window.pageYOffset + elementCenter - viewportCenter);
+                const centerY = rect.top + rect.height / 2;
+                const viewportCenter = window.innerHeight / 2;
+                if (Math.abs(centerY - viewportCenter) > 100) {
             window.scrollTo({
-                top: scrollToPosition,
+                        top: window.pageYOffset + centerY - viewportCenter,
                 behavior: 'smooth'
             });
-            
-            // Esperar un poco para que termine el scroll antes de continuar
-            return new Promise(resolve => {
                 setTimeout(resolve, 800);
-            });
-        }
-        
-        return Promise.resolve();
+                } else {
+                    resolve();
+                }
+                return;
+            }
+
+            // === SCROLL DENTRO DEL MODAL ===
+            const modalRect = modal.getBoundingClientRect();
+            const elRect = element.getBoundingClientRect();
+
+            // Calcular posición del elemento relativa al scroll actual del modal
+            const elementTopInModal = elRect.top - modalRect.top + modal.scrollTop;
+            const modalVisibleHeight = modal.clientHeight;
+
+            // Si el elemento está fuera del área visible
+            if (elementTopInModal < modal.scrollTop || 
+                elementTopInModal + elRect.height > modal.scrollTop + modalVisibleHeight) {
+
+                const targetScroll = elementTopInModal - (modalVisibleHeight / 2) + (elRect.height / 2);
+
+                modal.scrollTo({
+                    top: targetScroll,
+                    behavior: 'smooth'
+                });
+
+                setTimeout(resolve, 800); // Esperar animación
+            } else {
+                resolve();
+            }
+        });
     }
 
     // Resaltar elemento específico
@@ -582,6 +605,7 @@ class TicketManagementTutorial {
     }
 }
 
+// TUTORIAL DE CONSULTA POR RIF
 class ConsultaRIFTutorial {
     constructor() {
         this.currentStep = 0;
@@ -607,10 +631,22 @@ class ConsultaRIFTutorial {
                 description: 'Encuentra clientes por el nombre de su empresa (ej: "Mi Empresa, C.A.").',
                 position: 'bottom'
             },
+            // PASO: Resaltar el BOTÓN "BUSCAR" PRIMERO
+            {
+                selector: '#buscarRazon',
+                title: 'Botón Buscar',
+                description: 'Este botón inicia la búsqueda con el texto que ingreses en el campo. Te mostraré el campo a continuación.',
+                position: 'right',
+
+                waitFor: () => {
+                    const btn = document.getElementById('buscarRazon');
+                    return btn && btn.offsetParent !== null;
+                }
+            },
 {
     selector: '#RazonInput',
-    title: 'Campo de Búsqueda',
-    description: 'Aquí ingresas el RIF completo (con guión). Ejemplo: <strong>V-12345678</strong>',
+                title: 'Campo de Búsqueda por Razón Social',
+                description: 'Aquí ingresas el nombre o parte del nombre de la empresa. Cuando hagas click en "Siguiente", el tutorial escribirá "INV" automáticamente y hará la búsqueda.', 
     position: 'bottom',
 
     waitFor: () => {
@@ -621,78 +657,19 @@ class ConsultaRIFTutorial {
         return input.offsetParent !== null &&
                style.display !== 'none' &&
                style.visibility !== 'hidden';
-    },
-
-    onShow: () => {
-        setTimeout(() => {
-            const input = document.getElementById('RazonInput');
-            if (input) {
-                input.focus();
-                input.value = 'V-12345678'; // Ejemplo realista
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-                input.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        }, 500);
-    }
-},
-
-// PASO: Resaltar el BOTÓN "BUSCAR"
-{
-    selector: '#buscarRazon',
-    title: 'Botón Buscar',
-    description: 'Presiona este botón para iniciar la búsqueda del cliente.',
-    position: 'right',
-
-    waitFor: () => {
-        const btn = document.getElementById('buscarRazon');
-        if (!btn) return false;
-
-        const input = document.getElementById('RazonInput');
-        const hasValue = input && input.value.trim().length > 0;
-
-        return btn.offsetParent !== null && !btn.disabled && hasValue;
-    },
-
-    // OPCIONAL: Clic automático al avanzar
-    onNext: () => new Promise(resolve => {
-        const btn = document.getElementById('buscarRazon');
-        if (!btn || btn.disabled) return resolve();
-
-        const tutorial = window.virtualAssistant?.rifTutorial;
-        const overlay = tutorial?.overlay;
-
-        if (overlay) {
-            overlay.style.opacity = '0';
-            overlay.style.pointerEvents = 'none';
-            overlay.style.transition = 'opacity 0.2s ease-out';
-        }
-
-        setTimeout(() => {
-            btn.click();
-            console.log('Búsqueda iniciada: V-12345678');
-
-            setTimeout(() => {
-                if (overlay) {
-                    overlay.style.opacity = '1';
-                    overlay.style.pointerEvents = 'auto';
-                    overlay.style.transition = 'opacity 0.3s ease-in';
                 }
-                setTimeout(resolve, 600);
-            }, 1000); // Espera a que cargue el resultado
-        }, 300);
-    })
 },
             {
                 selector: '#rifCountTable',
                 title: 'Resultados de Búsqueda',
-                description: 'Aquí aparecerán todos los POS asociados al cliente. Haz clic en el <strong>Serial POS</strong> para ver detalles.',
+                description: 'Aquí aparecen todos los POS asociados al cliente con "INV". El tutorial hará click automáticamente en un <strong>Serial POS</strong> para mostrar los detalles.',
                 position: 'top',
                 waitFor: () => document.querySelector('#rifCountTable tbody tr td')?.textContent !== 'No hay datos'
             },
             {
                 selector: '.serial-pos-column',
                 title: 'Serial del POS',
-                description: 'Haz clic en cualquier serial para ver los detalles del equipo y crear un ticket.',
+                description: 'El tutorial hará click automáticamente en este serial para mostrar los detalles del equipo y las opciones para crear tickets.',
                 position: 'bottom'
             },
             {
@@ -706,7 +683,11 @@ class ConsultaRIFTutorial {
                 selector: '#createTicketFalla1Btn',
                 title: 'Crear Ticket Falla 1',
                 description: 'Usa este botón para reportar una falla crítica (ej: equipo no enciende).',
-                position: 'top'
+                position: 'top',
+                waitFor: () => {
+                    const btn = document.getElementById('createTicketFalla1Btn');
+                    return btn && btn.offsetParent !== null;
+                }
             },
             {
                 selector: '#createTicketFalla2Btn',
@@ -757,6 +738,7 @@ class ConsultaRIFTutorial {
         }
 
         this.removeHighlight();
+        this.removeTooltip();
         await this.prepareElementForHighlight(element);
         this.highlightElement(element);
         this.createTooltip(element, step);
@@ -777,18 +759,46 @@ class ConsultaRIFTutorial {
     }
 
     prepareElementForHighlight(element) {
+        return new Promise(resolve => {
+            const modalContent = document.getElementById('ModalSerial-content');
+            if (!modalContent || !element.closest('#ModalSerial-content')) {
+                // Scroll de página si no está en el modal
         const rect = element.getBoundingClientRect();
         const centerY = rect.top + rect.height / 2;
         const viewportCenter = window.innerHeight / 2;
-
         if (Math.abs(centerY - viewportCenter) > 100) {
             window.scrollTo({
                 top: window.pageYOffset + centerY - viewportCenter,
                 behavior: 'smooth'
             });
-            return new Promise(r => setTimeout(r, 800));
-        }
-        return Promise.resolve();
+                    setTimeout(resolve, 800);
+                } else {
+                    resolve();
+                }
+                return;
+            }
+
+            // SCROLL DENTRO DEL MODAL (#ModalSerial-content)
+            const contentRect = modalContent.getBoundingClientRect();
+            const elRect = element.getBoundingClientRect();
+            const elementTopInContent = elRect.top - contentRect.top + modalContent.scrollTop;
+            const contentVisibleHeight = modalContent.clientHeight;
+
+            if (elementTopInContent < modalContent.scrollTop || 
+                elementTopInContent + elRect.height > modalContent.scrollTop + contentVisibleHeight) {
+
+                const targetScroll = elementTopInContent - (contentVisibleHeight / 2) + (elRect.height / 2);
+
+                modalContent.scrollTo({
+                    top: targetScroll,
+                    behavior: 'smooth'
+                });
+
+                setTimeout(resolve, 800);
+            } else {
+                resolve();
+            }
+        });
     }
 
     highlightElement(element) {
@@ -872,6 +882,110 @@ class ConsultaRIFTutorial {
     }
 
     async nextStep() {
+        // Si estamos avanzando DESDE el paso 2 (Buscar por Razón Social), hacer click automático en el botón
+        if (this.currentStep === 2) {
+            const buscarPorNombreBtn = document.getElementById('buscarPorNombreBtn');
+            if (buscarPorNombreBtn) {
+                console.log("🤖 Tutorial: Haciendo click automático en 'Buscar por Razón Social'");
+                buscarPorNombreBtn.click();
+                // Esperar un momento para que se muestren los elementos
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            // Continuar con el flujo normal
+            this.currentStep++;
+            this.removeHighlight();
+            this.removeTooltip();
+            await this.showStep(this.currentStep);
+            return;
+        }
+        
+        // Si estamos avanzando DESDE el paso 4 (Campo RazonInput), colocar texto y hacer búsqueda automática
+        if (this.currentStep === 4) {
+            const buscarRazonBtn = document.getElementById('buscarRazon');
+            const razonInput = document.getElementById('RazonInput');
+            
+            if (buscarRazonBtn && razonInput) {
+                console.log("🤖 Tutorial: Escribiendo 'INV' en el campo y haciendo búsqueda automática");
+                
+                // Limpiar tooltip actual
+                this.removeHighlight();
+                this.removeTooltip();
+                
+                // Escribir "INV" en el campo con efectos visuales
+                razonInput.focus();
+                razonInput.value = 'INV';
+                razonInput.dispatchEvent(new Event('input', { bubbles: true }));
+                razonInput.dispatchEvent(new Event('change', { bubbles: true }));
+                
+                // Pequeña pausa para que el usuario vea el texto escribiéndose
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                // Ejecutar la función de búsqueda directamente
+                if (typeof SendRazon === 'function') {
+                    SendRazon();
+                } else {
+                    // Fallback: hacer click en el botón
+                    buscarRazonBtn.click();
+                }
+                
+                // Esperar a que se carguen los resultados
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Avanzar al siguiente paso (tabla de resultados)
+                this.currentStep++;
+                await this.showStep(this.currentStep);
+                return;
+            }
+        }
+        
+       // Si estamos avanzando DESDE el paso 6 (Serial del POS), hacer click automático
+       if (this.currentStep === 6) {
+            console.log("Tutorial: Haciendo click automático en el serial POS");
+
+            this.removeHighlight();
+            this.removeTooltip();
+
+            // BUSCAR EL <a> DENTRO DE LA CELDA CON CLASE serial-pos-column
+            const serialLink = document.querySelector('#rifCountTable tbody tr td.serial-pos-column a');
+
+            if (serialLink) {
+                console.log("Encontrado enlace serial:", serialLink.textContent.trim());
+
+                // Scroll a la tabla
+                const table = document.getElementById('rifCountTable');
+                if (table) {
+                    table.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                setTimeout(() => {
+                    // HACER CLIC DIRECTO EN EL <a>
+                    serialLink.click();
+
+                    // Forzar evento por si acaso
+                    const clickEvent = new MouseEvent('click', {
+                        view: window,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    serialLink.dispatchEvent(clickEvent);
+
+                    // Esperar a que se abra el modal
+                    setTimeout(() => {
+                        this.currentStep++;
+                        this.showStep(this.currentStep);
+                    }, 1200);
+                }, 600);
+
+                return;
+            } else {
+                console.warn("Tutorial: No se encontró el <a> del serial. ¿Falta clase 'serial-pos-column'?");
+                this.currentStep++;
+                this.showStep(this.currentStep);
+                return;
+            }
+        }
+                
+        // Flujo normal para todos los otros pasos
         this.currentStep++;
         this.removeHighlight();
         this.removeTooltip();
@@ -915,7 +1029,453 @@ class ConsultaRIFTutorial {
     }
 }
 
+// TUTORIAL DE GESTIÓN COORDINACIÓN
+class GestionCoordinadorTutorial {
+    constructor() {
+        this.restoreActionButtonsStyle = () => {
+            [
+                '.btn-received-coord',
+                '.btn-assign-tech',
+                '.btn-reassign-tech',
+                '.btn-view-image',
+                '#botonMostarNoImage',
+                '#hiperbinComponents',
+                '.btn-secondary[onclick^="printHistory"]'
+            ].forEach(selector => {
+                document.querySelectorAll(selector).forEach(btn => {
+                    btn.style.zIndex = '';
+                    btn.style.position = '';
+                });
+            });
+        };
 
+        this.currentStep = 0;
+        this.isActive = false;
+        this.overlay = null;
+        this.highlightedElement = null;
+
+        // === PASOS DEL TUTORIAL ===
+        this.tutorialSteps = [
+            { selector: '#tabla-ticket', title: 'Tabla de Tickets', description: 'Aquí se listan todos los tickets disponibles.', position: 'top' },
+            { selector: '.dt-buttons-container', title: 'Filtros Rápidos', description: 'Usa estos 4 botones para filtrar rápidamente.', position: 'bottom', waitFor: () => document.querySelector('.dt-buttons-container') !== null },
+
+            // FILTRO: POR ASIGNAR
+            { selector: '#btn-por-asignar', title: 'Filtro 1: Por Asignar', description: 'Muestra tickets que aún <strong>NO tienen técnico asignado</strong>.', position: 'bottom', waitFor: () => document.getElementById('btn-por-asignar') !== null, onNext: () => this.clickFilterInstant('#btn-por-asignar') },
+            { selector: '#tabla-ticket tbody tr td:last-child, #btn-por-asignar', title: 'Columna de Acciones', description: 'Desplazando la tabla para ver los botones disponibles...', position: 'left', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onNext: () => this.scrollToActionsColumn() },
+
+            // BOTONES EN "POR ASIGNAR" - VISIBLES Y CENTRADOS
+            { 
+                selector: '#tabla-ticket tbody tr td .btn-received-coord', 
+                title: 'Botón: Marcar Recibido', 
+                description: 'Marca el ticket como <strong>Recibido por Coordinación</strong>.', 
+                position: 'left',
+                waitFor: () => document.querySelector('#tabla-ticket tbody tr td .btn-received-coord') !== null,
+                onShow: () => this.ensureButtonVisible('.btn-received-coord')
+            },
+            { 
+                selector: '#tabla-ticket tbody tr td .btn-assign-tech', 
+                title: 'Botón: Asignar Técnico', 
+                description: 'Abre el flujo para <strong>asignar un técnico</strong>.', 
+                position: 'left',
+                waitFor: () => document.querySelector('#tabla-ticket tbody tr td .btn-assign-tech') !== null,
+                onShow: () => this.ensureButtonVisible('.btn-assign-tech')
+            },
+            { 
+                selector: '#tabla-ticket tbody tr td .btn-view-image, #tabla-ticket tbody tr td #botonMostarNoImage', 
+                title: 'Botón: Ver Documentos', 
+                description: 'Revisa documentos cargados (Envío, Anticipo, Exoneración).', 
+                position: 'left',
+                waitFor: () => document.querySelector('#tabla-ticket tbody tr td .btn-view-image, #tabla-ticket tbody tr td #botonMostarNoImage') !== null,
+                onShow: () => this.ensureButtonVisible('.btn-view-image, #botonMostarNoImage')
+            },
+
+            { selector: '#tabla-ticket tbody tr', title: 'Seleccionando Ticket', description: 'Haciendo clic en el primer ticket para ver detalles...', position: 'top', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onNext: () => this.selectFirstTicketAutomatically() },
+            { selector: '#ticket-details-panel', title: 'Detalles del Ticket', description: 'Aquí aparece toda la información del ticket seleccionado.', position: 'left', waitFor: () => document.getElementById('ticket-details-panel')?.children.length > 0 },
+            {
+                selector: '#hiperbinComponents',
+                title: 'Cargar Periféricos del POS',
+                description: 'Este botón te permite <strong>cargar y asociar periféricos/componentes</strong> al equipo POS seleccionado. Haz clic aquí cuando necesites registrar impresoras, lectores, etc. asociados a este POS.',
+                position: 'left',
+                waitFor: () => document.getElementById('hiperbinComponents') !== null,
+                onShow: () => {
+                    // Enfasis visual igual a los action-buttons
+                    const btn = document.getElementById('hiperbinComponents');
+                    if (btn) {
+                        btn.style.position = 'relative';
+                        btn.style.zIndex = '10001';
+                    }
+                }
+            },
+            {
+                selector: '.btn-secondary[onclick^="printHistory"]',
+                title: 'Imprimir Historial del Ticket',
+                description: 'Con este botón puedes <strong>imprimir o descargar en PDF</strong> el historial completo de acciones del ticket.',
+                position: 'left',
+                waitFor: () => document.querySelector('.btn-secondary[onclick^="printHistory"]') !== null,
+                onShow: () => {
+                    // Mismo énfasis visual
+                    const btn = document.querySelector('.btn-secondary[onclick^="printHistory"]');
+                    if (btn) {
+                        btn.style.position = 'relative';
+                        btn.style.zIndex = '10001';
+                    }
+                }
+            },
+            { selector: '#ticket-history-content', title: 'Historial del Ticket', description: 'Aquí se carga el historial completo de acciones, donde se pueden ver el flujo de los tickets a detalle.', position: 'left', waitFor: () => { const c = document.getElementById('ticket-history-content'); return c && c.innerHTML && !c.innerHTML.includes('Selecciona un ticket'); } },
+
+            // FILTRO: RECIBIDOS
+            { selector: '#btn-recibidos', title: 'Filtro 2: Recibidos', description: 'Tickets que el técnico ya marcó como <strong>"Recibido"</strong>.', position: 'bottom', waitFor: () => document.getElementById('btn-recibidos') !== null, onNext: () => this.clickFilterInstant('#btn-recibidos') },
+
+            // FILTRO: ASIGNADOS
+            { selector: '#btn-asignados', title: 'Filtro 3: Asignados', description: 'Tickets con <strong>técnico asignado</strong>, pero aún no recibidos.', position: 'bottom', waitFor: () => document.getElementById('btn-asignados') !== null, onNext: () => this.clickFilterInstant('#btn-asignados') },
+            { selector: '#tabla-ticket tbody tr td:last-child, #btn-asignados', title: 'Columna de Acciones', description: 'Desplazando para ver botones en "Asignados"...', position: 'left', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onNext: () => this.scrollToActionsColumn() },
+
+            // BOTONES EN "ASIGNADOS"
+            { 
+                selector: '#tabla-ticket tbody tr td .btn-reassign-tech', 
+                title: 'Botón: Reasignar Técnico', 
+                description: 'Permite <strong>reasignar</strong> a otro técnico si no ha enviado al taller.', 
+                position: 'left',
+                waitFor: () => document.querySelector('#tabla-ticket tbody tr td .btn-reassign-tech') !== null,
+                onShow: () => this.ensureButtonVisible('.btn-reassign-tech')
+            },
+            { 
+                selector: '#tabla-ticket tbody tr td .btn-view-image, #tabla-ticket tbody tr td #botonMostarNoImage', 
+                title: 'Botón: Ver Documentos', 
+                description: 'También puedes ver documentos desde "Asignados".', 
+                position: 'left',
+                waitFor: () => document.querySelector('#tabla-ticket tbody tr td .btn-view-image, #tabla-ticket tbody tr td #botonMostarNoImage') !== null,
+                onShow: () => this.ensureButtonVisible('.btn-view-image, #botonMostarNoImage')
+            },
+
+            // ÚLTIMO PASO: REASIGNADOS → BOTÓN "FINALIZAR"
+            {
+                selector: '#btn-reasignado',
+                title: 'Filtro 4: Reasignados',
+                description: `
+                    Muestra tickets <strong>reasignados a otro técnico</strong>.<br><br>
+                    <div style="background:#e3f2fd;padding:10px;border-radius:8px;font-size:14px;">
+                    <strong>TIP:</strong> Solo se puede reasignar si el técnico actual <strong>no ha enviado el ticket al taller</strong>.
+                    </div>
+                `,
+                position: 'bottom',
+                waitFor: () => document.getElementById('btn-reasignado') !== null,
+                onNext: () => this.clickFilterInstant('#btn-reasignado'),
+                isLastStep: true
+            }
+        ];
+
+        // === MÉTODOS AUXILIARES ===
+        this.clickFilterInstant = (selector) => {
+            const btn = document.querySelector(selector);
+            if (btn) btn.click();
+            return Promise.resolve();
+        };
+
+        this.scrollToActionsColumn = () => {
+            return new Promise(resolve => {
+                const table = document.getElementById('tabla-ticket');
+                const firstRow = document.querySelector('#tabla-ticket tbody tr');
+                if (!table || !firstRow) return setTimeout(resolve, 300);
+
+                const lastCell = firstRow.querySelector('td:last-child');
+                if (!lastCell) return setTimeout(resolve, 300);
+
+                const wrapper = table.closest('.dataTables_wrapper');
+                let scrollContainer = wrapper?.querySelector('.dataTables_scrollBody') || wrapper || table.parentElement;
+
+                if (scrollContainer && scrollContainer.scrollWidth > scrollContainer.clientWidth) {
+                    const target = lastCell.offsetLeft + lastCell.offsetWidth - scrollContainer.clientWidth + 40;
+                    scrollContainer.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+                    setTimeout(resolve, 900);
+                } else {
+                    setTimeout(resolve, 300);
+                }
+            });
+        };
+
+        this.selectFirstTicketAutomatically = () => {
+            return new Promise(resolve => {
+                let row = document.querySelector('#tabla-ticket tbody tr');
+                if (!row) {
+                    const fallback = document.getElementById('btn-por-asignar') || document.getElementById('btn-recibidos') || document.getElementById('btn-asignados');
+                    if (fallback) fallback.click();
+                    setTimeout(() => {
+                        row = document.querySelector('#tabla-ticket tbody tr');
+                        if (!row) {
+                            this.showTemporaryMessage('No hay tickets. Continuando...', 2000);
+                            setTimeout(() => this.nextStep(), 2000);
+                            return;
+                        }
+                        row.click();
+                        this.showTemporaryMessage('Ticket seleccionado.', 1500);
+                        setTimeout(resolve, 800);
+                    }, 700);
+                    return;
+                }
+                row.click();
+                this.showTemporaryMessage('Ticket seleccionado.', 1500);
+                setTimeout(resolve, 800);
+            });
+        };
+
+        this.showTemporaryMessage = (text, duration = 1500) => {
+            const msg = document.createElement('div');
+            msg.textContent = text;
+            msg.style.cssText = `
+                position:fixed; top:20px; left:50%; transform:translateX(-50%);
+                background:#28a745; color:white; padding:12px 24px; border-radius:10px;
+                font-weight:bold; z-index:10001; font-size:15px; box-shadow:0 6px 16px rgba(0,0,0,0.2);
+            `;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), duration);
+        };
+
+        // === ASEGURA QUE EL BOTÓN ESTÉ VISIBLE Y CENTRADO ===
+        this.ensureButtonVisible = (selector) => {
+            return new Promise(resolve => {
+                const btn = document.querySelector(selector);
+                if (!btn) return setTimeout(resolve, 300);
+
+                const rect = btn.getBoundingClientRect();
+                const centerY = rect.top + rect.height / 2;
+                const viewportCenter = window.innerHeight / 2;
+                const offset = centerY - viewportCenter;
+
+                if (Math.abs(offset) > 50) {
+                    window.scrollTo({
+                        top: window.pageYOffset + offset,
+                        behavior: 'smooth'
+                    });
+                    setTimeout(resolve, 600);
+                } else {
+                    setTimeout(resolve, 300);
+                }
+
+                setTimeout(() => {
+                    btn.style.position = 'relative';
+                    btn.style.zIndex = '10001';
+                }, 100);
+            });
+        };
+
+        // === MÉTODOS PRINCIPALES ===
+        this.startTutorial = () => {
+            if (this.isActive) return;
+            this.isActive = true;
+            this.currentStep = 0;
+            this.createOverlay();
+            this.showStep(0);
+        };
+
+        this.createOverlay = () => {
+            this.overlay = document.createElement('div');
+            this.overlay.id = 'tutorial-overlay';
+            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;';
+            document.body.appendChild(this.overlay);
+        };
+
+        this.showStep = async (stepIndex) => {
+            if (stepIndex >= this.tutorialSteps.length) { this.endTutorial(); return; }
+            const step = this.tutorialSteps[stepIndex];
+
+            if (step.waitFor) {
+                try {
+                    await this.waitForCondition(step.waitFor);
+                } catch (e) {
+                    console.warn(`Esperando: ${step.selector} → saltando.`);
+                    this.nextStep();
+                    return;
+                }
+            }
+
+            const element = document.querySelector(step.selector);
+            if (!element) {
+                console.warn(`Elemento no encontrado: ${step.selector}`);
+                this.nextStep();
+                return;
+            }
+
+            if (step.onShow) {
+                try {
+                    await step.onShow();
+                } catch (e) {
+                    console.warn('Error en onShow:', e);
+                }
+            }
+
+            // Detectar si el paso actual es de botón de acción (usa tu propia lista aquí)
+            const isActionButtonStep =
+                step.title === 'Botón: Marcar Recibido' ||
+                step.title === 'Botón: Asignar Técnico' ||
+                step.title === 'Botón: Reasignar Técnico' ||
+                step.title === 'Botón: Ver Documentos' ||
+                element.classList.contains('btn-received-coord') ||
+                element.classList.contains('btn-assign-tech') ||
+                element.classList.contains('btn-reassign-tech') ||
+                element.classList.contains('btn-view-image') ||
+                element.id === 'botonMostarNoImage';
+                
+            if (!isActionButtonStep && typeof this.restoreActionButtonsStyle === 'function') {
+                this.restoreActionButtonsStyle();
+            }
+
+            this.removeHighlight();
+            await this.prepareElementForHighlight(element);
+            this.highlightElement(element);
+            this.createTooltip(element, step);
+            this.addStepListeners();
+        };
+
+        this.waitForCondition = (condition) => {
+            return new Promise((resolve, reject) => {
+                let attempts = 0;
+                const check = () => {
+                    if (condition()) resolve();
+                    else if (attempts++ > 60) reject();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        this.prepareElementForHighlight = (el) => {
+            const rect = el.getBoundingClientRect();
+            const centerY = rect.top + rect.height / 2;
+            const viewportCenter = window.innerHeight / 2;
+            if (Math.abs(centerY - viewportCenter) > 100) {
+                window.scrollTo({ top: window.pageYOffset + centerY - viewportCenter, behavior: 'smooth' });
+                return new Promise(r => setTimeout(r, 600));
+            }
+            return Promise.resolve();
+        };
+
+        this.highlightElement = (el) => {
+            this.highlightedElement = el;
+            const rect = el.getBoundingClientRect();
+            const h = document.createElement('div');
+            h.id = 'tutorial-highlight';
+            h.style.cssText = `
+                position:fixed; top:${rect.top-6}px; left:${rect.left-6}px;
+                width:${rect.width+12}px; height:${rect.height+12}px;
+                border:4px solid #007bff; border-radius:12px;
+                background:rgba(0,123,255,0.15); z-index:9999; pointer-events:none;
+                animation: pulse 1.5s infinite;
+            `;
+            document.body.appendChild(h);
+        };
+
+       this.createTooltip = (el, step) => {
+    if (!el) return;
+    const tooltip = document.createElement('div');
+    tooltip.id = 'tutorial-tooltip';
+    const rect = el.getBoundingClientRect();
+    const width = 380;
+
+    // Detecta si es un botón de acción (clase o título)
+    const isActionButton =
+        step.title === 'Botón: Marcar Recibido' ||
+        step.title === 'Botón: Asignar Técnico' ||
+        step.title === 'Botón: Reasignar Técnico' ||
+        step.title === 'Botón: Ver Documentos' ||
+        el.classList.contains('btn-received-coord') ||
+        el.classList.contains('btn-assign-tech') ||
+        el.classList.contains('btn-reassign-tech') ||
+        el.classList.contains('btn-view-image') ||
+        el.id === 'botonMostarNoImage';
+
+    // POSICIÓN calculada
+    let top, left;
+    if (isActionButton) {
+        // SIEMPRE debajo del botón, con separación extra
+        top = rect.bottom + 40;
+        left = rect.left + rect.width / 2 - width / 2;
+    } else if (step.position === 'bottom') {
+        top = rect.bottom + 30;
+        left = rect.left + rect.width / 2 - width / 2;
+    } else if (step.position === 'top') {
+        top = rect.top - 220;
+        left = rect.left + rect.width / 2 - width / 2;
+    } else if (step.position === 'left') {
+        top = rect.top + rect.height / 2 - 100;
+        left = rect.left - width - 24;
+    } else if (step.position === 'right') {
+        top = rect.top + rect.height / 2 - 100;
+        left = rect.right + 24;
+    } else {
+        top = rect.top + rect.height / 2 - 100;
+        left = rect.left + rect.width / 2 - width / 2;
+    }
+
+    // Límites de pantalla
+    left = Math.max(15, Math.min(left, window.innerWidth - width - 15));
+    top = Math.max(15, Math.min(top, window.innerHeight - 220));
+
+    // Botón finaliza
+    const isLast = step.isLastStep;
+    const nextText = isLast ? 'Finalizar' : 'Siguiente';
+    const nextBg = isLast ? '#28a745' : '#007bff';
+
+    // ESTILO DEL TOOLTIP
+    tooltip.style.cssText = `
+        position:fixed; top:${top}px; left:${left}px; width:${width}px;
+        background:white; border:3px solid #007bff; border-radius:18px;
+        padding:24px; box-shadow:0 16px 40px rgba(0,0,0,0.28);
+        z-index:10000; font-family:'Segoe UI',sans-serif;
+        animation:popIn 0.3s ease;
+    `;
+
+    tooltip.innerHTML = `
+        <style>
+            @keyframes popIn { from {opacity:0;transform:scale(0.9) translateY(-10px);} to {opacity:1;transform:scale(1);} }
+        </style>
+        <h4 style="margin:0 0 14px;color:#007bff;font-weight:700;font-size:20px;">${step.title}</h4>
+        <p style="margin:0;color:#333;font-size:15px;line-height:1.6;">${step.description}</p>
+        <div style="display:flex;justify-content:flex-end;gap:14px;margin-top:20px;padding-top:16px;border-top:1px solid #eee;">
+            <button id="tutorial-skip" class="tutorial-btn tutorial-btn-skip" style="background:#6c757d; color:white; border:none; padding:11px 20px; border-radius:12px; font-size:14px; cursor:pointer; font-weight:600; margin-right:8px;">Saltar</button>
+            <button id="tutorial-next" class="tutorial-btn tutorial-btn-next" style="background:${nextBg}; color:white; border:none; padding:11px 20px; border-radius:12px; font-size:14px; cursor:pointer; font-weight:600;">${nextText}</button>
+        </div>
+    `;
+
+    document.body.appendChild(tooltip);
+        };
+
+        this.addStepListeners = () => {
+            const next = document.getElementById('tutorial-next');
+            const skip = document.getElementById('tutorial-skip');
+            if (next) next.onclick = () => this.nextStep();
+            if (skip) skip.onclick = () => this.endTutorial();
+        };
+
+        this.nextStep = async () => {
+            const prev = this.tutorialSteps[this.currentStep];
+            if (prev?.onNext) {
+                try { await prev.onNext(); } catch (e) { console.warn('Error en onNext:', e); }
+            }
+
+            this.currentStep++;
+
+            if (this.currentStep >= this.tutorialSteps.length || prev?.isLastStep) {
+                this.endTutorial();
+                return;
+            }
+
+            this.removeHighlight();
+            this.removeTooltip();
+            this.showStep(this.currentStep);
+        };
+
+        this.endTutorial = () => {
+            this.isActive = false;
+            this.removeHighlight();
+            this.removeTooltip();
+            if (this.overlay) this.overlay.remove();
+        };
+
+        this.removeHighlight = () => { const h = document.getElementById('tutorial-highlight'); if (h) h.remove(); };
+        this.removeTooltip = () => { const t = document.getElementById('tutorial-tooltip'); if (t) t.remove(); };
+    }
+}
 class VirtualAssistant {
     constructor() {
         this.panel = null;
@@ -927,6 +1487,7 @@ class VirtualAssistant {
         this.panelPosition = { x: 0, y: 0 };
         this.ticketTutorial = new TicketManagementTutorial();
         this.rifTutorial = new ConsultaRIFTutorial();
+        this.gestioncoordinacionTutorial = new GestionCoordinadorTutorial();
         
         this.init();
     }
@@ -968,7 +1529,7 @@ class VirtualAssistant {
                          class="panel-avatar"
                          onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDUiIGhlaWdodD0iNDUiIHZpZXdCb3g9IjAgMCA0NSA0NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjIuNSIgY3k9IjIyLjUiIHI9IjIyLjUiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSIxMSIgeT0iMTEiIHdpZHRoPSIyMyIgaGVpZ2h0PSIyMyIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTIgMTRDOS4zMzMgMTQgNCAxNS43NzkxIDQgMTlIMjBDMjAgMTUuNzc5MSAxOC42NjcgMTQgMTYgMTRIMTJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+'">
                     <div class="assistant-details">
-                        <h5 class="assistant-name">Ana - Chat IA</h5>
+                        <h5 class="assistant-name">Intelix - Asistente Virtual</h5>
                         <span class="assistant-status">En línea</span>
                     </div>
                 </div>
@@ -999,7 +1560,7 @@ class VirtualAssistant {
                         </div>
                         <div class="message-content">
                             <div class="message-bubble">
-                                <p>¡Hola! Soy Ana, tu asistente virtual con IA. Puedo ayudarte con consultas inteligentes del sistema.</p>
+                                <p>¡Hola! Soy Intelix, tu asistente virtual. Puedo ayudarte con consultas inteligentes del sistema.</p>
                                 <p><strong>¿En qué te puedo ayudar hoy?</strong></p>
                             </div>
                             <div class="message-time">Ahora</div>
@@ -1679,8 +2240,6 @@ class VirtualAssistant {
                 }
             );
             break;
-
-
 
         case 'technician_individual_efficiency':
             // Mostrar lista de técnicos para seleccionar
@@ -2419,13 +2978,56 @@ addChartMessage(data) {
 
     // Método para iniciar el tutorial de tickets
     startTicketTutorial() {
-        console.log('🤖 Iniciando tutorial de gestión de tickets');
+        this.closeModuleSelectionModal();
+
+        // Solo redirigir si NO estamos en dashboard
+        if (!window.location.pathname.includes('dashboard')) {
+            window.location.href = 'dashboard';
+            return;
+        }
+
+        // Si ya estamos en dashboard → iniciar tutorial directamente
+        setTimeout(() => {
+            if (this.ticketTutorial) {
         this.ticketTutorial.startTutorial();
+            }
+        }, 800);
     }
 
     startRifTutorial() {
-        console.log('🤖 Iniciando tutorial de gestión de RIF');
+        this.closeModuleSelectionModal();
+
+        // Solo redirigir si NO estamos en dashboard
+        if (!window.location.pathname.includes('consulta_rif')) {
+            window.location.href = 'consulta_rif';
+            return;
+        }
+
+        // Si ya estamos en dashboard → iniciar tutorial directamente
+        setTimeout(() => {
+            if (this.rifTutorial) {
         this.rifTutorial.startTutorial();
+            }
+        }, 800);
+
+    }
+
+    startGestionCoordinacionTutorial() {
+        this.closeModuleSelectionModal();
+
+        // Solo redirigir si NO estamos en dashboard
+        if (!window.location.pathname.includes('asignar_tecnico')) {
+            window.location.href = 'asignar_tecnico';
+            return;
+        }
+
+        // Si ya estamos en dashboard → iniciar tutorial directamente
+        setTimeout(() => {
+            if (this.gestioncoordinacionTutorial) {
+                this.gestioncoordinacionTutorial.startTutorial();
+            }
+        }, 800);
+         this.gestioncoordinacionTutorial.startTutorial();
     }
 
     startReportsTutorial() {
@@ -2621,6 +3223,40 @@ addChartMessage(data) {
                 <h2 style="margin: 0 0 10px 0; color: #333; font-size: 24px;">📚 Selecciona un Módulo</h2>
                 <p style="margin: 0; color: #666; font-size: 14px;">Elige el módulo del cual quieres ver el tutorial</p>
             </div>
+
+            <!-- DASHBOARD (TICKETS) -->
+                <div class="module-card" data-module="dashboard" style="
+                    border: 2px solid #e9ecef;
+                    border-radius: 8px;
+                    padding: 20px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    background: #f8f9fa;
+                " onmouseover="this.style.borderColor='#007bff'; this.style.background='#d4edda'" 
+                onmouseout="this.style.borderColor='#e9ecef'; this.style.background='#f8f9fa'">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="
+                            width: 50px;
+                            height: 50px;
+                            background: #007bff;
+                            border-radius: 8px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-size: 20px;
+                            font-weight: bold;
+                        ">
+                           📊
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0 0 5px 0; color: #333; font-size: 16px;">Dashboard</h4>
+                            <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">Resumen general y gestión de tickets</p>
+                        </div>
+                        <div style="color: #007bff; font-size: 18px;">→</div>
+                    </div>
+                </div>
+            </div>
             
             <div id="modules-list" style="display: grid; gap: 15px;">
                 ${modules.map(module => `
@@ -2705,7 +3341,6 @@ addChartMessage(data) {
     // Obtener icono para cada módulo
     getModuleIcon(moduleName) {
         const icons = {
-            'Dashboard': '📊',
             'Gestión Coordinador': '👨‍💼',
             'Gestión Técnicos': '🔧',
             'Gestión Taller': '🏭',
@@ -2722,26 +3357,31 @@ addChartMessage(data) {
 
     // Agregar event listeners al modal
     addModuleSelectionListeners() {
-        // Cerrar modal
-        const closeBtn = document.getElementById('close-module-modal');
-        const overlay = document.getElementById('module-tutorial-overlay');
-        
-        closeBtn.onclick = () => this.closeModuleModal();
-        overlay.onclick = (e) => {
-            if (e.target === overlay) {
-                this.closeModuleModal();
-            }
-        };
+        const self = this; // ← GUARDAR referencia
 
-        // Seleccionar módulo
-        const moduleCards = document.querySelectorAll('.module-card');
-        moduleCards.forEach(card => {
-            card.onclick = () => {
-                const moduleId = card.dataset.moduleId;
+        document.querySelectorAll('.module-card[data-module-id]').forEach(card => {
+            card.addEventListener('click', () => {
+                const moduleId = card.getAttribute('data-module-id');
                 const moduleName = card.querySelector('h4').textContent;
-                this.showSubmodulesForModule(moduleId, moduleName);
-            };
+                self.closeModuleSelectionModal();
+                self.showSubmodulesForModule(moduleId, moduleName); // ← MUESTRA SUBMÓDULOS
+            });
         });
+
+        // DASHBOARD
+        const dashboardCard = document.querySelector('.module-card[data-module="dashboard"]');
+        if (dashboardCard) {
+            dashboardCard.addEventListener('click', () => {
+                self.closeModuleSelectionModal(); // ← Usa self
+                self.startTicketTutorial();
+            });
+        }
+
+        // Cancelar
+        const closeBtn = document.getElementById('close-module-modal');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => self.closeModuleSelectionModal());
+        }
     }
 
     // Cerrar modal
@@ -2749,6 +3389,19 @@ addChartMessage(data) {
         const overlay = document.getElementById('module-tutorial-overlay');
         if (overlay) {
             overlay.remove();
+        }
+    }
+
+    closeModuleSelectionModal() {
+        const overlay = document.getElementById('module-tutorial-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+
+        // Limpiar estilos si existen
+        const styles = document.getElementById('module-tutorial-styles');
+        if (styles) {
+            styles.remove();
         }
     }
 
@@ -2915,8 +3568,7 @@ addChartMessage(data) {
     // Obtener icono para submódulos
     getSubmoduleIcon(submoduleName) {
         const icons = {
-            'Dashboard': '📊',
-            'Asignar Técnico': '👨‍💼',
+            'Gestión Coordinador': '👨‍💼',
             'Gestión Técnico': '🔧',
             'Gestión Taller': '🏭',
             'Gestión Rosal': '📦',
@@ -2988,7 +3640,7 @@ addChartMessage(data) {
             'consulta_rif': 'rif',
             'gestion_tickets': 'tickets',
             'reporte_ticket': 'reportes',
-            'asignar_tecnico': 'tecnicos',
+            'asignar_tecnico': 'gestion_coordinacion',
             'gestion_tecnico': 'tecnicos',
             'configuracion': 'config'
         };
@@ -3112,7 +3764,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 1000);
 });
 
-// Agregar estilos de animación adicionales
 const additionalStyles = `
     @keyframes bounce {
         0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
@@ -3296,7 +3947,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tutorialMap = {
         'rif': 'startRifTutorial',
         'tickets': 'startTicketTutorial',
-        'reportes': 'startReportsTutorial',
+        'gestion_coordinacion': 'startGestionCoordinacionTutorial',
         'tecnicos': 'startTechnicianTutorial'
     };
 

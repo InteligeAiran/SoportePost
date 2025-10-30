@@ -465,7 +465,7 @@ function mi_navbar() {}
                     font-size: 1.2em;
                 }
             }
-        /* END Estilos para los indicadores de estado del ticket */
+        /* END Estilos para los indicadores de estado del ticket */ 
     </style>
 </head>
 <body id="fondo" class="g-sidenav-show bg-gray-100">
