@@ -490,9 +490,9 @@ class ReportRepository
         }
     }
 
-    public function GetTotalTicketsInProcess($id_user){
+    public function GetTotalTicketsInProcess($id_rol, $id_user){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTotalTicketsInProcess($id_user); // Asumiendo que tienes este método en tu modelo
+        $result = $this->model->GetTotalTicketsInProcess($id_rol, $id_user); // Asumiendo que tienes este método en tu modelo
         return $result['row']['get_total_in_processtickets'];
     }
 

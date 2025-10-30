@@ -1452,14 +1452,23 @@ class reportes extends Controller {
     }
 
     public function handlegetTotalTicketsInProcess(){
+        $repository = new ReportRepository();
+        $repositoryUser = new UserRepository();
+
         $id_user = isset($_POST['user_id'])? $_POST['user_id'] : null;
 
         if($id_user === null){
             $this->response(['success' => false,'message' => 'Falta el id_user'], 400); // Código 400 Bad Request
         }
 
-        $repository = new ReportRepository();
-        $result = $repository->GetTotalTicketsInProcess($id_user);
+        $id_rol = $repositoryUser->getUserRol($id_user);
+
+        if(!$id_rol){
+            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            return;
+        }
+
+        $result = $repository->GetTotalTicketsInProcess($id_rol, $id_user);
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'count' => $result], 200);
         } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores

@@ -806,32 +806,35 @@ function SendRegions() {
           });
           
           const columnTitles = {
-            id_ticket: "ID Ticket",
-            nro_ticket: "Nro Ticket",
-            create_ticket: "Create Ticket",
-            name_status_ticket: "Status Ticket",
-            rif_empresa: "Rif",
-            razonsocial_cliente: "Razón Social",
-            descbanco: "Banco",
-            serial_pos: "Serial POS",
-            name_failure: "Descripción de Fallas",
-            name_process_ticket: "Process Ticket",
-            name_status_payment: "Estatus Pago",
-            full_name_tecnico: "Tecnico",
-            name_accion_ticket: "Accion Ticket",
-            full_name_coordinador: "Coordinador",
-            id_level_failure: "Nivel de Falla",
-            full_name_tecnicoassignado: "Técnico Asignado",
-            downl_exoneration: "Exoneración",
-            downl_payment: "Pago Anticipo",
-            downl_send_to_rosal: "Enviado a Rosal",
-            downl_send_fromrosal: "Enviado desde Rosal a destino",
-            date_send_lab: "Fecha Envío Lab",
-            date_send_torosal_fromlab: "Fecha Envío a rosal",
-            name_status_domiciliacion: "Estatus Domiciliación",
-            date_sendkey: "Fecha Envío Key",
-            date_receivekey: "Fecha Recibo Key",
-            date_receivefrom_desti: "Fecha Recibo Destino",
+              id_ticket: "ID Ticket",
+              rif_empresa: "Rif",
+              razonsocial_cliente: "Razón Social",
+              descbanco: "Banco",
+              descmodelo: "Modelo del POS",
+              name_process_ticket: "Gestión del Ticket",
+              name_status_payment: "Estatus Pago",
+              full_name_tecnico: "Usuario Gestión",
+              name_status_ticket: "Estatus Ticket",
+              create_ticket: "Fecha Apertura",
+              process_ticket: "Fecha Proceso",
+              end_ticket: "Fecha Cierre",
+              name_accion_ticket: "Accion Ticket",
+              full_name_coordinador: "Coordinador",
+              id_level_failure: "Nivel de Falla",
+              full_name_tecnicoassignado: "Técnico Asignado",
+              serial_pos: "Serial POS",
+              descestatus: "Estatus del POS",
+              name_failure: "Motivo de ingreso",
+              downl_exoneration: "Exoneración",
+              downl_payment: "Pago Anticipo",
+              downl_send_to_rosal: "Enviado a Rosal",
+              downl_send_fromrosal: "Enviado desde Rosal a destino",
+              date_send_lab: "Fecha Envío Lab",
+              date_send_torosal_fromlab: "Fecha Envío a rosal",
+              name_status_domiciliacion: "Estatus Domiciliación",
+              date_sendkey: "Fecha Envío Llaves",
+              date_receivekey: "Fecha Recepción Llaves",
+              date_receivefrom_desti: "Fecha Recibo Destino",
           };
 
           for (const key of visibleKeys) {
@@ -1240,21 +1243,24 @@ function SendRif() {
           const columnTitles = {
               // ... Tus títulos de columna
               id_ticket: "ID Ticket",
-              nro_ticket: "Nro Ticket",
-              create_ticket: "Fecha Creación Ticket",
-              name_status_ticket: "Estatus Ticket",
               rif_empresa: "Rif",
               razonsocial_cliente: "Razón Social",
               descbanco: "Banco",
-              name_process_ticket: "Proceso Ticket",
+              descmodelo: "Modelo del POS",
+              name_process_ticket: "Gestión del Ticket",
               name_status_payment: "Estatus Pago",
               full_name_tecnico: "Usuario Gestión",
-              name_accion_ticket: "Acción Ticket",
+              name_status_ticket: "Estatus Ticket",
+              create_ticket: "Fecha Apertura",
+              process_ticket: "Fecha Proceso",
+              end_ticket: "Fecha Cierre",
+              name_accion_ticket: "Accion Ticket",
               full_name_coordinador: "Coordinador",
               id_level_failure: "Nivel de Falla",
               full_name_tecnicoassignado: "Técnico Asignado",
               serial_pos: "Serial POS",
-              name_failure: "Descripción de Fallas",
+              descestatus: "Estatus del POS",
+              name_failure: "Motivo de ingreso",
               downl_exoneration: "Exoneración",
               downl_payment: "Pago Anticipo",
               downl_send_to_rosal: "Enviado a Rosal",
@@ -1262,9 +1268,10 @@ function SendRif() {
               date_send_lab: "Fecha Envío Lab",
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Key",
-              date_receivekey: "Fecha Recibo Key",
+              date_sendkey: "Fecha Envío Llaves",
+              date_receivekey: "Fecha Recepción Llaves",
               date_receivefrom_desti: "Fecha Recibo Destino",
+              cod_adm: "cod_adm",
           };
 
           for (const key of visibleKeys) {
@@ -1564,6 +1571,9 @@ function SendSerial() {
   const serialInput = document.getElementById("serialInput");
   const serialInputValue = serialInput.value.trim();
 
+  const id_user = document.getElementById('id_user').value;
+  const idtipouser = document.getElementById('idtipouser').value;
+
   // Mover la validación al principio para detener la ejecución si no hay serial
   if (!serialInputValue) {
     Swal.fire({
@@ -1664,21 +1674,24 @@ function SendSerial() {
           const columnTitles = {
               // ... Tus títulos de columna
               id_ticket: "ID Ticket",
-              nro_ticket: "Nro Ticket",
-              create_ticket: "Create Ticket",
-              name_status_ticket: "Status Ticket",
               rif_empresa: "Rif",
               razonsocial_cliente: "Razón Social",
               descbanco: "Banco",
-              name_process_ticket: "Process Ticket",
+              descmodelo: "Modelo del POS",
+              name_process_ticket: "Gestión del Ticket",
               name_status_payment: "Estatus Pago",
               full_name_tecnico: "Usuario Gestión",
+              name_status_ticket: "Estatus Ticket",
+              create_ticket: "Fecha Apertura",
+              process_ticket: "Fecha Proceso",
+              end_ticket: "Fecha Cierre",
               name_accion_ticket: "Accion Ticket",
               full_name_coordinador: "Coordinador",
               id_level_failure: "Nivel de Falla",
               full_name_tecnicoassignado: "Técnico Asignado",
               serial_pos: "Serial POS",
-              name_failure: "Descripción de Fallas",
+              descestatus: "Estatus del POS",
+              name_failure: "Motivo de ingreso",
               downl_exoneration: "Exoneración",
               downl_payment: "Pago Anticipo",
               downl_send_to_rosal: "Enviado a Rosal",
@@ -1686,9 +1699,10 @@ function SendSerial() {
               date_send_lab: "Fecha Envío Lab",
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Key",
-              date_receivekey: "Fecha Recibo Key",
+              date_sendkey: "Fecha Envío Llaves",
+              date_receivekey: "Fecha Recepción Llaves",
               date_receivefrom_desti: "Fecha Recibo Destino",
+              cod_adm: "cod_adm",
           };
 
           for (const key of visibleKeys) {
@@ -1972,7 +1986,7 @@ function SendSerial() {
     }
   };
 
-  const datos = `action=SearchSerialData&serial=${encodeURIComponent(serialInputValue)}`;
+  const datos = `action=SearchSerialData&serial=${encodeURIComponent(serialInputValue)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }
 
@@ -2093,21 +2107,24 @@ function SendStatus() {
           const columnTitles = {
               // ... Tus títulos de columna
               id_ticket: "ID Ticket",
-              nro_ticket: "Nro Ticket",
-              create_ticket: "Create Ticket",
-              name_status_ticket: "Status Ticket",
               rif_empresa: "Rif",
               razonsocial_cliente: "Razón Social",
               descbanco: "Banco",
-              name_process_ticket: "Process Ticket",
+              descmodelo: "Modelo del POS",
+              name_process_ticket: "Gestión del Ticket",
               name_status_payment: "Estatus Pago",
               full_name_tecnico: "Usuario Gestión",
+              name_status_ticket: "Estatus Ticket",
+              create_ticket: "Fecha Apertura",
+              process_ticket: "Fecha Proceso",
+              end_ticket: "Fecha Cierre",
               name_accion_ticket: "Accion Ticket",
               full_name_coordinador: "Coordinador",
               id_level_failure: "Nivel de Falla",
               full_name_tecnicoassignado: "Técnico Asignado",
               serial_pos: "Serial POS",
-              name_failure: "Descripción de Fallas",
+              descestatus: "Estatus del POS",
+              name_failure: "Motivo de ingreso",
               downl_exoneration: "Exoneración",
               downl_payment: "Pago Anticipo",
               downl_send_to_rosal: "Enviado a Rosal",
@@ -2115,8 +2132,8 @@ function SendStatus() {
               date_send_lab: "Fecha Envío Lab",
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Key",
-              date_receivekey: "Fecha Recibo Key",
+              date_sendkey: "Fecha Envío Llaves",
+              date_receivekey: "Fecha Recepción Llaves",
               date_receivefrom_desti: "Fecha Recibo Destino",
           };
 
@@ -2503,23 +2520,25 @@ function SendRango() {
 
           const columnTitles = {
               // ... Tus títulos de columna
-              id_ticket: "ID Ticket",
-              nro_ticket: "Nro Ticket",
-              create_ticket: "Create Ticket",
-              name_status_ticket: "Status Ticket",
-              date_closed: "Cierre Ticket",
+               id_ticket: "ID Ticket",
               rif_empresa: "Rif",
               razonsocial_cliente: "Razón Social",
               descbanco: "Banco",
-              name_process_ticket: "Process Ticket",
+              descmodelo: "Modelo del POS",
+              name_process_ticket: "Gestión del Ticket",
               name_status_payment: "Estatus Pago",
               full_name_tecnico: "Usuario Gestión",
+              name_status_ticket: "Estatus Ticket",
+              create_ticket: "Fecha Apertura",
+              process_ticket: "Fecha Proceso",
+              end_ticket: "Fecha Cierre",
               name_accion_ticket: "Accion Ticket",
               full_name_coordinador: "Coordinador",
               id_level_failure: "Nivel de Falla",
               full_name_tecnicoassignado: "Técnico Asignado",
               serial_pos: "Serial POS",
-              name_failure: "Descripción de Fallas",
+              descestatus: "Estatus del POS",
+              name_failure: "Motivo de ingreso",
               downl_exoneration: "Exoneración",
               downl_payment: "Pago Anticipo",
               downl_send_to_rosal: "Enviado a Rosal",
@@ -2527,8 +2546,8 @@ function SendRango() {
               date_send_lab: "Fecha Envío Lab",
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Key",
-              date_receivekey: "Fecha Recibo Key",
+              date_sendkey: "Fecha Envío Llaves",
+              date_receivekey: "Fecha Recepción Llaves",
               date_receivefrom_desti: "Fecha Recibo Destino",
           };
 
@@ -2993,20 +3012,24 @@ function SendBancos() {
           const columnTitles = {
               // ... Tus títulos de columna
               id_ticket: "ID Ticket",
-              create_ticket: "Create Ticket",
-              name_status_ticket: "Status Ticket",
               rif_empresa: "Rif",
               razonsocial_cliente: "Razón Social",
               descbanco: "Banco",
-              name_process_ticket: "Process Ticket",
+              descmodelo: "Modelo del POS",
+              name_process_ticket: "Gestión del Ticket",
               name_status_payment: "Estatus Pago",
               full_name_tecnico: "Usuario Gestión",
+              name_status_ticket: "Estatus Ticket",
+              create_ticket: "Fecha Apertura",
+              process_ticket: "Fecha Proceso",
+              end_ticket: "Fecha Cierre",
               name_accion_ticket: "Accion Ticket",
               full_name_coordinador: "Coordinador",
               id_level_failure: "Nivel de Falla",
               full_name_tecnicoassignado: "Técnico Asignado",
               serial_pos: "Serial POS",
-              name_failure: "Descripción de Fallas",
+              descestatus: "Estatus del POS",
+              name_failure: "Motivo de ingreso",
               downl_exoneration: "Exoneración",
               downl_payment: "Pago Anticipo",
               downl_send_to_rosal: "Enviado a Rosal",
@@ -3014,8 +3037,8 @@ function SendBancos() {
               date_send_lab: "Fecha Envío Lab",
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Key",
-              date_receivekey: "Fecha Recibo Key",
+              date_sendkey: "Fecha Envío Llaves",
+              date_receivekey: "Fecha Recepción Llaves",
               date_receivefrom_desti: "Fecha Recibo Destino",
           };
 
