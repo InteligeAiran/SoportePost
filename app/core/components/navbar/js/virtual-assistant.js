@@ -1476,6 +1476,304 @@ class GestionCoordinadorTutorial {
         this.removeTooltip = () => { const t = document.getElementById('tutorial-tooltip'); if (t) t.remove(); };
     }
 }
+
+//TUTORIAL GESTION TECNICO
+class GestionTecnicoTutorial {
+    constructor() {
+        this.currentStep = 0;
+        this.isActive = false;
+        this.overlay = null;
+        this.highlightedElement = null;
+
+        // PASOS
+        this.tutorialSteps = [
+            // 1) Tabla
+            { selector: '#tabla-ticket', title: 'Tabla de Tickets', description: 'En este módulo cada técnico verá únicamente los tickets que le fueron asignados para su gestión.', position: 'top', waitFor: () => document.getElementById('tabla-ticket') !== null },
+
+            // 2) Filtros
+            { selector: '.dt-buttons-container', title: 'Filtros de la Tabla', description: 'Filtra por estado: Asignados, Recibidos, Enviados a Taller y Entregados al Cliente.', position: 'bottom', waitFor: () => document.querySelector('.dt-buttons-container') !== null },
+
+            // 2.1) Asignados
+            { selector: '#btn-asignados', title: 'Filtro: Asignados', description: 'Tickets que el coordinador ya te asignó. Aquí comienza tu trabajo.', position: 'bottom', waitFor: () => document.getElementById('btn-asignados') !== null, onNext: () => this.click('#btn-asignados') },
+            { selector: '#tabla-ticket tbody tr td:last-child', title: 'Columna de Acciones', description: 'Cuando exista, aquí verás acciones del ticket. Primero te explico cómo confirmar recibido.', position: 'left', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onShow: () => this.scrollToActions() },
+
+            // Confirmar Recibido (en Asignados)
+            {
+                selector: '#tabla-ticket tbody tr td .btn-received-ticket',
+                title: 'Acción: Confirmar Recibido',
+                description: 'Marca el ticket como <strong>Recibido por Técnico</strong>. <br><span style="color:#dc3545;font-weight:700">TIP:</span> Si Coordinación ya lo marcó como recibido, no necesitas hacerlo. Si <strong>no</strong>, <span style="color:#dc3545;font-weight:700">es obligatorio</span> confirmarlo para habilitar las demás acciones.',
+                position: 'bottom',
+                waitFor: () => document.querySelector('#tabla-ticket tbody tr td .btn-received-ticket, #tabla-ticket tbody tr td .btn-wrench-custom') !== null,
+                onShow: async () => { await this.scrollToActions(); this.raise('.btn-received-ticket'); },
+                onNext: () => { this.restoreButtons(); this.click('#btn-recibidos'); }
+            },
+
+            // 2.2) Recibidos
+            { selector: '#btn-recibidos', title: 'Filtro: Recibidos', description: 'Tickets que ya están marcados como <strong>Recibidos</strong> por el técnico. Aquí verás las acciones habilitadas.', position: 'bottom', waitFor: () => document.getElementById('btn-recibidos') !== null },
+
+            // Desplazar a acciones en Recibidos
+            { selector: '#tabla-ticket tbody tr td:last-child', title: 'Columna de Acciones', description: 'Desplazando para mostrar las acciones disponibles en este estado.', position: 'left', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onShow: () => this.scrollToActions() },
+
+            // PRIMERO: Cargar documentos (Pago/Exoneración/Envío)
+            {
+                selector: '#tabla-ticket tbody tr td .btn-document-actions-modal',
+                title: 'Acción: Cargar Documentos',
+                description: 'Desde aquí puedes <strong>cargar y/o visualizar</strong> los documentos del ticket: <strong>Pago de Anticipo</strong>, <strong>Exoneración</strong> y <strong>Envío</strong> (Nota de Entrega).',
+                position: 'bottom',
+                waitFor: () => document.querySelector('#tabla-ticket tbody tr td .btn-document-actions-modal') !== null,
+                onShow: async () => { await this.scrollToActions(); this.raise('.btn-document-actions-modal'); }
+            },
+
+            // LUEGO: Enviar a Taller (con validaciones + click automático)
+            { 
+                selector: '#tabla-ticket tbody tr td .btn-wrench-custom',
+                title: 'Acción: Enviar a Taller',
+                description: `
+                    <div style="color:#dc3545;font-weight:700;margin-bottom:8px;">OJO: SÓLO PUEDES ENVIAR AL TALLER si ya te verificaron uno de los siguientes o estás solvente:</div>
+                    <ul style="margin:0 0 10px 18px;color:#dc3545;font-weight:700;line-height:1.5;">
+                        <li>Pago de Anticipo</li>
+                        <li>Exoneración</li>
+                        <li>Domiciliación — Solvente</li>
+                    </ul>
+                    Si falta cualquiera de estos, <strong style="color:#dc3545">NO podrás enviar al taller</strong>. Ahora haré clic automáticamente para mostrar las acciones.
+                `,
+                position: 'right',
+                waitFor: () => document.querySelector('#tabla-ticket tbody tr td .btn-wrench-custom') !== null,
+                onShow: async () => { await this.scrollToActions(); this.raise('.btn-wrench-custom'); },
+                onNext: () => {
+                    const btn = document.querySelector('#tabla-ticket tbody tr td .btn-wrench-custom');
+                    if (btn) btn.click(); // abre el modal
+                }
+            },
+
+            // Modal: Seleccionar Acción (explicación)
+            { 
+                selector: '#actionSelectionModal .action-buttons, #actionSelectionModal',
+                title: 'Seleccionar Acción',
+                description: `
+                    Aquí decides qué hacer con el ticket:<br><br>
+                    <span style="font-weight:700;">Enviar a Taller</span>: envía el equipo al taller para su revisión/servicio.<br>
+                    <span style="font-weight:700;">Devolver al Cliente</span>: úsalo cuando el POS <strong>no presenta la falla reportada</strong> y está funcional; el ticket se visualizará en <strong>Gestión Rosal</strong> para la entrega.
+                `,
+                position: 'top',
+                waitFor: () => document.getElementById('actionSelectionModal') !== null
+            },
+            { 
+                selector: '#ButtonSendToTaller',
+                title: 'Botón: Enviar a Taller',
+                description: 'Confirma el envío del equipo al taller. El sistema validará los documentos requeridos antes de continuar.',
+                position: 'bottom',
+                waitFor: () => document.getElementById('ButtonSendToTaller') !== null,
+                onShow: () => this.raise('#ButtonSendToTaller')
+            },
+            { 
+                selector: '#devolver',
+                title: 'Botón: Devolver al Cliente',
+                description: 'Si el POS está operativo y la falla no se reproduce, usa esta opción. El ticket pasará a <strong>Gestión Rosal</strong> para la entrega.',
+                position: 'bottom',
+                waitFor: () => document.getElementById('devolver') !== null,
+                onShow: () => this.raise('#devolver'),
+                onNext: () => {
+                    this.hideActionSelectionModal();
+                    this.restoreButtons();
+                    this.click('#btn-por-asignar'); // siguiente filtro
+                }
+            },
+
+            // 2.3) Enviados a Taller
+            { selector: '#btn-por-asignar', title: 'Filtro: Enviados a Taller', description: 'Lista los equipos ya enviados/“En Taller”. Útil para seguimiento del laboratorio.', position: 'bottom', waitFor: () => document.getElementById('btn-por-asignar') !== null },
+
+            // 2.3.1) Ver documentos cuando el POS está en Taller (solo visualización)
+            {
+                selector: '#tabla-ticket tbody tr td .btn-document-actions-modal',
+                title: 'Ver Documentos (En Taller)',
+                description: 'Aquí puedes visualizar los documentos ya cargados (Envío, Exoneración, Pago) cuando el POS está en taller. Solo visualización.',
+                position: 'bottom',
+                waitFor: () => document.querySelector('#tabla-ticket tbody tr td .btn-document-actions-modal') !== null,
+                onShow: async () => {
+                    await this.scrollToActions();
+                    this.raise('.btn-document-actions-modal');
+                }
+            },
+
+            // 2.4) Entregados (Cerrados)
+            { selector: '#btn-devuelto', title: 'Filtro: Entregados al Cliente', description: 'Tickets cerrados. Referencia histórica y verificación final.', position: 'bottom', waitFor: () => document.getElementById('btn-devuelto') !== null, onNext: () => this.click('#btn-devuelto') },
+
+            // 3) Selección de ticket y detalles
+            { selector: '#tabla-ticket tbody tr', title: 'Seleccionar Ticket', description: 'Haremos clic en un ticket para ver sus detalles e historial.', position: 'top', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onNext: () => this.selectFirstRow() },
+            { selector: '#ticket-details-panel', title: 'Panel de Detalles', description: 'Aquí verás la información del ticket, serial, estatus y fechas claves.', position: 'left', waitFor: () => document.getElementById('ticket-details-panel')?.children.length > 0 },
+
+             // Periféricos del dispositivo (primero)
+            {
+                selector: '#hiperbinComponents',
+                title: 'Cargar Periféricos del Dispositivo',
+                description: 'Registra o actualiza los periféricos/componentes asociados al POS del ticket.',
+                position: 'left',
+                waitFor: () => document.getElementById('hiperbinComponents') !== null,
+                onShow: () => this.raise('#hiperbinComponents'),
+                onNext: () => {
+                // Quitar estilos de énfasis y overlays al avanzar
+                this.restoreButtons();                         // limpia z-index/position del botón
+                this.removeHighlight();                        // quita el marco azul
+                this.removeTooltip();                          // cierra el tooltip actual
+                // Si quedó algún tooltip/backdrop de Bootstrap visible, elimínalo
+                document.querySelectorAll('.tooltip.show,.modal-backdrop').forEach(n => n.remove());
+            }
+            },
+
+            // Botón Imprimir Historial (segundo)
+            {
+                selector: '.btn-secondary[onclick^="printHistory"]',
+                title: 'Imprimir Historial',
+                description: 'Genera y descarga en PDF el historial completo de gestiones del ticket.',
+                position: 'top',
+                waitFor: () => document.querySelector('.btn-secondary[onclick^="printHistory"]') !== null,
+                onShow: () => this.raise('.btn-secondary[onclick^="printHistory"]')
+            },
+
+            // Contenedor del historial (tercero)
+            {
+                selector: '#ticket-history-content',
+                title: 'Historial del Ticket',
+                description: 'Este contenedor mostrará el historial completo de gestiones del ticket.',
+                position: 'left',
+                waitFor: () => document.getElementById('ticket-history-content') !== null
+            },
+
+            // 7) Historial desplegable final
+            { selector: '#ticketHistoryAccordion', title: 'Detalle del Historial', description: 'Aquí verás cada gestión con fechas, estados y cambios relevantes. ¡Listo!', position: 'left', waitFor: () => document.getElementById('ticketHistoryAccordion') !== null, isLastStep: true }
+        ];
+
+        // Helpers
+        this.click = (selector) => { const el = document.querySelector(selector); if (el) el.click(); };
+        this.raise = (selector) => { const el = document.querySelector(selector); if (el) { el.style.position = 'relative'; el.style.zIndex = '10001'; } };
+        this.scrollToActions = () => new Promise(resolve => {
+            const table = document.getElementById('tabla-ticket');
+            const row = document.querySelector('#tabla-ticket tbody tr');
+            if (!table || !row) return setTimeout(resolve, 300);
+            const lastCell = row.querySelector('td:last-child');
+            const wrapper = table.closest('.dataTables_wrapper');
+            const scroller = wrapper?.querySelector('.dataTables_scrollBody') || wrapper || table.parentElement;
+            if (scroller && scroller.scrollWidth > scroller.clientWidth) {
+                scroller.scrollTo({ left: lastCell.offsetLeft, behavior: 'smooth' });
+                return setTimeout(resolve, 700);
+            }
+            setTimeout(resolve, 300);
+        });
+        this.selectFirstRow = () => new Promise(resolve => {
+            const row = document.querySelector('#tabla-ticket tbody tr');
+            if (row) { row.click(); setTimeout(resolve, 700); } else setTimeout(resolve, 300);
+        });
+
+        // Ocultar modal de acciones
+        this.hideActionSelectionModal = () => {
+            const el = document.getElementById('actionSelectionModal');
+            if (!el) return;
+            try {
+                const inst = bootstrap?.Modal?.getInstance ? bootstrap.Modal.getInstance(el) : null;
+                if (inst) inst.hide();
+                else if (bootstrap?.Modal) new bootstrap.Modal(el).hide();
+                else el.style.display = 'none';
+            } catch (_) { el.style.display = 'none'; }
+            el.classList.remove('show');
+            el.style.display = 'none';
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+        };
+
+        // Engine
+        this.startTutorial = () => {
+            if (this.isActive) return;
+            this.isActive = true;
+            this.currentStep = 0;
+            this.createOverlay();
+            this.showStep(0);
+        };
+        this.createOverlay = () => {
+            this.overlay = document.createElement('div');
+            this.overlay.id = 'tutorial-overlay';
+            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;';
+            document.body.appendChild(this.overlay);
+        };
+        this.waitForCondition = (fn) => new Promise((res, rej) => { let n=0; const tick=()=>{ try{ if(fn()){res();return;} }catch{} if(n++>80){rej();return;} setTimeout(tick,125);} ; tick(); });
+        this.prepareElementForHighlight = async (el) => {
+            const r = el.getBoundingClientRect(); const cy = r.top + r.height/2; const vc = window.innerHeight/2;
+            if (Math.abs(cy - vc) > 120) { window.scrollTo({ top: window.pageYOffset + cy - vc, behavior: 'smooth' }); await new Promise(r => setTimeout(r, 600)); }
+        };
+        this.highlightElement = (el) => {
+            this.highlightedElement = el;
+            const r = el.getBoundingClientRect();
+            const h = document.createElement('div');
+            h.id = 'tutorial-highlight';
+            h.style.cssText = `position:fixed;top:${r.top-6}px;left:${r.left-6}px;width:${r.width+12}px;height:${r.height+12}px;border:4px solid #007bff;border-radius:12px;background:rgba(0,123,255,0.15);z-index:9999;pointer-events:none;animation:pulse 1.5s infinite;`;
+            document.body.appendChild(h);
+        };
+        this.createTooltip = (el, step) => {
+            const t = document.createElement('div'); t.id='tutorial-tooltip';
+            const r = el.getBoundingClientRect(); const w = 380;
+            let top, left;
+            if (step.position === 'bottom') { top = r.bottom + 40; left = r.left + r.width/2 - w/2; }
+            else if (step.position === 'top') { top = r.top - 220; left = r.left + r.width/2 - w/2; }
+            else if (step.position === 'left') { top = r.top + r.height/2 - 100; left = r.left - w - 24; }
+            else if (step.position === 'right') { top = r.top + r.height/2 - 100; left = r.right + 24; }
+            else { top = r.top + r.height/2 - 100; left = r.left + r.width/2 - w/2; }
+            left = Math.max(15, Math.min(left, window.innerWidth - w - 15));
+            top = Math.max(15, Math.min(top, window.innerHeight - 220));
+            const isLast = step.isLastStep;
+            t.style.cssText = `position:fixed;top:${top}px;left:${left}px;width:${w}px;background:white;border:3px solid #007bff;border-radius:18px;padding:24px;box-shadow:0 16px 40px rgba(0,0,0,0.28);z-index:10000;font-family:'Segoe UI',sans-serif;animation:popIn 0.3s ease;`;
+            t.innerHTML = `
+                <style>@keyframes popIn{from{opacity:0;transform:scale(.9) translateY(-10px)}to{opacity:1;transform:scale(1)}}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,123,255,.4)}50%{box-shadow:0 0 0 12px rgba(0,123,255,0)}}</style>
+                <h4 style="margin:0 0 14px;color:#007bff;font-weight:700;font-size:20px;">${step.title}</h4>
+                <p style="margin:0;color:#333;font-size:15px;line-height:1.6;">${step.description}</p>
+                <div style="display:flex;justify-content:flex-end;gap:14px;margin-top:20px;padding-top:16px;border-top:1px solid #eee;">
+                    <button id="tutorial-skip" style="background:#6c757d;color:white;border:none;padding:11px 20px;border-radius:12px;font-size:14px;cursor:pointer;font-weight:600;">Saltar</button>
+                    <button id="tutorial-next" style="background:${isLast?'#28a745':'#007bff'};color:white;border:none;padding:11px 20px;border-radius:12px;font-size:14px;cursor:pointer;font-weight:600;">${isLast?'Finalizar':'Siguiente'}</button>
+                </div>`;
+            document.body.appendChild(t);
+        };
+        this.removeHighlight = () => { const h=document.getElementById('tutorial-highlight'); if(h) h.remove(); };
+        this.removeTooltip = () => { const t=document.getElementById('tutorial-tooltip'); if(t) t.remove(); };
+        this.showStep = async (idx) => {
+            if (idx >= this.tutorialSteps.length) return this.endTutorial();
+            const step = this.tutorialSteps[idx];
+            try { if (step.waitFor) await this.waitForCondition(step.waitFor); } catch { this.nextStep(); return; }
+            const el = document.querySelector(step.selector); if (!el) { this.nextStep(); return; }
+            if (!this.isButtonStep(step)) this.restoreButtons();
+            if (step.onShow) { try { await step.onShow(); } catch {} }
+            this.removeHighlight(); this.removeTooltip();
+            await this.prepareElementForHighlight(el);
+            this.highlightElement(el);
+            this.createTooltip(el, step);
+            this.addListeners();
+        };
+        this.isButtonStep = (step) => ['Acción: Confirmar Recibido','Acción: Cargar Documentos','Acción: Enviar a Taller','Botón: Enviar a Taller','Botón: Devolver al Cliente','Cargar Periféricos','Imprimir Historial'].includes(step.title);
+        this.restoreButtons = () => {
+            ['.btn-received-ticket', '.btn-document-actions-modal', '.btn-wrench-custom', '#ButtonSendToTaller', '#devolver', '#hiperbinComponents', '.btn-secondary[onclick^="printHistory"]'].forEach(s => {
+                document.querySelectorAll(s).forEach(b => { b.style.zIndex=''; b.style.position=''; });
+            });
+        };
+        this.addListeners = () => {
+            const next = document.getElementById('tutorial-next');
+            const skip = document.getElementById('tutorial-skip');
+            if (next) next.onclick = () => this.nextStep();
+            if (skip) skip.onclick = () => this.endTutorial();
+        };
+        this.nextStep = async () => {
+            const prev = this.tutorialSteps[this.currentStep];
+            if (prev?.onNext) { try { await prev.onNext(); } catch {} }
+            this.currentStep++;
+            if (this.currentStep >= this.tutorialSteps.length || prev?.isLastStep) { this.endTutorial(); return; }
+            this.removeHighlight(); this.removeTooltip();
+            this.showStep(this.currentStep);
+        };
+        this.endTutorial = () => { this.isActive=false; this.removeHighlight(); this.removeTooltip(); if (this.overlay) this.overlay.remove(); };
+    }
+}
+
+
+// ASISTENTE VIRTUAL
 class VirtualAssistant {
     constructor() {
         this.panel = null;
@@ -1488,6 +1786,7 @@ class VirtualAssistant {
         this.ticketTutorial = new TicketManagementTutorial();
         this.rifTutorial = new ConsultaRIFTutorial();
         this.gestioncoordinacionTutorial = new GestionCoordinadorTutorial();
+        this.GestionTecnicoTutorial = new GestionTecnicoTutorial();
         
         this.init();
     }
@@ -3030,14 +3329,29 @@ addChartMessage(data) {
          this.gestioncoordinacionTutorial.startTutorial();
     }
 
+    startTechnicianTutorial() {
+        this.closeModuleSelectionModal();
+
+        // Solo redirigir si NO estamos en dashboard
+        if (!window.location.pathname.includes('tecnico')) {
+            window.location.href = 'tecnico';
+            return;
+        }
+
+        // Si ya estamos en dashboard → iniciar tutorial directamente
+        setTimeout(() => {
+            if (this.GestionTecnicoTutorial) {
+                this.GestionTecnicoTutorial.startTutorial();
+            }
+        }, 800);
+         this.GestionTecnicoTutorial.startTutorial();
+    }
+
+
+
     startReportsTutorial() {
         console.log('Iniciando tutorial: Reportes');
         // this.reportsTutorial.startT  utorial();
-    }
-
-    startTechnicianTutorial() {
-        console.log('Iniciando tutorial: Gestión de Técnicos');
-        // this.technicianTutorial.startTutorial();
     }
 
     // Procesar consultas de ayuda localmente (sin hacer peticiones HTTP)
@@ -3641,7 +3955,7 @@ addChartMessage(data) {
             'gestion_tickets': 'tickets',
             'reporte_ticket': 'reportes',
             'asignar_tecnico': 'gestion_coordinacion',
-            'gestion_tecnico': 'tecnicos',
+            'tecnico': 'tecnicos',
             'configuracion': 'config'
         };
 
