@@ -1646,7 +1646,49 @@ class GestionTecnicoTutorial {
 
         // Helpers
         this.click = (selector) => { const el = document.querySelector(selector); if (el) el.click(); };
-        this.raise = (selector) => { const el = document.querySelector(selector); if (el) { el.style.position = 'relative'; el.style.zIndex = '10001'; } };
+        this.raise = (selector) => {
+            const el = document.querySelector(selector);
+            if (el) {
+                el.style.position = 'relative';
+                el.style.zIndex = '10001';
+                el.style.boxShadow = '0 0 0 4px rgba(0,123,255,.45), 0 0 16px rgba(0,123,255,.8)';
+                el.style.transform = 'scale(1.02)';
+                el.style.transition = 'box-shadow .2s ease, transform .2s ease';
+            }
+        };
+        this.restoreButtons = () => {
+            ['.received-ticket-btn', '#marcarrecibido', '.deliver-ticket-btn', '.deliver-ticket-bt', '.upload-document-btn', '#openModalButton', '.send-to-region-btn', '.view-document-btn', '#viewimage', '.send-back-to-lab-btn'].forEach(sel => {
+                document.querySelectorAll(sel).forEach(el => {
+                    el.style.zIndex = '';
+                    el.style.position = '';
+                    el.style.boxShadow = '';
+                    el.style.transform = '';
+                    el.style.transition = '';
+                    el.style.visibility = '';
+                });
+            });
+        };
+        this.forceResetRaisedButtons = () => {
+            // Resetea cualquier botón que haya quedado con z-index elevado por pasos anteriores
+            document.querySelectorAll('#tabla-ticket button[style*="z-index"], #tabla-ticket a[style*="z-index"]').forEach(el => {
+                el.style.zIndex = '';
+                el.style.position = '';
+                el.style.boxShadow = '';
+                el.style.transform = '';
+                el.style.transition = '';
+            });
+        };
+        this.hideButtons = (selectors) => {
+            selectors.forEach(sel => {
+                document.querySelectorAll(sel).forEach(el => {
+                    el.style.visibility = 'hidden';
+                    el.style.zIndex = '';
+                    el.style.position = '';
+                    el.style.boxShadow = '';
+                    el.style.transform = '';
+                });
+            });
+        };
         this.scrollToActions = () => new Promise(resolve => {
             const table = document.getElementById('tabla-ticket');
             const row = document.querySelector('#tabla-ticket tbody tr');
@@ -1806,7 +1848,7 @@ class GestionTecnicoTutorial {
             this.removeHighlight(); this.removeTooltip();
             this.showStep(this.currentStep);
         };
-        this.endTutorial = () => { this.isActive=false; this.removeHighlight(); this.removeTooltip(); if (this.overlay) this.overlay.remove(); };
+        this.endTutorial = () => { this.isActive=false; this.removeHighlight(); this.removeTooltip(); this.restoreButtons(); if (this.overlay) this.overlay.remove(); };
     }
 }
 
@@ -1854,7 +1896,37 @@ class GestionTallerTutorial {
 
         // Helpers
         this.click = (selector) => { const el = document.querySelector(selector); if (el) el.click(); };
-        this.raise = (selector) => { const el = document.querySelector(selector); if (el) { el.style.position = 'relative'; el.style.zIndex = '10001'; } };
+        this.raise = (selector) => { const el = document.querySelector(selector); if (el) { el.style.position = 'relative'; el.style.zIndex = '10001'; el.style.boxShadow = '0 0 0 4px rgba(0,123,255,.45), 0 0 16px rgba(0,123,255,.8)'; } };
+        this.restoreButtons = () => {
+            ['.received-ticket-btn', '#marcarrecibido', '.deliver-ticket-btn', '.deliver-ticket-bt', '.upload-document-btn', '#openModalButton', '.send-to-region-btn', '.view-document-btn', '#viewimage', 'button.btn-secondary[title="No hay documento disponible"]', '.send-back-to-lab-btn']
+            .forEach(sel => {
+                document.querySelectorAll(sel).forEach(el => {
+                    el.style.zIndex = '';
+                    el.style.position = '';
+                    el.style.boxShadow = '';
+                    el.style.visibility = '';
+                    el.style.pointerEvents = '';
+                });
+            });
+        };
+        this.hideButtons = (selectors) => {
+            selectors.forEach(sel => {
+                document.querySelectorAll(sel).forEach(el => {
+                    el.style.visibility = 'hidden';
+                    el.style.pointerEvents = 'none';
+                    el.style.zIndex = '';
+                    el.style.position = '';
+                    el.style.boxShadow = '';
+                });
+            });
+        };
+        this.forceResetRaisedButtons = () => {
+            document.querySelectorAll('#tabla-ticket button[style*="z-index"], #tabla-ticket a[style*="z-index"]').forEach(el => {
+                el.style.zIndex = '';
+                el.style.position = '';
+                el.style.boxShadow = '';
+            });
+        };
         this.scrollToActions = () => new Promise(resolve => {
             const table = document.getElementById('tabla-ticket');
             const row = document.querySelector('#tabla-ticket tbody tr');
@@ -1986,6 +2058,144 @@ class GestionTallerTutorial {
     }
 }
 
+// TUTORIAL MÓDULO GESTIÓN ROSAL
+class GestionRosalTutorial {
+    constructor() {
+        this.currentStep = 0;
+        this.isActive = false;
+        this.overlay = null;
+        this.highlightedElement = null;
+
+        this.tutorialSteps = [
+            { selector: '#Row', title: 'Tabla de Tickets (Gestión Rosal)', description: 'Aquí gestionas los equipos en el Rosal: recibido, documentos, llaves y entrega a cliente.', position: 'top', waitFor: () => document.getElementById('tabla-ticket') !== null },
+            { selector: '.dt-buttons-container', title: 'Filtros de Estado', description: 'Usa estos filtros: Pendiente de Recibir, En el Rosal, Por confirmar llaves, Llaves Cargadas.', position: 'bottom', waitFor: () => document.querySelector('.dt-buttons-container') !== null },
+
+            // Filtro 1: Pendiente por recibir en Rosal
+            { selector: '#btn-por-asignar', title: 'Filtro: Pendiente por Confirmar Recibido', description: 'Muestra tickets con acción <strong>"En espera de Confirmar Devolución"</strong> o <strong>"En espera de confirmar recibido en el Rosal"</strong>.', position: 'bottom', waitFor: () => document.getElementById('btn-por-asignar') !== null, onNext: async () => { this.click('#btn-por-asignar'); await new Promise(r=>setTimeout(r,120)); await this.scrollToColumn('Acción'); } },
+            { selector: '#tabla-ticket tbody tr td:last-child', title: 'Columna de Acciones', description: 'Aquí encontrarás las acciones disponibles según el tipo de ticket. Desplazando la tabla...', position: 'left', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onShow: async () => { await this.scrollToColumn('Acción'); } },
+            { selector: '#tabla-ticket tbody tr td .received-ticket-btn, #marcarrecibido', title: 'Acción: Marcar Recibido en Rosal', description: 'Botón con <strong>dos checkmarks</strong>: aparece <strong>solo en tickets "En espera de confirmar recibido en el Rosal"</strong>. Confirma la recepción física del equipo en el Rosal.', position: 'right', waitFor: () => document.querySelector('#tabla-ticket tbody tr td .received-ticket-btn, #marcarrecibido') !== null, onShow: async () => { await this.scrollToColumn('Acción'); this.raise('.received-ticket-btn, #marcarrecibido'); }, onNext: () => { if (typeof this.restoreButtons === 'function') this.restoreButtons(); if (typeof this.hideButtons === 'function') this.hideButtons(['.received-ticket-btn', '#marcarrecibido']); } },
+            { selector: '#tabla-ticket tbody tr td .view-document-btn, #viewimage, button.btn-secondary[title="No hay documento disponible"]', title: 'Campo: Visualizar Documentos', description: 'Permite ver los documentos cargados asociados al ticket (Nota de Entrega, Envío, etc.). Si no hay documento, se muestra deshabilitado.', position: 'bottom', waitFor: () => document.querySelector('#tabla-ticket tbody tr td .view-document-btn, #viewimage, button.btn-secondary[title="No hay documento disponible"]') !== null, onShow: () => this.raise('.view-document-btn, #viewimage, button.btn-secondary[title="No hay documento disponible"]'), onNext: () => { this.restoreButtons(); this.hideButtons(['#viewimage']); } },
+
+            // Filtro 2: En el Rosal
+            { selector: '#btn-asignados', title: 'Filtro: En el Rosal', description: 'Equipos en el Rosal listos para gestión (entrega, documentos).', position: 'bottom', waitFor: () => document.getElementById('btn-asignados') !== null, onShow: () => { this.restoreButtons(); this.hideButtons(['.view-document-btn', '#viewimage', '.upload-document-btn', '#openModalButton', '.send-to-region-btn', '.send-back-to-lab-btn']); }, onNext: () => this.click('#btn-asignados') },
+            { selector: '#tabla-ticket tbody tr td:last-child', title: 'Columna de Acciones', description: 'Desplazando hasta la columna de acciones.', position: 'left', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onShow: async () => { await this.scrollToColumn('Acción'); } },
+            { selector: '#tabla-ticket tbody tr td .deliver-ticket-btn, #tabla-ticket tbody tr td .deliver-ticket-bt', title: 'Acción: Entregar al Cliente', description: 'Marca el ticket como Entregado al Cliente y lo cierra, registrando la fecha de entrega.', position: 'bottom', waitFor: () => document.querySelector('#tabla-ticket tbody tr td .deliver-ticket-btn, #tabla-ticket tbody tr td .deliver-ticket-bt') !== null, onShow: () => this.raise('.deliver-ticket-btn, .deliver-ticket-bt') },
+            { selector: '#tabla-ticket tbody tr td .upload-document-btn, #openModalButton', title: 'Acción: Subir Documento', description: 'Sube la Nota de Entrega u otro documento requerido para envío a región.', position: 'bottom', waitFor: () => document.querySelector('#tabla-ticket tbody tr td .upload-document-btn, #openModalButton') !== null, onShow: () => this.raise('.upload-document-btn, #openModalButton') },
+            { selector: '#tabla-ticket tbody tr td .send-to-region-btn', title: 'Acción: Enviar a Región', description: 'Envía el equipo a la región destino cuando el documento está cargado.', position: 'bottom', waitFor: () => document.querySelector('#tabla-ticket tbody tr td .send-to-region-btn') !== null, onShow: () => this.raise('.send-to-region-btn') },
+            { selector: '#tabla-ticket tbody tr td .view-document-btn, #viewimage', title: 'Ver Documento', description: 'Visualiza el documento cargado (imagen o PDF) en un modal.', position: 'bottom', waitFor: () => document.querySelector('#tabla-ticket tbody tr td .view-document-btn, #viewimage') !== null, onShow: () => this.raise('.view-document-btn, #viewimage'), onNext: () => { this.restoreButtons(); this.hideButtons(['.view-document-btn', '#viewimage', 'button.btn-secondary[title="No hay documento disponible"]']); } },
+            { selector: '#tabla-ticket tbody tr td .send-back-to-lab-btn', title: 'Acción: Devolver a Taller', description: 'Devuelve el ticket al taller cuando es necesario reiniciar el proceso de reparación o revisión.', position: 'bottom', waitFor: () => document.querySelector('#tabla-ticket tbody tr td .send-back-to-lab-btn') !== null, onShow: async () => { await this.scrollToColumn('Taller'); this.raise('.send-back-to-lab-btn'); }, onNext: () => { this.restoreButtons(); this.hideButtons(['.send-back-to-lab-btn']); } },
+
+            // Filtro 3: Por confirmar llaves
+            { selector: '#btn-recibidos', title: 'Filtro: Por confirmar llaves', description: 'Tickets a la espera de confirmar la carga de llaves en el Rosal.', position: 'bottom', waitFor: () => document.getElementById('btn-recibidos') !== null, onShow: () => { this.restoreButtons(); this.hideButtons(['.view-document-btn', '#viewimage', '.upload-document-btn', '#openModalButton', '.send-to-region-btn', '.deliver-ticket-btn', '.deliver-ticket-bt', '.send-back-to-lab-btn']); }, onNext: async () => { this.click('#btn-recibidos'); await new Promise(r=>setTimeout(r,120)); await this.scrollToColumn('Llaves'); } },
+            { selector: '#tabla-ticket tbody tr td .receive-key-checkbox', title: 'Acción: Confirmar Llaves (opcional)', description: 'Marca este checkbox si las llaves ya fueron cargadas.', position: 'bottom', waitFor: () => document.querySelector('#tabla-ticket tbody tr td .receive-key-checkbox') !== null, onShow: () => this.raise('.receive-key-checkbox') },
+
+            // Filtro 4: Llaves Cargadas
+            { selector: '#btn-llaves-cargadas', title: 'Filtro: Llaves Cargadas', description: 'Lista de tickets con llaves confirmadas.', position: 'bottom', waitFor: () => document.getElementById('btn-llaves-cargadas') !== null, onNext: () => this.click('#btn-llaves-cargadas') },
+
+            // Selección y detalles
+            { selector: '#tabla-ticket tbody tr', title: 'Seleccionar Ticket', description: 'Haremos clic en un ticket para ver sus detalles e historial.', position: 'top', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onNext: () => this.selectFirstRow() },
+            { selector: '#ticket-details-panel', title: 'Panel de Detalles', description: 'Aquí verás la información del ticket, serial y estados claves.', position: 'left', waitFor: () => document.getElementById('ticket-details-panel')?.children.length > 0 },
+            { selector: '#ticket-history-content', title: 'Historial del Ticket', description: 'Registro de gestiones y eventos del ticket.', position: 'left', waitFor: () => document.getElementById('ticket-history-content') !== null, isLastStep: true }
+        ];
+
+        // Helpers
+        this.click = (selector) => { const el = document.querySelector(selector); if (el) el.click(); };
+        this.raise = (selector) => { const el = document.querySelector(selector); if (el) { el.style.position = 'relative'; el.style.zIndex = '10001'; } };
+        this.scrollToActions = () => new Promise(resolve => {
+            const table = document.getElementById('tabla-ticket');
+            const row = document.querySelector('#tabla-ticket tbody tr');
+            if (!table || !row) return setTimeout(resolve, 250);
+            const lastCell = row.querySelector('td:last-child');
+            const wrapper = table.closest('.dataTables_wrapper');
+            const scroller = wrapper?.querySelector('.dataTables_scrollBody') || wrapper || table.parentElement;
+            if (scroller && scroller.scrollWidth > scroller.clientWidth) {
+                scroller.scrollTo({ left: lastCell.offsetLeft, behavior: 'smooth' });
+                return setTimeout(resolve, 500);
+            }
+            setTimeout(resolve, 250);
+        });
+        this.scrollToColumn = (columnHeaderText) => new Promise(resolve => {
+            const table = document.getElementById('tabla-ticket');
+            const row = document.querySelector('#tabla-ticket tbody tr');
+            if (!table || !row) return setTimeout(resolve, 250);
+            const wrapper = table.closest('.dataTables_wrapper');
+            const scrollHead = wrapper?.querySelector('.dataTables_scrollHead table thead');
+            const headers = scrollHead ? scrollHead.querySelectorAll('th') : table.querySelectorAll('thead th');
+            let targetCell = null;
+            headers.forEach((header, idx) => {
+                if (header.textContent.trim() === columnHeaderText) {
+                    const cells = row.querySelectorAll('td');
+                    if (cells[idx]) targetCell = cells[idx];
+                }
+            });
+            if (!targetCell) return setTimeout(resolve, 250);
+            const scroller = wrapper?.querySelector('.dataTables_scrollBody') || wrapper || table.parentElement;
+            if (scroller && scroller.scrollWidth > scroller.clientWidth) {
+                scroller.scrollTo({ left: targetCell.offsetLeft, behavior: 'smooth' });
+                return setTimeout(resolve, 500);
+            }
+            setTimeout(resolve, 250);
+        });
+        this.selectFirstRow = () => new Promise(resolve => {
+            const row = document.querySelector('#tabla-ticket tbody tr');
+            if (row) { row.click(); setTimeout(resolve, 500); } else setTimeout(resolve, 250);
+        });
+
+        this.hideModal = (selector) => {
+            const el = document.querySelector(selector);
+            if (!el) return;
+            try { if (typeof $ !== 'undefined' && typeof $(el).modal === 'function') { $(el).modal('hide'); } } catch(_){}
+            try { const inst = bootstrap?.Modal?.getInstance ? bootstrap.Modal.getInstance(el) : null; if (inst) inst.hide(); else if (bootstrap?.Modal) new bootstrap.Modal(el).hide(); } catch(_){}
+            el.classList.remove('show'); el.style.display='none'; el.style.visibility='hidden'; el.setAttribute('aria-hidden','true');
+            document.querySelectorAll('.modal-backdrop, .modal-backdrop.fade, .modal-backdrop.show').forEach(b=>b.remove());
+            document.body.classList.remove('modal-open'); document.documentElement.classList.remove('modal-open');
+            document.body.style.overflow=''; document.body.style.paddingRight='';
+        };
+
+        this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.waitForCondition = (fn) => new Promise((res, rej) => { let n=0; const tick=()=>{ try{ if(fn()){res();return;} }catch{} if(n++>100){rej();return;} setTimeout(tick,60);} ; tick(); });
+        this.prepareElementForHighlight = async (el) => {
+            return new Promise(resolve => {
+                const mainContainer = document.querySelector('main.main-content');
+                if (!mainContainer || !el.closest('main.main-content')) {
+                    // Si no hay main o el elemento no está dentro de main, scroll normal de ventana
+                    const r = el.getBoundingClientRect();
+                    const cy = r.top + r.height/2;
+                    const vc = window.innerHeight/2;
+                    if (Math.abs(cy - vc) > 40) {
+                        window.scrollTo({ top: window.pageYOffset + cy - vc, behavior: 'smooth' });
+                        return setTimeout(resolve, 400);
+                    } else {
+                        return resolve();
+                    }
+                }
+                // SCROLL DENTRO DEL MAIN
+                const mainRect = mainContainer.getBoundingClientRect();
+                const elRect = el.getBoundingClientRect();
+                const elementTopInMain = elRect.top - mainRect.top + mainContainer.scrollTop;
+                const mainVisibleHeight = mainContainer.clientHeight;
+                if (elementTopInMain < mainContainer.scrollTop || 
+                    elementTopInMain + elRect.height > mainContainer.scrollTop + mainVisibleHeight) {
+                    const targetScroll = elementTopInMain - (mainVisibleHeight / 2) + (elRect.height / 2);
+                    mainContainer.scrollTo({ top: targetScroll, behavior: 'smooth' });
+                    return setTimeout(resolve, 800);
+                } else {
+                    resolve();
+                }
+            });
+        };
+        this.highlightElement = (el) => { this.highlightedElement = el; const r = el.getBoundingClientRect(); const h = document.createElement('div'); h.id='tutorial-highlight'; h.style.cssText=`position:fixed;top:${r.top-6}px;left:${r.left-6}px;width:${r.width+12}px;height:${r.height+12}px;border:4px solid #007bff;border-radius:12px;background:rgba(0,123,255,0.15);z-index:9999;pointer-events:none;animation:pulse 1.5s infinite;`; document.body.appendChild(h); };
+        this.createTooltip = (el, step) => { const t=document.createElement('div'); t.id='tutorial-tooltip'; const r=el.getBoundingClientRect(); const w=380; let top,left; if(step.position==='bottom'){ top=r.bottom+40; left=r.left + r.width/2 - w/2; } else if(step.position==='top'){ top=r.top-220; left=r.left + r.width/2 - w/2; } else if(step.position==='left'){ top=r.top + r.height/2 - 100; left=r.left - w - 24; } else if(step.position==='right'){ top=r.top + r.height/2 - 100; left=r.right + 24; } else { top=r.top + r.height/2 - 100; left=r.left + r.width/2 - w/2; } left=Math.max(15, Math.min(left, window.innerWidth - w - 15)); top=Math.max(15, Math.min(top, window.innerHeight - 220)); const isLast=step.isLastStep; t.style.cssText=`position:fixed;top:${top}px;left:${left}px;width:${w}px;background:white;border:3px solid #007bff;border-radius:18px;padding:24px;box-shadow:0 16px 40px rgba(0,0,0,0.28);z-index:10000;font-family:'Segoe UI',sans-serif;animation:popIn 0.3s ease;`; t.innerHTML=`<style>@keyframes popIn{from{opacity:0;transform:scale(.9) translateY(-10px)}to{opacity:1;transform:scale(1)}}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,123,255,.4)}50%{box-shadow:0 0 0 12px rgba(0,123,255,0)}}</style><h4 style="margin:0 0 14px;color:#007bff;font-weight:700;font-size:20px;">${step.title}</h4><p style="margin:0;color:#333;font-size:15px;line-height:1.6;">${step.description}</p><div style="display:flex;justify-content:flex-end;gap:14px;margin-top:20px;padding-top:16px;border-top:1px solid #eee;"><button id="tutorial-skip" style="background:#6c757d;color:white;border:none;padding:11px 20px;border-radius:12px;font-size:14px;cursor:pointer;font-weight:600;">Saltar</button><button id="tutorial-next" style="background:${isLast?'#28a745':'#007bff'};color:white;border:none;padding:11px 20px;border-radius:12px;font-size:14px;cursor:pointer;font-weight:600;">${isLast?'Finalizar':'Siguiente'}</button></div>`; document.body.appendChild(t); };
+        this.removeHighlight = () => { const h=document.getElementById('tutorial-highlight'); if(h) h.remove(); };
+        this.removeTooltip = () => { const t=document.getElementById('tutorial-tooltip'); if(t) t.remove(); };
+        this.showStep = async (idx) => { if (idx >= this.tutorialSteps.length) return this.endTutorial(); const step = this.tutorialSteps[idx]; try { if (step.waitFor) await this.waitForCondition(step.waitFor); } catch { this.nextStep(); return; } const el = document.querySelector(step.selector); if (!el) { this.nextStep(); return; } if (typeof this.restoreButtons === 'function') { this.restoreButtons(); } if (typeof this.forceResetRaisedButtons === 'function') { this.forceResetRaisedButtons(); } if (step.onShow) { try { await step.onShow(); } catch {} } this.removeHighlight(); this.removeTooltip(); await this.prepareElementForHighlight(el); this.highlightElement(el); this.createTooltip(el, step); this.addListeners(); };
+        this.addListeners = () => { const next=document.getElementById('tutorial-next'); const skip=document.getElementById('tutorial-skip'); if(next) next.onclick=()=>this.nextStep(); if(skip) skip.onclick=()=>this.endTutorial(); };
+        this.nextStep = async () => { const prev = this.tutorialSteps[this.currentStep]; if (prev?.onNext) { try { await prev.onNext(); } catch {} } this.currentStep++; if (this.currentStep >= this.tutorialSteps.length || prev?.isLastStep) { this.endTutorial(); return; } this.removeHighlight(); this.removeTooltip(); this.showStep(this.currentStep); };
+        this.endTutorial = () => { this.isActive=false; this.removeHighlight(); this.removeTooltip(); this.restoreButtons(); if (this.overlay) this.overlay.remove(); };
+    }
+}
+
 
 // ASISTENTE VIRTUAL
 class VirtualAssistant {
@@ -2002,6 +2212,7 @@ class VirtualAssistant {
         this.gestioncoordinacionTutorial = new GestionCoordinadorTutorial();
         this.GestionTecnicoTutorial = new GestionTecnicoTutorial();
         this.GestionTallerTutorial = new GestionTallerTutorial();
+        this.GestionRosalTutorial = new GestionRosalTutorial();
         
         this.init();
     }
@@ -3579,6 +3790,23 @@ addChartMessage(data) {
         this.GestionTallerTutorial.startTutorial();
     }
 
+    startRosalTutorial() {
+        this.closeModuleSelectionModal();
+
+        // Redirigir si no estamos en el módulo de Gestión Rosal
+        if (!window.location.pathname.includes('pendiente_entrega')) {
+            window.location.href = 'pendiente_entrega';
+            return;
+        }
+
+        setTimeout(() => {
+            if (this.GestionRosalTutorial) {
+                this.GestionRosalTutorial.startTutorial();
+            }
+        }, 800);
+        this.GestionRosalTutorial.startTutorial();
+    }
+
 
 
     startReportsTutorial() {
@@ -4188,7 +4416,8 @@ addChartMessage(data) {
             'reporte_ticket': 'reportes',
             'asignar_tecnico': 'gestion_coordinacion',
             'tecnico': 'tecnicos',
-            'taller': 'taller'
+            'taller': 'taller',
+            'pendiente_entrega': 'rosal'
         };
 
         const clean = urlArchivo.trim()
@@ -4496,7 +4725,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'gestion_coordinacion': 'startGestionCoordinacionTutorial',
         'tecnicos': 'startTechnicianTutorial',
         'taller': 'startLabTutorial',
-        'lab': 'startLabTutorial'
+        'lab': 'startLabTutorial',
+        'rosal': 'startRosalTutorial'
     };
 
     const methodName = tutorialMap[tutorialParam];
