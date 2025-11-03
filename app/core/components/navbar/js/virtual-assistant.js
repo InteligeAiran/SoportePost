@@ -2192,8 +2192,13 @@ class GestionRosalTutorial {
         this.showStep = async (idx) => { if (idx >= this.tutorialSteps.length) return this.endTutorial(); const step = this.tutorialSteps[idx]; try { if (step.waitFor) await this.waitForCondition(step.waitFor); } catch { this.nextStep(); return; } const el = document.querySelector(step.selector); if (!el) { this.nextStep(); return; } if (typeof this.restoreButtons === 'function') { this.restoreButtons(); } if (typeof this.forceResetRaisedButtons === 'function') { this.forceResetRaisedButtons(); } if (step.onShow) { try { await step.onShow(); } catch {} } this.removeHighlight(); this.removeTooltip(); await this.prepareElementForHighlight(el); this.highlightElement(el); this.createTooltip(el, step); this.addListeners(); };
         this.addListeners = () => { const next=document.getElementById('tutorial-next'); const skip=document.getElementById('tutorial-skip'); if(next) next.onclick=()=>this.nextStep(); if(skip) skip.onclick=()=>this.endTutorial(); };
         this.nextStep = async () => { const prev = this.tutorialSteps[this.currentStep]; if (prev?.onNext) { try { await prev.onNext(); } catch {} } this.currentStep++; if (this.currentStep >= this.tutorialSteps.length || prev?.isLastStep) { this.endTutorial(); return; } this.removeHighlight(); this.removeTooltip(); this.showStep(this.currentStep); };
-        this.endTutorial = () => { this.isActive=false; this.removeHighlight(); this.removeTooltip(); this.restoreButtons(); if (this.overlay) this.overlay.remove(); };
-    }
+        this.endTutorial = () => {
+        this.isActive = false;
+        this.removeHighlight();
+        this.removeTooltip();
+        if (typeof this.restoreButtons === 'function') this.restoreButtons();
+        if (this.overlay) this.overlay.remove();
+        };    }
 }
 
 
