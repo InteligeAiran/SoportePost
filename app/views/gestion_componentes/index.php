@@ -314,7 +314,7 @@ function mi_navbar() {}
                 <div class="col-md-7 h-100 d-flex flex-column">
                     <div id="Row" class="row mt-4">
                         <div class="cord">
-                            <div class="card">
+                            <div class="card" id="Table-compo">
                                 <div class="card-header pb-0 p-3">
                                     <div class="col-lg-12 col-md-12 mt-4 mb-4">
                                         <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
@@ -352,34 +352,6 @@ function mi_navbar() {}
             </div>
         </div>
         <input type="hidden" id="iduser" value="<?php echo $_SESSION['id_user'] ?>">
-            <div class="modal fade" id="changeStatusDomiciliacionModal" tabindex="-1" aria-labelledby="changeStatusDomiciliacionModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header bg-gradient-primary">
-                            <h5 class="modal-title" id="changeStatusDomiciliacionModalLabel">Cambiar Estatus de Domiciliación</h5>
-                        </div>
-                        <div class="modal-body">
-                            <form id="changeStatusDomiciliacionForm">
-                                <div class="mb-3">
-                                    <label for="modalCurrentStatusDomiciliacion" class="form-label">Estado Actual:</label>
-                                    <input type="text" class="form-control" id="modalCurrentStatusDomiciliacion" readonly>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="modalNewStatusDomiciliacionSelect" class="form-label">Nuevo Estado:</label>
-                                    <select class="form-select" id="modalNewStatusDomiciliacionSelect" style="width: 98%;;">
-                                        <option value="">Cargando opciones...</option>
-                                    </select>
-                                </div>
-                                <div id="errorMessageDomiciliacion" class="alert alert-danger" style="display:none;"></div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" id="close-button" data-bs-dismiss="modal">Cerrar</button>
-                            <button type="button" class="btn btn-primary" id="saveStatusDomiciliacionChangeBtn">Guardar Cambios</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         <input type="hidden" id="idTicket">
     </main>
 

@@ -6,11 +6,11 @@ const id_usuario_element = document.getElementById("id_user");
 let id_usuario = id_usuario_element.value;
 let text = null;
 
-    // Agregar esta función al inicio de tu archivo virtual-assistant.js
-        function formatNumber(number) {
-            if (typeof number !== 'number') return number;
-            return number.toFixed(2);
-        }
+// Agregar esta función al inicio de tu archivo virtual-assistant.js
+function formatNumber(number) {
+if (typeof number !== 'number') return number;
+    return number.toFixed(2);
+}
 
 // TUTORIAL DEL DASHBOARD
 class TicketManagementTutorial {
@@ -2199,7 +2199,6 @@ class GestionRosalTutorial {
         };    }
 }
 
-
 // TUTORIAL MÓDULO GESTIÓN REGIONES
 class GestionRegionTutorial {
     constructor() {
@@ -2280,6 +2279,161 @@ class GestionRegionTutorial {
     }
 }
 
+// TUTORIAL MÓDULO GESTIÓN DE PERIFÉRICO/COMPONENTES
+class GestionComponentesTutorial {
+    constructor() {
+        this.currentStep = 0;
+        this.isActive = false;
+        this.overlay = null;
+        this.highlightedElement = null;
+
+        this.tutorialSteps = [
+            { selector: 'Table-compo', title: 'Periférico POS', description: 'Aquí gestionas los periféricos asociados a los equipos POS.', position: 'top', waitFor: () => !!document.querySelector('#tabla-ticket') },
+            { selector: '#tabla-ticket', title: 'Tabla de Tickets', description: 'Listado de tickets con su serial y un botón para ver los componentes del POS.', position: 'top', waitFor: () => document.getElementById('tabla-ticket') !== null },
+            { selector: '#tabla-ticket tbody tr td:last-child', title: 'Columna de Acciones', description: 'Desplazando lateralmente para localizar el botón de componentes.', position: 'left', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onShow: async () => { await this.scrollToColumn('Acciones'); await new Promise(r=>setTimeout(r,180)); } },
+            { selector: '#tabla-ticket tbody tr td .ver-componentes-btn', title: 'Botón: Ver Componentes', description: 'Abre el detalle de periféricos del POS seleccionado. Primero haré clic para mostrar la información.', position: 'bottom', waitFor: () => document.querySelector('#tabla-ticket tbody tr td .ver-componentes-btn') !== null, onShow: async () => { await this.scrollToColumn('Acciones'); await new Promise(r=>setTimeout(r,180)); this.raise('.ver-componentes-btn'); }, onNext: () => { const btn = document.querySelector('#tabla-ticket tbody tr td .ver-componentes-btn'); if (btn) { this.hideButton('.ver-componentes-btn'); btn.click(); } } },
+            { selector: '.swal2-html-container .pos-modal-container, .pos-modal-container', title: 'Información del POS y Periféricos', description: 'En este modal verás el banco, modelo y los periféricos registrados por módulo de gestión. El botón "Ver Componentes" fue ocultado para no distraer.', position: 'top', waitFor: () => document.querySelector('.pos-modal-container') !== null, onShow: () => { this.hideButton('.ver-componentes-btn'); }, onNext: async () => { await this.closeModal(); await new Promise(r=>setTimeout(r,500)); } },
+            { selector: '#tabla-ticket tbody tr', title: 'Seleccionar Ticket', description: 'Haciendo clic en un ticket para ver sus detalles en el panel lateral.', position: 'top', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onNext: () => this.selectFirstTicket() },
+            { selector: '#ticket-details-panel', title: 'Panel de Detalles', description: 'Aquí se muestran los detalles del ticket seleccionado.', position: 'left', waitFor: () => document.getElementById('ticket-details-panel')?.children.length > 0 && !document.getElementById('ticket-details-panel').textContent.includes('Selecciona un ticket') },
+            { selector: '#hiperbinComponents', title: 'Cargar Periféricos del Dispositivo', description: 'Este botón te permite cargar y asociar periféricos/componentes al equipo POS del ticket seleccionado.', position: 'left', waitFor: () => document.getElementById('hiperbinComponents') !== null, onShow: () => this.raise('#hiperbinComponents') },
+            { selector: '.btn-secondary[onclick^="printHistory"]', title: 'Imprimir Historial', description: 'Este botón genera y descarga en PDF el historial completo de gestiones del ticket.', position: 'top', waitFor: () => document.querySelector('.btn-secondary[onclick^="printHistory"]') !== null, onShow: () => this.raise('.btn-secondary[onclick^="printHistory"]') },
+            { selector: '#ticketHistoryAccordion', title: 'Historial del Ticket', description: 'Aquí se muestra el historial completo de gestiones del ticket, con todas las acciones realizadas y sus fechas.', position: 'left', waitFor: () => document.getElementById('ticketHistoryAccordion') !== null, isLastStep: true }
+        ];
+
+        this.click = (selector) => { const el = document.querySelector(selector); if (el) el.click(); };
+        this.raise = (selector) => { const el=document.querySelector(selector); if (el) { el.style.position='relative'; el.style.zIndex='10001'; el.style.boxShadow='0 0 0 4px rgba(0,123,255,.45), 0 0 16px rgba(0,123,255,.8)'; } };
+        this.hideButton = (selector) => { document.querySelectorAll(selector).forEach(btn => { btn.style.visibility = 'hidden'; btn.style.opacity = '0'; }); };
+        this.restoreButtons = () => { 
+            ['.ver-componentes-btn', '#hiperbinComponents', '.btn-secondary[onclick^="printHistory"]'].forEach(sel => {
+                document.querySelectorAll(sel).forEach(btn => { 
+                    btn.style.visibility = ''; 
+                    btn.style.opacity = ''; 
+                    btn.style.zIndex = ''; 
+                    btn.style.position = ''; 
+                    btn.style.boxShadow = ''; 
+                }); 
+            }); 
+        };
+        this.closeModal = async () => {
+            // Cerrar modal de SweetAlert2
+            if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+                Swal.close();
+                await new Promise(r => setTimeout(r, 300));
+            }
+            // También intentar cerrar cualquier modal de Bootstrap
+            document.querySelectorAll('.swal2-container, .modal.show').forEach(modal => {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+            });
+            // Remover backdrops
+            document.querySelectorAll('.swal2-backdrop-show, .modal-backdrop').forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open', 'swal2-height-auto');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        };
+        this.selectFirstTicket = () => {
+            return new Promise(resolve => {
+                const row = document.querySelector('#tabla-ticket tbody tr');
+                if (row) {
+                    row.click();
+                    setTimeout(resolve, 800);
+                } else {
+                    setTimeout(resolve, 300);
+                }
+            });
+        };
+        this.scrollToColumn = (columnHeaderText) => new Promise(resolve => {
+            const table = document.getElementById('tabla-ticket');
+            const row = document.querySelector('#tabla-ticket tbody tr');
+            if (!table || !row) return setTimeout(resolve, 250);
+            const wrapper = table.closest('.dataTables_wrapper');
+            const scrollHead = wrapper?.querySelector('.dataTables_scrollHead table thead');
+            const headers = scrollHead ? scrollHead.querySelectorAll('th') : table.querySelectorAll('thead th');
+            let targetCell = null;
+            headers.forEach((header, idx) => {
+                if (header.textContent.trim() === columnHeaderText) {
+                    const cells = row.querySelectorAll('td');
+                    if (cells[idx]) targetCell = cells[idx];
+                }
+            });
+            const scroller = wrapper?.querySelector('.dataTables_scrollBody') || wrapper || table.parentElement;
+            if (targetCell && scroller && scroller.scrollWidth > scroller.clientWidth) {
+                scroller.scrollTo({ left: targetCell.offsetLeft, behavior: 'smooth' });
+                return setTimeout(resolve, 500);
+            }
+            setTimeout(resolve, 250);
+        });
+        this.waitForCondition = (fn) => new Promise((res, rej) => { let n=0; const tick=()=>{ try{ if(fn()){res();return;} }catch{} if(n++>100){rej();return;} setTimeout(tick,60);} ; tick(); });
+        this.prepareElementForHighlight = async (el) => { const r = el.getBoundingClientRect(); const cy = r.top + r.height/2; const vc = window.innerHeight/2; if (Math.abs(cy - vc) > 120) { window.scrollTo({ top: window.pageYOffset + cy - vc, behavior: 'smooth' }); await new Promise(r => setTimeout(r, 400)); } };
+        this.highlightElement = (el) => { this.highlightedElement = el; const r = el.getBoundingClientRect(); const h = document.createElement('div'); h.id='tutorial-highlight'; h.style.cssText=`position:fixed;top:${r.top-6}px;left:${r.left-6}px;width:${r.width+12}px;height:${r.height+12}px;border:4px solid #007bff;border-radius:12px;background:rgba(0,123,255,0.15);z-index:9999;pointer-events:none;animation:pulse 1.5s infinite;`; document.body.appendChild(h); };
+        this.createTooltip = (el, step) => { const t=document.createElement('div'); t.id='tutorial-tooltip'; const r=el.getBoundingClientRect(); const w=380; let top,left; if(step.position==='bottom'){ top=r.bottom+40; left=r.left + r.width/2 - w/2; } else if(step.position==='top'){ top=r.top-220; left=r.left + r.width/2 - w/2; } else if(step.position==='left'){ top=r.top + r.height/2 - 100; left=r.left - w - 24; } else if(step.position==='right'){ top=r.top + r.height/2 - 100; left=r.right + 24; } else { top=r.top + r.height/2 - 100; left=r.left + r.width/2 - w/2; } left=Math.max(15, Math.min(left, window.innerWidth - w - 15)); top=Math.max(15, Math.min(top, window.innerHeight - 220)); const isLast=step.isLastStep; t.style.cssText=`position:fixed;top:${top}px;left:${left}px;width:${w}px;background:white;border:3px solid #007bff;border-radius:18px;padding:24px;box-shadow:0 16px 40px rgba(0,0,0,0.28);z-index:10000;font-family:'Segoe UI',sans-serif;animation:popIn 0.3s ease;`; t.innerHTML=`<style>@keyframes popIn{from{opacity:0;transform:scale(.9) translateY(-10px)}to{opacity:1;transform:scale(1)}}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,123,255,.4)}50%{box-shadow:0 0 0 12px rgba(0,123,255,0)}}</style><h4 style=\"margin:0 0 14px;color:#007bff;font-weight:700;font-size:20px;\">${step.title}</h4><p style=\"margin:0;color:#333;font-size:15px;line-height:1.6;\">${step.description}</p><div style=\"display:flex;justify-content:flex-end;gap:14px;margin-top:20px;padding-top:16px;border-top:1px solid #eee;\"><button id=\"tutorial-skip\" style=\"background:#6c757d;color:white;border:none;padding:11px 20px;border-radius:12px;font-size:14px;cursor:pointer;font-weight:600;\">Saltar</button><button id=\"tutorial-next\" style=\"background:${isLast?'#28a745':'#007bff'};color:white;border:none;padding:11px 20px;border-radius:12px;font-size:14px;cursor:pointer;font-weight:600;\">${isLast?'Finalizar':'Siguiente'}</button></div>`; document.body.appendChild(t); };
+        this.removeHighlight = () => { const h=document.getElementById('tutorial-highlight'); if(h) h.remove(); };
+        this.removeTooltip = () => { const t=document.getElementById('tutorial-tooltip'); if(t) t.remove(); };
+        this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.showStep = async (idx) => { 
+            if (idx >= this.tutorialSteps.length) return this.endTutorial(); 
+            const step = this.tutorialSteps[idx]; 
+            try { 
+                if (step.waitFor) await this.waitForCondition(step.waitFor); 
+            } catch { 
+                this.nextStep(); 
+                return; 
+            } 
+            // Restaurar botones antes de mostrar un nuevo paso (excepto si es un paso de botón)
+            const isButtonStep = step.title.includes('Botón:') || step.title === 'Cargar Periféricos del Dispositivo' || step.title === 'Imprimir Historial';
+            if (!isButtonStep) {
+                this.restoreButtons();
+            }
+            if (step.onShow) { 
+                try { 
+                    await step.onShow(); 
+                } catch (e) {
+                    console.warn('Error en onShow:', e);
+                } 
+            } 
+            const el = document.querySelector(step.selector); 
+            if (!el) { 
+                console.warn(`Elemento no encontrado: ${step.selector}`);
+                this.nextStep(); 
+                return; 
+            } 
+            this.removeHighlight(); 
+            this.removeTooltip(); 
+            await this.prepareElementForHighlight(el); 
+            this.highlightElement(el); 
+            this.createTooltip(el, step); 
+            this.addListeners(); 
+        };
+        this.addListeners = () => { const next=document.getElementById('tutorial-next'); const skip=document.getElementById('tutorial-skip'); if(next) next.onclick=()=>this.nextStep(); if(skip) skip.onclick=()=>this.endTutorial(); };
+        this.nextStep = async () => { 
+            const prev = this.tutorialSteps[this.currentStep]; 
+            if (prev?.onNext) { 
+                try { 
+                    await prev.onNext(); 
+                } catch (e) {
+                    console.warn('Error en onNext:', e);
+                } 
+            } 
+            this.currentStep++; 
+            if (this.currentStep >= this.tutorialSteps.length || prev?.isLastStep) { 
+                this.endTutorial(); 
+                return; 
+            } 
+            this.removeHighlight(); 
+            this.removeTooltip(); 
+            this.showStep(this.currentStep); 
+        };
+        this.endTutorial = () => { 
+            this.isActive=false; 
+            this.removeHighlight(); 
+            this.removeTooltip(); 
+            this.restoreButtons();
+            if (this.overlay) this.overlay.remove(); 
+        };
+    }
+}
+
 // ASISTENTE VIRTUAL
 class VirtualAssistant {
     constructor() {
@@ -2297,6 +2451,7 @@ class VirtualAssistant {
         this.GestionTallerTutorial = new GestionTallerTutorial();
         this.GestionRosalTutorial = new GestionRosalTutorial();
         this.GestionRegionTutorial = new GestionRegionTutorial();
+        this.GestionComponentesTutorial = new GestionComponentesTutorial();
         this.init();
     }
     
@@ -3908,6 +4063,33 @@ addChartMessage(data) {
         this.GestionRegionTutorial.startTutorial();
     }
 
+    startComponentesTutorial() {
+        console.log('🎬 startComponentesTutorial llamado');
+        this.closeModuleSelectionModal();
+        
+        // Verificar si estamos en el módulo correcto (con o sin acento)
+        const pathname = window.location.pathname;
+        const isInModule = pathname.includes('periférico_pos') || pathname.includes('periferico_pos') || decodeURIComponent(pathname).includes('periférico_pos');
+        
+        console.log(`📍 Pathname actual: ${pathname}`);
+        console.log(`📍 ¿Estamos en el módulo? ${isInModule}`);
+
+        if (!isInModule) {
+            console.log('🔄 Redirigiendo a periférico_pos...');
+            window.location.href = 'periférico_pos';
+            return;
+        }
+        
+        console.log('✅ Iniciando tutorial de componentes...');
+        setTimeout(() => {
+            if (this.GestionComponentesTutorial) {
+                this.GestionComponentesTutorial.startTutorial();
+            } else {
+                console.error('❌ GestionComponentesTutorial no está definido');
+            }
+        }, 800);
+    }
+
 
 
     startReportsTutorial() {
@@ -4451,7 +4633,12 @@ addChartMessage(data) {
             'Consulta Rif': '🔍',
             'Reporte Ticket': '📈',
             'Usuarios': '👥',
-            'Configuración': '⚙️'
+            'Configuración': '⚙️',
+            'Periférico POS': '💻',
+            'Verificación de Solvencia': '📑',
+            'Gestión Comercial': '🤝',
+            'Documentos': '📝'
+            
         };
         return icons[submoduleName] || '📋';
     }
@@ -4477,12 +4664,17 @@ addChartMessage(data) {
 
         // En addSubmodulesListeners()
         const submoduleCards = document.querySelectorAll('.submodule-card');
-        submoduleCards.forEach(card => {
+        console.log(`📋 Encontrados ${submoduleCards.length} cards de submódulos`);
+        
+        submoduleCards.forEach((card, index) => {
+            const urlArchivo = card.dataset.urlArchivo?.trim();
+            console.log(`📝 Card ${index + 1}: urlArchivo="${urlArchivo}"`);
+            
             card.onclick = () => {
-                const urlArchivo = card.dataset.urlArchivo?.trim();
+                console.log(`🖱️ Click en card ${index + 1} con urlArchivo="${urlArchivo}"`);
                 
                 if (!urlArchivo) {
-                    console.warn('Este submódulo no tiene tutorial disponible');
+                    console.warn('⚠️ Este submódulo no tiene tutorial disponible (urlArchivo vacío)');
                     return;
                 }
 
@@ -4498,7 +4690,9 @@ addChartMessage(data) {
    buildSubmoduleUrl(urlArchivo) {
         // Asegúrate de que urlArchivo sea algo como: "consulta_rif" o "reporte_ticket"
         const cleanPath = urlArchivo.trim().replace(/^\/+/, ''); // Quita slashes iniciales
-        return `${window.location.origin}/SoportePost/${cleanPath}`;
+        const fullUrl = `${window.location.origin}/SoportePost/${cleanPath}`;
+        console.log(`🔗 buildSubmoduleUrl: urlArchivo="${urlArchivo}" → fullUrl="${fullUrl}"`);
+        return fullUrl;
     }
 
     // Cerrar modal de submódulos
@@ -4519,37 +4713,57 @@ addChartMessage(data) {
             'tecnico': 'tecnicos',
             'taller': 'taller',
             'pendiente_entrega': 'rosal',
-            'region': 'region'
+            'region': 'region',
+            'periférico_pos': 'periferico',
+            'periferico_pos': 'periferico', // Versión sin acento
         };
 
-        const clean = urlArchivo.trim()
+        // Decodificar URL para manejar caracteres codificados (ej: perif%C3%A9rico_pos)
+        let clean = decodeURIComponent(urlArchivo.trim())
             .replace(/^\//, '')
             .split('?')[0]
             .split('.')[0]; // quita .php, .html, etc.
+
+        // Normalizar: convertir a minúsculas y quitar espacios
+        clean = clean.toLowerCase().trim();
+
+        console.log(`🔍 getTutorialParam: urlArchivo="${urlArchivo}" → clean="${clean}"`);
 
         return map[clean] || null;
     }
 
     // Iniciar tutorial de submódulo específico
-  // Iniciar tutorial de submódulo específico
     startSubmoduleTutorial(fullUrl) {
+        console.log(`🚀 startSubmoduleTutorial llamado con fullUrl: "${fullUrl}"`);
         this.closeSubmodulesModal();
         this.showRedirectMessage();
 
         setTimeout(() => {
-            const tutorialUrl = new URL(fullUrl);
-            const urlArchivo = tutorialUrl.pathname.split('/').pop().split('?')[0];
-            const tutorialType = this.getTutorialParam(urlArchivo);
+            try {
+                const tutorialUrl = new URL(fullUrl);
+                const pathnameParts = tutorialUrl.pathname.split('/').filter(p => p);
+                const urlArchivo = pathnameParts[pathnameParts.length - 1] || pathnameParts[pathnameParts.length - 2] || '';
+                
+                console.log(`📂 URL extraída: pathname="${tutorialUrl.pathname}", urlArchivo="${urlArchivo}"`);
+                
+                const tutorialType = this.getTutorialParam(urlArchivo);
 
-            if (tutorialType) {
-                tutorialUrl.searchParams.set('tutorial', tutorialType);
-                console.log(`Redirigiendo con tutorial: ${tutorialType}`);
-            } else {
-                console.log(`Submódulo sin tutorial: ${urlArchivo} → redirigiendo sin parámetro`);
-                // NO agrega 'tutorial=active'
+                if (tutorialType) {
+                    tutorialUrl.searchParams.set('tutorial', tutorialType);
+                    console.log(`✅ Redirigiendo con tutorial: ${tutorialType}`);
+                    console.log(`🔗 URL final: ${tutorialUrl.toString()}`);
+                } else {
+                    console.warn(`⚠️ Submódulo sin tutorial: ${urlArchivo} → redirigiendo sin parámetro`);
+                    // NO agrega 'tutorial=active'
+                }
+
+                window.location.href = tutorialUrl.toString();
+            } catch (error) {
+                console.error(`❌ Error en startSubmoduleTutorial:`, error);
+                console.error(`   fullUrl: "${fullUrl}"`);
+                // Fallback: redirigir sin parámetro de tutorial
+                window.location.href = fullUrl;
             }
-
-            window.location.href = tutorialUrl.toString();
         }, 1500);
     }
 
@@ -4807,18 +5021,25 @@ document.head.appendChild(styleSheet);
 
 // === DETECCIÓN Y EJECUCIÓN AUTOMÁTICA DEL TUTORIAL ===
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 DOMContentLoaded: Buscando parámetro de tutorial...');
     const urlParams = new URLSearchParams(window.location.search);
     let tutorialParam = urlParams.get('tutorial');
+
+    console.log(`🔍 Parámetro 'tutorial' directo: "${tutorialParam}"`);
 
     // Soporte para ?tutorial-rif o ?tutorial=rif
     if (!tutorialParam) {
         const match = window.location.search.match(/[?&]tutorial[-=]([a-z]+)/i);
         if (match) {
             tutorialParam = match[1].toLowerCase();
+            console.log(`🔍 Parámetro 'tutorial' encontrado en regex: "${tutorialParam}"`);
         }
     }
 
-    if (!tutorialParam) return;
+    if (!tutorialParam) {
+        console.log('ℹ️ No se encontró parámetro de tutorial en la URL');
+        return;
+    }
 
     // Mapeo de tipos de tutorial
     const tutorialMap = {
@@ -4830,26 +5051,38 @@ document.addEventListener('DOMContentLoaded', () => {
         'lab': 'startLabTutorial',
         'rosal': 'startRosalTutorial',
         'region': 'startRegionTutorial',
+        'periferico': 'startComponentesTutorial'
     };
 
     const methodName = tutorialMap[tutorialParam];
     if (!methodName) {
-        console.warn(`Tipo de tutorial no reconocido: ${tutorialParam}`);
+        console.warn(`⚠️ Tipo de tutorial no reconocido: "${tutorialParam}"`);
+        console.warn(`   Tipos disponibles: ${Object.keys(tutorialMap).join(', ')}`);
         return;
     }
 
-    console.log(`Tutorial activado desde URL: ?tutorial=${tutorialParam}`);
+    console.log(`✅ Tutorial activado desde URL: ?tutorial=${tutorialParam} → método: ${methodName}()`);
 
     // Limpiar URL
     const cleanUrl = window.location.pathname + window.location.hash;
     window.history.replaceState({}, document.title, cleanUrl);
 
     // Esperar a que el asistente esté listo
+    let attempts = 0;
+    const maxAttempts = 50; // 10 segundos (200ms * 50)
     const waitForAssistant = setInterval(() => {
+        attempts++;
         if (window.virtualAssistant && typeof window.virtualAssistant[methodName] === 'function') {
             clearInterval(waitForAssistant);
-            console.log(`Ejecutando tutorial: ${methodName}()`);
+            console.log(`🎬 Ejecutando tutorial: ${methodName}()`);
             window.virtualAssistant[methodName]();
+        } else if (attempts >= maxAttempts) {
+            clearInterval(waitForAssistant);
+            console.error(`❌ Timeout: Método de tutorial no encontrado después de ${maxAttempts} intentos`);
+            console.error(`   window.virtualAssistant existe: ${!!window.virtualAssistant}`);
+            console.error(`   método ${methodName} existe: ${window.virtualAssistant && typeof window.virtualAssistant[methodName] === 'function'}`);
+        } else if (attempts % 10 === 0) {
+            console.log(`⏳ Esperando asistente... (intento ${attempts}/${maxAttempts})`);
         }
     }, 200);
 
@@ -4857,7 +5090,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         clearInterval(waitForAssistant);
         if (window.virtualAssistant && typeof window.virtualAssistant[methodName] !== 'function') {
-            console.error(`Método de tutorial no encontrado después de espera: ${methodName}`);
+            console.error(`❌ Método de tutorial no encontrado después de espera: ${methodName}`);
         }
     }, 10000);
 });
