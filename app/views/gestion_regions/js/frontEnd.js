@@ -1213,11 +1213,11 @@ document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
         const modal = new bootstrap.Modal(document.getElementById('documentActionsModal'));
         modal.show();
     }
-    });
+  });
 
 
     // 3. Manejador de eventos para los botones de "Cargar Documento" (desde el modal de acciones)
-    $(document).on('click', '.btn-zoom-pdf, .btn-exoneracion-img, .btn-pago-pdf', function() {
+  $(document).on('click', '.btn-zoom-pdf, .btn-exoneracion-img, .btn-pago-pdf', function() {
         documentActionsModal.hide(); // Oculta el modal de acciones
         
         const ticketId = $(this).data('ticket-id');
@@ -1240,7 +1240,7 @@ document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
         setTimeout(() => {
             uploadDocumentModal.show();
         }, 300);
-    });
+  });
 
    $(document).on('click', '.btn-view-document', function() {
     documentActionsModal.hide();
