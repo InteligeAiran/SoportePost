@@ -12,6 +12,7 @@ use PHPMailer\PHPMailer\Exception;
 class EmailService
 {
     private $mailerConfig;
+    private $lastError = '';
 
     public function __construct(array $config = [])
     {
@@ -71,11 +72,18 @@ class EmailService
             }
 
             $mail->send();
+            $this->lastError = '';
             return true;
 
         } catch (Exception $e) {
-            error_log('Error al enviar el correo: ' . $mail->ErrorInfo);
+            $this->lastError = $mail->ErrorInfo ?: ($e->getMessage() ?? 'Error desconocido');
+            error_log('Error al enviar el correo: ' . $this->lastError);
             return false;
         }
+    }
+
+    public function getLastError(): string
+    {
+        return $this->lastError;
     }
 }

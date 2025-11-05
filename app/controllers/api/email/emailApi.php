@@ -164,13 +164,19 @@ class email extends Controller {
                     $body .= '<img src="cid:imagen_adjunta" alt="Logo de la empresa" style="display: block; margin: 0 auto; width: 150px;">';
                 }
 
+                // Enviar correo y manejar correctamente éxito/fracaso
                 if ($this->emailService->sendEmail($email, $subject, $body, [], $embeddedImages)) {
                     $repository->ChangePassForCode($email, $codigo);
                     $repository->UpdateStatusTo1($email);
                     $repository->UpdateTimePass($email);
                     $this->response(['success' => true, 'message' => 'Se ha enviado un código de restablecimiento a su correo electrónico.', 'color' => 'green']);
                 } else {
-                    $this->response(['success' => false, 'message' => 'Error al enviar el correo.', 'color' => 'red']);
+                    $errorDetail = method_exists($this->emailService, 'getLastError') ? $this->emailService->getLastError() : '';
+                    $this->response([
+                        'success' => false,
+                        'message' => 'Error al enviar el correo' . ($errorDetail ? ': ' . $errorDetail : '.'),
+                        'color' => 'red'
+                    ]);
                 }
 
             } else {
