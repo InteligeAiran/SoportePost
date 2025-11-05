@@ -6,11 +6,11 @@ const id_usuario_element = document.getElementById("id_user");
 let id_usuario = id_usuario_element.value;
 let text = null;
 
-// Agregar esta función al inicio de tu archivo virtual-assistant.js
-function formatNumber(number) {
-if (typeof number !== 'number') return number;
-    return number.toFixed(2);
-}
+    // Agregar esta función al inicio de tu archivo virtual-assistant.js
+        function formatNumber(number) {
+            if (typeof number !== 'number') return number;
+            return number.toFixed(2);
+        }
 
 // TUTORIAL DEL DASHBOARD
 class TicketManagementTutorial {
@@ -2434,6 +2434,162 @@ class GestionComponentesTutorial {
     }
 }
 
+// TUTORIAL MÓDULO VERIFICACIÓN DE SOLVENCIA DE DOMICILIACIÓN
+class GestionDomiciliacionTutorial {
+    constructor() {
+        this.currentStep = 0;
+        this.isActive = false;
+        this.overlay = null;
+        this.highlightedElement = null;
+
+        this.tutorialSteps = [
+            { selector: '#Tabla-Domiciliacion', title: 'Verificación de Solvencia de Domiciliación', description: 'En este módulo gestionas la verificación de solvencia de tickets relacionados con domiciliaciones bancarias.', position: 'top', waitFor: () => !!document.querySelector('#tabla-ticket') },
+            { selector: '#tabla-ticket', title: 'Tabla de Tickets', description: 'Listado de tickets con información de domiciliación: razón social, RIF, serial POS, estado de taller y estado de domiciliación.', position: 'top', waitFor: () => document.getElementById('tabla-ticket') !== null },
+            { selector: '.dt-buttons-container', title: 'Filtros de Estado', description: 'Usa estos 5 botones para filtrar tickets por estado de domiciliación: Pendiente por revisar, Solvente, Gestión Comercial, Convenio Firmado y Desafiliado con Deuda.', position: 'bottom', waitFor: () => document.querySelector('.dt-buttons-container') !== null },
+            { selector: '#btn-pendiente-revisar', title: 'Filtro: Pendiente por Revisar', description: 'Muestra tickets pendientes por revisar la domiciliación. Este es el estado inicial de los tickets.', position: 'bottom', waitFor: () => document.getElementById('btn-pendiente-revisar') !== null, onNext: () => this.clickFilter('#btn-pendiente-revisar') },
+            { selector: '#btn-solvente', title: 'Filtro: Solvente', description: 'Tickets donde el cliente está al día con sus pagos. Estado solvente confirmado.', position: 'bottom', waitFor: () => document.getElementById('btn-solvente') !== null, onNext: () => this.clickFilter('#btn-solvente') },
+            { selector: '#btn-gestion-comercial', title: 'Filtro: Gestión Comercial', description: 'Tickets en espera de respuesta del cliente. Requieren seguimiento comercial.', position: 'bottom', waitFor: () => document.getElementById('btn-gestion-comercial') !== null, onNext: () => this.clickFilter('#btn-gestion-comercial') },
+            { selector: '#btn-convenio-firmado', title: 'Filtro: Convenio Firmado', description: 'Tickets donde el cliente ha firmado un convenio de pago. Aquí puedes adjuntar o visualizar el documento del convenio.', position: 'bottom', waitFor: () => document.getElementById('btn-convenio-firmado') !== null, onNext: () => this.clickFilter('#btn-convenio-firmado') },
+            { selector: '#tabla-ticket tbody tr td:last-child', title: 'Columna de Acciones', description: 'Desplazando lateralmente para visualizar las acciones disponibles en los tickets.', position: 'left', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onShow: async () => { await this.scrollToColumn('Acciones'); await new Promise(r=>setTimeout(r,180)); } },
+            { selector: '#tabla-ticket tbody tr td .cambiar-estatus-domiciliacion-btn', title: 'Botón: Cambiar Estatus', description: 'Abre el modal para cambiar el estatus de domiciliación del ticket. Útil para actualizar el estado del proceso.', position: 'bottom', waitFor: () => document.querySelector('#tabla-ticket tbody tr td .cambiar-estatus-domiciliacion-btn') !== null },
+            { selector: '#tabla-ticket tbody tr td .adjuntar-documento-btn', title: 'Botón: Adjuntar Documento de Convenio', description: 'En el estado "Convenio Firmado" usa este botón para adjuntar el documento del convenio firmado por el cliente.', position: 'bottom', waitFor: () => document.querySelector('#tabla-ticket tbody tr td .adjuntar-documento-btn') !== null },
+            { selector: '#tabla-ticket tbody tr td .visualizar-documento-btn', title: 'Botón: Visualizar Documento de Convenio', description: 'Cuando el convenio ya está cargado, este botón abre el documento para visualizarlo o verificarlo.', position: 'bottom', waitFor: () => document.querySelector('#tabla-ticket tbody tr td .visualizar-documento-btn') !== null },
+            { selector: '#tabla-ticket tbody tr', title: 'Seleccionar Ticket', description: 'Haciendo clic en un ticket para ver sus detalles en el panel lateral.', position: 'top', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onNext: () => this.selectFirstTicket() },
+            { selector: '#ticket-details-panel', title: 'Panel de Detalles', description: 'Aquí se muestran los detalles completos del ticket seleccionado: información del cliente, serial POS, estados y fechas relevantes.', position: 'left', waitFor: () => document.getElementById('ticket-details-panel')?.children.length > 0 && !document.getElementById('ticket-details-panel').textContent.includes('Selecciona un ticket') },
+            { selector: '#ticket-history-content, #ticketHistoryAccordion', title: 'Historial del Ticket', description: 'Aquí se muestra el historial completo de gestiones realizadas sobre el ticket, incluyendo cambios de estatus y acciones de domiciliación.', position: 'left', waitFor: () => document.getElementById('ticket-history-content') || document.getElementById('ticketHistoryAccordion'), isLastStep: true }
+        ];
+
+        this.click = (selector) => { const el = document.querySelector(selector); if (el) el.click(); };
+        this.clickFilter = (selector) => { 
+            const btn = document.querySelector(selector);
+            if (btn && !btn.classList.contains('btn-primary')) {
+                btn.click();
+                return new Promise(resolve => setTimeout(resolve, 500));
+            }
+            return Promise.resolve();
+        };
+        this.raise = (selector) => { 
+            document.querySelectorAll(selector).forEach(el => {
+                if (el) { 
+                    el.style.position='relative'; 
+                    el.style.zIndex='10001'; 
+                    el.style.boxShadow='0 0 0 4px rgba(0,123,255,.45), 0 0 16px rgba(0,123,255,.8)'; 
+                }
+            });
+        };
+        this.restoreButtons = () => { 
+            ['.cambiar-estatus-domiciliacion-btn', '.adjuntar-documento-btn', '.visualizar-documento-btn'].forEach(sel => {
+                document.querySelectorAll(sel).forEach(btn => { 
+                    btn.style.visibility = ''; 
+                    btn.style.opacity = ''; 
+                    btn.style.zIndex = ''; 
+                    btn.style.position = ''; 
+                    btn.style.boxShadow = ''; 
+                }); 
+            }); 
+        };
+        this.selectFirstTicket = () => {
+            return new Promise(resolve => {
+                const row = document.querySelector('#tabla-ticket tbody tr');
+                if (row) {
+                    row.click();
+                    setTimeout(resolve, 800);
+                } else {
+                    setTimeout(resolve, 300);
+                }
+            });
+        };
+        this.scrollToColumn = (columnHeaderText) => new Promise(resolve => {
+            const table = document.getElementById('tabla-ticket');
+            const row = document.querySelector('#tabla-ticket tbody tr');
+            if (!table || !row) return setTimeout(resolve, 250);
+            const wrapper = table.closest('.dataTables_wrapper');
+            const scrollHead = wrapper?.querySelector('.dataTables_scrollHead table thead');
+            const headers = scrollHead ? scrollHead.querySelectorAll('th') : table.querySelectorAll('thead th');
+            let targetCell = null;
+            headers.forEach((header, idx) => {
+                if (header.textContent.trim() === columnHeaderText) {
+                    const cells = row.querySelectorAll('td');
+                    if (cells[idx]) targetCell = cells[idx];
+                }
+            });
+            const scroller = wrapper?.querySelector('.dataTables_scrollBody') || wrapper || table.parentElement;
+            if (targetCell && scroller && scroller.scrollWidth > scroller.clientWidth) {
+                scroller.scrollTo({ left: targetCell.offsetLeft, behavior: 'smooth' });
+                return setTimeout(resolve, 500);
+            }
+            setTimeout(resolve, 250);
+        });
+        this.waitForCondition = (fn) => new Promise((res, rej) => { let n=0; const tick=()=>{ try{ if(fn()){res();return;} }catch{} if(n++>100){rej();return;} setTimeout(tick,60);} ; tick(); });
+        this.prepareElementForHighlight = async (el) => { const r = el.getBoundingClientRect(); const cy = r.top + r.height/2; const vc = window.innerHeight/2; if (Math.abs(cy - vc) > 120) { window.scrollTo({ top: window.pageYOffset + cy - vc, behavior: 'smooth' }); await new Promise(r => setTimeout(r, 400)); } };
+        this.highlightElement = (el) => { this.highlightedElement = el; const r = el.getBoundingClientRect(); const h = document.createElement('div'); h.id='tutorial-highlight'; h.style.cssText=`position:fixed;top:${r.top-6}px;left:${r.left-6}px;width:${r.width+12}px;height:${r.height+12}px;border:4px solid #007bff;border-radius:12px;background:rgba(0,123,255,0.15);z-index:9999;pointer-events:none;animation:pulse 1.5s infinite;`; document.body.appendChild(h); };
+        this.createTooltip = (el, step) => { const t=document.createElement('div'); t.id='tutorial-tooltip'; const r=el.getBoundingClientRect(); const w=380; let top,left; if(step.position==='bottom'){ top=r.bottom+40; left=r.left + r.width/2 - w/2; } else if(step.position==='top'){ top=r.top-220; left=r.left + r.width/2 - w/2; } else if(step.position==='left'){ top=r.top + r.height/2 - 100; left=r.left - w - 24; } else if(step.position==='right'){ top=r.top + r.height/2 - 100; left=r.right + 24; } else { top=r.top + r.height/2 - 100; left=r.left + r.width/2 - w/2; } left=Math.max(15, Math.min(left, window.innerWidth - w - 15)); top=Math.max(15, Math.min(top, window.innerHeight - 220)); const isLast=step.isLastStep; t.style.cssText=`position:fixed;top:${top}px;left:${left}px;width:${w}px;background:white;border:3px solid #007bff;border-radius:18px;padding:24px;box-shadow:0 16px 40px rgba(0,0,0,0.28);z-index:10000;font-family:'Segoe UI',sans-serif;animation:popIn 0.3s ease;`; t.innerHTML=`<style>@keyframes popIn{from{opacity:0;transform:scale(.9) translateY(-10px)}to{opacity:1;transform:scale(1)}}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,123,255,.4)}50%{box-shadow:0 0 0 12px rgba(0,123,255,0)}}</style><h4 style=\"margin:0 0 14px;color:#007bff;font-weight:700;font-size:20px;\">${step.title}</h4><p style=\"margin:0;color:#333;font-size:15px;line-height:1.6;\">${step.description}</p><div style=\"display:flex;justify-content:flex-end;gap:14px;margin-top:20px;padding-top:16px;border-top:1px solid #eee;\"><button id=\"tutorial-skip\" style=\"background:#6c757d;color:white;border:none;padding:11px 20px;border-radius:12px;font-size:14px;cursor:pointer;font-weight:600;\">Saltar</button><button id=\"tutorial-next\" style=\"background:${isLast?'#28a745':'#007bff'};color:white;border:none;padding:11px 20px;border-radius:12px;font-size:14px;cursor:pointer;font-weight:600;\">${isLast?'Finalizar':'Siguiente'}</button></div>`; document.body.appendChild(t); };
+        this.removeHighlight = () => { const h=document.getElementById('tutorial-highlight'); if(h) h.remove(); };
+        this.removeTooltip = () => { const t=document.getElementById('tutorial-tooltip'); if(t) t.remove(); };
+        this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.showStep = async (idx) => { 
+            if (idx >= this.tutorialSteps.length) return this.endTutorial(); 
+            const step = this.tutorialSteps[idx]; 
+            try { 
+                if (step.waitFor) await this.waitForCondition(step.waitFor); 
+            } catch { 
+                this.nextStep(); 
+                return; 
+            } 
+            const isButtonStep = step.title.includes('Botón:') || step.title.includes('Filtro:');
+            if (!isButtonStep) {
+                this.restoreButtons();
+            }
+            if (step.onShow) { 
+                try { 
+                    await step.onShow(); 
+                } catch (e) {
+                    console.warn('Error en onShow:', e);
+                } 
+            } 
+            const el = typeof step.selector === 'function' ? step.selector() : document.querySelector(step.selector); 
+            if (!el) { 
+                console.warn(`Elemento no encontrado: ${typeof step.selector === 'function' ? '(función selector)' : step.selector}`);
+                this.nextStep(); 
+                return; 
+            } 
+            this.removeHighlight(); 
+            this.removeTooltip(); 
+            await this.prepareElementForHighlight(el); 
+            this.highlightElement(el); 
+            this.createTooltip(el, step); 
+            this.addListeners(); 
+        };
+        this.addListeners = () => { const next=document.getElementById('tutorial-next'); const skip=document.getElementById('tutorial-skip'); if(next) next.onclick=()=>this.nextStep(); if(skip) skip.onclick=()=>this.endTutorial(); };
+        this.nextStep = async () => { 
+            const prev = this.tutorialSteps[this.currentStep]; 
+            if (prev?.onNext) { 
+                try { 
+                    await prev.onNext(); 
+                } catch (e) {
+                    console.warn('Error en onNext:', e);
+                } 
+            } 
+            this.currentStep++; 
+            if (this.currentStep >= this.tutorialSteps.length || prev?.isLastStep) { 
+                this.endTutorial(); 
+                return; 
+            } 
+            this.removeHighlight(); 
+            this.removeTooltip(); 
+            this.showStep(this.currentStep); 
+        };
+        this.endTutorial = () => { 
+            this.isActive=false; 
+            this.removeHighlight(); 
+            this.removeTooltip(); 
+            this.restoreButtons();
+            if (this.overlay) this.overlay.remove(); 
+        };
+    }
+}
+
 // ASISTENTE VIRTUAL
 class VirtualAssistant {
     constructor() {
@@ -2452,6 +2608,7 @@ class VirtualAssistant {
         this.GestionRosalTutorial = new GestionRosalTutorial();
         this.GestionRegionTutorial = new GestionRegionTutorial();
         this.GestionComponentesTutorial = new GestionComponentesTutorial();
+        this.GestionDomiciliacionTutorial = new GestionDomiciliacionTutorial();
         this.init();
     }
     
@@ -4090,6 +4247,32 @@ addChartMessage(data) {
         }, 800);
     }
 
+    startDomiciliacionTutorial() {
+        console.log('🎬 startDomiciliacionTutorial llamado');
+        this.closeModuleSelectionModal();
+        
+        const pathname = window.location.pathname;
+        const isInModule = pathname.includes('domiciliacion') || decodeURIComponent(pathname).includes('domiciliacion');
+        
+        console.log(`📍 Pathname actual: ${pathname}`);
+        console.log(`📍 ¿Estamos en el módulo? ${isInModule}`);
+
+        if (!isInModule) {
+            console.log('🔄 Redirigiendo a domiciliacion...');
+            window.location.href = 'domiciliacion';
+            return;
+        }
+        
+        console.log('✅ Iniciando tutorial de domiciliación...');
+        setTimeout(() => {
+            if (this.GestionDomiciliacionTutorial) {
+                this.GestionDomiciliacionTutorial.startTutorial();
+            } else {
+                console.error('❌ GestionDomiciliacionTutorial no está definido');
+            }
+        }, 800);
+    }
+
 
 
     startReportsTutorial() {
@@ -4667,7 +4850,7 @@ addChartMessage(data) {
         console.log(`📋 Encontrados ${submoduleCards.length} cards de submódulos`);
         
         submoduleCards.forEach((card, index) => {
-            const urlArchivo = card.dataset.urlArchivo?.trim();
+                const urlArchivo = card.dataset.urlArchivo?.trim();
             console.log(`📝 Card ${index + 1}: urlArchivo="${urlArchivo}"`);
             
             card.onclick = () => {
@@ -4716,6 +4899,7 @@ addChartMessage(data) {
             'region': 'region',
             'periférico_pos': 'periferico',
             'periferico_pos': 'periferico', // Versión sin acento
+            'domiciliacion': 'domiciliacion',
         };
 
         // Decodificar URL para manejar caracteres codificados (ej: perif%C3%A9rico_pos)
@@ -4732,7 +4916,7 @@ addChartMessage(data) {
         return map[clean] || null;
     }
 
-    // Iniciar tutorial de submódulo específico
+  // Iniciar tutorial de submódulo específico
     startSubmoduleTutorial(fullUrl) {
         console.log(`🚀 startSubmoduleTutorial llamado con fullUrl: "${fullUrl}"`);
         this.closeSubmodulesModal();
@@ -4740,24 +4924,24 @@ addChartMessage(data) {
 
         setTimeout(() => {
             try {
-                const tutorialUrl = new URL(fullUrl);
+            const tutorialUrl = new URL(fullUrl);
                 const pathnameParts = tutorialUrl.pathname.split('/').filter(p => p);
                 const urlArchivo = pathnameParts[pathnameParts.length - 1] || pathnameParts[pathnameParts.length - 2] || '';
                 
                 console.log(`📂 URL extraída: pathname="${tutorialUrl.pathname}", urlArchivo="${urlArchivo}"`);
                 
-                const tutorialType = this.getTutorialParam(urlArchivo);
+            const tutorialType = this.getTutorialParam(urlArchivo);
 
-                if (tutorialType) {
-                    tutorialUrl.searchParams.set('tutorial', tutorialType);
+            if (tutorialType) {
+                tutorialUrl.searchParams.set('tutorial', tutorialType);
                     console.log(`✅ Redirigiendo con tutorial: ${tutorialType}`);
                     console.log(`🔗 URL final: ${tutorialUrl.toString()}`);
-                } else {
+            } else {
                     console.warn(`⚠️ Submódulo sin tutorial: ${urlArchivo} → redirigiendo sin parámetro`);
-                    // NO agrega 'tutorial=active'
-                }
+                // NO agrega 'tutorial=active'
+            }
 
-                window.location.href = tutorialUrl.toString();
+            window.location.href = tutorialUrl.toString();
             } catch (error) {
                 console.error(`❌ Error en startSubmoduleTutorial:`, error);
                 console.error(`   fullUrl: "${fullUrl}"`);
@@ -5051,7 +5235,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'lab': 'startLabTutorial',
         'rosal': 'startRosalTutorial',
         'region': 'startRegionTutorial',
-        'periferico': 'startComponentesTutorial'
+        'periferico': 'startComponentesTutorial',
+        'domiciliacion': 'startDomiciliacionTutorial'
     };
 
     const methodName = tutorialMap[tutorialParam];

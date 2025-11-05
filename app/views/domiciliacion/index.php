@@ -653,7 +653,7 @@ function mi_navbar() {}
                                         <!--h6 id = "cliente" class="mb-2">Clientes</h6-->
                                     </div>
                                 </div>
-                                <div class="table-responsive">
+                                <div class="table-responsive" id="Tabla-Domiciliacion">
                                     <table id="tabla-ticket" class="table table-striped table-bordered table-hover table-sm">
                                         <thead>
                                         </thead>

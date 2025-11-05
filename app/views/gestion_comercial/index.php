@@ -25,7 +25,6 @@ function mi_navbar() {}
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
     <style>
-
         /* Estilos para el botón botonMostarImage */
         #botonMostarImage{
            background-color: #003594;
