@@ -5806,321 +5806,93 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Botón de imprimir
-
-  const printBtn = document.getElementById("printPaymentAgreementBtn");
-
-  if (printBtn) {
-    // 1. Añadir el Listener de Clic al botón principal
-
-    printBtn.addEventListener("click", function () {
-      // Validar monto mínimo
-
-      const saldoDeudor = document.getElementById("pa_saldo_deudor").value;
-
-      if (
-        saldoDeudor &&
-        parseFloat(saldoDeudor.replace(/[^0-9.-]/g, "")) < 10
-      ) {
+document.getElementById("printPaymentAgreementBtn").addEventListener("click", function () {
+    // 1. Validar saldo mínimo
+    const saldoInput = document.getElementById("pa_saldo_deudor").value;
+    const saldo = parseFloat(saldoInput.replace(/[^0-9.-]/g, ""));
+    if (isNaN(saldo) || saldo < 10) {
         Swal.fire({
-          icon: "warning",
-
-          title: "Monto inválido",
-
-          text: "El saldo deudor debe ser mínimo $10.00",
-
-          confirmButtonColor: "#003594",
+            icon: "warning",
+            title: "Monto inválido",
+            text: "El saldo deudor debe ser mínimo $10.00",
+            confirmButtonColor: "#003594",
         });
-
         return;
-      }
-
-      const data = getPaymentAgreementFormData();
-
-      // Usar la variable global del número de convenio
-      const convenioNumero = window.currentConvenioNumero || data.nro_ticket;
-      const html = buildPaymentAgreementHtml(data, convenioNumero);
-
-      // 2. Mostrar la alerta de éxito
-
-      Swal.fire({
-        title: "¡Acuerdo de Pago generado!",
-
-        text: "El acuerdo de pago ha sido generado correctamente y está listo para imprimir.",
-
-        icon: "success",
-
-        confirmButtonText: "Imprimir",
-
-        confirmButtonColor: "#003594",
-
-        cancelButtonText: "Cerrar",
-
-        cancelButtonColor: "#6c757d",
-
-        color: "black",
-
-        showCancelButton: true,
-
-        allowOutsideClick: false,
-
-        allowEscapeKey: true,
-      }).then((result) => {
-        // 3. Ejecutar la lógica de impresión SÓLO si el usuario presiona el botón de Confirmación ('Imprimir')
-
-        if (result.isConfirmed) {
-          // Crear una nueva ventana para imprimir
-
-          const printWindow = window.open("", "_blank", "width=800,height=600");
-
-          if (printWindow) {
-            printWindow.document.open();
-
-            // Agregar script para cerrar automáticamente después de guardar
-
-            const htmlWithScript = html.replace(
-              "</body>",
-              `
-
-                        <script>
-
-                            // Función para cerrar la ventana y recargar la página principal
-
-                            function closeAndReload() {
-
-                                console.log('Cerrando ventana y recargando página principal...');
-
-                                if (window.opener) {
-
-                                    window.opener.location.reload();
-
-                                }
-
-                                window.close();
-
-                            }
-
-                            
-                            
-                            // Detectar cuando se completa la impresión/guardado
-
-                            window.addEventListener('afterprint', function() {
-
-                                console.log('Impresión completada - cerrando ventana');
-
-                                setTimeout(closeAndReload, 1000);
-
-                            });
-
-                            
-                            
-                            // Detectar cuando se pierde el foco (usuario interactúa con diálogo)
-
-                            window.addEventListener('blur', function() {
-
-                                console.log('Foco perdido - verificando si se cerró');
-
-                                setTimeout(function() {
-
-                                    if (document.hidden) {
-
-                                        closeAndReload();
-
-                                    }
-
-                                }, 3000);
-
-                            });
-
-                            
-                            
-                            // Botón manual de cierre (visible solo si es necesario)
-
-                            setTimeout(function() {
-
-                                if (!document.querySelector('.close-btn')) {
-
-                                    const closeBtn = document.createElement('button');
-
-                                    closeBtn.innerHTML = '✓ Documento Guardado - Cerrar';
-
-                                    closeBtn.className = 'close-btn';
-
-                                    closeBtn.style.cssText = \`
-
-                                        position: fixed;
-
-                                        top: 10px;
-
-                                        right: 10px;
-
-                                        background: #28a745;
-
-                                        color: white;
-
-                                        border: none;
-
-                                        padding: 10px 15px;
-
-                                        border-radius: 5px;
-
-                                        cursor: pointer;
-
-                                        font-size: 12px;
-
-                                        z-index: 9999;
-
-                                        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-
-                                    \`;
-
-                                    closeBtn.onclick = closeAndReload;
-
-                                    document.body.appendChild(closeBtn);
-
-                                }
-
-                            }, 5000); // Mostrar botón después de 5 segundos
-
-                        </script>
-
-                    </body>`
-            );
-
-            printWindow.document.write(htmlWithScript);
-
-            printWindow.document.close();
-
-            // Esperar a que se cargue el contenido y luego imprimir
-
-            printWindow.onload = function () {
-              printWindow.focus();
-
-              printWindow.print();
-
-              let reloadExecuted = false; // Flag para evitar recargas múltiples
-
-              let checkInterval = null;
-
-              // Función para recargar la página
-
-              const reloadPage = () => {
-                if (!reloadExecuted) {
-                  reloadExecuted = true;
-
-                  console.log(
-                    "Recargando página después de guardar documento..."
-                  );
-
-                  // Cerrar la ventana de impresión si aún está abierta
-
-                  if (printWindow && !printWindow.closed) {
-                    printWindow.close();
-                  }
-
-                  // Limpiar el intervalo
-
-                  if (checkInterval) {
-                    clearInterval(checkInterval);
-                  }
-
-                  // Recargar la página principal
-
-                  setTimeout(() => {
-                    window.location.reload();
-                  }, 1000);
-                }
-              };
-
-              // Método principal: Verificar periódicamente si la ventana se cerró
-
-              checkInterval = setInterval(() => {
-                try {
-                  if (printWindow.closed) {
-                    console.log(
-                      "Ventana cerrada detectada - ejecutando recarga"
-                    );
-
-                    reloadPage();
-                  }
-                } catch (e) {
-                  // Si hay error accediendo a la ventana, asumir que se cerró
-
-                  console.log(
-                    "Error accediendo a ventana - asumiendo que se cerró"
-                  );
-
-                  reloadPage();
-                }
-              }, 500); // Verificar cada 500ms
-
-              // Método alternativo: Detectar cuando se completa la impresión
-
-              printWindow.addEventListener("afterprint", function () {
-                console.log("Evento afterprint detectado");
-
-                reloadPage();
-              });
-
-              // Método alternativo: Detectar cuando se pierde el foco
-
-              printWindow.addEventListener("blur", function () {
-                console.log(
-                  "Evento blur detectado - usuario interactuando con diálogo"
-                );
-
-                // Esperar un poco y verificar si la ventana sigue abierta
-
-                setTimeout(() => {
-                  try {
-                    if (printWindow.closed) {
-                      reloadPage();
-                    }
-                  } catch (e) {
-                    reloadPage();
-                  }
-                }, 3000);
-              });
-
-              // Método de respaldo: Detectar cuando se cierra la ventana
-
-              printWindow.addEventListener("beforeunload", function () {
-                console.log("Evento beforeunload detectado");
-
-                reloadPage();
-              });
-
-              // Limpiar el intervalo después de 60 segundos para evitar loops infinitos
-
-              setTimeout(() => {
-                if (checkInterval) {
-                  clearInterval(checkInterval);
-
-                  console.log("Timeout alcanzado - limpiando intervalo");
-                }
-              }, 60000);
-            };
-          } else {
-            // Manejo si el navegador bloquea la nueva ventana (pop-up)
-
-            console.error("El navegador bloqueó la ventana de impresión.");
-
-            Swal.fire(
-              "Error",
-              "El navegador bloqueó la ventana de impresión. Por favor, permita pop-ups.",
-              "error"
-            );
-          }
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-          // El usuario hizo clic en "Cerrar"
-
-          console.log("Modal cerrado por el usuario");
+    }
+
+    // 2. Obtener datos
+    const data = getPaymentAgreementFormData();
+    const convenioNumero = window.currentConvenioNumero || data.nro_ticket || "000000";
+
+    // 3. Generar nombre del archivo
+    const hoy = new Date();
+    const fechaStr = `${hoy.getFullYear()}${String(hoy.getMonth() + 1).padStart(2, '0')}${String(hoy.getDate()).padStart(2, '0')}`;
+    const sanitizedConvenio = String(convenioNumero).replace(/[^A-Za-z0-9_-]/g, '');
+    const filename = `ConvenioFirmado-${sanitizedConvenio}_${fechaStr}.pdf`;
+
+    // 4. Generar HTML completo
+    const printHtml = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>${filename}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 15mm;
+            line-height: 1.5;
         }
-      });
-    });
-  }
+        .header { text-align: center; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f8f9fa; }
+        .firma { margin-top: 50px; display: flex; justify-content: space-between; }
+        @media print {
+            body { margin: 10mm; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    ${buildPaymentAgreementHtml(data, convenioNumero)}
+</body>
+</html>`;
 
-  // Botón de cerrar
+    // 5. Usar el iframe existente
+    const iframe = document.getElementById("paymentAgreementPreview");
+
+    // Forzar mismo origen con srcdoc
+    iframe.srcdoc = printHtml;
+
+    // 6. Mostrar modal de confirmación
+    Swal.fire({
+        title: "¡Listo para guardar!",
+        text: "El acuerdo está generado. Haz clic en 'Guardar PDF' para descargar.",
+        icon: "success",
+        showCancelButton: true,
+        confirmButtonText: "Guardar PDF",
+        cancelButtonText: "Cerrar",
+        confirmButtonColor: "#003594",
+        cancelButtonColor: "#6c757d",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Guardar título original
+            const originalTitle = document.title;
+            document.title = filename;
+
+            // Imprimir (abre diálogo: Imprimir o Guardar como PDF)
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+
+            // Restaurar título y recargar después de un breve delay
+            setTimeout(() => {
+                document.title = originalTitle;
+                window.location.reload();
+            }, 1000);
+        }
+    });
+});
 
   const closeBtn = document.getElementById("closePaymentAgreementBtn");
 

@@ -351,6 +351,16 @@ function mi_navbar() {}
                     font-size: 1.2em;
                 }
             }
+
+            #confirmarSolicitud {
+                background-color: #003594;
+                color: #fff;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s ease-in-out;
+            }
         /* END Estilos para los indicadores de estado del ticket */
     </style>
     </head>
@@ -413,35 +423,35 @@ function mi_navbar() {}
             </div>
         </main>
 
-        <!-- Modal para seleccionar solicitud -->
-        <div class="modal fade" id="selectSolicitudModal" tabindex="-1" aria-labelledby="selectSolicitudModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-            <div class="modal-header bg-gradient-primary">
-                <h5 class="modal-title" id="selectSolicitudModalLabel">Selecciona solicitud</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="form-check">
-                <input class="form-check-input" type="radio" name="solicitudType" id="sustituirPos" value="sustituir">
-                <label class="form-check-label" for="sustituirPos">Sustituir POS</label>
+        <!-- MODAL PARA SELECCIONAR SOLICITUD -->
+            <div class="modal fade" id="selectSolicitudModal" tabindex="-1" aria-labelledby="selectSolicitudModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                    <div class="modal-header bg-gradient-primary">
+                        <h5 class="modal-title" id="selectSolicitudModalLabel">Selecciona solicitud</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-check">
+                        <input class="form-check-input" type="radio" name="solicitudType" id="sustituirPos" value="sustituir">
+                        <label class="form-check-label" for="sustituirPos">Sustituir POS</label>
+                        </div>
+                        <div class="form-check">
+                        <input class="form-check-input" type="radio" name="solicitudType" id="desafiliarPos" value="desafiliar">
+                        <label class="form-check-label" for="desafiliarPos">Desafiliación POS</label>
+                        </div>
+                        <div class="form-check">
+                        <input class="form-check-input" type="radio" name="solicitudType" id="prestamoPos" value="prestamo">
+                        <label class="form-check-label" for="prestamoPos">Préstamo POS</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="confirmarSolicitud">Confirmar</button>
+                    </div>
+                    </div>
                 </div>
-                <div class="form-check">
-                <input class="form-check-input" type="radio" name="solicitudType" id="desafiliarPos" value="desafiliar">
-                <label class="form-check-label" for="desafiliarPos">Desafiliación POS</label>
-                </div>
-                <div class="form-check">
-                <input class="form-check-input" type="radio" name="solicitudType" id="prestamoPos" value="prestamo">
-                <label class="form-check-label" for="prestamoPos">Préstamo POS</label>
-                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="confirmarSolicitud">Confirmar</button>
-            </div>
-            </div>
-        </div>
-        </div>
+        <!-- END MODAL PARA SELECCIONAR SOLICITUD -->
 
         <!-- MODAL PARA SELECCIONAR TECNICO -->
             <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"

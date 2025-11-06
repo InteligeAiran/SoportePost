@@ -2590,6 +2590,147 @@ class GestionDomiciliacionTutorial {
     }
 }
 
+// TUTORIAL MÓDULO GESTIÓN COMERCIAL
+class GestionComercialTutorial {
+    constructor() {
+        this.currentStep = 0;
+        this.isActive = false;
+        this.overlay = null;
+        this.highlightedElement = null;
+
+        this.tutorialSteps = [
+            { selector: '#tabla-ticket', title: 'Gestión Comercial', description: 'Aquí gestionas la documentación y seguimiento comercial de los tickets.', position: 'top', waitFor: () => !!document.querySelector('#tabla-ticket') },
+            { selector: '.dt-buttons-container', title: 'Filtros de Gestión', description: 'Filtra por “Gestión Comercial Taller” o “Gestión Comercial Domiciliación”.', position: 'bottom', waitFor: () => document.querySelector('.dt-buttons-container') !== null },
+            { selector: '#btn-por-asignar', title: 'Filtro: Gestión Comercial Taller', description: 'Muestra tickets relacionados a gestión comercial en taller.', position: 'bottom', waitFor: () => document.getElementById('btn-por-asignar') !== null, onNext: () => this.clickFilter('#btn-por-asignar') },
+            { selector: '#btn-recibidos', title: 'Filtro: Gestión Comercial Domiciliación', description: 'Muestra tickets con gestiones de domiciliación.', position: 'bottom', waitFor: () => document.getElementById('btn-recibidos') !== null, onNext: () => this.clickFilter('#btn-recibidos') },
+            { selector: '#tabla-ticket tbody tr td:last-child', title: 'Columna de Acciones', description: 'Aquí encontrarás las acciones disponibles por ticket.', position: 'left', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onShow: async () => { await this.scrollToColumn('Acciones'); await new Promise(r=>setTimeout(r,180)); } },
+            { selector: '#tabla-ticket tbody tr td .btn-view-image', title: 'Selección de Acciones Disponibles', description: 'Abre el selector para revisar que otras acciones se puede ejecutar sobre el ticket.', position: 'bottom', waitFor: () => document.querySelector('#tabla-ticket tbody tr td .btn-view-image') !== null, onNext: () => { const b=document.querySelector('#tabla-ticket tbody tr td .btn-view-image'); if(b) b.click(); } },
+            { selector: '#selectSolicitudModal.modal.show .modal-content, #selectSolicitudModal.show .modal-content', title: 'Seleccionar el tipo de Solicitud', description: 'Elige el tipo de solicitud que desea ejecutar sobre el ticket: Sustituir POS, Desafiliación POS o Préstamo POS. Luego confirma para continuar.', position: 'top', waitFor: () => document.querySelector('#selectSolicitudModal.modal.show, #selectSolicitudModal.show') !== null, onNext: async () => { await this.forceHideModal(); await new Promise(r => setTimeout(r, 200)); } },
+            { selector: '#tabla-ticket tbody tr', title: 'Seleccionar Ticket', description: 'Selecciona una fila para ver los detalles a la derecha.', position: 'top', waitFor: () => document.querySelector('#tabla-ticket tbody tr') !== null, onNext: () => this.selectFirstTicket() },
+            { selector: '#ticket-details-panel', title: 'Detalles del Ticket', description: 'Resumen del ticket seleccionado, con historial y estado actual.', position: 'left', waitFor: () => document.getElementById('ticket-details-panel')?.textContent && !document.getElementById('ticket-details-panel').textContent.includes('Selecciona un ticket') },
+            { selector: 'button[onclick^="printHistory"], #ticket-details-panel .btn.btn-secondary', title: 'Imprimir Historial', description: 'Genera un PDF con el historial de gestión del ticket.', position: 'bottom', waitFor: () => document.querySelector('button[onclick^="printHistory"], #ticket-details-panel .btn.btn-secondary') !== null },
+            { selector: '#ticketHistoryAccordion, #ticket-history-content', title: 'Historial del Ticket', description: 'Sección donde se listan todas las acciones realizadas al ticket.', position: 'left', waitFor: () => document.querySelector('#ticketHistoryAccordion, #ticket-history-content') !== null, isLastStep: true }
+        ];
+
+        this.click = (selector) => { const el = document.querySelector(selector); if (el) el.click(); };
+        this.clickFilter = (selector) => {
+            const btn = document.querySelector(selector);
+            if (btn && !btn.classList.contains('btn-primary')) {
+                btn.click();
+                return new Promise(resolve => setTimeout(resolve, 500));
+            }
+            return Promise.resolve();
+        };
+        this.selectFirstTicket = () => new Promise(resolve => { const row = document.querySelector('#tabla-ticket tbody tr'); if (row) { row.click(); setTimeout(resolve, 600); } else { setTimeout(resolve, 300); } });
+        this.scrollToColumn = (columnHeaderText) => new Promise(resolve => {
+            const table = document.getElementById('tabla-ticket');
+            const row = document.querySelector('#tabla-ticket tbody tr');
+            if (!table || !row) return setTimeout(resolve, 250);
+            const wrapper = table.closest('.dataTables_wrapper');
+            const scrollHead = wrapper?.querySelector('.dataTables_scrollHead table thead');
+            const headers = scrollHead ? scrollHead.querySelectorAll('th') : table.querySelectorAll('thead th');
+            let targetCell = null;
+            headers.forEach((header, idx) => {
+                if (header.textContent.trim() === columnHeaderText) {
+                    const cells = row.querySelectorAll('td');
+                    if (cells[idx]) targetCell = cells[idx];
+                }
+            });
+            const scroller = wrapper?.querySelector('.dataTables_scrollBody') || wrapper || table.parentElement;
+            if (targetCell && scroller && scroller.scrollWidth > scroller.clientWidth) {
+                scroller.scrollTo({ left: targetCell.offsetLeft, behavior: 'smooth' });
+                return setTimeout(resolve, 500);
+            }
+            setTimeout(resolve, 250);
+        });
+        this.waitForCondition = (fn) => new Promise((res, rej) => { let n=0; const tick=()=>{ try{ if(fn()){res();return;} }catch{} if(n++>100){rej();return;} setTimeout(tick,60);} ; tick(); });
+        this.prepareElementForHighlight = async (el) => { const r = el.getBoundingClientRect(); const cy = r.top + r.height/2; const vc = window.innerHeight/2; if (Math.abs(cy - vc) > 120) { window.scrollTo({ top: window.pageYOffset + cy - vc, behavior: 'smooth' }); await new Promise(r => setTimeout(r, 400)); } };
+        this.highlightElement = (el) => { this.highlightedElement = el; const r = el.getBoundingClientRect(); const h = document.createElement('div'); h.id='tutorial-highlight'; h.style.cssText=`position:fixed;top:${r.top-6}px;left:${r.left-6}px;width:${r.width+12}px;height:${r.height+12}px;border:4px solid #007bff;border-radius:12px;background:rgba(0,123,255,0.15);z-index:9999;pointer-events:none;animation:pulse 1.5s infinite;`; document.body.appendChild(h); };
+        this.createTooltip = (el, step) => { const t=document.createElement('div'); t.id='tutorial-tooltip'; const r=el.getBoundingClientRect(); const w=380; let top,left; if(step.position==='bottom'){ top=r.bottom+40; left=r.left + r.width/2 - w/2; } else if(step.position==='top'){ top=r.top-220; left=r.left + r.width/2 - w/2; } else if(step.position==='left'){ top=r.top + r.height/2 - 100; left=r.left - w - 24; } else if(step.position==='right'){ top=r.top + r.height/2 - 100; left=r.right + 24; } else { top=r.top + r.height/2 - 100; left=r.left + r.width/2 - w/2; } left=Math.max(15, Math.min(left, window.innerWidth - w - 15)); top=Math.max(15, Math.min(top, window.innerHeight - 220)); const isLast=step.isLastStep; t.style.cssText=`position:fixed;top:${top}px;left:${left}px;width:${w}px;background:white;border:3px solid #007bff;border-radius:18px;padding:24px;box-shadow:0 16px 40px rgba(0,0,0,0.28);z-index:10000;font-family:'Segoe UI',sans-serif;animation:popIn 0.3s ease;`; t.innerHTML=`<style>@keyframes popIn{from{opacity:0;transform:scale(.9) translateY(-10px)}to{opacity:1;transform:scale(1)}}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,123,255,.4)}50%{box-shadow:0 0 0 12px rgba(0,123,255,0)}}</style><h4 style=\"margin:0 0 14px;color:#007bff;font-weight:700;font-size:20px;\">${step.title}</h4><p style=\"margin:0;color:#333;font-size:15px;line-height:1.6;\">${step.description}</p><div style=\"display:flex;justify-content:flex-end;gap:14px;margin-top:20px;padding-top:16px;border-top:1px solid #eee;\"><button id=\"tutorial-skip\" style=\"background:#6c757d;color:white;border:none;padding:11px 20px;border-radius:12px;font-size:14px;cursor:pointer;font-weight:600;\">Saltar</button><button id=\"tutorial-next\" style=\"background:${isLast?'#28a745':'#007bff'};color:white;border:none;padding:11px 20px;border-radius:12px;font-size:14px;cursor:pointer;font-weight:600;\">${isLast?'Finalizar':'Siguiente'}</button></div>`; document.body.appendChild(t); };
+        this.closeAnyModal = () => {
+            try {
+                const modalEl = document.getElementById('selectSolicitudModal');
+                if (modalEl && (modalEl.classList.contains('show') || modalEl.style.display === 'block')) {
+                    // Cerrar usando la API de Bootstrap si está disponible
+                    try {
+                        const instance = (window.bootstrap && window.bootstrap.Modal) ? window.bootstrap.Modal.getInstance(modalEl) || new window.bootstrap.Modal(modalEl) : null;
+                        if (instance) instance.hide();
+                    } catch {}
+                    // Disparo de cierre por botón como respaldo
+                    const closeBtn = modalEl.querySelector('.btn-close, [data-bs-dismiss="modal"], .btn-secondary');
+                    if (closeBtn) closeBtn.click();
+                }
+            } catch {}
+            document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        };
+        this.forceHideModal = async () => {
+            return new Promise((resolve) => {
+                try {
+                    const modalEl = document.getElementById('selectSolicitudModal');
+                    if (!modalEl) { resolve(); return; }
+                    
+                    // Método 1: Usar Bootstrap Modal API
+                    try {
+                        const bootstrap = window.bootstrap || (window.jQuery && window.jQuery.fn && window.jQuery.fn.modal ? window : null);
+                        if (bootstrap && bootstrap.Modal) {
+                            const instance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                            if (instance) {
+                                instance.hide();
+                                // Esperar a que el evento 'hidden.bs.modal' se dispare
+                                modalEl.addEventListener('hidden.bs.modal', () => resolve(), { once: true });
+                                setTimeout(() => resolve(), 400);
+                                return;
+                            }
+                        }
+                    } catch {}
+                    
+                    // Método 2: Cerrar manualmente con botón
+                    const closeBtn = modalEl.querySelector('.btn-close, [data-bs-dismiss="modal"], .btn-secondary');
+                    if (closeBtn) {
+                        closeBtn.click();
+                        setTimeout(() => resolve(), 400);
+                        return;
+                    }
+                    
+                    // Método 3: Cerrar forzando el DOM
+                    modalEl.classList.remove('show');
+                    modalEl.style.display = 'none';
+                    modalEl.setAttribute('aria-hidden', 'true');
+                    modalEl.removeAttribute('aria-modal');
+                    document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                    resolve();
+                } catch {
+                    resolve();
+                }
+            });
+        };
+        this.removeHighlight = () => { const h=document.getElementById('tutorial-highlight'); if(h) h.remove(); };
+        this.removeTooltip = () => { const t=document.getElementById('tutorial-tooltip'); if(t) t.remove(); };
+        this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.showStep = async (idx) => {
+            if (idx >= this.tutorialSteps.length) return this.endTutorial();
+            const step = this.tutorialSteps[idx];
+            try { if (step.waitFor) await this.waitForCondition(step.waitFor); } catch { this.nextStep(); return; }
+            if (step.onShow) { try { await step.onShow(); } catch {} }
+            const el = typeof step.selector === 'function' ? step.selector() : document.querySelector(step.selector);
+            if (!el) { this.nextStep(); return; }
+            this.removeHighlight(); this.removeTooltip();
+            await this.prepareElementForHighlight(el);
+            this.highlightElement(el); this.createTooltip(el, step); this.addListeners();
+        };
+        this.addListeners = () => { const next=document.getElementById('tutorial-next'); const skip=document.getElementById('tutorial-skip'); if(next) next.onclick=()=>this.nextStep(); if(skip) skip.onclick=()=>this.endTutorial(); };
+        this.nextStep = async () => { const prev = this.tutorialSteps[this.currentStep]; if (prev?.onNext) { try { await prev.onNext(); } catch {} } this.closeAnyModal(); this.currentStep++; if (this.currentStep >= this.tutorialSteps.length || prev?.isLastStep) { this.endTutorial(); return; } this.removeHighlight(); this.removeTooltip(); this.showStep(this.currentStep); };
+        this.endTutorial = () => { this.isActive=false; this.removeHighlight(); this.removeTooltip(); if (this.overlay) this.overlay.remove(); };
+    }
+}
+
 // ASISTENTE VIRTUAL
 class VirtualAssistant {
     constructor() {
@@ -2609,6 +2750,7 @@ class VirtualAssistant {
         this.GestionRegionTutorial = new GestionRegionTutorial();
         this.GestionComponentesTutorial = new GestionComponentesTutorial();
         this.GestionDomiciliacionTutorial = new GestionDomiciliacionTutorial();
+        this.GestionComercialTutorial = new GestionComercialTutorial();
         this.init();
     }
     
@@ -4248,27 +4390,40 @@ addChartMessage(data) {
     }
 
     startDomiciliacionTutorial() {
-        console.log('🎬 startDomiciliacionTutorial llamado');
         this.closeModuleSelectionModal();
         
         const pathname = window.location.pathname;
         const isInModule = pathname.includes('domiciliacion') || decodeURIComponent(pathname).includes('domiciliacion');
-        
-        console.log(`📍 Pathname actual: ${pathname}`);
-        console.log(`📍 ¿Estamos en el módulo? ${isInModule}`);
 
         if (!isInModule) {
-            console.log('🔄 Redirigiendo a domiciliacion...');
             window.location.href = 'domiciliacion';
             return;
         }
         
-        console.log('✅ Iniciando tutorial de domiciliación...');
         setTimeout(() => {
             if (this.GestionDomiciliacionTutorial) {
                 this.GestionDomiciliacionTutorial.startTutorial();
             } else {
                 console.error('❌ GestionDomiciliacionTutorial no está definido');
+            }
+        }, 800);
+    }
+
+    startGestionComercialTutorial() {
+        this.closeModuleSelectionModal();
+        const pathname = window.location.pathname;
+        const isInModule = pathname.includes('gestion_comercial') || decodeURIComponent(pathname).includes('gestion_comercial');
+        
+        if (!isInModule) {
+            window.location.href = 'gestion_comercial';
+            return;
+        }
+
+        setTimeout(() => {
+            if (this.GestionComercialTutorial) {
+                this.GestionComercialTutorial.startTutorial();
+            } else {
+                console.error('❌ GestionComercialTutorial no está definido');
             }
         }, 800);
     }
@@ -4900,6 +5055,7 @@ addChartMessage(data) {
             'periférico_pos': 'periferico',
             'periferico_pos': 'periferico', // Versión sin acento
             'domiciliacion': 'domiciliacion',
+            'gestion_comercial': 'gestion_comercial',
         };
 
         // Decodificar URL para manejar caracteres codificados (ej: perif%C3%A9rico_pos)
@@ -5236,7 +5392,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'rosal': 'startRosalTutorial',
         'region': 'startRegionTutorial',
         'periferico': 'startComponentesTutorial',
-        'domiciliacion': 'startDomiciliacionTutorial'
+        'domiciliacion': 'startDomiciliacionTutorial',
+        'gestion_comercial': 'startGestionComercialTutorial'
     };
 
     const methodName = tutorialMap[tutorialParam];

@@ -900,7 +900,7 @@ function mi_navbar() {}
 
                                 <div class="col-12">
                                     <button type="button" class="btn btn-secondary" id="previewPaymentAgreementBtn">Previsualizar</button>
-                                    <button type="button" class="btn btn-success" id="printPaymentAgreementBtn">Imprimir / Guardar PDF</button>
+                                    <button type="button" class="btn btn-success" id="printPaymentAgreementBtn">Guardar PDF</button>
                                 </div>
                                 <div class="col-12" style="height: 500px; border: 2px solid #e9ecef; border-radius: 8px; overflow: hidden;">
                                     <iframe id="paymentAgreementPreview" style="width:100%; height:100%; border:none; overflow-y: auto; overflow-x: hidden;"></iframe>

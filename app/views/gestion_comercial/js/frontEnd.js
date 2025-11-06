@@ -1470,7 +1470,7 @@ document.addEventListener("DOMContentLoaded", function () {
           text: `Has seleccionado: ${solicitudType === 'sustituir' ? 'Sustituir POS' : solicitudType === 'desafiliar' ? 'Desafiliación POS' : 'Préstamo POS'}`,
           confirmButtonText: 'Ok',
           color: 'black',
-          confirmButtonColor: '#007bff'
+          confirmButtonColor: '#003594'
         });
         // Aquí puedes añadir lógica adicional, como enviar la selección a un servidor
       } else {
@@ -1480,7 +1480,7 @@ document.addEventListener("DOMContentLoaded", function () {
           text: 'Por favor, selecciona una opción.',
           confirmButtonText: 'Ok',
           color: 'black',
-          confirmButtonColor: '#007bff'
+          confirmButtonColor: '#003594'
         });
       }
     });
