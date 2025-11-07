@@ -604,46 +604,87 @@ function getTicketDataCoordinator() {
                   { button: "btn-reasignado", term: "Reasignado al Técnico", status: "En proceso", action: "Reasignado al Técnico" }
                 ];
 
-                for (const { button, term, status, action } of searchTerms) {
-                  if (checkDataExists(term)) {
-                    api.columns().search('').draw(false);
-                    if (button === "btn-asignados") {
-                      api.column(6).visible(true);
-                    } else {
-                      api.column(6).visible(false);
-                    }
-                    api.column(7).visible(true);
-                    api.column(5).search(term, true, false).draw();
-                    setActiveButton(button);
-                    showTicketStatusIndicator(status, action);
+                let fallbackConfig = null;
+                let ticketFoundConfig = null;
+                let ticketFound = false;
 
-                    // Apply nro_ticket search if provided
-                    if (nroTicket) {
+                for (const config of searchTerms) {
+                  const hasData = checkDataExists(config.term);
+
+                  if (!hasData) {
+                    continue;
+                  }
+
+                  if (!fallbackConfig) {
+                    fallbackConfig = config;
+                  }
+
+                  if (nroTicket) {
+                    const filteredRows = api.rows({ filter: 'applied' }).data().toArray();
+                    const hasTicket = filteredRows.some(row => {
+                      const ticketNumber = Array.isArray(row) ? row[1] : row?.nro_ticket;
+                      return ticketNumber === nroTicket;
+                    });
+
+                    if (hasTicket) {
+                      ticketFoundConfig = config;
+                      ticketFound = true;
+                      break;
+                    }
+                  } else {
+                    ticketFoundConfig = config;
+                    break;
+                  }
+                }
+
+                if (!ticketFoundConfig && fallbackConfig) {
+                  ticketFoundConfig = fallbackConfig;
+                }
+
+                if (ticketFoundConfig) {
+                  // Reaplicar el filtro seleccionado para garantizar el estado correcto
+                  checkDataExists(ticketFoundConfig.term);
+
+                  if (ticketFoundConfig.button === "btn-asignados") {
+                    api.column(6).visible(true);
+                  } else {
+                    api.column(6).visible(false);
+                  }
+                  api.column(7).visible(true);
+                  setActiveButton(ticketFoundConfig.button);
+                  showTicketStatusIndicator(ticketFoundConfig.status, ticketFoundConfig.action);
+
+                  if (nroTicket) {
+                    if (ticketFound) {
                       api.search(nroTicket).draw(false);
+                      $('.dataTables_filter input').val(nroTicket);
                       api.rows().every(function () {
                         const rowData = this.data();
-                        if (rowData[1] === nroTicket) {
+                        const ticketNumber = Array.isArray(rowData) ? rowData[1] : rowData?.nro_ticket;
+                        if (ticketNumber === nroTicket) {
                           $(this.node()).addClass('table-active');
                           this.node().scrollIntoView({ behavior: 'smooth', block: 'center' });
                         } else {
                           $(this.node()).removeClass('table-active');
                         }
                       });
-                      // Check if ticket exists in current filter
-                      if (api.rows({ filter: 'applied' }).count() === 0) {
-                        Swal.fire({
-                          icon: 'warning',
-                          title: 'Ticket no encontrado',
-                          text: `El ticket ${nroTicket} no se encuentra en este filtro.`,
-                          confirmButtonText: 'Ok',
-                          color: 'black',
-                          confirmButtonColor: '#003594'
-                        });
-                        api.search('').draw(false); // Clear search if no matches
-                      }
+                    } else {
+                      api.search('').draw(false);
+                      $('.dataTables_filter input').val('');
+                      api.rows().every(function () {
+                        $(this.node()).removeClass('table-active');
+                      });
+                      Swal.fire({
+                        icon: 'warning',
+                        title: 'Ticket no encontrado',
+                        text: `El ticket ${nroTicket} no se encuentra en los datos disponibles.`,
+                        confirmButtonText: 'Ok',
+                        color: 'black',
+                        confirmButtonColor: '#003594'
+                      });
                     }
-                    return true;
                   }
+                  return true;
                 }
 
                 api.columns().search('').draw(false);
@@ -664,6 +705,16 @@ function getTicketDataCoordinator() {
                       </div>
                     </td>
                   </tr>`;
+                if (nroTicket) {
+                  Swal.fire({
+                    icon: 'warning',
+                    title: 'Ticket no encontrado',
+                    text: `El ticket ${nroTicket} no se encuentra en los datos disponibles.`,
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#003594'
+                  });
+                }
                 return false;
               }
 
