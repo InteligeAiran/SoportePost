@@ -3639,6 +3639,12 @@ function checkUserStatusAndPromptPassword() {
             newPasswordModalElement.setAttribute("aria-modal", "true");
             newPasswordModalElement.setAttribute("role", "dialog");
             document.body.classList.add("modal-open"); // Añadir clase al body para evitar scroll
+            
+            // Mostrar siempre las reglas de contraseña cuando se abre el modal
+            const passwordRequirementsDiv = document.getElementById("passwordRequirements");
+            if (passwordRequirementsDiv) {
+                passwordRequirementsDiv.style.display = "block";
+            }
             Swal.fire({
               icon: "info",
               title: "Cambio de Contraseña Requerido",
@@ -3714,6 +3720,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const newPasswordModalElement = document.getElementById("newPasswordModal");
 
     if (newPasswordModalElement) {
+        // Asegurar que las reglas estén visibles cuando el modal se muestra
+        newPasswordModalElement.addEventListener("shown.bs.modal", function () {
+            const passwordRequirementsDiv = document.getElementById("passwordRequirements");
+            if (passwordRequirementsDiv) {
+                passwordRequirementsDiv.style.display = "block";
+            }
+        });
+        
         newPasswordModalElement.addEventListener("hidden.bs.modal", function () {
             // Limpiar campos y mensajes de error al cerrar el modal
             document.getElementById("newPassword").value = "";
@@ -3722,10 +3736,11 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("confirmPasswordError").innerHTML = "";
             document.getElementById("modalUserIdForPassword").value = ""; 
 
-            // Limpiar estilos y mensajes de la leyenda al cerrar el modal
+            // Limpiar estilos de la leyenda al cerrar el modal (pero mantenerla visible)
             const passwordRequirementsDiv = document.getElementById("passwordRequirements");
             if (passwordRequirementsDiv) {
-                passwordRequirementsDiv.style.display = "none"; 
+                // Mantener el div visible siempre
+                passwordRequirementsDiv.style.display = "block"; 
                 const reqChecks = document.querySelectorAll(".password-legend li");
                 reqChecks.forEach(li => {
                     li.classList.remove("valid", "invalid");
@@ -3866,15 +3881,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Lógica de validación en tiempo real para la leyenda
     if (newPasswordInput && passwordRequirementsDiv) {
-        newPasswordInput.addEventListener("focus", function() {
-            passwordRequirementsDiv.style.display = "block";
-        });
-
-        newPasswordInput.addEventListener("blur", function() {
-            if (passwordErrorDiv.innerHTML === "") {
-                passwordRequirementsDiv.style.display = "none";
-            }
-        });
+        // Mostrar siempre las reglas de contraseña
+        passwordRequirementsDiv.style.display = "block";
 
         newPasswordInput.addEventListener("input", function() {
             const password = newPasswordInput.value;
@@ -3974,7 +3982,8 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 newPasswordInput.classList.add("success");
                 confirmNewPasswordInput.classList.add("success");
-                passwordRequirementsDiv.style.display = "none";
+                // Mantener las reglas visibles siempre
+                passwordRequirementsDiv.style.display = "block";
             }
 
             Swal.fire({

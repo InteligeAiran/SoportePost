@@ -60,7 +60,7 @@
         <h2>Restablecer Contraseña</h2>
         <p>Ingresa tu usuario Para Acceder a Tu correo.</p>
         <form id="restore_passForm">
-            <input class="form-control" placeholder="Coloque su Usuario" type="text" id="restoreUsername"  onblur="GetEmailByUsername()" name="restoreUsername">
+            <input class="form-control" placeholder="Coloque su Usuario" type="text" id="restoreUsername"  onblur="GetEmailByUsername()" name="restoreUsername"  onkeyup="javascript:this.value=this.value.toUpperCase();" required>
             <div id="restoreUsernameError" class="errorEmail"></div>
             <div id="restoreUsernameVerification" class="successEmail"></div>
             <input class="form-control" placeholder="Correo" onblur="checkEmailForPasswordReset()" type="email" id="email" name="email" disabled>

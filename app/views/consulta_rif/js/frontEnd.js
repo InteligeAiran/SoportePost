@@ -4008,6 +4008,85 @@ function SendRazon() {
             municipioCell.textContent = item.municipio;
           });
 
+          // Agregar animación CSS para el spinner si no existe
+          if (!document.getElementById('export-loading-spinner-style')) {
+            const style = document.createElement('style');
+            style.id = 'export-loading-spinner-style';
+            style.textContent = `
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `;
+            document.head.appendChild(style);
+          }
+
+          // Función para crear y mostrar el overlay de carga
+          function showExportLoading() {
+            // Verificar si ya existe el overlay
+            let loadingOverlay = document.getElementById('export-loading-overlay');
+            if (!loadingOverlay) {
+              loadingOverlay = document.createElement('div');
+              loadingOverlay.id = 'export-loading-overlay';
+              loadingOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.95);
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                backdrop-filter: blur(2px);
+                -webkit-backdrop-filter: blur(2px);
+              `;
+              
+              const spinner = document.createElement('div');
+              spinner.style.cssText = `
+                width: 80px;
+                height: 80px;
+                border: 6px solid #f3f3f3;
+                border-top: 6px solid #003594;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 20px;
+              `;
+              
+              const message = document.createElement('h4');
+              message.textContent = 'Generando documento...';
+              message.style.cssText = `
+                color: #003594;
+                margin-bottom: 10px;
+                font-weight: 600;
+              `;
+              
+              const subMessage = document.createElement('p');
+              subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
+              subMessage.style.cssText = `
+                color: #666;
+                font-size: 14px;
+              `;
+              
+              loadingOverlay.appendChild(spinner);
+              loadingOverlay.appendChild(message);
+              loadingOverlay.appendChild(subMessage);
+              document.body.appendChild(loadingOverlay);
+            } else {
+              loadingOverlay.style.display = 'flex';
+            }
+          }
+          
+          // Función para ocultar el overlay de carga
+          function hideExportLoading() {
+            const loadingOverlay = document.getElementById('export-loading-overlay');
+            if (loadingOverlay) {
+              loadingOverlay.style.display = 'none';
+            }
+          }
+
           // Inicialización de DataTables
           if ($.fn.DataTable.isDataTable("#rifCountTable")) {
             $("#rifCountTable").DataTable().destroy();
@@ -4058,6 +4137,18 @@ function SendRazon() {
                     attr: {
                         id: 'btn-excel-modern-id',
                         title: 'Exportar a Excel'
+                    },
+                    action: function(e, dt, button, config) {
+                        showExportLoading();
+                        // Llamar a la acción por defecto
+                        $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        // Ocultar después de un tiempo razonable (ajustar según necesidad)
+                        // El tiempo depende de la cantidad de datos
+                        const rowCount = dt.rows({search: 'applied'}).count();
+                        const delay = Math.min(Math.max(rowCount * 10, 2000), 10000); // Entre 2 y 10 segundos
+                        setTimeout(function() {
+                            hideExportLoading();
+                        }, delay);
                     },
                     exportOptions: {
                         columns: ':visible',
@@ -4142,6 +4233,18 @@ function SendRazon() {
                     attr: {
                         id: 'btn-pdf-modern-id',
                         title: 'Exportar a PDF'
+                    },
+                    action: function(e, dt, button, config) {
+                        showExportLoading();
+                        // Llamar a la acción por defecto
+                        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                        // Ocultar después de un tiempo razonable (ajustar según necesidad)
+                        // El tiempo depende de la cantidad de datos
+                        const rowCount = dt.rows({search: 'applied'}).count();
+                        const delay = Math.min(Math.max(rowCount * 10, 2000), 10000); // Entre 2 y 10 segundos
+                        setTimeout(function() {
+                            hideExportLoading();
+                        }, delay);
                     },
                     exportOptions: {
                         columns: ':visible',

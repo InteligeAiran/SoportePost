@@ -422,3 +422,326 @@
     background-color: #e0f7fa; 
     color: #007bff; 
 }
+
+             @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            .loading-overlay {
+                backdrop-filter: blur(2px);
+                -webkit-backdrop-filter: blur(2px);
+            }
+            
+            .loading-spinner {
+                box-shadow: 0 4px 15px rgba(0, 53, 148, 0.2);
+            }
+            
+            .card-loading {
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .card-loading::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+                animation: shimmer 2s infinite;
+                z-index: 1;
+            }
+            
+            @keyframes shimmer {
+                0% { left: -100%; }
+                100% { left: 100%; }
+            }
+
+            
+            .card-header.bg-primary.text-white {
+                cursor: pointer; /* Changes the cursor to indicate clickability */
+                transition: all 0.3s ease; /* Smooth transition for hover effects */
+            }
+
+            .card-header.bg-primary.text-white:hover {
+                background-color: #0057b3; /* Slightly darker blue on hover */
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9); /* Add shadow on hover */
+                transform: translateY(-2px); /* Slight lift effect */
+            }
+
+            .card-header.bg-primary.text-white:active {
+                background-color: #004494; /* Even darker blue when clicked */
+                transform: translateY(0); /* Reset lift on click */
+            }
+
+            /* Tooltip styling */
+            .card-header.bg-primary.text-white:hover::after {
+                content: 'Redireccionar'; /* Text to display */
+                position: absolute;
+                bottom: 100%; /* Position above the header */
+                left: 50%;
+                transform: translateX(-50%); /* Center horizontally */
+                background-color: #333; /* Dark background for tooltip */
+                color: #fff; /* White text */
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                white-space: nowrap;
+                z-index: 10; /* Ensure it appears above other elements */
+                opacity: 1;
+                transition: opacity 0.2s ease;
+            }
+
+            .card-header.bg-primary.text-white::after {
+                opacity: 0; /* Hidden by default */
+            }
+
+            /* Custom styles for SweetAlert2 modal */
+            /* Custom styles for SweetAlert2 session expired modal */
+            .modern-swal-popup1 {
+                border-radius: 12px !important;
+                padding: 20px !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+                background: linear-gradient(145deg, #ffffff, #f0f4f8) !important;
+            }
+
+            .modern-swal-title1 {
+                font-size: 1.5rem !important;
+                color: #1e3a8a !important;
+                font-weight: 600 !important;
+                margin-bottom: 10px !important;
+            }
+
+            .modern-swal-content1 {
+                font-size: 1rem !important;
+                color: #374151 !important;
+                line-height: 1.5 !important;
+            }
+
+            .modern-swal-progress-bar1 {
+                background-color: #1e3a8a !important; /* Deep blue progress bar */
+                height: 4px !important;
+            }
+
+            .modern-swal-popup {
+                border-radius: 12px !important;
+                padding: 20px !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+                background: linear-gradient(145deg, #ffffff, #f0f4f8) !important;
+            }
+
+            .modern-swal-title {
+                font-size: 1.5rem !important;
+                color: #1e3a8a !important;
+                font-weight: 600 !important;
+                margin-bottom: 10px !important;
+            }
+
+            .modern-swal-content {
+                font-size: 1rem !important;
+                color: #374151 !important;
+                line-height: 1.5 !important;
+            }
+
+            .modern-swal-confirm {
+                border-radius: 8px !important;
+                padding: 10px 20px !important;
+                font-size: 1rem !important;
+                font-weight: 500 !important;
+                transition: transform 0.2s ease !important;
+            }
+
+            .modern-swal-confirm:hover {
+                transform: translateY(-2px) !important;
+            }
+
+            .modern-swal-cancel {
+                border-radius: 8px !important;
+                padding: 10px 20px !important;
+                font-size: 1rem !important;
+                font-weight: 500 !important;
+                transition: transform 0.2s ease !important;
+            }
+
+            .modern-swal-cancel:hover {
+                transform: translateY(-2px) !important;
+            }
+
+            /* Estilos para el botón de expandir/contraer en tabla */
+            .btn-expand-collapse {
+                background: #007bff !important;
+                border: 1px solid #007bff !important;
+                border-radius: 8px;
+                padding: 8px 16px;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: #ffffff !important;
+                transition: all 0.2s ease;
+                font-family: 'Open Sans', sans-serif;
+                text-decoration: none;
+                outline: none;
+            }
+
+            .btn-expand-collapse:hover {
+                background: #0056b3 !important;
+                border-color: #0056b3 !important;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+                color: #ffffff !important;
+            }
+
+            .btn-expand-collapse:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+                background: #004085 !important;
+                border-color: #004085 !important;
+                color: #ffffff !important;
+            }
+
+            .btn-expand-collapse:focus {
+                box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+                color: #ffffff !important;
+            }
+
+            .expand-icon {
+                transition: transform 0.3s ease;
+                flex-shrink: 0;
+                color: #ffffff !important;
+            }
+
+            .expand-text {
+                white-space: nowrap;
+                color: #ffffff !important;
+            }
+
+            input[type="text"], input[type="password"]{
+                width: calc(100% - 1rem);
+                padding: 0.5rem 0.75rem;
+                margin-bottom: 0.75rem;
+                border: 1px solid #ced4da;
+                border-radius: 0.25rem;
+                box-sizing: border-box;
+                font-size: 0.9rem;
+                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+                font-family: 'Arial', sans-serif;
+            }
+
+            .password-legend {
+                text-align: left;
+                margin-top: 1rem;
+                color: black;
+                font-size: 0.875rem;
+            }
+
+            .password-legend ul {
+                list-style: none;
+                padding-left: 0;
+                margin-top: 0.5rem;
+            }
+
+            .password-legend li {
+                position: relative;
+                padding-left: 20px;
+                color: #888; /* Color inicial del texto */
+                transition: color 0.3s ease;
+            }
+
+            .password-legend li::before {
+                content: '•';
+                position: absolute;
+                left: 0;
+                top: 0;
+                font-size: 1.2rem;
+                line-height: 1;
+            }
+            
+            /* Reglas de color para los estados de validación */
+            .password-legend li.valid {
+                color: green;
+            }
+
+            .password-legend li.invalid {
+                color: red;
+            }
+
+            /* Estilo para los inputs con error o éxito */
+            .form-control.error {
+                border-color: #dc3545;
+            }
+
+            .form-control.success {
+                border-color: #198754;
+            }
+
+            .error-message {
+                color: #dc3545;
+                font-size: 0.875em;
+                margin-top: 0.25rem;
+            }
+            
+            /* Estilos para el input con icono */
+            .input-with-icon-wrapper {
+                position: relative;
+            }
+            
+            .password-toggle-icon {
+                position: absolute;
+                right: 6%;
+                top: 50%;
+                transform: translateY(-50%);
+                cursor: pointer;
+                color: #6c757d; /* Color de icono por defecto */
+            }
+
+            /* Contenedor del botón y la sugerencia de contraseña */
+            #suggestedPasswordContainer {
+                margin-top: -3%;
+                margin-left: 12%;
+                position: fixed;
+                align-items: center;
+            }
+
+            @media screen and (min-width: 1870px) {
+                #suggestedPasswordContainer {
+                    margin-top: -2%;
+                    margin-left: 10%;
+                    position: fixed;
+                    align-items: center;
+                }
+            }
+
+            #Cerrar-botton{
+                background-color: #A0A0A0;
+                  color: white;
+                border: none;
+                cursor: pointer;
+                padding: 10px 20px;
+                font-size: 16px;
+                border-radius: 5px;
+                transition: background-color 0.3s ease;
+            }
+
+            #Cerrar-botton:hover{
+                background-color: red;
+            }
+
+            #submitNewPasswordBtn{
+                background-color: #003594;
+                color: white;
+                border: none;
+                cursor: pointer;
+                padding: 10px 20px;
+                font-size: 16px;
+                border-radius: 5px;
+                transition: background-color 0.3s ease;
+            }
+
+            #submitNewPasswordBtn:hover{
+                background-color: green;
+            }

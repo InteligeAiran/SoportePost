@@ -153,8 +153,8 @@ class email extends Controller {
                 $body = '
                     <h2 style = "color: #3f85ff; font-size: 23px; text-align: center; margin-bottom: 20px;">Restablecer Contraseña</h2>
                     <strong><p style = " margin-bottom: 15px;">Hola, '.$nombre.'</p></strong>
-                    <strong><p>Recibimos una solicitud para restablecer tu contraseña.</p></strong>
-                    <strong><p>Para restablecer tu contraseña, utiliza el siguiente código: <span style = "background-color: #3f85ff; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 3.2em; text-align: center; margin: 22px auto; width: 200px; height: 50px; display: block; width: fit-content; border: 1px solid #000000;" class = "code">'.$codigo.'</span></p><strong>
+                    <strong><p>Solicitaste restablecer tu contraseña.</p></strong>
+                    <strong><p>Ingresa el siguiente código para crear una nueva:  <span style = "background-color: #3f85ff; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 3.2em; text-align: center; margin: 22px auto; width: 200px; height: 50px; display: block; width: fit-content; border: 1px solid #000000;" class = "code">'.$codigo.'</span></p><strong>
                     <p style = "text-align: center; color: red; font-size: 0.9em;">Este código será su contraseña. Cambie nuevamente al iniciar Sesión.</p>
                     <p style = "text-align: center; color: #777; font-size: 0.9em;">ATT: InteliSoft</p>';
 
@@ -1480,7 +1480,7 @@ class email extends Controller {
         $ticketdatereject = $resultDocumentoRechazado['fecha_rechazo'] ?? 'N/A';
 
         // Datos del que gestionó el ticket
-        $result_tecnico = $repository->GetEmailUser1gestionDataById( $ticketid, $documentType);
+        $result_tecnico = $repository->GetEmailUser1gestionDataById( $ticketId, $documentType);
         $email_tecnico = $result_tecnico['user_email'] ?? '';
         $nombre_tecnico = $result_tecnico['full_name'] ?? 'Técnico';
         $id_rol = $result_tecnico['id_rolusr'] ?? '';
