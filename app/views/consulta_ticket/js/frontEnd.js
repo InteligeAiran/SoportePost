@@ -520,6 +520,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 function getRegionUsuarios() {
+
+  const id_user = document.getElementById('id_user').value;
+  
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getRegionTicket`);
 
@@ -569,7 +572,7 @@ function getRegionUsuarios() {
     }
   };
 
-  const datos = `action=GetRegionUsers`; // Cambia la acción para que coincida con el backend
+  const datos = `action=GetRegionUsers&id_user=${encodeURIComponent(id_user)}`; // Cambia la acción para que coincida con el backend
   xhr.send(datos);
 }
 
@@ -701,6 +704,11 @@ function SendRegions() {
   const selectedOptionIndex = selectElement.selectedIndex;
   const regionName = selectElement.options[selectedOptionIndex].text;
 
+  const id_user = document.getElementById('id_user').value;
+  const idtipouser = document.getElementById('idtipouser').value;
+
+
+
   // Mover la validación al principio para detener la ejecución si no hay región
   if (!RegionSelectValue) {
     Swal.fire({
@@ -798,32 +806,35 @@ function SendRegions() {
           });
           
           const columnTitles = {
-            id_ticket: "ID Ticket",
-            nro_ticket: "Nro Ticket",
-            create_ticket: "Create Ticket",
-            name_status_ticket: "Status Ticket",
-            rif_empresa: "Rif",
-            razonsocial_cliente: "Razón Social",
-            descbanco: "Banco",
-            serial_pos: "Serial POS",
-            name_failure: "Descripción de Fallas",
-            name_process_ticket: "Process Ticket",
-            name_status_payment: "Estatus Pago",
-            full_name_tecnico: "Tecnico",
-            name_accion_ticket: "Accion Ticket",
-            full_name_coordinador: "Coordinador",
-            id_level_failure: "Nivel de Falla",
-            full_name_tecnicoassignado: "Técnico Asignado",
-            downl_exoneration: "Exoneración",
-            downl_payment: "Pago Anticipo",
-            downl_send_to_rosal: "Enviado a Rosal",
-            downl_send_fromrosal: "Enviado desde Rosal a destino",
-            date_send_lab: "Fecha Envío Lab",
-            date_send_torosal_fromlab: "Fecha Envío a rosal",
-            name_status_domiciliacion: "Estatus Domiciliación",
-            date_sendkey: "Fecha Envío Key",
-            date_receivekey: "Fecha Recibo Key",
-            date_receivefrom_desti: "Fecha Recibo Destino",
+              id_ticket: "ID Ticket",
+              rif_empresa: "Rif",
+              razonsocial_cliente: "Razón Social",
+              descbanco: "Banco",
+              descmodelo: "Modelo del POS",
+              name_process_ticket: "Gestión del Ticket",
+              name_status_payment: "Estatus Pago",
+              full_name_tecnico: "Usuario Gestión",
+              name_status_ticket: "Estatus Ticket",
+              create_ticket: "Fecha Apertura",
+              process_ticket: "Fecha Proceso",
+              end_ticket: "Fecha Cierre",
+              name_accion_ticket: "Accion Ticket",
+              full_name_coordinador: "Coordinador",
+              id_level_failure: "Nivel de Falla",
+              full_name_tecnicoassignado: "Técnico Asignado",
+              serial_pos: "Serial POS",
+              descestatus: "Estatus del POS",
+              name_failure: "Motivo de ingreso",
+              downl_exoneration: "Exoneración",
+              downl_payment: "Pago Anticipo",
+              downl_send_to_rosal: "Enviado a Rosal",
+              downl_send_fromrosal: "Enviado desde Rosal a destino",
+              date_send_lab: "Fecha Envío Lab",
+              date_send_torosal_fromlab: "Fecha Envío a rosal",
+              name_status_domiciliacion: "Estatus Domiciliación",
+              date_sendkey: "Fecha Envío Llaves",
+              date_receivekey: "Fecha Recepción Llaves",
+              date_receivefrom_desti: "Fecha Recibo Destino",
           };
 
           for (const key of visibleKeys) {
@@ -1078,15 +1089,16 @@ function SendRegions() {
         }
       }
     } else {
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "No hay datos en su búsqueda.";
-      mainTableCard.appendChild(errorMessage);
-      console.error("Error:", xhr.status, xhr.statusText);
-      // Show the welcome message if there's a connection error
-      if (welcomeMessage) {
-        welcomeMessage.style.visibility = "visible";
-        welcomeMessage.style.opacity = "1";
-      }
+      // const errorMessage = document.createElement("p");
+      // errorMessage.textContent = "No hay datos en su búsqueda.";
+      // mainTableCard.appendChild(errorMessage);
+      // console.error("Error:", xhr.status, xhr.statusText);
+      // // Show the welcome message if there's a connection error
+      // if (welcomeMessage) {
+      //   welcomeMessage.style.visibility = "visible";
+      //   welcomeMessage.style.opacity = "1";
+      // }
+      Swal.fire("No hay resultados para la búsqueda!");
     }
   };
 
@@ -1110,9 +1122,11 @@ function SendRegions() {
     }
   };
 
-  const datos = `action=SearchRegionData&id_region=${encodeURIComponent(RegionSelectValue)}`;
+  const datos = `action=SearchRegionData&id_region=${encodeURIComponent(RegionSelectValue)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }
+
+
 
 function SendRif() {
   // Get the welcome message element and show it at the start
@@ -1125,6 +1139,9 @@ function SendRif() {
   const tipoRif = document.getElementById("rifTipo").value;
   const numeroRif = document.getElementById("rifInput").value.trim();
   const rifCompleto = tipoRif + numeroRif;
+
+  const id_user = document.getElementById('id_user').value;
+  const idtipouser = document.getElementById('idtipouser').value;
 
   // Mover la validación al principio para detener la ejecución si no hay RIF
   if (!numeroRif) {
@@ -1226,21 +1243,24 @@ function SendRif() {
           const columnTitles = {
               // ... Tus títulos de columna
               id_ticket: "ID Ticket",
-              nro_ticket: "Nro Ticket",
-              create_ticket: "Fecha Creación Ticket",
-              name_status_ticket: "Estatus Ticket",
               rif_empresa: "Rif",
               razonsocial_cliente: "Razón Social",
               descbanco: "Banco",
-              name_process_ticket: "Proceso Ticket",
+              descmodelo: "Modelo del POS",
+              name_process_ticket: "Gestión del Ticket",
               name_status_payment: "Estatus Pago",
               full_name_tecnico: "Usuario Gestión",
-              name_accion_ticket: "Acción Ticket",
+              name_status_ticket: "Estatus Ticket",
+              create_ticket: "Fecha Apertura",
+              process_ticket: "Fecha Proceso",
+              end_ticket: "Fecha Cierre",
+              name_accion_ticket: "Accion Ticket",
               full_name_coordinador: "Coordinador",
               id_level_failure: "Nivel de Falla",
               full_name_tecnicoassignado: "Técnico Asignado",
               serial_pos: "Serial POS",
-              name_failure: "Descripción de Fallas",
+              descestatus: "Estatus del POS",
+              name_failure: "Motivo de ingreso",
               downl_exoneration: "Exoneración",
               downl_payment: "Pago Anticipo",
               downl_send_to_rosal: "Enviado a Rosal",
@@ -1248,9 +1268,10 @@ function SendRif() {
               date_send_lab: "Fecha Envío Lab",
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Key",
-              date_receivekey: "Fecha Recibo Key",
+              date_sendkey: "Fecha Envío Llaves",
+              date_receivekey: "Fecha Recepción Llaves",
               date_receivefrom_desti: "Fecha Recibo Destino",
+              cod_adm: "cod_adm",
           };
 
           for (const key of visibleKeys) {
@@ -1502,15 +1523,16 @@ function SendRif() {
         }
       }
     } else {
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "No hay datos en su búsqueda.";
-      razonCountTableCard.appendChild(errorMessage);
-      console.error("Error:", xhr.status, xhr.statusText);
-      // Show the welcome message if there's a connection error
-      if (welcomeMessage) {
-        welcomeMessage.style.visibility = "visible";
-        welcomeMessage.style.opacity = "1";
-      }
+      // const errorMessage = document.createElement("p");
+      // errorMessage.textContent = "No hay datos en su búsqueda.";
+      // razonCountTableCard.appendChild(errorMessage);
+      // console.error("Error:", xhr.status, xhr.statusText);
+      // // Show the welcome message if there's a connection error
+      // if (welcomeMessage) {
+      //   welcomeMessage.style.visibility = "visible";
+      //   welcomeMessage.style.opacity = "1";
+      // }
+      Swal.fire("No hay resultados para la búsqueda!");
     }
   };
 
@@ -1534,7 +1556,7 @@ function SendRif() {
     }
   };
 
-  const datos = `action=SearchRifData&rif=${encodeURIComponent(rifCompleto)}`;
+  const datos = `action=SearchRifData&rif=${encodeURIComponent(rifCompleto)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }
 
@@ -1548,6 +1570,9 @@ function SendSerial() {
 
   const serialInput = document.getElementById("serialInput");
   const serialInputValue = serialInput.value.trim();
+
+  const id_user = document.getElementById('id_user').value;
+  const idtipouser = document.getElementById('idtipouser').value;
 
   // Mover la validación al principio para detener la ejecución si no hay serial
   if (!serialInputValue) {
@@ -1649,21 +1674,24 @@ function SendSerial() {
           const columnTitles = {
               // ... Tus títulos de columna
               id_ticket: "ID Ticket",
-              nro_ticket: "Nro Ticket",
-              create_ticket: "Create Ticket",
-              name_status_ticket: "Status Ticket",
               rif_empresa: "Rif",
               razonsocial_cliente: "Razón Social",
               descbanco: "Banco",
-              name_process_ticket: "Process Ticket",
+              descmodelo: "Modelo del POS",
+              name_process_ticket: "Gestión del Ticket",
               name_status_payment: "Estatus Pago",
               full_name_tecnico: "Usuario Gestión",
+              name_status_ticket: "Estatus Ticket",
+              create_ticket: "Fecha Apertura",
+              process_ticket: "Fecha Proceso",
+              end_ticket: "Fecha Cierre",
               name_accion_ticket: "Accion Ticket",
               full_name_coordinador: "Coordinador",
               id_level_failure: "Nivel de Falla",
               full_name_tecnicoassignado: "Técnico Asignado",
               serial_pos: "Serial POS",
-              name_failure: "Descripción de Fallas",
+              descestatus: "Estatus del POS",
+              name_failure: "Motivo de ingreso",
               downl_exoneration: "Exoneración",
               downl_payment: "Pago Anticipo",
               downl_send_to_rosal: "Enviado a Rosal",
@@ -1671,9 +1699,10 @@ function SendSerial() {
               date_send_lab: "Fecha Envío Lab",
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Key",
-              date_receivekey: "Fecha Recibo Key",
+              date_sendkey: "Fecha Envío Llaves",
+              date_receivekey: "Fecha Recepción Llaves",
               date_receivefrom_desti: "Fecha Recibo Destino",
+              cod_adm: "cod_adm",
           };
 
           for (const key of visibleKeys) {
@@ -1925,15 +1954,15 @@ function SendSerial() {
         }
       }
     } else {
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "No hay Datos en su búsqueda.";
-      razonCountTableCard.appendChild(errorMessage);
-      console.error("Error:", xhr.status, xhr.statusText);
-      // Show the welcome message if there's a connection error
-      if (welcomeMessage) {
-        welcomeMessage.style.visibility = "visible";
-        welcomeMessage.style.opacity = "1";
-      }
+      // const errorMessage = document.createElement("p");
+      // errorMessage.textContent = "No hay Datos en su búsqueda.";
+      // razonCountTableCard.appendChild(errorMessage);
+      // console.error("Error:", xhr.status, xhr.statusText);
+      // // Show the welcome message if there's a connection error
+      // if (welcomeMessage) {
+      //   welcomeMessage.style.visibility = "visible";
+      //   welcomeMessage.style.opacity = "1";
+      // }
     }
   };
 
@@ -1957,7 +1986,7 @@ function SendSerial() {
     }
   };
 
-  const datos = `action=SearchSerialData&serial=${encodeURIComponent(serialInputValue)}`;
+  const datos = `action=SearchSerialData&serial=${encodeURIComponent(serialInputValue)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }
 
@@ -1974,7 +2003,8 @@ function SendStatus() {
   const selectedOptionIndex = selectElement.selectedIndex;
   const EstatusName = selectElement.options[selectedOptionIndex].text;
 
-
+  const id_user = document.getElementById('id_user').value;
+  const idtipouser = document.getElementById('idtipouser').value;
 
 
   // Mover la validación al principio para detener la ejecución si no hay serial
@@ -2077,21 +2107,24 @@ function SendStatus() {
           const columnTitles = {
               // ... Tus títulos de columna
               id_ticket: "ID Ticket",
-              nro_ticket: "Nro Ticket",
-              create_ticket: "Create Ticket",
-              name_status_ticket: "Status Ticket",
               rif_empresa: "Rif",
               razonsocial_cliente: "Razón Social",
               descbanco: "Banco",
-              name_process_ticket: "Process Ticket",
+              descmodelo: "Modelo del POS",
+              name_process_ticket: "Gestión del Ticket",
               name_status_payment: "Estatus Pago",
               full_name_tecnico: "Usuario Gestión",
+              name_status_ticket: "Estatus Ticket",
+              create_ticket: "Fecha Apertura",
+              process_ticket: "Fecha Proceso",
+              end_ticket: "Fecha Cierre",
               name_accion_ticket: "Accion Ticket",
               full_name_coordinador: "Coordinador",
               id_level_failure: "Nivel de Falla",
               full_name_tecnicoassignado: "Técnico Asignado",
               serial_pos: "Serial POS",
-              name_failure: "Descripción de Fallas",
+              descestatus: "Estatus del POS",
+              name_failure: "Motivo de ingreso",
               downl_exoneration: "Exoneración",
               downl_payment: "Pago Anticipo",
               downl_send_to_rosal: "Enviado a Rosal",
@@ -2099,8 +2132,8 @@ function SendStatus() {
               date_send_lab: "Fecha Envío Lab",
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Key",
-              date_receivekey: "Fecha Recibo Key",
+              date_sendkey: "Fecha Envío Llaves",
+              date_receivekey: "Fecha Recepción Llaves",
               date_receivefrom_desti: "Fecha Recibo Destino",
           };
 
@@ -2353,15 +2386,16 @@ function SendStatus() {
         }
       }
     } else {
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "No hay Datos en su búsqueda.";
-      razonCountTableCard.appendChild(errorMessage);
-      console.error("Error:", xhr.status, xhr.statusText);
-      // Show the welcome message if there's a connection error
-      if (welcomeMessage) {
-        welcomeMessage.style.visibility = "visible";
-        welcomeMessage.style.opacity = "1";
-      }
+      // const errorMessage = document.createElement("p");
+      // errorMessage.textContent = "No hay Datos en su búsqueda.";
+      // razonCountTableCard.appendChild(errorMessage);
+      // console.error("Error:", xhr.status, xhr.statusText);
+      // // Show the welcome message if there's a connection error
+      // if (welcomeMessage) {
+      //   welcomeMessage.style.visibility = "visible";
+      //   welcomeMessage.style.opacity = "1";
+      // }
+      Swal.fire("No hay resultados para la búsqueda!");
     }
   };
 
@@ -2385,7 +2419,7 @@ function SendStatus() {
     }
   };
 
-  const datos = `action=SearchSerialData&estatus=${encodeURIComponent(EstatusSelectValue)}`;
+  const datos = `action=SearchEstatusData&estatus=${encodeURIComponent(EstatusSelectValue)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }
 
@@ -2399,6 +2433,10 @@ function SendRango() {
 
   const initialDate = document.getElementById("date-ini").value;
   const endDate = document.getElementById("date-end").value;
+  
+  const id_user = document.getElementById('id_user').value;
+  const idtipouser = document.getElementById('idtipouser').value;
+
 
   if (!initialDate || !endDate) {
     Swal.fire({
@@ -2482,23 +2520,25 @@ function SendRango() {
 
           const columnTitles = {
               // ... Tus títulos de columna
-              id_ticket: "ID Ticket",
-              nro_ticket: "Nro Ticket",
-              create_ticket: "Create Ticket",
-              name_status_ticket: "Status Ticket",
-              date_closed: "Cierre Ticket",
+               id_ticket: "ID Ticket",
               rif_empresa: "Rif",
               razonsocial_cliente: "Razón Social",
               descbanco: "Banco",
-              name_process_ticket: "Process Ticket",
+              descmodelo: "Modelo del POS",
+              name_process_ticket: "Gestión del Ticket",
               name_status_payment: "Estatus Pago",
               full_name_tecnico: "Usuario Gestión",
+              name_status_ticket: "Estatus Ticket",
+              create_ticket: "Fecha Apertura",
+              process_ticket: "Fecha Proceso",
+              end_ticket: "Fecha Cierre",
               name_accion_ticket: "Accion Ticket",
               full_name_coordinador: "Coordinador",
               id_level_failure: "Nivel de Falla",
               full_name_tecnicoassignado: "Técnico Asignado",
               serial_pos: "Serial POS",
-              name_failure: "Descripción de Fallas",
+              descestatus: "Estatus del POS",
+              name_failure: "Motivo de ingreso",
               downl_exoneration: "Exoneración",
               downl_payment: "Pago Anticipo",
               downl_send_to_rosal: "Enviado a Rosal",
@@ -2506,8 +2546,8 @@ function SendRango() {
               date_send_lab: "Fecha Envío Lab",
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Key",
-              date_receivekey: "Fecha Recibo Key",
+              date_sendkey: "Fecha Envío Llaves",
+              date_receivekey: "Fecha Recepción Llaves",
               date_receivefrom_desti: "Fecha Recibo Destino",
           };
 
@@ -2762,15 +2802,16 @@ function SendRango() {
         }
       }
     } else {
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "No hay datos en su búsqueda.";
-      razonCountTableCard.appendChild(errorMessage);
-      console.error("Error:", xhr.status, xhr.statusText);
-      // Show the welcome message if there's a connection error
-      if (welcomeMessage) {
-        welcomeMessage.style.visibility = "visible";
-        welcomeMessage.style.opacity = "1";
-      }
+      // const errorMessage = document.createElement("p");
+      // errorMessage.textContent = "No hay datos en su búsqueda.";
+      // razonCountTableCard.appendChild(errorMessage);
+      // console.error("Error:", xhr.status, xhr.statusText);
+      // // Show the welcome message if there's a connection error
+      // if (welcomeMessage) {
+      //   welcomeMessage.style.visibility = "visible";
+      //   welcomeMessage.style.opacity = "1";
+      // }
+      Swal.fire("No hay resultados para la búsqueda!");
     }
   };
 
@@ -2787,7 +2828,7 @@ function SendRango() {
     }
   };
 
-  const datos = `action=SearchRangeDate&initial=${encodeURIComponent(initialDate)}&second=${encodeURIComponent(endDate)}`;
+  const datos = `action=SearchRangeDate&initial=${encodeURIComponent(initialDate)}&second=${encodeURIComponent(endDate)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }
 
@@ -2796,6 +2837,7 @@ function SendRango() {
 function getBancoTicket() {
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getBancoTicket`);
+
 
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
@@ -2865,7 +2907,8 @@ function SendBancos() {
   const selectElementBco = document.getElementById("SelectBancosInput");
   // const selectedOptionIndex = selectElementBco.selectedIndex;
   // const EstatusName = selectElementBco.options[selectedOptionIndex].text;
-
+  const id_user = document.getElementById('id_user').value;
+  const idtipouser = document.getElementById('idtipouser').value;
 
 
 
@@ -2969,20 +3012,24 @@ function SendBancos() {
           const columnTitles = {
               // ... Tus títulos de columna
               id_ticket: "ID Ticket",
-              create_ticket: "Create Ticket",
-              name_status_ticket: "Status Ticket",
               rif_empresa: "Rif",
               razonsocial_cliente: "Razón Social",
               descbanco: "Banco",
-              name_process_ticket: "Process Ticket",
+              descmodelo: "Modelo del POS",
+              name_process_ticket: "Gestión del Ticket",
               name_status_payment: "Estatus Pago",
               full_name_tecnico: "Usuario Gestión",
+              name_status_ticket: "Estatus Ticket",
+              create_ticket: "Fecha Apertura",
+              process_ticket: "Fecha Proceso",
+              end_ticket: "Fecha Cierre",
               name_accion_ticket: "Accion Ticket",
               full_name_coordinador: "Coordinador",
               id_level_failure: "Nivel de Falla",
               full_name_tecnicoassignado: "Técnico Asignado",
               serial_pos: "Serial POS",
-              name_failure: "Descripción de Fallas",
+              descestatus: "Estatus del POS",
+              name_failure: "Motivo de ingreso",
               downl_exoneration: "Exoneración",
               downl_payment: "Pago Anticipo",
               downl_send_to_rosal: "Enviado a Rosal",
@@ -2990,8 +3037,8 @@ function SendBancos() {
               date_send_lab: "Fecha Envío Lab",
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Key",
-              date_receivekey: "Fecha Recibo Key",
+              date_sendkey: "Fecha Envío Llaves",
+              date_receivekey: "Fecha Recepción Llaves",
               date_receivefrom_desti: "Fecha Recibo Destino",
           };
 
@@ -3244,15 +3291,18 @@ function SendBancos() {
         }
       }
     } else {
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "No hay Datos en su búsqueda.";
-      razonCountTableCard.appendChild(errorMessage);
-      console.error("Error:", xhr.status, xhr.statusText);
-      // Show the welcome message if there's a connection error
-      if (welcomeMessage) {
-        welcomeMessage.style.visibility = "visible";
-        welcomeMessage.style.opacity = "1";
-      }
+      // const errorMessage = document.createElement("p");
+      // errorMessage.textContent = "No hay Datos en su búsqueda.";
+      // razonCountTableCard.appendChild(errorMessage);
+      // console.error("Error:", xhr.status, xhr.statusText);
+      // // Show the welcome message if there's a connection error
+      // if (welcomeMessage) {
+      //   welcomeMessage.style.visibility = "visible";
+      //   welcomeMessage.style.opacity = "1";
+      // }
+      Swal.fire("No hay resultados para la búsqueda!");
+
+      console.log('errorr');
     }
   };
 
@@ -3276,6 +3326,6 @@ function SendBancos() {
     }
   };
 
-  const datos = `action=SearchBancoData&banco=${encodeURIComponent(selectBanco)}`;
+  const datos = `action=SearchBancoData&banco=${encodeURIComponent(selectBanco)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }

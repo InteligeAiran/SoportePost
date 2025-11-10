@@ -803,15 +803,21 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function GetRegionTicket(){
-        $result = $this->model->GetRegionTicket();
+    public function GetRegionTicket($id_user){
+        $result = $this->model->GetRegionTicket($id_user);
     
-        for ($i = 0; $i < $result['numRows']; $i++) {
-            $agente = pg_fetch_assoc($result['query'], $i);
-            $tipousers[] = $agente;
+       if ($result) {
+            //var_dump($result);  
+            $ticket = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
             //var_dump($agente);
+            return $ticket;
+        } else {
+            return null;
         }
-        return $tipousers;
     }
 
     public function SendBackToTaller($id_ticket, $id_user){

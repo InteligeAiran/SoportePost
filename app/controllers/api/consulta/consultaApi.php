@@ -1993,8 +1993,10 @@ class Consulta extends Controller
 
 
     public function handleGetRegionTicket(){
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
-        $result = $repository->GetRegionTicket();
+        $result = $repository->GetRegionTicket($id_user);
        // var_dump($result);
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'regionusers' => $result], 200);

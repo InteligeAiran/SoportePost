@@ -14,11 +14,14 @@ class reportsModel extends Model
         $this->db = DatabaseCon::getInstance(bd_hostname, mvc_port, bd_usuario, bd_clave, database); // Ensure getInstance() returns a PgSql\Connection
     }
 
-    public function GetTicketsByRegion($id_region)
+    public function GetTicketsByRegion($id_region,$id_user,$idtipouser)
     {
         try {
             $escaped_id_region = pg_escape_literal($this->db->getConnection(), $id_region); // Assuming '$this->db' is now a valid PgSql\Connection
-            $sql = "SELECT * FROM public.GetTicketsByRegion(".$escaped_id_region.");";  
+            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+            $escaped_idtipouser = pg_escape_literal($this->db->getConnection(), $idtipouser);
+
+            $sql = "SELECT * FROM public.GetTicketsByRegion(".$escaped_id_region.", ".$escaped_id_user.",".$escaped_idtipouser.");";  
             $result = $this->getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -26,10 +29,13 @@ class reportsModel extends Model
         }
     }
 
-    public function GetTicketsByRif($rif){
+    public function GetTicketsByRif($rif,$id_user,$idtipouser){
         try {
             $escaped_rif = pg_escape_literal($this->db->getConnection(), $rif); // Assuming '$this->db' is now a valid PgSql\Connection
-            $sql = "SELECT * FROM getticketsbyrif('%" . substr($escaped_rif, 1, -1) . "%')";
+            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+            $escaped_idtipouser = pg_escape_literal($this->db->getConnection(), $idtipouser);
+
+            $sql = "SELECT * FROM getticketsbyrif('%" . substr($escaped_rif, 1, -1) . "%', ".$escaped_id_user.",".$escaped_idtipouser.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -38,10 +44,13 @@ class reportsModel extends Model
     }
 
 
-    public function SearchSerial($serial){
+    public function SearchSerial($serial,$id_user,$idtipouser){
         try {
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); // Assuming '$this->db' is now a valid PgSql\Connection
-            $sql = "SELECT * FROM GetTicketsBySearchSerial('%" . substr($escaped_serial, 1, -1) . "%')";
+            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user); // Assuming '$this->db' is now a valid PgSql\Connection
+            $escaped_idtipouser = pg_escape_literal($this->db->getConnection(), $idtipouser); // Assuming '$this->db' is now a valid PgSql\Connection
+
+            $sql = "SELECT * FROM GetTicketsBySearchSerial('%" . substr($escaped_serial, 1, -1) . "%',".$escaped_id_user.",".$escaped_idtipouser.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -49,11 +58,14 @@ class reportsModel extends Model
         }
     }
 
-    public function SearchRangeData($ini_date, $end_date){
+    public function SearchRangeData($ini_date, $end_date,$id_user, $idtipouser){
         try {
             $escaped_ini_date = pg_escape_literal($this->db->getConnection(), $ini_date);
             $escaped_end_date = pg_escape_literal($this->db->getConnection(), $end_date);
-            $sql = "SELECT * FROM getticketsbysearchrangedate(".$escaped_ini_date.", ".$escaped_end_date.")";
+            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+            $escaped_idtipouser = pg_escape_literal($this->db->getConnection(), $idtipouser);
+
+            $sql = "SELECT * FROM getticketsbysearchrangedate(".$escaped_ini_date.", ".$escaped_end_date.",".$escaped_id_user.",".$escaped_idtipouser.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -881,7 +893,7 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
 
     public function GetTotalTicketsInProcess($id_rol, $id_user){
         try {
-            $sql = "SELECT * FROM get_total_in_processtickets(".$id_rol.", ".$id_user.")";
+            $sql = "SELECT * FROM get_total_in_processtickets(".$id_rol.",".$id_user.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -1167,9 +1179,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function GetDataEstatusTicket($estatus){
+    public function GetDataEstatusTicket($estatus,$id_user, $idtipouser){
         try {
-            $sql = "SELECT * FROM getticketsbyestatus(".$estatus.")";
+            $sql = "SELECT * FROM getticketsbyestatus(".$estatus.",".$id_user.",".$idtipouser.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -1217,9 +1229,9 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function SearchBanco($banco){
+    public function SearchBanco($banco,$id_user,$idtipouser){
         try {
-            $sql = "SELECT * FROM getticketsbybanco(".$banco.")";
+            $sql = "SELECT * FROM getticketsbybanco(".$banco.",".$id_user.",".$idtipouser.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
