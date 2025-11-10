@@ -1185,7 +1185,7 @@ $(document).on('click', '#printHtmlTemplateBtn', function () {
             title: 'Nota de Entrega',
             text: 'El archivo se generó correctamente. Puedes guardarlo como PDF.',
             showCancelButton: true,
-            confirmButtonText: 'Imprimir', // Opción que dispara window.print()
+            confirmButtonText: 'Guardar', // Opción que dispara window.print()
             cancelButtonText: 'Cerrar', // Opción que cierra la vista previa
             confirmButtonColor: '#003594',
             cancelButtonColor: '#808080', // Color para el botón "Cerrar Ventana"

@@ -324,6 +324,14 @@ let usuariosAcciones = {
     acciones: [6, 10, 11, 16], // Added 11 for Reasignado al Técnico
   },
 
+  rosal: {
+    modulo: 'pendiente_entrega',
+    modalId: 'pendienteEntregaModal', // Replace with actual modal ID if needed
+    buttonId: 'btn-por-asignar',
+    filterTerm: 'En espera de confirmar recibido en el Rosal|En espera de Confirmar Devolución|En el Rosal',
+    acciones: [14, 17, 12],
+  },
+
   // Add other roles as needed, e.g., for Entregado a Cliente
   cliente: {
     modulo: 'region',
@@ -331,6 +339,14 @@ let usuariosAcciones = {
     buttonId: 'btn-devuelto',
     filterTerm: 'Entregado a Cliente',
     acciones: [16], // Adjust id_accion_ticket as needed
+  },
+
+  region: {
+    modulo: 'region',
+    modalId: 'RegionTicketsModal', // Replace with actual modal ID if needed
+    buttonId: 'btn-por-asignar',
+    filterTerm: 'En espera de confirmar recibido en Región|En la región',
+    acciones: [18, 19],
   },
 
   taller: {
@@ -5172,7 +5188,7 @@ function displayChartErrorMessage(chartId, message, type = 'info') {
             ${message}
         </div>
         <div style="font-size: 14px; color: #6c757d; opacity: 0.8;">
-            ${type === 'error' ? 'Cree tickets para Vizualizar datos' : 'No hay información disponible'}
+            ${type === 'error' ? 'Gestione un ticket para Vizualizar datos' : 'No hay información disponible'}
         </div>
     `;
     

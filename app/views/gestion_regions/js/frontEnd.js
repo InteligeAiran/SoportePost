@@ -458,86 +458,136 @@ function getTicketDataFinaljs() {
                   return rowCount > 0;
                 }
 
-                 function applyNroTicketSearch() {
-                                    if (nroTicket) {
-                                        api.search(nroTicket).draw(false);
-                                        let ticketFound = false;
-                                        api.rows({ filter: 'applied' }).every(function () {
-                                            const rowData = this.data();
-                                            if (rowData.nro_ticket === nroTicket) {
-                                                $(this.node()).addClass('table-active');
-                                                this.node().scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                                ticketFound = true;
-                                            } else {
-                                                $(this.node()).removeClass('table-active');
-                                            }
-                                        });
-                                        if (!ticketFound) {
-                                            Swal.fire({
-                                                icon: 'warning',
-                                                title: 'Ticket no encontrado',
-                                                text: `El ticket ${nroTicket} no se encuentra en este filtro.`,
-                                                confirmButtonText: 'Ok',
-                                                color: 'black',
-                                                confirmButtonColor: '#003594'
-                                            });
-                                            api.search('').draw(false);
-                                        }
-                                    }
-                                  }
+                function applyNroTicketSearch(options = {}) {
+                  const { showWarning = true, warningText } = options || {};
+                  if (!nroTicket) {
+                    return false;
+                  }
+
+                  api.search(nroTicket).draw(false);
+                  let ticketFound = false;
+                  api.rows({ filter: 'applied' }).every(function () {
+                    const rowData = this.data();
+                    if (rowData.nro_ticket === nroTicket) {
+                      $(this.node()).addClass('table-active');
+                      this.node().scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      ticketFound = true;
+                    } else {
+                      $(this.node()).removeClass('table-active');
+                    }
+                  });
+
+                  if (!ticketFound) {
+                    if (showWarning) {
+                      Swal.fire({
+                        icon: 'warning',
+                        title: 'Ticket no encontrado',
+                        text: warningText || `El ticket ${nroTicket} no se encuentra en este filtro.`,
+                        confirmButtonText: 'Ok',
+                        color: 'black',
+                        confirmButtonColor: '#003594'
+                      });
+                    }
+                    api.search('').draw(false);
+                    $('.dataTables_filter input').val('');
+                    return false;
+                  }
+
+                  $('.dataTables_filter input').val(nroTicket);
+                  return true;
+                }
+
+                const filterConfigs = [
+                  {
+                    button: "btn-por-asignar",
+                    term: "^En espera de confirmar recibido en Región$",
+                    status: 'En proceso',
+                    action: 'En espera de confirmar recibido en Región',
+                    adjustColumns: () => {
+                      api.column(15).visible(true);
+                      api.column(11).visible(false);
+                      api.column(13).visible(true);
+                    }
+                  },
+                  {
+                    button: "btn-recibidos",
+                    term: "^En la región$",
+                    status: 'En proceso',
+                    action: 'En la región',
+                    adjustColumns: () => {
+                      api.column(15).visible(true);
+                    }
+                  },
+                  {
+                    button: "btn-asignados",
+                    term: "^Entregado a Cliente$",
+                    status: 'Cerrado',
+                    action: 'Entregado a Cliente',
+                    adjustColumns: () => {
+                      api.column(15).visible(false);
+                    }
+                  }
+                ];
+
+                function applyFilterConfig(config) {
+                  if (!config) return;
+                  api.columns().search('').draw(false);
+                  api.column(9).search(config.term, true, false).draw();
+                  config.adjustColumns();
+                  setActiveButton(config.button);
+                  showTicketStatusIndicator(config.status, config.action);
+                }
 
                 // Función para buscar automáticamente el primer botón con datos
                 function findFirstButtonWithData() {
-                  const searchTerms = [
-                    { button: "btn-por-asignar", term: "^En espera de confirmar recibido en Región$"},
-                    { button: "btn-recibidos", term: "^En la región$" },
-                    { button: "btn-asignados", term: "^Entregado a Cliente$" }
-                  ];
+                  let fallbackConfig = null;
+                  let ticketFoundConfig = null;
+                  let ticketFound = false;
 
-                  for (let i = 0; i < searchTerms.length; i++) {
-                    const { button, term } = searchTerms[i];
-                    
-                    if (checkDataExists(term)) {
-                      // Si hay datos, aplicar la búsqueda y activar el botón
-                      api.columns().search('').draw(false);
-                      api.column(9).search(term, true, false).draw();
+                  for (const config of filterConfigs) {
+                    const hasData = checkDataExists(config.term);
+                    if (!hasData) {
+                      continue;
+                    }
 
-                      // Aplicar configuración específica para cada botón
-                      if (button === "btn-por-asignar") {
-                        api.column(15).visible(true);
-                        api.column(11).visible(false);
-                        api.column(13).visible(true);
-                        api.column(9).search("^En espera de confirmar recibido en Región$", true, false).draw();
-                        
-                        // Actualizar indicador de estado
-                        showTicketStatusIndicator('En proceso', 'En espera de confirmar recibido en Región');
-                      } else if (button === "btn-asignados") {
-                        api.column(15).visible(false);
-                        api.column(9).search("^Entregado a Cliente$", true, false).draw();
-                        
-                        // Actualizar indicador de estado
-                        showTicketStatusIndicator('Cerrado', 'Entregado a Cliente');
-                      } else if (button === "btn-recibidos") {
-                        api.column(15).visible(true);
-                        api.column(9).search("^En la región$", true, false).draw();
-                        
-                        // Actualizar indicador de estado
-                        showTicketStatusIndicator('En proceso', 'En la región');
+                    if (!fallbackConfig) {
+                      fallbackConfig = config;
+                    }
+
+                    if (nroTicket) {
+                      const filteredRows = api.rows({ filter: 'applied' }).data().toArray();
+                      const hasTicket = filteredRows.some(row => row?.nro_ticket === nroTicket);
+                      if (hasTicket) {
+                        ticketFoundConfig = config;
+                        ticketFound = true;
+                        break;
                       }
-
-                      setActiveButton(button);
-                      applyNroTicketSearch(); // Aplicar búsqueda por nro_ticket si está en la URL
-                      return true; // Encontramos datos
+                    } else {
+                      ticketFoundConfig = config;
+                      break;
                     }
                   }
-                  
-                  // Si no hay datos en ningún botón, mostrar mensaje
+
+                  if (!ticketFoundConfig && fallbackConfig) {
+                    ticketFoundConfig = fallbackConfig;
+                  }
+
+                  if (ticketFoundConfig) {
+                    applyFilterConfig(ticketFoundConfig);
+                    if (nroTicket) {
+                      applyNroTicketSearch({
+                        showWarning: !ticketFound,
+                        warningText: `El ticket ${nroTicket} no se encuentra en los datos disponibles.`
+                      });
+                    }
+                    return true;
+                  }
+
                   api.columns().search('').draw(false);
-                  api.column(9).search("NO_DATA_FOUND").draw(); // Búsqueda que no devuelve resultados
-                  setActiveButton("btn-por-asignar"); // Mantener el primer botón activo por defecto
+                  api.column(9).search("NO_DATA_FOUND").draw();
+                  setActiveButton("btn-por-asignar");
                   showTicketStatusIndicator('Cerrado', 'Sin estado');
-                  
-                  // Mostrar mensaje de que no hay datos
+
                   const tbody = document.querySelector("#tabla-ticket tbody");
                   if (tbody) {
                     tbody.innerHTML = `<tr>
@@ -552,57 +602,55 @@ function getTicketDataFinaljs() {
                       </td>
                     </tr>`;
                   }
+
+                  if (nroTicket) {
+                    Swal.fire({
+                      icon: 'warning',
+                      title: 'Ticket no encontrado',
+                      text: `El ticket ${nroTicket} no se encuentra en los datos disponibles.`,
+                      confirmButtonText: 'Ok',
+                      color: 'black',
+                      confirmButtonColor: '#003594'
+                    });
+                  }
+
                   return false;
                 }
 
                 // Ejecutar la búsqueda automática al inicializar
                 findFirstButtonWithData();
 
+                const configMap = filterConfigs.reduce((acc, cfg) => {
+                  acc[cfg.button] = cfg;
+                  return acc;
+                }, {});
+
                 // Event listeners para los botones (mantener la funcionalidad manual)
                 $("#btn-por-asignar").on("click", function () {
-                  if (checkDataExists("^En espera de confirmar recibido en Región$")) {
-                    api.columns().search('').draw(false);
-                    api.column(15).visible(true);
-                    api.column(11).visible(false);
-                    api.column(13).visible(true);
-                    api.column(9).search("^En espera de confirmar recibido en Región$", true, false).draw();
-                    setActiveButton("btn-por-asignar");
-                    // Actualizar indicador de estado para "En espera de confirmar recibido en Región"
-                    showTicketStatusIndicator('En proceso', 'En espera de confirmar recibido en Región');
-                                                                            applyNroTicketSearch();
-
+                  const config = configMap["btn-por-asignar"];
+                  if (config && checkDataExists(config.term)) {
+                    applyFilterConfig(config);
+                    applyNroTicketSearch();
                   } else {
                     findFirstButtonWithData();
                   }
                 });
 
                 $("#btn-recibidos").on("click", function () {
-                  if (checkDataExists("^En la región$")) {
-                    api.columns().search('').draw(false);
-                    api.column(15).visible(true);
-                    api.column(9).search("^En la región$", true, false).draw();
-                    setActiveButton("btn-recibidos");
-                    // Actualizar indicador de estado para "En la región"
-                    showTicketStatusIndicator('En proceso', 'En la región');
-                                                                            applyNroTicketSearch();
-
+                  const config = configMap["btn-recibidos"];
+                  if (config && checkDataExists(config.term)) {
+                    applyFilterConfig(config);
+                    applyNroTicketSearch();
                   } else {
                     findFirstButtonWithData();
                   }
                 });
 
                 $("#btn-asignados").on("click", function () {
-                  if (checkDataExists("^Entregado a Cliente$")) {
-                    api.columns().search('').draw(false);
-                    api.column(15).visible(false);
-                    api.column(9).search("^Entregado a Cliente$", true, false).draw();
-
-                    setActiveButton("btn-asignados");
-                    
-                    // Actualizar indicador de estado para "Entregado a Cliente"
-                    showTicketStatusIndicator('Cerrado', 'Entregado a Cliente');
-                                                                            applyNroTicketSearch();
-
+                  const config = configMap["btn-asignados"];
+                  if (config && checkDataExists(config.term)) {
+                    applyFilterConfig(config);
+                    applyNroTicketSearch();
                   } else {
                     findFirstButtonWithData();
                   }

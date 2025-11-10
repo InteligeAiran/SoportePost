@@ -3118,7 +3118,7 @@ $(document).ready(function () {
                             </div>
                         `,
             showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-check"></i> Sí, Cambiar',
+            confirmButtonText: '<i class="fas fa-check"></i>Cambiar',
             cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
             confirmButtonColor: "#003594 ",
             cancelButtonColor: "#dc3545",
@@ -4164,17 +4164,13 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
             max-width: 100%;
 
-            margin: 0 auto;
+            margin: 0;
 
             overflow-x: hidden;
 
-            display: flex;
+            display: block;
 
-            justify-content: center;
-
-            align-items: flex-start;
-
-            min-height: 100vh;
+            min-height: auto;
 
         }
 
@@ -4186,11 +4182,11 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
             width: 100%;
 
-            margin: 0 auto;
+            margin: 20px auto;
 
             background: white;
 
-            min-height: calc(100vh - 40px);
+            min-height: auto;
 
             display: flex;
 
@@ -4200,6 +4196,8 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
             border-radius: 8px;
 
+            padding: 20px;
+
         }
 
         
@@ -4208,7 +4206,7 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
             text-align: center;
 
-            margin-bottom: 12px;
+            margin-bottom: 8px;
 
             padding: 8px 0;
 
@@ -4310,19 +4308,19 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
             display: flex;
 
-            justify-content: space-between;
+            justify-content: space-around;
 
-            margin: 10px 0;
+            margin: 10px 0 8px 0;
 
-            padding: 8px;
+            padding: 15px;
 
             background: #f8f9fa;
 
-            border-radius: 5px;
+            border-radius: 8px;
 
-            border-left: 3px solid #2c5aa0;
+            border-left: 4px solid #2c5aa0;
 
-            gap: 10px;
+            gap: 15px;
 
         }
 
@@ -4336,9 +4334,13 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
             align-items: center;
 
+            justify-content: center;
+
             flex: 1;
 
             min-width: 0;
+
+            text-align: center;
 
         }
 
@@ -4354,7 +4356,9 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
             text-transform: uppercase;
 
-            margin-bottom: 3px;
+            margin-bottom: 8px;
+
+            line-height: 1.3;
 
         }
 
@@ -4362,11 +4366,13 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
         
         .info-value {
 
-            font-size: 12px;
+            font-size: 13px;
 
             font-weight: bold;
 
             color: #2c5aa0;
+
+            word-break: break-word;
 
         }
 
@@ -4386,7 +4392,7 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
         
         .section {
 
-            margin: 6px 0;
+            margin: 4px 0;
 
             background: #fff;
 
@@ -4761,6 +4767,11 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
         
         
         /* Optimizaciones críticas para impresión */
+        
+        @page {
+            size: A4;
+            margin: 0.5cm;
+        }
 
         @media print {
 
@@ -4786,15 +4797,6 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
             
             
-            /* Ajustar el contenido para dar espacio al header/footer fijos */
-
-            body {
-
-                margin-top: 50px !important;
-
-                margin-bottom: 40px !important;
-
-            }
 
             
             
@@ -4802,15 +4804,13 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
                 width: 100% !important;
 
-                height: 100% !important;
+                height: auto !important;
 
                 margin: 0 !important;
 
                 padding: 0 !important;
 
                 overflow: visible !important;
-
-                display: block !important;
 
             }
 
@@ -4820,15 +4820,15 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
 
                 font-size: 10px !important;
 
-                padding: 8px !important;
+                padding: 0 !important;
 
-                display: flex !important;
+                margin: 0 !important;
 
-                justify-content: center !important;
+                display: block !important;
 
-                align-items: flex-start !important;
+                min-height: auto !important;
 
-                min-height: 100vh !important;
+                page-break-before: avoid !important;
 
             }
 
@@ -4851,6 +4851,8 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
                 box-shadow: none !important;
 
                 border-radius: 0 !important;
+
+                padding: 20px !important;
 
             }
 
@@ -5056,13 +5058,13 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
             
             .document-info {
 
-                margin: 6px 0 !important;
+                margin: 10px 0 8px 0 !important;
 
-                padding: 6px !important;
+                padding: 15px !important;
 
                 page-break-after: avoid;
 
-                gap: 8px !important;
+                gap: 15px !important;
 
             }
 
@@ -5813,7 +5815,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (printBtn) {
     // 1. Añadir el Listener de Clic al botón principal
 
-    printBtn.addEventListener("click", function () {
+    printBtn.addEventListener("click", async function () {
       // Validar monto mínimo
 
       const saldoDeudor = document.getElementById("pa_saldo_deudor").value;
@@ -5841,332 +5843,200 @@ document.addEventListener("DOMContentLoaded", function () {
       const convenioNumero = window.currentConvenioNumero || data.nro_ticket;
       const html = buildPaymentAgreementHtml(data, convenioNumero);
 
-      // 2. Mostrar la alerta de éxito
+      // 2. Crear iframe para renderizar el HTML con estilos
+      const iframe = document.createElement('iframe');
+      iframe.id = 'paymentAgreementPreview';
+      iframe.style.position = 'fixed';
+      iframe.style.top = '0';
+      iframe.style.left = '0';
+      iframe.style.width = '800px';
+      iframe.style.height = '1200px';
+      iframe.style.border = 'none';
+      iframe.style.zIndex = '999999';
+      iframe.style.opacity = '0';
+      iframe.style.pointerEvents = 'none';
+      iframe.style.transform = 'translateX(-10000px)';
+      document.body.appendChild(iframe);
 
-      Swal.fire({
-        title: "¡Acuerdo de Pago generado!",
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      const baseHref = `${window.location.origin}/SoportePost/`;
+      
+      // Inyectar base href para resolver rutas relativas
+      let htmlWithBase = html.replace('<head>', `<head><base href="${baseHref}">`);
+      
+      // Eliminar espacios en blanco y saltos de línea antes del contenido del body
+      htmlWithBase = htmlWithBase.replace(/<body[^>]*>\s*/i, '<body>');
+      
+      // Escribir el HTML completo con estilos
+      doc.open();
+      doc.write(htmlWithBase);
+      doc.close();
 
-        text: "El acuerdo de pago ha sido generado correctamente y está listo para imprimir.",
-
-        icon: "success",
-
-        confirmButtonText: "Imprimir",
-
-        confirmButtonColor: "#003594",
-
-        cancelButtonText: "Cerrar",
-
-        cancelButtonColor: "#6c757d",
-
-        color: "black",
-
-        showCancelButton: true,
-
-        allowOutsideClick: false,
-
-        allowEscapeKey: true,
-      }).then(async (result) => {
-        if (!result.isConfirmed) return;
-        const filename = `ConvenioFirmado-${convenioNumero}.pdf`;
-
-        // Cargar html2pdf si no existe
-        async function ensureHtml2Pdf() {
-          if (window.html2pdf) return true;
-          return new Promise((resolve) => {
-            const s = document.createElement('script');
-            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-            s.onload = () => resolve(true);
-            s.onerror = () => resolve(false);
-            document.head.appendChild(s);
-          });
-        }
-
-        const ok = await ensureHtml2Pdf();
-        if (ok && window.html2pdf) {
-          const iframe = document.createElement('iframe');
-          iframe.style.position = 'fixed';
-          iframe.style.left = '-10000px';
-          iframe.style.width = '210mm';
-          iframe.style.height = '297mm';
-          document.body.appendChild(iframe);
-
-          const idoc = (iframe.contentWindow || iframe.contentDocument).document;
-          idoc.open();
-          const baseHref = `${window.location.origin}/SoportePost/`;
-          const htmlFixed = html.replace('<head>', `<head><base href="${baseHref}">`);
-          idoc.write(htmlFixed);
-          idoc.close();
-
-          await new Promise(r => setTimeout(r, 500));
-          const imgs = idoc.images ? Array.from(idoc.images) : [];
-          await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => { img.onload = img.onerror = res; })));
-
-          try {
-            await html2pdf()
-              .set({
-                margin: [10,10,10,10],
-                filename,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, allowTaint: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['css', 'legacy'] }
-              })
-              .from(idoc.body)
-              .save();
-          } catch (e) {
-            console.error('Error generando PDF:', e);
-            Swal.fire('Error', 'No se pudo generar el PDF.', 'error');
-          } finally {
-            document.body.removeChild(iframe);
-          }
+      // Esperar a que el contenido se cargue completamente
+      await new Promise((resolve) => {
+        if (doc.readyState === 'complete') {
+          resolve();
         } else {
-          // Fallback: abrir diálogo del navegador
-          const w = window.open('', '_blank', 'width=800,height=600');
-          if (!w) { Swal.fire('Error', 'El navegador bloqueó la ventana de guardado', 'error'); return; }
-          w.document.open();
-          w.document.write(html);
-          w.document.title = filename;
-          w.document.close();
-          w.onload = function(){ w.focus(); w.print(); };
+          const onReady = () => {
+            doc.removeEventListener('DOMContentLoaded', onReady);
+            resolve();
+          };
+          doc.addEventListener('DOMContentLoaded', onReady);
+          setTimeout(() => {
+            doc.removeEventListener('DOMContentLoaded', onReady);
+            resolve();
+          }, 2000);
         }
       });
-    }
 
-
-
-                        <script>
-
-                            // Función para cerrar la ventana y recargar la página principal
-
-                            function closeAndReload() {
-
-                                console.log('Cerrando ventana y recargando página principal...');
-
-                                if (window.opener) {
-
-                                    window.opener.location.reload();
-
-                                }
-
-                                window.close();
-
-                            }
-
-                            
-                            
-                            // Detectar cuando se completa la impresión/guardado
-
-                            window.addEventListener('afterprint', function() {
-
-                                console.log('Impresión completada - cerrando ventana');
-
-                                setTimeout(closeAndReload, 1000);
-
-                            });
-
-                            
-                            
-                            // Detectar cuando se pierde el foco (usuario interactúa con diálogo)
-
-                            window.addEventListener('blur', function() {
-
-                                console.log('Foco perdido - verificando si se cerró');
-
-                                setTimeout(function() {
-
-                                    if (document.hidden) {
-
-                                        closeAndReload();
-
-                                    }
-
-                                }, 3000);
-
-                            });
-
-                            
-                            
-                            // Botón manual de cierre (visible solo si es necesario)
-
-                            setTimeout(function() {
-
-                                if (!document.querySelector('.close-btn')) {
-
-                                    const closeBtn = document.createElement('button');
-
-                                    closeBtn.innerHTML = '✓ Documento Guardado - Cerrar';
-
-                                    closeBtn.className = 'close-btn';
-
-                                    closeBtn.style.cssText = \`
-
-                                        position: fixed;
-
-                                        top: 10px;
-
-                                        right: 10px;
-
-                                        background: #28a745;
-
-                                        color: white;
-
-                                        border: none;
-
-                                        padding: 10px 15px;
-
-                                        border-radius: 5px;
-
-                                        cursor: pointer;
-
-                                        font-size: 12px;
-
-                                        z-index: 9999;
-
-                                        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-
-                                    \`;
-
-                                    closeBtn.onclick = closeAndReload;
-
-                                    document.body.appendChild(closeBtn);
-
-                                }
-
-                            }, 5000); // Mostrar botón después de 5 segundos
-
-                        </script>
-
-                    </body>`
-            );
-
-            printWindow.document.write(htmlWithScript);
-
-            printWindow.document.close();
-
-            // Esperar a que se cargue el contenido y luego imprimir
-
-            printWindow.onload = function () {
-              printWindow.focus();
-
-              printWindow.print();
-
-              let reloadExecuted = false; // Flag para evitar recargas múltiples
-
-              let checkInterval = null;
-
-              // Función para recargar la página
-
-              const reloadPage = () => {
-                if (!reloadExecuted) {
-                  reloadExecuted = true;
-
-                  console.log(
-                    "Recargando página después de guardar documento..."
-                  );
-
-                  // Cerrar la ventana de impresión si aún está abierta
-
-                  if (printWindow && !printWindow.closed) {
-                    printWindow.close();
-                  }
-
-                  // Limpiar el intervalo
-
-                  if (checkInterval) {
-                    clearInterval(checkInterval);
-                  }
-
-                  // Recargar la página principal
-
-                  setTimeout(() => {
-                    window.location.reload();
-                  }, 1000);
-                }
-              };
-
-              // Método principal: Verificar periódicamente si la ventana se cerró
-
-              checkInterval = setInterval(() => {
-                try {
-                  if (printWindow.closed) {
-                    console.log(
-                      "Ventana cerrada detectada - ejecutando recarga"
-                    );
-
-                    reloadPage();
-                  }
-                } catch (e) {
-                  // Si hay error accediendo a la ventana, asumir que se cerró
-
-                  console.log(
-                    "Error accediendo a ventana - asumiendo que se cerró"
-                  );
-
-                  reloadPage();
-                }
-              }, 500); // Verificar cada 500ms
-
-              // Método alternativo: Detectar cuando se completa la impresión
-
-              printWindow.addEventListener("afterprint", function () {
-                console.log("Evento afterprint detectado");
-
-                reloadPage();
-              });
-
-              // Método alternativo: Detectar cuando se pierde el foco
-
-              printWindow.addEventListener("blur", function () {
-                console.log(
-                  "Evento blur detectado - usuario interactuando con diálogo"
-                );
-
-                // Esperar un poco y verificar si la ventana sigue abierta
-
-                setTimeout(() => {
-                  try {
-                    if (printWindow.closed) {
-                      reloadPage();
-                    }
-                  } catch (e) {
-                    reloadPage();
-                  }
-                }, 3000);
-              });
-
-              // Método de respaldo: Detectar cuando se cierra la ventana
-
-              printWindow.addEventListener("beforeunload", function () {
-                console.log("Evento beforeunload detectado");
-
-                reloadPage();
-              });
-
-              // Limpiar el intervalo después de 60 segundos para evitar loops infinitos
-
-              setTimeout(() => {
-                if (checkInterval) {
-                  clearInterval(checkInterval);
-
-                  console.log("Timeout alcanzado - limpiando intervalo");
-                }
-              }, 60000);
-            };
-          } else {
-            // Manejo si el navegador bloquea la nueva ventana (pop-up)
-
-            console.error("El navegador bloqueó la ventana de impresión.");
-
-            Swal.fire(
-              "Error",
-              "El navegador bloqueó la ventana de impresión. Por favor, permita pop-ups.",
-              "error"
-            );
+      // Inyectar estilos adicionales para eliminar página en blanco
+      const style = doc.createElement('style');
+      style.textContent = `
+        @page {
+          size: A4;
+          margin: 0.5cm;
+        }
+        @media print {
+          html {
+            height: auto !important;
+            overflow: visible !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-          // El usuario hizo clic en "Cerrar"
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: auto !important;
+            min-height: auto !important;
+            page-break-before: avoid !important;
+            page-break-after: avoid !important;
+            position: relative !important;
+            top: 0 !important;
+          }
+          body::before,
+          body::after {
+            content: none !important;
+            display: none !important;
+          }
+          .container {
+            margin: 0 auto !important;
+            margin-top: 0 !important;
+            padding-top: 10px !important;
+            page-break-before: avoid !important;
+            position: relative !important;
+            top: 0 !important;
+          }
+        }
+      `;
+      doc.head.appendChild(style);
 
-          console.log("Modal cerrado por el usuario");
+      // Agregar script para ajustar antes de imprimir
+      const script = doc.createElement('script');
+      script.textContent = `
+        window.addEventListener('beforeprint', function() {
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+          document.body.style.marginTop = '0';
+          document.body.style.paddingTop = '0';
+          const container = document.querySelector('.container');
+          if (container) {
+            container.style.marginTop = '0';
+            container.style.paddingTop = '10px';
+          }
+        });
+      `;
+      doc.head.appendChild(script);
+
+      // Eliminar espacios en blanco antes del primer elemento del body
+      if (doc.body.firstChild && doc.body.firstChild.nodeType === 3) {
+        const firstText = doc.body.firstChild;
+        if (firstText.textContent && firstText.textContent.trim() === '') {
+          doc.body.removeChild(firstText);
+        }
+      }
+      
+      // Eliminar todos los nodos de texto vacíos al inicio del body
+      let firstChild = doc.body.firstChild;
+      while (firstChild && firstChild.nodeType === 3 && firstChild.textContent.trim() === '') {
+        doc.body.removeChild(firstChild);
+        firstChild = doc.body.firstChild;
+      }
+
+      // Asegurar que el contenedor esté al inicio del body
+      const container = doc.querySelector('.container');
+      if (container && container.parentNode === doc.body) {
+        // Mover el contenedor al inicio del body si no está ya ahí
+        const firstChild = doc.body.firstChild;
+        if (firstChild && firstChild !== container) {
+          doc.body.insertBefore(container, firstChild);
+        }
+      }
+
+      // Asegurar que el scroll esté en la parte superior
+      iframe.contentWindow.scrollTo(0, 0);
+      doc.documentElement.scrollTop = 0;
+      doc.body.scrollTop = 0;
+
+      // Forzar un reflow para aplicar los estilos
+      doc.body.offsetHeight;
+
+      // Guardar títulos originales
+      const originalIframeTitle = doc.title || '';
+      const originalWindowTitle = window.document.title || '';
+
+      // Crear el nombre del archivo
+      const fecha = new Date();
+      const y = fecha.getFullYear();
+      const m = String(fecha.getMonth() + 1).padStart(2, '0');
+      const d = String(fecha.getDate()).padStart(2, '0');
+      const fechaStr = `${y}${m}${d}`;
+      const filename = `ConvenioFirmado_${convenioNumero}_${fechaStr}`;
+
+      // 3. Mostrar el modal de éxito y preguntar qué hacer
+      Swal.fire({
+        icon: 'success',
+        title: 'Acuerdo de Pago',
+        text: 'El archivo se generó correctamente. Puedes guardarlo como PDF.',
+        showCancelButton: true,
+        confirmButtonText: 'Imprimir',
+        cancelButtonText: 'Cerrar',
+        confirmButtonColor: '#003594',
+        cancelButtonColor: '#808080',
+        color: 'black'
+      }).then((result) => {
+        // Si el usuario presiona "Imprimir"
+        if (result.isConfirmed) {
+          // Asignar el nombre del archivo al título de la ventana principal
+          window.document.title = filename;
+
+          // Asegurar que el scroll esté en la parte superior antes de imprimir
+          iframe.contentWindow.scrollTo(0, 0);
+          doc.documentElement.scrollTop = 0;
+          doc.body.scrollTop = 0;
+
+          // Pequeño delay para asegurar que el scroll se haya aplicado
+                setTimeout(() => {
+            // Llamar a la función de impresión
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+          }, 100);
+
+          // Restaurar títulos después de que el diálogo de impresión se lance
+              setTimeout(() => {
+            doc.title = originalIframeTitle;
+            window.document.title = originalWindowTitle;
+
+            // Limpiar el iframe
+            if (iframe && iframe.parentNode) {
+              document.body.removeChild(iframe);
+                }
+          }, 500);
+          } else {
+          // Si el usuario presiona "Cerrar"
+          // Limpiar el iframe
+          if (iframe && iframe.parentNode) {
+            document.body.removeChild(iframe);
+          }
         }
       });
     });
